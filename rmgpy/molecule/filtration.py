@@ -44,10 +44,10 @@ The rules this module follows are (by order of importance):
 
 import logging
 
-from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.element import PeriodicSystem
-from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.exceptions import ResonanceError
+from rmgpy.molecule.element import PeriodicSystem
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.pathfinder import find_shortest_path
 
 
 def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None):
@@ -135,7 +135,7 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                 elif atom.lonePairs >= 2:
                     octet_deviation += abs(8 - val_electrons)  # octet on S p[2,3]
                     # eg [S][S], OS[O], [NH+]#[N+][S-][O-], O[S-](O)[N+]#N, S=[O+][O-]
-            for atom2, bond in atom.bonds.iteritems():
+            for atom2, bond in atom.bonds.items():
                 if atom2.isSulfur() and bond.isTriple():
                     octet_deviation += 0.5  # penalty for S#S substructures. Often times sulfur can have a triple
                     # bond to another sulfur in a structure that obeys the octet rule, but probably shouldn't be a
@@ -148,8 +148,8 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
         # E.g., O=[:S..] is penalized, but [C..]=C=O isn't.
         if (atom.radicalElectrons >= 2 and
                 ((atom.isNitrogen() and atom.lonePairs == 0)
-                 or (atom.isOxygen() and atom.lonePairs in [0,1,2])
-                 or (atom.isSulfur() and atom.lonePairs in [0,1,2]))):
+                 or (atom.isOxygen() and atom.lonePairs in [0, 1, 2])
+                 or (atom.isSulfur() and atom.lonePairs in [0, 1, 2]))):
             octet_deviation += 3
 
     return octet_deviation
@@ -217,7 +217,7 @@ def charge_filtration(filtered_list, charge_span_list):
             for atom in mol.vertices:
                 if atom.radicalElectrons and int(atom.sortingLabel) not in rad_sorting_list:
                     rad_sorting_list.append(int(atom.sortingLabel))
-                for atom2, bond in atom.bonds.iteritems():
+                for atom2, bond in atom.bonds.items():
                     # check if bond is multiple, store only from one side (atom1 < atom2) for consistency
                     if atom2.sortingLabel > atom.sortingLabel and bond.isDouble() or bond.isTriple():
                         mul_bond_sorting_list.append((int(atom.sortingLabel), int(atom2.sortingLabel)))
@@ -252,10 +252,10 @@ def find_unique_sites_in_charged_list(mol, rad_sorting_list, mul_bond_sorting_li
     for atom in mol.vertices:
         if atom.radicalElectrons and int(atom.sortingLabel) not in rad_sorting_list:
             return [mol]
-        for atom2, bond in atom.bonds.iteritems():
-            if atom2.sortingLabel > atom.sortingLabel and (bond.isDouble() or bond.isTriple())\
-                    and (int(atom.sortingLabel), int(atom2.sortingLabel)) not in mul_bond_sorting_list\
-                    and not (atom.isSulfur() and atom2.isSulfur()):
+        for atom2, bond in atom.bonds.items():
+            if (atom2.sortingLabel > atom.sortingLabel and (bond.isDouble() or bond.isTriple())
+                    and (int(atom.sortingLabel), int(atom2.sortingLabel)) not in mul_bond_sorting_list
+                    and not (atom.isSulfur() and atom2.isSulfur())):
                 # We check that both atoms aren't S, otherwise we get [S.-]=[S.+] as a structure of S2 triplet
                 return [mol]
     return []
@@ -293,7 +293,7 @@ def stabilize_charges_by_electronegativity(mol_list, allow_empty_list=False):
             # several pairs of formally charged atoms, where one of the pairs isn't obeying the
             # electronegativity rule, while the sum of the pairs does.
             indices_to_pop.append(i)
-    for i in reversed(xrange(len(mol_list))):  # pop starting from the end, so indices won't change
+    for i in reversed(range(len(mol_list))):  # pop starting from the end, so indices won't change
         if i in indices_to_pop:
             mol_list.pop(i)
     if mol_list or allow_empty_list:
@@ -337,7 +337,7 @@ def stabilize_charges_by_proximity(mol_list):
     for i, distances in enumerate(charge_distance_list):
         if distances[0] < max_cumulative_similar_charge_distance:
             indices_to_pop.append(i)
-    for i in reversed(xrange(len(mol_list))):  # pop starting from the end, so indices won't change
+    for i in reversed(range(len(mol_list))):  # pop starting from the end, so indices won't change
         if i in indices_to_pop:
             mol_list.pop(i)
     return mol_list
@@ -409,9 +409,9 @@ def mark_unreactive_structures(filtered_list, mol_list):
         # (e.g., [::N]O <=> [::N][::O.] + [H.], where [::N][::O.] should be recognized as [:N.]=[::O]).
         mol = mol_list[0]
         logging.debug("Setting the unrepresentative resonance structure {0} as unreactive in species {1}.".format(
-            mol.toSMILES(),filtered_list[0].toSMILES()))
+            mol.toSMILES(), filtered_list[0].toSMILES()))
         logging.debug("Unreactive structure:\n{0}\nA representative reactive structure in this species:\n{1}\n".format(
-            mol.toAdjacencyList(),filtered_list[0].toAdjacencyList()))
+            mol.toAdjacencyList(), filtered_list[0].toAdjacencyList()))
         mol.reactive = False
         filtered_list.append(mol)
 
@@ -425,7 +425,7 @@ def check_reactive(filtered_list):
         logging.info('\n\n')
         logging.error('No reactive structures were attributed to species {0}'.format(filtered_list[0].toSMILES()))
         for mol in filtered_list:
-            logging.info('Structure: {0}\n{1}Reactive: {2}'.format(mol.toSMILES(),mol.toAdjacencyList(),mol.reactive))
+            logging.info('Structure: {0}\n{1}Reactive: {2}'.format(mol.toSMILES(), mol.toAdjacencyList(), mol.reactive))
         logging.info('\n')
         raise ResonanceError('Each species must have at least one reactive structure. Something probably went wrong'
                              ' when exploring resonance structures for species {0}'.format(filtered_list[0].toSMILES()))

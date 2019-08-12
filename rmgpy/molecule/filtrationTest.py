@@ -30,10 +30,10 @@
 
 import unittest
 
-from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.resonance import generate_resonance_structures, analyze_molecule
 from rmgpy.molecule.filtration import get_octet_deviation_list, get_octet_deviation, filter_structures, \
                                       charge_filtration, get_charge_span_list, aromaticity_filtration
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.resonance import generate_resonance_structures, analyze_molecule
 
 ################################################################################
 
@@ -65,11 +65,11 @@ class FiltrationTest(unittest.TestCase):
         mol2 = Molecule().fromAdjacencyList(adj2)
         mol3 = Molecule().fromAdjacencyList(adj3)
 
-        mol_list = [mol1,mol2,mol3]
+        mol_list = [mol1, mol2, mol3]
         octet_deviation_list = get_octet_deviation_list(mol_list)
         filtered_list = filter_structures(mol_list)
 
-        self.assertEqual(octet_deviation_list,[1, 3, 3])
+        self.assertEqual(octet_deviation_list, [1, 3, 3])
         self.assertEqual(len(filtered_list), 1)
         self.assertTrue(all([atom.charge == 0 for atom in filtered_list[0].vertices]))
 

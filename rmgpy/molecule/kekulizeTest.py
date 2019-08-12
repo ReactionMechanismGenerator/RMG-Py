@@ -29,10 +29,9 @@
 ###############################################################################
 
 import unittest
-from external.wip import work_in_progress
 
-from rmgpy.molecule import Molecule
-from rmgpy.molecule.kekulize import *
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.kekulize import AromaticRing
 
 
 class KekulizeTest(unittest.TestCase):
@@ -55,7 +54,7 @@ class KekulizeTest(unittest.TestCase):
 """)
         bonds = set()
         for atom in molecule.atoms:
-            bonds.update(atom.bonds.values())
+            bonds.update(list(atom.bonds.values()))
 
         ring_atoms, ring_bonds = molecule.getAromaticRings()
 

@@ -28,10 +28,11 @@
 #                                                                             #
 ###############################################################################
 
-import re
 import itertools
+import re
 
-from .molecule import Molecule
+from rmgpy.molecule.molecule import Molecule
+
 
 def retrieveElementCount(obj):
     """Converts an (augmented) inchi or Molecule into a dictionary element -> count"""
@@ -40,7 +41,7 @@ def retrieveElementCount(obj):
     if isinstance(obj, str):
         assert 'InChI=1' in obj
         mf = obj.split('/')[1]
-        pieces = re.findall('[A-Z][^A-Z]*', mf)#split on capital letters
+        pieces = re.findall('[A-Z][^A-Z]*', mf)  # split on capital letters
 
         for piece in pieces:
             match = re.match(r"([a-z]+)([0-9]*)", piece, re.I)
@@ -59,12 +60,13 @@ def retrieveElementCount(obj):
             del element_count['Pt']
 
         return element_count
-    
+
     elif isinstance(obj, Molecule):
         return obj.get_element_count()
 
     else:
         raise Exception
+
 
 def partition(sample, list_of_samples):
     """
@@ -89,7 +91,7 @@ def partition(sample, list_of_samples):
 
     """
 
-    partitions, sample_lists  = [], []
+    partitions, sample_lists = [], []
 
     for s in sample:
         for one_sample_list in list_of_samples:
@@ -99,14 +101,14 @@ def partition(sample, list_of_samples):
                     partitions[index].append(s)
                 except ValueError:
                     partitions.append([s])
-                    sample_lists.append(one_sample_list)                    
-                
+                    sample_lists.append(one_sample_list)
+
                 break
-        else:# s does not belong to any list of samples
+        else:  # s does not belong to any list of samples
             partitions.append([s])
             sample_lists.append([])
 
-    return partitions, sample_lists          
+    return partitions, sample_lists
 
 
 def agglomerate(groups):
@@ -124,14 +126,15 @@ def agglomerate(groups):
     [[1,2,3], [5,6], [4,7]]
     """
 
-    result = filter(lambda x: len(x) > 1, groups)
-    singletons = filter(lambda x: len(x) == 1, groups)
-    
+    result = [x for x in groups if len(x) > 1]
+    singletons = [x for x in groups if len(x) == 1]
+
     # collapse singletons:
     singletons = list(itertools.chain.from_iterable(singletons))
 
     result.append(singletons)
     return result
+
 
 def generate_combo(samples, sample_spaces):
     """
@@ -149,9 +152,10 @@ def generate_combo(samples, sample_spaces):
     combos = [list(tup) for tup in itertools.product(*combos)]
 
     # don't add the original samples
-    combos = filter(lambda x: x != samples, combos)
+    combos = [x for x in combos if x != samples]
 
-    return combos    
+    return combos
+
 
 def swap(to_be_swapped, sample):
     """
@@ -173,5 +177,5 @@ def swap(to_be_swapped, sample):
     original = (sample.intersection(to_be_swapped)).pop()
     central = (sample - to_be_swapped).pop()
     new_partner = (to_be_swapped - sample).pop()
-    
+
     return central, original, new_partner
