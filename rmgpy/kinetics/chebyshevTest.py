@@ -31,6 +31,7 @@
 """
 This script contains unit tests of the :mod:`rmgpy.kinetics.chebyshev` module.
 """
+from __future__ import division
 
 import unittest
 import numpy
@@ -175,8 +176,8 @@ class TestChebyshev(unittest.TestCase):
         Test that a Chebyshev object can be pickled and unpickled with no loss
         of information.
         """
-        import cPickle
-        chebyshev = cPickle.loads(cPickle.dumps(self.chebyshev,-1))
+        import pickle
+        chebyshev = pickle.loads(pickle.dumps(self.chebyshev,-1))
         self.assertEqual(self.chebyshev.coeffs.value.shape[0], chebyshev.coeffs.value.shape[0])
         self.assertEqual(self.chebyshev.coeffs.value.shape[1], chebyshev.coeffs.value.shape[1])
         for i in range(self.chebyshev.coeffs.value.shape[0]):

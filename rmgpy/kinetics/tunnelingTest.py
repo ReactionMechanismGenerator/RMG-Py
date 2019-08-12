@@ -74,8 +74,8 @@ class TestWigner(unittest.TestCase):
         Test that a Wigner object can be successfully pickled and unpickled
         with no loss of information.
         """
-        import cPickle
-        tunneling = cPickle.loads(cPickle.dumps(self.tunneling,-1))
+        import pickle
+        tunneling = pickle.loads(pickle.dumps(self.tunneling,-1))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
 
@@ -150,8 +150,8 @@ class TestEckart(unittest.TestCase):
         Test that an Eckart object can be successfully pickled and
         unpickled with no loss of information.
         """
-        import cPickle
-        tunneling = cPickle.loads(cPickle.dumps(self.tunneling,-1))
+        import pickle
+        tunneling = pickle.loads(pickle.dumps(self.tunneling,-1))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
         self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)

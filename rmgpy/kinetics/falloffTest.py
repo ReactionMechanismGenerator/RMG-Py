@@ -215,8 +215,8 @@ class TestThirdBody(unittest.TestCase):
         Test that a ThirdBody object can be successfully pickled and
         unpickled with no loss of information.
         """
-        import cPickle
-        thirdBody = cPickle.loads(cPickle.dumps(self.thirdBody,-1))
+        import pickle
+        thirdBody = pickle.loads(pickle.dumps(self.thirdBody,-1))
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.A.value, thirdBody.arrheniusLow.A.value, delta=1e0)
         self.assertEqual(self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units)
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4)
@@ -234,10 +234,10 @@ class TestThirdBody(unittest.TestCase):
         self.assertAlmostEqual(self.thirdBody.Pmax.value, thirdBody.Pmax.value, 4)
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         efficiencies = {}
-        for mol, eff in self.thirdBody.efficiencies.iteritems():
+        for mol, eff in self.thirdBody.efficiencies.items():
             efficiencies[mol.toSMILES()] = eff
         pickled_efficiencies = {}
-        for mol, eff in thirdBody.efficiencies.iteritems():
+        for mol, eff in thirdBody.efficiencies.items():
             pickled_efficiencies[mol.toSMILES()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
@@ -266,10 +266,10 @@ class TestThirdBody(unittest.TestCase):
         self.assertAlmostEqual(self.thirdBody.Pmax.value, thirdBody.Pmax.value, 4)
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         efficiencies = {}
-        for mol, eff in self.thirdBody.efficiencies.iteritems():
+        for mol, eff in self.thirdBody.efficiencies.items():
             efficiencies[mol.toSMILES()] = eff
         pickled_efficiencies = {}
-        for mol, eff in thirdBody.efficiencies.iteritems():
+        for mol, eff in thirdBody.efficiencies.items():
             pickled_efficiencies[mol.toSMILES()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
@@ -395,8 +395,8 @@ class TestLindemann(unittest.TestCase):
         Test that a Lindemann object can be pickled and unpickled with no loss
         of information.
         """
-        import cPickle
-        lindemann = cPickle.loads(cPickle.dumps(self.lindemann,-1))
+        import pickle
+        lindemann = pickle.loads(pickle.dumps(self.lindemann,-1))
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.A.value, lindemann.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units)
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4)
@@ -422,10 +422,10 @@ class TestLindemann(unittest.TestCase):
         self.assertAlmostEqual(self.lindemann.Pmax.value, lindemann.Pmax.value, 4)
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         efficiencies = {}
-        for mol, eff in self.lindemann.efficiencies.iteritems():
+        for mol, eff in self.lindemann.efficiencies.items():
             efficiencies[mol.toSMILES()] = eff
         pickled_efficiencies = {}
-        for mol, eff in lindemann.efficiencies.iteritems():
+        for mol, eff in lindemann.efficiencies.items():
             pickled_efficiencies[mol.toSMILES()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
@@ -462,10 +462,10 @@ class TestLindemann(unittest.TestCase):
         self.assertAlmostEqual(self.lindemann.Pmax.value, lindemann.Pmax.value, 4)
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         efficiencies = {}
-        for mol, eff in self.lindemann.efficiencies.iteritems():
+        for mol, eff in self.lindemann.efficiencies.items():
             efficiencies[mol.toSMILES()] = eff
         pickled_efficiencies = {}
-        for mol, eff in lindemann.efficiencies.iteritems():
+        for mol, eff in lindemann.efficiencies.items():
             pickled_efficiencies[mol.toSMILES()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
@@ -623,8 +623,8 @@ class TestTroe(unittest.TestCase):
         Test that a Troe object can be pickled and unpickled with no loss of
         information.
         """
-        import cPickle
-        troe = cPickle.loads(cPickle.dumps(self.troe,-1))
+        import pickle
+        troe = pickle.loads(pickle.dumps(self.troe,-1))
         self.assertAlmostEqual(self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.troe.arrheniusHigh.A.units, troe.arrheniusHigh.A.units)
         self.assertAlmostEqual(self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4)
@@ -657,10 +657,10 @@ class TestTroe(unittest.TestCase):
         self.assertAlmostEqual(self.troe.Pmax.value, troe.Pmax.value, 4)
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)        
         efficiencies = {}
-        for mol, eff in self.troe.efficiencies.iteritems():
+        for mol, eff in self.troe.efficiencies.items():
             efficiencies[mol.toSMILES()] = eff
         pickled_efficiencies = {}
-        for mol, eff in troe.efficiencies.iteritems():
+        for mol, eff in troe.efficiencies.items():
             pickled_efficiencies[mol.toSMILES()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
@@ -704,10 +704,10 @@ class TestTroe(unittest.TestCase):
         self.assertAlmostEqual(self.troe.Pmax.value, troe.Pmax.value, 4)
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)  
         efficiencies = {}
-        for mol, eff in self.troe.efficiencies.iteritems():
+        for mol, eff in self.troe.efficiencies.items():
             efficiencies[mol.toSMILES()] = eff
         pickled_efficiencies = {}
-        for mol, eff in troe.efficiencies.iteritems():
+        for mol, eff in troe.efficiencies.items():
             pickled_efficiencies[mol.toSMILES()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
