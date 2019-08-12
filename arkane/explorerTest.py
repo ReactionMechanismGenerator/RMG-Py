@@ -96,5 +96,7 @@ class TestExplorerJob(unittest.TestCase):
             self.assertIn(rxn, self.explorer_job.networks[0].path_reactions)
 
 
+################################################################################
+
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
