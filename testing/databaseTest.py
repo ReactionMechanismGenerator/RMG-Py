@@ -1,6 +1,12 @@
 """
 This scripts runs tests on the database
 """
+from __future__ import division
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import numpy as np
 import logging
 
@@ -18,7 +24,7 @@ import nose
 import nose.tools
 
 
-class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use nose test generators
+class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want to use nose test generators
     """
     Contains unit tests for the database for rigorous error checking.
     """
@@ -33,7 +39,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
     # These are generators, that call the methods below.
     def test_kinetics(self):
-        for family_name, family in self.database.kinetics.families.iteritems():
+        for family_name, family in self.database.kinetics.families.items():
 
             test = lambda x: self.kinetics_checkCorrectNumberofNodesInRules(family_name)
             test_name = "Kinetics family {0}: rules have correct number of nodes?".format(family_name)
@@ -115,7 +121,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 self.compat_func_name = test_name
                 yield test, depository.label
 
-        for library_name, library in self.database.kinetics.libraries.iteritems():
+        for library_name, library in self.database.kinetics.libraries.items():
 
             test = lambda x: self.kinetics_checkAdjlistsNonidentical(library)
             test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
@@ -136,7 +142,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             yield test, library_name
 
     def test_thermo(self):
-        for group_name, group in self.database.thermo.groups.iteritems():
+        for group_name, group in self.database.thermo.groups.items():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Thermo groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
@@ -174,7 +180,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             yield test, group_name
 
     def test_solvation(self):
-        for group_name, group in self.database.solvation.groups.iteritems():
+        for group_name, group in self.database.solvation.groups.items():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
@@ -212,7 +218,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             yield test, group_name
 
     def test_statmech(self):
-        for group_name, group in self.database.statmech.groups.iteritems():
+        for group_name, group in self.database.statmech.groups.items():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
@@ -250,7 +256,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             yield test, group_name
 
     def test_transport(self):
-        for group_name, group in self.database.transport.groups.iteritems():
+        for group_name, group in self.database.transport.groups.items():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
@@ -296,7 +302,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         family = self.database.kinetics.families[family_name]
         expectedNumberNodes = len(family.getRootTemplate())
         tst = []
-        for label, entries in family.rules.entries.iteritems():
+        for label, entries in family.rules.entries.items():
             for entry in entries:
                 nodes = label.split(';')
                 tst.append((len(nodes), expectedNumberNodes, "Wrong number of groups or semicolons in family {family} rule {entry}.  Should be {num_nodes}".format(family=family_name, entry=entry, num_nodes=expectedNumberNodes)))
@@ -325,7 +331,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         topGroupOrder = ';'.join(topNode.label for topNode in family.getRootTemplate())
         tst1 = []
         tst2 = []
-        for label, entries in family.rules.entries.iteritems():
+        for label, entries in family.rules.entries.items():
             for entry in entries:
                 nodes = label.split(';')
                 for i, node in enumerate(nodes):
@@ -352,7 +358,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         tst1 = []
         tst2 = []
         tst3 = []
-        for nodeName, nodeGroup in family.groups.entries.iteritems():
+        for nodeName, nodeGroup in family.groups.entries.items():
             tst.append(('[' in nodeName or ']' in nodeName, "Group {group} in {family} family contains square brackets [ ] in the label, which are not allowed.".format(group=nodeName, family=family_name)))
             ascendParent = nodeGroup
 
@@ -393,9 +399,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         family.entries = originalFamily.groups.entries
         entriesCopy = copy(family.entries)
         tst = []
-        for nodeName, nodeGroup in family.entries.iteritems():
+        for nodeName, nodeGroup in family.entries.items():
             del entriesCopy[nodeName]
-            for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
+            for nodeNameOther, nodeGroupOther in entriesCopy.items():
                 tst.append((family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther)))
 
         boo = False
@@ -416,7 +422,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         family = Database()
         family.entries = originalFamily.groups.entries
         tst = []
-        for nodeName, childNode in family.entries.iteritems():
+        for nodeName, childNode in family.entries.items():
             #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if childNode in originalFamily.groups.top or childNode in originalFamily.forwardTemplate.products: continue
             parentNode = childNode.parent
@@ -464,7 +470,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         family = Database()
         family.entries = originalFamily.groups.entries
         tst = []
-        for nodeName, node in family.entries.iteritems():
+        for nodeName, node in family.entries.items():
             #Some families also construct a 2-level trees for the products
             #(root with all entries down one level) We don't care about this
             #tree as it is not used in searching, so we ignore products
@@ -732,7 +738,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 ignore.extend(product.children)
         else: ignore=[]
         tst = []
-        for entryName, entry in family.groups.entries.iteritems():
+        for entryName, entry in family.groups.entries.items():
             #ignore products
             if entry in ignore: continue
             #ignore LogicOr groups
@@ -749,7 +755,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     if num_of_Dbonds == 2:
                         correctAtomList.append('Cdd')
                     elif num_of_Dbonds == 1:
-                        for ligand, bond in atom.bonds.iteritems():
+                        for ligand, bond in atom.bonds.items():
                             #Ignore ligands that are not double bonded
                             if any([abs(2-order) < 1e-7 for order in bond.order]):
                                 for ligAtomType in ligand.atomType:
@@ -804,7 +810,7 @@ The following adjList may have atoms in a different ordering than the input file
 
             #find the bonds to break
             bondsToBreak = []
-            for atom2, bond in midAtom.bonds.iteritems():
+            for atom2, bond in midAtom.bonds.items():
                 if atom2.label is None or atom2.label not in endLabels: #
                     bondsToBreak.append(bond)
 
@@ -846,7 +852,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         # set of all end_labels should be backbone label
         backboneLabel = set([])
-        for end_label in endLabels.itervalues():
+        for end_label in endLabels.values():
             for label in end_label:
                 backboneLabel.add(label)
 
@@ -856,14 +862,14 @@ The following adjList may have atoms in a different ordering than the input file
         C = [] #backbone missing end group labels
         D = [] #backbone missing labels in between groups
         E = [] #backbone tries to define atoms inside end groups
-        for group_name, entry in family.groups.entries.iteritems():
+        for group_name, entry in family.groups.entries.items():
             if isinstance(entry.item, Group):
                 group = entry.item
                 if backbone in family.ancestors(entry):
                     for atom in group.atoms:
                         if atom.label: presentLabels.add(atom.label)
                     #Check C
-                    for endGroup, labels in endLabels.iteritems():
+                    for endGroup, labels in endLabels.items():
                         if not labels.issubset(presentLabels):
                             C.append([endGroup, entry])
                     #check D
@@ -874,7 +880,7 @@ The following adjList may have atoms in a different ordering than the input file
                             D.append([backbone, entry])
                             break
                     #check E
-                    for endGroup, labels in endLabels.iteritems():
+                    for endGroup, labels in endLabels.items():
                         endFromBackbone = getEndFromBackbone(entry, labels)
                         presentLabels = endFromBackbone.getLabeledAtoms()
                         presentLabels = set(presentLabels.keys())
@@ -885,7 +891,7 @@ The following adjList may have atoms in a different ordering than the input file
 
                 else:
                     presentLabels = set([])
-                    for endNode, labelledAtoms in endLabels.iteritems():
+                    for endNode, labelledAtoms in endLabels.items():
                         if endNode in family.ancestors(entry):
                             for atom in group.atoms:
                                 if atom.label: presentLabels.add(atom.label)
@@ -973,7 +979,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         #If atom has too many benzene rings, we currently have trouble making sample atoms
         skipped = []
-        for entryName, entry in family.groups.entries.iteritems():
+        for entryName, entry in family.groups.entries.items():
             if entry in ignore: continue
             elif isinstance(entry.item, Group):
                 ancestors=family.ancestors(entry)
@@ -1053,7 +1059,7 @@ Origin Group AdjList:
         """
         This test checks whether nodes are found in the tree, with proper parents.
         """
-        for nodeName, nodeGroup in group.entries.iteritems():
+        for nodeName, nodeGroup in group.entries.items():
             ascendParent = nodeGroup
             # Check whether the node has proper parents unless it is the top reactant or product node
             tst1 = []
@@ -1089,9 +1095,9 @@ Origin Group AdjList:
         """
         entriesCopy = copy(group.entries)
         tst = []
-        for nodeName, nodeGroup in group.entries.iteritems():
+        for nodeName, nodeGroup in group.entries.items():
             del entriesCopy[nodeName]
-            for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
+            for nodeNameOther, nodeGroupOther in entriesCopy.items():
                 group.matchNodeToNode(nodeGroup,nodeGroupOther)
                 tst.append((group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther)))
 
@@ -1110,7 +1116,7 @@ Origin Group AdjList:
         """
         tst1 = []
         tst2 = []
-        for nodeName, childNode in group.entries.iteritems():
+        for nodeName, childNode in group.entries.items():
             #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if childNode in group.top: continue
             parentNode = childNode.parent
@@ -1163,7 +1169,7 @@ Origin Group AdjList:
         way to writes a bicyclic group that excludes an analogous tricyclic.
         """
         tst = []
-        for nodeName, node in group.entries.iteritems():
+        for nodeName, node in group.entries.items():
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index+1:]:
                     tst.append((group.matchNodeToChild(child1, child2),
@@ -1186,7 +1192,7 @@ Origin Group AdjList:
         targetLabel=['Cd', 'CO', 'CS', 'Cdd']
         targetAtomTypes=[atomTypes[x] for x in targetLabel]
         tst = []
-        for entryName, entry in group.entries.iteritems():
+        for entryName, entry in group.entries.items():
             if isinstance(entry.item, Group):
                 for index, atom in enumerate(entry.item.atoms):
                     for atomtype1 in atom.atomType:
@@ -1200,7 +1206,7 @@ Origin Group AdjList:
                     if num_of_Dbonds == 2:
                         correctAtomList.append('Cdd')
                     elif num_of_Dbonds == 1:
-                        for ligand, bond in atom.bonds.iteritems():
+                        for ligand, bond in atom.bonds.items():
                             #Ignore ligands that are not double bonded
                             if any([abs(2-order) < 1e-7 for order in bond.order]):
                                 for ligAtomType in ligand.atomType:
@@ -1235,7 +1241,7 @@ The following adjList may have atoms in a different ordering than the input file
         tst1 = []
         tst2 = []
         tst3 = []
-        for entryName, entry in group.entries.iteritems():
+        for entryName, entry in group.entries.items():
             try:
                 if isinstance(entry.item, Group):
                     try:
