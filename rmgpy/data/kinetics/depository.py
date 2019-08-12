@@ -153,7 +153,7 @@ class KineticsDepository(Database):
                 collider = collider.group(0) # save string value rather than the object
                 assert collider == re.search('\(\+[^\)]+\)',products).group(0), "Third body colliders in reaction {0} in kinetics library {1} are not identical!".format(rxn_string, self.label)
                 extraParenthesis = collider.count('(') -1
-                for i in xrange(extraParenthesis):
+                for i in range(extraParenthesis):
                     collider += ')' # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders, although currently not implemented in Chemkin. See RMG-Py #1070
                 reactants = reactants.replace(collider,'')
                 products = products.replace(collider,'')

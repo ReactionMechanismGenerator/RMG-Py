@@ -31,7 +31,9 @@
 """
 This module contains functionality for working with kinetics families.
 """
+from __future__ import division
 
+from builtins import str
 import os.path
 import numpy as np
 import logging
@@ -207,7 +209,7 @@ class TemplateReaction(Reaction):
 
 ################################################################################
 
-class ReactionRecipe:
+class ReactionRecipe(object):
     """
     Represent a list of actions that, when executed, result in the conversion
     of a set of reactants to a set of products. There are currently five such
@@ -629,7 +631,7 @@ class KineticsFamily(Database):
         
         assert len(toplabels) == len(treeDistances), 'treeDistances does not have the same number of entries as there are top nodes in the family'
 
-        for entryName,entry in self.groups.entries.iteritems():
+        for entryName,entry in self.groups.entries.items():
             topentry = entry
             while not (topentry.parent is None): #get the top for the tree entry is in
                 topentry = topentry.parent
@@ -700,7 +702,7 @@ class KineticsFamily(Database):
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
         # load the groups indicated in the entry label
-        for label, entries in self.rules.entries.iteritems():
+        for label, entries in self.rules.entries.items():
             nodes = label.split(';')
             reactants = [self.groups.entries[node] for node in nodes]
             reaction = Reaction(reactants=reactants, products=[])
@@ -824,7 +826,7 @@ class KineticsFamily(Database):
         # Add new unique species with labeledAtoms into species_dict
         for rxn in reactions:
             for spec in (rxn.reactants + rxn.products):
-                for ex_spec in species_dict.itervalues():
+                for ex_spec in species_dict.values():
                     if ex_spec.molecule[0].getFormula() != spec.molecule[0].getFormula():
                         continue
                     else:
@@ -877,8 +879,8 @@ class KineticsFamily(Database):
                 data = reaction.kinetics,
                 reference = reference[i],
                 referenceType = referenceType[i],
-                shortDesc = unicode(shortDesc[i]),
-                longDesc = unicode(longDesc[i]),
+                shortDesc = str(shortDesc[i]),
+                longDesc = str(longDesc[i]),
                 rank = rank[i],
             )
 
@@ -975,7 +977,7 @@ class KineticsFamily(Database):
 
         # Save forbidden structures, if present
         if self.forbidden is not None:
-            entries = self.forbidden.entries.values()
+            entries = list(self.forbidden.entries.values())
             entries.sort(key=lambda x: x.label)
             for entry in entries:
                 self.forbidden.saveEntry(f, entry, name='forbidden')
@@ -1115,7 +1117,7 @@ class KineticsFamily(Database):
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
-        entries = depository.entries.values()
+        entries = list(depository.entries.values())
         entries.sort(key=lambda x: x.index)
         
         if trainIndices is not None:
@@ -1546,7 +1548,7 @@ class KineticsFamily(Database):
 
         # Tag atoms with labels
         for m in maps:
-            for reactantAtom, templateAtom in m.iteritems():
+            for reactantAtom, templateAtom in m.items():
                 reactantAtom.label = templateAtom.label
 
         # Check that reactant structures are allowed in this family
@@ -2604,7 +2606,7 @@ class KineticsFamily(Database):
             moleculeC = reactants0[2]
             # Get mappings for all permutations of reactants
             mappings = []
-            for order in itertools.permutations(range(3), 3):
+            for order in itertools.permutations(list(range(3)), 3):
                 mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]].item)
                 mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]].item)
                 mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]].item)
@@ -2753,7 +2755,7 @@ class KineticsFamily(Database):
         return (wf+wb)/2.0
 
     def getw0s(self, rxns):
-        return map(self.getw0,rxns)
+        return list(map(self.getw0,rxns))
     
     def getTrainingDepository(self):
         """
@@ -2989,7 +2991,7 @@ class KineticsFamily(Database):
         if exts == []: #should only occur when all reactions at this node are identical
             rs = templateRxnMap[parent.label]
             for q,rxn in enumerate(rs):
-                for j in xrange(q):
+                for j in range(q):
                     if not same_species_lists(rxn.reactants,rs[j].reactants,generate_initial_map=True):
                         for p,atm in enumerate(parent.item.atoms):
                             if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
@@ -3164,7 +3166,7 @@ class KineticsFamily(Database):
             inds = inds[outlierNum:-outlierNum]
         intervalLength = int(len(inds)/stratumNum)
         strata = []
-        for i in xrange(stratumNum):
+        for i in range(stratumNum):
             if i == 0:
                 temp = inds[:intervalLength].tolist()
                 random.shuffle(temp)
@@ -3203,7 +3205,7 @@ class KineticsFamily(Database):
         """
         templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,fixLabels=fixLabels,
                                              exactMatchesOnly=False,getReverse=getReverse)
-        for key,item in templateRxnMap.iteritems():
+        for key,item in templateRxnMap.items():
             entry = self.groups.entries[key]
             parent = entry.parent
             if parent and len(templateRxnMap[parent.label]) < maxRxnsToReoptNode:
@@ -3215,7 +3217,7 @@ class KineticsFamily(Database):
     def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0,minSplitableEntryNum=2,minRxnsToSpawn=20):
 
         if depth > 0:
-            root = self.groups.entries[templateRxnMap.keys()[0]]
+            root = self.groups.entries[list(templateRxnMap.keys())[0]]
         else:
             for entry in self.groups.entries.values(): #find the root entry for this branch
                 if entry.index != -1:
@@ -3252,7 +3254,7 @@ class KineticsFamily(Database):
                 del procNames[ind]
 
             splitableEntryNum = 0
-            for label,items in templateRxnMap.iteritems(): #figure out how many splitable objects there are
+            for label,items in templateRxnMap.items(): #figure out how many splitable objects there are
                 entry = self.groups.entries[label]
                 if len(items) > 1 and entry not in multCompletedNodes:
                     splitableEntryNum += 1
@@ -3293,7 +3295,7 @@ class KineticsFamily(Database):
 
             #fix indicies
             iters = 0
-            for entry in self.groups.entries.itervalues():
+            for entry in self.groups.entries.values():
                 if entry.index != -1:
                     entry.index = iters
                     iters += 1
@@ -3307,7 +3309,7 @@ class KineticsFamily(Database):
             index += 1
             self.groups.entries[item.label] = item
 
-        for label,entry in self.groups.entries.iteritems():
+        for label,entry in self.groups.entries.items():
             if entry.index != -1 and entry.parent is None and entry.label != root.label:
                 pname = "_".join(label.split('_')[:-1])
                 while pname not in self.groups.entries.keys():
@@ -3425,7 +3427,7 @@ class KineticsFamily(Database):
                     if entry.parent:
                         entry = entry.parent
                 
-                for q in xrange(iters):
+                for q in range(iters):
                     if entry.parent:
                         entry = entry.parent
 
@@ -3530,10 +3532,10 @@ class KineticsFamily(Database):
                 
                 skip = False
                 if node.children == []: #if the atoms or bonds are graphically indistinguishable don't regularize
-                    bdpairs = {(atm,tuple(bd.order)) for atm,bd in atm1.bonds.iteritems()}
+                    bdpairs = {(atm,tuple(bd.order)) for atm,bd in atm1.bonds.items()}
                     for atm2 in grp.atoms:
                         if atm1 is not atm2 and atm1.atomType == atm2.atomType and len(atm1.bonds) == len(atm2.bonds):
-                            bdpairs2 = {(atm,tuple(bd.order)) for atm,bd in atm2.bonds.iteritems()}
+                            bdpairs2 = {(atm,tuple(bd.order)) for atm,bd in atm2.bonds.items()}
                             if bdpairs == bdpairs2:
                                 skip = True
                                 indistinguishable.append(i)
@@ -3689,7 +3691,7 @@ class KineticsFamily(Database):
 
 
         #clear everything
-        self.groups.entries = {x.label:x for x in self.groups.entries.itervalues() if x.index == -1}
+        self.groups.entries = {x.label:x for x in self.groups.entries.values() if x.index == -1}
         
         #add the starting node
         self.addEntry(None,grp,'Root')
@@ -3736,7 +3738,7 @@ class KineticsFamily(Database):
 
         if self.ownReverse and getReverse:
             revRxns = []
-            rkeys = self.reverseMap.keys()
+            rkeys = list(self.reverseMap.keys())
             reverseMap = self.reverseMap
             
         if estimateThermo:
@@ -3936,7 +3938,7 @@ class KineticsFamily(Database):
         
         if exactMatchesOnly:
             newLists = dict()
-            for key,rs in rxnLists.iteritems():
+            for key,rs in rxnLists.items():
                 newrs = set(rs)
                 for child in self.groups.entries[key].children:
                     newrs -= set(rxnLists[child.label])
@@ -4088,7 +4090,7 @@ class KineticsFamily(Database):
                             rules[ruleEntry] = weight
                 # Each entry should now only appear once    
                 training = [(k[0],k[1],v) for k,v in training.items()]
-                rules = rules.items()
+                rules = list(rules.items())
                 
             return rules, training
 
@@ -4266,14 +4268,14 @@ def _makeRule(rr):
 
 def _spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth,minSplitableEntryNum,minRxnsToSpawn):
     parentConn, childConn = mp.Pipe()
-    name = templateRxnMap.keys()[0]
+    name = list(templateRxnMap.keys())[0]
     p = mp.Process(target=_childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn))
     p.start()
     return parentConn,p,name
 
 def _childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn):
     delLabels = []
-    rootlabel = templateRxnMap.keys()[0]
+    rootlabel = list(templateRxnMap.keys())[0]
     for label in family.groups.entries.keys():
         if label != rootlabel:
             delLabels.append(label)
@@ -4284,4 +4286,4 @@ def _childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,
 
     family.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs,depth=depth+1,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
 
-    childConn.send(family.groups.entries.values())
+    childConn.send(list(family.groups.entries.values()))

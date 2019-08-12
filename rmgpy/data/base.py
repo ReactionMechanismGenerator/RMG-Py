@@ -34,6 +34,9 @@ particular, this module is devoted to functionality that is common across all
 components of the RMG database.
 """
 
+from builtins import str
+from past.builtins import basestring
+from six import string_types
 import os
 import logging
 import re
@@ -101,8 +104,8 @@ class Entry(object):
         self.data = data
         self.reference = reference
         self.referenceType = referenceType
-        self._shortDesc = unicode(shortDesc)
-        self._longDesc = unicode(longDesc)
+        self._shortDesc = str(shortDesc)
+        self._longDesc = str(longDesc)
         self.rank = rank
         self.nodalDistance=nodalDistance
 
@@ -120,7 +123,7 @@ class Entry(object):
         if value is None:
             self._longDesc = None
         else:
-            self._longDesc = unicode(value)
+            self._longDesc = str(value)
     @property
     def shortDesc(self):
         return self._shortDesc
@@ -129,7 +132,7 @@ class Entry(object):
         if value is None:
             self._shortDesc = None
         else:
-            self._shortDesc = unicode(value)
+            self._shortDesc = str(value)
 
     def getAllDescendants(self):
         """
@@ -150,7 +153,7 @@ class Entry(object):
 
 ################################################################################
 
-class Database:
+class Database(object):
     """
     An RMG-style database, consisting of a dictionary of entries (associating
     items with data), and an optional tree for assigning a hierarchy to the
@@ -234,7 +237,7 @@ class Database:
         local_context['longDesc'] = self.longDesc
         local_context['RateUncertainty'] = RateUncertainty
         # add in anything from the Class level dictionary.
-        for key, value in Database.local_context.iteritems():
+        for key, value in Database.local_context.items():
             local_context[key]=value
         
         # Process the file
@@ -281,7 +284,7 @@ class Database:
                 index += 1
         else:
             # Otherwise save the entries sorted by index, if defined
-            entries = self.entries.values()
+            entries = list(self.entries.values())
             entries.sort(key=lambda x: (x.index))
 
         for index, entry in enumerate(entries):
@@ -519,7 +522,7 @@ class Database:
                 except KeyError:
                     raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
                 
-                if isinstance(parent, str):
+                if isinstance(parent, string_types):
                     raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent, label))
 
                 # Update the parent and children of the nodes accordingly
@@ -583,7 +586,7 @@ class Database:
             logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skippedCount, self.label))
 
         # Make sure each entry with data has a nonnegative index
-        entries2 = self.entries.values()
+        entries2 = list(self.entries.values())
         entries2.sort(key=lambda entry: entry.index)
         index = entries2[-1].index + 1
         if index < 1: index = 1
@@ -722,7 +725,7 @@ class Database:
         # Otherwise save the dictionary in any order
         else:
             # Save the library in order by index
-            entries = self.entries.values()
+            entries = list(self.entries.values())
             entries.sort(key=lambda x: (x.index, x.label))
 
         def comment(s):
@@ -815,7 +818,7 @@ class Database:
         """
         try:
             # Save the library in order by index
-            entries = self.entries.values()
+            entries = list(self.entries.values())
             entries.sort(key=lambda x: x.index)
             
             f = codecs.open(path, 'w',  'utf-8')
@@ -823,7 +826,7 @@ class Database:
             for entry in entries:
                 if entry.data is not None:
                     data = entry.data
-                    if not isinstance(data, str):
+                    if not isinstance(data, string_types):
                         data = self.generateOldLibraryEntry(data)
                     records.append((entry.index, [entry.label], data, entry.shortDesc))
 
@@ -863,7 +866,7 @@ class Database:
         """
         Returns all the ancestors of a node, climbing up the tree to the top.
         """
-        if isinstance(node, str): node = self.entries[node]
+        if isinstance(node, string_types): node = self.entries[node]
         ancestors = []
         parent = node.parent
         if parent is not None:
@@ -875,7 +878,7 @@ class Database:
         """
         Returns all the descendants of a node, climbing down the tree to the bottom.
         """
-        if isinstance(node, str): node = self.entries[node]
+        if isinstance(node, string_types): node = self.entries[node]
         descendants = []
         for child in node.children:
             descendants.append(child)
@@ -947,7 +950,7 @@ class Database:
         `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
         =================== ========================================================
         """
-        if isinstance(node, str): node = self.entries[node]
+        if isinstance(node, string_types): node = self.entries[node]
         group = node.item
         if isinstance(group, LogicNode):
             return group.matchToStructure(self, structure, atoms, strict)
@@ -976,7 +979,7 @@ class Database:
                         return False
                 # Semantic check #2: labeled atoms that share bond in the group (node)
                 # also share equivalent (or more specific) bond in the structure
-                for atom2, atom1 in initialMap.iteritems():
+                for atom2, atom1 in initialMap.items():
                     if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
                         bond1 = group.getBond(center, atom1)   # bond1 is group
                         bond2 = structure.getBond(atom, atom2) # bond2 is structure
@@ -994,7 +997,7 @@ class Database:
             # Labeled atoms in the structure that are not in the group should
             # not be considered in the isomorphism check, so flag them temporarily
             # Without this we would hit a lot of nodes that are ambiguous
-            flaggedAtoms = [atom for label, atom in structure.getLabeledAtoms().iteritems() if label not in centers]
+            flaggedAtoms = [atom for label, atom in structure.getLabeledAtoms().items() if label not in centers]
             for atom in flaggedAtoms: atom.ignore = True
             
             # use mapped (labeled) atoms to try to match subgraph
@@ -1087,7 +1090,7 @@ class Database:
 
         return groupToRemove
 
-class LogicNode:
+class LogicNode(object):
     """
     A base class for AND and OR logic nodes.
     """
