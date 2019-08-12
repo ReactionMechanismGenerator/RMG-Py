@@ -28,25 +28,22 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
-
-import distutils.spawn
-import itertools
-import logging
-import numpy as np
 import os
 import shutil
+import unittest
+
+import numpy as np
 
 from rmgpy import getPath
-from rmgpy.qm.main import QMCalculator
-from rmgpy.molecule import Molecule
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.gaussian import Gaussian, GaussianMolPM3, GaussianMolPM6
-
+from rmgpy.qm.main import QMCalculator
 
 executablePath = Gaussian.executablePath
 NO_GAUSSIAN = not os.path.exists(executablePath)
-    
+
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+
 
 class TestGaussianMolPM3(unittest.TestCase):
     """
@@ -58,15 +55,14 @@ class TestGaussianMolPM3(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-        
-        qm = QMCalculator(software = 'gaussian',
-                          method = 'pm3',
-                          fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-                          scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+
+        qm = QMCalculator(software='gaussian',
+                          method='pm3',
+                          fileStore=os.path.join(rmgpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(rmgpy_path, 'testing', 'qm', 'QMscratch'),
                           )
 
-        
         if not os.path.exists(qm.settings.fileStore):
             os.makedirs(qm.settings.fileStore)
 
@@ -86,7 +82,7 @@ class TestGaussianMolPM3(unittest.TestCase):
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
-        if result.molecularMass.units=='amu':
+        if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
     def testLoadThermoData(self):
@@ -102,9 +98,10 @@ class TestGaussianMolPM3(unittest.TestCase):
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
-        if result.molecularMass.units=='amu':
+        if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
-        
+
+
 class TestGaussianMolPM6(unittest.TestCase):
     """
     Contains unit tests for the Geometry class.
@@ -115,12 +112,12 @@ class TestGaussianMolPM6(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-        
-        qm = QMCalculator(software = 'gaussian',
-                          method = 'pm6',
-                          fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-                          scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+
+        qm = QMCalculator(software='gaussian',
+                          method='pm6',
+                          fileStore=os.path.join(rmgpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(rmgpy_path, 'testing', 'qm', 'QMscratch'),
                           )
 
         if not os.path.exists(qm.settings.fileStore):
@@ -143,7 +140,7 @@ class TestGaussianMolPM6(unittest.TestCase):
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
-        if result.molecularMass.units=='amu':
+        if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
     @unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
@@ -160,11 +157,11 @@ class TestGaussianMolPM6(unittest.TestCase):
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
-        if result.molecularMass.units=='amu':
+        if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
 
 ################################################################################
 
 if __name__ == '__main__':
-    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

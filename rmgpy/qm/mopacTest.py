@@ -28,19 +28,17 @@
 #                                                                             #
 ###############################################################################
 
+import os
+import shutil
 import unittest
 
 import numpy as np
-import os
-import shutil
-import subprocess
 
 from rmgpy import getPath
-from rmgpy.qm.main import QMCalculator
-from rmgpy.molecule import Molecule
-from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
 from rmgpy.exceptions import DependencyError
-
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.qm.main import QMCalculator
+from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
 
 NO_MOPAC = NO_LICENCE = False
 try:
@@ -55,6 +53,7 @@ except DependencyError as e:
 
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
+
 class TestMopacMolPM3(unittest.TestCase):
     """
     Contains unit tests for the Geometry class.
@@ -66,12 +65,12 @@ class TestMopacMolPM3(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
 
         qm = QMCalculator(software='mopac',
                           method='pm3',
-                          fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-                          scratchDirectory=os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+                          fileStore=os.path.join(rmgpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(rmgpy_path, 'testing', 'qm', 'QMscratch'),
                           )
 
         if not os.path.exists(qm.settings.fileStore):
@@ -118,6 +117,7 @@ class TestMopacMolPM3(unittest.TestCase):
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1)  # to 1 decimal place
 
+
 class TestMopacMolPM6(unittest.TestCase):
     """
     Contains unit tests for the Geometry class.
@@ -129,12 +129,12 @@ class TestMopacMolPM6(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
 
         qm = QMCalculator(software='mopac',
                           method='pm6',
-                          fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-                          scratchDirectory=os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+                          fileStore=os.path.join(rmgpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(rmgpy_path, 'testing', 'qm', 'QMscratch'),
                           )
 
         if not os.path.exists(qm.settings.fileStore):
@@ -153,7 +153,7 @@ class TestMopacMolPM6(unittest.TestCase):
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
         self.assertTrue(self.qmmol1.verifyOutputFile())
-        
+
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
@@ -182,6 +182,7 @@ class TestMopacMolPM6(unittest.TestCase):
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.0681, 0)  # to 0 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1)  # to 1 decimal place
 
+
 class TestMopacMolPM7(unittest.TestCase):
     """
     Contains unit tests for the Geometry class.
@@ -193,12 +194,12 @@ class TestMopacMolPM7(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
 
         qm = QMCalculator(software='mopac',
                           method='pm7',
-                          fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-                          scratchDirectory=os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+                          fileStore=os.path.join(rmgpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(rmgpy_path, 'testing', 'qm', 'QMscratch'),
                           )
 
         if not os.path.exists(qm.settings.fileStore):
@@ -218,7 +219,7 @@ class TestMopacMolPM7(unittest.TestCase):
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
         self.assertTrue(self.qmmol1.verifyOutputFile())
-        
+
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
@@ -227,7 +228,7 @@ class TestMopacMolPM7(unittest.TestCase):
 
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.9863, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
-        
+
     def testLoadThermoData(self):
         """
         Test that generateThermoData() can load thermo from the previous MOPAC PM7 run.
@@ -246,7 +247,8 @@ class TestMopacMolPM7(unittest.TestCase):
 
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.8571, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
-        
+
+
 ################################################################################
 
 if __name__ == '__main__':

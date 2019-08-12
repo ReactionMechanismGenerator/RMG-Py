@@ -32,26 +32,27 @@
 This module contains the QMVerifier class for confirming quantum job success.
 """
 
+import logging
 import os
 
-import logging
 
-class QMVerifier:
+class QMVerifier(object):
     """
     Verifies whether a QM job (externalized) was succesfully completed by 
       * searching for specific keywords in the output files, 
       * located in a specific directory (e.g. "QMFiles")
     """
-    def __init__(self,molfile):
+
+    def __init__(self, molfile):
         self.molfile = molfile
         self.gaussianResultExists = False
         self.mopacResultExists = False
         self.mm4ResultExists = False
-        
+
         self.outputExtension = '.out'
         self.inputExtension = '.mop'
-    
-    def checkForInChiKeyCollision(self,logFileInChI):
+
+    def checkForInChiKeyCollision(self, logFileInChI):
         """
         This method is designed in the case a MOPAC output file was found but the InChI found in the file did not
         correspond to the InChI of the given molecule.
@@ -64,32 +65,31 @@ class QMVerifier:
         This method reads in the MOPAC input file and compares the found InChI in there to the InChI of the given molecule.
         """
         # if InChIPartialMatch == 1:#case where the InChI in memory begins with the InChI in the log file we will continue and check the input file, pring a warning if there is no match
-        #look in the input file if the InChI doesn't match (apparently, certain characters can be deleted in MOPAC output file for long InChIs)
-        inputFile = os.path.join(self.molfile.directory,self.molfile.name+self.inputExtension)
-            
-        assert os.path.exists(inputFile)
+        # look in the input file if the InChI doesn't match (apparently, certain characters can be deleted in MOPAC output file for long InChIs)
+        input_file = os.path.join(self.molfile.directory, self.molfile.name + self.inputExtension)
 
-        with open(inputFile) as inputFile:#read the MOPAC inputFile
-            lineI = inputFile.readline()
-            for line in inputFile:
+        assert os.path.exists(input_file)
+
+        with open(input_file) as input_file:  # read the MOPAC input_file
+            lineI = input_file.readline()
+            for line in input_file:
                 if line.startswith("InChI="):
                     inputFileInChI = lineI.rstrip()
                     break
-            
+
             if inputFileInChI == self.molfile.InChIAug:
                 logging.info('An InChI match could be found in the input file, but not in the output file. Anywho, a\
                 pre-existing successful MOPAC result exists.')
                 return True
-            
+
             else:
                 logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " +
-                             self.molfile.name + " RMG Augmented InChI = "+ self.molfile.InChIAug +
-                             " Log file Augmented InChI = "+logFileInChI + 
+                             self.molfile.name + " RMG Augmented InChI = " + self.molfile.InChIAug +
+                             " Log file Augmented InChI = " + logFileInChI +
                              " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
                 return False
-    
 
-        #returns True if an MM4 output file for the given name and directory (.mm4out suffix) exists and indicates successful completion (same criteria as used after calculation runs) terminates if the InChI doesn't match the InChI in the file or if there is no InChI in the file returns False otherwise
+        # returns True if an MM4 output file for the given name and directory (.mm4out suffix) exists and indicates successful completion (same criteria as used after calculation runs) terminates if the InChI doesn't match the InChI in the file or if there is no InChI in the file returns False otherwise
 
     def succesfulJobExists(self):
         """
