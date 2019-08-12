@@ -4,12 +4,14 @@ channels:
   - rmg
   - rdkit
   - cantera
-  - anaconda
+  - pytorch
+  - conda-forge
 dependencies:
   - cairo
   - cairocffi
   - cantera >=2.3.0
   - cclib
+  - chemprop
   - coolprop
   - coverage
   - cython >=0.25.2
