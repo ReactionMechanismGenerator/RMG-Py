@@ -29,17 +29,22 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`rmgpy.statmech.schrodinger` 
+This script contains unit tests of the :mod:`rmgpy.statmech.schrodinger`
 module.
 """
 
+from __future__ import division
+
 import unittest
 
-import numpy
-from rmgpy.statmech.schrodinger import getPartitionFunction, getHeatCapacity, getEnthalpy, getEntropy, getDensityOfStates
+import numpy as np
+
 import rmgpy.constants as constants
+from rmgpy.statmech.schrodinger import getDensityOfStates, getEnthalpy, getEntropy, \
+    getHeatCapacity, getPartitionFunction
 
 ################################################################################
+
 
 class TestSchrodinger(unittest.TestCase):
     """
@@ -47,79 +52,80 @@ class TestSchrodinger(unittest.TestCase):
     module. The solution to the Schrodinger equation used for these tests is
     that of a linear rigid rotor with a rotational constant of 1 cm^-1.
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
         self.B = 1.0 * 11.96
-        self.energy = lambda J: self.B * J * (J + 1)
-        self.degeneracy = lambda J: 2 * J + 1
+        self.energy = lambda j: self.B * j * (j + 1)
+        self.degeneracy = lambda j: 2 * j + 1
         self.n0 = 0
-        
-    def test_getPartitionFunction(self):
+
+    def test_get_partition_function(self):
         """
         Test the getPartitionFunction() method.
         """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.array([208.8907, 347.9285, 695.5234, 1043.118, 1390.713])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = getPartitionFunction(T, self.energy, self.degeneracy, self.n0)
-            self.assertAlmostEqual(Qexp / Qact, 1.0, 4, '{0} != {1} within 4 figures'.format(Qexp, Qact))
-            
-    def test_getHeatCapacity(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([208.8907, 347.9285, 695.5234, 1043.118, 1390.713])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = getPartitionFunction(temperature, self.energy, self.degeneracy, self.n0)
+            self.assertAlmostEqual(q_exp / q_act, 1.0, 4)
+
+    def test_get_heat_capacity(self):
         """
         Test the getHeatCapacity() method.
         """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Cvexplist = numpy.array([1, 1, 1, 1, 1])
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = getHeatCapacity(T, self.energy, self.degeneracy, self.n0)
-            self.assertAlmostEqual(Cvexp / Cvact, 1.0, 4, '{0} != {1} within 4 figures'.format(Cvexp, Cvact))
-       
-    def test_getEnthalpy(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1, 1, 1, 1, 1])
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = getHeatCapacity(temperature, self.energy, self.degeneracy, self.n0)
+            self.assertAlmostEqual(cv_exp / cv_act, 1.0, 4)
+
+    def test_get_enthalpy(self):
         """
         Test the getEnthalpy() method.
         """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = numpy.array([0.9984012, 0.9990409, 0.9995205, 0.9996803, 0.9997603])
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = getEnthalpy(T, self.energy, self.degeneracy, self.n0)
-            self.assertAlmostEqual(Hexp / Hact, 1.0, 4, '{0} != {1} within 4 figures'.format(Hexp, Hact))
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([0.9984012, 0.9990409, 0.9995205, 0.9996803, 0.9997603])
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = getEnthalpy(temperature, self.energy, self.degeneracy, self.n0)
+            self.assertAlmostEqual(h_exp / h_act, 1.0, 4)
 
-    def test_getEntropy(self):
+    def test_get_entropy(self):
         """
         Test the getEntropy() method.
         """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Sexplist = numpy.array([6.340212, 6.851038, 7.544185, 7.949650, 8.237332])
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = getEntropy(T, self.energy, self.degeneracy, self.n0)
-            self.assertAlmostEqual(Sexp / Sact, 1.0, 4, '{0} != {1} within 4 figures'.format(Sexp, Sact))
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([6.340212, 6.851038, 7.544185, 7.949650, 8.237332])
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = getEntropy(temperature, self.energy, self.degeneracy, self.n0)
+            self.assertAlmostEqual(s_exp / s_act, 1.0, 4)
 
-#    def test_getSumOfStates(self):
+#    def test_get_sum_of_states(self):
 #        """
 #        Test the getSumOfStates() method.
 #        """
-#        Elist = numpy.arange(0, 10., 0.01)
-#        densStates = getDensityOfStates(Elist, self.energy, self.degeneracy, self.n0)
-#        sumStates = getSumOfStates(Elist, self.energy, self.degeneracy, self.n0)
-#        for n in range(1, len(Elist)):
-#            self.assertAlmostEqual(numpy.sum(densStates[0:n+1]) / sumStates[n], 1.0, 3)
+#        e_list = np.arange(0, 10., 0.01)
+#        dens_states = getDensityOfStates(e_list, self.energy, self.degeneracy, self.n0)
+#        sum_states = getSumOfStates(e_list, self.energy, self.degeneracy, self.n0)
+#        for n in range(1, len(e_list)):
+#            self.assertAlmostEqual(np.sum(dens_states[0:n + 1]) / sum_states[n], 1.0, 3)
 
-    def test_getDensityOfStates(self):
+    def test_get_density_of_states(self):
         """
         Test the getDensityOfStates() method.
         """
-        Tlist = numpy.array([300,400,500,600])
-        Elist = numpy.arange(0, 40000., 20.)
-        for T in Tlist:
-            densStates = getDensityOfStates(Elist, self.energy, self.degeneracy, self.n0)
-            Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-            Qexp = getPartitionFunction(T, self.energy, self.degeneracy, self.n0)
-            self.assertAlmostEqual(Qexp / Qact, 1.0, 2, '{0} != {1} within 2 figures'.format(Qexp, Qact))
-            
+        t_list = np.array([300, 400, 500, 600])
+        e_list = np.arange(0, 40000., 20.)
+        for temperature in t_list:
+            dens_states = getDensityOfStates(e_list, self.energy, self.degeneracy, self.n0)
+            q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+            q_exp = getPartitionFunction(temperature, self.energy, self.degeneracy, self.n0)
+            self.assertAlmostEqual(q_exp / q_act, 1.0, 2)
+
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
