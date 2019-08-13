@@ -110,20 +110,20 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.getPartitionFunction() method for ethylene.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Qexplist = numpy.array([4.05311e+09, 4.19728e+10, 2.82309e+12, 7.51135e+13, 1.16538e+15])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.ethylene.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+        q_exp_list = numpy.array([4.05311e+09, 4.19728e+10, 2.82309e+12, 7.51135e+13, 1.16538e+15])
+        for T, q_exp in zip(Tlist, q_exp_list):
+            q_act = self.ethylene.getPartitionFunction(T)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
     def test_getHeatCapacity_ethylene(self):
         """
         Test the StatMech.getHeatCapacity() method for ethylene.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Cvexplist = numpy.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.ethylene.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, 3)
+        cv_exp_list = numpy.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
+        for T, cv_exp in zip(Tlist, cv_exp_list):
+            cv_act = self.ethylene.getHeatCapacity(T)
+            self.assertAlmostEqual(cv_exp, cv_act, 3)
 
     def test_getEnthalpy_ethylene(self):
         """
@@ -192,42 +192,43 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.getEnthalpy() method for oxygen.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Hexplist = numpy.array([3.50326, 3.54432, 3.75062, 3.91623, 4.02765]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.oxygen.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+        h_exp_list = numpy.array([3.50326, 3.54432, 3.75062, 3.91623,
+                                  4.02765]) * constants.R * Tlist
+        for T, h_exp in zip(Tlist, h_exp_list):
+            h_act = self.oxygen.getEnthalpy(T)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
 
     def test_getEntropy_oxygen(self):
         """
         Test the StatMech.getEntropy() method for oxygen.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Sexplist = numpy.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.oxygen.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, 3)
+        s_exp_list = numpy.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
+        for T, s_exp in zip(Tlist, s_exp_list):
+            s_act = self.oxygen.getEntropy(T)
+            self.assertAlmostEqual(s_exp, s_act, 3)
 
     def test_getSumOfStates_oxygen(self):
         """
         Test the StatMech.getSumOfStates() method for oxygen.
         """
         Elist = numpy.arange(0, 5000*11.96, 2*11.96)
-        sumStates = self.oxygen.getSumOfStates(Elist)
-        densStates = self.oxygen.getDensityOfStates(Elist)
+        sum_states = self.oxygen.getSumOfStates(Elist)
+        dens_states = self.oxygen.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
             self.assertTrue(0.8 < numpy.sum(
-                densStates[0:n+1]) / sumStates[n] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n+1]), sumStates[n]))
+                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n+1]), sum_states[n]))
 
     def test_getDensityOfStates_oxygen(self):
         """
         Test the StatMech.getDensityOfStates() method for oxygen.
         """
         Elist = numpy.arange(0, 5000*11.96, 2*11.96)
-        densStates = self.oxygen.getDensityOfStates(Elist)
+        dens_states = self.oxygen.getDensityOfStates(Elist)
         T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.oxygen.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-1*Qexp)
+        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_exp = self.oxygen.getPartitionFunction(T)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-1*q_exp)
 
     def test_getTotalMass(self):
         """

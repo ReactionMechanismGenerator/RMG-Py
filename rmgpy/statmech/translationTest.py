@@ -63,10 +63,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         classical translator.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Qexplist = numpy.array([7.22597e+06, 2.59130e+07, 1.46586e+08, 4.03944e+08, 8.29217e+08])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+        q_exp_list = numpy.array([7.22597e+06, 2.59130e+07, 1.46586e+08, 4.03944e+08, 8.29217e+08])
+        for T, q_exp in zip(Tlist, q_exp_list):
+            q_act = self.mode.getPartitionFunction(T)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
     def test_getHeatCapacity_classical(self):
         """
@@ -74,10 +74,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         translator.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Cvexplist = numpy.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
+        cv_exp_list = numpy.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R
+        for T, cv_exp in zip(Tlist, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(T)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
 
     def test_getEnthalpy_classical(self):
         """
@@ -85,10 +85,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         translator.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Hexplist = numpy.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+        h_exp_list = numpy.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R * Tlist
+        for T, h_exp in zip(Tlist, h_exp_list):
+            h_act = self.mode.getEnthalpy(T)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
 
     def test_getEntropy_classical(self):
         """
@@ -96,10 +96,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         translator.
         """
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Sexplist = numpy.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+        s_exp_list = numpy.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
+        for T, s_exp in zip(Tlist, s_exp_list):
+            s_act = self.mode.getEntropy(T)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
 
     def test_getSumOfStates_classical(self):
         """
@@ -107,11 +107,11 @@ class TestIdealGasTranslation(unittest.TestCase):
         translator.
         """
         Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
+        sum_states = self.mode.getSumOfStates(Elist)
+        dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
             self.assertTrue(0.8 < numpy.sum(
-                densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
+                dens_states[0:n]) / sum_states[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n]), sum_states[n]))
 
     def test_getDensityOfStates_classical(self):
         """
@@ -119,11 +119,11 @@ class TestIdealGasTranslation(unittest.TestCase):
         classical translator.
         """
         Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        densStates = self.mode.getDensityOfStates(Elist)
+        dens_states = self.mode.getDensityOfStates(Elist)
         T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.mode.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-6*Qexp)
+        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_exp = self.mode.getPartitionFunction(T)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-6*q_exp)
 
     def test_repr(self):
         """

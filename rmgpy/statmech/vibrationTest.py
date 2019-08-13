@@ -65,10 +65,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = False
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Qexplist = numpy.array([0.00906536, 0.04196925, 0.335754, 1.13316978, 2.68603])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+        q_exp_list = numpy.array([0.00906536, 0.04196925, 0.335754, 1.13316978, 2.68603])
+        for T, q_exp in zip(Tlist, q_exp_list):
+            q_act = self.mode.getPartitionFunction(T)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
     def test_getPartitionFunction_quantum(self):
         """
@@ -77,10 +77,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = True
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Qexplist = numpy.array([1.10923, 1.39358, 2.70819, 4.98825, 8.459780])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+        q_exp_list = numpy.array([1.10923, 1.39358, 2.70819, 4.98825, 8.459780])
+        for T, q_exp in zip(Tlist, q_exp_list):
+            q_act = self.mode.getPartitionFunction(T)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
     def test_getHeatCapacity_classical(self):
         """
@@ -89,10 +89,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = False
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Cvexplist = numpy.array([3, 3, 3, 3, 3]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
+        cv_exp_list = numpy.array([3, 3, 3, 3, 3]) * constants.R
+        for T, cv_exp in zip(Tlist, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(T)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
 
     def test_getHeatCapacity_quantum(self):
         """
@@ -101,10 +101,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = True
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Cvexplist = numpy.array([0.832004, 1.47271, 2.32513, 2.65024, 2.79124]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
+        cv_exp_list = numpy.array([0.832004, 1.47271, 2.32513, 2.65024, 2.79124]) * constants.R
+        for T, cv_exp in zip(Tlist, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(T)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
 
     def test_getEnthalpy_classical(self):
         """
@@ -113,10 +113,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = False
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Hexplist = numpy.array([3, 3, 3, 3, 3]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+        h_exp_list = numpy.array([3, 3, 3, 3, 3]) * constants.R * Tlist
+        for T, h_exp in zip(Tlist, h_exp_list):
+            h_act = self.mode.getEnthalpy(T)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
 
     def test_getEnthalpy_quantum(self):
         """
@@ -125,11 +125,11 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = True
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Hexplist = numpy.array([0.280395, 0.637310, 1.30209, 1.70542,
+        h_exp_list = numpy.array([0.280395, 0.637310, 1.30209, 1.70542,
                                 1.96142]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+        for T, h_exp in zip(Tlist, h_exp_list):
+            h_act = self.mode.getEnthalpy(T)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
 
     def test_getEntropy_classical(self):
         """
@@ -138,10 +138,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = False
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Sexplist = numpy.array([-1.70329, -0.170818, 1.90862, 3.12502, 3.98807]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*abs(Sexp))
+        s_exp_list = numpy.array([-1.70329, -0.170818, 1.90862, 3.12502, 3.98807]) * constants.R
+        for T, s_exp in zip(Tlist, s_exp_list):
+            s_act = self.mode.getEntropy(T)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4*abs(s_exp))
 
     def test_getEntropy_quantum(self):
         """
@@ -150,10 +150,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = True
         Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Sexplist = numpy.array([0.384065, 0.969182, 2.29837, 3.31251, 4.09675]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+        s_exp_list = numpy.array([0.384065, 0.969182, 2.29837, 3.31251, 4.09675]) * constants.R
+        for T, s_exp in zip(Tlist, s_exp_list):
+            s_act = self.mode.getEntropy(T)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
 
     def test_getSumOfStates_classical(self):
         """
@@ -163,11 +163,11 @@ class TestHarmonicOscillator(unittest.TestCase):
         self.mode.quantum = False
         self.mode.frequencies = ([500, 1000], "cm^-1")
         Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
+        sum_states = self.mode.getSumOfStates(Elist)
+        dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
             self.assertTrue(0.8 < numpy.sum(
-                densStates[0:n]) / sumStates[n] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
+                dens_states[0:n]) / sum_states[n] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n]), sum_states[n]))
 
     def test_getSumOfStates_quantum(self):
         """
@@ -176,15 +176,15 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         self.mode.quantum = True
         Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
+        sum_states = self.mode.getSumOfStates(Elist)
+        dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(1, len(Elist)):
-            if sumStates[n-1] == 0:
-                self.assertTrue(numpy.sum(densStates[0:n]) == 0, '{0} != {1}'.format(
-                    numpy.sum(densStates[0:n]), 0))
+            if sum_states[n-1] == 0:
+                self.assertTrue(numpy.sum(dens_states[0:n]) == 0, '{0} != {1}'.format(
+                    numpy.sum(dens_states[0:n]), 0))
             else:
                 self.assertTrue(0.8 < numpy.sum(
-                    densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
+                    dens_states[0:n]) / sum_states[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n]), sum_states[n]))
 
     def test_getDensityOfStates_classical(self):
         """
@@ -194,11 +194,11 @@ class TestHarmonicOscillator(unittest.TestCase):
         self.mode.quantum = False
         factor = constants.h * constants.c * 100. * constants.Na  # cm^-1 to J/mol
         Elist = numpy.arange(0, 10000*factor, 1*factor)
-        densStates = self.mode.getDensityOfStates(Elist)
+        dens_states = self.mode.getDensityOfStates(Elist)
         T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.mode.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_exp = self.mode.getPartitionFunction(T)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
     def test_getDensityOfStates_quantum(self):
         """
@@ -208,9 +208,9 @@ class TestHarmonicOscillator(unittest.TestCase):
         self.mode.quantum = True
         factor = constants.h * constants.c * 100. * constants.Na  # cm^-1 to J/mol
         Elist = numpy.arange(0, 10000*factor, 1*factor)
-        densStates = self.mode.getDensityOfStates(Elist)
+        dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(len(Elist)):
-            if densStates[n] != 0:
+            if dens_states[n] != 0:
                 # The peaks should occur near a multiple of 500 cm^-1
                 E = float(Elist[n]) / factor
                 self.assertTrue(E % 500 < 5 or E % 500 > 495)
