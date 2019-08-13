@@ -28,24 +28,28 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 import os
 import os.path
+import unittest
+
 from nose.plugins.attrib import attr
+
 import rmgpy
-from rmgpy.tools.regression import *
+from rmgpy.tools.regression import readInputFile, run
+
+
 @attr('functional')
 class regressionTest(unittest.TestCase):
 
     def test(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools/data/regression')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/regression')
         benchmark = os.path.join(folder, 'benchmark')
         tested = os.path.join(folder, 'tested')
-        inputFile = os.path.join(folder, 'input.py')
+        input_file = os.path.join(folder, 'input.py')
 
-        args = readInputFile(inputFile)
+        args = readInputFile(input_file)
         run(benchmark, tested, *args)
-        
+
     def tearDown(self):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None

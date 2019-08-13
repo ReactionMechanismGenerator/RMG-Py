@@ -28,22 +28,26 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 import os
 import os.path
 import shutil
+import unittest
+
 from nose.plugins.attrib import attr
+
 import rmgpy
 from rmgpy.tools.fluxdiagram import createFluxDiagram
+
+
 @attr('functional')
 class FluxDiagramTest(unittest.TestCase):
 
     def test_avi_simple(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools','data','flux')
-        
-        inputFile = os.path.join(folder,'input_simple.py')
-        chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
-        dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'flux')
+
+        input_file = os.path.join(folder, 'input_simple.py')
+        chemkin_file = os.path.join(folder, 'chemkin', 'chem.inp')
+        dict_file = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
         settings = {'maximumNodeCount': 50,
                     'maximumEdgeCount': 50,
                     'concentrationTolerance': 1e-6,
@@ -52,27 +56,27 @@ class FluxDiagramTest(unittest.TestCase):
                     'maximumEdgePenWidth': 10.0,
                     'radius': 2,
                     'centralReactionCount': 2,
-                    'timeStep': 10**0.1}
-        createFluxDiagram(inputFile, chemkinFile, dictFile,
+                    'timeStep': 10 ** 0.1}
+        createFluxDiagram(input_file, chemkin_file, dict_file,
                           centralSpeciesList=[1], superimpose=True, settings=settings)
 
-        outputdir = os.path.join(folder,'flux')
-        simfile = os.path.join(outputdir,'1','flux_diagram.avi')
+        outputdir = os.path.join(folder, 'flux')
+        simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')
 
-        speciesdir = os.path.join(folder,'species')
+        speciesdir = os.path.join(folder, 'species')
 
         self.assertTrue(os.path.isfile(simfile))
-        
+
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)
 
     def test_avi_liquid(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'flux')
 
-        inputFile = os.path.join(folder, 'input_liquid.py')
-        chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
-        dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
-        createFluxDiagram(inputFile, chemkinFile, dictFile, diffusionLimited=False)
+        input_file = os.path.join(folder, 'input_liquid.py')
+        chemkin_file = os.path.join(folder, 'chemkin', 'chem.inp')
+        dict_file = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
+        createFluxDiagram(input_file, chemkin_file, dict_file, diffusionLimited=False)
 
         outputdir = os.path.join(folder, 'flux')
         simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')

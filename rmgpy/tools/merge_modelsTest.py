@@ -28,9 +28,9 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 import os
 import os.path
+import unittest
 
 from rmgpy.tools.merge_models import get_models_to_merge, combine_models
 
@@ -41,12 +41,12 @@ class MergeModelsTest(unittest.TestCase):
         folder = os.path.join(os.getcwd(), 'rmgpy/tools/data/diffmodels')
 
         chemkin3 = os.path.join(folder, 'chem3.inp')
-        speciesDict3 = os.path.join(folder, 'species_dictionary3.txt')
+        species_dict3 = os.path.join(folder, 'species_dictionary3.txt')
 
         chemkin2 = os.path.join(folder, 'chem2.inp')
-        speciesDict2 = os.path.join(folder, 'species_dictionary2.txt')
+        species_dict2 = os.path.join(folder, 'species_dictionary2.txt')
 
-        models = get_models_to_merge(((chemkin3, speciesDict3, None), (chemkin2, speciesDict2, None)))
+        models = get_models_to_merge(((chemkin3, species_dict3, None), (chemkin2, species_dict2, None)))
         final_model = combine_models(models)
         species = final_model.species
         reactions = final_model.reactions
@@ -64,14 +64,14 @@ class MergeModelsTest(unittest.TestCase):
                 self.assertEqual(s.index, 14)
 
         # make sure indexes are redone when there is a conflict
-        H_index = False
+        h_index = False
         for s in species:
             if s.label == 'H':
-                if isinstance(H_index, bool):
-                    H_index = s.index
+                if isinstance(h_index, bool):
+                    h_index = s.index
                 else:
                     # found second matching label, make sure index different
-                    self.assertNotEqual(s.index, H_index)
+                    self.assertNotEqual(s.index, h_index)
                     break
         else:
             raise Exception("Could not find two species identical labels")

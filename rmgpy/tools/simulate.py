@@ -28,8 +28,8 @@
 #                                                                             #
 ###############################################################################
 
-import os.path
 import logging
+import os.path
 from time import time
 
 import rmgpy.util as util
@@ -52,37 +52,38 @@ def simulate(rmg, diffusionLimited=True):
     util.makeOutputSubdirectory(rmg.outputDirectory, 'solver')
 
     for index, reactionSystem in enumerate(rmg.reactionSystems):
-            
+
         if reactionSystem.sensitiveSpecies:
-            logging.info('Conducting simulation and sensitivity analysis of reaction system %s...' % (index+1))
+            logging.info('Conducting simulation and sensitivity analysis of reaction system %s...' % (index + 1))
             if reactionSystem.sensitiveSpecies == ['all']:
                 reactionSystem.sensitiveSpecies = rmg.reactionModel.core.species
-        
+
         else:
-            logging.info('Conducting simulation of reaction system %s...' % (index+1))
+            logging.info('Conducting simulation of reaction system %s...' % (index + 1))
 
         reactionSystem.attach(SimulationProfileWriter(
             rmg.outputDirectory, index, rmg.reactionModel.core.species))
         reactionSystem.attach(SimulationProfilePlotter(
             rmg.outputDirectory, index, rmg.reactionModel.core.species))
-            
-        sensWorksheet = []
-        for spec in reactionSystem.sensitiveSpecies:
-            csvfilePath = os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
-            sensWorksheet.append(csvfilePath)
 
-        pdepNetworks = []
+        sens_worksheet = []
+        for spec in reactionSystem.sensitiveSpecies:
+            csvfile_path = os.path.join(rmg.outputDirectory, 'solver',
+                                        'sensitivity_{0}_SPC_{1}.csv'.format(index + 1, spec.index))
+            sens_worksheet.append(csvfile_path)
+
+        pdep_networks = []
         for source, networks in rmg.reactionModel.networkDict.items():
-            pdepNetworks.extend(networks)
-        
-        modelSettings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=1)
-        simulatorSettings = rmg.simulatorSettingsList[-1]
+            pdep_networks.extend(networks)
+
+        model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=1)
+        simulator_settings = rmg.simulatorSettingsList[-1]
 
         if isinstance(reactionSystem, LiquidReactor):
             if diffusionLimited:
                 rmg.loadDatabase()
-                solventData = rmg.database.solvation.getSolventData(rmg.solvent)
-                diffusionLimiter.enable(solventData, rmg.database.solvation)
+                solvent_data = rmg.database.solvation.getSolventData(rmg.solvent)
+                diffusionLimiter.enable(solvent_data, rmg.database.solvation)
 
             # Store constant species indices
             if reactionSystem.constSPCNames is not None:
@@ -90,7 +91,7 @@ def simulate(rmg, diffusionLimited=True):
         elif rmg.uncertainty is not None:
             rmg.verboseComments = True
             rmg.loadDatabase()
-        
+
         reactionSystem.simulate(
             coreSpecies=rmg.reactionModel.core.species,
             coreReactions=rmg.reactionModel.core.reactions,
@@ -98,13 +99,13 @@ def simulate(rmg, diffusionLimited=True):
             edgeReactions=rmg.reactionModel.edge.reactions,
             surfaceSpecies=[],
             surfaceReactions=[],
-            pdepNetworks=pdepNetworks,
+            pdepNetworks=pdep_networks,
             sensitivity=True if reactionSystem.sensitiveSpecies else False,
-            sensWorksheet=sensWorksheet,
-            modelSettings=modelSettings,
-            simulatorSettings=simulatorSettings,
+            sensWorksheet=sens_worksheet,
+            modelSettings=model_settings,
+            simulatorSettings=simulator_settings,
         )
-        
+
         if reactionSystem.sensitiveSpecies:
             plot_sensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
             rmg.run_uncertainty_analysis()
@@ -122,10 +123,10 @@ def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True, chec
     initializeLog(logging.INFO, os.path.join(output_dir, 'simulate.log'))
 
     rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, checkDuplicates=checkDuplicates)
-    
+
     start_time = time()
     # conduct simulation
-    simulate(rmg,diffusionLimited)
+    simulate(rmg, diffusionLimited)
     end_time = time()
     time_taken = end_time - start_time
     logging.info("Simulation took {0} seconds".format(time_taken))

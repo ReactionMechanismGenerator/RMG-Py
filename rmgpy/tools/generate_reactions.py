@@ -36,13 +36,13 @@ effectively the first step in the RMG rate-based mechanism generation algorithm.
 The input file is a subset of that used with regular RMG jobs. 
 """
 
-import os.path
 import logging
+import os.path
 
-from rmgpy.rmg.main import initializeLog, RMG
-from rmgpy.chemkin import ChemkinWriter
-from rmgpy.rmg.output import OutputHTMLWriter
 from rmg import parse_command_line_arguments
+from rmgpy.chemkin import ChemkinWriter
+from rmgpy.rmg.main import initializeLog, RMG
+from rmgpy.rmg.output import OutputHTMLWriter
 
 
 def main():
@@ -62,10 +62,10 @@ def main():
         level = logging.WARNING
 
     kwargs = {
-            'restart': args.restart,
-            'walltime': args.walltime,
-            'log': level,
-            'kineticsdatastore': args.kineticsdatastore
+        'restart': args.restart,
+        'walltime': args.walltime,
+        'log': level,
+        'kineticsdatastore': args.kineticsdatastore
     }
 
     initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
@@ -99,9 +99,9 @@ def execute(rmg, **kwargs):
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
-            
+
     rmg.saveEverything()
 
     rmg.finish()
-    
+
     return rmg
