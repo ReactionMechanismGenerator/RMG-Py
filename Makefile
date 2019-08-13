@@ -44,22 +44,10 @@ documentation:
 	@ echo "Start at: documentation/build/html/index.html"
 
 clean:
-	@ echo "Removing build directory..."
-	@ python setup.py clean --build-temp build
-	@ echo "Removing compiled files..."
 	@ python utilities.py clean
-	@ echo "Cleanup completed."
 
 clean-solver:
-	@ echo "Removing solver build directories..."
-ifeq ($(OS),Windows_NT)
-	@ -rd /s /q build\rmgpy\solver
-else
-	@ -rm -r build/rmgpy/solver/
-endif
-	@ echo "Removing compiled files..."
 	@ python utilities.py clean-solver
-	@ echo "Cleanup completed."
 
 install:
 	@ echo "Checking you have PyDQED..."
