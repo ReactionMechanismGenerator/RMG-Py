@@ -32,6 +32,8 @@
 This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: 'rmgpy.data.transport' module
 """
 
+from __future__ import division
+
 import unittest
 
 import rmgpy.constants as constants
@@ -39,6 +41,7 @@ from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.transport import TransportData
 
 #################################################################################
+
 
 class TestTransportData(unittest.TestCase):
     """
@@ -113,18 +116,19 @@ class TestTransportData(unittest.TestCase):
         """
         Test the LennardJones.getCollisionFrequency() method.
         """
-        T = 1000; P = 1.0e5
+        T = 1000
+        P = 1.0e5
         M = P / constants.R / T
         mu = 1.0
         omega = self.transport.getCollisionFrequency(T, M, mu)
         self.assertAlmostEqual(omega / 1.17737e10, 1.0, 4)
- 
+
     def test_pickle(self):
         """
         Test that a TransportData object can be pickled and unpickled with no loss of information.
         """
-        import cPickle
-        transport = cPickle.loads(cPickle.dumps(self.transport,-1))
+        import pickle
+        transport = pickle.loads(pickle.dumps(self.transport, -1))
         self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
         self.assertAlmostEqual(self.transport.epsilon.value_si, transport.epsilon.value_si, 4)
         self.assertAlmostEqual(self.transport.sigma.value_si, transport.sigma.value_si, 4)
@@ -146,15 +150,17 @@ class TestTransportData(unittest.TestCase):
         self.assertAlmostEqual(self.transport.polarizability.value_si, transport.polarizability.value_si, 4)
         self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
         self.assertEqual(self.transport.comment, transport.comment)
-        
+
     def test_toCantera(self):
         """
         Test that the Cantera GasTransportData creation is successful.
         """
-        transport = TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech""")
-        rmg_ctTransport = transport.toCantera()
+        transport = TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
+                                  dipoleMoment=(2, 'De'), polarizability=(1, 'angstrom^3'),
+                                  rotrelaxcollnum=15.0, comment="""GRI-Mech""")
+        rmg_ct_transport = transport.toCantera()
         import cantera as ct
-        ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
+        ct_species = ct.Species.fromCti("""species(name=u'Ar',
         atoms='Ar:1',
         transport=gas_transport(geom='atom',
                                 diam=3.33,
@@ -162,16 +168,16 @@ class TestTransportData(unittest.TestCase):
                                 dipole=2.0,
                                 polar=1.0,
                                 rot_relax=15.0))""")
-        
-        ctTransport = ctSpecies.transport
-        
-        self.assertAlmostEqual(rmg_ctTransport.geometry, ctTransport.geometry)
-        self.assertAlmostEqual(rmg_ctTransport.acentric_factor, ctTransport.acentric_factor)
-        self.assertAlmostEqual(rmg_ctTransport.diameter, ctTransport.diameter)
-        self.assertAlmostEqual(rmg_ctTransport.dipole, ctTransport.dipole)
-        self.assertAlmostEqual(rmg_ctTransport.polarizability, ctTransport.polarizability)
-        self.assertAlmostEqual(rmg_ctTransport.rotational_relaxation, ctTransport.rotational_relaxation)
-        self.assertAlmostEqual(rmg_ctTransport.well_depth, ctTransport.well_depth)
+
+        ct_transport = ct_species.transport
+
+        self.assertAlmostEqual(rmg_ct_transport.geometry, ct_transport.geometry)
+        self.assertAlmostEqual(rmg_ct_transport.acentric_factor, ct_transport.acentric_factor)
+        self.assertAlmostEqual(rmg_ct_transport.diameter, ct_transport.diameter)
+        self.assertAlmostEqual(rmg_ct_transport.dipole, ct_transport.dipole)
+        self.assertAlmostEqual(rmg_ct_transport.polarizability, ct_transport.polarizability)
+        self.assertAlmostEqual(rmg_ct_transport.rotational_relaxation, ct_transport.rotational_relaxation)
+        self.assertAlmostEqual(rmg_ct_transport.well_depth, ct_transport.well_depth)
 
 
 #################################################################################
