@@ -44,9 +44,6 @@ def processThermoData(spc, thermo0, thermoClass=NASA, solventName = ''):
     
     Resulting thermo is returned.
     """
-    # TODO moving this as a global import leads to circular imports.
-    from rmgpy.rmg.model import Species
-
     thermo = None
 
     # Always convert to Wilhoit so we can compute E0
@@ -66,7 +63,6 @@ def processThermoData(spc, thermo0, thermoClass=NASA, solventName = ''):
         solventData = solvationdatabase.getSolventData(solventName)
     if solventData and not "Liquid thermo library" in thermo0.comment:
         solvationdatabase = getDB('solvation')
-        #logging.info("Making solvent correction for {0}".format(Species.solventName))
         soluteData = solvationdatabase.getSoluteData(spc)
         solvation_correction = solvationdatabase.getSolvationCorrection(soluteData, solventData)
         # correction is added to the entropy and enthalpy
