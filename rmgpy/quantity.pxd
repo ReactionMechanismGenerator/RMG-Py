@@ -25,11 +25,12 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
-
-cpdef list NOT_IMPLEMENTED_UNITS
+cimport numpy as np
 
 from rmgpy.rmgobject cimport RMGObject
+
+
+cpdef list NOT_IMPLEMENTED_UNITS
 
 ################################################################################
 
@@ -66,9 +67,9 @@ cdef class ScalarQuantity(Units):
 
 cdef class ArrayQuantity(Units):
 
-    cdef public numpy.ndarray value_si
+    cdef public np.ndarray value_si
     cdef public str _uncertaintyType
-    cdef public numpy.ndarray uncertainty_si
+    cdef public np.ndarray uncertainty_si
 
     cpdef dict as_dict(self)
 
