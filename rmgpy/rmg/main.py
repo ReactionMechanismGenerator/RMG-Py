@@ -84,6 +84,11 @@ from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 
 ################################################################################
 
+# This module uses the HDF5 data format, which can cause problems on files systems that use NFS (common for network
+# mounted file systems. The following sets an environment variable that prevents file locking that would otherwise
+# cause a problem for NFS.
+os.environ['HDF5_USE_FILE_LOCKING'] = 'FALSE'
+
 solvent = None
 
 # Maximum number of user defined processors
