@@ -1495,7 +1495,6 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
     thermo = species.getThermoData()
 
     if not isinstance(thermo, NASA):
-        return ''
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": '
                            'Thermodynamics data must be a NASA object.'.format(species))
 
