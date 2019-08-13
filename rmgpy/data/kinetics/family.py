@@ -1830,7 +1830,8 @@ class KineticsFamily(Database):
             for product in reaction.products:
                 logging.error("Product: {0!r}".format(product))
             logging.error('Unable to calculate degeneracy for reaction {0} in reaction family {1}. Expected 1 reaction but generated {2}'.format(reaction, self.label, len(reactions)))
-            reaction.kinetics.comment += "\ndegeneracy not possible to calculate used 1.0"
+            if reaction.kinetics:
+                reaction.kinetics.comment += "\ndegeneracy not possible to calculate used 1.0"
             return 1.0
 
         return reactions[0].degeneracy
