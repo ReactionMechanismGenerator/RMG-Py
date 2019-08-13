@@ -28,8 +28,8 @@
 #                                                                             #
 ###############################################################################
 
-from .translation import Translation, IdealGasTranslation
-from .rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from .vibration import Vibration, HarmonicOscillator
-from .torsion import Torsion, HinderedRotor
-from .conformer import Conformer
+from rmgpy.statmech.translation import Translation, IdealGasTranslation
+from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
+from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.conformer import Conformer
