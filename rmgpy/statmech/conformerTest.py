@@ -33,11 +33,11 @@ This script contains unit tests of the :mod:`rmgpy.statmech.conformer` module.
 """
 
 import unittest
-import numpy
+import numpy as np
 
+import rmgpy.constants as constants
 from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator, \
     LinearRotor, HinderedRotor
-import rmgpy.constants as constants
 
 ################################################################################
 
@@ -74,7 +74,7 @@ class TestConformer(unittest.TestCase):
         )
 
         # The following data is for ethane at the CBS-QB3 level
-        self.coordinates = numpy.array([
+        self.coordinates = np.array([
             [0.0000,  0.0000,  0.0000],
             [-0.0000, -0.0000,  1.0936],
             [1.0430, -0.0000, -0.3288],
@@ -84,8 +84,8 @@ class TestConformer(unittest.TestCase):
             [-0.3125, -2.1468, -0.2292],
             [-1.8039, -1.2051, -0.2293],
         ])
-        self.number = numpy.array([6, 1, 1, 1, 6, 1, 1, 1])
-        self.mass = numpy.array([12, 1.007825, 1.007825, 1.007825,
+        self.number = np.array([6, 1, 1, 1, 6, 1, 1, 1])
+        self.mass = np.array([12, 1.007825, 1.007825, 1.007825,
                                  12, 1.007825, 1.007825, 1.007825])
         self.E0 = -93.5097
         self.conformer = Conformer(
@@ -109,8 +109,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getPartitionFunction() method for ethylene.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = numpy.array([4.05311e+09, 4.19728e+10, 2.82309e+12, 7.51135e+13, 1.16538e+15])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([4.05311e+09, 4.19728e+10, 2.82309e+12, 7.51135e+13, 1.16538e+15])
         for T, q_exp in zip(Tlist, q_exp_list):
             q_act = self.ethylene.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -119,8 +119,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getHeatCapacity() method for ethylene.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.ethylene.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, 3)
@@ -129,8 +129,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getEnthalpy() method for ethylene.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Hexplist = numpy.array([4.23129, 5.04826, 7.27337, 8.93167, 10.1223]) * constants.R * Tlist
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        Hexplist = np.array([4.23129, 5.04826, 7.27337, 8.93167, 10.1223]) * constants.R * Tlist
         for T, Hexp in zip(Tlist, Hexplist):
             Hact = self.ethylene.getEnthalpy(T)
             self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
@@ -139,8 +139,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getEntropy() method for ethylene.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Sexplist = numpy.array([26.3540, 29.5085, 35.9422, 40.8817, 44.8142]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        Sexplist = np.array([26.3540, 29.5085, 35.9422, 40.8817, 44.8142]) * constants.R
         for T, Sexp in zip(Tlist, Sexplist):
             Sact = self.ethylene.getEntropy(T)
             self.assertAlmostEqual(Sexp, Sact, 3)
@@ -149,21 +149,21 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getSumOfStates() method for ethylene.
         """
-        Elist = numpy.arange(0, 5000*11.96, 2*11.96)
+        Elist = np.arange(0, 5000*11.96, 2*11.96)
         sumStates = self.ethylene.getSumOfStates(Elist)
         densStates = self.ethylene.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(
-                densStates[0:n+1]) / sumStates[n] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n+1]), sumStates[n]))
+            self.assertTrue(0.8 < np.sum(
+                densStates[0:n+1]) / sumStates[n] < 1.25, '{0} != {1}'.format(np.sum(densStates[0:n+1]), sumStates[n]))
 
     def test_getDensityOfStates_ethylene(self):
         """
         Test the StatMech.getDensityOfStates() method for ethylene.
         """
-        Elist = numpy.arange(0, 5000*11.96, 2*11.96)
+        Elist = np.arange(0, 5000*11.96, 2*11.96)
         densStates = self.ethylene.getDensityOfStates(Elist)
         T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
+        Qact = np.sum(densStates * np.exp(-Elist / constants.R / T))
         Qexp = self.ethylene.getPartitionFunction(T)
         self.assertAlmostEqual(Qexp, Qact, delta=1e-1*Qexp)
 
@@ -171,8 +171,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getPartitionFunction() method for oxygen.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Qexplist = numpy.array([1.55584e+09, 9.38339e+09, 1.16459e+11, 5.51016e+11, 1.72794e+12])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        Qexplist = np.array([1.55584e+09, 9.38339e+09, 1.16459e+11, 5.51016e+11, 1.72794e+12])
         for T, Qexp in zip(Tlist, Qexplist):
             Qact = self.oxygen.getPartitionFunction(T)
             self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
@@ -181,8 +181,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getHeatCapacity() method for oxygen.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        Cvexplist = numpy.array([3.52538, 3.70877, 4.14751, 4.32063, 4.39392]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        Cvexplist = np.array([3.52538, 3.70877, 4.14751, 4.32063, 4.39392]) * constants.R
         for T, Cvexp in zip(Tlist, Cvexplist):
             Cvact = self.oxygen.getHeatCapacity(T)
             self.assertAlmostEqual(Cvexp, Cvact, 3)
@@ -191,8 +191,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getEnthalpy() method for oxygen.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([3.50326, 3.54432, 3.75062, 3.91623,
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([3.50326, 3.54432, 3.75062, 3.91623,
                                   4.02765]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.oxygen.getEnthalpy(T)
@@ -202,8 +202,8 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getEntropy() method for oxygen.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.oxygen.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, 3)
@@ -212,21 +212,21 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.getSumOfStates() method for oxygen.
         """
-        Elist = numpy.arange(0, 5000*11.96, 2*11.96)
+        Elist = np.arange(0, 5000*11.96, 2*11.96)
         sum_states = self.oxygen.getSumOfStates(Elist)
         dens_states = self.oxygen.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(
-                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n+1]), sum_states[n]))
+            self.assertTrue(0.8 < np.sum(
+                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(np.sum(dens_states[0:n+1]), sum_states[n]))
 
     def test_getDensityOfStates_oxygen(self):
         """
         Test the StatMech.getDensityOfStates() method for oxygen.
         """
-        Elist = numpy.arange(0, 5000*11.96, 2*11.96)
+        Elist = np.arange(0, 5000*11.96, 2*11.96)
         dens_states = self.oxygen.getDensityOfStates(Elist)
         T = 100
-        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
         q_exp = self.oxygen.getPartitionFunction(T)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-1*q_exp)
 
@@ -235,7 +235,7 @@ class TestConformer(unittest.TestCase):
         Test the Conformer.getTotalMass() method.
         """
         self.assertAlmostEqual(self.conformer.getTotalMass() *
-                               constants.Na*1000., numpy.sum(self.mass), 6)
+                               constants.Na*1000., np.sum(self.mass), 6)
 
     def test_getCenterOfMass(self):
         """

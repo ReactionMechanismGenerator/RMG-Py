@@ -33,10 +33,10 @@ This script contains unit tests of the :mod:`rmgpy.statmech.rotation` module.
 """
 
 import unittest
-import numpy
+import numpy as np
 
-from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 import rmgpy.constants as constants
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 
 ################################################################################
 
@@ -107,8 +107,8 @@ class TestLinearRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = numpy.array([72.6691, 121.115, 242.230, 363.346, 484.461])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([72.6691, 121.115, 242.230, 363.346, 484.461])
         for T, q_exp in zip(Tlist, q_exp_list):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -119,8 +119,8 @@ class TestLinearRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = numpy.array([72.8360, 121.282, 242.391, 363.512, 484.627])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([72.8360, 121.282, 242.391, 363.512, 484.627])
         for T, q_exp in zip(Tlist, q_exp_list):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -130,8 +130,8 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getHeatCapacity() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([1, 1, 1, 1, 1]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1, 1, 1, 1, 1]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -141,8 +141,8 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getHeatCapacity() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([1, 1, 1, 1, 1]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1, 1, 1, 1, 1]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -152,8 +152,8 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getEnthalpy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([1, 1, 1, 1, 1]) * constants.R * Tlist
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([1, 1, 1, 1, 1]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
@@ -163,8 +163,8 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getEnthalpy() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array(
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array(
             [0.997705, 0.998624, 0.999312, 0.999541, 0.999656]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
@@ -175,8 +175,8 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getEntropy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -186,8 +186,8 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getEntropy() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -197,22 +197,22 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getSumOfStates() method using a classical rotor.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 2000*11.96, 1.0*11.96)
+        Elist = np.arange(0, 2000*11.96, 1.0*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         sum_states = self.mode.getSumOfStates(Elist)
         for n in range(1, len(Elist)):
-            self.assertAlmostEqual(numpy.sum(dens_states[0:n]) / sum_states[n], 1.0, 3)
+            self.assertAlmostEqual(np.sum(dens_states[0:n]) / sum_states[n], 1.0, 3)
 
     def test_getSumOfStates_quantum(self):
         """
         Test the LinearRotor.getSumOfStates() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Elist = numpy.arange(0, 4000.*11.96, 2.0*11.96)
+        Elist = np.arange(0, 4000.*11.96, 2.0*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         sum_states = self.mode.getSumOfStates(Elist)
         for n in range(1, len(Elist)):
-            self.assertAlmostEqual(numpy.sum(dens_states[0:n+1]) / sum_states[n], 1.0, 3)
+            self.assertAlmostEqual(np.sum(dens_states[0:n+1]) / sum_states[n], 1.0, 3)
 
     def test_getDensityOfStates_classical(self):
         """
@@ -220,11 +220,11 @@ class TestLinearRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 400, 500])
-        Elist = numpy.arange(0, 4000.*11.96, 1.0*11.96)
+        Tlist = np.array([300, 400, 500])
+        Elist = np.arange(0, 4000.*11.96, 1.0*11.96)
         for T in Tlist:
             dens_states = self.mode.getDensityOfStates(Elist)
-            q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+            q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
             q_exp = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 
@@ -233,11 +233,11 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.getDensityOfStates() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 400, 500])
-        Elist = numpy.arange(0, 4000.*11.96, 2.0*11.96)
+        Tlist = np.array([300, 400, 500])
+        Elist = np.arange(0, 4000.*11.96, 2.0*11.96)
         for T in Tlist:
             dens_states = self.mode.getDensityOfStates(Elist)
-            q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+            q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
             q_exp = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 
@@ -277,7 +277,7 @@ class TestNonlinearRotor(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.inertia = numpy.array([3.415, 16.65, 20.07])
+        self.inertia = np.array([3.415, 16.65, 20.07])
         self.symmetry = 4
         self.quantum = False
         self.mode = NonlinearRotor(
@@ -290,7 +290,7 @@ class TestNonlinearRotor(unittest.TestCase):
         """
         Test getting the NonlinearRotor.rotationalConstant property.
         """
-        b_exp = numpy.array([4.93635, 1.0125, 0.839942])
+        b_exp = np.array([4.93635, 1.0125, 0.839942])
         b_act = self.mode.rotationalConstant.value_si
         for B0, B in zip(b_exp, b_act):
             self.assertAlmostEqual(B0, B, 4)
@@ -313,8 +313,8 @@ class TestNonlinearRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_explist = numpy.array([651.162, 1401.08, 3962.84, 7280.21, 11208.6])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_explist = np.array([651.162, 1401.08, 3962.84, 7280.21, 11208.6])
         for T, q_exp in zip(Tlist, q_explist):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -325,8 +325,8 @@ class TestNonlinearRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -336,8 +336,8 @@ class TestNonlinearRotor(unittest.TestCase):
         Test the NonlinearRotor.getEnthalpy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R * Tlist
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
@@ -347,8 +347,8 @@ class TestNonlinearRotor(unittest.TestCase):
         Test the NonlinearRotor.getEntropy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([7.97876, 8.74500, 9.78472, 10.3929, 10.8244]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([7.97876, 8.74500, 9.78472, 10.3929, 10.8244]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -358,12 +358,12 @@ class TestNonlinearRotor(unittest.TestCase):
         Test the NonlinearRotor.getSumOfStates() method using a classical rotor.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        Elist = np.arange(0, 1000*11.96, 1*11.96)
         sum_states = self.mode.getSumOfStates(Elist)
         dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(
-                dens_states[0:n]) / sum_states[n] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n]), sum_states[n]))
+            self.assertTrue(0.8 < np.sum(
+                dens_states[0:n]) / sum_states[n] < 1.25, '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
     def test_getDensityOfStates_classical(self):
         """
@@ -371,10 +371,10 @@ class TestNonlinearRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        Elist = np.arange(0, 1000*11.96, 1*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         T = 100
-        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
         q_exp = self.mode.getPartitionFunction(T)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 
@@ -475,8 +475,8 @@ class TestKRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_explist = numpy.array([10.6839, 13.7929, 19.5060, 23.8899, 27.5857])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_explist = np.array([10.6839, 13.7929, 19.5060, 23.8899, 27.5857])
         for T, q_exp in zip(Tlist, q_explist):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -487,8 +487,8 @@ class TestKRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_explist = numpy.array([10.6839, 13.7929, 19.5060, 23.8899, 27.5857])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_explist = np.array([10.6839, 13.7929, 19.5060, 23.8899, 27.5857])
         for T, q_exp in zip(Tlist, q_explist):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -498,8 +498,8 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getHeatCapacity() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -509,8 +509,8 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getHeatCapacity() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -520,8 +520,8 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getEnthalpy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R * Tlist
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
@@ -531,8 +531,8 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getEnthalpy() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R * Tlist
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
@@ -542,8 +542,8 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getEntropy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -553,8 +553,8 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getEntropy() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -564,24 +564,24 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getSumOfStates() method using a classical rotor.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        Elist = np.arange(0, 1000*11.96, 1*11.96)
         sum_states = self.mode.getSumOfStates(Elist)
         dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
-            self.assertTrue(0.75 < numpy.sum(
-                dens_states[0:n+1]) / sum_states[n] < 1.3333, '{0} != {1}'.format(numpy.sum(dens_states[0:n+1]), sum_states[n]))
+            self.assertTrue(0.75 < np.sum(
+                dens_states[0:n+1]) / sum_states[n] < 1.3333, '{0} != {1}'.format(np.sum(dens_states[0:n+1]), sum_states[n]))
 
     def test_getSumOfStates_quantum(self):
         """
         Test the KRotor.getSumOfStates() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        Elist = np.arange(0, 1000*11.96, 1*11.96)
         sum_states = self.mode.getSumOfStates(Elist)
         dens_states = self.mode.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(
-                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(numpy.sum(dens_states[0:n+1]), sum_states[n]))
+            self.assertTrue(0.8 < np.sum(
+                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(np.sum(dens_states[0:n+1]), sum_states[n]))
 
     def test_getDensityOfStates_classical(self):
         """
@@ -589,10 +589,10 @@ class TestKRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 3000*11.96, 0.05*11.96)
+        Elist = np.arange(0, 3000*11.96, 0.05*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         T = 500
-        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
         q_exp = self.mode.getPartitionFunction(T)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 
@@ -601,10 +601,10 @@ class TestKRotor(unittest.TestCase):
         Test the KRotor.getDensityOfStates() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Elist = numpy.arange(0, 4000*11.96, 2*11.96)
+        Elist = np.arange(0, 4000*11.96, 2*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         T = 500
-        q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+        q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
         q_exp = self.mode.getPartitionFunction(T)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 
@@ -701,8 +701,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_explist = numpy.array([1552.74, 3340.97, 9449.69, 17360.2, 26727.8])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_explist = np.array([1552.74, 3340.97, 9449.69, 17360.2, 26727.8])
         for T, q_exp in zip(Tlist, q_explist):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -713,8 +713,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_explist = numpy.array([1555.42, 3344.42, 9454.57, 17366.2, 26734.7])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_explist = np.array([1555.42, 3344.42, 9454.57, 17366.2, 26734.7])
         for T, q_exp in zip(Tlist, q_explist):
             q_act = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
@@ -724,8 +724,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getHeatCapacity() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -735,8 +735,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getHeatCapacity() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4*cv_exp)
@@ -746,8 +746,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getEnthalpy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R * Tlist
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
@@ -757,8 +757,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getEnthalpy() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([1.49828, 1.49897, 1.49948, 1.49966,
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([1.49828, 1.49897, 1.49948, 1.49966,
                                   1.49974]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.mode.getEnthalpy(T)
@@ -769,8 +769,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getEntropy() method using a classical rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -780,8 +780,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getEntropy() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.mode.getEntropy(T)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4*s_exp)
@@ -791,22 +791,22 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getSumOfStates() method using a classical rotor.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 2000*11.96, 1.0*11.96)
+        Elist = np.arange(0, 2000*11.96, 1.0*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         sum_states = self.mode.getSumOfStates(Elist)
         for n in range(20, len(Elist)):
-            self.assertAlmostEqual(numpy.sum(dens_states[0:n+1]) / sum_states[n], 1.0, 1)
+            self.assertAlmostEqual(np.sum(dens_states[0:n+1]) / sum_states[n], 1.0, 1)
 
     def test_getSumOfStates_quantum(self):
         """
         Test the SphericalTopRotor.getSumOfStates() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Elist = numpy.arange(0, 2000*11.96, 1.0*11.96)
+        Elist = np.arange(0, 2000*11.96, 1.0*11.96)
         dens_states = self.mode.getDensityOfStates(Elist)
         sum_states = self.mode.getSumOfStates(Elist)
         for n in range(1, len(Elist)):
-            self.assertAlmostEqual(numpy.sum(dens_states[0:n+1]) / sum_states[n], 1.0, 3)
+            self.assertAlmostEqual(np.sum(dens_states[0:n+1]) / sum_states[n], 1.0, 3)
 
     def test_getDensityOfStates_classical(self):
         """
@@ -814,11 +814,11 @@ class TestSphericalTopRotor(unittest.TestCase):
         rotor.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300, 400, 500])
-        Elist = numpy.arange(0, 2000*11.96, 1.0*11.96)
+        Tlist = np.array([300, 400, 500])
+        Elist = np.arange(0, 2000*11.96, 1.0*11.96)
         for T in Tlist:
             dens_states = self.mode.getDensityOfStates(Elist)
-            q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+            q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
             q_exp = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 
@@ -827,11 +827,11 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.getDensityOfStates() method using a quantum rotor.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300, 400, 500])
-        Elist = numpy.arange(0, 4000*11.96, 2.0*11.96)
+        Tlist = np.array([300, 400, 500])
+        Elist = np.arange(0, 4000*11.96, 2.0*11.96)
         for T in Tlist:
             dens_states = self.mode.getDensityOfStates(Elist)
-            q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+            q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
             q_exp = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-2*q_exp)
 

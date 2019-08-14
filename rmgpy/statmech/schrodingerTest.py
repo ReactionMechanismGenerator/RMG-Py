@@ -34,10 +34,10 @@ module.
 """
 
 import unittest
+import numpy as np
 
-import numpy
-from rmgpy.statmech.schrodinger import getPartitionFunction, getHeatCapacity, getEnthalpy, getEntropy, getDensityOfStates
 import rmgpy.constants as constants
+from rmgpy.statmech.schrodinger import getPartitionFunction, getHeatCapacity, getEnthalpy, getEntropy, getDensityOfStates
 
 ################################################################################
 
@@ -62,8 +62,8 @@ class TestSchrodinger(unittest.TestCase):
         """
         Test the getPartitionFunction() method.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = numpy.array([208.8907, 347.9285, 695.5234, 1043.118, 1390.713])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([208.8907, 347.9285, 695.5234, 1043.118, 1390.713])
         for T, q_exp in zip(Tlist, q_exp_list):
             q_act = getPartitionFunction(T, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(q_exp / q_act, 1.0, 4,
@@ -73,8 +73,8 @@ class TestSchrodinger(unittest.TestCase):
         """
         Test the getHeatCapacity() method.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = numpy.array([1, 1, 1, 1, 1])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1, 1, 1, 1, 1])
         for T, cv_exp in zip(Tlist, cv_exp_list):
             cv_act = getHeatCapacity(T, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(cv_exp / cv_act, 1.0, 4,
@@ -84,8 +84,8 @@ class TestSchrodinger(unittest.TestCase):
         """
         Test the getEnthalpy() method.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = numpy.array([0.9984012, 0.9990409, 0.9995205, 0.9996803, 0.9997603])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([0.9984012, 0.9990409, 0.9995205, 0.9996803, 0.9997603])
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = getEnthalpy(T, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 4,
@@ -95,8 +95,8 @@ class TestSchrodinger(unittest.TestCase):
         """
         Test the getEntropy() method.
         """
-        Tlist = numpy.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = numpy.array([6.340212, 6.851038, 7.544185, 7.949650, 8.237332])
+        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([6.340212, 6.851038, 7.544185, 7.949650, 8.237332])
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = getEntropy(T, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4,
@@ -106,21 +106,21 @@ class TestSchrodinger(unittest.TestCase):
 #        """
 #        Test the getSumOfStates() method.
 #        """
-#        Elist = numpy.arange(0, 10., 0.01)
+#        Elist = np.arange(0, 10., 0.01)
 #        dens_states = getDensityOfStates(Elist, self.energy, self.degeneracy, self.n0)
 #        sumStates = getSumOfStates(Elist, self.energy, self.degeneracy, self.n0)
 #        for n in range(1, len(Elist)):
-#            self.assertAlmostEqual(numpy.sum(dens_states[0:n+1]) / sumStates[n], 1.0, 3)
+#            self.assertAlmostEqual(np.sum(dens_states[0:n+1]) / sumStates[n], 1.0, 3)
 
     def test_getDensityOfStates(self):
         """
         Test the getDensityOfStates() method.
         """
-        Tlist = numpy.array([300, 400, 500, 600])
-        Elist = numpy.arange(0, 40000., 20.)
+        Tlist = np.array([300, 400, 500, 600])
+        Elist = np.arange(0, 40000., 20.)
         for T in Tlist:
             dens_states = getDensityOfStates(Elist, self.energy, self.degeneracy, self.n0)
-            q_act = numpy.sum(dens_states * numpy.exp(-Elist / constants.R / T))
+            q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
             q_exp = getPartitionFunction(T, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(q_exp / q_act, 1.0, 2,
                                    '{0} != {1} within 2 figures'.format(q_exp, q_act))
