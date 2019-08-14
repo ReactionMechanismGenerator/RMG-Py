@@ -337,7 +337,7 @@ class KineticsJob(object):
             t_list = 1000.0 / numpy.arange(0.4, 3.35, 0.05)
         klist = numpy.zeros_like(t_list)
         klist2 = numpy.zeros_like(t_list)
-        for i in xrange(len(t_list)):
+        for i in range(len(t_list)):
             klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
             klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
 
@@ -388,7 +388,7 @@ class KineticsJob(object):
         KineticsDrawer().draw(self.reaction, format=format, path=path)
 
 
-class KineticsDrawer:
+class KineticsDrawer(object):
     """
     This class provides functionality for drawing the potential energy surface
     for a high pressure limit reaction using the Cairo 2D graphics engine.
@@ -591,7 +591,7 @@ class KineticsDrawer:
         Eheight = self.__getTextSize('0.0', format=format)[3] + 6
         y_E0 = (E0_max - 0.0) * E_slope + padding + Eheight
         height = (E0_max - E0_min) * E_slope + 2 * padding + Eheight + 6
-        for i in xrange(len(self.wells)):
+        for i in range(len(self.wells)):
             if 0.001 * self.wells[i].E0 == E0_min:
                 height += label_rects[i][3]
                 break
@@ -599,7 +599,7 @@ class KineticsDrawer:
         # Determine naive position of each well (one per column)
         coordinates = numpy.zeros((len(self.wells), 2), numpy.float64)
         x = padding
-        for i in xrange(len(self.wells)):
+        for i in range(len(self.wells)):
             well = self.wells[i]
             rect = label_rects[i]
             this_well_width = max(well_width, rect[2])
@@ -789,7 +789,7 @@ class KineticsDrawer:
             surface.finish()
 
 
-class Well:
+class Well(object):
     """
     A helper class representing a "well" of species
     `species_list` is a list of at least one entry

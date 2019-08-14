@@ -135,7 +135,7 @@ class ArkaneSpecies(RMGObject):
         """
         result = '{0!r}'.format(self.__class__.__name__)
         result += '{'
-        for key, value in self.as_dict().iteritems():
+        for key, value in self.as_dict().items():
             if key != 'class':
                 result += '{0!r}: {1!r}'.format(str(key), str(value))
         result += '}'

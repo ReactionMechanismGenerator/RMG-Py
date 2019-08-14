@@ -31,7 +31,6 @@
 """
 This module contains functionality for parsing Arkane input files.
 """
-
 import logging
 import os.path
 
@@ -318,8 +317,8 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
             raise ValueError('chemical structures of reactants and products not available for RMG estimation of '
                              'reaction {0}'.format(label))
         for spc in rxn.reactants + rxn.products:
-            print spc.label
-            print spc.molecule
+            print(spc.label)
+            print(spc.molecule)
         db = getDB('kinetics')
         rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants, products=rxn.products)
         rxns = [r for r in rxns if r.elementary_high_p]
@@ -344,7 +343,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
     if isinstance(rxn, Reaction):
         reactionDict[label] = rxn
     else:
-        for i in xrange(len(rxn)):
+        for i in range(len(rxn)):
             reactionDict[label + str(i)] = rxn[i]
 
     return rxn
@@ -485,7 +484,7 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
         interpolationModel = (interpolationModel,)
 
     nwk = None
-    if label in networkDict.keys():
+    if label in list(networkDict.keys()):
         nwk = networkDict[label]
 
     job = PressureDependenceJob(network=nwk, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
@@ -621,7 +620,7 @@ def loadInputFile(path):
 
     with open(path, 'r') as f:
         try:
-            exec f in global_context, local_context
+            exec(f, global_context, local_context)
         except (NameError, TypeError, SyntaxError):
             logging.error('The input file {0!r} was invalid:'.format(path))
             raise

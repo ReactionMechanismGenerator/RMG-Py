@@ -363,7 +363,7 @@ class GaussianLog(Log):
 
         # give warning in case this assumption is not true
         if rigid_scan:
-            print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
+            print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
 
         vlist = numpy.array(vlist, numpy.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be
