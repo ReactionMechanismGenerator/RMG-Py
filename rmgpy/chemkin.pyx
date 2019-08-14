@@ -1416,7 +1416,7 @@ def get_species_identifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\[\]\*#]+', label):
             if len(label) <= 16:
                 return label
             else:
