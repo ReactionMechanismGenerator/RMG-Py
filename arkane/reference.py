@@ -229,8 +229,16 @@ class ReferenceSpecies(ArkaneSpecies):
                         preferred_source = sources[i]
         high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
         low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
+        if 'tpss/def2-tzvp' in self.calculated_data.keys():
+            try:
+                fod = float(self.calculated_data['tpss/def2-tzvp'].fod)
+            except:
+                fod = None
+        else:
+            fod = None
 
-        return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, preferred_source)
+
+        return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, fod, preferred_source)
 
 
 class ReferenceDataEntry(RMGObject):
@@ -344,14 +352,23 @@ class ReferenceDatabase(object):
     """
     A class for loading and working with database of reference species, located at RMG-database/input/reference_sets/
     """
-    def __init__(self):
+    def __init__(self,paths = None, parse_model_chemistries=True):
         """
         Attributes:
             self.reference_sets (Dict[str, ReferenceSpecies]): {'set name': [ReferenceSpecies, ...], ...}
         """
+        
+        self.SpeciesConstraints = {}
         self.reference_sets = {}
+        self.paths = {}
+        self.model_chemistries = {}
+        self.errorCancellingSets = {}
+        self.descriptors = {}
 
-    def load(self, paths=''):
+        if paths:
+            self.load(paths=paths,parse_model_chemistries=parse_model_chemistries)
+
+    def load(self, paths='', parse_model_chemistries=False):
         """
         Load one or more set of reference species and append it on to the database
 
@@ -371,6 +388,7 @@ class ReferenceDatabase(object):
 
         molecule_list = []
         for path in paths:
+            model_chemistries = []
             set_name = os.path.basename(path)
             logging.info('Loading in reference set `{0}` from {1} ...'.format(set_name, path))
             spcs_dirs = os.listdir(path)
@@ -378,6 +396,9 @@ class ReferenceDatabase(object):
             for spcs in spcs_dirs:
                 ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
                 ref_spcs.load_yaml(os.path.join(path, spcs, '{0}.yml'.format(spcs)))
+                for model_chem in ref_spcs.calculated_data.keys():
+                    if model_chem not in model_chemistries:
+                        model_chemistries.append(model_chem)
                 molecule = Molecule(SMILES=ref_spcs.smiles)
                 if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
                     logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
@@ -393,8 +414,24 @@ class ReferenceDatabase(object):
                 else:
                     molecule_list.append(molecule)
                     reference_set.append(ref_spcs)
-
+            
+            self.model_chemistries[set_name] = model_chemistries
+            self.paths[set_name] = path
             self.reference_sets[set_name] = reference_set
+
+        if parse_model_chemistries:
+            for set_name,chemistries in self.model_chemistries.items():
+                self.errorCancellingSets[set_name] = {}
+                for chem in chemistries:
+                    errorCancellingSet = self.extract_model_chemistry(chem, [set_name])
+                    self.errorCancellingSets[set_name][chem] = errorCancellingSet
+
+    def save(self,path,set_name):
+
+        ref_spcs = self.reference_sets[set_name]
+
+        for ref in ref_spcs:
+            ref.save_yaml(path)
 
     def extract_model_chemistry(self, model_chemistry, sets=None):
         """
@@ -419,6 +456,8 @@ class ReferenceDatabase(object):
             for ref_spcs in current_set:
                 if model_chemistry not in ref_spcs.calculated_data:  # Move on to the next reference species
                     continue
+                if not ref_spcs.calculated_data[model_chemistry].thermo: # Make sure refernce species has thermo
+                    continue
                 if not ref_spcs.reference_data:  # This reference species does not have any sources, continue on
                     continue
                 reference_list.append(ref_spcs.to_error_canceling_spcs(model_chemistry))
@@ -426,18 +465,56 @@ class ReferenceDatabase(object):
         return reference_list
 
     def get_constraint_map(self, model_chemistry, sets=None):
-
-        reference_list = self.extract_model_chemistry(model_chemistry)
-        constraint = SpeciesConstraints(target=None, reference_list=reference_list, 
-        constraint_class=None,conserve_bonds=True, conserve_ring_size=True)
+  
+        if not sets:
+            sets = self.reference_sets.keys()
+        else:
+            if isinstance(sets,str):
+                sets = [sets]
+            assert(isinstance(sets,list))
         
+        reference_list = []
+
+        for s in sets: 
+            if model_chemistry in self.errorCancellingSets[s].keys():
+                for spcs in self.errorCancellingSets[s][model_chemistry]:
+                    reference_list.append(spcs)
+            else:
+                for spcs in self.extract_model_chemistry(model_chemistry):
+                    reference_list.append(spcs)
+  
+        constraint = SpeciesConstraints(target=None, reference_list=reference_list, 
+        constraint_class='all',conserve_bonds=True, conserve_ring_size=True)
+        
+        self.SpeciesConstraints[model_chemistry] = constraint
+
         return constraint.constraint_map
+
+    def get_descriptors(self,species,sets=None):
+
+        constraint = SpeciesConstraints()
+        descriptors = constraint.get_descriptors(species)
+        self.descriptors[species] = descriptors
+
+        return descriptors
 
     def test(self, model_chemistry, constraint_class = None, iterate_constraint_classes = True, number_of_reactions=5, sets=None):
 
         import pandas as pd
         
-        reference_list = self.extract_model_chemistry(model_chemistry)
+        reference_list = []
+
+        if not sets:
+            sets = self.errorCancellingSets.keys()
+        
+        for s in sets:
+            if s in self.errorCancellingSets.keys():
+                if model_chemistry in self.errorCancellingSets[s].keys():
+                    for spcs in self.errorCancellingSets[s][model_chemistry]:
+                        reference_list.append(spcs)
+            else:
+                for spcs in self.extract_model_chemistry(model_chemistry, sets=[s]):
+                    reference_list.append(spcs)
         
         data = []
         for i,error_canceling_spcs in enumerate(reference_list):
@@ -449,20 +526,20 @@ class ReferenceDatabase(object):
             high_level_hf298 = target_spcs.high_level_hf298
             ref_h298 = high_level_hf298.value_si/high_level_hf298.conversionFactors['kcal/mol']
             ref_h298_uncertainty = high_level_hf298.uncertainty_si/high_level_hf298.conversionFactors['kcal/mol']
-
+            fod = target_spcs.fod
             
-            for constraint in ['class_1','class_2','class_3']:
+            for constraint in ['class_0','class_1','class_2','class_3','class_4','class_5']:
                 if not iterate_constraint_classes:
                     if constraint != constraint_class:
                         continue
                 isodesmic_scheme = ErrorCancelingScheme(target=target_spcs,reference_set=reference_set,constraint_class=constraint,
                 conserve_bonds=True,conserve_ring_size=True)
-                h298_mean, reaction_list = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=5, milp_software='lpsolve')
+                h298_mean, reaction_list, fod_dict = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=5, milp_software='lpsolve')
                 h298 = h298_mean.value_si/h298_mean.conversionFactors['kcal/mol']
-                species_data = [target_spcs.molecule.toSMILES(),constraint,reaction_list,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298]
+                species_data = [target_spcs.molecule.toSMILES(),constraint,reaction_list,fod_dict,fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298]
                 data.append(species_data)
 
-        columns = ['SMILES','constraint_class','Reactions','H298_mean(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref']
+        columns = ['SMILES','constraint_class','Reactions','fod_dict','fod','H298_mean(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref']
         df = pd.DataFrame(data,columns=columns)
 
         return df

@@ -668,7 +668,7 @@ class StatMechJob(object):
                                                                       (uncorrected_thermo, 'J/mol'),
                                                                       self.modelChemistry),
                                          reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
-            isodesmic_thermo, isodesmicReactionList = scheme.calculate_target_enthalpy()
+            isodesmic_thermo, isodesmicReactionList, fod_dict = scheme.calculate_target_enthalpy()
             self.isodesmicReactionList = [r[0] for r in isodesmicReactionList]
 
             # Set the difference as the isodesmic EO correction and re-run the statmech job

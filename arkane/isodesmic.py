@@ -52,13 +52,16 @@ import numpy as np
 import pyomo.environ as pyo
 
 from rmgpy.molecule import Molecule
+from rmgpy.species import Species
+from rmgpy.reaction import Reaction
 from rmgpy.quantity import ScalarQuantity
-
+from rmgpy.molecule.graph import getVertexConnectivityValue
+import logging
 
 class ErrorCancelingSpecies(object):
     """Class for target and known (benchmark) species participating in an error canceling reaction"""
 
-    def __init__(self, molecule, low_level_hf298, model_chemistry, high_level_hf298=None, source=None):
+    def __init__(self, molecule, low_level_hf298, model_chemistry, high_level_hf298=None, fod=None, source=None):
         """
 
         Args:
@@ -82,6 +85,7 @@ class ErrorCancelingSpecies(object):
                              'consistency checks. Instead, a {0} object was given'.format(type(model_chemistry)))
 
         self.low_level_hf298 = ScalarQuantity(*low_level_hf298)
+        self.fod = fod
 
         # If the species is a reference species, then the high level data is already known
         self.high_level_hf298 = ScalarQuantity(*high_level_hf298) if high_level_hf298 else None
@@ -120,6 +124,8 @@ class ErrorCancelingReaction(object):
 
         # Does not include the target, which is handled separately.
         self.species = species
+        self.fod = self.calculated_fod()
+        self.species_dict = self.get_dict()
 
     def __repr__(self):
         reactant_string = '1.0*{0} + '.format(self.target.molecule.toSMILES())
@@ -131,6 +137,34 @@ class ErrorCancelingReaction(object):
                 reactant_string += '{0}*{1} + '.format(-1*coeff, spcs.molecule.toSMILES())
 
         return '<ErrorCancelingReaction {0}== {1}>'.format(reactant_string[:-2], product_string[:-2])
+
+    def get_rmg_reaction(self):
+
+        reactants = [(self.target.molecule,'-1')]
+        products = []
+        for spcs, coeff in self.species.items():
+            if coeff > 0:
+                products.append((spcs.molecule,str(coeff)))
+            else:
+                reactants.append((spcs.molecule,str(coeff)))
+        
+        reactants = [Species(molecule = [mol], label=label) for mol,label in reactants]
+        products = [Species(molecule = [mol],label=label) for mol,label in products]
+
+        rmg_reaction = Reaction(reactants=reactants,products=products)
+
+        self.rmg_reaction = rmg_reaction
+
+        return rmg_reaction
+
+    def get_dict(self):
+
+        species_dict = {}
+        for spcs, coeff in self.species.items():
+            species_dict[spcs] = coeff
+
+        return species_dict
+
 
     def calculate_target_thermo(self):
         """
@@ -147,13 +181,31 @@ class ErrorCancelingReaction(object):
             low_level_h_rxn
         return ScalarQuantity(target_thermo, 'J/mol')
 
+    def calculated_fod(self):
+        """
+        Returns the sum of the fod number for all the species in the reaction.
+        If a species is in the reaction does not have an fod number, it will return None.
+        """
+
+        if self.target.fod:
+            fod = self.target.fod
+        else:
+            return None
+
+        for spcs,v in self.species.items():
+            if spcs.fod:
+                fod += spcs.fod * abs(v)
+            else:
+                return None
+
+        return fod
 
 class SpeciesConstraints(object):
     """
     A class for defining and enumerating constraints to ReferenceSpecies objects for error canceling reactions
     """
 
-    def __init__(self, target, reference_list, constraint_class=None, conserve_bonds=True, conserve_ring_size=True):
+    def __init__(self, target=None, reference_list=None, constraint_class=None, conserve_bonds=True, conserve_ring_size=True):
         """
         Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
         the labels for these constraints.
@@ -171,68 +223,92 @@ class SpeciesConstraints(object):
         """
 
         self.target = target
-        self.all_reference_species = reference_list
-        self.reference_species = []
+        self.reference_species = reference_list
+
+        constraint_classes = ['class_0', 'class_1', 'class_2', 'class_3', 'class_4', 'class_5']
+
         if constraint_class:
-            self.constraint_class = constraint_class
+            if isinstance(constraint_class,str):
+                constraint_class = constraint_class.lower()
+                if constraint_class.lower() == 'all':
+                    self.constraint_class = constraint_classes
+                else:
+                    assert(constraint_class in constraint_classes)
+                    self.constraint_class = [constraint_class]
+            elif isinstance(constraint_class,list):
+                self.constraint_class = []
+                for c in constraint_class:
+                    c = c.lower()
+                    assert(c in constraint_classes)
+                    self.constraint_class.append(c)
+            else:
+                raise ValueError('constraint class must be None, all, or a <str> or <list> of'
+                'supported constraint classes {}'.format(constraint_clases))
         else:
-            self.constraint_class = 'class_3'
+            self.constraint_class = constraint_classes
         
         self.conserve_bonds = conserve_bonds
         self.conserve_ring_size = conserve_ring_size
-        self.constraint_map = self._get_constraint_map()
 
-    def _get_descriptors(self,species):
+        if self.reference_species:
+            self.constraint_map, self.weights = self.get_constraint_map()
+        else:
+            self.constraint_map = None
 
-        assert isinstance(species,ErrorCancelingSpecies)
+    def get_descriptors(self, species):
+        """
 
-        descriptors = defaultdict()
-        descriptors['class_1'] = []
-        descriptors['class_2'] = []
-        descriptors['class_3'] = []
+        """
+        if isinstance(species, ErrorCancelingSpecies):
+            mol = species.molecule
+        elif isinstance(species, Molecule):
+            mol = species
+        elif isinstance(species,str): # assume smiles string
+            mol = Molecule(SMILES=species)
+        else:
+            raise ValueError('species must be a {},{},or a SMILES string, not {}'.format(type(ErrorCancelingSpecies),
+            type(Molecule), type(species)))
+        
+        descriptors = defaultdict(list)
 
-        for atom in species.molecule.atoms:
-            descriptor = list(atom.get_descriptor())
-            descriptor.pop(1)
-            descriptors['class_1'].append(tuple(descriptor))
-            descriptor_2 = descriptor[:] # for constraint class 2
-            descriptor_3 = descriptor[:] # for constraint class 3
-            bonds_2 = [] # for constraint class 2
-            bonds_3 = [] # for constraint class 3
-            for atom,bond in atom.bonds.items():
+        for atom in mol.atoms:
+            
+            atom_general = (atom.number, atom.radicalElectrons)
+            atom_specific = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons)
+
+            descriptors['class_0'].append(atom_general)
+            descriptors['class_1'].append(atom_specific)
+            descriptors['class_2'].append(atom_specific)
+            descriptors['class_4'].append(atom_specific)
+
+            bonds_general = [] # for constraint class 3
+            bonds_specific = [] # for constraint class 5
+            radical_count = atom.radicalElectrons
+            for bonded_atom, bond in atom.bonds.items():
+                radical_count += bonded_atom.radicalElectrons
                 order_number = bond.getOrderNum()
-                bonds_2.append((atom.number,order_number))
-                bonded_atom_descriptor = list(atom.get_descriptor())
-                bonded_atom_descriptor.pop(1)
-                bonded_atom_descriptor.append(order_number)
-                bonds_3.append(tuple(bonded_atom_descriptor))
-            bonds_2.sort()
-            bonds_3.sort()
-            descriptor_2.extend(bonds_2)
-            descriptor_3.extend(bonds_3)
-            descriptors['class_2'].append(tuple(descriptor_2))
-            descriptors['class_3'].append(tuple(descriptor_3))
-        
+                bonds_general.append((bonded_atom.number,order_number))
+                bonds_specific.append((bonded_atom.number,bonded_atom.radicalElectrons,bonded_atom.lonePairs,bonded_atom.charge,order_number))
+            bonds_general.sort()
+            bonds_specific.sort()
+            class_3 = atom_specific + tuple(bonds_general) + (radical_count,)
+            class_5 = atom_specific + tuple(bonds_specific) + (radical_count,)
+            descriptors['class_3'].append(class_3)
+            descriptors['class_5'].append(class_5)
 
+        for bond in mol.getAllEdges():
+            atom1 = bond.atom1
+            atom2 = bond.atom2
+            radical_count = atom1.radicalElectrons + atom2.radicalElectrons
+            class_2 = tuple(sorted([atom1.number, atom2.number]) + [bond.getOrderNum()]) + (radical_count,)
+            class_4 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [bond.getOrderNum()]) + (radical_count,)
+            descriptors['class_2'].append(class_2)
+            descriptors['class_4'].append(class_4)
 
-        # if self.constraint_class == 3:
-        #     for atom in species.molecule.atoms:
-        #         descriptor = list(atom.get_descriptor())
-        #         descriptor.pop(1)
-        #         bonds = []
-        #         for atom,bond in atom.bonds.items():
-        #             descriptor2 = list(atom.get_descriptor())
-        #             descriptor2.pop(1)
-        #             descriptor2.append(bond.getOrderNum())
-        #             bonds.append(tuple(descriptor2))
-        #         bonds.sort()
-        #         descriptor.extend(bonds)
-        #         descriptors.append(tuple(descriptor))
-        
         return descriptors
     
 
-    def _get_constraint_map(self):
+    def get_constraint_map(self):
         # Enumerate all of the constraints in the target molecule to initialize the constraint mapping
 
         # constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
@@ -255,20 +331,22 @@ class SpeciesConstraints(object):
         #         if descriptor not in constraint_map:
         #             constraint_map.append(descriptor)
 
-        constraint_map = defaultdict()
+        constraint_map = defaultdict(defaultdict)
+        objective_vectors = defaultdict(np.array)
 
-        constraint_map['class_1'] = defaultdict()
-        constraint_map['class_2'] = defaultdict()
-        constraint_map['class_3'] = defaultdict()
+        # constraint_map['class_0'] = defaultdict()
+        # constraint_map['class_1'] = defaultdict()
+        # constraint_map['class_2'] = defaultdict()
+        # constraint_map['class_3'] = defaultdict()
+        # constraint_map['class_4'] = defaultdict()
+        # constraint_map['class_5'] = defaultdict()
+        # constraint_map['class_connectivity'] = defaultdict()
 
-        if self.target:
-            all_species = self.all_reference_species + [self.target]
-        else:
-            all_species = self.all_reference_species
+        #all_species = self.all_reference_species + [self.target]
 
-        for species in all_species:
-            descriptors= self._get_descriptors(species)
-            for constraint_class,descriptor_list in descriptors.items():
+        for species in self.reference_species:
+            descriptors = self.get_descriptors(species)
+            for constraint_class, descriptor_list in descriptors.items():
                 for d in descriptor_list:
                     if d not in constraint_map[constraint_class].keys():
                         constraint_map[constraint_class][d] = 1
@@ -276,50 +354,41 @@ class SpeciesConstraints(object):
                         constraint_map[constraint_class][d] += 1
 
 
-        # for contraint
+        for constraint_class, descriptors in constraint_map.items():
+            objective_vector = np.zeros(len(descriptors.keys()))
+            for i,d in enumerate(descriptors.keys()):
+                radical_electrons = d[-1]
+                weight = radical_electrons + 1
+                objective_vector[i] = weight
+            objective_vectors[constraint_class] = objective_vector
 
-        # for descriptor in descriptors_1:
-        #     if descriptor not in constraint_map_1.keys():
-        #             constraint_map_1[descriptor] = 1
-        #         else:
-        #             constraint_map_1[descriptor] += 1
+        return constraint_map, objective_vectors
 
-        # for descriptor in descriptors_2:
-        #     if descriptor not in constraint_map_2.keys():
-        #             constraint_map_2[descriptor] = 1
-        #         else:
-        #             constraint_map_2[descriptor] += 1
+    def filter_constraint_classes(self,target=None):
 
-        # for descriptor in descriptors_3:
-        #     if descriptor not in constraint_map_3.keys():
-        #             constraint_map_3[descriptor] = 1
-        #         else:
-        #             constraint_map_3[descriptor] += 1
-        
-        # use_connectivity_values = True
-        # for atom in self.target.molecule.atoms:
-        #     descriptor = list(atom.get_descriptor())
-        #     if descriptor in constraint_map:
-        #         continue
-        #     else:
-        #         constraint_map.append(descriptor)
-        #         use_connectivity_values = False
-                    
-        # if not use_connectivity_values:
-        #     for descriptor in constraint_map:
-        #         descriptor.pop(1)
-        #     if self.conserve_bonds:
-        #         for spcs in all_species:
-        #             bonds = spcs.molecule.enumerate_bonds().keys()
-        #             for b in bonds:
-        #                 if b not in constraint_map:
-        #                     constraint_map.append(b)
+        if not target: # use self.target
+            if self.target:
+                target = self.target
+    
+        if not self.constraint_map:
+            self.constarint_map, _ = self.get_constraint_map()
 
-        # self.use_connectivity_values = use_connectivity_values
-        
-        return constraint_map
+        target_constraint_classes = []
 
-    def _enumerate_constraints(self, species):
+        descriptors = self.get_descriptors(target)
+        for constraint_class, descriptor_list in descriptors.items():
+            if constraint_class not in self.constraint_class:
+                continue
+            for d in descriptor_list:
+                if d not in self.constraint_map[constraint_class].keys():
+                    self.constraint_class.remove(constraint_class)
+                else:
+                    target_constraint_classes.append(constraint_class)
+
+        return target_constraint_classes
+
+
+    def _enumerate_constraints(self, species, constraint_class):
         """
         Determine the constraint vector for a molecule given the enforced constraints
 
@@ -350,13 +419,11 @@ class SpeciesConstraints(object):
         # except KeyError:  # This molecule has a feature not found in the target molecule. Return None to exclude this
         #     return None
 
-        constraint_vector = np.zeros(len(self.constraint_map[self.constraint_class].keys()))
-        #print self.use_connectivity_values
-        #if self.use_connectivity_values:
-        descriptors = self._get_descriptors(species)
-        for descriptor in descriptors[self.constraint_class]:
-            constraint_vector[self.constraint_map[self.constraint_class].keys().index(descriptor)] += 1
-
+        constraint_vector = np.zeros(len(self.constraint_map[constraint_class].keys()))
+        descriptors = self.get_descriptors(species)
+        for descriptor in descriptors[constraint_class]:
+            constraint_vector[self.constraint_map[constraint_class].keys().index(descriptor)] += 1
+                
         # for atom in molecule.atoms:
         #     descriptor = list(atom.get_descriptor())
         #     descriptor.pop(1)
@@ -389,16 +456,23 @@ class SpeciesConstraints(object):
             np.ndarray: target constraint vector (1xn_constraints)
             np.ndarray: constraint matrix for allowable reference species (len(self.reference_species)xn_constraints)
         """
-        target_constraints = self._enumerate_constraints(self.target)
+
+        self.filter_constraint_classes()
+        if len(self.constraint_class) == 0:
+            return None
+
+        self.constraint_class.sort()    
+        constraint_class = self.constraint_class[-1]
+
+        target_constraints = self._enumerate_constraints(self.target,constraint_class)
         constraint_matrix = []
 
-        for spcs in self.all_reference_species:
-            spcs_constraints = self._enumerate_constraints(spcs)
-            if spcs_constraints is not None:  # This species is allowed
-                self.reference_species.append(spcs)
-                constraint_matrix.append(spcs_constraints)
+        for spcs in self.reference_species:
+            spcs_constraints = self._enumerate_constraints(spcs,constraint_class)
+            #self.reference_species.append(spcs)
+            constraint_matrix.append(spcs_constraints)
 
-        return target_constraints, np.array(constraint_matrix, dtype=int)
+        return target_constraints, np.array(constraint_matrix, dtype=int), self.weights[constraint_class]
 
 
 class ErrorCancelingScheme(object):
@@ -420,14 +494,12 @@ class ErrorCancelingScheme(object):
         """
 
         self.target = target
-        if constraint_class:
-            self.constraint_class = constraint_class
-        else:
-            self.constraint_class = 'class_3'
-        self.constraints = SpeciesConstraints(target, reference_set, constraint_class = self.constraint_class, conserve_bonds=conserve_bonds,
+        self.constraint_class = constraint_class
+
+        self.constraints = SpeciesConstraints(target, reference_set, constraint_class = self.constraint_class,conserve_bonds = conserve_bonds,
                                               conserve_ring_size=conserve_ring_size)
 
-        self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
+        self.target_constraint, self.constraint_matrix, self.weights = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
 
     def _find_error_canceling_reaction(self, reference_subset, milp_software='lpsolve'):
@@ -448,6 +520,7 @@ class ErrorCancelingScheme(object):
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
         c_matrix = np.tile(c_matrix, (2, 1))
         sum_constraints = np.sum(c_matrix, 1, dtype=int)
+        objective_constraints = np.sum(c_matrix * self.weights, 1, dtype=int)
         targets = -1*self.target_constraint
         m = c_matrix.shape[0]
         n = c_matrix.shape[1]
@@ -495,7 +568,8 @@ class ErrorCancelingScheme(object):
             # Setup the MILP problem using lpsolve
             lp = lpsolve('make_lp', 0, m)
             lpsolve('set_verbose', lp, 2)  # Reduce the logging from lpsolve
-            lpsolve('set_obj_fn', lp, sum_constraints)
+            #lpsolve('set_obj_fn', lp, sum_constraints)
+            lpsolve('set_obj_fn', lp, objective_constraints)
             lpsolve('set_minim', lp)
 
             for j in range(n):
@@ -556,21 +630,37 @@ class ErrorCancelingScheme(object):
             :obj:list of :obj:ErrorCancelingReaction: A list of the found error canceling reactions
         """
         subset_queue = deque()
+        #subset_queue.append(range(len(self.reference_species)))
         subset_queue.append(np.arange(0, len(self.reference_species)))
+        #subset_queue.append(range(len(self.reference_species)))
+        #indicies = range(len(self.reference_species))
         reaction_list = []
+        #indicies = range(len(self.reference_species))
+        max_attempts = 1000
+        attempts = 0
 
-        while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
+        while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max) and (attempts<max_attempts):
+        #while (len(indicies) != 0) and (len(reaction_list) < n_reactions_max) and (attempts<max_attempts):
             subset = subset_queue.popleft()
+            #subset = indicies
             if len(subset) == 0:
                 continue
             reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
+            attempts += 1
+            print(attempts)
             if reaction is None:
                 continue
             else:
-                reaction_list.append(reaction)
-
+                unique = True
+                for rxn in reaction_list:
+                    if rxn.species == reaction.species:
+                        unique = False
+                        break
+                if unique:
+                    reaction_list.append(reaction)
                 for index in subset_indices:
-                    subset_queue.append(np.delete(subset, index))
+                    subset_queue.append((np.delete(subset, index)))
+
 
         return reaction_list
 
@@ -592,13 +682,15 @@ class ErrorCancelingScheme(object):
         reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
         h298_list = np.zeros(len(reaction_list))
         h298_kcal_mol = np.zeros(len(reaction_list))
+        fod_dict = dict()
 
         for i, rxn in enumerate(reaction_list):
             h298 = rxn.calculate_target_thermo()
             h298_list[i] = h298.value_si
             h298_kcal_mol[i] = h298.value_si/h298.conversionFactors['kcal/mol']
+            fod_dict[rxn] = (h298_kcal_mol[i],rxn.target.fod) + tuple(s.fod for s in rxn.species)
 
-        return ScalarQuantity(np.median(h298_list), 'J/mol'), zip(reaction_list,h298_kcal_mol)
+        return ScalarQuantity(np.median(h298_list), 'J/mol'), zip(reaction_list,h298_kcal_mol), fod_dict
 
 
 class IsodesmicScheme(ErrorCancelingScheme):
