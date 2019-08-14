@@ -33,6 +33,8 @@ This module contains functionality for working with kinetics "rate rules",
 which provide rate coefficient parameters for various combinations of 
 functional groups.
 """
+from builtins import str
+from six import string_types
 import warnings
 import os.path
 import re
@@ -223,7 +225,7 @@ class KineticsRules(Database):
         self.entries = {}
         for entry in entries:
             index, label, data, shortDesc = entry
-            if isinstance(data, (str,unicode)):
+            if isinstance(data, string_types):
                 kinetics = data
                 rank = 0
             elif isinstance(data, tuple) and len(data) == 2:
@@ -274,14 +276,14 @@ class KineticsRules(Database):
                 assert line.rstrip() == f.next().rstrip(), "Overline didn't match underline"
                 if not comments.has_key(index):
                     comments[index] = ''
-                line = f.next()
+                line = next(f)
             comments[index] += line
         f.close()
         
         # Transfer the comments to the longDesc attribute of the associated entry
         entries = self.getEntries()
         unused = []
-        for index, longDesc in comments.iteritems():
+        for index, longDesc in comments.items():
             try:
                 index = int(index)
             except ValueError:
@@ -474,7 +476,7 @@ class KineticsRules(Database):
                 
         if distanceList != []: #average the minimum distance neighbors
             minDist = min(distanceList) 
-            closeChildrenList = [childrenList[i] for i in xrange(len(childrenList)) if distanceList[i]==minDist]
+            closeChildrenList = [childrenList[i] for i in range(len(childrenList)) if distanceList[i]==minDist]
         else:
             closeChildrenList = []
             
@@ -656,7 +658,7 @@ class KineticsRules(Database):
                         
             
             for i,template0 in enumerate(templateList0):
-                for index in xrange(len(template0)):
+                for index in range(len(template0)):
                     if not template0[index].parent: # We're at the top-level node in this subtreee
                         continue
                     dist = deepcopy(distanceList0[i])

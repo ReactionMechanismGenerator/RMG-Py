@@ -265,7 +265,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
+        for label, atom in expectedProduct.getLabeledAtoms().items():
             mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
@@ -306,13 +306,13 @@ multiplicity 2
         self.assertEqual(len(products), 2)
 
         mapping1 = {}
-        for label, atom in expectedProducts[0].getLabeledAtoms().iteritems():
+        for label, atom in expectedProducts[0].getLabeledAtoms().items():
             mapping1[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProducts[0].isIsomorphic(products[0], mapping1))
 
         mapping2 = {}
-        for label, atom in expectedProducts[1].getLabeledAtoms().iteritems():
+        for label, atom in expectedProducts[1].getLabeledAtoms().items():
             mapping2[atom] = products[1].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProducts[1].isIsomorphic(products[1], mapping2))
@@ -365,7 +365,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
+        for label, atom in expectedProduct.getLabeledAtoms().items():
             mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
@@ -408,7 +408,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
+        for label, atom in expectedProduct.getLabeledAtoms().items():
             mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
@@ -461,7 +461,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
+        for label, atom in expectedProduct.getLabeledAtoms().items():
             mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
@@ -520,7 +520,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
+        for label, atom in expectedProduct.getLabeledAtoms().items():
             mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
@@ -563,7 +563,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
+        for label, atom in expectedProduct.getLabeledAtoms().items():
             mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
@@ -692,10 +692,10 @@ class TestTreeGeneration(unittest.TestCase):
         Test that the tree was properly cleared before generation
         """
         self.family.cleanTree(self.thermoDatabase)
-        ents = [ent for ent in self.family.groups.entries.itervalues() if ent.index != -1]
+        ents = [ent for ent in self.family.groups.entries.values() if ent.index != -1]
         self.assertEquals(len(ents),1,'more than one relevant group left in groups after preparing tree for generation')
         self.assertEquals(len(self.family.rules.entries),1,'more than one group in rules.entries after preparing tree for generation' )
-        root = self.family.groups.entries[self.family.rules.entries.keys()[0]]
+        root = self.family.groups.entries[list(self.family.rules.entries.keys())[0]]
         self.assertEquals([root],self.family.forwardTemplate.reactants)
         self.assertEquals([root],self.family.groups.top)
         
@@ -716,11 +716,11 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that the tree is structured properly
         """
-        for entry in self.family.groups.entries.itervalues():
+        for entry in self.family.groups.entries.values():
             for entry2 in entry.children:
-                self.assertTrue(entry2 in self.family.groups.entries.itervalues())
+                self.assertTrue(entry2 in iter(self.family.groups.entries.values()))
             if entry.parent:
-                self.assertTrue(entry.parent in self.family.groups.entries.itervalues())
+                self.assertTrue(entry.parent in iter(self.family.groups.entries.values()))
         
         self.assertTrue(self.family.groups.entries['Root'].parent is None)
                 
@@ -732,7 +732,7 @@ class TestTreeGeneration(unittest.TestCase):
         self.family.makeBMRulesFromTemplateRxnMap(templateRxnMap)
         
         c = 0
-        for rs in self.family.rules.entries.itervalues():
+        for rs in self.family.rules.entries.values():
             self.assertLess(len(rs),2,'more than one training reaction at a node')
             if len(rs) == 1:
                 c += 1
@@ -745,7 +745,7 @@ class TestTreeGeneration(unittest.TestCase):
         """
         templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.database.thermo,estimateThermo=False)
         
-        for entry in self.family.groups.entries.itervalues():
+        for entry in self.family.groups.entries.values():
             if entry.children == []:
                 continue
             vioObj = set() #set of violations, one atom or one bond is allowed to be in violation (if it was just created)
@@ -885,14 +885,14 @@ multiplicity 2
 
         for i, reactant in enumerate(reaction.reactants):
             mapping = {}
-            for label, atom in expected_reactants[i].getLabeledAtoms().iteritems():
+            for label, atom in expected_reactants[i].getLabeledAtoms().items():
                 mapping[atom] = reactant.molecule[0].getLabeledAtom(label)[0]
 
             self.assertTrue(expected_reactants[i].isIsomorphic(reactant.molecule[0], mapping))
 
         for i, product in enumerate(reaction.products):
             mapping = {}
-            for label, atom in expected_products[i].getLabeledAtoms().iteritems():
+            for label, atom in expected_products[i].getLabeledAtoms().items():
                 mapping[atom] = product.molecule[0].getLabeledAtom(label)[0]
 
             self.assertTrue(expected_products[i].isIsomorphic(product.molecule[0], mapping))

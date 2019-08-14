@@ -28,10 +28,10 @@
 #                                                                             #
 ###############################################################################
 
-from .common import *
-from .database import *
-from .depository import *
-from .family import *
-from .groups import *
-from .library import *
-from .rules import *
+from rmgpy.data.kinetics.common import *
+from rmgpy.data.kinetics.database import *
+from rmgpy.data.kinetics.depository import *
+from rmgpy.data.kinetics.family import *
+from rmgpy.data.kinetics.groups import *
+from rmgpy.data.kinetics.library import *
+from rmgpy.data.kinetics.rules import *

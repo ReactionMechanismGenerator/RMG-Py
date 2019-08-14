@@ -31,6 +31,7 @@
 """
 This module contains functionality for working with kinetics libraries.
 """
+from __future__ import division
 
 import os.path
 import logging
@@ -395,7 +396,7 @@ class KineticsLibrary(Database):
         local_context['shortDesc'] = self.shortDesc
         local_context['longDesc'] = self.longDesc
         # add in anything from the Class level dictionary.
-        for key, value in Database.local_context.iteritems():
+        for key, value in Database.local_context.items():
             local_context[key]=value
         
         # Process the file
@@ -441,7 +442,7 @@ class KineticsLibrary(Database):
                 assert collider == re.search('\(\+[^\)]+\)',products).group(0), "Third body colliders in reaction {0} in kinetics library {1} are missing" \
                                                                                 " from products or are not identical!".format(rxn_string, self.label)
                 extraParenthesis = collider.count('(') -1
-                for i in xrange(extraParenthesis):
+                for i in range(extraParenthesis):
                     collider += ')' # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders, although currently not implemented in Chemkin. See RMG-Py #1070
                 reactants = reactants.replace(collider,'',1)
                 products = products.replace(collider,'',1)
@@ -562,7 +563,7 @@ class KineticsLibrary(Database):
         path = os.path.abspath(path)
 
         self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
-        species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
+        species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.items()])
         
         # Add common bath gases (Ar, Ne, He, N2) if not already present
         for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
@@ -652,11 +653,11 @@ class KineticsLibrary(Database):
                         if not found:
                             speciesDict[formula] = Species(label=formula, molecule=[molecule])
         
-        entries = self.entries.values()
+        entries = list(self.entries.values())
         entries.sort(key=lambda x: x.index)
         
         # Save the species dictionary
-        speciesList = speciesDict.values()
+        speciesList = list(speciesDict.values())
         speciesList.sort(key=lambda x: x.label)
         f = open(os.path.join(path, 'species.txt'), 'w')
         for species in speciesList:
@@ -733,7 +734,7 @@ class KineticsLibrary(Database):
                         writeArrhenius(f, rate.arrheniusLow)
                     if len(rate.efficiencies) > 0:
                         eff_line = ''
-                        for molecule, efficiency in rate.efficiencies.iteritems():
+                        for molecule, efficiency in rate.efficiencies.items():
                             for spec in speciesDict.values():
                                 if molecule in spec.molecule:
                                     mol_label = spec.label

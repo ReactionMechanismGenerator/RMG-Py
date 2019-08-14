@@ -29,6 +29,7 @@
 ###############################################################################
 
 
+from __future__ import division
 import os.path
 import logging
 from copy import deepcopy
@@ -135,13 +136,13 @@ class KineticsDatabase(object):
         # For backward compatibility, check for old-style recommendedFamilies dictionary
         if hasattr(rec, 'recommendedFamilies'):
             default = set()
-            for family, recommended in rec.recommendedFamilies.iteritems():
+            for family, recommended in rec.recommendedFamilies.items():
                 if recommended:
                     default.add(family)
             self.recommendedFamilies = {'default': default}
         else:
             self.recommendedFamilies = {name: value
-                                        for name, value in rec.__dict__.iteritems()
+                                        for name, value in rec.__dict__.items()
                                         if not name.startswith('_')}
 
     def loadFamilies(self, path, families=None, depositories=None):
@@ -309,7 +310,7 @@ along with individual families. Custom sets can be easily defined in this file
 and immediately used in input files without any additional changes.
 """
 ''')
-                for name, item in self.recommendedFamilies.iteritems():
+                for name, item in self.recommendedFamilies.items():
                     f.write('\n{0} = {{\n'.format(name))
                     for label in sorted(item):
                         f.write("    '{0}',\n".format(label))
@@ -321,7 +322,7 @@ and immediately used in input files without any additional changes.
         points to the top-level folder of the kinetics families.
         """
         if not os.path.exists(path): os.mkdir(path)
-        for label, family in self.families.iteritems():
+        for label, family in self.families.items():
             familyPath = os.path.join(path, label)
             if not os.path.exists(familyPath): os.mkdir(familyPath)
             family.save(familyPath)
@@ -331,7 +332,7 @@ and immediately used in input files without any additional changes.
         Save the kinetics libraries to the given `path` on disk, where `path`
         points to the top-level folder of the kinetics libraries.
         """
-        for label, library in self.libraries.iteritems():
+        for label, library in self.libraries.items():
             folders = label.split(os.sep)
             try:
                 os.makedirs(os.path.join(path, *folders))
@@ -379,7 +380,7 @@ and immediately used in input files without any additional changes.
 
         groupsPath = os.path.join(path, 'kinetics_groups')
         if not os.path.exists(groupsPath): os.mkdir(groupsPath)
-        for label, family in self.families.iteritems():
+        for label, family in self.families.items():
             groupPath = os.path.join(groupsPath, label)
             family.saveOld(groupPath)
             
@@ -544,7 +545,7 @@ and immediately used in input files without any additional changes.
         Generate reactions from all families for the input molecules.
         """
         reaction_list = []
-        for label, family in self.families.iteritems():
+        for label, family in self.families.items():
             if only_families is None or label in only_families:
                 try:
                     reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
