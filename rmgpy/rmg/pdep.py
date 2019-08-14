@@ -128,7 +128,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
     """
 
     def __init__(self, index=-1, source=None):
-        rmgpy.pdep.network.Network.__init__(self)
+        rmgpy.pdep.network.Network.__init__(self,label="PDepNetwork #{0}".format(index))
         self.index = index
         self.source = source
         self.explored = []
@@ -144,13 +144,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
     
     def __setstate__(self,dict):
         self.__dict__.update(dict)
-
-    @property
-    def label(self):
-        """
-        Get the `label` for this network (analogous to reaction families as a reaction's source)
-        """
-        return "PDepNetwork #{0}".format(self.index)
 
     def cleanup(self):
         """
