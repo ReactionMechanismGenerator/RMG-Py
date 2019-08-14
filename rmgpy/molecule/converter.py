@@ -31,6 +31,8 @@
 """
 This module provides methods for converting molecules between RMG, RDKit, and OpenBabel.
 """
+from __future__ import print_function
+
 import logging
 import sys
 
@@ -41,13 +43,10 @@ from rdkit import Chem
 try:
     import openbabel
 except ImportError:
-    OB_INSTALLED = False
-else:
-    OB_INSTALLED = True
+    openbabel = None
 
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.molecule as mm
-
 from rmgpy.exceptions import DependencyError
 
 
@@ -65,29 +64,31 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     # between different runs
     mol.sortAtoms()
     atoms = mol.vertices
-    rdAtomIndices = {} # dictionary of RDKit atom indices
+    rd_atom_indices = {}  # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
-            rdAtom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
+            rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
         else:
-            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+            rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
-            rdAtom.SetIsotope(atom.element.isotope)
-        rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
-        rdAtom.SetFormalCharge(atom.charge)
-        if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
-        rdkitmol.AddAtom(rdAtom)
+            rd_atom.SetIsotope(atom.element.isotope)
+        rd_atom.SetNumRadicalElectrons(atom.radicalElectrons)
+        rd_atom.SetFormalCharge(atom.charge)
+        if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rd_atom.SetNumRadicalElectrons(
+            2)
+        rdkitmol.AddAtom(rd_atom)
         if removeHs and atom.symbol == 'H':
             pass
         else:
-            rdAtomIndices[atom] = index
+            rd_atom_indices[atom] = index
 
-    rdBonds = Chem.rdchem.BondType
-    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC, 'Q': rdBonds.QUADRUPLE}
+    rd_bonds = Chem.rdchem.BondType
+    orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
+              'Q': rd_bonds.QUADRUPLE}
     # Add the bonds
     for atom1 in mol.vertices:
-        for atom2, bond in atom1.edges.iteritems():
+        for atom2, bond in atom1.edges.items():
             if bond.isHydrogenBond():
                 continue
             index1 = atoms.index(atom1)
@@ -104,7 +105,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     if removeHs:
         rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
     if returnMapping:
-        return rdkitmol, rdAtomIndices
+        return rdkitmol, rd_atom_indices
     return rdkitmol
 
 
@@ -133,7 +134,7 @@ def fromRDKitMol(mol, rdkitmol):
     Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
 
     # iterate through atoms in rdkitmol
-    for i in xrange(rdkitmol.GetNumAtoms()):
+    for i in range(rdkitmol.GetNumAtoms()):
         rdkitatom = rdkitmol.GetAtomWithIdx(i)
 
         # Use atomic number as key for element
@@ -143,24 +144,29 @@ def fromRDKitMol(mol, rdkitmol):
 
         # Process charge
         charge = rdkitatom.GetFormalCharge()
-        radicalElectrons = rdkitatom.GetNumRadicalElectrons()
+        radical_electrons = rdkitatom.GetNumRadicalElectrons()
 
-        atom = mm.Atom(element, radicalElectrons, charge, '', 0)
+        atom = mm.Atom(element, radical_electrons, charge, '', 0)
         mol.vertices.append(atom)
 
         # Add bonds by iterating again through atoms
-        for j in xrange(0, i):
+        for j in range(0, i):
             rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
             if rdkitbond is not None:
                 order = 0
 
                 # Process bond type
                 rdbondtype = rdkitbond.GetBondType()
-                if rdbondtype.name == 'SINGLE': order = 1
-                elif rdbondtype.name == 'DOUBLE': order = 2
-                elif rdbondtype.name == 'TRIPLE': order = 3
-                elif rdbondtype.name == 'QUADRUPLE': order = 4
-                elif rdbondtype.name == 'AROMATIC': order = 1.5
+                if rdbondtype.name == 'SINGLE':
+                    order = 1
+                elif rdbondtype.name == 'DOUBLE':
+                    order = 2
+                elif rdbondtype.name == 'TRIPLE':
+                    order = 3
+                elif rdbondtype.name == 'QUADRUPLE':
+                    order = 4
+                elif rdbondtype.name == 'AROMATIC':
+                    order = 1.5
 
                 bond = mm.Bond(mol.vertices[i], mol.vertices[j], order)
                 mol.addBond(bond)
@@ -171,7 +177,7 @@ def fromRDKitMol(mol, rdkitmol):
     mol.update()
 
     # Assume this is always true
-    # There are cases where 2 radicalElectrons is a singlet, but
+    # There are cases where 2 radical_electrons is a singlet, but
     # the triplet is often more stable,
     mol.multiplicity = mol.getRadicalCount() + 1
     # mol.updateAtomTypes()
@@ -193,7 +199,7 @@ def debugRDKitMol(rdmol, level=logging.INFO):
         old_stdout_file_descriptor = os.dup(sys.stdout.fileno())
     except:
         message = "Can't access the sys.stdout file descriptor, so can't capture RDKit debug info"
-        print message
+        print(message)
         rdmol.Debug()
         return message
     os.dup2(my_temp_file.fileno(), sys.stdout.fileno())
@@ -211,14 +217,14 @@ def toOBMol(mol, returnMapping=False):
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
-    if not OB_INSTALLED:
+    if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     # Sort the atoms to ensure consistent output
     mol.sortAtoms()
     atoms = mol.vertices
 
-    obAtomIds = {}  # dictionary of OB atom IDs
+    ob_atom_ids = {}  # dictionary of OB atom IDs
     obmol = openbabel.OBMol()
     for atom in atoms:
         a = obmol.NewAtom()
@@ -226,22 +232,22 @@ def toOBMol(mol, returnMapping=False):
         if atom.element.isotope != -1:
             a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)
-        obAtomIds[atom] = a.GetId()
+        ob_atom_ids[atom] = a.GetId()
     orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
-        for atom2, bond in atom1.edges.iteritems():
+        for atom2, bond in atom1.edges.items():
             if bond.isHydrogenBond():
                 continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
                 order = orders[bond.order]
-                obmol.AddBond(index1+1, index2+1, order)
+                obmol.AddBond(index1 + 1, index2 + 1, order)
 
     obmol.AssignSpinMultiplicity(True)
 
     if returnMapping:
-        return obmol, obAtomIds
+        return obmol, ob_atom_ids
 
     return obmol
 
@@ -255,7 +261,7 @@ def fromOBMol(mol, obmol):
     # cython.declare(i=cython.int)
     # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
     # cython.declare(atom=mm.Atom, atom1=mm.Atom, atom2=mm.Atom, bond=mm.Bond)
-    if not OB_INSTALLED:
+    if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     mol.vertices = []
@@ -273,7 +279,7 @@ def fromOBMol(mol, obmol):
         # Process charge
         charge = obatom.GetFormalCharge()
         obatom_multiplicity = obatom.GetSpinMultiplicity()
-        radicalElectrons =  obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
+        radicalElectrons = obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
 
         atom = mm.Atom(element, radicalElectrons, charge, '', 0)
         mol.vertices.append(atom)
@@ -282,12 +288,13 @@ def fromOBMol(mol, obmol):
     for obbond in openbabel.OBMolBondIter(obmol):
         # Process bond type
         oborder = obbond.GetBondOrder()
-        if oborder not in [1,2,3,4] and obbond.IsAromatic() :
+        if oborder not in [1, 2, 3, 4] and obbond.IsAromatic():
             oborder = 1.5
 
-        bond = mm.Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0
+        bond = mm.Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1],
+                       mol.vertices[obbond.GetEndAtomIdx() - 1],
+                       oborder)  # python array indices start at 0
         mol.addBond(bond)
-
 
     # Set atom types and connectivity values
     mol.updateConnectivityValues()

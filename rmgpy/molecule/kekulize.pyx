@@ -52,9 +52,10 @@ and the process continues until the entire molecule can be solved.
 
 import logging
 
-from .molecule cimport Atom, Bond, Molecule
-from .element import PeriodicSystem
 from rmgpy.exceptions import KekulizationError, AtomTypeError
+from rmgpy.molecule.element import PeriodicSystem
+from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+
 
 cpdef kekulize(Molecule mol):
     """
@@ -84,9 +85,9 @@ cpdef kekulize(Molecule mol):
         aromatic = True
         for atom1 in ring:
             # Check if this is a bridged ring
-            bridged = sum([1 if atom in ring else 0 for atom in atom1.bonds.iterkeys()]) > 2
-            for atom2, bond in atom1.bonds.iteritems():
-                if bridged and sum([1 if atom in ring else 0 for atom in atom2.bonds.iterkeys()]) > 2:
+            bridged = sum([1 if atom in ring else 0 for atom in atom1.bonds.keys()]) > 2
+            for atom2, bond in atom1.bonds.items():
+                if bridged and sum([1 if atom in ring else 0 for atom in atom2.bonds.keys()]) > 2:
                     # This atom2 is the other end of the bridging bond, so don't consider it as a part of the ring
                     exo_bonds.add(bond)
                     continue
@@ -315,7 +316,7 @@ cdef class AromaticBond(object):
             occupied = 0
             uncertain = 0
             # Count electrons in bonds
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 if abs(round(bond.order) - bond.order) < 1e-9:
                     # This is a fixed bond, either single or double
                     occupied += int(round(bond.order))

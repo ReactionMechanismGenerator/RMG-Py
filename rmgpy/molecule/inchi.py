@@ -28,6 +28,8 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
+
 import itertools
 import re
 import warnings
@@ -117,7 +119,7 @@ def decompose_aug_inchi(string):
     u_indices, p_indices = [], []
     matches = re.findall(ulayer_pattern, string)
     if matches:
-        u_indices = map(int, matches.pop().split('/')[0].split(U_LAYER_SEPARATOR))
+        u_indices = list(map(int, matches.pop().split('/')[0].split(U_LAYER_SEPARATOR)))
 
     matches = re.findall(player_pattern, string)
     if matches:
@@ -158,7 +160,7 @@ def compose_aug_inchi(inchi, ulayer=None, player=None):
     aug_inchi = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
     aug_inchi += inchi
 
-    for layer in filter(None, [ulayer, player]):
+    for layer in [_f for _f in [ulayer, player] if _f]:
         aug_inchi += layer
 
     return aug_inchi
@@ -176,7 +178,7 @@ def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
 
     aug_inchi_key = inchi_key
 
-    for layer in filter(None, [ulayer, player]):
+    for layer in [_f for _f in [ulayer, player] if _f]:
         aug_inchi_key += '-' + layer[1:]  # cut off the '/'
 
     return aug_inchi_key
@@ -225,7 +227,7 @@ def _parse_H_layer(inchi):
 
     couples = []
     for match in re.findall(PARENTHESES, h_layer):
-        mobile_h_atoms = map(int, match[2:].split(','))
+        mobile_h_atoms = list(map(int, match[2:].split(',')))
         couples.append(mobile_h_atoms)
 
     return couples
@@ -316,7 +318,7 @@ def _parse_N_layer(auxinfo):
     else:
         raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
 
-    indices = map(int, atom_numbers.split(','))
+    indices = list(map(int, atom_numbers.split(',')))
 
     return indices
 
@@ -641,7 +643,7 @@ def create_augmented_layers(mol):
     else:
         molcopy = mol.copy(deep=True)
 
-        hydrogens = filter(lambda at: at.number == 1, molcopy.atoms)
+        hydrogens = [at for at in molcopy.atoms if at.number == 1]
         for h in hydrogens:
             molcopy.removeAtom(h)
 
@@ -826,7 +828,7 @@ def _fix_adjacent_charges(mol):
     """
     for at in mol.atoms:
         if at.charge != 0:
-            for neigh, bond in at.bonds.iteritems():
+            for neigh, bond in at.bonds.items():
                 if neigh.charge != 0:
                     bond.incrementOrder()
                     at.charge += 1 if at.charge < 0 else -1
@@ -891,7 +893,7 @@ def _fix_oxygen_unsaturated_bond(mol, u_indices):
         if at.isOxygen() and at.radicalElectrons == 1 and at.lonePairs == 1:
             bonds = mol.getBonds(at)
             oxygen = at
-            for atom2, bond in bonds.iteritems():
+            for atom2, bond in bonds.items():
                 if bond.isTriple():
                     bond.decrementOrder()
                     oxygen.radicalElectrons -= 1
@@ -920,7 +922,7 @@ def _fix_oxygen_unsaturated_bond(mol, u_indices):
                     bond.incrementOrder()
                 break
             else:
-                for atom2, bond in bonds.iteritems():
+                for atom2, bond in bonds.items():
                     if not bond.isSingle() and atom2.charge == 0:
                         oxygen.charge -= 1
                         if (mol.atoms.index(atom2) + 1) in u_indices:
@@ -940,7 +942,7 @@ def _is_unsaturated(mol):
                    bonds=dict,
                    bond=Bond)
     for atom in mol.atoms:
-        for bond in atom.bonds.itervalues():
+        for bond in atom.bonds.values():
             if not bond.isSingle():
                 return True
 
@@ -993,7 +995,7 @@ def _fix_mobile_h(mol, inchi, u1, u2):
 
         # search hydrogen atom and bond
         hydrogen = None
-        for at, bond in original.bonds.iteritems():
+        for at, bond in original.bonds.items():
             if at.number == 1:
                 hydrogen = at
                 mol.removeBond(bond)

@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-from graph cimport Vertex, Edge, Graph
+from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 
 cdef class VF2:
 

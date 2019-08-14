@@ -25,12 +25,13 @@
 #                                                                             #
 ###############################################################################
 
-from .graph cimport Vertex, Edge, Graph
-from .atomtype cimport AtomType
-cimport rmgpy.molecule.group as gr
-from .element cimport Element
+cimport numpy as np
+
 cimport rmgpy.constants as constants
-cimport numpy
+cimport rmgpy.molecule.group as gr
+from rmgpy.molecule.atomtype cimport AtomType
+from rmgpy.molecule.element cimport Element
+from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 
 ################################################################################
 cdef dict bond_orders 
@@ -42,7 +43,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
-    cdef public numpy.ndarray coords
+    cdef public np.ndarray coords
     cdef public short lonePairs
     cdef public int id
     cdef public dict props
@@ -212,7 +213,7 @@ cdef class Molecule(Graph):
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
 
-    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
+    cpdef fromXYZ(self, np.ndarray atomicNums, np.ndarray coordinates)
     
     cpdef str toInChI(self)
 

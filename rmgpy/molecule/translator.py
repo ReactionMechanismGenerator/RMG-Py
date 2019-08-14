@@ -33,10 +33,9 @@ This module provides methods for translating to and from common molecule
 representation formats, e.g. SMILES, InChI, SMARTS.
 """
 
-
-import cython
 import logging
 
+import cython
 # Assume that rdkit is installed
 from rdkit import Chem
 # Test if openbabel is installed
@@ -50,7 +49,6 @@ else:
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.molecule as mm
 import rmgpy.molecule.util as util
-
 from rmgpy.exceptions import DependencyError
 from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
 
