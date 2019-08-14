@@ -28,12 +28,12 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 import os
-from nose.plugins.attrib import attr
+import unittest
 
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
+from nose.plugins.attrib import attr
 
 
 ################################################################################

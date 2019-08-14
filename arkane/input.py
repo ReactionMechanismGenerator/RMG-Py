@@ -32,51 +32,39 @@
 This module contains functionality for parsing Arkane input files.
 """
 
-import os.path
 import logging
+import os.path
+
 import numpy as np
-
-from rmgpy import settings
-from rmgpy.exceptions import InputError, DatabaseError
-from rmgpy.data.rmg import RMGDatabase
-from rmgpy.data.rmg import getDB
-
-from rmgpy.rmg.model import CoreEdgeReactionModel
-
-from rmgpy.species import Species, TransitionState
-from rmgpy.quantity import Quantity
-
-from rmgpy.statmech.translation import Translation, IdealGasTranslation
-from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
-from rmgpy.statmech.conformer import Conformer
-
-from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.thermo.wilhoit import Wilhoit
-
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
-from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
-from rmgpy.kinetics.tunneling import Wigner, Eckart
-from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
-
-from rmgpy.pdep.configuration import Configuration
-from rmgpy.pdep.network import Network
-from rmgpy.pdep.collision import SingleExponentialDown
-
-from rmgpy.molecule import Molecule
-from rmgpy.reaction import Reaction
-from rmgpy.transport import TransportData
-
+from arkane.common import is_pdep
+from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
+from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob, assign_frequency_scale_factor
 from arkane.thermo import ThermoJob
-from arkane.pdep import PressureDependenceJob
-from arkane.explorer import ExplorerJob
-from arkane.common import is_pdep
+from rmgpy import settings
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.rmg import getDB
+from rmgpy.exceptions import InputError, DatabaseError
+from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
+from rmgpy.kinetics.tunneling import Wigner, Eckart
+from rmgpy.molecule import Molecule
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.pdep.configuration import Configuration
+from rmgpy.pdep.network import Network
+from rmgpy.reaction import Reaction
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.species import Species, TransitionState
+from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.statmech.vibration import HarmonicOscillator
+from rmgpy.thermo.nasa import NASAPolynomial, NASA
+from rmgpy.thermo.thermodata import ThermoData
+from rmgpy.thermo.wilhoit import Wilhoit
+from rmgpy.transport import TransportData
 
 ################################################################################
 

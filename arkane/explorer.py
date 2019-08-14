@@ -32,17 +32,17 @@ The Arkane Explorer module
 #                                                                             #
 ###############################################################################
 
-import os
-import numpy as np
 import logging
+import os
 import shutil
 from copy import deepcopy
 
+import numpy as np
 import rmgpy
-from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.data.rmg import getDB
 from rmgpy.exceptions import InputError
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
 
 
 ################################################################################

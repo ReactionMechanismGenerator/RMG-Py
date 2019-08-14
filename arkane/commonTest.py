@@ -32,23 +32,22 @@
 This script contains unit tests of the :mod:`arkane.common` module.
 """
 
-import unittest
-import numpy
+import logging
 import os
 import shutil
-import logging
+import unittest
 
+import numpy
 import rmgpy
 import rmgpy.constants as constants
-from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.species import Species, TransitionState
-from rmgpy.quantity import ScalarQuantity
-from rmgpy.thermo import NASA, ThermoData
-
 from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass
-from arkane.statmech import InputError, StatMechJob
 from arkane.input import jobList
+from arkane.statmech import InputError, StatMechJob
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.quantity import ScalarQuantity
+from rmgpy.species import Species, TransitionState
+from rmgpy.thermo import NASA, ThermoData
 
 
 ################################################################################
@@ -358,7 +357,7 @@ class TestArkaneSpecies(unittest.TestCase):
         self.assertEqual(arkane_spc.smiles, 'CC')
         self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
         self.assertEqual(arkane_spc.label, 'C2H6')
-        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99*1.014)  # checks float conversion
+        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99 * 1.014)  # checks float conversion
         self.assertFalse(arkane_spc.use_bond_corrections)
         self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4)  # HarmonicOsc.
         self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)

@@ -28,16 +28,15 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-import unittest
 import os
+import unittest
 
-from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
+import numpy
 import rmgpy.constants as constants
-from external.wip import work_in_progress
-
 from arkane.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
+from external.wip import work_in_progress
+from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 
 ################################################################################

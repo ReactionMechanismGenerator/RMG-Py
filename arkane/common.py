@@ -32,31 +32,29 @@ Arkane common module
 #                                                                             #
 ###############################################################################
 
-import numpy
-import os.path
 import logging
-import time
+import os.path
 import string
+import time
 
+import numpy
+import rmgpy.constants as constants
 import yaml
-
-from rmgpy.rmgobject import RMGObject
+from arkane.pdep import PressureDependenceJob
 from rmgpy import __version__
-from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.molecule.element import elementList
 from rmgpy.molecule.translator import toInChI, toInChIKey
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.quantity import ScalarQuantity, ArrayQuantity
+from rmgpy.rmgobject import RMGObject
+from rmgpy.species import Species, TransitionState
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
 from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
-from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.transport import TransportData
 from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
-from rmgpy.species import Species, TransitionState
-import rmgpy.constants as constants
-
-from arkane.pdep import PressureDependenceJob
+from rmgpy.transport import TransportData
 
 
 ################################################################################
@@ -335,8 +333,8 @@ def check_conformer_energy(Vlist, path):
     Vdiff = (Vlist[0] - numpy.min(Vlist)) * constants.E_h * constants.Na / 1000
     if Vdiff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
-                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'.format(
-                         path=os.path.basename(path), diff=Vdiff))
+                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
+                        .format(path=os.path.basename(path), diff=Vdiff))
 
 
 def get_element_mass(input_element, isotope=None):

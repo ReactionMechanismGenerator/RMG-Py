@@ -32,23 +32,19 @@ Arkane kinetics module
 #                                                                             #
 ###############################################################################
 
-import os.path
-import numpy
-import string
 import logging
+import os.path
+import string
 
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
-from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
-from rmgpy.kinetics.tunneling import Wigner, Eckart
+import numpy
 import rmgpy.quantity as quantity
-from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
-from rmgpy.exceptions import SpeciesError
-
-from arkane.sensitivity import KineticsSensitivity as sa
-from arkane.output import prettify
 from arkane.common import ArkaneSpecies
+from arkane.output import prettify
+from arkane.sensitivity import KineticsSensitivity as sa
+from rmgpy.exceptions import SpeciesError
+from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.kinetics.tunneling import Wigner, Eckart
+from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
 
 
 ################################################################################
@@ -81,8 +77,8 @@ class KineticsJob(object):
             self.Tcount = len(self.Tlist.value_si)
         else:
             self.Tlist = (1 / numpy.linspace(1 / self.Tmax.value_si,
-                                            1 / self.Tmin.value_si,
-                                            self.Tcount), 'K')
+                                             1 / self.Tmin.value_si,
+                                             self.Tcount), 'K')
 
         self.reaction = reaction
         self.kunits = None
@@ -315,14 +311,14 @@ class KineticsJob(object):
         """
         Save a YAML file for TSs if structures of the respective reactant/s and product/s are known
         """
-        if all ([spc.molecule is not None and len(spc.molecule)
-                 for spc in self.reaction.reactants + self.reaction.products]):
+        if all([spc.molecule is not None and len(spc.molecule)
+                for spc in self.reaction.reactants + self.reaction.products]):
             self.arkane_species.update_species_attributes(self.reaction.transitionState)
             self.arkane_species.reaction_label = self.reaction.label
             self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
                                              for spc in self.reaction.reactants]
             self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
-                                             for spc in self.reaction.products]
+                                            for spc in self.reaction.products]
             self.arkane_species.save_yaml(path=output_directory)
 
     def plot(self, output_directory):
