@@ -80,10 +80,10 @@ class TestArkaneJob(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                     'data', 'methoxy.py'))
-        pdepjob = jobList[-1]
-        cls.kineticsjob = jobList[0]
+        pdepjob = job_list[-1]
+        cls.kineticsjob = job_list[0]
         pdepjob.activeJRotor = True
         network = pdepjob.network
         cls.Nisom = len(network.isomers)
@@ -329,8 +329,8 @@ class TestArkaneSpecies(unittest.TestCase):
         """
         Test properly dumping the ArkaneSpecies object and respective sub-objects
         """
-        jobList = self.arkane.loadInputFile(self.dump_input_path)
-        for job in jobList:
+        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        for job in job_list:
             job.execute(output_directory=self.dump_path)
         self.assertTrue(os.path.isfile(self.dump_output_file))
 
@@ -339,12 +339,12 @@ class TestArkaneSpecies(unittest.TestCase):
         Test properly loading the ArkaneSpecies object and respective sub-objects
         """
         # Create YAML file by running Arkane
-        jobList = self.arkane.loadInputFile(self.dump_input_path)
-        for job in jobList:
+        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        for job in job_list:
             job.execute(output_directory=self.dump_path)
 
         # Load in newly created YAML file
-        arkane_spc_old = jobList[0].arkane_species
+        arkane_spc_old = job_list[0].arkane_species
         arkane_spc = ArkaneSpecies.__new__(ArkaneSpecies)
         arkane_spc.load_yaml(path=os.path.join(self.dump_path, 'species', arkane_spc_old.label + '.yml'))
 
