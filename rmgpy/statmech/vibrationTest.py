@@ -32,6 +32,10 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.vibration` module.
 """
 
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+
 import unittest
 import numpy as np
 
@@ -232,8 +236,8 @@ class TestHarmonicOscillator(unittest.TestCase):
         Test that a HarmonicOscillator object can be pickled and unpickled
         with no loss of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode, -1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertEqual(self.mode.frequencies.value.shape, mode.frequencies.value.shape)
         for freq0, freq in zip(self.mode.frequencies.value, mode.frequencies.value):
             self.assertAlmostEqual(freq0, freq, 6)

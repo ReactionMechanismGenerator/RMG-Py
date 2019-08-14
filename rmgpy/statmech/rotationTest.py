@@ -32,6 +32,10 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.rotation` module.
 """
 
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+
 import unittest
 import numpy as np
 
@@ -258,8 +262,8 @@ class TestLinearRotor(unittest.TestCase):
         Test that a LinearRotor object can be pickled and unpickled with no
         loss of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode, -1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -397,8 +401,8 @@ class TestNonlinearRotor(unittest.TestCase):
         Test that a NonlinearRotor object can be pickled and unpickled with
         no loss of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode, -1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
         for I0, I in zip(self.mode.inertia.value, mode.inertia.value):
             self.assertAlmostEqual(I0, I, 6)
@@ -625,8 +629,8 @@ class TestKRotor(unittest.TestCase):
         Test that a KRotor object can be pickled and unpickled with no loss
         of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode, -1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -852,8 +856,8 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test that a SphericalTopRotor object can be pickled and unpickled
         with no loss of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode, -1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
