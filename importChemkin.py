@@ -577,42 +577,66 @@ class ModelMatcher():
                 f.write('\n')
 
         special_smiles_to_adj_list = {
-            'singlet[CH2]': """multiplicity 1
-1 C u0 p1 {2,S} {3,S}
-2 H u0 {1,S}
-3 H u0 {1,S}
-""",
-            'triplet[CH2]': """multiplicity 3
-1 C u2 {2,S} {3,S}
-2 H u0 {1,S}
-3 H u0 {1,S}
-""",
-            'singletC=[C]': """multiplicity 1
-1 C u0 {2,D} {3,S} {4,S}
-2 C u0 p1 {1,D}
-3 H u0 {1,S}
-4 H u0 {1,S}
-""",
-            'tripletC=[C]': """multiplicity 3
-1 C u0 {2,D} {3,S} {4,S}
-2 C u2 {1,D}
-3 H u0 {1,S}
-4 H u0 {1,S}""",
-            'singlet[CH]O': "1 C 2S {2,S}\n2 O 0  {1,S}",
-            'triplet[CH]O': "1 C 2T {2,S}\n2 O 0  {1,S}",
-            '[C]': "1 C u0 p2 c0",
-            'excited[OH]': """multiplicity 2
-molecularTermSymbol A^2S+
-1 O u1 p2 c0 {2,S}
-2 H u0 p0 c0 {1,S}
-""",  # this is not right, but at least distinct from ground state doublet
-            'excited[CH]': "1 C u1 p1 c0 {2,S}\n2 H u0 p0 c0 {1,S}",  # this is entirely backwards, but RMG thinks normal [CH] is a quartet, and this has to be different!
-            'excited[O]': "1 O u0 p3 c0",  # RMG (via RDKit?) thinks this is water, and prints the wrong SMILES
-            '[NH2+][O-]': """multiplicity 2
-1 N u1 p0 c+1 {2,S} {3,S} {4,S}
-2 O u0 p3 c-1 {1,S}
-3 H u0 p0 c0 {1,S}
-4 H u0 p0 c0 {1,S}""",  # workaround a bug
+            'singlet[CH2]': """
+                            multiplicity 1
+                            1 C u0 p1 {2,S} {3,S}
+                            2 H u0 {1,S}
+                            3 H u0 {1,S}
+                            """,
+            'triplet[CH2]': """
+                            multiplicity 3
+                            1 C u2 {2,S} {3,S}
+                            2 H u0 {1,S}
+                            3 H u0 {1,S}
+                            """,
+            'singletC=[C]': """
+                            multiplicity 1
+                            1 C u0 {2,D} {3,S} {4,S}
+                            2 C u0 p1 {1,D}
+                            3 H u0 {1,S}
+                            4 H u0 {1,S}
+                            """,
+            'tripletC=[C]': """
+                            multiplicity 3
+                            1 C u0 {2,D} {3,S} {4,S}
+                            2 C u2 {1,D}
+                            3 H u0 {1,S}
+                            4 H u0 {1,S}
+                            """,
+            'singlet[CH]O': """
+                            1 O u0 p1 c+1 {2,D} {4,S}
+                            2 C u0 p1 c-1 {1,D} {3,S}
+                            3 H u0 p0 c0 {2,S}
+                            4 H u0 p0 c0 {1,S}
+                            """,
+            'triplet[CH]O': """
+                            multiplicity 3
+                            1 C u2 p0 c0 {2,S} {3,S}
+                            2 O u0 p2 c0 {1,S} {4,S}
+                            3 H u0 p0 c0 {1,S}
+                            4 H u0 p0 c0 {2,S}
+                            """,
+            '[C]':          "1 C u0 p2 c0",
+            'excited[OH]':  """
+                            multiplicity 2
+                            molecularTermSymbol A^2S+
+                            1 O u1 p2 c0 {2,S}
+                            2 H u0 p0 c0 {1,S}
+                            """, # the 'A' in the molecular term symbol means first excited state
+            'excited[CH]':  """
+                            multiplicity 2
+                            molecularTermSymbol A^2S+
+                            1 C u1 p1 c0 {2,S}
+                            2 H u0 p0 c0 {1,S}
+                            """, # the 'A' in the molecular term symbol means first excited state
+            '[O]singlet':  "1 O u0 p3 c0",  # RMG (via RDKit?) thinks this is water, and prints the wrong SMILES
+            '[NH2+][O-]':    """
+                            multiplicity 2
+                            1 N u1 p0 c+1 {2,S} {3,S} {4,S}
+                            2 O u0 p3 c-1 {1,S}
+                            3 H u0 p0 c0 {1,S}
+                            4 H u0 p0 c0 {1,S}
+                            """.strip(),  # workaround a bug
             }
 
         for species_label in known_names:
