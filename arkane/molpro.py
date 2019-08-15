@@ -424,3 +424,11 @@ class MolproLog(Log):
                 items = line.split()
                 return float(items[-1])
         raise ValueError('Unable to find D1 diagnostic in energy file: {}'.format(self.path))
+
+    def load_scan_pivot_atoms(self):
+        """Not implemented for Molpro"""
+        raise NotImplementedError('The load_scan_pivot_atoms method is not implemented for Molpro Logs')
+
+    def load_scan_frozen_atoms(self):
+        """Not implemented for Molpro"""
+        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Molpro Logs')
