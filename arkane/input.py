@@ -218,8 +218,9 @@ def species(label, *args, **kwargs):
                 if db is None:
                     raise DatabaseError('Thermo database is None.')
             except DatabaseError:
-                logging.warn("The database isn't loaded, cannot estimate thermo for {0}. "
-                             "If it is a bath gas, set reactive = False to avoid generating thermo.".format(spec.label))
+                logging.warning("The database isn't loaded, cannot estimate thermo for {0}. "
+                                "If it is a bath gas, set reactive = False to avoid generating"
+                                " thermo.".format(spec.label))
             else:
                 logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
                              ' RMG-Database...'.format(spec.label))

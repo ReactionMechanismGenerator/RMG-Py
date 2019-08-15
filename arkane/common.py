@@ -373,7 +373,7 @@ def get_element_mass(input_element, isotope=None):
         if len(mass_list[0]) == 2:
             # isotope weight is unavailable, use the first entry
             mass = mass_list[0][1]
-            logging.warn("Assuming isotop {0} is representative of element {1}".format(mass_list[0][0], symbol))
+            logging.warning('Assuming isotope {0} is representative of element {1}'.format(mass_list[0][0], symbol))
         else:
             # use the most common isotope
             max_weight = mass_list[0][2]

@@ -586,18 +586,18 @@ class StatMechJob(object):
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already'
-                             ' present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for'
-                             ' Gaussian to generate the force constant matrix, if running Molpro include keyword print,'
-                             ' hessian')
+                logging.warning('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already '
+                                'present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for '
+                                'Gaussian to generate the force constant matrix, if running Molpro include keyword '
+                                'print, hessian')
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = np.array([])
         else:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already'
-                             ' present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for'
-                             ' Gaussian to generate the force constant matrix, if running Molpro include keyword print,'
-                             ' hessian')
+                logging.warning('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already '
+                                'present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for '
+                                'Gaussian to generate the force constant matrix, if running Molpro include keyword'
+                                'print, hessian')
             frequencies = np.array([])
             rotors = np.array([])
 
@@ -1155,8 +1155,8 @@ def determine_rotor_symmetry(energies, label, pivots):
         symmetry = len(peaks)
         reason = 'number of peaks and valleys, all within the determined resolution criteria'
     if symmetry not in [1, 2, 3]:
-        logging.warn('Determined symmetry number {0} for rotor of species {1} between pivots {2};'
-                     ' you should make sure this makes sense'.format(symmetry, label, pivots))
+        logging.warning('Determined symmetry number {0} for rotor of species {1} between pivots {2}; '
+                        'you should make sure this makes sense'.format(symmetry, label, pivots))
     else:
         logging.info('Determined a symmetry number of {0} for rotor of species {1} between pivots {2}'
                      ' based on the {3}.'.format(symmetry, label, pivots, reason))
