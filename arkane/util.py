@@ -28,6 +28,12 @@
 #                                                                             #
 ###############################################################################
 
+"""
+This module contains different utilities used in Arkane.
+"""
+
+from rmgpy.exceptions import InputError
+
 from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog

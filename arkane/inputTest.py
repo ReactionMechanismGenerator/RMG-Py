@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-Unit tests for the input module of Arkane
+This module contains unit tests of the :mod:`arkane.input` module.
 """
 
 import os

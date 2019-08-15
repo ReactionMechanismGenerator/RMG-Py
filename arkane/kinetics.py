@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane kinetics module
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -31,6 +27,10 @@ Arkane kinetics module
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+
+"""
+Arkane kinetics module
+"""
 
 import logging
 import os.path

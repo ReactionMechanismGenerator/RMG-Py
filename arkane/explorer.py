@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-The Arkane Explorer module
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #

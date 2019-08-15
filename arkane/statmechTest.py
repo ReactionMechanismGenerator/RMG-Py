@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.main` module.
+This module contains unit tests of the :mod:`arkane.statmech` module.
 """
 
 import os

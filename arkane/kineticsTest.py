@@ -28,6 +28,10 @@
 #                                                                             #
 ###############################################################################
 
+"""
+This module contains unit tests of the :mod:`arkane.kinetics` module.
+"""
+
 import unittest
 
 from rmgpy.reaction import Reaction

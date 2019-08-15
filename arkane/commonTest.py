@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.common` module.
+This module contains unit tests of the :mod:`arkane.common` module.
 """
 
 import logging

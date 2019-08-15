@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.thermo` module.
+This module contains unit tests of the :mod:`arkane.thermo` module.
 """
 
 import os

@@ -28,6 +28,10 @@
 #                                                                             #
 ###############################################################################
 
+"""
+This module contains unit tests of the :mod:`arkane.gaussian` module.
+"""
+
 import os
 import unittest
 

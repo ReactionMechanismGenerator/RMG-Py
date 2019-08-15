@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane common module
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -31,6 +27,10 @@ Arkane common module
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+
+"""
+Arkane common module
+"""
 
 import logging
 import os.path

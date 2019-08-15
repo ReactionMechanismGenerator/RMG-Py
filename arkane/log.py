@@ -31,6 +31,7 @@
 """
 A general class for parsing quantum mechanical log files
 """
+
 import logging
 import os.path
 import shutil

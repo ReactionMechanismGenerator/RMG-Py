@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane QChem module
-Used to parse QChem output files
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -32,6 +27,11 @@ Used to parse QChem output files
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+
+"""
+Arkane QChem module
+Used to parse QChem output files
+"""
 
 import math
 import logging

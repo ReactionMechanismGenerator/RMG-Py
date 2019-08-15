@@ -31,6 +31,7 @@
 """
 This module contains functionality for parsing Arkane input files.
 """
+
 import logging
 import os.path
 
