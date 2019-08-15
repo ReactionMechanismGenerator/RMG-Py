@@ -746,6 +746,9 @@ class ModelMatcher():
                 if os.path.abspath(path).startswith(os.path.split(os.path.abspath(args.thermo))[0]):
                     logging.info("But it's the model currently being imported, so not loading.")
                     break
+                if not re.search("Curran",path):
+                    logging.info("Not Curran so skipping to save time!")
+                    break
                 library = rmgpy.data.thermo.ThermoLibrary()
                 library.SKIP_DUPLICATES = True
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
@@ -2284,6 +2287,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
 <li><a href="blocked.html">Blocked matches.</a></li>
 <li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a> <span id="thermomatches_count"></span></li>
+<li><a href="thermomatchesmodel.html">Unconfirmed thermodynamics matches (select by model)</a></li>
 <li><a href="thermolibraries.html">Loaded thermodynamics libraries.</a></li>
 <li><a href="ThermoLibrary.py">Download thermo library.</a></li>
 </ul>
@@ -2363,6 +2367,54 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append("<td><a href='/clearthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
+        return ('\n'.join(output))
+
+    @cherrypy.expose
+    def thermomatchesmodel_html(self, model=None, confirm=None):
+        if model not in self.rmg_object.database.thermo.libraries:
+            output = [self.html_head(), '<h1>Select model to find Thermochemistry Matches</h1>']
+            output.extend(['<form action="/thermomatchesmodel.html" method="get">', '<select name="model">'])
+            for library in self.rmg_object.database.thermo.libraries.keys():
+                output.append('  <option value="{lib}">{lib}</option>'.format(lib=library))
+            output.extend(['<input type="submit">', '</form>'])
+            return ('\n'.join(output)) # stop here
+        img = self._img
+        output = [self.html_head(), '<h1>Thermochemistry Matches with model {}</h1>'.format(model)]
+        output.append('<table style="width:800px; border-collapse:collapse;">')
+        to_confirm = []
+        for chemkinLabel, rmgSpecsDict in self.thermoMatches.iteritems():
+            for rmgSpec, libraries in rmgSpecsDict.iteritems():
+                for library_name, species_name in libraries:
+                    if library_name == model and species_name == chemkinLabel:
+                        break
+                else: # didn't break
+                    continue # to next thermo match
+                output.append('<tr style="border-top: 1px solid black;">')
+                output.append("<td>{label}</td>".format(label=chemkinLabel))
+                output.append("<td>{img}</td>".format(img=img(rmgSpec)))
+                if chemkinLabel in self.votes :
+                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)))
+                else:
+                    output.append("<td>No votes yet.</td>")
+
+                if confirm == 'all':
+                    to_confirm.append((chemkinLabel, rmgSpec))
+                    output.append("<td>Confirmed!</td>")
+                else:
+                    output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                    output.append("<td><a href='/clearthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                output.append("</tr>")
+        output.extend(['</table>', self.html_tail])
+        
+        if confirm == 'all':
+            for chemkinLabel, rmgSpec in to_confirm:
+                self.clearThermoMatch(chemkinLabel, None)
+                self.manualMatchesToProcess.append((str(chemkinLabel), rmgSpec))
+                self.clearTentativeMatch(chemkinLabel, None)
+                self.saveMatchToFile(chemkinLabel, rmgSpec, username=self.getUsername()+' (because it matches thermo/name in {})'.format(model))
+        else:
+            output.append("<a href='/thermomatchesmodel.html?model={model}&confirm=all'><button>Confirm all</button></a>".format(model=model))
+
         return ('\n'.join(output))
 
     @cherrypy.expose
