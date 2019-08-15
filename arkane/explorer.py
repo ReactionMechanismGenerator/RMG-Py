@@ -193,14 +193,14 @@ class ExplorerJob(object):
         # determine T and P combinations
 
         if self.pdepjob.Tlist:
-            tlist = self.pdepjob.Tlist.value_si
+            t_list = self.pdepjob.Tlist.value_si
         else:
-            tlist = np.linspace(self.pdepjob.Tmin.value_si, self.pdepjob.Tmax.value_si, self.pdepjob.Tcount)
+            t_list = np.linspace(self.pdepjob.Tmin.value_si, self.pdepjob.Tmax.value_si, self.pdepjob.Tcount)
 
         if self.pdepjob.Plist:
-            plist = self.pdepjob.Plist.value_si
+            p_list = self.pdepjob.Plist.value_si
         else:
-            plist = np.linspace(self.pdepjob.Pmin.value_si, self.pdepjob.Pmax.value_si, self.pdepjob.Pcount)
+            p_list = np.linspace(self.pdepjob.Pmin.value_si, self.pdepjob.Pmax.value_si, self.pdepjob.Pcount)
 
         # generate the network
 
@@ -210,8 +210,8 @@ class ExplorerJob(object):
 
         while incomplete:
             incomplete = False
-            for T in tlist:
-                for P in plist:
+            for temperature in t_list:
+                for pressure in p_list:
                     for network in self.networks:
                         # compute the characteristic rate coefficient by summing all rate coefficients
                         # from the reactant channel
@@ -228,15 +228,15 @@ class ExplorerJob(object):
                         for rxn in network.netReactions:  # reaction_model.core.reactions+reaction_model.edge.reactions:
                             if (set(rxn.reactants) == set(self.source)
                                     and rxn.products[0].molecule[0].getFormula() == form):
-                                kchar += rxn.kinetics.getRateCoefficient(T=T, P=P)
+                                kchar += rxn.kinetics.getRateCoefficient(T=temperature, P=pressure)
                             elif (set(rxn.products) == set(self.source)
                                     and rxn.reactants[0].molecule[0].getFormula() == form):
                                 kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).getRateCoefficient(
-                                    T=T, P=P)
+                                    T=temperature, P=pressure)
 
-                        if network.getLeakCoefficient(T=T, P=P) > self.explore_tol * kchar:
+                        if network.getLeakCoefficient(T=temperature, P=pressure) > self.explore_tol * kchar:
                             incomplete = True
-                            spc = network.getMaximumLeakSpecies(T=T, P=P)
+                            spc = network.getMaximumLeakSpecies(T=temperature, P=pressure)
                             logging.info('adding new isomer {0} to network'.format(spc))
                             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
@@ -284,17 +284,17 @@ class ExplorerJob(object):
                 rxn_set = None
                 product_set = None
 
-                for T in tlist:
+                for temperature in t_list:
                     if self.energy_tol != np.inf:
-                        rxns = network.get_energy_filtered_reactions(T, self.energy_tol)
+                        rxns = network.get_energy_filtered_reactions(temperature, self.energy_tol)
                         if rxn_set is not None:
                             rxn_set &= set(rxns)
                         else:
                             rxn_set = set(rxns)
 
-                    for P in plist:
+                    for pressure in p_list:
                         if self.flux_tol != 0.0:
-                            products = network.get_rate_filtered_products(T, P, self.flux_tol)
+                            products = network.get_rate_filtered_products(temperature, pressure, self.flux_tol)
                             products = [tuple(x) for x in products]
                             if product_set is not None:
                                 product_set &= set(products)

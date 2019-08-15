@@ -254,10 +254,10 @@ class PressureDependenceJob(object):
 
         # set transition state Energy if not set previously using same method as RMG pdep
         for reaction in self.network.pathReactions:
-            transitionState = reaction.transitionState
-            if transitionState.conformer and transitionState.conformer.E0 is None:
-                transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants])
-                                                + reaction.kinetics.Ea.value_si, 'J/mol')
+            transition_state = reaction.transitionState
+            if transition_state.conformer and transition_state.conformer.E0 is None:
+                transition_state.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants])
+                                                 + reaction.kinetics.Ea.value_si, 'J/mol')
                 logging.info('Approximated transitions state E0 for reaction {3} from kinetics '
                              'A={0}, n={1}, Ea={2} J/mol'.format(reaction.kinetics.A.value_si,
                                                                  reaction.kinetics.n.value_si,
@@ -355,14 +355,14 @@ class PressureDependenceJob(object):
                 else:
                     raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
 
-        maximumGrainSize = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
+        maximum_grain_size = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
 
         self.network.initialize(
             Tmin=self.Tmin.value_si,
             Tmax=self.Tmax.value_si,
             Pmin=self.Pmin.value_si,
             Pmax=self.Pmax.value_si,
-            maximumGrainSize=maximumGrainSize,
+            maximumGrainSize=maximum_grain_size,
             minimumGrainCount=self.minimumGrainCount,
             activeJRotor=self.activeJRotor,
             activeKRotor=self.activeKRotor,
@@ -410,8 +410,8 @@ class PressureDependenceJob(object):
 
         self.network.netReactions = []
 
-        Nreac = self.network.Nisom + self.network.Nreac
-        Nprod = Nreac + self.network.Nprod
+        n_reac = self.network.Nisom + self.network.Nreac
+        n_prod = n_reac + self.network.Nprod
 
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
@@ -420,8 +420,8 @@ class PressureDependenceJob(object):
         Pmax = self.Pmax.value_si
         Pdata = self.Plist.value_si
 
-        for prod in range(Nprod):
-            for reac in range(Nreac):
+        for prod in range(n_prod):
+            for reac in range(n_reac):
                 if reac == prod:
                     continue
                 reaction = Reaction(reactants=configurations[reac].species,
@@ -462,8 +462,8 @@ class PressureDependenceJob(object):
         f = open(outputFile, 'a')
         f_chemkin = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
 
-        Nreac = self.network.Nisom + self.network.Nreac
-        Nprod = Nreac + self.network.Nprod
+        n_reac = self.network.Nisom + self.network.Nreac
+        n_prod = n_reac + self.network.Nprod
         Tlist = self.Tlist.value_si
         Plist = self.Plist.value_si
         Tcount = Tlist.shape[0]
@@ -488,8 +488,8 @@ class PressureDependenceJob(object):
 
         count = 0
         printed_reactions = []  # list of rxns already printed
-        for prod in range(Nprod):
-            for reac in range(Nreac):
+        for prod in range(n_prod):
+            for reac in range(n_reac):
                 if reac == prod:
                     continue
                 reaction = self.network.netReactions[count]
@@ -517,7 +517,7 @@ class PressureDependenceJob(object):
                 f.write('#   =========== ')
                 f.write('=========== ' * Pcount)
                 f.write('\n')
-                f.write('#         T \ P ')
+                f.write('#         T / P ')
                 f.write(' '.join(['{0:11.3e}'.format(P * 1e-5) for P in Plist]))
                 f.write('\n')
                 f.write('#   =========== ')
@@ -559,8 +559,8 @@ class PressureDependenceJob(object):
         import matplotlib.cm
         cm = matplotlib.cm.jet
 
-        Nreac = self.network.Nisom + self.network.Nreac
-        Nprod = Nreac + self.network.Nprod
+        n_reac = self.network.Nisom + self.network.Nreac
+        n_prod = n_reac + self.network.Nprod
         Tlist = self.Tlist.value_si
         Plist = self.Plist.value_si
         Tcount = Tlist.shape[0]
@@ -569,8 +569,8 @@ class PressureDependenceJob(object):
         K = self.K
 
         count = 0
-        for prod in range(Nprod):
-            for reac in range(Nreac):
+        for prod in range(n_prod):
+            for reac in range(n_reac):
                 if reac == prod:
                     continue
                 reaction = self.network.netReactions[count]
@@ -578,7 +578,7 @@ class PressureDependenceJob(object):
 
                 reaction_str = '{0} {1} {2}'.format(
                     ' + '.join([reactant.label for reactant in reaction.reactants]),
-                    '<=>' if prod < Nreac else '-->',
+                    '<=>' if prod < n_reac else '-->',
                     ' + '.join([product.label for product in reaction.products]),
                 )
 

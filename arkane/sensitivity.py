@@ -127,16 +127,16 @@ class KineticsSensitivity(object):
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for reaction {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
-                       "by perturbing E0 of each well or TS by {1}, and are given in `mol/J` units.\n\n\n".format(
-                        reaction_str, self.perturbation))
+                       "by perturbing E0 of each well or TS by {1}, and are given in "
+                       "`mol/J` units.\n\n\n".format(reaction_str, self.perturbation))
             reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
             ts_label = self.job.reaction.transitionState.label
             products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
             max_label = max(len(reactants_label), len(products_label), len(ts_label), 10)
             sa_f.write('========================={0}=============================================\n'
                        '| Direction | Well or TS {1}| Temperature (K) | Sensitivity coefficient |\n'
-                       '|-----------+------------{2}+-----------------+-------------------------|\n'.format(
-                        '=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
+                       '|-----------+------------{2}+-----------------+-------------------------|\n'
+                       .format('=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     reactants_label, ' ' * (max_label - len(reactants_label)), condition.value_si,
@@ -321,8 +321,8 @@ class PDepSensitivity(object):
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for network {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
-                       "by perturbing E0 of each well or TS by {1},\n and are given in `mol/J` units.\n\n\n".format(
-                        network_str, self.perturbation))
+                       "by perturbing E0 of each well or TS by {1},\n and are given in "
+                       "`mol/J` units.\n\n\n".format(network_str, self.perturbation))
             for rxn in self.job.network.netReactions:
                 reactants_label = ' + '.join([reactant.label for reactant in rxn.reactants])
                 products_label = ' + '.join([reactant.label for reactant in rxn.products])
@@ -331,8 +331,8 @@ class PDepSensitivity(object):
                 max_label = 40
                 sa_f.write('========================={0}==================================================\n'
                            '| Well or TS {1}| Temperature (K) | Pressure (bar) | Sensitivity coefficient |\n'
-                           '|------------{2}+-----------------+----------------+-------------------------|\n'.format(
-                            '=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
+                           '|------------{2}+-----------------+----------------+-------------------------|\n'
+                           .format('=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
                 for entry in wells + transition_states:
                     if isinstance(entry, TransitionState):
                         entry_label = '(TS) ' + entry.label

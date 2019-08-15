@@ -70,7 +70,6 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
 # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
 SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226}
 
-
 # Atomic energies
 # All model chemistries here should be lower-case because the user input is changed to lower-case
 atom_energies = {
@@ -328,7 +327,6 @@ atom_energies = {
 
 }
 
-
 # Petersson-type bond additivity correction parameters
 pbac = {
 
@@ -404,7 +402,6 @@ pbac = {
     },
 
 }
-
 
 # Melius-type bond additivity correction parameters
 mbac = {}

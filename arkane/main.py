@@ -179,13 +179,13 @@ class Arkane:
         # Initialize (and clear!) the output files for the job
         if self.outputDirectory is None:
             self.outputDirectory = os.path.dirname(os.path.abspath(self.inputFile))
-        outputFile = os.path.join(self.outputDirectory, 'output.py')
-        with open(outputFile, 'w') as f:
+        output_file = os.path.join(self.outputDirectory, 'output.py')
+        with open(output_file, 'w') as f:
             pass
-        chemkinFile = os.path.join(self.outputDirectory, 'chem.inp')
+        chemkin_file = os.path.join(self.outputDirectory, 'chem.inp')
 
         # write the chemkin files and run the thermo and then kinetics jobs
-        with open(chemkinFile, 'w') as f:
+        with open(chemkin_file, 'w') as f:
             writeElementsSection(f)
 
             f.write('SPECIES\n\n')
@@ -214,7 +214,7 @@ class Arkane:
                     for hr_info in job.raw_hindered_rotor_data:
                         hindered_rotor_info.append(hr_info)
 
-        with open(chemkinFile, 'a') as f:
+        with open(chemkin_file, 'a') as f:
             f.write('\n')
             f.write('END\n\n\n\n')
             f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
@@ -224,10 +224,11 @@ class Arkane:
             supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
             with open(supporting_info_file, 'wb') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(['Label','Symmetry Number','Number of optical isomers','Symmetry Group',
-                                 'Rotational constant (cm-1)','Calculated Frequencies (unscaled and prior to projection, cm^-1)',
-                                 'Electronic energy (J/mol)','E0 (electronic energy + ZPE, J/mol)',
-                                 'E0 with atom and bond corrections (J/mol)','Atom XYZ coordinates (angstrom)',
+                writer.writerow(['Label', 'Symmetry Number', 'Number of optical isomers', 'Symmetry Group',
+                                 'Rotational constant (cm-1)',
+                                 'Calculated Frequencies (unscaled and prior to projection, cm^-1)',
+                                 'Electronic energy (J/mol)', 'E0 (electronic energy + ZPE, J/mol)',
+                                 'E0 with atom and bond corrections (J/mol)', 'Atom XYZ coordinates (angstrom)',
                                  'T1 diagnostic', 'D1 diagnostic'])
                 for row in supporting_info:
                     label = row[0]
@@ -240,10 +241,11 @@ class Arkane:
                         rot = ', '.join(['{0:.2f}'.format(s) for s in row[4].rotationalConstant.value])
                     if row[5] is not None:
                         freq = ''
-                        if row[6] is not None: #there is a negative frequency
+                        if row[6] is not None:  # there is a negative frequency
                             freq = '{0:.1f}'.format(abs(row[6])) + 'i, '
                         freq += ', '.join(['{0:.1f}'.format(s) for s in row[5]])
-                    atoms = ', '.join(["{0}    {1}".format(atom,"    ".join([str(c) for c in coords])) for atom, coords in zip(row[10], row[11])])
+                    atoms = ', '.join(["{0}    {1}".format(atom, "    ".join([str(c) for c in coords]))
+                                       for atom, coords in zip(row[10], row[11])])
                     writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7], row[8], row[9], atoms, row[12],
                                      row[13]])
         if hindered_rotor_info:
@@ -253,11 +255,11 @@ class Arkane:
             with open(hr_file, 'wb') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(['species', 'rotor_number', 'symmetry', 'resolution (degrees)',
-                                'pivot_atoms', 'frozen_atoms'] +
+                                 'pivot_atoms', 'frozen_atoms'] +
                                 ['energy (J/mol) {}'.format(i) for i in range(max_energy_length)])
                 for row in hindered_rotor_info:
                     writer.writerow([row[0], row[1], row[2], row[3][1] * 180 / np.pi,
-                                    row[5], row[6]] + [a for a in row[4]])
+                                     row[5], row[6]] + [a for a in row[4]])
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.jobList:
             if isinstance(job, KineticsJob):
@@ -269,13 +271,13 @@ class Arkane:
                     raise InputError(
                         'No network matched the label of the pressureDependence block and there is no explorer block '
                         'to generate a network')
-                job.execute(outputFile=outputFile, plot=self.plot)
+                job.execute(outputFile=output_file, plot=self.plot)
             elif isinstance(job, ExplorerJob):
-                thermoLibrary, kineticsLibrary, speciesList = self.getLibraries()
-                job.execute(outputFile=outputFile, plot=self.plot, speciesList=speciesList, thermoLibrary=thermoLibrary,
-                            kineticsLibrary=kineticsLibrary)
+                thermo_library, kinetics_library, species_list = self.getLibraries()
+                job.execute(outputFile=output_file, plot=self.plot, speciesList=species_list,
+                            thermoLibrary=thermo_library, kineticsLibrary=kinetics_library)
 
-        with open(chemkinFile, 'a') as f:
+        with open(chemkin_file, 'a') as f:
             f.write('END\n\n')
 
         # Print some information to the end of the log
@@ -285,47 +287,47 @@ class Arkane:
         """Get RMG kinetics and thermo libraries"""
         name = 'kineticsjobs'
 
-        speciesList = self.speciesDict.values()
-        reactionList = self.reactionDict.values()
+        species_list = list(self.speciesDict.values())
+        reaction_list = list(self.reactionDict.values())
 
         # remove duplicate species
-        for rxn in reactionList:
+        for rxn in reaction_list:
             for i, rspc in enumerate(rxn.reactants):
-                for spc in speciesList:
+                for spc in species_list:
                     if spc.isIsomorphic(rspc):
                         rxn.reactants[i] = spc
                         break
             for i, rspc in enumerate(rxn.products):
-                for spc in speciesList:
+                for spc in species_list:
                     if spc.isIsomorphic(rspc):
                         rxn.products[i] = spc
                         break
         del_inds = []
-        for i, spc1 in enumerate(speciesList):
-            for j, spc2 in enumerate(speciesList):
+        for i, spc1 in enumerate(species_list):
+            for j, spc2 in enumerate(species_list):
                 if j > i and spc1.isIsomorphic(spc2):
                     del_inds.append(j)
 
         for j in sorted(del_inds)[::-1]:
-            del speciesList[j]
+            del species_list[j]
 
-        thermoLibrary = ThermoLibrary(name=name)
-        for i, species in enumerate(speciesList):
+        thermo_library = ThermoLibrary(name=name)
+        for i, species in enumerate(species_list):
             if species.thermo:
-                thermoLibrary.loadEntry(index=i + 1,
-                                        label=species.label,
-                                        molecule=species.molecule[0].toAdjacencyList(),
-                                        thermo=species.thermo,
-                                        shortDesc=species.thermo.comment)
+                thermo_library.loadEntry(index=i + 1,
+                                         label=species.label,
+                                         molecule=species.molecule[0].toAdjacencyList(),
+                                         thermo=species.thermo,
+                                         shortDesc=species.thermo.comment)
             else:
                 logging.warning(
                     'Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(
                         str(species)))
 
         # load kinetics library entries                    
-        kineticsLibrary = KineticsLibrary(name=name, autoGenerated=True)
-        kineticsLibrary.entries = {}
-        for i, reaction in enumerate(reactionList):
+        kinetics_library = KineticsLibrary(name=name, autoGenerated=True)
+        kinetics_library.entries = {}
+        for i, reaction in enumerate(reaction_list):
             entry = Entry(
                 index=i + 1,
                 label=reaction.toLabeledStr(),
@@ -339,11 +341,11 @@ class Arkane:
                 else:
                     entry.longDesc = reaction.kinetics.comment
 
-            kineticsLibrary.entries[i + 1] = entry
+            kinetics_library.entries[i + 1] = entry
 
-        kineticsLibrary.label = name
+        kinetics_library.label = name
 
-        return thermoLibrary, kineticsLibrary, speciesList
+        return thermo_library, kinetics_library, species_list
 
 
 def initialize_log(verbose=logging.INFO, log_file=None):

@@ -63,6 +63,6 @@ def determine_qm_software(fullpath):
                 break
             line = f.readline()
         else:
-            raise InputError(
-                "File at {0} could not be identified as a Gaussian, QChem or Molpro log file.".format(fullpath))
+            raise InputError('File at {0} could not be identified as a Gaussian, '
+                             'QChem or Molpro log file.'.format(fullpath))
     return software_log

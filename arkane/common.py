@@ -330,12 +330,12 @@ def check_conformer_energy(Vlist, path):
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 
     log a warning message.  
     """
-    Vlist = np.array(Vlist, np.float64)
-    Vdiff = (Vlist[0] - np.min(Vlist)) * constants.E_h * constants.Na / 1000
-    if Vdiff >= 2:  # we choose 2 kJ/mol to be the critical energy
+    v_list = np.array(Vlist, np.float64)
+    v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
+    if v_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
                         'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
-                        .format(path=os.path.basename(path), diff=Vdiff))
+                        .format(path=os.path.basename(path), diff=v_diff))
 
 
 def get_element_mass(input_element, isotope=None):

@@ -91,7 +91,7 @@ class GaussianLog(Log):
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
         """
-        F = None
+        force = None
 
         n_atoms = self.getNumberOfAtoms()
         n_rows = n_atoms * 3
@@ -101,7 +101,7 @@ class GaussianLog(Log):
             while line != '':
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
-                    F = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), np.float64)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -109,13 +109,13 @@ class GaussianLog(Log):
                         for j in range(i * 5, n_rows):
                             data = f.readline().split()
                             for k in range(len(data) - 1):
-                                F[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
-                                F[i * 5 + k, j] = F[j, i * 5 + k]
+                                force[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
+                                force[i * 5 + k, j] = force[j, i * 5 + k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    F *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                    force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
-        return F
+        return force
 
     def loadGeometry(self):
         """
@@ -213,7 +213,7 @@ class GaussianLog(Log):
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
                             inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) \
-                                         * constants.Na * 1e23
+                                * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 

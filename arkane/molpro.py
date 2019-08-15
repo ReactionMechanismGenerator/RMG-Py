@@ -98,13 +98,13 @@ class MolproLog(Log):
                         # Header row
                         line = f.readline()
                         # Matrix element rows
-                        for j in range(i*5, n_rows):
+                        for j in range(i * 5, n_rows):
                             data = f.readline().split()
-                            for k in range(len(data)-1):
-                                fc[j, i*5+k] = float(data[k+1].replace('D', 'E'))
-                                fc[i*5+k, j] = fc[j, i*5+k]
+                            for k in range(len(data) - 1):
+                                fc[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
+                                fc[i * 5 + k, j] = fc[j, i * 5 + k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    fc *= 4.35974417e-18 / 5.291772108e-11**2
+                    fc *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
         return fc
@@ -189,7 +189,7 @@ class MolproLog(Log):
                     splits = line.replace('=', ' ').replace(',', ' ').split(' ')
                     for i, s in enumerate(splits):
                         if 'spin' in s:
-                            spinMultiplicity = int(splits[i+1]) + 1
+                            spinMultiplicity = int(splits[i + 1]) + 1
                             logging.debug(
                                 'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
                             break
@@ -232,14 +232,15 @@ class MolproLog(Log):
                         elif 'Rotational Constants' in line and line.split()[-1] == '[GHz]':
                             inertia = [float(d) for d in line.split()[-4:-1]]
                             for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 
                         elif 'Rotational Constant' in line and line.split()[3] == '[GHz]':
                             inertia = float(line.split()[2])
-                            inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) * constants.Na * 1e23
+                            inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) \
+                                * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 

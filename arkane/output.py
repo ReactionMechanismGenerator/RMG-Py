@@ -100,14 +100,14 @@ class PrettifyVisitor(ast.NodeVisitor):
         Return a pretty representation of the tuple represented by `node`.
         """
         # If the tuple represents a quantity, keep it on one line
-        isQuantity = True
+        is_quantity = True
         if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num, ast.List)) or (
                 isinstance(node.elts[0], ast.List) and any([not isinstance(e, ast.Num) for e in node.elts[0].elts])):
-            isQuantity = False
+            is_quantity = False
         elif len(node.elts) < 2 or not isinstance(node.elts[1], ast.Str):
-            isQuantity = False
+            is_quantity = False
 
-        if not isQuantity:
+        if not is_quantity:
             # Split elements onto multiple lines
             result = '(\n'
             self.level += 1

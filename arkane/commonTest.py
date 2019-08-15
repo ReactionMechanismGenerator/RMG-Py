@@ -82,7 +82,7 @@ class TestArkaneJob(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
         job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                    'data', 'methoxy.py'))
+                                                     'data', 'methoxy.py'))
         pdepjob = job_list[-1]
         cls.kineticsjob = job_list[0]
         pdepjob.activeJRotor = True

@@ -130,20 +130,20 @@ class ThermoJob(object):
         if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
             # Monatomic species
             linear = False
-            Nfreq = 0
-            Nrotors = 0
+            n_freq = 0
+            n_rotors = 0
             Cp0 = 2.5 * constants.R
             CpInf = 2.5 * constants.R
         else:
             # Polyatomic species
             linear = True if isinstance(conformer.modes[1], LinearRotor) else False
-            Nfreq = len(conformer.modes[2].frequencies.value)
-            Nrotors = len(conformer.modes[3:])
+            n_freq = len(conformer.modes[2].frequencies.value)
+            n_rotors = len(conformer.modes[3:])
             Cp0 = (3.5 if linear else 4.0) * constants.R
-            CpInf = Cp0 + (Nfreq + 0.5 * Nrotors) * constants.R
+            CpInf = Cp0 + (n_freq + 0.5 * n_rotors) * constants.R
 
         wilhoit = Wilhoit()
-        if Nfreq == 0 and Nrotors == 0:
+        if n_freq == 0 and n_rotors == 0:
             wilhoit.Cp0 = (Cplist[0], "J/(mol*K)")
             wilhoit.CpInf = (Cplist[0], "J/(mol*K)")
             wilhoit.B = (500., "K")
@@ -165,10 +165,10 @@ class ThermoJob(object):
         in `output_directory`.
         """
         species = self.species
-        outputFile = os.path.join(output_directory, 'output.py')
+        output_file = os.path.join(output_directory, 'output.py')
         logging.info('Saving thermo for {0}...'.format(species.label))
 
-        with open(outputFile, 'a') as f:
+        with open(output_file, 'a') as f:
             f.write('# Thermodynamics for {0}:\n'.format(species.label))
             H298 = species.getThermoData().getEnthalpy(298) / 4184.
             S298 = species.getThermoData().getEntropy(298) / 4.184

@@ -60,12 +60,7 @@ class KineticsJob(object):
                 if kinetics is already given in the input, then it is False.
     """
 
-    def __init__(self, reaction,
-                 Tmin=None,
-                 Tmax=None,
-                 Tlist=None,
-                 Tcount=0,
-                 sensitivity_conditions=None):
+    def __init__(self, reaction, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None):
         self.usedTST = False
         self.Tmin = Tmin if Tmin is not None else (298, 'K')
         self.Tmax = Tmax if Tmax is not None else (2500, 'K')
@@ -431,16 +426,16 @@ class KineticsDrawer:
         """
         Return the minimum and maximum energy in J/mol on the potential energy surface.
         """
-        E0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
-        E0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
-        if E0_max - E0_min > 5e5:
+        e0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        e0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        if e0_max - e0_min > 5e5:
             # the energy barrier in one of the reaction directions is larger than 500 kJ/mol, warn the user
             logging.warning('The energy differences between the stationary points of reaction {0} '
                             'seems too large.'.format(self.reaction))
             logging.warning('Got the following energies:\nWell 1: {0} kJ/mol\nTS: {1} kJ/mol\nWell 2: {2}'
                             ' kJ/mol'.format(self.wells[0].E0 / 1000., self.wells[1].E0 / 1000.,
                                              self.reaction.transitionState.conformer.E0.value_si / 1000.))
-        return E0_min, E0_max
+        return e0_min, e0_max
 
     def __useStructureForLabel(self, configuration):
         """
@@ -565,33 +560,33 @@ class KineticsDrawer:
             label_rects.append(self.__getLabelSize(well, format=format))
 
         # Get energy range (use kJ/mol internally)
-        E0_min, E0_max = self.__getEnergyRange()
-        E0_min *= 0.001
-        E0_max *= 0.001
+        e0_min, e0_max = self.__getEnergyRange()
+        e0_min *= 0.001
+        e0_max *= 0.001
 
         # Drawing parameters
         padding = self.options['padding']
         well_width = self.options['wellWidth']
         well_spacing = self.options['wellSpacing']
-        E_slope = self.options['Eslope']
-        t_swidth = self.options['TSwidth']
+        e_slope = self.options['Eslope']
+        ts_width = self.options['TSwidth']
 
-        E0_offset = self.options['E0offset'] * 0.001
+        e0_offset = self.options['E0offset'] * 0.001
 
         # Choose multiplier to convert energies to desired units (on figure only)
-        E_units = self.options['Eunits']
+        e_units = self.options['Eunits']
         try:
-            E_mult = {'J/mol': 1.0, 'kJ/mol': 0.001, 'cal/mol': 1.0 / 4.184, 'kcal/mol': 1.0 / 4184.,
-                     'cm^-1': 1.0 / 11.962}[E_units]
+            e_mult = {'J/mol': 1.0, 'kJ/mol': 0.001, 'cal/mol': 1.0 / 4.184, 'kcal/mol': 1.0 / 4184.,
+                      'cm^-1': 1.0 / 11.962}[e_units]
         except KeyError:
-            raise Exception('Invalid value "{0}" for Eunits parameter.'.format(E_units))
+            raise InputError('Invalid value "{0}" for Eunits parameter.'.format(e_units))
 
         # Determine height required for drawing
         Eheight = self.__getTextSize('0.0', format=format)[3] + 6
-        y_E0 = (E0_max - 0.0) * E_slope + padding + Eheight
-        height = (E0_max - E0_min) * E_slope + 2 * padding + Eheight + 6
+        y_e0 = (e0_max - 0.0) * e_slope + padding + Eheight
+        height = (e0_max - e0_min) * e_slope + 2 * padding + Eheight + 6
         for i in range(len(self.wells)):
-            if 0.001 * self.wells[i].E0 == E0_min:
+            if 0.001 * self.wells[i].E0 == e0_min:
                 height += label_rects[i][3]
                 break
 
@@ -602,8 +597,8 @@ class KineticsDrawer:
             well = self.wells[i]
             rect = label_rects[i]
             this_well_width = max(well_width, rect[2])
-            E0 = 0.001 * well.E0
-            y = y_E0 - E0 * E_slope
+            e0 = 0.001 * well.E0
+            y = y_e0 - e0 * e_slope
             coordinates[i] = [x + 0.5 * this_well_width, y]
             x += this_well_width + well_spacing
         width = x + padding - well_spacing
@@ -692,41 +687,41 @@ class KineticsDrawer:
         # Fill the background with white
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.paint()
-        self.__drawText('E0 ({0})'.format(E_units), cr, 15, 10, padding=2)  # write units
+        self.__drawText('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
 
         # Draw reactions
-        E0_reac = self.wells[0].E0 * 0.001 - E0_offset
-        E0_prod = self.wells[1].E0 * 0.001 - E0_offset
-        E0_TS = self.reaction.transitionState.conformer.E0.value_si * 0.001 - E0_offset
+        e0_reac = self.wells[0].E0 * 0.001 - e0_offset
+        e0_prod = self.wells[1].E0 * 0.001 - e0_offset
+        e0_ts = self.reaction.transitionState.conformer.E0.value_si * 0.001 - e0_offset
         x1, y1 = coordinates[0, :]
         x2, y2 = coordinates[1, :]
         x1 += well_spacing / 2.0
         x2 -= well_spacing / 2.0
-        if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
+        if abs(e0_ts - e0_reac) > 0.1 and abs(e0_ts - e0_prod) > 0.1:
             if len(self.reaction.reactants) == 2:
-                if E0_reac < E0_prod:
+                if e0_reac < e0_prod:
                     x0 = x1 + well_spacing * 0.5
                 else:
                     x0 = x2 - well_spacing * 0.5
             elif len(self.reaction.products) == 2:
-                if E0_reac < E0_prod:
+                if e0_reac < e0_prod:
                     x0 = x2 - well_spacing * 0.5
                 else:
                     x0 = x1 + well_spacing * 0.5
             else:
                 x0 = 0.5 * (x1 + x2)
-            y0 = y_E0 - (E0_TS + E0_offset) * E_slope
+            y0 = y_e0 - (e0_ts + e0_offset) * e_slope
             width1 = (x0 - x1)
             width2 = (x2 - x0)
             # Draw horizontal line for TS
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.set_line_width(2.0)
-            cr.move_to(x0 - t_swidth / 2.0, y0)
-            cr.line_to(x0 + t_swidth / 2.0, y0)
+            cr.move_to(x0 - ts_width / 2.0, y0)
+            cr.line_to(x0 + ts_width / 2.0, y0)
             cr.stroke()
             # Add background and text for energy
-            E0 = "{0:.1f}".format(E0_TS * 1000. * E_mult)
-            extents = cr.text_extents(E0)
+            e0 = "{0:.1f}".format(e0_ts * 1000. * e_mult)
+            extents = cr.text_extents(e0)
             x = x0 - extents[2] / 2.0
             y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -734,14 +729,14 @@ class KineticsDrawer:
             cr.fill()
             cr.move_to(x, y)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-            cr.show_text(E0)
+            cr.show_text(e0)
             # Draw Bezier curve connecting reactants and products through TS
             cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
             cr.set_line_width(1.0)
             cr.move_to(x1, y1)
-            cr.curve_to(x1 + width1 / 8.0, y1, x0 - width1 / 8.0 - t_swidth / 2.0, y0, x0 - t_swidth / 2.0, y0)
-            cr.move_to(x0 + t_swidth / 2.0, y0)
-            cr.curve_to(x0 + width2 / 8.0 + t_swidth / 2.0, y0, x2 - width2 / 8.0, y2, x2, y2)
+            cr.curve_to(x1 + width1 / 8.0, y1, x0 - width1 / 8.0 - ts_width / 2.0, y0, x0 - ts_width / 2.0, y0)
+            cr.move_to(x0 + ts_width / 2.0, y0)
+            cr.curve_to(x0 + width2 / 8.0 + ts_width / 2.0, y0, x2 - width2 / 8.0, y2, x2, y2)
             cr.stroke()
         else:
             width = (x2 - x1)
@@ -762,9 +757,9 @@ class KineticsDrawer:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
-            E0 = well.E0 * 0.001 - E0_offset
-            E0 = "{0:.1f}".format(E0 * 1000. * E_mult)
-            extents = cr.text_extents(E0)
+            e0 = well.E0 * 0.001 - e0_offset
+            e0 = "{0:.1f}".format(e0 * 1000. * e_mult)
+            extents = cr.text_extents(e0)
             x = x0 - extents[2] / 2.0
             y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -772,7 +767,7 @@ class KineticsDrawer:
             cr.fill()
             cr.move_to(x, y)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-            cr.show_text(E0)
+            cr.show_text(e0)
             # Draw background and text for label
             x = x0 - 0.5 * label_rects[i][2]
             y = y0 + 6

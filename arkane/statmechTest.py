@@ -50,6 +50,7 @@ class TestStatmech(unittest.TestCase):
     """
     Contains unit tests of the StatmechJob class.
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""

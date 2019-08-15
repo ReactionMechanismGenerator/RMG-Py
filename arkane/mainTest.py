@@ -52,6 +52,7 @@ class TestArkaneExamples(unittest.TestCase):
     """
     Run all of Arkane's examples, and report which one failed
     """
+
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -101,7 +102,7 @@ class TestArkaneExamples(unittest.TestCase):
                     item_path = os.path.join(example_path, name)
                     if os.path.isfile(item_path):
                         extension = name.split('.')[-1]
-                        if name in cls.files_to_delete or\
+                        if name in cls.files_to_delete or \
                                 (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
                             os.remove(item_path)
                     else:
