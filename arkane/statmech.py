@@ -723,12 +723,12 @@ class StatMechJob(object):
                 else:
                     f.write('\n\n#Rejected Reactions:\n#------------------------\n')
                 if len(reactions_dict) > 0:
-                    for i,((rxn,constraint_class),(obj,h298,weight)) in enumerate(reactions_dict.items()):
+                    for i,((rxn,constraint_class),(obj,fod,h298,weight)) in enumerate(reactions_dict.items()):
                         print i,((rxn,constraint_class),(obj,h298,weight)) 
                     # for i, rxn in enumerate(self.isodesmicReactionList):
                         thermo = rxn.calculate_target_thermo()
                         f.write('Reaction {}: {} kcal/mol , weight: {}\n'.format(i+1, thermo.value_si/4184.0, weight))
-                        f.write('constraint_class: {0} , objective_function_output:{1}\n#'.format(constraint_class,obj))
+                        f.write('constraint_class: {0} , objective_function_output:{1}, sum_of_fod:{2}\n#'.format(constraint_class,obj,fod))
                         reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
                         product_string = '\tProducts:\n#'
                         for spcs, v in rxn.species.items():

@@ -538,7 +538,7 @@ class ReferenceDatabase(object):
 
         return descriptors
 
-    def test(self, model_chemistry, constraint_class = None, iterate_constraint_classes = True, number_of_reactions=5, sets=None):
+    def test(self, model_chemistry, number_of_reactions, constraint_classes = None, sets=None):
 
         import pandas as pd
         
@@ -566,20 +566,29 @@ class ReferenceDatabase(object):
             high_level_hf298 = target_spcs.high_level_hf298
             ref_h298 = high_level_hf298.value_si/high_level_hf298.conversionFactors['kcal/mol']
             ref_h298_uncertainty = high_level_hf298.uncertainty_si/high_level_hf298.conversionFactors['kcal/mol']
-            fod = target_spcs.fod
+            target_fod = target_spcs.fod
             
             # for constraint in ['class_0','class_1','class_2','class_3','class_4','class_5']:
             #     if not iterate_constraint_classes:
             #         if constraint != constraint_class:
             #             continue
-            isodesmic_scheme = ErrorCancelingScheme(target=target_spcs,reference_set=reference_set,constraint_class=constraint_class,
+            isodesmic_scheme = ErrorCancelingScheme(target=target_spcs,reference_set=reference_set,constraint_classes=constraint_classes,
             conserve_bonds=True,conserve_ring_size=True)
-            h298_calc, reactions, rejected_reactions = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=20, milp_software='lpsolve')
-            h298 = h298_calc.value_si/h298_calc.conversionFactors['kcal/mol']
-            species_data = [target_spcs.molecule.toSMILES(),reactions,rejected_reactions,fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298]
-            data.append(species_data)
+            h298_calc, reactions, rejected_reactions = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=number_of_reactions, milp_software='lpsolve')
+            if h298_calc:
+                h298 = h298_calc.value_si/h298_calc.conversionFactors['kcal/mol']
+                obj_fod_h298_weight = []
+                for (reaction,constraint_class),(obj,fod,h,weight) in reactions.items():
+                    h_rxn = h.value_si/h.conversionFactors['kcal/mol']
+                    obj_fod_h298_weight.append((constraint_class,obj,fod,abs(h-ref_h298),weight))
+                species_data = [target_spcs.molecule.toSMILES(),reactions,target_fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298,obj_fod_h298_weight]
+                data.append(species_data)
+                print(target_spcs.molecule.toSMILES(),h298-ref_h298,obj_fod_h298_weight)
+                
+            else:
+                continue
 
-        columns = ['SMILES','Reactions','Rejected_Reactions','fod','H298_calc(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref']
+        columns = ['SMILES','Reactions','target_fod','H298_calc(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref','constraintclass_obj_fod_h298_weight']
         df = pd.DataFrame(data,columns=columns)
 
         return df
