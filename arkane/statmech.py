@@ -934,9 +934,9 @@ def projectRotors(conformer, F, rotors, linear, is_ts, getProjectedOutFreqs=Fals
             tops = [top1, top2]
         else:
             raise ValueError("{} not a proper rotor format".format(rotor))
-        for i in range(len(tops)):
-            top = tops[i]
-            pivots = pivotss[i]
+        for k in range(len(tops)):
+            top = tops[k]
+            pivots = pivotss[k]
             # Determine pivot atom
             if pivots[0] in top:
                 pivot1 = pivots[0]
