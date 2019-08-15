@@ -184,7 +184,9 @@ class StatMechJob(object):
         self.includeHinderedRotors = True
         self.useIsodesmicReactions = False
         self.isodesmicCorrection = None
-        self.isodesmicReactionList = None
+        # self.isodesmicReactionList = None
+        self.isodesmicReactionsDict = None
+        self.rejectedReactionsDict = None
         self.referenceSets = ''
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
@@ -668,8 +670,10 @@ class StatMechJob(object):
                                                                       (uncorrected_thermo, 'J/mol'),
                                                                       self.modelChemistry),
                                          reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
-            isodesmic_thermo, isodesmicReactionList, fod_dict = scheme.calculate_target_enthalpy()
-            self.isodesmicReactionList = [r[0] for r in isodesmicReactionList]
+            isodesmic_thermo, isodesmicReactionsDict, rejectedReactionsDict = scheme.calculate_target_enthalpy()
+            #self.isodesmicReactionList = [r[0] for r in isodesmicReactionList]
+            self.isodesmicReactionsDict = isodesmicReactionsDict
+            self.rejectedReactionsDict = rejectedReactionsDict
 
             # Set the difference as the isodesmic EO correction and re-run the statmech job
             self.isodesmicCorrection = isodesmic_thermo.value_si - uncorrected_thermo
@@ -711,20 +715,30 @@ class StatMechJob(object):
         f.write('{0}\n\n'.format(prettify(result)))
 
         if self.useIsodesmicReactions:
-            f.write('\n\n#Isodesmic Reactions Used:\n#------------------------\n#')
-            for i, rxn in enumerate(self.isodesmicReactionList):
-                thermo = rxn.calculate_target_thermo()
-                f.write('Reaction {0}: {1:9.3f} kcal/mol\n#'.format(i+1, thermo.value_si/4184.0))
-                reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
-                product_string = '\tProducts:\n#'
-                for spcs, v in rxn.species.items():
-                    if v > 0:  # Product
-                        product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
-                    else:  # Reactant
-                        reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
-                f.write(reactant_string + product_string + '\n#')
+            for reactions_dict in [self.isodesmicReactionsDict,self.rejectedReactionsDict]:
+                # print self.rejectedReactionsDict
+                # print self.isodesmicReactionsDict
+                if reactions_dict == self.isodesmicReactionsDict:
+                    f.write('\n\n#Isodesmic Reactions Used:\n#------------------------\n')
+                else:
+                    f.write('\n\n#Rejected Reactions:\n#------------------------\n')
+                if len(reactions_dict) > 0:
+                    for i,((rxn,constraint_class),(obj,h298,weight)) in enumerate(reactions_dict.items()):
+                        print i,((rxn,constraint_class),(obj,h298,weight)) 
+                    # for i, rxn in enumerate(self.isodesmicReactionList):
+                        thermo = rxn.calculate_target_thermo()
+                        f.write('Reaction {}: {} kcal/mol , weight: {}\n'.format(i+1, thermo.value_si/4184.0, weight))
+                        f.write('constraint_class: {0} , objective_function_output:{1}\n#'.format(constraint_class,obj))
+                        reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
+                        product_string = '\tProducts:\n#'
+                        for spcs, v in rxn.species.items():
+                            if v > 0:  # Product
+                                product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
+                            else:  # Reactant
+                                reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
+                        f.write(reactant_string + product_string + '\n#')
 
-            f.write('\n\n')
+                        f.write('\n\n')
 
         f.close()
 

@@ -212,12 +212,12 @@ class TestErrorCancelingScheme(unittest.TestCase):
         scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.caffeine, self.ethyne])
 
         # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
-        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='lpsolve')
+        rxn, _, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='lpsolve')
         self.assertEqual(rxn.species[self.butane], -1)
         self.assertEqual(rxn.species[self.propane], 1)
         self.assertEqual(rxn.species[self.butene], 1)
 
-        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='pyomo')
+        rxn, _, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='pyomo')
         self.assertEqual(rxn.species[self.butane], -1)
         self.assertEqual(rxn.species[self.propane], 1)
         self.assertEqual(rxn.species[self.butene], 1)
@@ -229,7 +229,7 @@ class TestErrorCancelingScheme(unittest.TestCase):
         scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.pentane, self.pentene,
                                                 self.hexane, self.hexene, self.benzene])
 
-        reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
+        reaction_list = scheme.multiple_error_canceling_reaction_search([],n_reactions_max=20)
         self.assertEqual(len(reaction_list), 20)
         reaction_string = reaction_list.__repr__()
         rxn_str1 = '<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*CCC + 1.0*C=CCC >'

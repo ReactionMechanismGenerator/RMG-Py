@@ -229,18 +229,58 @@ class ReferenceSpecies(ArkaneSpecies):
                         preferred_source = sources[i]
         high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
         low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
-        if 'tpss/def2-tzvp' in self.calculated_data.keys():
-            try:
-                fod = float(self.calculated_data['tpss/def2-tzvp'].fod)
-            except:
-                fod = None
-        else:
-            fod = None
+        fod = self.calculated_data[model_chemistry].fod
+        # if 'tpss/def2-tzvp' in self.calculated_data.keys():
+        #     try:
+        #         fod = float(self.calculated_data['tpss/def2-tzvp'].fod)
+        #     except:
+        #         fod = None
+        # else:
+        #     fod = None
 
 
         return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, fod, preferred_source)
 
 
+    def write_fod_input(ref,coords,directory='./fod_inputs'):
+        """
+        Generates input files to run finite temperaure DFT to determine the Fractional Occupation number weighted Density (FOD number).
+        Uses the default functional, basis set, and SmearTemp (TPSS, def2-TZVP, 5000 K) in Orca.
+        See resource for more information:
+        Bauer, C. A., Hansen, A., & Grimme, S. (2017). The Fractional Occupation Number Weighted Density as a Versatile Analysis Tool for Molecules with a Complicated Electronic Structure. 
+        Chemistry - A European Journal, 23(25), 6150–6164. https://doi.org/10.1002/chem.201604682
+        """
+        if '(' in ref.smiles or '#' in ref.smiles:
+            base = ref.smiles.replace('(', '{').replace(')', '}').replace('#', '=-')
+        else:
+            base = ref.smiles
+
+        # Make sure we have required properties of conformer to run the job
+        assert None not in [ref.multiplicity,ref.charge,coords]
+        
+        # If directory is not specified, use the instance directory
+        if directory is None:
+            directory = self.directory
+        else:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
+        # Path for FOD input file
+        outfile = os.path.join(directory,ref.smiles+'_fod.inp')
+
+        # Write FOD input
+        with open(outfile, 'w+') as f:
+            f.write('# FOD anaylsis for {} \n'.format(ref.smiles))
+            f.write('! FOD \n')
+            f.write('\n')
+            f.write('%pal nprocs 4 end \n')
+            f.write('%scf\n  MaxIter  600\nend\n')
+            f.write('%base "{}_fod" \n'.format(base))
+            f.write('*xyz {} {}\n'.format(ref.charge, ref.multiplicity))
+            f.writelines(coords)
+            f.write('*\n')
+
+        
 class ReferenceDataEntry(RMGObject):
     """
     A class for storing reference data for a specific species from a single source
@@ -528,18 +568,18 @@ class ReferenceDatabase(object):
             ref_h298_uncertainty = high_level_hf298.uncertainty_si/high_level_hf298.conversionFactors['kcal/mol']
             fod = target_spcs.fod
             
-            for constraint in ['class_0','class_1','class_2','class_3','class_4','class_5']:
-                if not iterate_constraint_classes:
-                    if constraint != constraint_class:
-                        continue
-                isodesmic_scheme = ErrorCancelingScheme(target=target_spcs,reference_set=reference_set,constraint_class=constraint,
-                conserve_bonds=True,conserve_ring_size=True)
-                h298_mean, reaction_list, fod_dict = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=5, milp_software='lpsolve')
-                h298 = h298_mean.value_si/h298_mean.conversionFactors['kcal/mol']
-                species_data = [target_spcs.molecule.toSMILES(),constraint,reaction_list,fod_dict,fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298]
-                data.append(species_data)
+            # for constraint in ['class_0','class_1','class_2','class_3','class_4','class_5']:
+            #     if not iterate_constraint_classes:
+            #         if constraint != constraint_class:
+            #             continue
+            isodesmic_scheme = ErrorCancelingScheme(target=target_spcs,reference_set=reference_set,constraint_class=constraint_class,
+            conserve_bonds=True,conserve_ring_size=True)
+            h298_calc, reactions, rejected_reactions = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=20, milp_software='lpsolve')
+            h298 = h298_calc.value_si/h298_calc.conversionFactors['kcal/mol']
+            species_data = [target_spcs.molecule.toSMILES(),reactions,rejected_reactions,fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298]
+            data.append(species_data)
 
-        columns = ['SMILES','constraint_class','Reactions','fod_dict','fod','H298_mean(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref']
+        columns = ['SMILES','Reactions','Rejected_Reactions','fod','H298_calc(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref']
         df = pd.DataFrame(data,columns=columns)
 
         return df
