@@ -354,3 +354,19 @@ class QChemLog(Log):
             return frequency
         else:
             raise InputError('Unable to find imaginary frequency in QChem output file {0}'.format(self.path))
+
+    def load_scan_pivot_atoms(self):
+        """Not implemented for QChem"""
+        raise NotImplementedError('The load_scan_pivot_atoms method is not implemented for QChem Logs')
+
+    def load_scan_frozen_atoms(self):
+        """Not implemented for QChem"""
+        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for QChem Logs')
+
+    def get_D1_diagnostic(self):
+        """Not implemented for QChem"""
+        raise NotImplementedError('The get_D1_diagnostic method is not implemented for QChem Logs')
+
+    def get_T1_diagnostic(self):
+        """Not implemented for QChem"""
+        raise NotImplementedError('The get_T1_diagnostic method is not implemented for QChem Logs')

@@ -470,3 +470,11 @@ class GaussianLog(Log):
             raise Exception('Unable to find imaginary frequency of {1} '
                             'in Gaussian output file {0}'.format(self.path, self.species.label))
         return frequency
+
+    def get_D1_diagnostic(self):
+        """Not implemented for Gaussian"""
+        raise NotImplementedError('The get_D1_diagnostic method is not implemented for Gaussian Logs')
+
+    def get_T1_diagnostic(self):
+        """Not implemented for Gaussian"""
+        raise NotImplementedError('The get_T1_diagnostic method is not implemented for Gaussian Logs')
