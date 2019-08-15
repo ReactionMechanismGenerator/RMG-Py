@@ -1013,7 +1013,7 @@ molecularTermSymbol A^2S+
              'H2O2': 'OO',
              'O': '[O]',
              'N2': 'N#N',
-             'CO': '[C]=O',
+             'CO': '[C-]#[O+]',
              'HO2': '[O]O',
              'C3H8': 'CCC',
              'CH': '[CH]',
