@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 from rmgpy.kinetics.uncertainties cimport RateUncertainty
@@ -70,9 +70,9 @@ cdef class PDepKineticsModel(KineticsModel):
     
     cpdef bint isPressureValid(self, double P) except -2
 
-    cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1
+    cpdef double getEffectivePressure(self, double P, list species, np.ndarray fractions) except -1
     
-    cpdef numpy.ndarray getEffectiveColliderEfficiencies(self, list species)
+    cpdef np.ndarray getEffectiveColliderEfficiencies(self, list species)
 
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
@@ -90,4 +90,4 @@ cdef class TunnelingModel:
 
     cpdef double calculateTunnelingFactor(self, double T) except -100000000
 
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
+    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)

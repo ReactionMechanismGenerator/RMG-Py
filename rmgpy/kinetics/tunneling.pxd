@@ -25,7 +25,8 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
+
 from rmgpy.kinetics.model cimport TunnelingModel
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
@@ -35,7 +36,7 @@ cdef class Wigner(TunnelingModel):
 
     cpdef double calculateTunnelingFactor(self, double T) except -100000000
 
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
+    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)
 
 ################################################################################
 
@@ -47,4 +48,4 @@ cdef class Eckart(TunnelingModel):
 
     cpdef double calculateTunnelingFactor(self, double T) except -100000000
 
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
+    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)

@@ -27,9 +27,11 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-np = numpy
-from libc.math cimport exp, log, sqrt, log10
+from __future__ import division
+
+import numpy as np
+cimport numpy as np
+from libc.math cimport exp, sqrt, log10
 from scipy.optimize import curve_fit
 
 cimport rmgpy.constants as constants
@@ -37,8 +39,9 @@ import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.molecule.molecule import Bond
+
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
-RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -62,8 +65,10 @@ cdef class Arrhenius(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
+    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0, "K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None,
+                 uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
+                               comment=comment)
         self.A = A
         self.n = n
         self.Ea = Ea
@@ -88,7 +93,8 @@ cdef class Arrhenius(KineticsModel):
         """
         A helper function used when pickling an Arrhenius object.
         """
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -128,17 +134,18 @@ cdef class Arrhenius(KineticsModel):
         n = self._n.value_si
         Ea = self._Ea.value_si
         T0 = self._T0.value_si
-        return A * (T / T0)**n * exp(-Ea / (constants.R * T))
+        return A * (T / T0) ** n * exp(-Ea / (constants.R * T))
 
     cpdef changeT0(self, double T0):
         """
         Changes the reference temperature used in the exponent to `T0` in K,
         and adjusts the preexponential factor accordingly.
         """
-        self._A.value_si /= (self._T0.value_si / T0)**self._n.value_si
+        self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=1, numpy.ndarray weights=None, bint threeParams=True):
+    cpdef fitToData(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, np.ndarray weights=None,
+                    bint threeParams=True):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in
@@ -146,48 +153,47 @@ cdef class Arrhenius(KineticsModel):
         resulting parameters provide the best possible approximation to the
         data.
         """
-        import numpy.linalg
         import scipy.stats
 
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
-        if len(Tlist) < 3+threeParams:
+        if len(Tlist) < 3 + threeParams:
             raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
         if threeParams:
-            A = numpy.zeros((len(Tlist),3), numpy.float64)
-            A[:,0] = numpy.ones_like(Tlist)
-            A[:,1] = numpy.log(Tlist / T0)
-            A[:,2] = -1.0 / constants.R / Tlist
+            A = np.zeros((len(Tlist), 3), np.float64)
+            A[:, 0] = np.ones_like(Tlist)
+            A[:, 1] = np.log(Tlist / T0)
+            A[:, 2] = -1.0 / constants.R / Tlist
         else:
-            A = numpy.zeros((len(Tlist),2), numpy.float64)
-            A[:,0] = numpy.ones_like(Tlist)
-            A[:,1] = -1.0 / constants.R / Tlist
-        b = numpy.log(klist)
+            A = np.zeros((len(Tlist), 2), np.float64)
+            A[:, 0] = np.ones_like(Tlist)
+            A[:, 1] = -1.0 / constants.R / Tlist
+        b = np.log(klist)
         if weights is not None:
             for n in range(b.size):
-                A[n,:] *= weights[n]
+                A[n, :] *= weights[n]
                 b[n] *= weights[n]
-        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
+        x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
         # Determine covarianace matrix to obtain parameter uncertainties
         count = klist.size
-        cov = residues[0] / (count - 3) * numpy.linalg.inv(numpy.dot(A.T, A))
+        cov = residues[0] / (count - 3) * np.linalg.inv(np.dot(A.T, A))
         t = scipy.stats.t.ppf(0.975, count - 3)
 
         if not threeParams:
-            x = numpy.array([x[0], 0, x[1]])
-            cov = numpy.array([[cov[0,0], 0, cov[0,1]], [0,0,0], [cov[1,0], 0, cov[1,1]]])
+            x = np.array([x[0], 0, x[1]])
+            cov = np.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
 
-        self.A = (exp(x[0]),kunits)
+        self.A = (exp(x[0]), kunits)
         self.n = x[1]
-        self.Ea = (x[2] * 0.001,"kJ/mol")
-        self.T0 = (T0,"K")
-        self.Tmin = (numpy.min(Tlist),"K")
-        self.Tmax = (numpy.max(Tlist),"K")
+        self.Ea = (x[2] * 0.001, "kJ/mol")
+        self.T0 = (T0, "K")
+        self.Tmin = (np.min(Tlist), "K")
+        self.Tmax = (np.max(Tlist), "K")
         self.comment = 'Fitted to {0:d} data points; dA = *|/ {1:g}, dn = +|- {2:g}, dEa = +|- {3:g} kJ/mol'.format(
             len(Tlist),
-            exp(sqrt(cov[0,0])),
-            sqrt(cov[1,1]),
-            sqrt(cov[2,2]) * 0.001,
+            exp(sqrt(cov[0, 0])),
+            sqrt(cov[1, 1]),
+            sqrt(cov[2, 2]) * 0.001,
         )
 
         return self
@@ -198,12 +204,12 @@ cdef class Arrhenius(KineticsModel):
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics,Arrhenius):
+        if not isinstance(otherKinetics, Arrhenius):
             return False
         if not KineticsModel.isIdenticalTo(self, otherKinetics):
             return False
         if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-            or not self.Ea.equals(otherKinetics.Ea) or not self.T0.equals(otherKinetics.T0)):
+                or not self.Ea.equals(otherKinetics.Ea) or not self.T0.equals(otherKinetics.T0)):
             return False
 
         return True
@@ -214,7 +220,6 @@ cdef class Arrhenius(KineticsModel):
         """
         self._A.value_si *= factor
 
-
     def toCanteraKinetics(self):
         """
         Converts the Arrhenius object to a cantera Arrhenius object
@@ -224,31 +229,32 @@ cdef class Arrhenius(KineticsModel):
 
         import cantera as ct
 
-        rateUnitsDimensionality = {'1/s':0,
-                                   's^-1':0,
-                               'm^3/(mol*s)':1,
-                               'm^6/(mol^2*s)':2,
-                               'cm^3/(mol*s)':1,
-                               'cm^6/(mol^2*s)':2,
-                               'm^3/(molecule*s)': 1,
-                               'm^6/(molecule^2*s)': 2,
-                               'cm^3/(molecule*s)': 1,
-                               'cm^6/(molecule^2*s)': 2,
-                               }
+        rateUnitsDimensionality = {'1/s': 0,
+                                   's^-1': 0,
+                                   'm^3/(mol*s)': 1,
+                                   'm^6/(mol^2*s)': 2,
+                                   'cm^3/(mol*s)': 1,
+                                   'cm^6/(mol^2*s)': 2,
+                                   'm^3/(molecule*s)': 1,
+                                   'm^6/(molecule^2*s)': 2,
+                                   'cm^3/(molecule*s)': 1,
+                                   'cm^6/(molecule^2*s)': 2,
+                                   }
 
         if self._T0.value_si != 1:
-            A = self._A.value_si/(self._T0.value_si)**self._n.value_si
+            A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
         else:
             A = self._A.value_si
 
         try:
-            A *= 1000**rateUnitsDimensionality[self._A.units]
+            A *= 1000 ** rateUnitsDimensionality[self._A.units]
         except KeyError:
-            raise Exception('Arrhenius A-factor units {0} not found among accepted units for converting to Cantera Arrhenius object.'.format(self._A.units))
+            raise Exception('Arrhenius A-factor units {0} not found among accepted units for converting to '
+                            'Cantera Arrhenius object.'.format(self._A.units))
 
         b = self._n.value_si
-        E = self._Ea.value_si*1000   # convert from J/mol to J/kmol
-        return ct.Arrhenius(A,b,E)
+        E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+        return ct.Arrhenius(A, b, E)
 
     def setCanteraKinetics(self, ctReaction, speciesList):
         """
@@ -269,22 +275,23 @@ cdef class Arrhenius(KineticsModel):
         in J/mol (and vise versa).
         """
 
-        if (bool(alpha) ^ bool(dHrxn)):
-            raise Exception('If you set alpha or dHrxn in toArrheniusEP, '\
-                                'you need to set the other value to non-zero.')
+        if bool(alpha) ^ bool(dHrxn):
+            raise Exception('If you set alpha or dHrxn in toArrheniusEP, '
+                            'you need to set the other value to non-zero.')
         self.changeT0(1)
-        aep = ArrheniusEP(A = self.A,
-                          n = self.n,
-                          alpha = alpha,
-                          E0 = (self.Ea.value_si-alpha*dHrxn,'J/mol'),
-                          Tmin = self.Tmin,
-                          Tmax = self.Tmax,
-                          Pmin = self.Pmin,
-                          Pmax = self.Pmax,
-                          uncertainty = self.uncertainty,
-                          comment = self.comment)
+        aep = ArrheniusEP(A=self.A,
+                          n=self.n,
+                          alpha=alpha,
+                          E0=(self.Ea.value_si - alpha * dHrxn, 'J/mol'),
+                          Tmin=self.Tmin,
+                          Tmax=self.Tmax,
+                          Pmin=self.Pmin,
+                          Pmax=self.Pmax,
+                          uncertainty=self.uncertainty,
+                          comment=self.comment)
         return aep
 ################################################################################
+
 
 cdef class ArrheniusEP(KineticsModel):
     """
@@ -308,8 +315,10 @@ cdef class ArrheniusEP(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
+    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None,
+                 comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
+                               comment=comment)
         self.A = A
         self.n = n
         self.alpha = alpha
@@ -334,7 +343,8 @@ cdef class ArrheniusEP(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                              self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -374,7 +384,7 @@ cdef class ArrheniusEP(KineticsModel):
         Ea = self.getActivationEnergy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
-        return A * T**n * exp(-Ea / (constants.R * T))
+        return A * T ** n * exp(-Ea / (constants.R * T))
 
     cpdef double getActivationEnergy(self, double dHrxn) except -1:
         """
@@ -396,16 +406,16 @@ cdef class ArrheniusEP(KineticsModel):
         given enthalpy of reaction `dHrxn` to determine the activation energy.
         """
         return Arrhenius(
-            A = self.A,
-            n = self.n,
-            Ea = (self.getActivationEnergy(dHrxn)*0.001,"kJ/mol"),
-            T0 = (1,"K"),
-            Tmin = self.Tmin,
-            Tmax = self.Tmax,
-            Pmin = self.Pmin,
-            Pmax = self.Pmax,
-            uncertainty = self.uncertainty,
-            comment = self.comment,
+            A=self.A,
+            n=self.n,
+            Ea=(self.getActivationEnergy(dHrxn) * 0.001, "kJ/mol"),
+            T0=(1, "K"),
+            Tmin=self.Tmin,
+            Tmax=self.Tmax,
+            Pmin=self.Pmin,
+            Pmax=self.Pmax,
+            uncertainty=self.uncertainty,
+            comment=self.comment,
         )
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
@@ -414,12 +424,12 @@ cdef class ArrheniusEP(KineticsModel):
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics,ArrheniusEP):
+        if not isinstance(otherKinetics, ArrheniusEP):
             return False
         if not KineticsModel.isIdenticalTo(self, otherKinetics):
             return False
         if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-            or not self.alpha.equals(otherKinetics.alpha) or not self.E0.equals(otherKinetics.E0)):
+                or not self.alpha.equals(otherKinetics.alpha) or not self.E0.equals(otherKinetics.E0)):
             return False
 
         return True
@@ -463,8 +473,10 @@ cdef class ArrheniusBM(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, w0=(0.0,'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
+    def __init__(self, A=None, n=0.0, w0=(0.0, 'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
+                 uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
+                               comment=comment)
         self.A = A
         self.n = n
         self.w0 = w0
@@ -489,7 +501,8 @@ cdef class ArrheniusBM(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
+        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                              self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -529,23 +542,23 @@ cdef class ArrheniusBM(KineticsModel):
         Ea = self.getActivationEnergy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
-        return A * T**n * exp(-Ea / (constants.R * T))
+        return A * T ** n * exp(-Ea / (constants.R * T))
 
     cpdef double getActivationEnergy(self, double dHrxn) except -1:
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
         """
-        cdef double w0,E0
+        cdef double w0, E0
         E0 = self._E0.value_si
-        if dHrxn < -4*self._E0.value_si:
+        if dHrxn < -4 * self._E0.value_si:
             return 0.0
-        elif dHrxn > 4*self._E0.value_si:
+        elif dHrxn > 4 * self._E0.value_si:
             return dHrxn
         else:
             w0 = self._w0.value_si
-            Vp = 2*w0*(2*w0+2*E0)/(2*w0-2*E0)
-            return (w0+dHrxn/2.0)*(Vp-2*w0+dHrxn)**2/(Vp**2-(2*w0)**2+dHrxn**2)
+            Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+            return (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
 
     cpdef Arrhenius toArrhenius(self, double dHrxn):
         """
@@ -553,17 +566,17 @@ cdef class ArrheniusBM(KineticsModel):
         given enthalpy of reaction `dHrxn` to determine the activation energy.
         """
         return Arrhenius(
-            A = self.A,
-            n = self.n,
-            Ea = (self.getActivationEnergy(dHrxn)*0.001,"kJ/mol"),
-            T0 = (1,"K"),
-            Tmin = self.Tmin,
-            Tmax = self.Tmax,
+            A=self.A,
+            n=self.n,
+            Ea=(self.getActivationEnergy(dHrxn) * 0.001, "kJ/mol"),
+            T0=(1, "K"),
+            Tmin=self.Tmin,
+            Tmax=self.Tmax,
             uncertainty=self.uncertainty,
-            comment = self.comment,
+            comment=self.comment,
         )
 
-    def fitToReactions(self,rxns,w0=None,recipe=None,Ts=None):
+    def fitToReactions(self, rxns, w0=None, recipe=None, Ts=None):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
@@ -571,52 +584,53 @@ cdef class ArrheniusBM(KineticsModel):
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
-            Ts = [300.0,500.0,600.0,700.0,800.0,900.0,1000.0,1100.0,1200.0,1500.0]
+            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
         if w0 is None:
             #estimate w0
-            w0s = getw0s(recipe,rxns)
-            w0 = sum(w0s)/len(w0s)
+            w0s = getw0s(recipe, rxns)
+            w0 = sum(w0s) / len(w0s)
 
-        #define optimization function
-        def kfcn(xs,lnA,n,E0):
+        # define optimization function
+        def kfcn(xs, lnA, n, E0):
             out = []
             for x in xs:
                 T = x[0]
                 dHrxn = x[1]
-                if dHrxn < -4*E0:
+                if dHrxn < -4 * E0:
                     Ea = 0.0
-                elif dHrxn > 4*E0:
+                elif dHrxn > 4 * E0:
                     Ea = dHrxn
                 else:
-                    Vp = 2*w0*(2*w0+2*E0)/(2*w0-2*E0)
-                    Ea = (w0+dHrxn/2.0)*(Vp-2*w0+dHrxn)**2/(Vp**2-(2*w0)**2+dHrxn**2)
+                    Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                    Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
 
-                out.append(lnA+np.log(T**n*np.exp(-Ea/(8.314*T))))
+                out.append(lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T))))
             return out
 
-        #get (T,dHrxn(T)) -> (Ln(k) mappings
+        # get (T,dHrxn(T)) -> (Ln(k) mappings
         xdata = []
         ydata = []
         sigmas = []
         for rxn in rxns:
-            s = rank_accuracy_map[rxn.rank].value_si/2.0 #approximately correct the overall uncertainties to std deviations
+            # approximately correct the overall uncertainties to std deviations
+            s = rank_accuracy_map[rxn.rank].value_si/2.0
             for T in Ts:
-                xdata.append([T,rxn.getEnthalpyOfReaction(T)])
+                xdata.append([T, rxn.getEnthalpyOfReaction(T)])
                 ydata.append(np.log(rxn.getRateCoefficient(T)))
 
-                sigmas.append(s/(8.314*T))
+                sigmas.append(s / (8.314 * T))
 
         xdata = np.array(xdata)
         ydata = np.array(ydata)
 
-        #fit parmeters
+        # fit parameters
         boo = True
         xtol = 1e-8
         ftol = 1e-8
         while boo:
             boo = False
             try:
-                params = curve_fit(kfcn,xdata,ydata,sigma=sigmas,p0=[1.0,1.0,w0/10.0],xtol=xtol,ftol=ftol)
+                params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
             except RuntimeError:
                 if xtol < 1.0:
                     boo = True
@@ -625,21 +639,21 @@ cdef class ArrheniusBM(KineticsModel):
                 else:
                     raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
 
-        lnA,n,E0 = params[0].tolist()
+        lnA, n, E0 = params[0].tolist()
         A = np.exp(lnA)
 
-        #fill in parameters
+        # fill in parameters
         if len(rxns[0].reactants) == 1:
-            self.A = (A,'s^-1')
+            self.A = (A, 's^-1')
         elif len(rxns[0].reactants) == 2:
-            self.A = (A,'m^3/(mol*s)')
+            self.A = (A, 'm^3/(mol*s)')
 
         self.n = n
-        self.w0 = (w0,'J/mol')
-        self.E0 = (E0,'J/mol')
-        self.Tmin = (numpy.min(Ts),"K")
-        self.Tmax = (numpy.max(Ts),"K")
-        self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns),Ts)
+        self.w0 = (w0, 'J/mol')
+        self.E0 = (E0, 'J/mol')
+        self.Tmin = (np.min(Ts), "K")
+        self.Tmax = (np.max(Ts), "K")
+        self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         return self
 
@@ -649,12 +663,12 @@ cdef class ArrheniusBM(KineticsModel):
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics,ArrheniusBM):
+        if not isinstance(otherKinetics, ArrheniusBM):
             return False
         if not KineticsModel.isIdenticalTo(self, otherKinetics):
             return False
         if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-            or not self.w0.equals(otherKinetics.w0) or not self.E0.equals(otherKinetics.E0)):
+                or not self.w0.equals(otherKinetics.w0) or not self.E0.equals(otherKinetics.E0)):
             return False
 
         return True
@@ -696,8 +710,10 @@ cdef class PDepArrhenius(PDepKineticsModel):
 
     """
 
-    def __init__(self, pressures=None, arrhenius=None, highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit, comment=comment)
+    def __init__(self, pressures=None, arrhenius=None, highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
+                 comment=''):
+        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit,
+                                   comment=comment)
         self.pressures = pressures
         self.arrhenius = arrhenius or []
 
@@ -720,7 +736,8 @@ cdef class PDepArrhenius(PDepKineticsModel):
         """
         A helper function used when pickling a PDepArrhenius object.
         """
-        return (PDepArrhenius, (self.pressures, self.arrhenius, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (PDepArrhenius, (self.pressures, self.arrhenius, self.highPlimit, self.Tmin, self.Tmax,
+                                self.Pmin, self.Pmax, self.comment))
 
     property pressures:
         """The list of pressures."""
@@ -734,12 +751,13 @@ cdef class PDepArrhenius(PDepKineticsModel):
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] pressures
+        cdef np.ndarray[np.float64_t, ndim=1] pressures
         cdef int i, ilow, ihigh
 
         pressures = self._pressures.value_si
 
-        ilow = 0; ihigh = -1
+        ilow = 0
+        ihigh = -1
         for i in range(pressures.shape[0]):
             if pressures[i] <= P:
                 ilow = i
@@ -767,10 +785,10 @@ cdef class PDepArrhenius(PDepKineticsModel):
             klow = alow.getRateCoefficient(T)
             khigh = ahigh.getRateCoefficient(T)
             if klow == khigh == 0.0: return 0.0
-            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
+            k = klow * 10 ** (log10(P / Plow) / log10(Phigh / Plow) * log10(khigh / klow))
         return k
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=1):
+    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=1):
         """
         Fit the pressure-dependent Arrhenius model to a matrix of rate
         coefficient data `K` with units of `kunits` corresponding to a set of
@@ -778,10 +796,10 @@ cdef class PDepArrhenius(PDepKineticsModel):
         model is fit cpdef changeRate(self, double factor)at each pressure.
         """
         cdef int i
-        self.pressures = (Plist*1e-5,"bar")
+        self.pressures = (Plist * 1e-5, "bar")
         self.arrhenius = []
         for i in range(len(Plist)):
-            arrhenius = Arrhenius().fitToData(Tlist, K[:,i], kunits, T0)
+            arrhenius = Arrhenius().fitToData(Tlist, K[:, i], kunits, T0)
             self.arrhenius.append(arrhenius)
         return self
 
@@ -793,7 +811,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         """
         if not isinstance(otherKinetics, PDepArrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
             return False
         if len(self.arrhenius) != len(otherKinetics.arrhenius):
             return False
@@ -828,7 +846,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         pressures = copy.deepcopy(self._pressures.value_si)
         ctArrhenius = [arr.toCanteraKinetics() for arr in self.arrhenius]
 
-        ctReaction.rates = zip(pressures, ctArrhenius)
+        ctReaction.rates = list(zip(pressures, ctArrhenius))
 
 ################################################################################
 
@@ -894,7 +912,7 @@ cdef class MultiArrhenius(KineticsModel):
         """
         if not isinstance(otherKinetics, MultiArrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
             return False
         if len(self.arrhenius) != len(otherKinetics.arrhenius):
             return False
@@ -905,7 +923,7 @@ cdef class MultiArrhenius(KineticsModel):
 
         return True
 
-    cpdef Arrhenius toArrhenius(self, double Tmin=-1, double Tmax=-1 ):
+    cpdef Arrhenius toArrhenius(self, double Tmin=-1, double Tmax=-1):
         """
         Return an :class:`Arrhenius` instance of the kinetics model
 
@@ -918,15 +936,16 @@ cdef class MultiArrhenius(KineticsModel):
         data.
         """
         cdef Arrhenius arrh
-        cdef numpy.ndarray Tlist, klist
+        cdef np.ndarray Tlist, klist
         cdef str kunits
         if Tmin == -1: Tmin = self.Tmin.value_si
         if Tmax == -1: Tmax = self.Tmax.value_si
-        kunits = str(quantity.pq.Quantity(1.0, self.arrhenius[0].A.units).simplified).split()[-1] # is this the best way to get the units returned by k??
-        Tlist = numpy.logspace(log10(Tmin), log10(Tmax), num=25)
-        klist = numpy.array( map(self.getRateCoefficient, Tlist) , numpy.float64)
+        kunits = str(quantity.pq.Quantity(1.0, self.arrhenius[0].A.units).simplified).split()[-1]  # is this the best way to get the units returned by k??
+        Tlist = np.logspace(log10(Tmin), log10(Tmax), num=25)
+        klist = np.array(list(map(self.getRateCoefficient, Tlist)), np.float64)
         arrh = Arrhenius().fitToData(Tlist, klist, kunits)
-        arrh.comment = "Fitted to Multiple Arrhenius kinetics over range {Tmin}-{Tmax} K. {comment}".format(Tmin=Tmin, Tmax=Tmax, comment=self.comment)
+        arrh.comment = "Fitted to Multiple Arrhenius kinetics over range {Tmin}-{Tmax} K. {comment}".format(
+            Tmin=Tmin, Tmax=Tmax, comment=self.comment)
         return arrh
 
     cpdef changeRate(self, double factor):
@@ -946,7 +965,6 @@ cdef class MultiArrhenius(KineticsModel):
 
         for i, arr in enumerate(self.arrhenius):
             arr.setCanteraKinetics(ctReaction[i], speciesList)
-
 
 ################################################################################
 
@@ -1001,7 +1019,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         cdef double k, klow, khigh, Plow, Phigh
         cdef PDepArrhenius arrh
         cdef KineticsModel arrh_low, arrh_high
-        cdef numpy.ndarray Plist1, Plist2
+        cdef np.ndarray Plist1, Plist2
         cdef int i
 
         if P == 0:
@@ -1009,7 +1027,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
         k = 0
         for arrh in self.arrhenius:
-            k += arrh.getRateCoefficient(T,P)
+            k += arrh.getRateCoefficient(T, P)
 
         return k
 
@@ -1021,7 +1039,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         """
         if not isinstance(otherKinetics, MultiPDepArrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
             return False
         if len(self.arrhenius) != len(otherKinetics.arrhenius):
             return False
@@ -1050,7 +1068,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         for i, arr in enumerate(self.arrhenius):
             arr.setCanteraKinetics(ctReaction[i], speciesList)
 
-def getw0(actions,rxn):
+def getw0(actions, rxn):
     """
     calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
     and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
@@ -1072,15 +1090,15 @@ def getw0(actions,rxn):
     for act in recipe:
 
         if act[0] == 'BREAK_BOND':
-            bd = mol.getBond(aDict[act[1]],aDict[act[3]])
+            bd = mol.getBond(aDict[act[1]], aDict[act[3]])
             wb += bd.getBDE()
         elif act[0] == 'FORM_BOND':
-            bd = Bond(aDict[act[1]],aDict[act[3]],act[2])
+            bd = Bond(aDict[act[1]], aDict[act[3]], act[2])
             wf += bd.getBDE()
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.getBond(aDict[act[1]],aDict[act[3]])
+            bd1 = mol.getBond(aDict[act[1]], aDict[act[3]])
 
-            if act[2]+bd1.order == 0.5:
+            if act[2] + bd1.order == 0.5:
                 mol2 = None
                 for r in rxn.products:
                     m = r.molecule[0]
@@ -1088,20 +1106,20 @@ def getw0(actions,rxn):
                         mol2 = mol2.merge(m)
                     else:
                         mol2 = m.copy(deep=True)
-                bd2 = mol2.getBond(aDict[act[1]],aDict[act[3]])
+                bd2 = mol2.getBond(aDict[act[1]], aDict[act[3]])
             else:
-                bd2 = Bond(aDict[act[1]],aDict[act[3]],bd1.order+act[2])
+                bd2 = Bond(aDict[act[1]], aDict[act[3]], bd1.order + act[2])
 
             if bd2.order == 0:
                 bd2bde = 0.0
             else:
                 bd2bde = bd2.getBDE()
-            bdediff = bd2bde-bd1.getBDE()
+            bdediff = bd2bde - bd1.getBDE()
             if bdediff > 0:
                 wf += abs(bdediff)
             else:
                 wb += abs(bdediff)
-    return (wf+wb)/2.0
+    return (wf + wb) / 2.0
 
 def getw0s(actions, rxns):
-    return [getw0(actions,rxn) for rxn in rxns]
+    return [getw0(actions, rxn) for rxn in rxns]

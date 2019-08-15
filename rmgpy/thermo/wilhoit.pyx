@@ -27,17 +27,19 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-import cython
+from __future__ import division
 
+import cython
+import numpy as np
+cimport numpy as np
+import scipy.linalg
 from libc.math cimport sqrt, log
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-import scipy.linalg
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
-RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 ################################################################################
 
@@ -215,8 +217,8 @@ cdef class Wilhoit(HeatCapacityModel):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def fitToData(self, 
-                  numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
-                  numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
+                  np.ndarray[np.float64_t, ndim=1] Tdata, 
+                  np.ndarray[np.float64_t, ndim=1] Cpdata, 
                   double Cp0, double CpInf,
                   double H298, double S298, double B0=500.0):
         """
@@ -239,8 +241,8 @@ cdef class Wilhoit(HeatCapacityModel):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def fitToDataForConstantB(self, 
-                              numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
-                              numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
+                              np.ndarray[np.float64_t, ndim=1] Tdata, 
+                              np.ndarray[np.float64_t, ndim=1] Cpdata, 
                               double Cp0, double CpInf,
                               double H298, double S298, double B):
         """
@@ -251,8 +253,8 @@ cdef class Wilhoit(HeatCapacityModel):
         at zero and infinite temperature, the dimensionless enthalpy `H298` at 
         298 K, and the dimensionless entropy `S298` at 298 K. 
         """
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] b, x
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] A
+        cdef np.ndarray[np.float64_t, ndim=1] b, x
+        cdef np.ndarray[np.float64_t, ndim=2] A
         cdef double y
         cdef int i, j
         
@@ -273,14 +275,14 @@ cdef class Wilhoit(HeatCapacityModel):
                 
             # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
             # This can be done directly - no iteration required
-            A = numpy.empty((Cpdata.shape[0],4), numpy.float64)
-            b = numpy.empty(Cpdata.shape[0], numpy.float64)
+            A = np.empty((Cpdata.shape[0],4), np.float64)
+            b = np.empty(Cpdata.shape[0], np.float64)
             for i in range(Cpdata.shape[0]):
                 y = Tdata[i] / (Tdata[i] + B)
                 for j in range(4):
                     A[i,j] = (y*y*y - y*y) * y**j
                 b[i] = ((Cpdata[i] - Cp0) / (CpInf - Cp0) - y*y)
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
+            x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
             
             self.B = (float(B),"K")
             self.a0 = float(x[0])
@@ -519,7 +521,7 @@ cdef class Wilhoit(HeatCapacityModel):
         cdef double iseUnw, rmsUnw, iseWei, rmsWei, T
         cdef str rmsStr
         
-        from rmgpy.thermo.nasa import NASA, NASAPolynomial
+        from rmgpy.thermo.nasa import NASA
 
         # Scale the temperatures to kK
         Tmin /= 1000.
@@ -617,8 +619,8 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
                      
     :result: The pair of NASA polynomials with scaled parameters
     """
-    cdef numpy.ndarray[numpy.float64_t, ndim=2] A
-    cdef numpy.ndarray[numpy.float64_t, ndim=1] b, x
+    cdef np.ndarray[np.float64_t, ndim=2] A
+    cdef np.ndarray[np.float64_t, ndim=1] b, x
     cdef double w0min, w1min, w2min, w3min, w4min, wM1min
     cdef double w0int, w1int, w2int, w3int, w4int, wM1int
     cdef double w0max, w1max, w2max, w3max, w4max, wM1max
@@ -626,8 +628,8 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
     cdef int i, j
     
     #construct (typically 13*13) symmetric A matrix (in A*x = b); other elements will be zero
-    A = numpy.zeros([10+contCons,10+contCons])
-    b = numpy.zeros([10+contCons])
+    A = np.zeros([10+contCons,10+contCons])
+    b = np.zeros([10+contCons])
 
     if weighting:
         A[0,0] = 2*log(Tint/Tmin)

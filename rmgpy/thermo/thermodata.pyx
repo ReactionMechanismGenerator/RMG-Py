@@ -27,13 +27,15 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-import cython
+from __future__ import division
+
 import logging
 
-from libc.math cimport sqrt, log
+import cython
+import numpy as np
+cimport numpy as np
+from libc.math cimport log
 
-cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 
 ################################################################################
@@ -122,7 +124,7 @@ cdef class ThermoData(HeatCapacityModel):
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double Cp
@@ -173,7 +175,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double H, slope, intercept, T0
@@ -246,7 +248,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double S, slope, intercept, T0
@@ -323,7 +325,7 @@ cdef class ThermoData(HeatCapacityModel):
         Return the Gibbs free energy in J/mol at the specified temperature
         `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata
         cdef double Cp0, CpInf
         cdef int N
 

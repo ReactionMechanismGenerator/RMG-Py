@@ -27,13 +27,15 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
+from __future__ import division
+
 import cython
+import numpy as np
+cimport numpy as np
 
 from libc.math cimport log
 
 cimport rmgpy.constants as constants
-import rmgpy.quantity as quantity
 
 ################################################################################
 
@@ -94,9 +96,9 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """The set of seven or nine NASA polynomial coefficients."""
         def __get__(self):
             if self.cm2 == 0 and self.cm1 == 0:
-                return numpy.array([self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+                return np.array([self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
             else:
-                return numpy.array([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+                return np.array([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
         def __set__(self, value):
             if value is None:
                 value = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -360,7 +362,7 @@ cdef class NASA(HeatCapacityModel):
         limits at zero and infinite temperature.
         """
         cdef double Tmin, Tmax, dT, H298, S298, Cp0, CpInf
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Cpdata
         cdef int i
         
         from rmgpy.thermo.wilhoit import Wilhoit
@@ -371,8 +373,8 @@ cdef class NASA(HeatCapacityModel):
         CpInf = self.CpInf.value_si
         dT = min(50.0, (Tmax - Tmin) / 100.)
         
-        Tdata = numpy.arange(Tmin, Tmax, dT)
-        Cpdata = numpy.zeros_like(Tdata)
+        Tdata = np.arange(Tmin, Tmax, dT)
+        Cpdata = np.zeros_like(Tdata)
         
         for i in range(Tdata.shape[0]):
             Cpdata[i] = self.getHeatCapacity(Tdata[i])
@@ -406,7 +408,7 @@ cdef class NASA(HeatCapacityModel):
         
         from cantera import NasaPoly2
 
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coeffs
+        cdef np.ndarray[np.float64_t, ndim=1] coeffs
         
         polys = self.polynomials
         assert len(polys) == 2, "Cantera NasaPoly2 objects only accept 2 polynomials"
@@ -414,7 +416,7 @@ cdef class NASA(HeatCapacityModel):
         
         # In RMG's NASA object, the first polynoamial is low temperature, and the second is 
         # high temperature
-        coeffs = numpy.zeros(15)
+        coeffs = np.zeros(15)
         coeffs[0] = polys[0].Tmax.value_si # mid point temperature between two polynomials
         coeffs[1:8] = polys[1].coeffs # 7 coefficients of the high temperature polynomial
         coeffs[8:15] = polys[0].coeffs # 7 coefficients of the low temperature polynomial

@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.kinetics.model cimport KineticsModel, PDepKineticsModel
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
@@ -43,7 +43,7 @@ cdef class Arrhenius(KineticsModel):
 
     cpdef changeT0(self, double T0)
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=?, numpy.ndarray weights=?, bint threeParams=?)
+    cpdef fitToData(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint threeParams=?)
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
@@ -98,7 +98,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
     
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=?)
+    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=?)
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
