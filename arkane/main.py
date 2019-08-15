@@ -148,72 +148,6 @@ class Arkane:
         else:
             self.outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
 
-    def initializeLog(self, verbose=logging.INFO, logFile=None):
-        """
-        Set up a logger for Arkane to use to print output to stdout. The
-        `verbose` parameter is an integer specifying the amount of log text seen
-        at the console; the levels correspond to those of the :data:`logging` module.
-        """
-        # Create logger
-        logger = logging.getLogger()
-        logger.setLevel(verbose)
-
-        # Use custom level names for cleaner log output
-        logging.addLevelName(logging.CRITICAL, 'Critical: ')
-        logging.addLevelName(logging.ERROR, 'Error: ')
-        logging.addLevelName(logging.WARNING, 'Warning: ')
-        logging.addLevelName(logging.INFO, '')
-        logging.addLevelName(logging.DEBUG, '')
-        logging.addLevelName(0, '')
-
-        # Create formatter and add to handlers
-        formatter = logging.Formatter('%(levelname)s%(message)s')
-
-        # Remove old handlers before adding ours
-        while logger.handlers:
-            logger.removeHandler(logger.handlers[0])
-
-        # Create console handler; send everything to stdout rather than stderr
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(verbose)
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-
-        # Create file handler; always be at least verbose in the file
-        if logFile:
-            fh = logging.FileHandler(filename=logFile)
-            fh.setLevel(min(logging.DEBUG, verbose))
-            fh.setFormatter(formatter)
-            logger.addHandler(fh)
-
-    def logHeader(self, level=logging.INFO):
-        """
-        Output a header containing identifying information about Arkane to the log.
-        """
-        from rmgpy import __version__
-        logging.log(level, 'Arkane execution initiated at {0}'.format(time.asctime()))
-        logging.log(level, '')
-
-        logging.log(level, '################################################################')
-        logging.log(level, '#                                                              #')
-        logging.log(level, '# Automated Reaction Kinetics and Network Exploration (Arkane) #')
-        logging.log(level, '#                                                              #')
-        logging.log(level, '#   Version: {0:49s} #'.format(__version__))
-        logging.log(level, '#   Authors: RMG Developers (rmg_dev@mit.edu)                  #')
-        logging.log(level, '#   P.I.s:   William H. Green (whgreen@mit.edu)                #')
-        logging.log(level, '#            Richard H. West (r.west@neu.edu)                  #')
-        logging.log(level, '#   Website: http://reactionmechanismgenerator.github.io/      #')
-        logging.log(level, '#                                                              #')
-        logging.log(level, '################################################################')
-        logging.log(level, '')
-
-    def logFooter(self, level=logging.INFO):
-        """
-        Output a footer to the log.
-        """
-        logging.log(level, '')
-        logging.log(level, 'Arkane execution terminated at {0}'.format(time.asctime()))
-
     def loadInputFile(self, inputFile):
         """
         Load a set of jobs from the given `inputFile` on disk. Returns the
@@ -233,10 +167,10 @@ class Arkane:
 
         # Initialize the logging system (both to the console and to a file in the
         # output directory)
-        self.initializeLog(self.verbose, os.path.join(self.outputDirectory, 'arkane.log'))
+        initialize_log(self.verbose, os.path.join(self.outputDirectory, 'arkane.log'))
 
         # Print some information to the beginning of the log
-        self.logHeader()
+        log_header()
 
         # Load the input file for the job
         self.jobList = self.loadInputFile(self.inputFile)
@@ -345,7 +279,7 @@ class Arkane:
             f.write('END\n\n')
 
         # Print some information to the end of the log
-        self.logFooter()
+        log_footer()
 
     def getLibraries(self):
         """Get RMG kinetics and thermo libraries"""
@@ -410,3 +344,72 @@ class Arkane:
         kineticsLibrary.label = name
 
         return thermoLibrary, kineticsLibrary, speciesList
+
+
+def initialize_log(verbose=logging.INFO, log_file=None):
+    """
+    Set up a logger for Arkane to use to print output to stdout. The
+    `verbose` parameter is an integer specifying the amount of log text seen
+    at the console; the levels correspond to those of the :data:`logging` module.
+    """
+    # Create logger
+    logger = logging.getLogger()
+    logger.setLevel(verbose)
+
+    # Use custom level names for cleaner log output
+    logging.addLevelName(logging.CRITICAL, 'Critical: ')
+    logging.addLevelName(logging.ERROR, 'Error: ')
+    logging.addLevelName(logging.WARNING, 'Warning: ')
+    logging.addLevelName(logging.INFO, '')
+    logging.addLevelName(logging.DEBUG, '')
+    logging.addLevelName(0, '')
+
+    # Create formatter and add to handlers
+    formatter = logging.Formatter('%(levelname)s%(message)s')
+
+    # Remove old handlers before adding ours
+    while logger.handlers:
+        logger.removeHandler(logger.handlers[0])
+
+    # Create console handler; send everything to stdout rather than stderr
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(verbose)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    # Create file handler; always be at least verbose in the file
+    if log_file:
+        fh = logging.FileHandler(filename=log_file)
+        fh.setLevel(min(logging.DEBUG, verbose))
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+
+
+def log_header(level=logging.INFO):
+    """
+    Output a header containing identifying information about Arkane to the log.
+    """
+    from rmgpy import __version__
+    logging.log(level, 'Arkane execution initiated at {0}'.format(time.asctime()))
+    logging.log(level, '')
+
+    logging.log(level, '################################################################')
+    logging.log(level, '#                                                              #')
+    logging.log(level, '# Automated Reaction Kinetics and Network Exploration (Arkane) #')
+    logging.log(level, '#                                                              #')
+    logging.log(level, '#   Version: {0:49s} #'.format(__version__))
+    logging.log(level, '#   Authors: RMG Developers (rmg_dev@mit.edu)                  #')
+    logging.log(level, '#   P.I.s:   William H. Green (whgreen@mit.edu)                #')
+    logging.log(level, '#            Richard H. West (r.west@neu.edu)                  #')
+    logging.log(level, '#   Website: http://reactionmechanismgenerator.github.io/      #')
+    logging.log(level, '#                                                              #')
+    logging.log(level, '################################################################')
+    logging.log(level, '')
+
+
+def log_footer(level=logging.INFO):
+    """
+    Output a footer to the log.
+    """
+    logging.log(level, '')
+    logging.log(level, 'Arkane execution terminated at {0}'.format(time.asctime()))
