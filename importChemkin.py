@@ -746,9 +746,6 @@ class ModelMatcher():
                 if os.path.abspath(path).startswith(os.path.split(os.path.abspath(args.thermo))[0]):
                     logging.info("But it's the model currently being imported, so not loading.")
                     break
-                if not re.search("Curran",path):
-                    logging.info("Not Curran so skipping to save time!")
-                    break
                 library = rmgpy.data.thermo.ThermoLibrary()
                 library.SKIP_DUPLICATES = True
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
