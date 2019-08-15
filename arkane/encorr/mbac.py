@@ -97,11 +97,11 @@ def get_bac(model_chemistry, coords, nums, multiplicity=1, mol_corr=0.0):
         bac_bond += length_corr * np.exp(-alpha * length)
 
         # Neighbor correction
-        for other_atom, other_bond in mol.getBonds(atom1).iteritems():  # Atoms adjacent to atom1
+        for other_atom, other_bond in mol.getBonds(atom1).items():  # Atoms adjacent to atom1
             if other_bond is not bond:
                 other_symbol = other_atom.element.symbol
                 bac_bond += bond_corr_neighbor[symbol1] + bond_corr_neighbor[other_symbol]
-        for other_atom, other_bond in mol.getBonds(atom2).iteritems():  # Atoms adjacent to atom2
+        for other_atom, other_bond in mol.getBonds(atom2).items():  # Atoms adjacent to atom2
             if other_bond is not bond:
                 other_symbol = other_atom.element.symbol
                 bac_bond += bond_corr_neighbor[symbol2] + bond_corr_neighbor[other_symbol]

@@ -180,8 +180,8 @@ class KineticsSensitivity(object):
         plt.rcdefaults()
         _, ax = plt.subplots(nrows=len(self.conditions), ncols=2, tight_layout=True)
         labels = [reactants_label, ts_label, products_label]
-        min_sa = min(min(min(self.f_sa_coefficients.itervalues())), min(min(self.r_sa_coefficients.itervalues())))
-        max_sa = max(max(max(self.f_sa_coefficients.itervalues())), max(max(self.r_sa_coefficients.itervalues())))
+        min_sa = min(min(min(self.f_sa_coefficients.values())), min(min(self.r_sa_coefficients.values())))
+        max_sa = max(max(max(self.f_sa_coefficients.values())), max(max(self.r_sa_coefficients.values())))
         for i, condition in enumerate(self.conditions):
             f_values = [self.f_sa_coefficients[self.job.reaction.reactants[0]][i],
                         self.f_sa_coefficients[self.job.reaction.transitionState][i],
@@ -359,7 +359,7 @@ class PDepSensitivity(object):
             labels = [str(entry) for entry in wells]
             labels.extend(ts.label for ts in transition_states)
             max_sa = min_sa = self.sa_coefficients[str(rxn)][wells[0]][0]
-            for conformer_sa in self.sa_coefficients[str(rxn)].itervalues():
+            for conformer_sa in self.sa_coefficients[str(rxn)].values():
                 for sa_condition in conformer_sa:
                     if min_sa > sa_condition:
                         min_sa = sa_condition
