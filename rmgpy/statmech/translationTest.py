@@ -33,14 +33,12 @@ This script contains unit tests of the :mod:`rmgpy.statmech.translation` module.
 """
 
 from __future__ import division
-from future import standard_library
+
 import unittest
 import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.statmech.translation import IdealGasTranslation
-
-standard_library.install_aliases()
 
 ################################################################################
 
