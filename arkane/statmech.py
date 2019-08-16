@@ -167,10 +167,12 @@ def freeRotor(pivots, top, symmetry):
 
 
 def hinderedRotor2D(scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry='none'):
+    """Read a two dimensional hindered rotor directive, and return the attributes in a list"""
     return [scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry]
 
 
 def hinderedRotorClassicalND(calcPath, pivots, tops, sigmas, semiclassical):
+    """Read an N dimensional hindered rotor directive, and return the attributes in a list"""
     return [calcPath, pivots, tops, sigmas, semiclassical]
 
 
