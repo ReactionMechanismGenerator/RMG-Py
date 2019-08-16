@@ -281,7 +281,7 @@ class PressureDependenceJob(object):
             if self.sensitivity_conditions is not None:
                 perturbation = 0.1  # kcal/mol
                 logging.info('\n\nRunning sensitivity analysis...')
-                for i in xrange(3):
+                for i in range(3):
                     try:
                         sa(self, os.path.dirname(outputFile), perturbation=perturbation)
                     except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as exept:
@@ -597,7 +597,7 @@ class PressureDependenceJob(object):
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
 
                 plt.subplot(1, 2, 1)
-                for p in xrange(Pcount):
+                for p in range(Pcount):
                     plt.semilogy(1000.0 / Tlist, K[:, p], color=cm(1. * p / (Pcount - 1)), marker='o', linestyle='',
                                  label=str('%.2e' % (Plist[p] / 1e+5)) + ' bar')
                     if reaction.kinetics is not None:
@@ -609,7 +609,7 @@ class PressureDependenceJob(object):
                 plt.legend()
 
                 plt.subplot(1, 2, 2)
-                for t in xrange(Tcount):
+                for t in range(Tcount):
                     plt.loglog(Plist * 1e-5, K[t, :], color=cm(1. * t / (Tcount - 1)), marker='o', linestyle='',
                                label=str('%.0d' % Tlist[t]) + ' K')
                     plt.loglog(Plist * 1e-5, K2[t, :], color=cm(1. * t / (Tcount - 1)), marker='', linestyle='-')

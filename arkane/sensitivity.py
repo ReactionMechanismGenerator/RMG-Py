@@ -99,10 +99,10 @@ class KineticsSensitivity(object):
             # Calculate the sensitivity coefficients according to dln(r) / dln(E0) = (E0 * dr) / (r * dE0)
             self.f_sa_coefficients[species] = [(self.f_sa_rates[species][i] - self.f_rates[i]) /
                                                (self.perturbation.value_si * self.f_rates[i])
-                                               for i in xrange(len(self.conditions))]
+                                               for i in range(len(self.conditions))]
             self.r_sa_coefficients[species] = [(self.r_sa_rates[species][i] - self.r_rates[i]) /
                                                (self.perturbation.value_si * self.r_rates[i])
-                                               for i in xrange(len(self.conditions))]
+                                               for i in range(len(self.conditions))]
         self.save()
         self.plot()
 
@@ -285,7 +285,7 @@ class PDepSensitivity(object):
                 self.sa_coefficients[str(rxn)][entry] = [((self.sa_rates[str(rxn)][entry][i]
                                                            - self.rates[str(rxn)][i])) /
                                                          (self.perturbation.value_si * self.rates[str(rxn)][i])
-                                                         for i in xrange(len(self.conditions))]
+                                                         for i in range(len(self.conditions))]
         self.save(wells, transition_states)
         self.plot(wells, transition_states)
 

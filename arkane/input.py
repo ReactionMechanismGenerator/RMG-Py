@@ -344,7 +344,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
     if isinstance(rxn, Reaction):
         reactionDict[label] = rxn
     else:
-        for i in xrange(len(rxn)):
+        for i in range(len(rxn)):
             reactionDict[label + str(i)] = rxn[i]
 
     return rxn

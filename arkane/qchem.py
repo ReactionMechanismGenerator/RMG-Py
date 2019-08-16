@@ -141,7 +141,7 @@ class QChemLog(Log):
         # Now look for the geometry.
         # Will return the final geometry in the file under Standard Nuclear Orientation.
         geometry_flag = False
-        for i in reversed(xrange(len(log))):
+        for i in reversed(range(len(log))):
             line = log[i]
             if 'Standard Nuclear Orientation' in line:
                 for line in log[(i + 3):]:

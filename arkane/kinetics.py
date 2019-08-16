@@ -336,7 +336,7 @@ class KineticsJob(object):
             t_list = 1000.0 / np.arange(0.4, 3.35, 0.05)
         klist = np.zeros_like(t_list)
         klist2 = np.zeros_like(t_list)
-        for i in xrange(len(t_list)):
+        for i in range(len(t_list)):
             klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
             klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
 
@@ -598,7 +598,7 @@ class KineticsDrawer:
         # Determine naive position of each well (one per column)
         coordinates = np.zeros((len(self.wells), 2), np.float64)
         x = padding
-        for i in xrange(len(self.wells)):
+        for i in range(len(self.wells)):
             well = self.wells[i]
             rect = label_rects[i]
             this_well_width = max(well_width, rect[2])

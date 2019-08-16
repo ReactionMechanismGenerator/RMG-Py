@@ -269,7 +269,7 @@ class StatMechJob(object):
 
         with open(path, 'r') as f:
             try:
-                exec f in global_context, local_context
+                exec(f in global_context, local_context)
             except (NameError, TypeError, SyntaxError):
                 logging.error('The species file {0} was invalid:'.format(path))
                 raise
@@ -924,7 +924,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts, getProjectedOutFreqs=Fals
             tops = [top1,top2]
         else:
             raise ValueError("{} not a proper rotor format".format(rotor))
-        for i in xrange(len(tops)):
+        for i in range(len(tops)):
             top = tops[i]
             pivots = pivotss[i]
             # Determine pivot atom
@@ -984,7 +984,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts, getProjectedOutFreqs=Fals
 
     #calculate the frequencies correspondinng to the internal rotors
     intProj = np.dot(Fm,Dint)
-    kmus = np.array([np.linalg.norm(intProj[:,i]) for i in xrange(intProj.shape[1])])
+    kmus = np.array([np.linalg.norm(intProj[:,i]) for i in range(intProj.shape[1])])
     intRotorFreqs = np.sqrt(kmus) / (2.0 * math.pi * constants.c * 100.0)
 
     if getProjectedOutFreqs:
