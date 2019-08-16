@@ -453,7 +453,7 @@ class PressureDependenceJob(object):
         elif model == 'pdeparrhenius':
             kinetics = PDepArrhenius().fitToData(Tdata, Pdata, kdata, kunits)
         else:
-            raise Exception('Invalid interpolation model {0!r}.'.format(self.interpolationModel[0]))
+            raise PressureDependenceError('Invalid interpolation model {0!r}.'.format(self.interpolationModel[0]))
         return kinetics
 
     def save(self, outputFile):

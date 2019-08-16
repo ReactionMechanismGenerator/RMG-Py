@@ -44,6 +44,7 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 
 from arkane.common import check_conformer_energy, get_element_mass
 from arkane.log import Log
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -135,8 +136,8 @@ class QChemLog(Log):
                 break
 
         if not completed_job:
-            raise InputError(
-                'Could not find a successfully completed QChem job in QChem output file {0}'.format(self.path))
+            raise LogError('Could not find a successfully completed QChem job '
+                           'in QChem output file {0}'.format(self.path))
 
         # Now look for the geometry.
         # Will return the final geometry in the file under Standard Nuclear Orientation.
@@ -164,7 +165,7 @@ class QChemLog(Log):
         number = np.array(number, np.int)
         mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from QChem geometry output file {0}'.format(self.path))
+            raise LogError('Unable to read atoms from QChem geometry output file {0}.'.format(self.path))
 
         return coord, number, mass
 
@@ -285,7 +286,7 @@ class QChemLog(Log):
                     b = float(line.split()[8]) * constants.E_h * constants.Na
                 e_elect = a or b
         if e_elect is None:
-            raise InputError('Unable to find energy in QChem output file.')
+            raise LogError('Unable to find energy in QChem output file {0}.'.format(self.path))
         return e_elect
 
     def loadZeroPointEnergy(self):
@@ -301,7 +302,7 @@ class QChemLog(Log):
         if zpe is not None:
             return zpe
         else:
-            raise InputError('Unable to find zero-point energy in QChem output file.')
+            raise LogError('Unable to find zero-point energy in QChem output file {0}.'.format(self.path))
 
     def loadScanEnergies(self):
         """
@@ -323,7 +324,8 @@ class QChemLog(Log):
                     logging.info('found a sucessfully completed QChem Job')
                     read = True
                 elif 'SCF failed to converge' in line:
-                    raise InputError('QChem Job did not sucessfully complete: SCF failed to converge')
+                    raise LogError('QChem Job did not successfully complete: '
+                                   'SCF failed to converge in file {0}.'.format(self.path))
         logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
         v_list = np.array(v_list, np.float64)
@@ -353,7 +355,7 @@ class QChemLog(Log):
         if frequency < 0:
             return frequency
         else:
-            raise InputError('Unable to find imaginary frequency in QChem output file {0}'.format(self.path))
+            raise LogError('Unable to find imaginary frequency in QChem output file {0}.'.format(self.path))
 
     def load_scan_pivot_atoms(self):
         """Not implemented for QChem"""

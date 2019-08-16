@@ -47,3 +47,11 @@ class BondAdditivityCorrectionError(Exception):
     additivity corrections.
     """
     pass
+
+
+class LogError(Exception):
+    """
+    An exception to be raised when an error occurs while parsing
+    electronic structure calculation log files.
+    """
+    pass
