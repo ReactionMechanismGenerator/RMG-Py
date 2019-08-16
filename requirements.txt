@@ -15,6 +15,7 @@ MarkupSafe # this makes Jinja2 faster
 Jinja2 # this is for rendering the HTML output files
 cairocffi
 yaml
+h5py
 
 # For postprocessing the profiling data
 argparse

@@ -17,6 +17,7 @@ dependencies:
   - ffmpeg
   - gprof2dot
   - graphviz
+  - h5py
   - jinja2
   - jupyter
   - lpsolve55
