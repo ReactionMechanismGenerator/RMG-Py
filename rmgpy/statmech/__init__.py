@@ -28,6 +28,10 @@
 #                                                                             #
 ###############################################################################
 
+"""
+initialize imports
+"""
+
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
