@@ -835,30 +835,27 @@ class ModelMatcher():
             elif speciesMatch(rmg_reactants[0], ck_reactants[1]) and speciesMatch(rmg_reactants[1], ck_reactants[0]):
                 forwardReactantsMatch = True
         elif len_rmg_reactants == 3 and len_ck_reactants == 3:
-            if (speciesMatch(rmg_reactants[0], ck_reactants[0]) and
-                    speciesMatch(rmg_reactants[1], ck_reactants[1]) and
+            if speciesMatch(rmg_reactants[0], ck_reactants[0]):
+                if (speciesMatch(rmg_reactants[1], ck_reactants[1]) and
                     speciesMatch(rmg_reactants[2], ck_reactants[2])):
-                forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_reactants[0]) and
-                    speciesMatch(rmg_reactants[1], ck_reactants[2]) and
+                    forwardReactantsMatch = True
+                elif(speciesMatch(rmg_reactants[1], ck_reactants[2]) and
                     speciesMatch(rmg_reactants[2], ck_reactants[1])):
-                forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_reactants[1]) and
-                    speciesMatch(rmg_reactants[1], ck_reactants[0]) and
+                    forwardReactantsMatch = True
+            elif speciesMatch(rmg_reactants[0], ck_reactants[1]):
+                if (speciesMatch(rmg_reactants[1], ck_reactants[0]) and
                     speciesMatch(rmg_reactants[2], ck_reactants[2])):
-                forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_reactants[2]) and
-                    speciesMatch(rmg_reactants[1], ck_reactants[0]) and
+                    forwardReactantsMatch = True
+                elif(speciesMatch(rmg_reactants[1], ck_reactants[2]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[0])):
+                    forwardReactantsMatch = True
+            elif speciesMatch(rmg_reactants[0], ck_reactants[2]):
+                if (speciesMatch(rmg_reactants[1], ck_reactants[0]) and
                     speciesMatch(rmg_reactants[2], ck_reactants[1])):
-                forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_reactants[1]) and
-                    speciesMatch(rmg_reactants[1], ck_reactants[2]) and
+                    forwardReactantsMatch = True
+                elif (speciesMatch(rmg_reactants[1], ck_reactants[1]) and
                     speciesMatch(rmg_reactants[2], ck_reactants[0])):
-                forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_reactants[2]) and
-                    speciesMatch(rmg_reactants[1], ck_reactants[1]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[0])):
-                forwardReactantsMatch = True
+                    forwardReactantsMatch = True
         elif len_rmg_reactants == len_ck_reactants:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
@@ -882,30 +879,27 @@ class ModelMatcher():
             elif speciesMatch(rmg_products[0], ck_products[1]) and speciesMatch(rmg_products[1], ck_products[0]):
                 forwardProductsMatch = True
         elif len_rmg_products == 3 and len_ck_products == 3:
-            if (speciesMatch(rmg_products[0], ck_products[0]) and
-                    speciesMatch(rmg_products[1], ck_products[1]) and
+            if speciesMatch(rmg_products[0], ck_products[0]):
+                if (speciesMatch(rmg_products[1], ck_products[1]) and
                     speciesMatch(rmg_products[2], ck_products[2])):
-                forwardProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_products[0]) and
-                    speciesMatch(rmg_products[1], ck_products[2]) and
+                    forwardProductsMatch = True
+                elif (speciesMatch(rmg_products[1], ck_products[2]) and
                     speciesMatch(rmg_products[2], ck_products[1])):
-                forwardProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_products[1]) and
-                    speciesMatch(rmg_products[1], ck_products[0]) and
+                    forwardProductsMatch = True
+            elif speciesMatch(rmg_products[0], ck_products[1]):
+                if (speciesMatch(rmg_products[1], ck_products[0]) and
                     speciesMatch(rmg_products[2], ck_products[2])):
-                forwardProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_products[2]) and
-                    speciesMatch(rmg_products[1], ck_products[0]) and
+                    forwardProductsMatch = True
+                elif (speciesMatch(rmg_products[1], ck_products[2]) and
+                    speciesMatch(rmg_products[2], ck_products[0])):
+                    forwardProductsMatch = True
+            elif speciesMatch(rmg_products[0], ck_products[2]):
+                if (speciesMatch(rmg_products[1], ck_products[0]) and
                     speciesMatch(rmg_products[2], ck_products[1])):
-                forwardProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_products[1]) and
-                    speciesMatch(rmg_products[1], ck_products[2]) and
+                    forwardProductsMatch = True
+                elif (speciesMatch(rmg_products[1], ck_products[1]) and
                     speciesMatch(rmg_products[2], ck_products[0])):
-                forwardProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_products[2]) and
-                    speciesMatch(rmg_products[1], ck_products[1]) and
-                    speciesMatch(rmg_products[2], ck_products[0])):
-                forwardProductsMatch = True
+                    forwardProductsMatch = True
         elif len_rmg_products == len_ck_products:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len_rmg_products))
 
