@@ -44,7 +44,7 @@ from arkane.explorer import ExplorerJob
 
 
 @attr('functional')
-class testExplorerJob(unittest.TestCase):
+class TestExplorerJob(unittest.TestCase):
     """
     Contains tests for ExplorerJob class execute method
     """
