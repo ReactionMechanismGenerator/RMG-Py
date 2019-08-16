@@ -62,11 +62,10 @@ from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
 
-
 ################################################################################
 
 
-class Arkane:
+class Arkane(object):
     """
     The :class:`Arkane` class represents an instance of Arkane, a tool for
     computing properties of chemical species and reactions. The attributes are:

@@ -382,7 +382,7 @@ class KineticsJob(object):
         KineticsDrawer().draw(self.reaction, format=format, path=path)
 
 
-class KineticsDrawer:
+class KineticsDrawer(object):
     """
     This class provides functionality for drawing the potential energy surface
     for a high pressure limit reaction using the Cairo 2D graphics engine.
@@ -783,7 +783,7 @@ class KineticsDrawer:
             surface.finish()
 
 
-class Well:
+class Well(object):
     """
     A helper class representing a "well" of species
     `species_list` is a list of at least one entry
