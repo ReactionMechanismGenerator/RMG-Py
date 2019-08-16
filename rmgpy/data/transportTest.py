@@ -30,13 +30,14 @@
 
 import os
 import unittest
-from external.wip import work_in_progress
 
+from external.wip import work_in_progress
 from rmgpy import settings
-from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
-from rmgpy.transport import TransportData
+from rmgpy.quantity import Energy, Length
 from rmgpy.species import Species
+from rmgpy.transport import TransportData
+
 
 ################################################################################
 
@@ -98,7 +99,7 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information.
         """
         import pickle
-        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution,-1))
+        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution, -1))
         self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
@@ -122,6 +123,7 @@ class TestTransportDatabase(unittest.TestCase):
     """
     Contains unit tests of the :class:`TransportDatabase` class.
     """
+
     @classmethod
     def setUpClass(self):
         """A function that is run ONCE before all unit tests in this class."""
@@ -144,20 +146,20 @@ class TestTransportDatabase(unittest.TestCase):
             ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
             ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, None],  # not sure what to expect, we just want to make sure it doesn't crash
             ['benzene', 'c1ccccc1', None, None, None],
-            ]
+        ]
 
-        #values calculate from joback's estimations
+        # values calculate from joback's estimations
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species().fromSMILES(smiles)
-            transportData, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
+            transport_data, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
             if comment:
-                self.assertTrue(transportData.comment == comment)
+                self.assertTrue(transport_data.comment == comment)
             if sigma:
-                self.assertAlmostEqual(transportData.sigma.value_si * 1e10, sigma.value_si * 1e10, 4)
+                self.assertAlmostEqual(transport_data.sigma.value_si * 1e10, sigma.value_si * 1e10, 4)
             if epsilon:
-                self.assertAlmostEqual(transportData.epsilon.value_si, epsilon.value_si, 1)
+                self.assertAlmostEqual(transport_data.epsilon.value_si, epsilon.value_si, 1)
 
     @work_in_progress
     def testJobackOnBenzeneBonds(self):
@@ -176,8 +178,8 @@ class TestTransportDatabase(unittest.TestCase):
                                               11 H u0 p0 {5,S}
                                               12 H u0 p0 {6,S}
                                               """)
-        transportData, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
-        self.assertIsNotNone(transportData)
+        transport_data, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
+        self.assertIsNotNone(transport_data)
 
     def testGetTransportProperties(self):
         """Test that we can retrieve best transport properties for a species."""
@@ -205,4 +207,3 @@ class TestTransportDatabase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
-

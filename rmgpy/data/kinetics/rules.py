@@ -33,23 +33,23 @@ This module contains functionality for working with kinetics "rate rules",
 which provide rate coefficient parameters for various combinations of 
 functional groups.
 """
-from builtins import str
-from six import string_types
-import warnings
-import os.path
-import re
 import codecs
 import math
-import numpy
-from copy import  deepcopy
+import os.path
+import re
+import warnings
+from copy import deepcopy
+
+import numpy as np
+from six import string_types
 
 from rmgpy.data.base import Database, Entry, getAllCombinations
-
+from rmgpy.data.kinetics.common import saveEntry
+from rmgpy.exceptions import KineticsError, DatabaseError
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP, ArrheniusBM
-from .common import saveEntry
-from rmgpy.exceptions import KineticsError, DatabaseError
+
 
 ################################################################################
 
@@ -57,7 +57,7 @@ class KineticsRules(Database):
     """
     A class for working with a set of "rate rules" for a RMG kinetics family. 
     """
-    
+
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
@@ -79,19 +79,19 @@ class KineticsRules(Database):
                   nodalDistance=None,
                   treeDistances=None
                   ):
-            
-        if isinstance(kinetics,Arrhenius):
+
+        if isinstance(kinetics, Arrhenius):
             kinetics = kinetics.toArrheniusEP()
         entry = Entry(
-            index = index,
-            label = label,
+            index=index,
+            label=label,
             # item = reaction,
-            data = kinetics,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
-            rank = rank,
+            data=kinetics,
+            reference=reference,
+            referenceType=referenceType,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
+            rank=rank,
             nodalDistance=nodalDistance,
         )
         try:
@@ -135,7 +135,7 @@ class KineticsRules(Database):
             '1,3_Insertion_RSR',
             'lone_electron_pair_bond',
         ]
-        
+
         # The names of all of the RMG reaction families that are unimolecular
         UNIMOLECULAR_KINETICS_FAMILIES = [
             'intra_H_migration',
@@ -169,48 +169,52 @@ class KineticsRules(Database):
         elif label in UNIMOLECULAR_KINETICS_FAMILIES:
             Aunits = 's^-1'
         else:
-            raise Exception('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
+            raise Exception('Unable to determine preexponential units for old reaction family '
+                            '"{0}".'.format(self.label))
 
         try:
             Tmin, Tmax = data[0].split('-')
-            Tmin = (float(Tmin),"K")
-            Tmax = (float(Tmax),"K")
+            Tmin = (float(Tmin), "K")
+            Tmax = (float(Tmax), "K")
         except ValueError:
-            Tmin = (float(data[0]),"K")
+            Tmin = (float(data[0]), "K")
             Tmax = None
 
         A, n, alpha, E0, dA, dn, dalpha, dE0 = data[1:9]
-        
+
         A = float(A)
         if dA[0] == '*':
-            A = Quantity(A,Aunits,'*|/',float(dA[1:]))
+            A = Quantity(A, Aunits, '*|/', float(dA[1:]))
         else:
             dA = float(dA)
-            if dA != 0:
-                A = Quantity(A,Aunits,'+|-',dA)
+            if dA:
+                A = Quantity(A, Aunits, '+|-', dA)
             else:
-                A = Quantity(A,Aunits)
-        
-        n = float(n); dn = float(dn)
-        if dn != 0:
-            n = Quantity(n,'','+|-',dn)
+                A = Quantity(A, Aunits)
+
+        n = float(n)
+        dn = float(dn)
+        if dn:
+            n = Quantity(n, '', '+|-', dn)
         else:
-            n = Quantity(n,'')
-                
-        alpha = float(alpha); dalpha = float(dalpha)
-        if dalpha != 0:
-            alpha = Quantity(alpha,'','+|-',dalpha)
+            n = Quantity(n, '')
+
+        alpha = float(alpha)
+        dalpha = float(dalpha)
+        if dalpha:
+            alpha = Quantity(alpha, '', '+|-', dalpha)
         else:
-            alpha = Quantity(alpha,'')
-        
-        E0 = float(E0); dE0 = float(dE0)
-        if dE0 != 0:
-            E0 = Quantity(E0,'kcal/mol','+|-',dE0)
+            alpha = Quantity(alpha, '')
+
+        E0 = float(E0)
+        dE0 = float(dE0)
+        if dE0:
+            E0 = Quantity(E0, 'kcal/mol', '+|-', dE0)
         else:
-            E0 = Quantity(E0,'kcal/mol')
-        
+            E0 = Quantity(E0, 'kcal/mol')
+
         rank = int(data[9])
-        
+
         return ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax), rank
 
     def loadOld(self, path, groups, numLabels):
@@ -221,7 +225,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         # Parse the old library
         entries = self.parseOldLibrary(os.path.join(path, 'rateLibrary.txt'), numParameters=10, numLabels=numLabels)
-        
+
         self.entries = {}
         for entry in entries:
             index, label, data, shortDesc = entry
@@ -235,19 +239,19 @@ class KineticsRules(Database):
             reactants = [groups.entries[l].item for l in label.split(';')]
             item = Reaction(reactants=reactants, products=[])
             entry = Entry(
-                index = index,
-                label = label,
-                item = item,
-                data = kinetics,
-                rank = rank,
-                shortDesc = shortDesc
+                index=index,
+                label=label,
+                item=item,
+                data=kinetics,
+                rank=rank,
+                shortDesc=shortDesc
             )
             try:
                 self.entries[label].append(entry)
             except KeyError:
                 self.entries[label] = [entry]
         self.__loadOldComments(path)
-    
+
     def __loadOldComments(self, path):
         """
         Load a set of old comments from the ``comments.txt`` file for the old
@@ -256,13 +260,13 @@ class KineticsRules(Database):
         """
         warnings.warn("The old kinetics databases are no longer supported and may be"
                       " removed in version 2.3.", DeprecationWarning)
-        index = 'General' #mops up comments before the first rate ID
-        
+        index = 'General'  # mops up comments before the first rate ID
+
         re_underline = re.compile('^\-+')
-        
+
         comments = {}
         comments[index] = ''
-        
+
         # Load the comments into a temporary dictionary for now
         # If no comments file then do nothing
         try:
@@ -274,12 +278,12 @@ class KineticsRules(Database):
             if match:
                 index = f.next().strip()
                 assert line.rstrip() == f.next().rstrip(), "Overline didn't match underline"
-                if not comments.has_key(index):
+                if index not in comments:
                     comments[index] = ''
                 line = next(f)
             comments[index] += line
         f.close()
-        
+
         # Transfer the comments to the longDesc attribute of the associated entry
         entries = self.getEntries()
         unused = []
@@ -288,15 +292,15 @@ class KineticsRules(Database):
                 index = int(index)
             except ValueError:
                 unused.append(index)
-                
+
             if isinstance(index, int):
                 for entry in entries:
                     if entry.index == index:
                         entry.longDesc = longDesc
                         break
-                #else:
+                # else:
                 #    unused.append(str(index))
-            
+
         # Any unused comments are placed in the longDesc attribute of the depository
         self.longDesc = comments['General'] + '\n'
         unused.remove('General')
@@ -304,8 +308,9 @@ class KineticsRules(Database):
             try:
                 self.longDesc += comments[index] + '\n'
             except KeyError:
-                import pdb; pdb.set_trace()
-                
+                import pdb
+                pdb.set_trace()
+
     def saveOld(self, path, groups):
         """
         Save a set of old rate rules for kinetics groups from this depository.
@@ -320,35 +325,36 @@ class KineticsRules(Database):
         elif reactionOrder == 1:
             factor = 1.0
         else:
-            raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
+            raise ValueError('Unable to determine preexponential units for old reaction family '
+                             '"{0}".'.format(self.label))
 
         entries = self.getEntries()
-        
+
         flib = codecs.open(os.path.join(path, 'rateLibrary.txt'), 'w', 'utf-8')
         flib.write('// The format for the data in this rate library\n')
         flib.write('Arrhenius_EP\n\n')
-        
+
         fcom = codecs.open(os.path.join(path, 'comments.rst'), 'w', 'utf-8')
         fcom.write('-------\n')
         fcom.write('General\n')
         fcom.write('-------\n')
         fcom.write(self.longDesc.strip() + '\n\n')
-        
+
         for entry in entries:
             flib.write('{0:<5d} '.format(entry.index))
             line = ''
             for label in entry.label.split(';'):
                 line = line + '{0:<23} '.format(label)
             flib.write(line)
-            if len(line)>48: # make long lines line up in 10-space columns
-                flib.write(' '*(10-len(line)%10))
+            if len(line) > 48:  # make long lines line up in 10-space columns
+                flib.write(' ' * (10 - len(line) % 10))
             if entry.data.Tmax is None:
-                if re.match('\d+\-\d+',str(entry.data.Tmin).strip()):
+                if re.match('\d+\-\d+', str(entry.data.Tmin).strip()):
                     # Tmin contains string of Trange
                     Trange = '{0} '.format(entry.data.Tmin)
                 elif isinstance(entry.data.Tmin, ScalarQuantity):
                     # Tmin is a temperature. Make range 1 degree either side!
-                    Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si-1, entry.data.Tmin.value_si+1)
+                    Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si - 1, entry.data.Tmin.value_si + 1)
                 else:
                     # Range is missing, but we have to put something:
                     Trange = '   1-9999 '
@@ -356,30 +362,30 @@ class KineticsRules(Database):
                 Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
             flib.write('{0:<12}'.format(Trange))
             flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(
-                            entry.data.A.value_si * factor,
-                            entry.data.n.value_si,
-                            entry.data.alpha.value_si,
-                            entry.data.E0.value_si / 4184.
-                            ))
+                entry.data.A.value_si * factor,
+                entry.data.n.value_si,
+                entry.data.alpha.value_si,
+                entry.data.E0.value_si / 4184.
+            ))
             if entry.data.A.isUncertaintyMultiplicative():
                 flib.write('*{0:<6g} '.format(entry.data.A.uncertainty_si))
             else:
                 flib.write('{0:<7g} '.format(entry.data.A.uncertainty_si * factor))
             flib.write('{0:6g} {1:6g} {2:6g} '.format(
-                            entry.data.n.uncertainty_si,
-                            entry.data.alpha.uncertainty_si,
-                            entry.data.E0.uncertainty_si / 4184.
-                            ))
+                entry.data.n.uncertainty_si,
+                entry.data.alpha.uncertainty_si,
+                entry.data.E0.uncertainty_si / 4184.
+            ))
 
             if not entry.rank:
                 entry.rank = 0
             flib.write(u'    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
-            
+
             fcom.write('------\n')
             fcom.write('{0}\n'.format(entry.index))
             fcom.write('------\n')
             fcom.write(entry.longDesc.strip() + '\n\n')
-            
+
         flib.close()
         fcom.close()
 
@@ -389,11 +395,11 @@ class KineticsRules(Database):
         sorted by index.
         """
         entries = []
-        for e in self.entries.values(): 
-            if isinstance(e,list):
-                entries.extend(e)
+        for entry in self.entries.values():
+            if isinstance(entry, list):
+                entries.extend(entry)
             else:
-                entries.append(e)
+                entries.append(entry)
         entries.sort(key=lambda x: x.index)
         return entries
 
@@ -417,7 +423,7 @@ class KineticsRules(Database):
         corresponding entry exists.
         """
         entries = self.getAllRules(template)
-            
+
         if len(entries) == 1:
             return entries[0]
         elif len(entries) > 1:
@@ -442,7 +448,7 @@ class KineticsRules(Database):
             entries.extend(self.entries[templateLabels])
         except KeyError:
             pass
-        
+
         return entries
 
     def fillRulesByAveragingUp(self, rootTemplate, alreadyDone, verbose=False):
@@ -452,7 +458,7 @@ class KineticsRules(Database):
         (warning: this uses up a lot of memory due to the extensively long comments)
         """
         rootLabel = ';'.join([g.label for g in rootTemplate])
-        
+
         if rootLabel in alreadyDone:
             return alreadyDone[rootLabel]
 
@@ -473,29 +479,29 @@ class KineticsRules(Database):
                 childrenSet[i] = parent.children
                 childrenList.extend(getAllCombinations(childrenSet))
                 distanceList.extend([k.nodalDistance for k in parent.children])
-                
-        if distanceList != []: #average the minimum distance neighbors
-            minDist = min(distanceList) 
-            closeChildrenList = [childrenList[i] for i in range(len(childrenList)) if distanceList[i]==minDist]
+
+        if distanceList != []:  # average the minimum distance neighbors
+            minDist = min(distanceList)
+            closeChildrenList = [childrenList[i] for i in range(len(childrenList)) if distanceList[i] == minDist]
         else:
             closeChildrenList = []
-            
+
         kineticsList = []
         for template in childrenList:
             label = ';'.join([g.label for g in template])
-            
+
             if label in alreadyDone:
                 kinetics = alreadyDone[label]
             else:
                 kinetics = self.fillRulesByAveragingUp(template, alreadyDone, verbose)
-            
+
             if template in closeChildrenList and kinetics is not None:
                 kineticsList.append([kinetics, template])
-        
+
         # See if we already have a rate rule for this exact template instead
         # and return it now that we have finished searching its children
         entry = self.getRule(rootTemplate)
-        
+
         if entry is not None and entry.rank > 0:
             # We already have a rate rule for this exact template
             # If the entry has rank of zero, then we have so little faith
@@ -504,45 +510,45 @@ class KineticsRules(Database):
             # value
             alreadyDone[rootLabel] = entry.data
             return entry.data
-        
+
         if len(kineticsList) > 0:
-            
+
             if len(kineticsList) > 1:
                 # We found one or more results! Let's average them together
                 kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                
+
                 if verbose:
                     kinetics.comment = 'Average of [{0}]'.format(
-                         ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
-                
+                        ' + '.join(k.comment if k.comment != '' else
+                                   ';'.join(g.label for g in t) for k, t in kineticsList))
+
                 else:
                     kinetics.comment = 'Average of [{0}]'.format(
-                     ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
+                        ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
 
             else:
-                k,t = kineticsList[0]
+                k, t = kineticsList[0]
                 kinetics = deepcopy(k)
                 # Even though we are using just a single set of kinetics, it's still considered
                 # an average.  It just happens that the other distance 1 children had no data.
-                
+
                 if verbose:
-                    kinetics.comment = 'Average of [{0}]'.format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
+                    kinetics.comment = 'Average of [{0}]'.format(
+                        k.comment if k.comment != '' else ';'.join(g.label for g in t))
                 else:
                     kinetics.comment = 'Average of [{0}]'.format(';'.join(g.label for g in t))
-                
 
-            
             entry = Entry(
-                index = 0,
-                label = rootLabel,
-                item = rootTemplate,
-                data = kinetics,
-                rank = 11, # Indicates this is an averaged estimate
+                index=0,
+                label=rootLabel,
+                item=rootTemplate,
+                data=kinetics,
+                rank=11,  # Indicates this is an averaged estimate
             )
             self.entries[entry.label] = [entry]
             alreadyDone[rootLabel] = entry.data
             return entry.data
-            
+
         alreadyDone[rootLabel] = None
         return None
 
@@ -555,7 +561,10 @@ class KineticsRules(Database):
         Hence we average n, Ea, and alpha arithmetically, but we
         average log A (geometric average) 
         """
-        logA = 0.0; n = 0.0; E0 = 0.0; alpha = 0.0
+        logA = 0.0
+        n = 0.0
+        E0 = 0.0
+        alpha = 0.0
         count = len(kineticsList)
         for kinetics in kineticsList:
             logA += math.log10(kinetics.A.value_si)
@@ -593,7 +602,7 @@ class KineticsRules(Database):
             E0=(E0 * 0.001, "kJ/mol"),
         )
         return averagedKinetics
-    
+
     def estimateKinetics(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -604,50 +613,49 @@ class KineticsRules(Database):
         and is None if some averaging or use of a parent node took place.
         """
         entry = self.getRule(template)
-        
+
         originalLeaves = getTemplateLabel(template)
         templateList = [template]
-        distanceList = [numpy.zeros(len(template))]
-        minNorm = numpy.inf
+        distanceList = [np.zeros(len(template))]
+        minNorm = np.inf
         savedKinetics = []
-        
+
         if entry is not None and entry.data:
-            savedKinetics = [[deepcopy(entry.data),template]]
+            savedKinetics = [[deepcopy(entry.data), template]]
             templateList = []
             minNorm = 0
-            
+
         while len(templateList) > 0:
-            
+
             kineticsList = []
             distances = []
-            for i,t in enumerate(templateList):
+            for i, t in enumerate(templateList):
                 entry = self.getRule(t)
-                if entry is None: 
+                if entry is None:
                     continue
                 kinetics = deepcopy(entry.data)
                 kineticsList.append([kinetics, t])
                 distances.append(distanceList[i])
-            
-            
-            if len(kineticsList) > 0:                 
+
+            if len(kineticsList) > 0:
                 # Filter the kinetics to use templates with the lowest minimum euclidean distance 
                 # from the specified template
-                norms = [numpy.linalg.norm(d) for d in distances]
+                norms = [np.linalg.norm(d) for d in distances]
                 newMinNorm = min(norms)
                 if newMinNorm == minNorm:
-                    savedKinetics.extend([pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)])
+                    savedKinetics.extend([pair for pair, norm in zip(kineticsList, norms) if norm == min(norms)])
                 elif newMinNorm < minNorm:
                     minNorm = newMinNorm
-                    savedKinetics = [pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)]
-                
-            templateList0 = templateList #keep the old template list
-            distanceList0 = distanceList #keep thge old distance list
+                    savedKinetics = [pair for pair, norm in zip(kineticsList, norms) if norm == min(norms)]
+
+            templateList0 = templateList  # keep the old template list
+            distanceList0 = distanceList  # keep thge old distance list
             distanceList = []
             templateList = []
-            
-            if minNorm > 0:  #filter out stuff too large to be used
+
+            if minNorm > 0:  # filter out stuff too large to be used
                 toDelete = []
-                norms = [numpy.linalg.norm(d) for d in distanceList0]
+                norms = [np.linalg.norm(d) for d in distanceList0]
                 for i in range(len(templateList0)):
                     if norms[i] > minNorm:
                         toDelete.append(i)
@@ -655,29 +663,29 @@ class KineticsRules(Database):
                 for k in toDelete:
                     del templateList0[k]
                     del distanceList0[k]
-                        
-            
-            for i,template0 in enumerate(templateList0):
+
+            for i, template0 in enumerate(templateList0):
                 for index in range(len(template0)):
-                    if not template0[index].parent: # We're at the top-level node in this subtreee
+                    if not template0[index].parent:  # We're at the top-level node in this subtreee
                         continue
                     dist = deepcopy(distanceList0[i])
                     t = template0[:]
                     dist[index] += t[index].nodalDistance
                     t[index] = t[index].parent
-                     
+
                     if t not in templateList:
                         templateList.append(t)
                         distanceList.append(dist)
 
             if templateList != [] and minNorm != 0:
                 continue
-            
+
         kineticsList = removeIdenticalKinetics(savedKinetics)
-        
+
         if len(kineticsList) == 0:
-            raise KineticsError('Unable to determine kinetics for reaction with template {0} in family {1}.'.format(template, self.label))
-            
+            raise KineticsError('Unable to determine kinetics for reaction with template {0} in family '
+                                '{1}.'.format(template, self.label))
+
         elif len(kineticsList) == 1:
             kinetics, t = kineticsList[0]
             # Check whether the exact rate rule for the original template (most specific
@@ -689,11 +697,11 @@ class KineticsRules(Database):
                 if 'Average' in kinetics.comment:
                     kinetics.comment += 'Estimated using an average'
                 else:
-                    kinetics.comment += 'Exact match found' 
+                    kinetics.comment += 'Exact match found'
             else:
-                #Using a more general node to estimate original template
-                kinetics.comment +='Estimated using template ' + matchedLeaves
-                            
+                # Using a more general node to estimate original template
+                kinetics.comment += 'Estimated using template ' + matchedLeaves
+
         else:
             # We found one or more results! Let's average them together
             kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
@@ -701,24 +709,25 @@ class KineticsRules(Database):
             # appended in the following lines.  Verbose comments are filtered out in 
             # rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics
             kinetics.comment = 'Average of [{0}]'.format(
-                    ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
-            kinetics.comment +='\n'
+                ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+            kinetics.comment += '\n'
             # Append standard portion of kinetics comments that appear in non-verbose mode.
             kinetics.comment += 'Estimated using average of templates {0}'.format(
-                        ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
-                    )
-                
+                ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
+            )
+
         kinetics.comment += ' for rate rule ' + originalLeaves
         kinetics.comment += '\nEuclidian distance = {}'.format(minNorm)
         kinetics.A.value_si *= degeneracy
         if degeneracy > 1:
             kinetics.comment += "\n"
             kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-        
+
         kinetics.comment += "\n"
-        kinetics.comment += "family: {0}".format(self.label.replace('/rules',''))
-        
+        kinetics.comment += "family: {0}".format(self.label.replace('/rules', ''))
+
         return kinetics, (entry if 'Exact' in kinetics.comment else None)
+
 
 def removeIdenticalKinetics(kList):
     """
@@ -738,8 +747,9 @@ def removeIdenticalKinetics(kList):
         else:
             outSet.add(sk)
             outList.append(k)
-            
+
     return outList
+
 
 def getTemplateLabel(template):
     # Get string format of the template in the form "(leaf1,leaf2)"
