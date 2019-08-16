@@ -1,7 +1,8 @@
 """
 This scripts runs tests on the database
 """
-from __future__ import division
+from __future__ import division, print_function
+
 import numpy as np
 import logging
 
@@ -1029,9 +1030,9 @@ Origin Group AdjList:
 
         #print out entries skipped from exception we can't currently handle
         if skipped:
-            print "These entries were skipped because too big benzene rings or has nitrogen sample atom:"
+            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
             for entryName in skipped:
-                print entryName
+                print(entryName)
 
         boo = False
         for i in range(len(tst1)):
@@ -1287,9 +1288,9 @@ Origin Group AdjList:
 
         #print out entries skipped from exception we can't currently handle
         if skipped:
-            print "These entries were skipped because too big benzene rings or has nitrogen sample atom:"
+            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
             for entryName in skipped:
-                print entryName
+                print(entryName)
 
         boo = False
         for i in range(len(tst1)):

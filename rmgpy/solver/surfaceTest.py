@@ -28,7 +28,7 @@
 #                                                                             #
 ###############################################################################
 
-from __future__ import division
+from __future__ import division, print_function
 import unittest
 import numpy
 
@@ -226,11 +226,11 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 
-        print "Surface site density:", rxnSystem.surfaceSiteDensity.value_si
+        print("Surface site density:", rxnSystem.surfaceSiteDensity.value_si)
 
-        print "rxn1 rate coefficient", rxn1.getSurfaceRateCoefficient(rxnSystem.T.value_si,
+        print("rxn1 rate coefficient", rxn1.getSurfaceRateCoefficient(rxnSystem.T.value_si,
                                             rxnSystem.surfaceSiteDensity.value_si
-                                            )
+                                            ))
 
         # Integrate to get the solution at each time point
         t = []
@@ -243,10 +243,10 @@ class SurfaceReactorCheck(unittest.TestCase):
         y.append(rxnSystem.y.copy())
         reactionRates.append(rxnSystem.coreReactionRates.copy())
         speciesRates.append(rxnSystem.coreSpeciesRates.copy())
-        print "time: ", t
-        print "moles:", y
-        print "reaction rates:", reactionRates
-        print "species rates:", speciesRates
+        print("time: ", t)
+        print("moles:", y)
+        print("reaction rates:", reactionRates)
+        print("species rates:", speciesRates)
         for t1 in tlist:
             rxnSystem.advance(t1)
             t.append(rxnSystem.t)
