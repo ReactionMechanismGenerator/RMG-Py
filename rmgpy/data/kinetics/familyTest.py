@@ -724,9 +724,9 @@ class TestTreeGeneration(unittest.TestCase):
         """
         for entry in self.family.groups.entries.values():
             for entry2 in entry.children:
-                self.assertTrue(entry2 in iter(self.family.groups.entries.values()))
+                self.assertTrue(entry2 in list(self.family.groups.entries.values()))
             if entry.parent:
-                self.assertTrue(entry.parent in iter(self.family.groups.entries.values()))
+                self.assertTrue(entry.parent in list(self.family.groups.entries.values()))
 
         self.assertTrue(self.family.groups.entries['Root'].parent is None)
 

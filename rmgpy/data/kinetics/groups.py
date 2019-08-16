@@ -619,7 +619,7 @@ class KineticsGroups(Database):
         # Add a note to the history of each changed item indicating that we've generated new group values
         changed = False
         for label, entry in self.entries.items():
-            if entry.data is not None and old_entries.has_key(label):
+            if entry.data is not None and label in old_entries:
                 if (isinstance(entry.data, KineticsData) and
                         isinstance(old_entries[label], KineticsData) and
                         len(entry.data.kdata.value_si) == len(old_entries[label].kdata.value_si) and

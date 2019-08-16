@@ -4323,7 +4323,7 @@ def _makeRule(rr):
         else:
             dlnks = np.array([
                 np.log(
-                    ArrheniusBM().fitToReactions(rxns[list(set(xrange(len(rxns))) - set([i, ]))], recipe=recipe)
+                    ArrheniusBM().fitToReactions(rxns[list(set(range(len(rxns))) - set([i, ]))], recipe=recipe)
                     .toArrhenius(rxn.getEnthalpyOfReaction(Tref))
                     .getRateCoefficient(T=Tref) / rxn.getRateCoefficient(T=Tref)
                 ) for i, rxn in enumerate(rxns)

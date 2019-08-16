@@ -29,7 +29,7 @@
 ###############################################################################
 
 
-from __future__ import division
+from __future__ import division, print_function
 
 import logging
 import os.path
@@ -668,11 +668,11 @@ and immediately used in input files without any additional changes.
                 reaction.kinetics = kinetics
                 template = reaction.template
             elif len(reverse) > 0 and len(forward) > 0:
-                print 'FAIL: Multiple reactions found for {0!r}.'.format(entry.label)
+                print('FAIL: Multiple reactions found for {0!r}.'.format(entry.label))
             elif len(reverse) == 0 and len(forward) == 0:
-                print 'FAIL: No reactions found for "%s".' % (entry.label)
+                print('FAIL: No reactions found for "%s".' % (entry.label))
             else:
-                print 'FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label)
+                print('FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label))
 
         assert reaction is not None
         assert template is not None

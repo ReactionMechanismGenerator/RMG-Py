@@ -278,7 +278,7 @@ class KineticsRules(Database):
             if match:
                 index = f.next().strip()
                 assert line.rstrip() == f.next().rstrip(), "Overline didn't match underline"
-                if not comments.has_key(index):
+                if index not in comments:
                     comments[index] = ''
                 line = next(f)
             comments[index] += line

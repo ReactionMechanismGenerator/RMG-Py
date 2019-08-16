@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import print_function
 import os
 import unittest
 
@@ -1052,8 +1053,8 @@ class TestKinetics(unittest.TestCase):
                                     products=products,
                                     family='H_Abstraction')
         family = getDB('kinetics').families['H_Abstraction']
-        print reaction.reactants
-        print reaction.products
+        print(reaction.reactants)
+        print(reaction.products)
         family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
 
         # test that the reaction has labels
@@ -1095,8 +1096,8 @@ class TestKinetics(unittest.TestCase):
                                     products=products,
                                     family='H_Abstraction')
         family = getDB('kinetics').families['H_Abstraction']
-        print reaction.reactants
-        print reaction.products
+        print(reaction.reactants)
+        print(reaction.products)
         family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
 
         # test that the reaction has labels
