@@ -139,7 +139,7 @@ class KineticsJob(object):
                                     "{0} in reaction {1}".format(e, self.reaction.label))
                 try:
                     self.draw(output_directory)
-                except:
+                except Exception as e:
                     logging.warning("Could not draw reaction {1} due to error: {0}".format(e, self.reaction.label))
             if self.sensitivity_conditions is not None:
                 logging.info('\n\nRunning sensitivity analysis...')

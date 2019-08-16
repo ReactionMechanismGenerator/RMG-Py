@@ -44,6 +44,7 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from arkane.common import get_element_mass
 from arkane.exceptions import LogError
 from arkane.log import Log
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -161,7 +162,7 @@ class MolproLog(Log):
         mass = np.array(mass, np.float64)
         coord = np.array(coord, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
+            raise LogError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
 
         return coord, number, mass
 
@@ -300,8 +301,8 @@ class MolproLog(Log):
                     if any([mrci, f12a, f12b]):
                         break
             else:
-                raise ValueError('Could not determine type of calculation. Currently, CCSD(T)-F12a, CCSD(T)-F12b,'
-                                 ' MRCI, MRCI+Davidson are supported')
+                raise LogError('Could not determine type of calculation. Currently, CCSD(T)-F12a, CCSD(T)-F12b, '
+                               'MRCI, MRCI+Davidson are supported')
             # Search for e_elect
             for line in lines:
                 if f12 and f12a:
@@ -344,7 +345,7 @@ class MolproLog(Log):
             logging.debug('Molpro energy found is {0} J/mol'.format(e_elect))
             return e_elect
         else:
-            raise Exception('Unable to find energy in Molpro log file {0}.'.format(self.path))
+            raise LogError('Unable to find energy in Molpro log file {0}.'.format(self.path))
 
     def loadZeroPointEnergy(self):
         """
@@ -369,8 +370,8 @@ class MolproLog(Log):
         if zpe is not None:
             return zpe
         else:
-            raise Exception('Unable to find zero-point energy in Molpro log file. Make sure that the'
-                            ' keyword {frequencies, thermo, print,thermo} is included in the input file')
+            raise LogError('Unable to find zero-point energy in Molpro log file. Make sure that the '
+                           'keyword {frequencies, thermo, print,thermo} is included in the input file.')
 
     def loadNegativeFrequency(self):
         """
@@ -388,7 +389,7 @@ class MolproLog(Log):
                 line = f.readline()
 
         if frequency is None:
-            raise Exception('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
+            raise LogError('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
         negativefrequency = -float(frequency)
         return negativefrequency
 
@@ -410,7 +411,7 @@ class MolproLog(Log):
             if 'T1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise ValueError('Unable to find T1 diagnostic in energy file: {}'.format(self.path))
+        raise LogError('Unable to find T1 diagnostic in energy file: {0}'.format(self.path))
 
     def get_D1_diagnostic(self):
         """
@@ -424,7 +425,7 @@ class MolproLog(Log):
             if 'D1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise ValueError('Unable to find D1 diagnostic in energy file: {}'.format(self.path))
+        raise LogError('Unable to find D1 diagnostic in energy file: {0}'.format(self.path))
 
     def load_scan_pivot_atoms(self):
         """Not implemented for Molpro"""

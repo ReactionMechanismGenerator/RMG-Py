@@ -40,10 +40,10 @@ import os.path
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
+from arkane.exceptions import LogError
 from arkane.log import Log
 
 ################################################################################
@@ -149,10 +149,10 @@ class GaussianLog(Log):
         number = np.array(number, np.int)
         mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from Gaussian geometry output file {0}. '
-                             'Make sure the output file is not corrupt.\nNote: if your species has '
-                             '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
-                             'input file so Gaussian will print the input orientation geomerty.'.format(self.path))
+            raise LogError('Unable to read atoms from Gaussian geometry output file {0}. '
+                           'Make sure the output file is not corrupt.\nNote: if your species has '
+                           '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
+                           'input file so Gaussian will print the input orientation geometry.'.format(self.path))
 
         return coord, number, mass
 
@@ -293,12 +293,12 @@ class GaussianLog(Log):
 
         if e0_composite is not None:
             if scaled_zpe is None:
-                raise Exception('Unable to find zero-point energy in Gaussian log file.')
+                raise LogError('Unable to find zero-point energy in Gaussian log file.')
             return e0_composite - scaled_zpe
         elif e_elect is not None:
             return e_elect
         else:
-            raise Exception('Unable to find energy in Gaussian log file.')
+            raise LogError('Unable to find energy in Gaussian log file.')
 
     def loadZeroPointEnergy(self):
         """
@@ -324,7 +324,7 @@ class GaussianLog(Log):
         if zpe is not None:
             return zpe
         else:
-            raise Exception('Unable to find zero-point energy in Gaussian log file.')
+            raise LogError('Unable to find zero-point energy in Gaussian log file.')
 
     def loadScanEnergies(self):
         """
@@ -414,8 +414,8 @@ class GaussianLog(Log):
                     elif terms[0] == 'B':
                         action_index = 3  # bond length with 2 terms
                     else:
-                        raise ValueError('This file has an option not supported by arkane.'
-                                         'Unable to read scan specs for line: {}'.format(line))
+                        raise LogError('This file has an option not supported by Arkane. '
+                                       'Unable to read scan specs for line: {0}'.format(line))
                     if len(terms) > action_index:
                         # specified type explicitly
                         if terms[action_index] == letter_spec:
@@ -467,8 +467,8 @@ class GaussianLog(Log):
         frequencies.sort()
         frequency = [freq for freq in frequencies if freq < 0][0]
         if frequency is None:
-            raise Exception('Unable to find imaginary frequency of {1} '
-                            'in Gaussian output file {0}'.format(self.path, self.species.label))
+            raise LogError('Unable to find imaginary frequency of {1} '
+                           'in Gaussian output file {0}'.format(self.path, self.species.label))
         return frequency
 
     def get_D1_diagnostic(self):

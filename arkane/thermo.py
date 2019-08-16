@@ -107,7 +107,7 @@ class ThermoJob(object):
         attribute).
         """
         if self.thermoClass.lower() not in ['wilhoit', 'nasa']:
-            raise Exception('Unknown thermodynamic model "{0}".'.format(self.thermoClass))
+            raise InputError('Unknown thermodynamic model "{0}".'.format(self.thermoClass))
 
         species = self.species
 

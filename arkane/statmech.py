@@ -417,7 +417,7 @@ class StatMechJob(object):
             try:
                 symbol = symbol_by_number[atom_num]
             except KeyError:
-                raise Exception('Could not recognize element number {0}.'.format(atom_num))
+                raise ElementError('Could not recognize element number {0}.'.format(atom_num))
             atoms[symbol] = atoms.get(symbol, 0) + 1
 
         # Save atoms for use in writing thermo output
@@ -696,7 +696,7 @@ class StatMechJob(object):
         """
         try:
             import pylab
-        except:
+        except ImportError:
             logging.warning("Unable to import pylab. not generating hindered rotor figures")
             return
         phi = np.arange(0, 6.3, 0.02, np.float64)
