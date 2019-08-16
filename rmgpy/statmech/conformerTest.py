@@ -58,8 +58,8 @@ class TestConformer(unittest.TestCase):
             modes=[
                 IdealGasTranslation(mass=(28.03, "amu")),
                 NonlinearRotor(inertia=([3.41526, 16.6498, 20.065], "amu*angstrom^2"), symmetry=4),
-                HarmonicOscillator(frequencies=([828.397, 970.652, 977.223, 1052.93, 1233.55,
-                                                 1367.56, 1465.09, 1672.25, 3098.46, 3111.7, 3165.79, 3193.54], "cm^-1")),
+                HarmonicOscillator(frequencies=([828.397, 970.652, 977.223, 1052.93, 1233.55, 1367.56, 1465.09,
+                                                 1672.25, 3098.46, 3111.7, 3165.79, 3193.54], "cm^-1")),
             ],
             spinMultiplicity=1,
             opticalIsomers=1,
@@ -87,8 +87,7 @@ class TestConformer(unittest.TestCase):
             [-1.8039, -1.2051, -0.2293],
         ])
         self.number = np.array([6, 1, 1, 1, 6, 1, 1, 1])
-        self.mass = np.array([12, 1.007825, 1.007825, 1.007825,
-                                 12, 1.007825, 1.007825, 1.007825])
+        self.mass = np.array([12, 1.007825, 1.007825, 1.007825, 12, 1.007825, 1.007825, 1.007825])
         self.E0 = -93.5097
         self.conformer = Conformer(
             E0=(self.E0, "kJ/mol"),
@@ -96,7 +95,8 @@ class TestConformer(unittest.TestCase):
                 IdealGasTranslation(mass=(30.0469, "amu")),
                 NonlinearRotor(inertia=([6.27071, 25.3832, 25.3833], "amu*angstrom^2"), symmetry=6),
                 HarmonicOscillator(frequencies=([818.917, 819.479, 987.099, 1206.76, 1207.05, 1396, 1411.35, 1489.73,
-                                                 1489.95, 1492.49, 1492.66, 2995.36, 2996.06, 3040.77, 3041, 3065.86, 3066.02], "cm^-1")),
+                                                 1489.95, 1492.49, 1492.66, 2995.36, 2996.06, 3040.77, 3041, 3065.86,
+                                                 3066.02], "cm^-1")),
                 HinderedRotor(inertia=(1.56768, "amu*angstrom^2"), symmetry=3,
                               barrier=(2.69401, "kcal/mol"), quantum=False, semiclassical=False),
             ],
@@ -107,139 +107,140 @@ class TestConformer(unittest.TestCase):
             mass=(self.mass, "amu"),
         )
 
-    def test_getPartitionFunction_ethylene(self):
+    def test_get_partition_function_ethylene(self):
         """
         Test the StatMech.getPartitionFunction() method for ethylene.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        t_list = np.array([300, 500, 1000, 1500, 2000])
         q_exp_list = np.array([4.05311e+09, 4.19728e+10, 2.82309e+12, 7.51135e+13, 1.16538e+15])
-        for T, q_exp in zip(Tlist, q_exp_list):
-            q_act = self.ethylene.getPartitionFunction(T)
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.ethylene.getPartitionFunction(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
-    def test_getHeatCapacity_ethylene(self):
+    def test_get_heat_capacity_ethylene(self):
         """
         Test the StatMech.getHeatCapacity() method for ethylene.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        t_list = np.array([300, 500, 1000, 1500, 2000])
         cv_exp_list = np.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
-        for T, cv_exp in zip(Tlist, cv_exp_list):
-            cv_act = self.ethylene.getHeatCapacity(T)
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = self.ethylene.getHeatCapacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, 3)
 
-    def test_getEnthalpy_ethylene(self):
+    def test_get_enthalpy_ethylene(self):
         """
         Test the StatMech.getEnthalpy() method for ethylene.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
-        Hexplist = np.array([4.23129, 5.04826, 7.27337, 8.93167, 10.1223]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.ethylene.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([4.23129, 5.04826, 7.27337, 8.93167, 10.1223]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.ethylene.getEnthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
-    def test_getEntropy_ethylene(self):
+    def test_get_entropy_ethylene(self):
         """
         Test the StatMech.getEntropy() method for ethylene.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
-        Sexplist = np.array([26.3540, 29.5085, 35.9422, 40.8817, 44.8142]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.ethylene.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, 3)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([26.3540, 29.5085, 35.9422, 40.8817, 44.8142]) * constants.R
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.ethylene.getEntropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, 3)
 
-    def test_getSumOfStates_ethylene(self):
+    def test_get_sum_of_states_ethylene(self):
         """
         Test the StatMech.getSumOfStates() method for ethylene.
         """
-        Elist = np.arange(0, 5000*11.96, 2*11.96)
-        sumStates = self.ethylene.getSumOfStates(Elist)
-        densStates = self.ethylene.getDensityOfStates(Elist)
-        for n in range(10, len(Elist)):
+        e_list = np.arange(0, 5000*11.96, 2*11.96)
+        sum_states = self.ethylene.getSumOfStates(e_list)
+        dens_states = self.ethylene.getDensityOfStates(e_list)
+        for n in range(10, len(e_list)):
             self.assertTrue(0.8 < np.sum(
-                densStates[0:n+1]) / sumStates[n] < 1.25, '{0} != {1}'.format(np.sum(densStates[0:n+1]), sumStates[n]))
+                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(
+                np.sum(dens_states[0:n+1]), sum_states[n]))
 
-    def test_getDensityOfStates_ethylene(self):
+    def test_get_density_of_states_ethylene(self):
         """
         Test the StatMech.getDensityOfStates() method for ethylene.
         """
-        Elist = np.arange(0, 5000*11.96, 2*11.96)
-        densStates = self.ethylene.getDensityOfStates(Elist)
-        T = 100
-        Qact = np.sum(densStates * np.exp(-Elist / constants.R / T))
-        Qexp = self.ethylene.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-1*Qexp)
+        e_list = np.arange(0, 5000*11.96, 2*11.96)
+        dens_states = self.ethylene.getDensityOfStates(e_list)
+        temperature = 100
+        q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+        q_exp = self.ethylene.getPartitionFunction(temperature)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-1*q_exp)
 
-    def test_getPartitionFunction_oxygen(self):
+    def test_get_partition_function_oxygen(self):
         """
         Test the StatMech.getPartitionFunction() method for oxygen.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
-        Qexplist = np.array([1.55584e+09, 9.38339e+09, 1.16459e+11, 5.51016e+11, 1.72794e+12])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.oxygen.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([1.55584e+09, 9.38339e+09, 1.16459e+11, 5.51016e+11, 1.72794e+12])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.oxygen.getPartitionFunction(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4*q_exp)
 
-    def test_getHeatCapacity_oxygen(self):
+    def test_get_heat_capacity_oxygen(self):
         """
         Test the StatMech.getHeatCapacity() method for oxygen.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
-        Cvexplist = np.array([3.52538, 3.70877, 4.14751, 4.32063, 4.39392]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.oxygen.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, 3)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([3.52538, 3.70877, 4.14751, 4.32063, 4.39392]) * constants.R
+        for temperature, Cvexp in zip(t_list, cv_exp_list):
+            cv_act = self.oxygen.getHeatCapacity(temperature)
+            self.assertAlmostEqual(Cvexp, cv_act, 3)
 
-    def test_getEnthalpy_oxygen(self):
+    def test_get_enthalpy_oxygen(self):
         """
         Test the StatMech.getEnthalpy() method for oxygen.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = np.array([3.50326, 3.54432, 3.75062, 3.91623,
-                                  4.02765]) * constants.R * Tlist
-        for T, h_exp in zip(Tlist, h_exp_list):
-            h_act = self.oxygen.getEnthalpy(T)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([3.50326, 3.54432, 3.75062, 3.91623, 4.02765]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.oxygen.getEnthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4*h_exp)
 
-    def test_getEntropy_oxygen(self):
+    def test_get_entropy_oxygen(self):
         """
         Test the StatMech.getEntropy() method for oxygen.
         """
-        Tlist = np.array([300, 500, 1000, 1500, 2000])
+        t_list = np.array([300, 500, 1000, 1500, 2000])
         s_exp_list = np.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
-        for T, s_exp in zip(Tlist, s_exp_list):
-            s_act = self.oxygen.getEntropy(T)
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.oxygen.getEntropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, 3)
 
-    def test_getSumOfStates_oxygen(self):
+    def test_get_sum_of_states_oxygen(self):
         """
         Test the StatMech.getSumOfStates() method for oxygen.
         """
-        Elist = np.arange(0, 5000*11.96, 2*11.96)
-        sum_states = self.oxygen.getSumOfStates(Elist)
-        dens_states = self.oxygen.getDensityOfStates(Elist)
-        for n in range(10, len(Elist)):
+        e_list = np.arange(0, 5000*11.96, 2*11.96)
+        sum_states = self.oxygen.getSumOfStates(e_list)
+        dens_states = self.oxygen.getDensityOfStates(e_list)
+        for n in range(10, len(e_list)):
             self.assertTrue(0.8 < np.sum(
-                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(np.sum(dens_states[0:n+1]), sum_states[n]))
+                dens_states[0:n+1]) / sum_states[n] < 1.25, '{0} != {1}'.format(np.sum(dens_states[0:n+1]),
+                                                                                sum_states[n]))
 
-    def test_getDensityOfStates_oxygen(self):
+    def test_get_density_of_states_oxygen(self):
         """
         Test the StatMech.getDensityOfStates() method for oxygen.
         """
-        Elist = np.arange(0, 5000*11.96, 2*11.96)
-        dens_states = self.oxygen.getDensityOfStates(Elist)
-        T = 100
-        q_act = np.sum(dens_states * np.exp(-Elist / constants.R / T))
-        q_exp = self.oxygen.getPartitionFunction(T)
+        e_list = np.arange(0, 5000*11.96, 2*11.96)
+        dens_states = self.oxygen.getDensityOfStates(e_list)
+        temperature = 100
+        q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+        q_exp = self.oxygen.getPartitionFunction(temperature)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-1*q_exp)
 
-    def test_getTotalMass(self):
+    def test_get_total_mass(self):
         """
         Test the Conformer.getTotalMass() method.
         """
         self.assertAlmostEqual(self.conformer.getTotalMass() *
                                constants.Na*1000., np.sum(self.mass), 6)
 
-    def test_getCenterOfMass(self):
+    def test_get_center_of_mass(self):
         """
         Test the Conformer.getCenterOfMass() method.
         """
@@ -248,30 +249,29 @@ class TestConformer(unittest.TestCase):
         self.assertAlmostEqual(cm[1]*1e10, -0.60255, 4)
         self.assertAlmostEqual(cm[2]*1e10, -0.27900, 4)
 
-    def test_getMomentOfInertiaTensor(self):
+    def test_get_moment_of_inertia_tensor(self):
         """
         Test the Conformer.getMomentOfInertiaTensor() method.
         """
-        I = self.conformer.getMomentOfInertiaTensor()
-        self.assertAlmostEqual(I[0, 0]*constants.Na*1e23, 20.65968, 4)
-        self.assertAlmostEqual(I[0, 1]*constants.Na*1e23, -7.48115, 4)
-        self.assertAlmostEqual(I[0, 2]*constants.Na*1e23, -3.46416, 4)
-        self.assertAlmostEqual(I[1, 0]*constants.Na*1e23, -7.48115, 4)
-        self.assertAlmostEqual(I[1, 1]*constants.Na*1e23, 13.53472, 4)
-        self.assertAlmostEqual(I[1, 2]*constants.Na*1e23, -5.48630, 4)
-        self.assertAlmostEqual(I[2, 0]*constants.Na*1e23, -3.46416, 4)
-        self.assertAlmostEqual(I[2, 1]*constants.Na*1e23, -5.48630, 4)
-        self.assertAlmostEqual(I[2, 2]*constants.Na*1e23, 22.84296, 4)
+        inertia = self.conformer.getMomentOfInertiaTensor()
+        self.assertAlmostEqual(inertia[0, 0]*constants.Na*1e23, 20.65968, 4)
+        self.assertAlmostEqual(inertia[0, 1]*constants.Na*1e23, -7.48115, 4)
+        self.assertAlmostEqual(inertia[0, 2]*constants.Na*1e23, -3.46416, 4)
+        self.assertAlmostEqual(inertia[1, 0]*constants.Na*1e23, -7.48115, 4)
+        self.assertAlmostEqual(inertia[1, 1]*constants.Na*1e23, 13.53472, 4)
+        self.assertAlmostEqual(inertia[1, 2]*constants.Na*1e23, -5.48630, 4)
+        self.assertAlmostEqual(inertia[2, 0]*constants.Na*1e23, -3.46416, 4)
+        self.assertAlmostEqual(inertia[2, 1]*constants.Na*1e23, -5.48630, 4)
+        self.assertAlmostEqual(inertia[2, 2]*constants.Na*1e23, 22.84296, 4)
 
-    def test_getPrincipalMomentsOfInertia(self):
+    def test_get_principal_moments_of_inertia(self):
         """
         Test the Conformer.getPrincipalMomentsOfInertia() method.
         """
-        I, V = self.conformer.getPrincipalMomentsOfInertia()
-        self.assertAlmostEqual(I[0]*constants.Na*1e23,  6.27074, 4)
-        self.assertAlmostEqual(I[1]*constants.Na*1e23, 25.38321, 3)
-        self.assertAlmostEqual(I[2]*constants.Na*1e23, 25.38341, 3)
-        # print V
+        inertia, axes = self.conformer.getPrincipalMomentsOfInertia()
+        self.assertAlmostEqual(inertia[0]*constants.Na*1e23,  6.27074, 4)
+        self.assertAlmostEqual(inertia[1]*constants.Na*1e23, 25.38321, 3)
+        self.assertAlmostEqual(inertia[2]*constants.Na*1e23, 25.38341, 3)
         # For some reason the axes seem to jump around (positioning and signs change)
         # but the absolute values should be the same as we expect
         expected = sorted([0.497140,
@@ -283,32 +283,32 @@ class TestConformer(unittest.TestCase):
                            0.364578,
                            0.792099,
                            0.489554])
-        result = sorted(abs(V).flat)
+        result = sorted(abs(axes).flat)
         for i, j in zip(expected, result):
             self.assertAlmostEqual(i, j, 4)
         return
 
-    def test_getInternalReducedMomentOfInertia(self):
+    def test_get_internal_reduced_moment_of_inertia(self):
         """
         Test the Conformer.getInternalReducedMomentOfInertia() method.
         """
-        I = self.conformer.getInternalReducedMomentOfInertia(pivots=[1, 5], top1=[1, 2, 3, 4])
-        self.assertAlmostEqual(I*constants.Na*1e23, 1.56768, 4)
+        inertia = self.conformer.getInternalReducedMomentOfInertia(pivots=[1, 5], top1=[1, 2, 3, 4])
+        self.assertAlmostEqual(inertia * constants.Na * 1e23, 1.56768, 4)
 
-    def test_getNumberDegreesOfFreedom(self):
+    def test_get_number_degrees_of_freedom(self):
         """
         Test the Conformer.getNumberDegreesOfFreedom() method.
         """
         # this is for ethane:
-        numberDegreesOfFreedom = self.conformer.getNumberDegreesOfFreedom()
-        self.assertEqual(numberDegreesOfFreedom, 24)
+        number_degrees_of_freedom = self.conformer.getNumberDegreesOfFreedom()
+        self.assertEqual(number_degrees_of_freedom, 24)
 
         # this is for ethylene:
-        # It doesn't check aganist 3*Natoms, because Natoms is not declared.
-        numberDegreesOfFreedom = self.ethylene.getNumberDegreesOfFreedom()
-        self.assertEqual(numberDegreesOfFreedom, 18)
+        # It doesn't check against 3 * n_atoms, because n_atoms is not declared.
+        number_degrees_of_freedom = self.ethylene.getNumberDegreesOfFreedom()
+        self.assertEqual(number_degrees_of_freedom, 18)
 
         # this is for CO
-        # It doesn't check aganist 3*Natoms, because Natoms is not declared.
-        numberDegreesOfFreedom = self.oxygen.getNumberDegreesOfFreedom()
-        self.assertEqual(numberDegreesOfFreedom, 6)
+        # It doesn't check against 3 * n_atoms, because n_atoms is not declared.
+        number_degrees_of_freedom = self.oxygen.getNumberDegreesOfFreedom()
+        self.assertEqual(number_degrees_of_freedom, 6)
