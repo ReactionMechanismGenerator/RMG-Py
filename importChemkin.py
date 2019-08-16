@@ -862,6 +862,10 @@ class ModelMatcher():
         elif len_rmg_reactants == len_ck_reactants:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
+        # Return False now if we can already be sure
+        if not forwardReactantsMatch:
+            if not eitherDirection:
+                return False
 
         rmg_products = rmg_reaction.products
         ck_products = chemkin_reaction.products
@@ -948,6 +952,11 @@ class ModelMatcher():
                 reverseReactantsMatch = True
         elif len_rmg_reactants == len_ck_products:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
+
+        # Should have already returned if matched in forward direction.
+        # Return False now if we can be sure it's no match.
+        if not reverseReactantsMatch:
+            return False
 
         # Compare products to reactants
         reverseProductsMatch = False
