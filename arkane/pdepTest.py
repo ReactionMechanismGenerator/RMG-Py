@@ -28,17 +28,21 @@
 #                                                                             #
 ###############################################################################
 
-import os
-import unittest
-import shutil
+"""
+This module contains unit tests of the :mod:`arkane.pdep` module.
+"""
+
 import logging
+import os
+import shutil
+import unittest
 
 from nose.plugins.attrib import attr
 
 from rmgpy import settings
 from rmgpy.chemkin import readReactionsBlock
-from rmgpy.species import Species
 from rmgpy.kinetics.chebyshev import Chebyshev
+from rmgpy.species import Species
 
 from arkane.main import Arkane
 

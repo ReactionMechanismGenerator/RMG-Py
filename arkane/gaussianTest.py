@@ -28,17 +28,17 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-import unittest
 import os
+import unittest
 
-from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
+import numpy as np
+
 import rmgpy.constants as constants
 from external.wip import work_in_progress
+from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
-
 
 ################################################################################
 
@@ -68,7 +68,7 @@ class GaussianTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = numpy.array([298.15], numpy.float64)
+        t_list = np.array([298.15], np.float64)
         self.assertAlmostEqual(trans.getPartitionFunction(t_list), 5.83338e6, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(t_list), 2.59622e3, delta=1e-2)
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.0481e0, delta=1e-4)
@@ -95,7 +95,7 @@ class GaussianTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = numpy.array([298.15], numpy.float64)
+        t_list = np.array([298.15], np.float64)
         self.assertAlmostEqual(trans.getPartitionFunction(t_list), 7.11169e6, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(t_list), 7.13316e1, delta=1e-4)
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.00037e0, delta=1e-4)
@@ -123,7 +123,7 @@ class GaussianTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = numpy.array([298.15], numpy.float64)
+        t_list = np.array([298.15], np.float64)
 
         self.assertAlmostEqual(trans.getPartitionFunction(t_list), 5.83338e6, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(t_list), 2.53410e3, delta=1e-2)

@@ -32,8 +32,8 @@
 This script contains unit tests of the :mod:`arkane.thermo` module.
 """
 
-import unittest
 import os
+import unittest
 
 from rmgpy.species import Species
 

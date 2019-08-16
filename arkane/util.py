@@ -32,6 +32,9 @@ from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
 
+################################################################################
+
+
 def determine_qm_software(fullpath):
     """
     Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
@@ -57,4 +60,3 @@ def determine_qm_software(fullpath):
             raise InputError(
                 "File at {0} could not be identified as a Gaussian, QChem or Molpro log file.".format(fullpath))
     return software_log
-

@@ -28,14 +28,16 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
-import os
+"""
+This module contains unit tests of the :mod:`arkane.qchem` module.
+"""
 
-from rmgpy.statmech import Conformer, IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, \
-    HinderedRotor
+import os
+import unittest
+
+from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.qchem import QChemLog
-
 
 ################################################################################
 

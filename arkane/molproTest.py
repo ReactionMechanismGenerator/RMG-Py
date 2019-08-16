@@ -28,12 +28,17 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
+"""
+This module contains unit tests of the :mod:`arkane.molpro` module.
+"""
+
 import unittest
 import os
 
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
+import numpy as np
+
 import rmgpy.constants as constants
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.molpro import MolproLog
 
@@ -97,7 +102,7 @@ class MolproTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = numpy.array([298.15], numpy.float64)
+        t_list = np.array([298.15], np.float64)
 
         self.assertAlmostEqual(trans.getPartitionFunction(t_list), 9.175364e7, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(t_list), 1.00005557e5, delta=1e-2)

@@ -32,6 +32,7 @@
 This module provides custom Exception classes for use in Arkane.
 """
 
+
 class AtomEnergyCorrectionError(Exception):
     """
     An exception to be raised when an error occurs while applying atom

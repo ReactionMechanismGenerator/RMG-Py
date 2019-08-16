@@ -31,12 +31,14 @@
 """
 A general class for parsing quantum mechanical log files
 """
-import os.path
 import logging
+import os.path
 import shutil
 
 from rmgpy.qm.qmdata import QMData
 from rmgpy.qm.symmetry import PointGroupCalculator
+
+################################################################################
 
 
 class Log(object):

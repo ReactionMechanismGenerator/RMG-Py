@@ -32,15 +32,16 @@
 This script contains unit tests of the :mod:`arkane.main` module.
 """
 
-import unittest
 import os
+import unittest
+
 import numpy as np
 
 from rmgpy.exceptions import InputError
 
 from arkane import Arkane
-from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 from arkane.qchem import QChemLog
+from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 
 ################################################################################
 

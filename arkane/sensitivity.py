@@ -33,15 +33,15 @@ This module contains classes for sensitivity analysis
 of kinetics and pressure-dependent jobs.
 """
 
-import os
 import logging
+import os
 import string
+
 import numpy as np
 
+from rmgpy.pdep import Configuration
 import rmgpy.quantity as quantity
 from rmgpy.species import TransitionState
-from rmgpy.pdep import Configuration
-
 
 ################################################################################
 

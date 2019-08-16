@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane Gaussian module
-Used to parse Gaussian output files
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -33,14 +28,20 @@ Used to parse Gaussian output files
 #                                                                             #
 ###############################################################################
 
-import math
-import numpy
+"""
+Arkane Gaussian module
+Used to parse Gaussian output files
+"""
+
 import logging
+import math
 import os.path
 
+import numpy as np
+
 import rmgpy.constants as constants
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 from rmgpy.exceptions import InputError
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
 from arkane.log import Log
@@ -100,7 +101,7 @@ class GaussianLog(Log):
             while line != '':
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
-                    F = numpy.zeros((n_rows, n_rows), numpy.float64)
+                    F = np.zeros((n_rows, n_rows), np.float64)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -144,9 +145,9 @@ class GaussianLog(Log):
         for num in number:
             mass1, _ = get_element_mass(num)
             mass.append(mass1)
-        coord = numpy.array(coord, numpy.float64)
-        number = numpy.array(number, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
+        coord = np.array(coord, np.float64)
+        number = np.array(number, np.int)
+        mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise InputError('Unable to read atoms from Gaussian geometry output file {0}. '
                              'Make sure the output file is not corrupt.\nNote: if your species has '
@@ -365,14 +366,14 @@ class GaussianLog(Log):
         if rigid_scan:
             print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
 
-        vlist = numpy.array(vlist, numpy.float64)
+        vlist = np.array(vlist, np.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be
         # the lowest energy conformer
         check_conformer_energy(vlist, self.path)
 
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
-        vlist -= numpy.min(vlist)
+        vlist -= np.min(vlist)
         vlist *= constants.E_h * constants.Na
 
         if opt_freq:
@@ -381,7 +382,7 @@ class GaussianLog(Log):
         # Determine the set of dihedral angles corresponding to the loaded energies
         # This assumes that you start at 0.0, finish at 360.0, and take
         # constant step sizes in between
-        angle = numpy.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), numpy.float64)
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), np.float64)
 
         return vlist, angle
 

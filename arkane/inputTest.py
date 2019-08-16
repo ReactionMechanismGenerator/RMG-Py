@@ -32,19 +32,18 @@
 Unit tests for the input module of Arkane
 """
 
-import unittest
 import os
+import unittest
 
 import rmgpy
-from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.transport import TransportData
-from rmgpy.statmech.vibration import HarmonicOscillator
-from rmgpy.statmech.translation import IdealGasTranslation
-from rmgpy.statmech.rotation import NonlinearRotor
-from rmgpy.kinetics.tunneling import Eckart
 from rmgpy.exceptions import InputError
+from rmgpy.kinetics.tunneling import Eckart
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.statmech.rotation import NonlinearRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.molecule import Molecule
+from rmgpy.transport import TransportData
 
 from arkane.input import species, transitionState, reaction, SMILES, loadInputFile, process_model_chemistry
 

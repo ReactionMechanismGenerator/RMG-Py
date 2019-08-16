@@ -34,22 +34,22 @@ a job for computing the pressure-dependent rate coefficients of a unimolecular
 reaction network.
 """
 
-import os.path
-import math
-import numpy
 import logging
+import math
+import os.path
+
+import numpy as np
 
 import rmgpy.quantity as quantity
+from rmgpy.chemkin import writeKineticsEntry
+from rmgpy.data.kinetics.library import LibraryReaction
+from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
-from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.chemkin import writeKineticsEntry
-from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError
 
 from arkane.output import prettify
 from arkane.sensitivity import PDepSensitivity as sa
-
 
 ################################################################################
 
@@ -115,8 +115,8 @@ class PressureDependenceJob(object):
         self.Tcount = Tcount
         if Tlist is not None:
             self.Tlist = Tlist
-            self.Tmin = (numpy.min(self.Tlist.value_si), "K")
-            self.Tmax = (numpy.max(self.Tlist.value_si), "K")
+            self.Tmin = (np.min(self.Tlist.value_si), "K")
+            self.Tmax = (np.max(self.Tlist.value_si), "K")
             self.Tcount = len(self.Tlist.value_si)
         else:
             self.Tlist = None
@@ -126,8 +126,8 @@ class PressureDependenceJob(object):
         self.Pcount = Pcount
         if Plist is not None:
             self.Plist = Plist
-            self.Pmin = (numpy.min(self.Plist.value_si) * 1e-5, "bar")
-            self.Pmax = (numpy.max(self.Plist.value_si) * 1e-5, "bar")
+            self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
+            self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
             self.Pcount = len(self.Plist.value_si)
         else:
             self.Plist = None
@@ -317,7 +317,7 @@ class PressureDependenceJob(object):
             pass
         elif self.interpolationModel[0].lower() == 'chebyshev':
             # Distribute temperatures on a Gauss-Chebyshev grid
-            Tlist = numpy.zeros(Tcount, numpy.float64)
+            Tlist = np.zeros(Tcount, np.float64)
             for i in range(Tcount):
                 T = -math.cos((2 * i + 1) * math.pi / (2 * self.Tcount))
                 T = 2.0 / ((1.0 / Tmax - 1.0 / Tmin) * T + 1.0 / Tmax + 1.0 / Tmin)
@@ -325,7 +325,7 @@ class PressureDependenceJob(object):
             self.Tlist = (Tlist, "K")
         else:
             # Distribute temperatures evenly on a T^-1 domain
-            Tlist = 1.0 / numpy.linspace(1.0 / Tmax, 1.0 / Tmin, Tcount)
+            Tlist = 1.0 / np.linspace(1.0 / Tmax, 1.0 / Tmin, Tcount)
             self.Tlist = (Tlist, "K")
         return self.Tlist.value_si
 
@@ -389,7 +389,7 @@ class PressureDependenceJob(object):
             pass
         elif self.interpolationModel[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
-            Plist = numpy.zeros(Pcount, numpy.float64)
+            Plist = np.zeros(Pcount, np.float64)
             for i in range(Pcount):
                 P = -math.cos((2 * i + 1) * math.pi / (2 * self.Pcount))
                 P = 10 ** (0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
@@ -397,7 +397,7 @@ class PressureDependenceJob(object):
             self.Plist = (Plist * 1e-5, "bar")
         else:
             # Distribute pressures evenly on a log domain
-            Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
+            Plist = 10.0 ** np.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
             self.Plist = (Plist * 1e-5, "bar")
         return self.Plist.value_si
 
@@ -584,7 +584,7 @@ class PressureDependenceJob(object):
 
                 fig = plt.figure(figsize=(10, 6))
 
-                K2 = numpy.zeros((Tcount, Pcount))
+                K2 = np.zeros((Tcount, Pcount))
                 if reaction.kinetics is not None:
                     for t in range(Tcount):
                         for p in range(Pcount):

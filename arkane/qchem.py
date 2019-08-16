@@ -36,10 +36,10 @@ Used to parse QChem output files
 import math
 import logging
 import os.path
-import numpy
+
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
@@ -160,9 +160,9 @@ class QChemLog(Log):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        coord = numpy.array(coord, numpy.float64)
-        number = numpy.array(number, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
+        coord = np.array(coord, np.float64)
+        number = np.array(number, np.int)
+        mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise InputError('Unable to read atoms from QChem geometry output file {0}'.format(self.path))
 
@@ -253,7 +253,7 @@ class QChemLog(Log):
                         logging.debug('inertia is {}'.format(str(inertia)))
                         for i in range(2):
                             inertia[i] *= (constants.a0 / 1e-10) ** 2
-                        inertia = numpy.sqrt(inertia[0] * inertia[1])
+                        inertia = np.sqrt(inertia[0] * inertia[1])
                         rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                         rot.append(rotation)
                     else:
@@ -326,15 +326,15 @@ class QChemLog(Log):
                     raise InputError('QChem Job did not sucessfully complete: SCF failed to converge')
         logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
-        Vlist = numpy.array(Vlist, numpy.float64)
+        Vlist = np.array(Vlist, np.float64)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
         check_conformer_energy(Vlist, self.path)
 
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
-        Vlist -= numpy.min(Vlist)
+        Vlist -= np.min(Vlist)
         Vlist *= constants.E_h * constants.Na
-        angle = numpy.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(Vlist) - 1), numpy.float64)
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(Vlist) - 1), np.float64)
         return Vlist, angle
 
     def loadNegativeFrequency(self):

@@ -30,8 +30,8 @@
 
 import unittest
 
-from rmgpy.species import TransitionState
 from rmgpy.reaction import Reaction
+from rmgpy.species import TransitionState
 
 from arkane.kinetics import KineticsJob
 

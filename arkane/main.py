@@ -32,18 +32,18 @@
 This module contains the :class:`Arkane` class, the main class used to run Arkane.
 """
 
+import argparse
+import csv
+import logging
 import os
 import os.path
 import sys
-import logging
-import argparse
 import time
-import csv
+
 import numpy as np
 
 try:
     import matplotlib
-
     matplotlib.rc('mathtext', default='regular')
 except ImportError:
     pass
@@ -54,13 +54,13 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.exceptions import InputError
 
+from arkane.common import is_pdep
+from arkane.explorer import ExplorerJob
 from arkane.input import loadInputFile
 from arkane.kinetics import KineticsJob
+from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
-from arkane.pdep import PressureDependenceJob
-from arkane.explorer import ExplorerJob
-from arkane.common import is_pdep
 
 
 ################################################################################

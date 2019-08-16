@@ -34,35 +34,33 @@ statistical mechanics job used to compute and save the statistical mechanics
 information for a single species or transition state.
 """
 
-import os.path
-import math
-import numpy as np
 import logging
+import math
+import os.path
 
-from rdkit.Chem import GetPeriodicTable
+import matplotlib.pyplot as plt
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.species import TransitionState, Species
-from rmgpy.statmech.translation import Translation, IdealGasTranslation
-from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
-from rmgpy.statmech.conformer import Conformer
-from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
-from rmgpy.exceptions import InputError, StatmechError
-from rmgpy.quantity import Quantity
+from rmgpy.exceptions import InputError, ElementError
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.species import TransitionState, Species
+from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor
+from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
+from rmgpy.statmech.translation import Translation, IdealGasTranslation
+from rmgpy.statmech.vibration import HarmonicOscillator
+from rmgpy.quantity import Quantity
 
-from arkane.output import prettify
-from arkane.log import Log
-from arkane.gaussian import GaussianLog
-from arkane.molpro import MolproLog
-from arkane.qchem import QChemLog
-from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
+from arkane.common import symbol_by_number
 from arkane.encorr.corr import get_atom_correction, get_bac
+from arkane.gaussian import GaussianLog
+from arkane.log import Log
+from arkane.molpro import MolproLog
+from arkane.output import prettify
+from arkane.qchem import QChemLog
 from arkane.util import determine_qm_software
-
 
 ################################################################################
 

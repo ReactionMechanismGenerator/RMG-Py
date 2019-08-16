@@ -32,24 +32,21 @@ Arkane kinetics module
 #                                                                             #
 ###############################################################################
 
-import os.path
-import numpy
-import string
 import logging
+import os.path
+import string
 
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
-from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
-from rmgpy.kinetics.tunneling import Wigner, Eckart
+import numpy as np
+
 import rmgpy.quantity as quantity
+from rmgpy.exceptions import SpeciesError, InputError
+from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
-from rmgpy.exceptions import SpeciesError
 
-from arkane.sensitivity import KineticsSensitivity as sa
-from arkane.output import prettify
 from arkane.common import ArkaneSpecies
-
+from arkane.output import prettify
+from arkane.sensitivity import KineticsSensitivity as sa
 
 ################################################################################
 
@@ -80,9 +77,7 @@ class KineticsJob(object):
             self.Tmax = (max(self.Tlist.value_si), 'K')
             self.Tcount = len(self.Tlist.value_si)
         else:
-            self.Tlist = (1 / numpy.linspace(1 / self.Tmax.value_si,
-                                             1 / self.Tmin.value_si,
-                                             self.Tcount), 'K')
+            self.Tlist = (1 / np.linspace(1 / self.Tmax.value_si, 1 / self.Tmin.value_si, self.Tcount), 'K')
 
         self.reaction = reaction
         self.kunits = None
@@ -184,7 +179,7 @@ class KineticsJob(object):
             else:
                 raise ValueError('Unknown tunneling model {0!r} for reaction {1}.'.format(tunneling, self.reaction))
         logging.debug('Generating {0} kinetics model for {1}...'.format(kinetics_class, self.reaction))
-        klist = numpy.zeros_like(self.Tlist.value_si)
+        klist = np.zeros_like(self.Tlist.value_si)
         for i, t in enumerate(self.Tlist.value_si):
             klist[i] = self.reaction.calculateTSTRateCoefficient(t)
         order = len(self.reaction.reactants)
@@ -223,7 +218,7 @@ class KineticsJob(object):
             f.write('#   ======= =========== =========== =========== ===============\n')
 
             if self.Tlist is None:
-                t_list = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
+                t_list = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
             else:
                 t_list = self.Tlist.value_si
 
@@ -275,8 +270,8 @@ class KineticsJob(object):
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
-            kinetics0rev = Arrhenius().fitToData(t_list, numpy.array(k0revs), kunits=self.krunits)
-            kineticsrev = Arrhenius().fitToData(t_list, numpy.array(krevs), kunits=self.krunits)
+            kinetics0rev = Arrhenius().fitToData(t_list, np.array(k0revs), kunits=self.krunits)
+            kineticsrev = Arrhenius().fitToData(t_list, np.array(krevs), kunits=self.krunits)
 
             f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
             f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
@@ -338,9 +333,9 @@ class KineticsJob(object):
         if self.Tlist is not None:
             t_list = [t for t in self.Tlist.value_si]
         else:
-            t_list = 1000.0 / numpy.arange(0.4, 3.35, 0.05)
-        klist = numpy.zeros_like(t_list)
-        klist2 = numpy.zeros_like(t_list)
+            t_list = 1000.0 / np.arange(0.4, 3.35, 0.05)
+        klist = np.zeros_like(t_list)
+        klist2 = np.zeros_like(t_list)
         for i in xrange(len(t_list)):
             klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
             klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
@@ -601,7 +596,7 @@ class KineticsDrawer:
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = numpy.zeros((len(self.wells), 2), numpy.float64)
+        coordinates = np.zeros((len(self.wells), 2), np.float64)
         x = padding
         for i in xrange(len(self.wells)):
             well = self.wells[i]
@@ -626,7 +621,7 @@ class KineticsDrawer:
             well_rects.append([l + x - 0.5 * w, t + y + 6, w, h])
 
         # Squish columns together from the left where possible until an isomer is encountered
-        oldLeft = numpy.min(coordinates[:, 0])
+        oldLeft = np.min(coordinates[:, 0])
         Nleft = - 1
         columns = []
         for i in range(Nleft, -1, -1):
@@ -653,7 +648,7 @@ class KineticsDrawer:
                 delta = x - coordinates[c, 0]
                 well_rects[c][0] += delta
                 coordinates[c, 0] += delta
-        new_left = numpy.min(coordinates[:, 0])
+        new_left = np.min(coordinates[:, 0])
         coordinates[:, 0] -= new_left - oldLeft
 
         # Squish columns together from the right where possible until an isomer is encountered

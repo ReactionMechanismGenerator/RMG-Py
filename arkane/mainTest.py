@@ -32,14 +32,16 @@
 This script contains unit tests of the :mod:`arkane.main` module.
 """
 
-import unittest
 import logging
 import os
 import shutil
-from nose.plugins.attrib import attr
+import unittest
 import zipfile
 
+from nose.plugins.attrib import attr
+
 import rmgpy
+
 from arkane import Arkane
 
 ################################################################################

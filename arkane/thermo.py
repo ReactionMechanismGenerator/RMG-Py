@@ -33,28 +33,23 @@ This module contains the :class:`ThermoJob` class, used to compute and save the
 thermodynamics information for a single species.
 """
 
-import os.path
-import numpy as np
 import logging
+import os.path
 import string
 
+import numpy as np
+
 import rmgpy.constants as constants
-from rmgpy.statmech.translation import Translation, IdealGasTranslation
-from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor
-from rmgpy.statmech.conformer import Conformer
-from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.chemkin import writeThermoEntry
-from rmgpy.species import Species
+from rmgpy.exceptions import InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
+from rmgpy.species import Species
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor
+from rmgpy.thermo.wilhoit import Wilhoit
 
-from arkane.output import prettify
 from arkane.common import ArkaneSpecies, symbol_by_number
-
+from arkane.output import prettify
 
 ################################################################################
 

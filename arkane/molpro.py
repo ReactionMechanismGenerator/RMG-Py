@@ -33,15 +33,16 @@ Used to parse Molpro output files
 #                                                                             #
 ###############################################################################
 
-import math
-import numpy
 import logging
+import math
+
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import get_element_mass
+from arkane.exceptions import LogError
 from arkane.log import Log
 
 ################################################################################
@@ -92,7 +93,7 @@ class MolproLog(Log):
             while line != '':
                 # Read force constant matrix
                 if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                    fc = numpy.zeros((n_rows, n_rows), numpy.float64)
+                    fc = np.zeros((n_rows, n_rows), np.float64)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -156,9 +157,9 @@ class MolproLog(Log):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        number = numpy.array(number, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
-        coord = numpy.array(coord, numpy.float64)
+        number = np.array(number, np.int)
+        mass = np.array(mass, np.float64)
+        coord = np.array(coord, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise InputError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
 

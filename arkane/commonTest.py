@@ -32,24 +32,24 @@
 This script contains unit tests of the :mod:`arkane.common` module.
 """
 
-import unittest
-import numpy
+import logging
 import os
 import shutil
-import logging
+import unittest
+
+import numpy as np
 
 import rmgpy
 import rmgpy.constants as constants
 from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.species import Species, TransitionState
 from rmgpy.quantity import ScalarQuantity
+from rmgpy.species import Species, TransitionState
 from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass
-from arkane.statmech import InputError, StatMechJob
 from arkane.input import jobList
-
+from arkane.statmech import InputError, StatMechJob
 
 ################################################################################
 
@@ -67,8 +67,8 @@ class CommonTest(unittest.TestCase):
                   -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
                   -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
                   -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
-        v_list = numpy.array(v_list, numpy.float64)
-        v_diff = (v_list[0] - numpy.min(v_list)) * constants.E_h * constants.Na / 1000
+        v_list = np.array(v_list, np.float64)
+        v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
         self.assertAlmostEqual(v_diff / 2.7805169838282797, 1, 5)
 
 
@@ -153,7 +153,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the temperature list.
         """
-        self.assertTrue(numpy.array_equal(self.TlistValue, numpy.array([450, 500, 678, 700])))
+        self.assertTrue(np.array_equal(self.TlistValue, np.array([450, 500, 678, 700])))
 
     def testPminValue(self):
         """
@@ -177,7 +177,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the pressure list.
         """
-        self.assertTrue(numpy.array_equal(self.PlistValue, numpy.array([0.01, 0.1, 1, 3, 10, 100, 1000])))
+        self.assertTrue(np.array_equal(self.PlistValue, np.array([0.01, 0.1, 1, 3, 10, 100, 1000])))
 
     def testGenerateTemperatureList(self):
         """

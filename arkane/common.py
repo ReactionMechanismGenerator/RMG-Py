@@ -32,32 +32,31 @@ Arkane common module
 #                                                                             #
 ###############################################################################
 
-import numpy
-import os.path
 import logging
-import time
+import os.path
 import string
+import time
 
+import numpy as np
 import yaml
 
-from rmgpy.rmgobject import RMGObject
+import rmgpy.constants as constants
 from rmgpy import __version__
-from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.molecule.element import elementList
 from rmgpy.molecule.translator import toInChI, toInChIKey
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.quantity import ScalarQuantity, ArrayQuantity
+from rmgpy.rmgobject import RMGObject
+from rmgpy.species import Species, TransitionState
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
 from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
-from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.transport import TransportData
 from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
-from rmgpy.species import Species, TransitionState
-import rmgpy.constants as constants
+from rmgpy.transport import TransportData
 
 from arkane.pdep import PressureDependenceJob
-
 
 ################################################################################
 
@@ -183,7 +182,7 @@ class ArkaneSpecies(RMGObject):
                 data = species.getThermoData()
                 h298 = data.getEnthalpy(298) / 4184.
                 s298 = data.getEntropy(298) / 4.184
-                temperatures = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
+                temperatures = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
                 cp = []
                 for t in temperatures:
                     cp.append(data.getHeatCapacity(t) / 4.184)
@@ -279,7 +278,7 @@ class ArkaneSpecies(RMGObject):
                       'NASA': NASA,
                       'NASAPolynomial': NASAPolynomial,
                       'ThermoData': ThermoData,
-                      'np_array': numpy.array,
+                      'np_array': np.array,
                       }
         freq_data = None
         if 'imaginary_frequency' in data:
@@ -331,8 +330,8 @@ def check_conformer_energy(Vlist, path):
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 
     log a warning message.  
     """
-    Vlist = numpy.array(Vlist, numpy.float64)
-    Vdiff = (Vlist[0] - numpy.min(Vlist)) * constants.E_h * constants.Na / 1000
+    Vlist = np.array(Vlist, np.float64)
+    Vdiff = (Vlist[0] - np.min(Vlist)) * constants.E_h * constants.Na / 1000
     if Vdiff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
                         'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
