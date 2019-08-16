@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.rmgobject cimport RMGObject
 
@@ -41,6 +41,6 @@ cdef class Mode(RMGObject):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=?)
     
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=?)

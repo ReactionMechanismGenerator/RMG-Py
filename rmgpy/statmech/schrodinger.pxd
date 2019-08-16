@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 ################################################################################
 
@@ -37,6 +37,6 @@ cpdef double getEnthalpy(double T, energy, degeneracy=?, int n0=?, int nmax=?, d
 
 cpdef double getEntropy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -100000000
 
-cpdef numpy.ndarray getSumOfStates(numpy.ndarray Elist, energy, degeneracy=?, int n0=?, numpy.ndarray sumStates0=?)
+cpdef np.ndarray getSumOfStates(np.ndarray Elist, energy, degeneracy=?, int n0=?, np.ndarray sumStates0=?)
 
-cpdef numpy.ndarray getDensityOfStates(numpy.ndarray Elist, energy, degeneracy=?, int n0=?, numpy.ndarray densStates0=?)
+cpdef np.ndarray getDensityOfStates(np.ndarray Elist, energy, degeneracy=?, int n0=?, np.ndarray densStates0=?)
