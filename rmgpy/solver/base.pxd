@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 from cpython cimport bool
 include "settings.pxi"
 if DASPK == 1:
@@ -39,8 +39,8 @@ cdef class ReactionSystem(DASx):
 
     # reactor state variables:
     cdef public float t0
-    cdef public numpy.ndarray y0
-    cdef public numpy.ndarray dydt0
+    cdef public np.ndarray y0
+    cdef public np.ndarray dydt0
 
     #  variables that determine the dimensions of arrays and matrices:
     cdef public int numCoreSpecies
@@ -55,54 +55,54 @@ cdef class ReactionSystem(DASx):
     # variables that store stoichiometry data
     cdef public dict speciesIndex
     cdef public dict reactionIndex
-    cdef public numpy.ndarray reactantIndices
-    cdef public numpy.ndarray productIndices
-    cdef public numpy.ndarray networkIndices
+    cdef public np.ndarray reactantIndices
+    cdef public np.ndarray productIndices
+    cdef public np.ndarray networkIndices
 
     # matrices that cache kinetic and rate data
-    cdef public numpy.ndarray kf # forward rate coefficients
-    cdef public numpy.ndarray kb # reverse rate coefficients
-    cdef public numpy.ndarray Keq # equilibrium constants
-    cdef public numpy.ndarray networkLeakCoefficients
-    cdef public numpy.ndarray jacobianMatrix
+    cdef public np.ndarray kf  # forward rate coefficients
+    cdef public np.ndarray kb  # reverse rate coefficients
+    cdef public np.ndarray Keq  # equilibrium constants
+    cdef public np.ndarray networkLeakCoefficients
+    cdef public np.ndarray jacobianMatrix
 
-    cdef public numpy.ndarray coreSpeciesConcentrations
+    cdef public np.ndarray coreSpeciesConcentrations
     
     #surface information
-    cdef public numpy.ndarray surfaceSpeciesIndices
-    cdef public numpy.ndarray surfaceReactionIndices
-    cdef public numpy.ndarray validLayeringIndices
+    cdef public np.ndarray surfaceSpeciesIndices
+    cdef public np.ndarray surfaceReactionIndices
+    cdef public np.ndarray validLayeringIndices
     
     # The reaction and species rates at the current time (in mol/m^3*s)
-    cdef public numpy.ndarray coreSpeciesRates
-    cdef public numpy.ndarray coreReactionRates
-    cdef public numpy.ndarray coreSpeciesProductionRates
-    cdef public numpy.ndarray coreSpeciesConsumptionRates
-    cdef public numpy.ndarray edgeSpeciesRates
-    cdef public numpy.ndarray edgeReactionRates
+    cdef public np.ndarray coreSpeciesRates
+    cdef public np.ndarray coreReactionRates
+    cdef public np.ndarray coreSpeciesProductionRates
+    cdef public np.ndarray coreSpeciesConsumptionRates
+    cdef public np.ndarray edgeSpeciesRates
+    cdef public np.ndarray edgeReactionRates
 
-    cdef public numpy.ndarray networkLeakRates    
+    cdef public np.ndarray networkLeakRates    
 
     # variables that cache maximum rate (ratio) data
-    cdef public numpy.ndarray maxEdgeSpeciesRateRatios
-    cdef public numpy.ndarray maxNetworkLeakRateRatios
+    cdef public np.ndarray maxEdgeSpeciesRateRatios
+    cdef public np.ndarray maxNetworkLeakRateRatios
     
     #for managing prunable edge species
     cdef public list prunableSpecies
     cdef public list prunableNetworks
-    cdef public numpy.ndarray prunableSpeciesIndices
-    cdef public numpy.ndarray prunableNetworkIndices
+    cdef public np.ndarray prunableSpeciesIndices
+    cdef public np.ndarray prunableNetworkIndices
     
     # sensitivity variables
     # cdef public int sensmethod
-    cdef public numpy.ndarray sensitivityCoefficients
+    cdef public np.ndarray sensitivityCoefficients
     cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
-    # cdef public numpy.ndarray senpar
+    # cdef public np.ndarray senpar
 
     # tolerance settings
-    cdef public numpy.ndarray atol_array
-    cdef public numpy.ndarray rtol_array
+    cdef public np.ndarray atol_array
+    cdef public np.ndarray rtol_array
     
     cdef public list snapshots
 
@@ -112,9 +112,9 @@ cdef class ReactionSystem(DASx):
     cdef public bint trimolecular
 
     # reaction threshold settings
-    cdef public numpy.ndarray unimolecularThreshold
-    cdef public numpy.ndarray bimolecularThreshold
-    cdef public numpy.ndarray trimolecularThreshold
+    cdef public np.ndarray unimolecularThreshold
+    cdef public np.ndarray bimolecularThreshold
+    cdef public np.ndarray trimolecularThreshold
 
     # methods
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,

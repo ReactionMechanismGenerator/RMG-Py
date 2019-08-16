@@ -30,19 +30,19 @@ Contains the :class:`SimpleReactor` class, providing a reaction system
 consisting of a homogeneous, isothermal, isobaric batch reactor.
 """
 
-import numpy
-cimport numpy
-
 import itertools
 import logging
 
-from base cimport ReactionSystem
 cimport cython
+import numpy as np
+cimport numpy as np
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
-from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.quantity cimport ScalarQuantity
+from rmgpy.solver.base cimport ReactionSystem
+
 
 cdef class SurfaceReactor(ReactionSystem):
     """
@@ -64,11 +64,11 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public dict initialSurfaceCoverages
     cdef public ScalarQuantity surfaceVolumeRatio
     cdef public ScalarQuantity surfaceSiteDensity
-    cdef public numpy.ndarray reactionsOnSurface # (catalyst surface, not core/edge surface)
-    cdef public numpy.ndarray speciesOnSurface # (catalyst surface, not core/edge surface)
+    cdef public np.ndarray reactionsOnSurface  # (catalyst surface, not core/edge surface)
+    cdef public np.ndarray speciesOnSurface  # (catalyst surface, not core/edge surface)
 
-    def __init__(self, 
-                 T, 
+    def __init__(self,
+                 T,
                  initialP,
                  initialGasMoleFractions,
                  initialSurfaceCoverages,
@@ -81,15 +81,15 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensConditions=None,
                  ):
         ReactionSystem.__init__(self,
-                                termination, 
-                                sensitiveSpecies, 
+                                termination,
+                                sensitiveSpecies,
                                 sensitivityThreshold)
 
-        if isinstance(T,list):
+        if isinstance(T, list):
             self.Trange = [Quantity(t) for t in T]
         else:
             self.T = Quantity(T)
-        if isinstance(initialP,list):
+        if isinstance(initialP, list):
             raise NotImplementedError("Can't do ranges of initial pressures for surface reactors yet")
         else:
             self.initialP = Quantity(initialP)
@@ -97,25 +97,25 @@ cdef class SurfaceReactor(ReactionSystem):
         self.initialSurfaceCoverages = initialSurfaceCoverages
         self.surfaceVolumeRatio = Quantity(surfaceVolumeRatio)
         self.surfaceSiteDensity = Quantity(surfaceSiteDensity)
-        self.V = 0 # will be set from ideal gas law in initializeModel
+        self.V = 0  # will be set from ideal gas law in initializeModel
         self.constantVolume = True
         self.sensConditions = sensConditions
         self.nSims = nSims
-        
+
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
-        Convert the initialGasMoleFractions and initialSurfaceCoverages dictionaries
+        Convert the initial_gas_mole_fractions and initial_surface_coverages dictionaries
         from species names into species objects,
         using the given dictionary of species.
         """
-        initialGasMoleFractions = {}
-        for label, moleFrac in self.initialGasMoleFractions.iteritems():
-            initialGasMoleFractions[speciesDict[label]] = moleFrac
-        self.initialGasMoleFractions = initialGasMoleFractions
-        initialSurfaceCoverages = {}
-        for label, surfaceCoverage in self.initialSurfaceCoverages.iteritems():
-            initialSurfaceCoverages[speciesDict[label]] = surfaceCoverage
-        self.initialSurfaceCoverages = initialSurfaceCoverages
+        initial_gas_mole_fractions = {}
+        for label, moleFrac in self.initialGasMoleFractions.items():
+            initial_gas_mole_fractions[speciesDict[label]] = moleFrac
+        self.initialGasMoleFractions = initial_gas_mole_fractions
+        initial_surface_coverages = {}
+        for label, surfaceCoverage in self.initialSurfaceCoverages.items():
+            initial_surface_coverages[speciesDict[label]] = surfaceCoverage
+        self.initialSurfaceCoverages = initial_surface_coverages
 
     cpdef initializeModel(self,
                           list coreSpecies,
@@ -156,22 +156,22 @@ cdef class SurfaceReactor(ReactionSystem):
                                        filterReactions=filterReactions,
                                        conditions=conditions,
                                        )
-        cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
+        cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef int index
         #: 1 if it's on a surface, 0 if it's in the gas phase
-        reactionsOnSurface = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.int)
-        speciesOnSurface = numpy.zeros((self.numCoreSpecies), numpy.int)
-        for spec, index in self.speciesIndex.iteritems():
+        reactions_on_surface = np.zeros((self.numCoreReactions + self.numEdgeReactions), np.int)
+        species_on_surface = np.zeros((self.numCoreSpecies), np.int)
+        for spec, index in self.speciesIndex.items():
             if index >= self.numCoreSpecies:
                 continue
             if spec.containsSurfaceSite():
-                speciesOnSurface[index] = 1
-        for rxn, index in self.reactionIndex.iteritems():
+                species_on_surface[index] = 1
+        for rxn, index in self.reactionIndex.items():
             if rxn.isSurfaceReaction():
-                reactionsOnSurface[index] = 1
-        self.speciesOnSurface = speciesOnSurface
-        self.reactionsOnSurface = reactionsOnSurface
-        
+                reactions_on_surface[index] = 1
+        self.speciesOnSurface = species_on_surface
+        self.reactionsOnSurface = reactions_on_surface
+
         # Set initial conditions
         self.set_initial_conditions()
 
@@ -183,7 +183,7 @@ cdef class SurfaceReactor(ReactionSystem):
         self.generate_rate_coefficients(coreReactions, edgeReactions)
 
         ReactionSystem.compute_network_variables(self, pdepNetworks)
-        
+
         ReactionSystem.set_initial_derivative(self)
 
         # Initialize the model
@@ -195,19 +195,18 @@ cdef class SurfaceReactor(ReactionSystem):
         arrays with the values computed at the temperature and (effective) pressure of the 
         reaction system.
         """
-        
-        cdef double P, surfaceVolumeRatioSI
-        
-        surfaceVolumeRatioSI = self.surfaceVolumeRatio.value_si
+
+        cdef double P, surface_volume_ratio_si
+
+        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si
         # ToDo: Pressure should come from ideal gas law?
         P = self.initialP.value_si
 
         warned = False
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
-            
-            # ToDo: getRateCoefficient should also depend on surface coverages vector
 
+            # ToDo: getRateCoefficient should also depend on surface coverages vector
 
             if rxn.isSurfaceReaction():
                 """
@@ -216,13 +215,13 @@ cdef class SurfaceReactor(ReactionSystem):
                 This is to avoid repeatedly multiplying a bunch of things inside every 
                 loop of the ODE solver.
                 """
-                self.kf[j] = (surfaceVolumeRatioSI *
+                self.kf[j] = (surface_volume_ratio_si *
                               rxn.getSurfaceRateCoefficient(self.T.value_si,
                                                             self.surfaceSiteDensity.value_si
                                                             ))
             else:
                 if not warned and rxn.kinetics.isPressureDependent():
-                    logging.warning("Pressure may be varying, but using initial pressure to evalute k(T,P) expressions!")
+                    logging.warning("Pressure may be varying, but using initial pressure to evaluate k(T,P) expressions!")
                     warned = True
                 self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)
             if rxn.reversible:
@@ -238,25 +237,24 @@ cdef class SurfaceReactor(ReactionSystem):
         """
         logging.info("\nSurface reaction system {}".format(number if number is not None else ""))
         logging.info("Gas phase mole fractions:")
-        totalGasMoles = 0
-        for spec, moleFrac in self.initialGasMoleFractions.iteritems():
+        total_gas_moles = 0
+        for spec, moleFrac in self.initialGasMoleFractions.items():
             logging.info("  {0:20s} {1:.5g}".format(spec, moleFrac))
-            totalGasMoles += moleFrac
-        logging.info("Total gas phase:          {:.3g} moles".format(totalGasMoles))
+            total_gas_moles += moleFrac
+        logging.info("Total gas phase:          {:.3g} moles".format(total_gas_moles))
         logging.info("Pressure:                 {:.3g} Pa".format(self.initialP.value_si))
         logging.info("Temperature:              {} K".format(self.T.value_si))
-        V = constants.R * self.T.value_si * totalGasMoles / self.initialP.value_si
+        V = constants.R * self.T.value_si * total_gas_moles / self.initialP.value_si
         logging.info("Reactor volume:           {:.3g} m3".format(V))
-        surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si # 1/m
-        logging.info("Surface/volume ratio:     {:.3g} m2/m3".format(surfaceVolumeRatio_si))
+        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si  # 1/m
+        logging.info("Surface/volume ratio:     {:.3g} m2/m3".format(surface_volume_ratio_si))
         logging.info("Surface site density:     {:.3g} mol/m2".format(self.surfaceSiteDensity.value_si))
-        totalSurfaceSites = V * surfaceVolumeRatio_si * self.surfaceSiteDensity.value_si # total surface sites in reactor
-        logging.info("Surface sites in reactor: {:.3g} moles".format(totalSurfaceSites))
+        total_surface_sites = V * surface_volume_ratio_si * self.surfaceSiteDensity.value_si  # total surface sites in reactor
+        logging.info("Surface sites in reactor: {:.3g} moles".format(total_surface_sites))
         logging.info("Initial surface coverages (and amounts):")
-        for spec, coverage in self.initialSurfaceCoverages.iteritems():
-            logging.info("  {:18s} {:.5g} = {:.5g} moles".format(spec, coverage, totalSurfaceSites*coverage ))
-        
-        
+        for spec, coverage in self.initialSurfaceCoverages.items():
+            logging.info("  {:18s} {:.5g} = {:.5g} moles".format(spec, coverage, total_surface_sites * coverage))
+
     def set_initial_conditions(self):
         """
         Sets the initial conditions of the rate equations that represent the 
@@ -281,34 +279,34 @@ cdef class SurfaceReactor(ReactionSystem):
         ###            to also update the log_initial_conditions above
         ###            which unfortunately is maintained separately.
         ### 
-        cdef double V, P, surfaceVolumeRatio_si
-        
+        cdef double V, P, surface_volume_ratio_si
+
         ReactionSystem.set_initial_conditions(self)
         # self.y0 tracks number of moles of each core species
 
         # add only the gas phase species first
         self.y0 *= 0.
-        for spec, moleFrac in self.initialGasMoleFractions.iteritems():
+        for spec, moleFrac in self.initialGasMoleFractions.items():
             i = self.get_species_index(spec)
-            self.y0[i] = moleFrac # moles in reactor
+            self.y0[i] = moleFrac  # moles in reactor
 
         # Use ideal gas law to compute reactor volume
-        V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.initialP.value_si
-        self.V = V # volume in m^3  (assume reactor volume is gas phase volume, i.e catalyst takes no space)
+        V = constants.R * self.T.value_si * np.sum(self.y0[:self.numCoreSpecies]) / self.initialP.value_si
+        self.V = V  # volume in m^3  (assume reactor volume is gas phase volume, i.e catalyst takes no space)
 
-        surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si # 1/m
-        totalSurfaceSites = V * surfaceVolumeRatio_si * self.surfaceSiteDensity.value_si # total surface sites in reactor
+        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si  # 1/m
+        total_surface_sites = V * surface_volume_ratio_si * self.surfaceSiteDensity.value_si  # total surface sites in reactor
 
-        for spec, coverage in self.initialSurfaceCoverages.iteritems():
+        for spec, coverage in self.initialSurfaceCoverages.items():
             i = self.get_species_index(spec)
-            self.y0[i] = totalSurfaceSites * coverage # moles in reactor
-        
-        for j, isSurfaceSpecies in enumerate(self.speciesOnSurface): # should only go up to core species
+            self.y0[i] = total_surface_sites * coverage  # moles in reactor
+
+        for j, isSurfaceSpecies in enumerate(self.speciesOnSurface):  # should only go up to core species
             if isSurfaceSpecies:
-                self.coreSpeciesConcentrations[j] = self.y0[j] / V / surfaceVolumeRatio_si # moles per m2 of surface
+                self.coreSpeciesConcentrations[j] = self.y0[j] / V / surface_volume_ratio_si  # moles per m2 of surface
             else:
-                self.coreSpeciesConcentrations[j] = self.y0[j] / V # moles per m3 of gas
-        
+                self.coreSpeciesConcentrations[j] = self.y0[j] / V  # moles per m3 of gas
+
     def compute_network_variables(self, pdepNetworks=None):
         # ToDo: this should allow pressure to vary?
         # for now, just call the base class version.
@@ -329,179 +327,179 @@ cdef class SurfaceReactor(ReactionSystem):
         # extending the Smoluchowski equation to three molecules
         trimolecular_threshold_rate_constant = modelSettings.filterThreshold / 1e3
         return (unimolecular_threshold_rate_constant,
-                    bimolecular_threshold_rate_constant,
-                    trimolecular_threshold_rate_constant)
+                bimolecular_threshold_rate_constant,
+                trimolecular_threshold_rate_constant)
 
     @cython.boundscheck(False)
     def residual(self,
                  double t,
-                 numpy.ndarray[numpy.float64_t, ndim=1] N,
-                 numpy.ndarray[numpy.float64_t, ndim=1] dNdt,
-                 numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)
+                 np.ndarray[np.float64_t, ndim=1] N,
+                 np.ndarray[np.float64_t, ndim=1] dNdt,
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)
                  ):
 
         """
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
-        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.int_t, ndim=1] reactionsOnSurface, speciesOnSurface
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
-        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
+        cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
+        cdef np.ndarray[np.int_t, ndim=1] reactions_on_surface, species_on_surface
+        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
+        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef int i, j, z, first, second, third
-        cdef double k, V, reactionRate, surfaceVolumeRatio_si
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] C
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk
+        cdef double k, V, reaction_rate, surface_volume_ratio_si
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
+        cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
+        cdef np.ndarray[np.float64_t, ndim=1] C
+        cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
 
         ir = self.reactantIndices
         ip = self.productIndices
-        equilibriumConstants = self.Keq
+        equilibrium_constants = self.Keq
 
-        kf = self.kf # are already 'per m3 of reactor' even for surface reactions
-        kr = self.kb # are already 'per m3 of reactor' even for surface reactions
-        
+        kf = self.kf  # are already 'per m3 of reactor' even for surface reactions
+        kr = self.kb  # are already 'per m3 of reactor' even for surface reactions
+
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
 
-        numCoreSpecies = len(self.coreSpeciesRates)
-        numCoreReactions = len(self.coreReactionRates)
-        numEdgeSpecies = len(self.edgeSpeciesRates)
-        numEdgeReactions = len(self.edgeReactionRates)
-        numPdepNetworks = len(self.networkLeakRates)
-        
-        
-        res = numpy.zeros(numCoreSpecies, numpy.float64)
+        num_core_species = len(self.coreSpeciesRates)
+        num_core_reactions = len(self.coreReactionRates)
+        num_edge_species = len(self.edgeSpeciesRates)
+        num_edge_reactions = len(self.edgeReactionRates)
+        num_pdep_networks = len(self.networkLeakRates)
 
-        coreSpeciesConcentrations = numpy.zeros_like(self.coreSpeciesConcentrations)
-        coreSpeciesRates = numpy.zeros_like(self.coreSpeciesRates)
-        coreReactionRates = numpy.zeros_like(self.coreReactionRates)
-        edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
-        edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
-        networkLeakRates = numpy.zeros_like(self.networkLeakRates)
-        
-        reactionsOnSurface = self.reactionsOnSurface
-        speciesOnSurface = self.speciesOnSurface
-        surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si
+        res = np.zeros(num_core_species, np.float64)
 
-        C = numpy.zeros_like(self.coreSpeciesConcentrations)
-        V =  self.V # constant volume reactor
+        core_species_concentrations = np.zeros_like(self.coreSpeciesConcentrations)
+        core_species_rates = np.zeros_like(self.coreSpeciesRates)
+        core_reaction_rates = np.zeros_like(self.coreReactionRates)
+        edge_species_rates = np.zeros_like(self.edgeSpeciesRates)
+        edge_reaction_rates = np.zeros_like(self.edgeReactionRates)
+        network_leak_rates = np.zeros_like(self.networkLeakRates)
 
-        for j in xrange(numCoreSpecies):
-            if speciesOnSurface[j]:
-                C[j] = (N[j] / V) / surfaceVolumeRatio_si
+        reactions_on_surface = self.reactionsOnSurface
+        species_on_surface = self.speciesOnSurface
+        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si
+
+        C = np.zeros_like(self.coreSpeciesConcentrations)
+        V = self.V  # constant volume reactor
+
+        for j in range(num_core_species):
+            if species_on_surface[j]:
+                C[j] = (N[j] / V) / surface_volume_ratio_si
             else:
                 C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
-            coreSpeciesConcentrations[j] = C[j]
-        
-        for j in xrange(ir.shape[0]):
-            k = kf[j]
-            if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
-                reactionRate = 0.0
-            elif ir[j,1] == -1: # only one reactant
-                reactionRate = k * C[ir[j,0]]
-            elif ir[j,2] == -1: # only two reactants
-                reactionRate = k * C[ir[j,0]] * C[ir[j,1]]
-            else: # three reactants!! (really?)
-                reactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
-            k = kr[j]
-            if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
-                pass
-            elif ip[j,1] == -1: # only one reactant
-                reactionRate -= k * C[ip[j,0]]
-            elif ip[j,2] == -1: # only two reactants
-                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]]
-            else: # three reactants!! (really?)
-                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
+            core_species_concentrations[j] = C[j]
 
-            "reactionRate is now in mol/m3/s"
+        for j in range(ir.shape[0]):
+            k = kf[j]
+            if ir[j, 0] >= num_core_species or ir[j, 1] >= num_core_species or ir[j, 2] >= num_core_species:
+                reaction_rate = 0.0
+            elif ir[j, 1] == -1:  # only one reactant
+                reaction_rate = k * C[ir[j, 0]]
+            elif ir[j, 2] == -1:  # only two reactants
+                reaction_rate = k * C[ir[j, 0]] * C[ir[j, 1]]
+            else:  # three reactants!! (really?)
+                reaction_rate = k * C[ir[j, 0]] * C[ir[j, 1]] * C[ir[j, 2]]
+            k = kr[j]
+            if ip[j, 0] >= num_core_species or ip[j, 1] >= num_core_species or ip[j, 2] >= num_core_species:
+                pass
+            elif ip[j, 1] == -1:  # only one reactant
+                reaction_rate -= k * C[ip[j, 0]]
+            elif ip[j, 2] == -1:  # only two reactants
+                reaction_rate -= k * C[ip[j, 0]] * C[ip[j, 1]]
+            else:  # three reactants!! (really?)
+                reaction_rate -= k * C[ip[j, 0]] * C[ip[j, 1]] * C[ip[j, 2]]
+
+            "reaction_rate is now in mol/m3/s"
             # Set the reaction and species rates
-            if j < numCoreReactions:
+            if j < num_core_reactions:
                 # The reaction is a core reaction
-                coreReactionRates[j] = reactionRate
+                core_reaction_rates[j] = reaction_rate
 
                 # Add/subtract the total reaction rate from each species rate
                 # Since it's a core reaction we know that all of its reactants
                 # and products are core species
-                first = ir[j,0]
-                coreSpeciesRates[first] -= reactionRate
-                second = ir[j,1]
+                first = ir[j, 0]
+                core_species_rates[first] -= reaction_rate
+                second = ir[j, 1]
                 if second != -1:
-                    coreSpeciesRates[second] -= reactionRate
-                    third = ir[j,2]
+                    core_species_rates[second] -= reaction_rate
+                    third = ir[j, 2]
                     if third != -1:
-                        coreSpeciesRates[third] -= reactionRate
-                first = ip[j,0]
-                coreSpeciesRates[first] += reactionRate
-                second = ip[j,1]
+                        core_species_rates[third] -= reaction_rate
+                first = ip[j, 0]
+                core_species_rates[first] += reaction_rate
+                second = ip[j, 1]
                 if second != -1:
-                    coreSpeciesRates[second] += reactionRate
-                    third = ip[j,2]
+                    core_species_rates[second] += reaction_rate
+                    third = ip[j, 2]
                     if third != -1:
-                        coreSpeciesRates[third] += reactionRate
+                        core_species_rates[third] += reaction_rate
 
             else:
                 # The reaction is an edge reaction
-                edgeReactionRates[j-numCoreReactions] = reactionRate
+                edge_reaction_rates[j - num_core_reactions] = reaction_rate
 
                 # Add/substract the total reaction rate from each species rate
                 # Since it's an edge reaction its reactants and products could
                 # be either core or edge species
                 # We're only interested in the edge species
-                first = ir[j,0]
-                if first >= numCoreSpecies: edgeSpeciesRates[first-numCoreSpecies] -= reactionRate
-                second = ir[j,1]
+                first = ir[j, 0]
+                if first >= num_core_species: edge_species_rates[first - num_core_species] -= reaction_rate
+                second = ir[j, 1]
                 if second != -1:
-                    if second >= numCoreSpecies: edgeSpeciesRates[second-numCoreSpecies] -= reactionRate
-                    third = ir[j,2]
+                    if second >= num_core_species: edge_species_rates[second - num_core_species] -= reaction_rate
+                    third = ir[j, 2]
                     if third != -1:
-                        if third >= numCoreSpecies: edgeSpeciesRates[third-numCoreSpecies] -= reactionRate
-                first = ip[j,0]
-                if first >= numCoreSpecies: edgeSpeciesRates[first-numCoreSpecies] += reactionRate
-                second = ip[j,1]
+                        if third >= num_core_species: edge_species_rates[third - num_core_species] -= reaction_rate
+                first = ip[j, 0]
+                if first >= num_core_species: edge_species_rates[first - num_core_species] += reaction_rate
+                second = ip[j, 1]
                 if second != -1:
-                    if second >= numCoreSpecies: edgeSpeciesRates[second-numCoreSpecies] += reactionRate
-                    third = ip[j,2]
+                    if second >= num_core_species: edge_species_rates[second - num_core_species] += reaction_rate
+                    third = ip[j, 2]
                     if third != -1:
-                        if third >= numCoreSpecies: edgeSpeciesRates[third-numCoreSpecies] += reactionRate
+                        if third >= num_core_species: edge_species_rates[third - num_core_species] += reaction_rate
 
-        for j in xrange(inet.shape[0]):
+        for j in range(inet.shape[0]):
             k = knet[j]
-            if inet[j,1] == -1: # only one reactant
-                reactionRate = k * C[inet[j,0]]
-            elif inet[j,2] == -1: # only two reactants
-                reactionRate = k * C[inet[j,0]] * C[inet[j,1]]
-            else: # three reactants!! (really?)
-                reactionRate = k * C[inet[j,0]] * C[inet[j,1]] * C[inet[j,2]]
-            networkLeakRates[j] = reactionRate
+            if inet[j, 1] == -1:  # only one reactant
+                reaction_rate = k * C[inet[j, 0]]
+            elif inet[j, 2] == -1:  # only two reactants
+                reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]]
+            else:  # three reactants!! (really?)
+                reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
+            network_leak_rates[j] = reaction_rate
 
-        self.coreSpeciesConcentrations = coreSpeciesConcentrations
-        self.coreSpeciesRates = coreSpeciesRates
-        self.coreReactionRates = coreReactionRates
-        self.edgeSpeciesRates = edgeSpeciesRates
-        self.edgeReactionRates = edgeReactionRates
-        self.networkLeakRates = networkLeakRates
+        self.coreSpeciesConcentrations = core_species_concentrations
+        self.coreSpeciesRates = core_species_rates
+        self.coreReactionRates = core_reaction_rates
+        self.edgeSpeciesRates = edge_species_rates
+        self.edgeReactionRates = edge_reaction_rates
+        self.networkLeakRates = network_leak_rates
 
-        res = coreSpeciesRates * V 
+        res = core_species_rates * V
         # mol/s
-        
+
         if self.sensitivity and False:
-            delta = numpy.zeros(len(N), numpy.float64)
-            delta[:numCoreSpecies] = res
+            delta = np.zeros(len(N), np.float64)
+            delta[:num_core_species] = res
             if self.jacobianMatrix is None:
-                jacobian = self.jacobian(t,N,dNdt,0,senpar)
+                jacobian = self.jacobian(t, N, dNdt, 0, senpar)
             else:
                 jacobian = self.jacobianMatrix
             dgdk = ReactionSystem.computeRateDerivative(self)
-            for j in xrange(numCoreReactions+numCoreSpecies):
-                for i in xrange(numCoreSpecies):
-                    for z in xrange(numCoreSpecies):
-                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*N[(j+1)*numCoreSpecies + z] 
-                    delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
+            for j in range(num_core_reactions + num_core_species):
+                for i in range(num_core_species):
+                    for z in range(num_core_species):
+                        delta[(j + 1) * num_core_species + i] += jacobian[i, z] * N[(j + 1) * num_core_species + z]
+                    delta[(j + 1) * num_core_species + i] += dgdk[i, j]
         else:
             delta = res
         delta = delta - dNdt
-        
+
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
