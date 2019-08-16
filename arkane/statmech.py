@@ -272,7 +272,7 @@ class StatMechJob(object):
 
         with open(path, 'r') as f:
             try:
-                exec(f in global_context, local_context)
+                exec(f.read(), global_context, local_context)
             except (NameError, TypeError, SyntaxError):
                 logging.error('The species file {0} was invalid:'.format(path))
                 raise
