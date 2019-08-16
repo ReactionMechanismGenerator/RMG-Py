@@ -127,9 +127,9 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
                 "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         kineticsFamilies = kineticsFamilies
 
-    database = getDB() or RMGDatabase()
+    rmg_database = getDB() or RMGDatabase()
 
-    database.load(
+    rmg_database.load(
         path=databaseDirectory,
         thermoLibraries=thermoLibraries,
         transportLibraries=transportLibraries,
@@ -140,10 +140,10 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )
 
-    for family in database.kinetics.families.values():  # load training
-        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
+    for family in rmg_database.kinetics.families.values():  # load training
+        family.addKineticsRulesFromTrainingSet(thermoDatabase=rmg_database.thermo)
 
-    for family in database.kinetics.families.values():
+    for family in rmg_database.kinetics.families.values():
         family.fillKineticsRulesByAveragingUp(verbose=True)
 
 
