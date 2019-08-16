@@ -49,7 +49,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 
 from arkane.output import prettify
-from arkane.sensitivity import PDepSensitivity as sa
+from arkane.sensitivity import PDepSensitivity as SensAnalysis
 
 ################################################################################
 
@@ -283,7 +283,7 @@ class PressureDependenceJob(object):
                 logging.info('\n\nRunning sensitivity analysis...')
                 for i in range(3):
                     try:
-                        sa(self, os.path.dirname(outputFile), perturbation=perturbation)
+                        SensAnalysis(self, os.path.dirname(outputFile), perturbation=perturbation)
                     except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as e:
                         logging.warning('Could not complete the sensitivity analysis with a perturbation of {0} '
                                         'kcal/mol, trying {1} kcal/mol instead.'.format(

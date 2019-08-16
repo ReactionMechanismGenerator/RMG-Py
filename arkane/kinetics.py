@@ -46,7 +46,7 @@ from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
 
 from arkane.common import ArkaneSpecies
 from arkane.output import prettify
-from arkane.sensitivity import KineticsSensitivity as sa
+from arkane.sensitivity import KineticsSensitivity as SensAnalysis
 
 ################################################################################
 
@@ -143,7 +143,7 @@ class KineticsJob(object):
                     logging.warning("Could not draw reaction {1} due to error: {0}".format(e, self.reaction.label))
             if self.sensitivity_conditions is not None:
                 logging.info('\n\nRunning sensitivity analysis...')
-                sa(self, output_directory)
+                SensAnalysis(self, output_directory)
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
 
