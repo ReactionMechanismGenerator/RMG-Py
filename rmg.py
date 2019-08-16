@@ -31,13 +31,15 @@
 """
 RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
+from __future__ import print_function
 
 import os.path
 import argparse
 import logging
-import rmgpy
 
+import rmgpy
 from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
+
 
 ################################################################################
 
@@ -49,13 +51,11 @@ def parse_command_line_arguments(command_line_args=None):
     sensible, parses them, and returns them.
     """
 
-    parser = argparse.ArgumentParser(description=
-    """
-    Reaction Mechanism Generator (RMG) is an automatic chemical reaction
-    mechanism generator that constructs kinetic models composed of
-    elementary chemical reaction steps using a general understanding of
-    how molecules react.
-    """)
+    parser = argparse.ArgumentParser(description='Reaction Mechanism Generator (RMG) is an automatic chemical reaction '
+                                                 'mechanism generator that constructs kinetic models composed of '
+                                                 'elementary chemical reaction steps using a general understanding of '
+                                                 'how molecules react.')
+
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
                         help='a file describing the job to execute')
 
