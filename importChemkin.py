@@ -800,7 +800,7 @@ class ModelMatcher():
         elif rmg_species.label in identified_labels:
             return False
         else:
-            if self.formulaDict[chemkin_label] == rmg_species.molecule[0].getFormula():
+            if self.formulaDict[chemkin_label] == rmg_species.formula:
                 if rmg_species in self.blockedMatches.get(chemkin_label, {}):
                     return False
                 self.suggestedMatches[chemkin_label] = rmg_species

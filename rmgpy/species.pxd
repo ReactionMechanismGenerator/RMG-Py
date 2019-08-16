@@ -53,6 +53,7 @@ cdef class Species:
     cdef public bint isSolvent
     cdef public int creationIteration
     cdef public bint explicitlyAllowed
+    cdef str _formula
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
