@@ -128,7 +128,6 @@ class Log(object):
         """
         raise NotImplementedError("load_scan_frozen_atoms is not implemented for the Log class")
 
-
     def loadNegativeFrequency(self):
         """
         Return the imaginary frequency from a transition state frequency

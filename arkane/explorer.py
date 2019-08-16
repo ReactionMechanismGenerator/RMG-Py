@@ -240,13 +240,13 @@ class ExplorerJob(object):
                             logging.info('adding new isomer {0} to network'.format(spc))
                             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
-                                                       bimolecularReact=np.zeros((len(reaction_model.core.species),
-                                                                                  len(reaction_model.core.species))))
+                                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+                                                                              len(reaction_model.core.species))))
 
                             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
-                                                       bimolecularReact=np.zeros((len(reaction_model.core.species),
-                                                                                  len(reaction_model.core.species))))
+                                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+                                                                              len(reaction_model.core.species))))
         for network in self.networks:
             rmRxns = []
             for rxn in network.pathReactions:  # remove reactions with forbidden species

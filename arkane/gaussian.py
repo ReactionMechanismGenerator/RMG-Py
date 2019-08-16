@@ -181,7 +181,8 @@ class GaussianLog(Log):
                 # Read the spin multiplicity if not explicitly given
                 if spinMultiplicity == 0 and 'Multiplicity =' in line:
                     spinMultiplicity = int(line.split()[-1])
-                    logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                    logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'
+                                  .format(label, spinMultiplicity))
 
                 # The data we want is in the Thermochemistry section of the output
                 if '- Thermochemistry -' in line:
@@ -204,13 +205,13 @@ class GaussianLog(Log):
                         elif 'Rotational constants (GHZ):' in line:
                             inertia = [float(d) for d in line.split()[-3:]]
                             for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
-                            inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9)\
+                            inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) \
                                          * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
@@ -413,7 +414,7 @@ class GaussianLog(Log):
                         action_index = 3  # bond length with 2 terms
                     else:
                         raise ValueError('This file has an option not supported by arkane.'
-                                        'Unable to read scan specs for line: {}'.format(line))
+                                         'Unable to read scan specs for line: {}'.format(line))
                     if len(terms) > action_index:
                         # specified type explicitly
                         if terms[action_index] == letter_spec:

@@ -81,8 +81,7 @@ class KineticsJob(object):
             self.Tcount = len(self.Tlist.value_si)
         else:
             self.Tlist = (1 / numpy.linspace(1 / self.Tmax.value_si,
-                                            1 / self.Tmin.value_si,
-                                            self.Tcount), 'K')
+                                             1 / self.Tmin.value_si,
 
         self.reaction = reaction
         self.kunits = None
@@ -315,14 +314,14 @@ class KineticsJob(object):
         """
         Save a YAML file for TSs if structures of the respective reactant/s and product/s are known
         """
-        if all ([spc.molecule is not None and len(spc.molecule)
-                 for spc in self.reaction.reactants + self.reaction.products]):
+        if all([spc.molecule is not None and len(spc.molecule)
+                for spc in self.reaction.reactants + self.reaction.products]):
             self.arkane_species.update_species_attributes(self.reaction.transitionState)
             self.arkane_species.reaction_label = self.reaction.label
             self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
                                              for spc in self.reaction.reactants]
             self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
-                                             for spc in self.reaction.products]
+                                            for spc in self.reaction.products]
             self.arkane_species.save_yaml(path=output_directory)
 
     def plot(self, output_directory):

@@ -335,8 +335,8 @@ def check_conformer_energy(Vlist, path):
     Vdiff = (Vlist[0] - numpy.min(Vlist)) * constants.E_h * constants.Na / 1000
     if Vdiff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
-                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'.format(
-                         path=os.path.basename(path), diff=Vdiff))
+                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
+                        .format(path=os.path.basename(path), diff=Vdiff))
 
 
 def get_element_mass(input_element, isotope=None):
