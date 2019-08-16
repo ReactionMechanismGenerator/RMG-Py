@@ -58,7 +58,7 @@ class GaussianTest(unittest.TestCase):
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
         conformer, unscaled_frequencies = log.loadConformer()
-        E0 = log.loadEnergy()
+        energy_0 = log.loadEnergy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
@@ -68,12 +68,12 @@ class GaussianTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 5.83338e6, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 2.59622e3, delta=1e-2)
-        self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.0481e0, delta=1e-4)
+        t_list = numpy.array([298.15], numpy.float64)
+        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 5.83338e6, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 2.59622e3, delta=1e-2)
+        self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.0481e0, delta=1e-4)
 
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.467452, 4)
+        self.assertAlmostEqual(energy_0 / constants.Na / constants.E_h, -78.467452, 4)
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
 
@@ -85,7 +85,7 @@ class GaussianTest(unittest.TestCase):
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
         conformer, unscaled_frequencies = log.loadConformer()
-        E0 = log.loadEnergy()
+        energy_0 = log.loadEnergy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, LinearRotor)]) == 1)
@@ -95,12 +95,12 @@ class GaussianTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 7.11169e6, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 7.13316e1, delta=1e-4)
-        self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.00037e0, delta=1e-4)
+        t_list = numpy.array([298.15], numpy.float64)
+        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 7.11169e6, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 7.13316e1, delta=1e-4)
+        self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.00037e0, delta=1e-4)
 
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.3784877, 4)
+        self.assertAlmostEqual(energy_0 / constants.Na / constants.E_h, -150.3784877, 4)
         self.assertEqual(conformer.spinMultiplicity, 3)
         self.assertEqual(conformer.opticalIsomers, 1)
 
@@ -113,7 +113,7 @@ class GaussianTest(unittest.TestCase):
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_G3.log'))
         conformer, unscaled_frequencies = log.loadConformer()
-        E0 = log.loadEnergy()
+        energy_0 = log.loadEnergy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
@@ -123,13 +123,13 @@ class GaussianTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        Tlist = numpy.array([298.15], numpy.float64)
+        t_list = numpy.array([298.15], numpy.float64)
 
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 5.83338e6, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 2.53410e3, delta=1e-2)
-        self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.0304e0, delta=1e-4)
+        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 5.83338e6, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 2.53410e3, delta=1e-2)
+        self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.0304e0, delta=1e-4)
 
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.562189, 4)
+        self.assertAlmostEqual(energy_0 / constants.Na / constants.E_h, -78.562189, 4)
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
 

@@ -64,21 +64,21 @@ class GaussianLog(Log):
         Return the number of atoms in the molecular configuration used in
         the Gaussian log file.
         """
-        Natoms = 0
+        n_atoms = 0
 
         with open(self.path, 'r') as f:
             line = f.readline()
-            while line != '' and Natoms == 0:
+            while line != '' and n_atoms == 0:
                 # Automatically determine the number of atoms
-                if 'Input orientation:' in line and Natoms == 0:
+                if 'Input orientation:' in line and n_atoms == 0:
                     for i in range(5):
                         line = f.readline()
                     while '---------------------------------------------------------------------' not in line:
-                        Natoms += 1
+                        n_atoms += 1
                         line = f.readline()
                 line = f.readline()
 
-        return Natoms
+        return n_atoms
 
     def loadForceConstantMatrix(self):
         """
@@ -92,20 +92,20 @@ class GaussianLog(Log):
         """
         F = None
 
-        Natoms = self.getNumberOfAtoms()
-        Nrows = Natoms * 3
+        n_atoms = self.getNumberOfAtoms()
+        n_rows = n_atoms * 3
 
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
-                    F = numpy.zeros((Nrows, Nrows), numpy.float64)
-                    for i in range(int(math.ceil(Nrows / 5.0))):
+                    F = numpy.zeros((n_rows, n_rows), numpy.float64)
+                    for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
                         # Matrix element rows
-                        for j in range(i * 5, Nrows):
+                        for j in range(i * 5, n_rows):
                             data = f.readline().split()
                             for k in range(len(data) - 1):
                                 F[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
@@ -187,7 +187,7 @@ class GaussianLog(Log):
                 # The data we want is in the Thermochemistry section of the output
                 if '- Thermochemistry -' in line:
                     modes = []
-                    inPartitionFunctions = False
+                    in_partition_functions = False
                     line = f.readline()
                     while line != '':
 
@@ -238,11 +238,11 @@ class GaussianLog(Log):
                             e0 = float(line.split()[6]) * 4.35974394e-18 * constants.Na
 
                         # Read spin multiplicity if above method was unsuccessful
-                        elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity == 0:
+                        elif 'Electronic' in line and in_partition_functions and spinMultiplicity == 0:
                             spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
 
                         elif 'Log10(Q)' in line:
-                            inPartitionFunctions = True
+                            in_partition_functions = True
 
                         # Read the next line in the file
                         line = f.readline()
@@ -330,10 +330,10 @@ class GaussianLog(Log):
         Extract the optimized energies in J/mol from a log file, e.g. the 
         result of a Gaussian "Scan" quantum chemistry calculation.
         """
-        optfreq = False
-        rigidScan = False
+        opt_freq = False
+        rigid_scan = False
 
-        Vlist = []  # The array of potentials at each scan angle
+        vlist = []  # The array of potentials at each scan angle
 
         # Parse the Gaussian log file, extracting the energies of each
         # optimized conformer in the scan
@@ -342,48 +342,48 @@ class GaussianLog(Log):
             while line != '':
                 # If the job contains a "freq" then we want to ignore the last energy
                 if ' freq ' in line:
-                    optfreq = True
+                    opt_freq = True
                 # if # scan is keyword instead of # opt, then this is a rigid scan job
                 # and parsing the energies is done a little differently
                 if '# scan' in line:
-                    rigidScan = True
+                    rigid_scan = True
                 # The lines containing "SCF Done" give the energy at each
                 # iteration (even the intermediate ones)
                 if 'SCF Done:' in line:
-                    E = float(line.split()[4])
+                    energy = float(line.split()[4])
                     # rigid scans will only not optimize, so just append every time it finds an energy.
-                    if rigidScan:
-                        Vlist.append(E)
-                # We want to keep the values of E that come most recently before
+                    if rigid_scan:
+                        vlist.append(energy)
+                # We want to keep the values of energy that come most recently before
                 # the line containing "Optimization completed", since it refers
                 # to the optimized geometry
                 if 'Optimization completed' in line:
-                    Vlist.append(E)
+                    vlist.append(energy)
                 line = f.readline()
 
         # give warning in case this assumption is not true
-        if rigidScan:
-            print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
+        if rigid_scan:
+            print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
 
-        Vlist = numpy.array(Vlist, numpy.float64)
+        vlist = numpy.array(vlist, numpy.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be
         # the lowest energy conformer
-        check_conformer_energy(Vlist, self.path)
+        check_conformer_energy(vlist, self.path)
 
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
-        Vlist -= numpy.min(Vlist)
-        Vlist *= constants.E_h * constants.Na
+        vlist -= numpy.min(vlist)
+        vlist *= constants.E_h * constants.Na
 
-        if optfreq:
-            Vlist = Vlist[:-1]
+        if opt_freq:
+            vlist = vlist[:-1]
 
         # Determine the set of dihedral angles corresponding to the loaded energies
         # This assumes that you start at 0.0, finish at 360.0, and take
         # constant step sizes in between
-        angle = numpy.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(Vlist) - 1), numpy.float64)
+        angle = numpy.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), numpy.float64)
 
-        return Vlist, angle
+        return vlist, angle
 
     def _load_scan_specs(self, letter_spec):
         """

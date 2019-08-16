@@ -82,6 +82,7 @@ class KineticsJob(object):
         else:
             self.Tlist = (1 / numpy.linspace(1 / self.Tmax.value_si,
                                              1 / self.Tmin.value_si,
+                                             self.Tcount), 'K')
 
         self.reaction = reaction
         self.kunits = None
@@ -164,7 +165,7 @@ class KineticsJob(object):
         if isinstance(self.reaction.kinetics, Arrhenius):
             return None
         self.usedTST = True
-        kineticsClass = 'Arrhenius'
+        kinetics_class = 'Arrhenius'
 
         tunneling = self.reaction.transitionState.tunneling
         if isinstance(tunneling, Wigner) and tunneling.frequency is None:
@@ -182,7 +183,7 @@ class KineticsJob(object):
                 pass
             else:
                 raise ValueError('Unknown tunneling model {0!r} for reaction {1}.'.format(tunneling, self.reaction))
-        logging.debug('Generating {0} kinetics model for {1}...'.format(kineticsClass, self.reaction))
+        logging.debug('Generating {0} kinetics model for {1}...'.format(kinetics_class, self.reaction))
         klist = numpy.zeros_like(self.Tlist.value_si)
         for i, t in enumerate(self.Tlist.value_si):
             klist[i] = self.reaction.calculateTSTRateCoefficient(t)
@@ -222,11 +223,11 @@ class KineticsJob(object):
             f.write('#   ======= =========== =========== =========== ===============\n')
 
             if self.Tlist is None:
-                Tlist = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
+                t_list = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
             else:
-                Tlist = self.Tlist.value_si
+                t_list = self.Tlist.value_si
 
-            for T in Tlist:
+            for T in t_list:
                 tunneling = reaction.transitionState.tunneling
                 reaction.transitionState.tunneling = None
                 try:
@@ -260,7 +261,7 @@ class KineticsJob(object):
             else:
                 keq_unit_converter = 1
 
-            for n, T in enumerate(Tlist):
+            for n, T in enumerate(t_list):
                 k = ks[n]
                 k0 = k0s[n]
                 Keq = keq_unit_converter * reaction.getEquilibriumConstant(T)  # getEquilibriumConstant returns SI units
@@ -274,8 +275,8 @@ class KineticsJob(object):
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
-            kinetics0rev = Arrhenius().fitToData(Tlist, numpy.array(k0revs), kunits=self.krunits)
-            kineticsrev = Arrhenius().fitToData(Tlist, numpy.array(krevs), kunits=self.krunits)
+            kinetics0rev = Arrhenius().fitToData(t_list, numpy.array(k0revs), kunits=self.krunits)
+            kineticsrev = Arrhenius().fitToData(t_list, numpy.array(krevs), kunits=self.krunits)
 
             f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
             f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
@@ -435,16 +436,16 @@ class KineticsDrawer:
         """
         Return the minimum and maximum energy in J/mol on the potential energy surface.
         """
-        E0min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
-        E0max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
-        if E0max - E0min > 5e5:
+        E0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        E0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        if E0_max - E0_min > 5e5:
             # the energy barrier in one of the reaction directions is larger than 500 kJ/mol, warn the user
             logging.warning('The energy differences between the stationary points of reaction {0} '
                             'seems too large.'.format(self.reaction))
             logging.warning('Got the following energies:\nWell 1: {0} kJ/mol\nTS: {1} kJ/mol\nWell 2: {2}'
                             ' kJ/mol'.format(self.wells[0].E0 / 1000., self.wells[1].E0 / 1000.,
                                              self.reaction.transitionState.conformer.E0.value_si / 1000.))
-        return E0min, E0max
+        return E0_min, E0_max
 
     def __useStructureForLabel(self, configuration):
         """
@@ -453,16 +454,16 @@ class KineticsDrawer:
         """
 
         # Initialize with the current user option value
-        useStructures = self.options['structures']
+        use_structures = self.options['structures']
 
         # But don't use structures if one or more species in the configuration
         # do not have structure data
         for spec in configuration.species_list:
             if spec.molecule is None or len(spec.molecule) == 0:
-                useStructures = False
+                use_structures = False
                 break
 
-        return useStructures
+        return use_structures
 
     def __getTextSize(self, text, padding=2, format='pdf'):
         try:
@@ -494,56 +495,56 @@ class KineticsDrawer:
     def __getLabelSize(self, configuration, format='pdf'):
         width = 0
         height = 0
-        boundingRects = []
+        bounding_rects = []
         if self.__useStructureForLabel(configuration):
             for spec in configuration.species_list:
                 _, _, rect = MoleculeDrawer().draw(spec.molecule[0], format=format)
-                boundingRects.append(list(rect))
+                bounding_rects.append(list(rect))
         else:
             for spec in configuration.species_list:
-                boundingRects.append(self.__getTextSize(spec.label, format=format))
+                bounding_rects.append(self.__getTextSize(spec.label, format=format))
 
-        plusRect = self.__getTextSize('+', format=format)
+        plus_rect = self.__getTextSize('+', format=format)
 
-        for rect in boundingRects:
+        for rect in bounding_rects:
             if width < rect[2]:
                 width = rect[2]
-            height += rect[3] + plusRect[3]
-        height -= plusRect[3]
+            height += rect[3] + plus_rect[3]
+        height -= plus_rect[3]
 
         return [0, 0, width, height]
 
     def __drawLabel(self, configuration, cr, x0, y0, format='pdf'):
 
-        boundingRect = self.__getLabelSize(configuration, format=format)
+        bounding_rect = self.__getLabelSize(configuration, format=format)
         padding = 2
 
-        useStructures = self.__useStructureForLabel(configuration)
+        use_structures = self.__useStructureForLabel(configuration)
         y = y0
         for i, spec in enumerate(configuration.species_list):
             if i > 0:
                 rect = self.__getTextSize('+', padding=padding, format=format)
-                x = x0 - 0.5 * (rect[2] - boundingRect[2]) + 2 * padding
+                x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
                 self.__drawText('+', cr, x, y)
                 y += rect[3]
 
-            if useStructures:
-                moleculeDrawer = MoleculeDrawer()
+            if use_structures:
+                molecule_drawer = MoleculeDrawer()
                 cr.save()
-                _, _, rect = moleculeDrawer.draw(spec.molecule[0], format=format)
+                _, _, rect = molecule_drawer.draw(spec.molecule[0], format=format)
                 cr.restore()
-                x = x0 - 0.5 * (rect[2] - boundingRect[2])
+                x = x0 - 0.5 * (rect[2] - bounding_rect[2])
                 cr.save()
-                moleculeDrawer.render(cr, offset=(x, y))
+                molecule_drawer.render(cr, offset=(x, y))
                 cr.restore()
                 y += rect[3]
             else:
                 rect = self.__getTextSize(spec.label, padding=padding, format=format)
-                x = x0 - 0.5 * (rect[2] - boundingRect[2]) + 2 * padding
+                x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
                 self.__drawText(spec.label, cr, x, y)
                 y += rect[3]
 
-        return boundingRect
+        return bounding_rect
 
     def draw(self, reaction, format, path=None):
         """
@@ -564,39 +565,39 @@ class KineticsDrawer:
         self.wells = [Well(self.reaction.reactants), Well(self.reaction.products)]
 
         # Generate the bounding rectangles for each configuration label
-        labelRects = []
+        label_rects = []
         for well in self.wells:
-            labelRects.append(self.__getLabelSize(well, format=format))
+            label_rects.append(self.__getLabelSize(well, format=format))
 
         # Get energy range (use kJ/mol internally)
-        E0min, E0max = self.__getEnergyRange()
-        E0min *= 0.001
-        E0max *= 0.001
+        E0_min, E0_max = self.__getEnergyRange()
+        E0_min *= 0.001
+        E0_max *= 0.001
 
         # Drawing parameters
         padding = self.options['padding']
-        wellWidth = self.options['wellWidth']
-        wellSpacing = self.options['wellSpacing']
-        Eslope = self.options['Eslope']
-        TSwidth = self.options['TSwidth']
+        well_width = self.options['wellWidth']
+        well_spacing = self.options['wellSpacing']
+        E_slope = self.options['Eslope']
+        t_swidth = self.options['TSwidth']
 
         E0_offset = self.options['E0offset'] * 0.001
 
         # Choose multiplier to convert energies to desired units (on figure only)
-        Eunits = self.options['Eunits']
+        E_units = self.options['Eunits']
         try:
-            Emult = {'J/mol': 1.0, 'kJ/mol': 0.001, 'cal/mol': 1.0 / 4.184, 'kcal/mol': 1.0 / 4184.,
-                     'cm^-1': 1.0 / 11.962}[Eunits]
+            E_mult = {'J/mol': 1.0, 'kJ/mol': 0.001, 'cal/mol': 1.0 / 4.184, 'kcal/mol': 1.0 / 4184.,
+                     'cm^-1': 1.0 / 11.962}[E_units]
         except KeyError:
-            raise Exception('Invalid value "{0}" for Eunits parameter.'.format(Eunits))
+            raise Exception('Invalid value "{0}" for Eunits parameter.'.format(E_units))
 
         # Determine height required for drawing
         Eheight = self.__getTextSize('0.0', format=format)[3] + 6
-        y_E0 = (E0max - 0.0) * Eslope + padding + Eheight
-        height = (E0max - E0min) * Eslope + 2 * padding + Eheight + 6
-        for i in xrange(len(self.wells)):
-            if 0.001 * self.wells[i].E0 == E0min:
-                height += labelRects[i][3]
+        y_E0 = (E0_max - 0.0) * E_slope + padding + Eheight
+        height = (E0_max - E0_min) * E_slope + 2 * padding + Eheight + 6
+        for i in range(len(self.wells)):
+            if 0.001 * self.wells[i].E0 == E0_min:
+                height += label_rects[i][3]
                 break
 
         # Determine naive position of each well (one per column)
@@ -604,37 +605,37 @@ class KineticsDrawer:
         x = padding
         for i in xrange(len(self.wells)):
             well = self.wells[i]
-            rect = labelRects[i]
-            thisWellWidth = max(wellWidth, rect[2])
+            rect = label_rects[i]
+            this_well_width = max(well_width, rect[2])
             E0 = 0.001 * well.E0
-            y = y_E0 - E0 * Eslope
-            coordinates[i] = [x + 0.5 * thisWellWidth, y]
-            x += thisWellWidth + wellSpacing
-        width = x + padding - wellSpacing
+            y = y_E0 - E0 * E_slope
+            coordinates[i] = [x + 0.5 * this_well_width, y]
+            x += this_well_width + well_spacing
+        width = x + padding - well_spacing
 
         # Determine the rectangles taken up by each well
         # We'll use this to merge columns safely so that wells don't overlap
-        wellRects = []
+        well_rects = []
         for i in range(len(self.wells)):
-            l, t, w, h = labelRects[i]
+            l, t, w, h = label_rects[i]
             x, y = coordinates[i, :]
-            if w < wellWidth:
-                w = wellWidth
+            if w < well_width:
+                w = well_width
             t -= 6 + Eheight
             h += 6 + Eheight
-            wellRects.append([l + x - 0.5 * w, t + y + 6, w, h])
+            well_rects.append([l + x - 0.5 * w, t + y + 6, w, h])
 
         # Squish columns together from the left where possible until an isomer is encountered
         oldLeft = numpy.min(coordinates[:, 0])
         Nleft = - 1
         columns = []
         for i in range(Nleft, -1, -1):
-            top = wellRects[i][1]
-            bottom = top + wellRects[i][3]
+            top = well_rects[i][1]
+            bottom = top + well_rects[i][3]
             for column in columns:
                 for c in column:
-                    top0 = wellRects[c][1]
-                    bottom0 = top + wellRects[c][3]
+                    top0 = well_rects[c][1]
+                    bottom0 = top + well_rects[c][3]
                     if (top0 <= top <= bottom0) or (top <= top0 <= bottom):
                         # Can't put it in this column
                         break
@@ -646,25 +647,25 @@ class KineticsDrawer:
                 # Needs a new column
                 columns.append([i])
         for column in columns:
-            columnWidth = max([wellRects[c][2] for c in column])
-            x = coordinates[column[0] + 1, 0] - 0.5 * wellRects[column[0] + 1][2] - wellSpacing - 0.5 * columnWidth
+            column_width = max([well_rects[c][2] for c in column])
+            x = coordinates[column[0] + 1, 0] - 0.5 * well_rects[column[0] + 1][2] - well_spacing - 0.5 * column_width
             for c in column:
                 delta = x - coordinates[c, 0]
-                wellRects[c][0] += delta
+                well_rects[c][0] += delta
                 coordinates[c, 0] += delta
-        newLeft = numpy.min(coordinates[:, 0])
-        coordinates[:, 0] -= newLeft - oldLeft
+        new_left = numpy.min(coordinates[:, 0])
+        coordinates[:, 0] -= new_left - oldLeft
 
         # Squish columns together from the right where possible until an isomer is encountered
-        Nright = 3
+        n_right = 3
         columns = []
-        for i in range(Nright, len(self.wells)):
-            top = wellRects[i][1]
-            bottom = top + wellRects[i][3]
+        for i in range(n_right, len(self.wells)):
+            top = well_rects[i][1]
+            bottom = top + well_rects[i][3]
             for column in columns:
                 for c in column:
-                    top0 = wellRects[c][1]
-                    bottom0 = top0 + wellRects[c][3]
+                    top0 = well_rects[c][1]
+                    bottom0 = top0 + well_rects[c][3]
                     if (top0 <= top <= bottom0) or (top <= top0 <= bottom):
                         # Can't put it in this column
                         break
@@ -676,14 +677,14 @@ class KineticsDrawer:
                 # Needs a new column
                 columns.append([i])
         for column in columns:
-            columnWidth = max([wellRects[c][2] for c in column])
-            x = coordinates[column[0] - 1, 0] + 0.5 * wellRects[column[0] - 1][2] + wellSpacing + 0.5 * columnWidth
+            column_width = max([well_rects[c][2] for c in column])
+            x = coordinates[column[0] - 1, 0] + 0.5 * well_rects[column[0] - 1][2] + well_spacing + 0.5 * column_width
             for c in column:
                 delta = x - coordinates[c, 0]
-                wellRects[c][0] += delta
+                well_rects[c][0] += delta
                 coordinates[c, 0] += delta
 
-        width = max([rect[2] + rect[0] for rect in wellRects]) - min([rect[0] for rect in wellRects]) + 2 * padding
+        width = max([rect[2] + rect[0] for rect in well_rects]) - min([rect[0] for rect in well_rects]) + 2 * padding
 
         # Draw to the final surface
         surface = createNewSurface(format=format, target=path, width=width, height=height)
@@ -696,7 +697,7 @@ class KineticsDrawer:
         # Fill the background with white
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.paint()
-        self.__drawText('E0 ({0})'.format(Eunits), cr, 15, 10, padding=2)  # write units
+        self.__drawText('E0 ({0})'.format(E_units), cr, 15, 10, padding=2)  # write units
 
         # Draw reactions
         E0_reac = self.wells[0].E0 * 0.001 - E0_offset
@@ -704,32 +705,32 @@ class KineticsDrawer:
         E0_TS = self.reaction.transitionState.conformer.E0.value_si * 0.001 - E0_offset
         x1, y1 = coordinates[0, :]
         x2, y2 = coordinates[1, :]
-        x1 += wellSpacing / 2.0
-        x2 -= wellSpacing / 2.0
+        x1 += well_spacing / 2.0
+        x2 -= well_spacing / 2.0
         if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
             if len(self.reaction.reactants) == 2:
                 if E0_reac < E0_prod:
-                    x0 = x1 + wellSpacing * 0.5
+                    x0 = x1 + well_spacing * 0.5
                 else:
-                    x0 = x2 - wellSpacing * 0.5
+                    x0 = x2 - well_spacing * 0.5
             elif len(self.reaction.products) == 2:
                 if E0_reac < E0_prod:
-                    x0 = x2 - wellSpacing * 0.5
+                    x0 = x2 - well_spacing * 0.5
                 else:
-                    x0 = x1 + wellSpacing * 0.5
+                    x0 = x1 + well_spacing * 0.5
             else:
                 x0 = 0.5 * (x1 + x2)
-            y0 = y_E0 - (E0_TS + E0_offset) * Eslope
+            y0 = y_E0 - (E0_TS + E0_offset) * E_slope
             width1 = (x0 - x1)
             width2 = (x2 - x0)
             # Draw horizontal line for TS
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.set_line_width(2.0)
-            cr.move_to(x0 - TSwidth / 2.0, y0)
-            cr.line_to(x0 + TSwidth / 2.0, y0)
+            cr.move_to(x0 - t_swidth / 2.0, y0)
+            cr.line_to(x0 + t_swidth / 2.0, y0)
             cr.stroke()
             # Add background and text for energy
-            E0 = "{0:.1f}".format(E0_TS * 1000. * Emult)
+            E0 = "{0:.1f}".format(E0_TS * 1000. * E_mult)
             extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0
             y = y0 - 6.0
@@ -743,9 +744,9 @@ class KineticsDrawer:
             cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
             cr.set_line_width(1.0)
             cr.move_to(x1, y1)
-            cr.curve_to(x1 + width1 / 8.0, y1, x0 - width1 / 8.0 - TSwidth / 2.0, y0, x0 - TSwidth / 2.0, y0)
-            cr.move_to(x0 + TSwidth / 2.0, y0)
-            cr.curve_to(x0 + width2 / 8.0 + TSwidth / 2.0, y0, x2 - width2 / 8.0, y2, x2, y2)
+            cr.curve_to(x1 + width1 / 8.0, y1, x0 - width1 / 8.0 - t_swidth / 2.0, y0, x0 - t_swidth / 2.0, y0)
+            cr.move_to(x0 + t_swidth / 2.0, y0)
+            cr.curve_to(x0 + width2 / 8.0 + t_swidth / 2.0, y0, x2 - width2 / 8.0, y2, x2, y2)
             cr.stroke()
         else:
             width = (x2 - x1)
@@ -761,13 +762,13 @@ class KineticsDrawer:
             x0, y0 = coordinates[i, :]
             # Draw horizontal line for well
             cr.set_line_width(4.0)
-            cr.move_to(x0 - wellWidth / 2.0, y0)
-            cr.line_to(x0 + wellWidth / 2.0, y0)
+            cr.move_to(x0 - well_width / 2.0, y0)
+            cr.line_to(x0 + well_width / 2.0, y0)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
             E0 = well.E0 * 0.001 - E0_offset
-            E0 = "{0:.1f}".format(E0 * 1000. * Emult)
+            E0 = "{0:.1f}".format(E0 * 1000. * E_mult)
             extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0
             y = y0 - 6.0
@@ -778,9 +779,9 @@ class KineticsDrawer:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(E0)
             # Draw background and text for label
-            x = x0 - 0.5 * labelRects[i][2]
+            x = x0 - 0.5 * label_rects[i][2]
             y = y0 + 6
-            cr.rectangle(x, y, labelRects[i][2], labelRects[i][3])
+            cr.rectangle(x, y, label_rects[i][2], label_rects[i][3])
             cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
             cr.fill()
             self.__drawLabel(well, cr, x, y, format=format)
