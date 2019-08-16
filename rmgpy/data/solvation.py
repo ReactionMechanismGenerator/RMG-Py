@@ -40,6 +40,7 @@ import rmgpy.constants as constants
 from rmgpy.species import Species
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
+from six import string_types
 
 from rmgpy.molecule import Molecule, Atom, Bond, Group, atomTypes
 
@@ -859,7 +860,7 @@ class SolvationDatabase(object):
             raise KeyError('Node has no parent with data in database.')
         data = node.data
         comment = node.label
-        while isinstance(data, basestring) and data is not None:
+        while isinstance(data, string_types) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data

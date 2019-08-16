@@ -33,7 +33,6 @@ This module contains functionality for working with kinetics "rate rules",
 which provide rate coefficient parameters for various combinations of 
 functional groups.
 """
-from builtins import str
 from six import string_types
 import warnings
 import os.path

@@ -34,8 +34,6 @@ particular, this module is devoted to functionality that is common across all
 components of the RMG database.
 """
 
-from builtins import str
-from past.builtins import basestring
 from six import string_types
 import os
 import logging
@@ -46,6 +44,10 @@ try:
 except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
+
+from builtins import str
+from six import string_types
+
 from rmgpy.molecule import Molecule, Group
 from rmgpy.kinetics.arrhenius import ArrheniusBM
 from rmgpy.kinetics.uncertainties import RateUncertainty
@@ -842,7 +844,7 @@ class Database(object):
                 f.write('{:<6d} '.format(index))
                 for label in labels:
                     f.write('{:<32s} '.format(label))
-                if isinstance(data, basestring):
+                if isinstance(data, string_types):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))

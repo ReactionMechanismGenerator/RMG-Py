@@ -36,6 +36,7 @@ from __future__ import division
 import os.path
 import logging
 from copy import deepcopy
+from six import string_types
 
 from base import Database, Entry, makeLogicNode, DatabaseError
 
@@ -534,7 +535,7 @@ class TransportDatabase(object):
             raise KeyError('Node {!r} has no parent with data in the transport database.'.format(node0))
         data = node.data
         comment = node.label
-        while isinstance(data, basestring) and data is not None:
+        while isinstance(data, string_types) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data

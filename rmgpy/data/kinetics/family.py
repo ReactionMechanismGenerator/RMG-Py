@@ -33,7 +33,6 @@ This module contains functionality for working with kinetics families.
 """
 from __future__ import division
 
-from builtins import str
 import os.path
 import numpy as np
 import logging

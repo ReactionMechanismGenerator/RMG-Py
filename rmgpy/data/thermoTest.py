@@ -32,6 +32,7 @@ from __future__ import division
 import os
 import unittest
 from external.wip import work_in_progress
+from six import string_types
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
@@ -748,7 +749,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertTrue(radGroup.entries['RJ2_triplet'].data == groupToRemove2.parent.label)
         #If the parent pointed toward groupToRemove, we need should have copied data object
         Tlist=[300, 400, 500, 600, 800, 1000, 1500]
-        self.assertFalse(isinstance(groupToRemove2.parent.data, basestring))
+        self.assertFalse(isinstance(groupToRemove2.parent.data, string_types))
         self.assertTrue(groupToRemove2.parent.data.getEnthalpy(298) == groupToRemove2.data.getEnthalpy(298))
         self.assertTrue(groupToRemove2.parent.data.getEntropy(298) == groupToRemove2.data.getEntropy(298))
         self.assertFalse(False in [groupToRemove2.parent.data.getHeatCapacity(x) == groupToRemove2.data.getHeatCapacity(x) for x in Tlist])
