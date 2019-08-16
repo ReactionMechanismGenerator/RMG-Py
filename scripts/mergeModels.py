@@ -42,12 +42,12 @@ The resulting merged files are placed in ``chem.inp`` and
 
 import rmgpy.tools.merge_models as merge_models
 
+
 ################################################################################
 
 def main():
     merge_models.main()
 
+
 if __name__ == '__main__':
     main()
-    
-    
