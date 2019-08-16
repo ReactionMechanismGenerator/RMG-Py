@@ -319,9 +319,6 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         if not all([m.molecule != [] for m in rxn.reactants + rxn.products]):
             raise ValueError('chemical structures of reactants and products not available for RMG estimation of '
                              'reaction {0}'.format(label))
-        for spc in rxn.reactants + rxn.products:
-            print spc.label
-            print spc.molecule
         db = getDB('kinetics')
         rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants, products=rxn.products)
         rxns = [r for r in rxns if r.elementary_high_p]
