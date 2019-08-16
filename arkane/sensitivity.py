@@ -178,7 +178,7 @@ class KineticsSensitivity(object):
         products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
 
         plt.rcdefaults()
-        _, ax = plt.subplots(nrows=len(self.conditions), ncols=2, tight_layout=True)
+        ax = plt.subplots(nrows=len(self.conditions), ncols=2, tight_layout=True)[1]
         labels = [reactants_label, ts_label, products_label]
         min_sa = min(min(min(self.f_sa_coefficients.values())), min(min(self.r_sa_coefficients.values())))
         max_sa = max(max(max(self.f_sa_coefficients.values())), max(max(self.r_sa_coefficients.values())))
@@ -355,7 +355,7 @@ class PDepSensitivity(object):
 
         for rxn in self.job.network.netReactions:
             plt.rcdefaults()
-            _, ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)
+            ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)[1]
             labels = [str(entry) for entry in wells]
             labels.extend(ts.label for ts in transition_states)
             max_sa = min_sa = self.sa_coefficients[str(rxn)][wells[0]][0]

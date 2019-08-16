@@ -488,7 +488,7 @@ class KineticsDrawer(object):
         bounding_rects = []
         if self.__useStructureForLabel(configuration):
             for spec in configuration.species_list:
-                _, _, rect = MoleculeDrawer().draw(spec.molecule[0], format=format)
+                rect = MoleculeDrawer().draw(spec.molecule[0], format=format)[2]
                 bounding_rects.append(list(rect))
         else:
             for spec in configuration.species_list:
@@ -521,7 +521,7 @@ class KineticsDrawer(object):
             if use_structures:
                 molecule_drawer = MoleculeDrawer()
                 cr.save()
-                _, _, rect = molecule_drawer.draw(spec.molecule[0], format=format)
+                rect = molecule_drawer.draw(spec.molecule[0], format=format)[2]
                 cr.restore()
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2])
                 cr.save()
