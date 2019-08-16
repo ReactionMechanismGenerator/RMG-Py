@@ -33,10 +33,12 @@ This module contains the :class:`NetworkDrawer` class, used to generate a
 depiction of a pressure-dependent reaction network.
 """
 
-import numpy
 import logging
 
+import numpy as np
+
 from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
+
 
 ################################################################################
 
@@ -277,7 +279,7 @@ class NetworkDrawer:
                 break
         
         # Determine naive position of each well (one per column)
-        coordinates = numpy.zeros((len(wells), 2), numpy.float64)
+        coordinates = np.zeros((len(wells), 2), np.float64)
         x = padding
         for i in range(len(wells)):
             well = wells[i]
@@ -301,7 +303,7 @@ class NetworkDrawer:
             wellRects.append([l + x - 0.5 * w, t + y + 6, w, h])
         
         # Squish columns together from the left where possible until an isomer is encountered
-        oldLeft = numpy.min(coordinates[:,0])
+        oldLeft = np.min(coordinates[:,0])
         Nleft = wells.index(network.isomers[0])-1
         columns = []
         for i in range(Nleft, -1, -1):
@@ -328,7 +330,7 @@ class NetworkDrawer:
                 delta = x - coordinates[c,0]
                 wellRects[c][0] += delta
                 coordinates[c,0] += delta
-        newLeft = numpy.min(coordinates[:,0])
+        newLeft = np.min(coordinates[:,0])
         coordinates[:,0] -= newLeft - oldLeft
 
         # Squish columns together from the right where possible until an isomer is encountered

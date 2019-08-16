@@ -32,13 +32,12 @@
 This module contains unit tests of the :mod:`rmgpy.pdep.collision` module.
 """
 
-import numpy
 import unittest
 
-import rmgpy.constants as constants
-from rmgpy.pdep.collision import  SingleExponentialDown
+from rmgpy.pdep.collision import SingleExponentialDown
 
 ################################################################################
+
 
 class TestSingleExponentialDown(unittest.TestCase):
     """
