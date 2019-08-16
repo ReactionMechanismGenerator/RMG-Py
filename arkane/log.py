@@ -31,12 +31,15 @@
 """
 A general class for parsing quantum mechanical log files
 """
-import os.path
+
 import logging
+import os.path
 import shutil
 
 from rmgpy.qm.qmdata import QMData
 from rmgpy.qm.symmetry import PointGroupCalculator
+
+################################################################################
 
 
 class Log(object):
@@ -127,7 +130,6 @@ class Log(object):
         Inner lists with length 4 represent frozen dihedral angles
         """
         raise NotImplementedError("load_scan_frozen_atoms is not implemented for the Log class")
-
 
     def loadNegativeFrequency(self):
         """

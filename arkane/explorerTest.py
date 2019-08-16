@@ -28,19 +28,23 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+"""
+This module contains unit tests of the :mod:`arkane.explorer` module.
+"""
+
 import os
+import unittest
+
 from nose.plugins.attrib import attr
 
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
 
-
 ################################################################################
 
 
 @attr('functional')
-class testExplorerJob(unittest.TestCase):
+class TestExplorerJob(unittest.TestCase):
     """
     Contains tests for ExplorerJob class execute method
     """
@@ -56,12 +60,12 @@ class testExplorerJob(unittest.TestCase):
             if not isinstance(job, ExplorerJob):
                 job.execute(outputFile=None, plot=None)
             else:
-                thermoLibrary, kineticsLibrary, speciesList = arkane.getLibraries()
-                job.execute(outputFile=None, plot=None, speciesList=speciesList, thermoLibrary=thermoLibrary,
-                            kineticsLibrary=kineticsLibrary)
+                thermo_library, kinetics_library, species_list = arkane.getLibraries()
+                job.execute(outputFile=None, plot=None, speciesList=species_list, thermoLibrary=thermo_library,
+                            kineticsLibrary=kinetics_library)
 
-        cls.thermoLibrary = thermoLibrary
-        cls.kineticsLibrary = kineticsLibrary
+        cls.thermoLibrary = thermo_library
+        cls.kineticsLibrary = kinetics_library
         cls.explorerjob = cls.jobList[-1]
         cls.pdepjob = cls.jobList[-2]
 

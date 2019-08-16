@@ -29,11 +29,11 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.thermo` module.
+This module contains unit tests of the :mod:`arkane.thermo` module.
 """
 
-import unittest
 import os
+import unittest
 
 from rmgpy.species import Species
 
@@ -47,6 +47,7 @@ class TestThermo(unittest.TestCase):
     """
     Contains unit tests of the ThermoJob class.
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
@@ -63,8 +64,6 @@ class TestThermo(unittest.TestCase):
         """Test Getting an element count dictionary from the species.conformer attribute"""
         element_count = self.thermo_job.element_count_from_conformer()
         self.assertEqual(element_count, {'H': 4, 'C': 2})
-
-
 
 ################################################################################
 

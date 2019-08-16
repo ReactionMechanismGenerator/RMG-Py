@@ -32,51 +32,41 @@
 This module contains functionality for parsing Arkane input files.
 """
 
-import os.path
 import logging
+import os.path
+
 import numpy as np
 
 from rmgpy import settings
-from rmgpy.exceptions import InputError, DatabaseError
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.rmg import getDB
-
-from rmgpy.rmg.model import CoreEdgeReactionModel
-
-from rmgpy.species import Species, TransitionState
-from rmgpy.quantity import Quantity
-
-from rmgpy.statmech.translation import Translation, IdealGasTranslation
-from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
-from rmgpy.statmech.conformer import Conformer
-
-from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.thermo.wilhoit import Wilhoit
-
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
-from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
-from rmgpy.kinetics.tunneling import Wigner, Eckart
+from rmgpy.exceptions import InputError, DatabaseError
+from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
-
+from rmgpy.kinetics.tunneling import Wigner, Eckart
+from rmgpy.molecule import Molecule
+from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.pdep.configuration import Configuration
 from rmgpy.pdep.network import Network
-from rmgpy.pdep.collision import SingleExponentialDown
-
-from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.species import Species, TransitionState
+from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.statmech.vibration import HarmonicOscillator
+from rmgpy.thermo.nasa import NASAPolynomial, NASA
+from rmgpy.thermo.thermodata import ThermoData
+from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.transport import TransportData
 
+from arkane.common import is_pdep
+from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
+from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob, assign_frequency_scale_factor
 from arkane.thermo import ThermoJob
-from arkane.pdep import PressureDependenceJob
-from arkane.explorer import ExplorerJob
-from arkane.common import is_pdep
 
 ################################################################################
 
@@ -85,7 +75,6 @@ transitionStateDict = {}
 reactionDict = {}
 networkDict = {}
 jobList = []
-
 
 ################################################################################
 
@@ -230,8 +219,9 @@ def species(label, *args, **kwargs):
                 if db is None:
                     raise DatabaseError('Thermo database is None.')
             except DatabaseError:
-                logging.warn("The database isn't loaded, cannot estimate thermo for {0}. "
-                             "If it is a bath gas, set reactive = False to avoid generating thermo.".format(spec.label))
+                logging.warning("The database isn't loaded, cannot estimate thermo for {0}. "
+                                "If it is a bath gas, set reactive = False to avoid generating"
+                                " thermo.".format(spec.label))
             else:
                 logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
                              ' RMG-Database...'.format(spec.label))
@@ -356,7 +346,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
     if isinstance(rxn, Reaction):
         reactionDict[label] = rxn
     else:
-        for i in xrange(len(rxn)):
+        for i in range(len(rxn)):
             reactionDict[label + str(i)] = rxn[i]
 
     return rxn
@@ -497,7 +487,7 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
         interpolationModel = (interpolationModel,)
 
     nwk = None
-    if label in networkDict.keys():
+    if label in list(networkDict.keys()):
         nwk = networkDict[label]
 
     job = PressureDependenceJob(network=nwk, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
@@ -633,7 +623,7 @@ def loadInputFile(path):
 
     with open(path, 'r') as f:
         try:
-            exec f in global_context, local_context
+            exec(f.read(), global_context, local_context)
         except (NameError, TypeError, SyntaxError):
             logging.error('The input file {0!r} was invalid:'.format(path))
             raise

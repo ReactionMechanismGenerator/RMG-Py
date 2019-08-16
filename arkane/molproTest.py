@@ -28,14 +28,20 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
+"""
+This module contains unit tests of the :mod:`arkane.molpro` module.
+"""
+
 import unittest
 import os
 
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
+import numpy as np
+
 import rmgpy.constants as constants
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.molpro import MolproLog
+
 
 ################################################################################
 
@@ -45,27 +51,27 @@ class MolproTest(unittest.TestCase):
     Contains unit tests for the chempy.io.gaussian module, used for reading
     and writing Molpro files.
     """
-    
+
     def testLoadDzFromMolproLog_F12(self):
         """
         Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
         energy can be properly read.
         """
-        
+
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
         e0 = log.loadEnergy()
-        
+
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.474353559604, 5)
-    
+
     def testLoadQzFromMolproLog_F12(self):
         """
         Uses a Molpro log file for ethylene_qz (C2H4) to test that F12b
         energy can be properly read.
         """
-        
+
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_qz.out'))
         e0 = log.loadEnergy()
-        
+
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.472682755635, 5)
 
     def testLoadRadFromMolproLog_F12(self):
@@ -73,10 +79,10 @@ class MolproTest(unittest.TestCase):
         Uses a Molpro log file for OH (C2H4) to test that radical
         energy can be properly read.
         """
-        
+
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'OH_f12.out'))
         e0 = log.loadEnergy()
-        
+
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -75.663696424380, 5)
 
     def testLoadHOSIFromMolpro_log(self):
@@ -97,7 +103,7 @@ class MolproTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = numpy.array([298.15], numpy.float64)
+        t_list = np.array([298.15], np.float64)
 
         self.assertAlmostEqual(trans.getPartitionFunction(t_list), 9.175364e7, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(t_list), 1.00005557e5, delta=1e-2)
@@ -138,7 +144,7 @@ class MolproTest(unittest.TestCase):
         """
         Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
         """
-        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
+        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
         d1_diagnostic = log.get_D1_diagnostic()
         self.assertAlmostEqual(d1_diagnostic, 0.03369031)
 
@@ -146,9 +152,10 @@ class MolproTest(unittest.TestCase):
         """
         Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
         """
-        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
+        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
         t1_diagnostic = log.get_T1_diagnostic()
         self.assertAlmostEqual(t1_diagnostic, 0.01152184)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

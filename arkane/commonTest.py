@@ -29,27 +29,27 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.common` module.
+This module contains unit tests of the :mod:`arkane.common` module.
 """
 
-import unittest
-import numpy
+import logging
 import os
 import shutil
-import logging
+import unittest
+
+import numpy as np
 
 import rmgpy
 import rmgpy.constants as constants
 from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.species import Species, TransitionState
 from rmgpy.quantity import ScalarQuantity
+from rmgpy.species import Species, TransitionState
 from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass
-from arkane.statmech import InputError, StatMechJob
 from arkane.input import jobList
-
+from arkane.statmech import InputError, StatMechJob
 
 ################################################################################
 
@@ -67,8 +67,8 @@ class CommonTest(unittest.TestCase):
                   -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
                   -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
                   -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
-        v_list = numpy.array(v_list, numpy.float64)
-        v_diff = (v_list[0] - numpy.min(v_list)) * constants.E_h * constants.Na / 1000
+        v_list = np.array(v_list, np.float64)
+        v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
         self.assertAlmostEqual(v_diff / 2.7805169838282797, 1, 5)
 
 
@@ -81,10 +81,10 @@ class TestArkaneJob(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                    'data', 'methoxy.py'))
-        pdepjob = jobList[-1]
-        cls.kineticsjob = jobList[0]
+        job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                     'data', 'methoxy.py'))
+        pdepjob = job_list[-1]
+        cls.kineticsjob = job_list[0]
         pdepjob.activeJRotor = True
         network = pdepjob.network
         cls.Nisom = len(network.isomers)
@@ -153,7 +153,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the temperature list.
         """
-        self.assertTrue(numpy.array_equal(self.TlistValue, numpy.array([450, 500, 678, 700])))
+        self.assertTrue(np.array_equal(self.TlistValue, np.array([450, 500, 678, 700])))
 
     def testPminValue(self):
         """
@@ -177,7 +177,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the pressure list.
         """
-        self.assertTrue(numpy.array_equal(self.PlistValue, numpy.array([0.01, 0.1, 1, 3, 10, 100, 1000])))
+        self.assertTrue(np.array_equal(self.PlistValue, np.array([0.01, 0.1, 1, 3, 10, 100, 1000])))
 
     def testGenerateTemperatureList(self):
         """
@@ -330,8 +330,8 @@ class TestArkaneSpecies(unittest.TestCase):
         """
         Test properly dumping the ArkaneSpecies object and respective sub-objects
         """
-        jobList = self.arkane.loadInputFile(self.dump_input_path)
-        for job in jobList:
+        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        for job in job_list:
             job.execute(output_directory=self.dump_path)
         self.assertTrue(os.path.isfile(self.dump_output_file))
 
@@ -340,12 +340,12 @@ class TestArkaneSpecies(unittest.TestCase):
         Test properly loading the ArkaneSpecies object and respective sub-objects
         """
         # Create YAML file by running Arkane
-        jobList = self.arkane.loadInputFile(self.dump_input_path)
-        for job in jobList:
+        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        for job in job_list:
             job.execute(output_directory=self.dump_path)
 
         # Load in newly created YAML file
-        arkane_spc_old = jobList[0].arkane_species
+        arkane_spc_old = job_list[0].arkane_species
         arkane_spc = ArkaneSpecies.__new__(ArkaneSpecies)
         arkane_spc.load_yaml(path=os.path.join(self.dump_path, 'species', arkane_spc_old.label + '.yml'))
 
@@ -358,7 +358,7 @@ class TestArkaneSpecies(unittest.TestCase):
         self.assertEqual(arkane_spc.smiles, 'CC')
         self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
         self.assertEqual(arkane_spc.label, 'C2H6')
-        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99*1.014)  # checks float conversion
+        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99 * 1.014)  # checks float conversion
         self.assertFalse(arkane_spc.use_bond_corrections)
         self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4)  # HarmonicOsc.
         self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
@@ -426,7 +426,7 @@ class TestGetMass(unittest.TestCase):
     """
 
     def test_get_mass(self):
-        """Test that the correct mass/number/isotop is returned from get_element_mass"""
+        """Test that the correct mass/number/isotope is returned from get_element_mass"""
         self.assertEquals(get_element_mass(1), (1.00782503224, 1))  # test input by integer
         self.assertEquals(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
         self.assertEquals(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane common module
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -32,32 +28,35 @@ Arkane common module
 #                                                                             #
 ###############################################################################
 
-import numpy
-import os.path
-import logging
-import time
-import string
+"""
+Arkane common module
+"""
 
+import logging
+import os.path
+import string
+import time
+
+import numpy as np
 import yaml
 
-from rmgpy.rmgobject import RMGObject
+import rmgpy.constants as constants
 from rmgpy import __version__
-from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.molecule.element import elementList
 from rmgpy.molecule.translator import toInChI, toInChIKey
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.quantity import ScalarQuantity, ArrayQuantity
+from rmgpy.rmgobject import RMGObject
+from rmgpy.species import Species, TransitionState
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
 from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
-from rmgpy.pdep.collision import SingleExponentialDown
-from rmgpy.transport import TransportData
 from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
-from rmgpy.species import Species, TransitionState
-import rmgpy.constants as constants
+from rmgpy.transport import TransportData
 
 from arkane.pdep import PressureDependenceJob
-
 
 ################################################################################
 
@@ -137,7 +136,7 @@ class ArkaneSpecies(RMGObject):
         """
         result = '{0!r}'.format(self.__class__.__name__)
         result += '{'
-        for key, value in self.as_dict().iteritems():
+        for key, value in self.as_dict().items():
             if key != 'class':
                 result += '{0!r}: {1!r}'.format(str(key), str(value))
         result += '}'
@@ -183,7 +182,7 @@ class ArkaneSpecies(RMGObject):
                 data = species.getThermoData()
                 h298 = data.getEnthalpy(298) / 4184.
                 s298 = data.getEntropy(298) / 4.184
-                temperatures = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
+                temperatures = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
                 cp = []
                 for t in temperatures:
                     cp.append(data.getHeatCapacity(t) / 4.184)
@@ -279,7 +278,7 @@ class ArkaneSpecies(RMGObject):
                       'NASA': NASA,
                       'NASAPolynomial': NASAPolynomial,
                       'ThermoData': ThermoData,
-                      'np_array': numpy.array,
+                      'np_array': np.array,
                       }
         freq_data = None
         if 'imaginary_frequency' in data:
@@ -331,17 +330,17 @@ def check_conformer_energy(Vlist, path):
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 
     log a warning message.  
     """
-    Vlist = numpy.array(Vlist, numpy.float64)
-    Vdiff = (Vlist[0] - numpy.min(Vlist)) * constants.E_h * constants.Na / 1000
-    if Vdiff >= 2:  # we choose 2 kJ/mol to be the critical energy
+    v_list = np.array(Vlist, np.float64)
+    v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
+    if v_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
-                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'.format(
-                         path=os.path.basename(path), diff=Vdiff))
+                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
+                        .format(path=os.path.basename(path), diff=v_diff))
 
 
 def get_element_mass(input_element, isotope=None):
     """
-    Returns the mass and z number of the requested isotop for a given element.
+    Returns the mass and z number of the requested isotope for a given element.
     'input_element' can be wither the atomic number (integer) or an element symbol.
     'isotope' is an integer of the atomic z number. If 'isotope' is None, returns the most common isotope.
     Data taken from NIST, https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl (accessed October 2018)
@@ -368,13 +367,13 @@ def get_element_mass(input_element, isotope=None):
                 mass = iso_mass[1]
                 break
         else:
-            raise ValueError("Could not find requested isotop {0} for element {1}".format(isotope, symbol))
+            raise ValueError("Could not find requested isotope {0} for element {1}".format(isotope, symbol))
     else:
         # no specific isotope is required
         if len(mass_list[0]) == 2:
             # isotope weight is unavailable, use the first entry
             mass = mass_list[0][1]
-            logging.warn("Assuming isotop {0} is representative of element {1}".format(mass_list[0][0], symbol))
+            logging.warning('Assuming isotope {0} is representative of element {1}'.format(mass_list[0][0], symbol))
         else:
             # use the most common isotope
             max_weight = mass_list[0][2]

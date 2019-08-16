@@ -29,17 +29,19 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.main` module.
+This module contains unit tests of the :mod:`arkane.main` module.
 """
 
-import unittest
 import logging
 import os
 import shutil
-from nose.plugins.attrib import attr
+import unittest
 import zipfile
 
+from nose.plugins.attrib import attr
+
 import rmgpy
+
 from arkane import Arkane
 
 ################################################################################
@@ -50,6 +52,7 @@ class TestArkaneExamples(unittest.TestCase):
     """
     Run all of Arkane's examples, and report which one failed
     """
+
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -88,7 +91,7 @@ class TestArkaneExamples(unittest.TestCase):
         """A function that is run ONCE after all unit tests in this class."""
         cls.extensions_to_delete = ['pdf', 'csv', 'txt', 'inp']
         cls.files_to_delete = ['arkane.log', 'output.py']
-        cls.files_to_keep = ['README.txt']  # files to keep that have extentions marked for deletion
+        cls.files_to_keep = ['README.txt']  # files to keep that have extensions marked for deletion
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         for example_type in cls.example_types:
             example_type_path = os.path.join(cls.base_path, example_type)
@@ -99,7 +102,7 @@ class TestArkaneExamples(unittest.TestCase):
                     item_path = os.path.join(example_path, name)
                     if os.path.isfile(item_path):
                         extension = name.split('.')[-1]
-                        if name in cls.files_to_delete or\
+                        if name in cls.files_to_delete or \
                                 (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
                             os.remove(item_path)
                     else:

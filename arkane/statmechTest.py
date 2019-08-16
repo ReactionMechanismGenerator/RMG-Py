@@ -29,18 +29,19 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.main` module.
+This module contains unit tests of the :mod:`arkane.statmech` module.
 """
 
-import unittest
 import os
+import unittest
+
 import numpy as np
 
 from rmgpy.exceptions import InputError
 
 from arkane import Arkane
-from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 from arkane.qchem import QChemLog
+from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 
 ################################################################################
 
@@ -49,6 +50,7 @@ class TestStatmech(unittest.TestCase):
     """
     Contains unit tests of the StatmechJob class.
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""

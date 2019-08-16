@@ -33,7 +33,7 @@ This is the main executable script for Arkane, a tool for computing chemical
 reaction rates and other properties used in detailed kinetics models using
 various methodologies and theories. To run Arkane, use the command ::
 
-    $ python arkane.py FILE
+    $ python Arkane.py FILE
 
 where ``FILE`` is the path to an Arkane input file describing the job to
 execute. Arkane will run the specified job, writing the output to
@@ -41,7 +41,7 @@ execute. Arkane will run the specified job, writing the output to
 files appearing in the same directory as the input file. Some additional
 command-line arguments are available; run the command ::
 
-    $ python arkane.py -h
+    $ python Arkane.py -h
 
 for more information.
 """
@@ -49,7 +49,7 @@ for more information.
 import os
 import logging
 
-from arkane.main import *
+from arkane.main import Arkane
 
 arkane = Arkane()
 
@@ -61,6 +61,7 @@ arkane.execute()
 
 try:
     import psutil
+
     process = psutil.Process(os.getpid())
     memory_info = process.memory_info()
     logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))

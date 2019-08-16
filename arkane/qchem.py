@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane QChem module
-Used to parse QChem output files
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -33,13 +28,18 @@ Used to parse QChem output files
 #                                                                             #
 ###############################################################################
 
+"""
+Arkane QChem module
+Used to parse QChem output files
+"""
+
 import math
 import logging
 import os.path
-import numpy
+
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
@@ -64,21 +64,21 @@ class QChemLog(Log):
         Return the number of atoms in the molecular configuration used in
         the QChem output file.
         """
-        Natoms = 0
+        n_atoms = 0
 
         with open(self.path, 'r') as f:
             line = f.readline()
-            while line != '' and Natoms == 0:
+            while line != '' and n_atoms == 0:
                 # Automatically determine the number of atoms
-                if 'Standard Nuclear Orientation' in line and Natoms == 0:
+                if 'Standard Nuclear Orientation' in line and n_atoms == 0:
                     for i in range(3):
                         line = f.readline()
                     while '----------------------------------------------------' not in line:
-                        Natoms += 1
+                        n_atoms += 1
                         line = f.readline()
                 line = f.readline()
 
-        return Natoms
+        return n_atoms
 
     def loadForceConstantMatrix(self):
         """
@@ -88,30 +88,30 @@ class QChemLog(Log):
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
         """
-        F = None
+        force = None
 
-        Natoms = self.getNumberOfAtoms()
-        Nrows = Natoms * 3
+        n_atoms = self.getNumberOfAtoms()
+        n_rows = n_atoms * 3
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
                 # Read force constant matrix
                 if 'Final Hessian.' in line or 'Hessian of the SCF Energy' in line:
-                    F = numpy.zeros((Nrows, Nrows), numpy.float64)
-                    for i in range(int(math.ceil(Nrows / 6.0))):
+                    force = np.zeros((n_rows, n_rows), np.float64)
+                    for i in range(int(math.ceil(n_rows / 6.0))):
                         # Header row
                         line = f.readline()
                         # Matrix element rows
-                        for j in range(Nrows):  # for j in range(i*6, Nrows):
+                        for j in range(n_rows):  # for j in range(i*6, Nrows):
                             data = f.readline().split()
                             for k in range(len(data) - 1):
-                                F[j, i * 6 + k] = float(data[k + 1])
+                                force[j, i * 6 + k] = float(data[k + 1])
                                 # F[i*5+k,j] = F[j,i*5+k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    F *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                    force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
-        return F
+        return force
 
     def loadGeometry(self):
 
@@ -130,7 +130,7 @@ class QChemLog(Log):
         completed_job = False
         for line in reversed(log):
             if 'Total job time:' in line:
-                logging.debug('Found a sucessfully completed QChem Job')
+                logging.debug('Found a successfully completed QChem Job')
                 completed_job = True
                 break
 
@@ -141,7 +141,7 @@ class QChemLog(Log):
         # Now look for the geometry.
         # Will return the final geometry in the file under Standard Nuclear Orientation.
         geometry_flag = False
-        for i in reversed(xrange(len(log))):
+        for i in reversed(range(len(log))):
             line = log[i]
             if 'Standard Nuclear Orientation' in line:
                 for line in log[(i + 3):]:
@@ -160,9 +160,9 @@ class QChemLog(Log):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        coord = numpy.array(coord, numpy.float64)
-        number = numpy.array(number, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
+        coord = np.array(coord, np.float64)
+        number = np.array(number, np.int)
+        mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise InputError('Unable to read atoms from QChem geometry output file {0}'.format(self.path))
 
@@ -253,7 +253,7 @@ class QChemLog(Log):
                         logging.debug('inertia is {}'.format(str(inertia)))
                         for i in range(2):
                             inertia[i] *= (constants.a0 / 1e-10) ** 2
-                        inertia = numpy.sqrt(inertia[0] * inertia[1])
+                        inertia = np.sqrt(inertia[0] * inertia[1])
                         rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                         rot.append(rotation)
                     else:
@@ -308,7 +308,7 @@ class QChemLog(Log):
         Extract the optimized energies in J/mol from a QChem log file, e.g. the
         result of a QChem "PES Scan" quantum chemistry calculation.
         """
-        Vlist = []
+        v_list = []
         angle = []
         read = False
         with open(self.path, 'r') as f:
@@ -318,24 +318,24 @@ class QChemLog(Log):
                 if read:
                     values = [float(item) for item in line.split()]
                     angle.append(values[0])
-                    Vlist.append(values[1])
+                    v_list.append(values[1])
                 if 'Summary of potential scan:' in line:
-                    logging.info('found a sucessfully completed QChem Job')
+                    logging.info('found a successfully completed QChem Job')
                     read = True
                 elif 'SCF failed to converge' in line:
                     raise InputError('QChem Job did not sucessfully complete: SCF failed to converge')
         logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
-        Vlist = numpy.array(Vlist, numpy.float64)
+        v_list = np.array(v_list, np.float64)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
-        check_conformer_energy(Vlist, self.path)
+        check_conformer_energy(v_list, self.path)
 
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
-        Vlist -= numpy.min(Vlist)
-        Vlist *= constants.E_h * constants.Na
-        angle = numpy.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(Vlist) - 1), numpy.float64)
-        return Vlist, angle
+        v_list -= np.min(v_list)
+        v_list *= constants.E_h * constants.Na
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        return v_list, angle
 
     def loadNegativeFrequency(self):
         """

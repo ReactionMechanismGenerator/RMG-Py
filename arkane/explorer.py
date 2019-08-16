@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-The Arkane Explorer module
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -32,18 +28,22 @@ The Arkane Explorer module
 #                                                                             #
 ###############################################################################
 
-import os
-import numpy as np
+"""
+The Arkane Explorer module
+"""
+
 import logging
+import os
 import shutil
 from copy import deepcopy
 
+import numpy as np
+
 import rmgpy
-from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.data.rmg import getDB
 from rmgpy.exceptions import InputError
-
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
 
 ################################################################################
 
@@ -109,18 +109,18 @@ class ExplorerJob(object):
         if outputFile:
             reaction_model.pressureDependence.outputFile = os.path.dirname(outputFile)
 
-        kineticsDatabase = getDB('kinetics')
-        thermoDatabase = getDB('thermo')
+        kinetics_database = getDB('kinetics')
+        thermo_database = getDB('thermo')
 
-        thermoDatabase.libraries['thermojobs'] = thermoLibrary
-        thermoDatabase.libraryOrder.insert(0, 'thermojobs')
+        thermo_database.libraries['thermojobs'] = thermoLibrary
+        thermo_database.libraryOrder.insert(0, 'thermojobs')
 
-        kineticsDatabase.libraries['kineticsjobs'] = kineticsLibrary
-        kineticsDatabase.libraryOrder.insert(0, ('kineticsjobs', 'Reaction Library'))
+        kinetics_database.libraries['kineticsjobs'] = kineticsLibrary
+        kinetics_database.libraryOrder.insert(0, ('kineticsjobs', 'Reaction Library'))
 
-        jobRxns = [rxn for rxn in reaction_model.core.reactions]
+        job_rxns = [rxn for rxn in reaction_model.core.reactions]
 
-        self.jobRxns = jobRxns
+        self.jobRxns = job_rxns
 
         if outputFile is not None:
             if not os.path.exists(os.path.join(reaction_model.pressureDependence.outputFile, 'pdep')):
@@ -139,8 +139,8 @@ class ExplorerJob(object):
 
         form = mmol.getFormula()
 
-        for spec in self.bathGas.keys() + self.source:
-            nspec, isNew = reaction_model.makeNewSpecies(spec, reactive=False)
+        for spec in list(self.bathGas.keys()) + self.source:
+            nspec, is_new = reaction_model.makeNewSpecies(spec, reactive=False)
             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec, reactEdge=False, unimolecularReact=flags,
                                    bimolecularReact=np.zeros((len(reaction_model.core.species),
@@ -148,7 +148,7 @@ class ExplorerJob(object):
 
         reaction_model.addSeedMechanismToCore('kineticsjobs')
 
-        for lib in kineticsDatabase.libraryOrder:
+        for lib in kinetics_database.libraryOrder:
             if lib[0] != 'kineticsjobs':
                 reaction_model.addReactionLibraryToEdge(lib[0])
 
@@ -163,8 +163,8 @@ class ExplorerJob(object):
             biflags = np.zeros((len(reaction_model.core.species), len(reaction_model.core.species)))
         elif len(self.source) == 2:
             flags = np.array([False for s in reaction_model.core.species])
-            biflags = np.array([[False for i in xrange(len(reaction_model.core.species))]
-                                for j in xrange(len(reaction_model.core.species))])
+            biflags = np.array([[False for i in range(len(reaction_model.core.species))]
+                                for j in range(len(reaction_model.core.species))])
             biflags[reaction_model.core.species.index(self.source[0]), reaction_model.core.species.index(
                 self.source[1])] = True
         else:
@@ -193,68 +193,68 @@ class ExplorerJob(object):
         # determine T and P combinations
 
         if self.pdepjob.Tlist:
-            Tlist = self.pdepjob.Tlist.value_si
+            t_list = self.pdepjob.Tlist.value_si
         else:
-            Tlist = np.linspace(self.pdepjob.Tmin.value_si, self.pdepjob.Tmax.value_si, self.pdepjob.Tcount)
+            t_list = np.linspace(self.pdepjob.Tmin.value_si, self.pdepjob.Tmax.value_si, self.pdepjob.Tcount)
 
         if self.pdepjob.Plist:
-            Plist = self.pdepjob.Plist.value_si
+            p_list = self.pdepjob.Plist.value_si
         else:
-            Plist = np.linspace(self.pdepjob.Pmin.value_si, self.pdepjob.Pmax.value_si, self.pdepjob.Pcount)
+            p_list = np.linspace(self.pdepjob.Pmin.value_si, self.pdepjob.Pmax.value_si, self.pdepjob.Pcount)
 
         # generate the network
 
-        forbiddenStructures = getDB('forbidden')
+        forbidden_structures = getDB('forbidden')
         incomplete = True
-        checkedSpecies = []
+        checked_species = []
 
         while incomplete:
             incomplete = False
-            for T in Tlist:
-                for P in Plist:
+            for temperature in t_list:
+                for pressure in p_list:
                     for network in self.networks:
                         # compute the characteristic rate coefficient by summing all rate coefficients
                         # from the reactant channel
                         for spc in reaction_model.edge.species:
-                            if spc in checkedSpecies:
+                            if spc in checked_species:
                                 continue
-                            if forbiddenStructures.isMoleculeForbidden(spc.molecule[0]):
+                            if forbidden_structures.isMoleculeForbidden(spc.molecule[0]):
                                 reaction_model.removeSpeciesFromEdge(reaction_model.reactionSystems, spc)
                                 reaction_model.removeEmptyPdepNetworks()
                             else:
-                                checkedSpecies.append(spc)
+                                checked_species.append(spc)
 
                         kchar = 0.0
                         for rxn in network.netReactions:  # reaction_model.core.reactions+reaction_model.edge.reactions:
                             if (set(rxn.reactants) == set(self.source)
                                     and rxn.products[0].molecule[0].getFormula() == form):
-                                kchar += rxn.kinetics.getRateCoefficient(T=T, P=P)
+                                kchar += rxn.kinetics.getRateCoefficient(T=temperature, P=pressure)
                             elif (set(rxn.products) == set(self.source)
                                     and rxn.reactants[0].molecule[0].getFormula() == form):
                                 kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).getRateCoefficient(
-                                    T=T, P=P)
+                                    T=temperature, P=pressure)
 
-                        if network.getLeakCoefficient(T=T, P=P) > self.explore_tol * kchar:
+                        if network.getLeakCoefficient(T=temperature, P=pressure) > self.explore_tol * kchar:
                             incomplete = True
-                            spc = network.getMaximumLeakSpecies(T=T, P=P)
+                            spc = network.getMaximumLeakSpecies(T=temperature, P=pressure)
                             logging.info('adding new isomer {0} to network'.format(spc))
                             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
-                                                       bimolecularReact=np.zeros((len(reaction_model.core.species),
-                                                                                  len(reaction_model.core.species))))
+                                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+                                                                              len(reaction_model.core.species))))
 
                             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
-                                                       bimolecularReact=np.zeros((len(reaction_model.core.species),
-                                                                                  len(reaction_model.core.species))))
+                                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+                                                                              len(reaction_model.core.species))))
         for network in self.networks:
-            rmRxns = []
+            rm_rxns = []
             for rxn in network.pathReactions:  # remove reactions with forbidden species
                 for r in rxn.reactants + rxn.products:
-                    if forbiddenStructures.isMoleculeForbidden(r.molecule[0]):
-                        rmRxns.append(rxn)
+                    if forbidden_structures.isMoleculeForbidden(r.molecule[0]):
+                        rm_rxns.append(rxn)
 
-            for rxn in rmRxns:
+            for rxn in rm_rxns:
                 logging.info('Removing forbidden reaction: {0}'.format(rxn))
                 network.pathReactions.remove(rxn)
 
@@ -271,7 +271,7 @@ class ExplorerJob(object):
 
         warns = []
 
-        for rxn in jobRxns:
+        for rxn in job_rxns:
             if rxn not in network.pathReactions:
                 warns.append('Reaction {0} in the input file was not explored during network expansion and was '
                              'not included in the full network.  This is likely because your explore_tol value is '
@@ -281,41 +281,40 @@ class ExplorerJob(object):
         for network in self.networks:
             if self.energy_tol != np.inf or self.flux_tol != 0.0:
 
-                rxnSet = None
-                productSet = None
+                rxn_set = None
+                product_set = None
 
-                for T in Tlist:
+                for temperature in t_list:
                     if self.energy_tol != np.inf:
-                        rxns = network.get_energy_filtered_reactions(T, self.energy_tol)
-                        if rxnSet is not None:
-                            rxnSet &= set(rxns)
+                        rxns = network.get_energy_filtered_reactions(temperature, self.energy_tol)
+                        if rxn_set is not None:
+                            rxn_set &= set(rxns)
                         else:
-                            rxnSet = set(rxns)
+                            rxn_set = set(rxns)
 
-                    for P in Plist:
+                    for pressure in p_list:
                         if self.flux_tol != 0.0:
-                            products = network.get_rate_filtered_products(T, P, self.flux_tol)
+                            products = network.get_rate_filtered_products(temperature, pressure, self.flux_tol)
                             products = [tuple(x) for x in products]
-                            if productSet is not None:
-                                productSet &= set(products)
+                            if product_set is not None:
+                                product_set &= set(products)
                             else:
-                                productSet = set(products)
+                                product_set = set(products)
 
-
-                if rxnSet:
+                if rxn_set:
                     logging.info('removing reactions during reduction:')
-                    for rxn in rxnSet:
+                    for rxn in rxn_set:
                         logging.info(rxn)
-                    rxnSet = list(rxnSet)
-                if productSet:
+                    rxn_set = list(rxn_set)
+                if product_set:
                     logging.info('removing products during reduction:')
-                    for prod in productSet:
+                    for prod in product_set:
                         logging.info([x.label for x in prod])
-                    productSet = list(productSet)
+                    product_set = list(product_set)
 
-                network.remove_reactions(reaction_model, rxns=rxnSet, prods=productSet)
+                network.remove_reactions(reaction_model, rxns=rxn_set, prods=product_set)
 
-                for rxn in jobRxns:
+                for rxn in job_rxns:
                     if rxn not in network.pathReactions:
                         warns.append(
                             'Reaction {0} in the input file was not included in the reduced model.'.format(rxn))

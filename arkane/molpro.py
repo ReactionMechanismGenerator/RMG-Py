@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Arkane Molpro module
-Used to parse Molpro output files
-"""
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -33,15 +28,21 @@ Used to parse Molpro output files
 #                                                                             #
 ###############################################################################
 
-import math
-import numpy
+"""
+Arkane Molpro module
+Used to parse Molpro output files
+"""
+
 import logging
+import math
+
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import get_element_mass
+from arkane.exceptions import LogError
 from arkane.log import Log
 
 ################################################################################
@@ -92,18 +93,18 @@ class MolproLog(Log):
             while line != '':
                 # Read force constant matrix
                 if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                    fc = numpy.zeros((n_rows, n_rows), numpy.float64)
+                    fc = np.zeros((n_rows, n_rows), np.float64)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
                         # Matrix element rows
-                        for j in range(i*5, n_rows):
+                        for j in range(i * 5, n_rows):
                             data = f.readline().split()
-                            for k in range(len(data)-1):
-                                fc[j, i*5+k] = float(data[k+1].replace('D', 'E'))
-                                fc[i*5+k, j] = fc[j, i*5+k]
+                            for k in range(len(data) - 1):
+                                fc[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
+                                fc[i * 5 + k, j] = fc[j, i * 5 + k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    fc *= 4.35974417e-18 / 5.291772108e-11**2
+                    fc *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
         return fc
@@ -156,9 +157,9 @@ class MolproLog(Log):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        number = numpy.array(number, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
-        coord = numpy.array(coord, numpy.float64)
+        number = np.array(number, np.int)
+        mass = np.array(mass, np.float64)
+        coord = np.array(coord, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise InputError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
 
@@ -188,7 +189,7 @@ class MolproLog(Log):
                     splits = line.replace('=', ' ').replace(',', ' ').split(' ')
                     for i, s in enumerate(splits):
                         if 'spin' in s:
-                            spinMultiplicity = int(splits[i+1]) + 1
+                            spinMultiplicity = int(splits[i + 1]) + 1
                             logging.debug(
                                 'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
                             break
@@ -231,14 +232,15 @@ class MolproLog(Log):
                         elif 'Rotational Constants' in line and line.split()[-1] == '[GHz]':
                             inertia = [float(d) for d in line.split()[-4:-1]]
                             for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 
                         elif 'Rotational Constant' in line and line.split()[3] == '[GHz]':
                             inertia = float(line.split()[2])
-                            inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) * constants.Na * 1e23
+                            inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) \
+                                * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 
@@ -399,7 +401,7 @@ class MolproLog(Log):
     def get_T1_diagnostic(self):
         """
         Returns the T1 diagnostic from output log.
-        If multiple occurrences exist, returns the last occurence
+        If multiple occurrences exist, returns the last occurrence
         """
         with open(self.path) as f:
             log = f.readlines()
@@ -413,7 +415,7 @@ class MolproLog(Log):
     def get_D1_diagnostic(self):
         """
         Returns the D1 diagnostic from output log.
-        If multiple occurrences exist, returns the last occurence
+        If multiple occurrences exist, returns the last occurrence
         """
         with open(self.path) as f:
             log = f.readlines()

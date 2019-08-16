@@ -39,8 +39,11 @@ import pybel
 
 from rmgpy.molecule import Molecule, Atom, Bond, getElement
 
-from arkane.exceptions import BondAdditivityCorrectionError
 import arkane.encorr.data as data
+from arkane.exceptions import BondAdditivityCorrectionError
+
+################################################################################
+
 
 atom_spins = {
     'H': 0.5, 'C': 1.0, 'N': 1.5, 'O': 1.0, 'F': 0.5, 'Si': 1.0, 'P': 1.5, 'S': 1.0, 'Cl': 0.5, 'Br': 0.5, 'I': 0.5
@@ -94,11 +97,11 @@ def get_bac(model_chemistry, coords, nums, multiplicity=1, mol_corr=0.0):
         bac_bond += length_corr * np.exp(-alpha * length)
 
         # Neighbor correction
-        for other_atom, other_bond in mol.getBonds(atom1).iteritems():  # Atoms adjacent to atom1
+        for other_atom, other_bond in mol.getBonds(atom1).items():  # Atoms adjacent to atom1
             if other_bond is not bond:
                 other_symbol = other_atom.element.symbol
                 bac_bond += bond_corr_neighbor[symbol1] + bond_corr_neighbor[other_symbol]
-        for other_atom, other_bond in mol.getBonds(atom2).iteritems():  # Atoms adjacent to atom2
+        for other_atom, other_bond in mol.getBonds(atom2).items():  # Atoms adjacent to atom2
             if other_bond is not bond:
                 other_symbol = other_atom.element.symbol
                 bac_bond += bond_corr_neighbor[symbol2] + bond_corr_neighbor[other_symbol]
