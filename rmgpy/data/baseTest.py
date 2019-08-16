@@ -28,12 +28,11 @@
 #                                                                             #
 ###############################################################################
 
-import os
 import unittest
-from external.wip import work_in_progress
 
 from rmgpy.data.base import Entry, Database, ForbiddenStructures
 from rmgpy.molecule import Group, Molecule
+
 
 ################################################################################
 

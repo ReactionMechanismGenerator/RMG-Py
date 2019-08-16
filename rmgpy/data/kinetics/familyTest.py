@@ -29,21 +29,21 @@
 ###############################################################################
 
 import filecmp
-import mock
+import logging
 import os.path
 import shutil
 import unittest
+
+import mock
 import numpy as np
-import logging
 
 from rmgpy import settings
-from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
-from rmgpy.molecule.group import Group
 
 
 ###################################################

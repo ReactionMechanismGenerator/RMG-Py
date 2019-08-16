@@ -34,21 +34,22 @@ groups, including support for using group additivity to estimate rate
 coefficients.
 """
 from __future__ import division
+
 import logging
-import warnings
 import math
-import numpy
+import warnings
 from copy import deepcopy
 
+import numpy as np
+
+import rmgpy.constants as constants
 from rmgpy.data.base import Database, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
-
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData, ArrheniusBM
-from rmgpy.species import Species
-from rmgpy.quantity import constants
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
+from rmgpy.species import Species
 
-# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
-RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+# Prior to np 1.14, `np.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 ################################################################################
 
@@ -364,7 +365,7 @@ class KineticsGroups(Database):
         if method == 'KineticsData':
             # Fit a discrete set of k(T) data points by training against k(T) data
             
-            Tdata = numpy.array([300,400,500,600,800,1000,1500,2000])
+            Tdata = np.array([300,400,500,600,800,1000,1500,2000])
             
             # Initialize dictionaries of fitted group values and uncertainties
             groupValues = {}; groupUncertainties = {}; groupCounts = {}; groupComments = {}
@@ -407,17 +408,17 @@ class KineticsGroups(Database):
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
                 return
-            A = numpy.array(A)
-            b = numpy.array(b)
-            kdata = numpy.array(kdata)
+            A = np.array(A)
+            b = np.array(b)
+            kdata = np.array(kdata)
             
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
+            x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
             
             for t, T in enumerate(Tdata):
                 
                 # Determine error in each group (on log scale)
-                stdev = numpy.zeros(len(groupList)+1, numpy.float64)
-                count = numpy.zeros(len(groupList)+1, numpy.int)
+                stdev = np.zeros(len(groupList)+1, np.float64)
+                count = np.zeros(len(groupList)+1, np.int)
                 
                 for index in range(len(trainingSet)):
                     template, kinetics = trainingSet[index]
@@ -433,7 +434,7 @@ class KineticsGroups(Database):
                                 count[ind] += 1
                     stdev[-1] += variance
                     count[-1] += 1
-                stdev = numpy.sqrt(stdev / (count - 1))
+                stdev = np.sqrt(stdev / (count - 1))
                 import scipy.stats
                 ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
                 
@@ -457,8 +458,8 @@ class KineticsGroups(Database):
             for entry in groupEntries:
                 if groupValues[entry] is not None:
                     entry.data = KineticsData(Tdata=(Tdata,"K"), kdata=(groupValues[entry],kunits))
-                    if not any(numpy.isnan(numpy.array(groupUncertainties[entry]))):
-                        entry.data.kdata.uncertainties = numpy.array(groupUncertainties[entry])
+                    if not any(np.isnan(np.array(groupUncertainties[entry]))):
+                        entry.data.kdata.uncertainties = np.array(groupUncertainties[entry])
                         entry.data.kdata.uncertaintyType = '*|/'
                     entry.shortDesc = "Group additive kinetics."
                     entry.longDesc = "Fitted to {0} rates.\n".format(groupCounts[entry])
@@ -469,8 +470,8 @@ class KineticsGroups(Database):
         elif method == 'Arrhenius':
             # Fit Arrhenius parameters (A, n, Ea) by training against k(T) data
             
-            Tdata = numpy.array([300,400,500,600,800,1000,1500,2000])
-            logTdata = numpy.log(Tdata)
+            Tdata = np.array([300,400,500,600,800,1000,1500,2000])
+            logTdata = np.log(Tdata)
             Tinvdata = 1000. / (constants.R * Tdata)
             
             A = []; b = []
@@ -511,11 +512,11 @@ class KineticsGroups(Database):
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
                 return
-            A = numpy.array(A)
-            b = numpy.array(b)
-            kdata = numpy.array(kdata)
+            A = np.array(A)
+            b = np.array(b)
+            kdata = np.array(kdata)
             
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
+            x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
             
             # Store the results
             self.top[0].data = Arrhenius(
@@ -563,10 +564,10 @@ class KineticsGroups(Database):
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
                 return
-            A = numpy.array(A)
-            b = numpy.array(b)
+            A = np.array(A)
+            b = np.array(b)
             
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
+            x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
             
             # Store the results
             self.top[0].data = Arrhenius(

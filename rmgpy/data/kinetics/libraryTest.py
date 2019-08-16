@@ -28,17 +28,19 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+import logging
 import os.path
 import shutil
-import logging
+import unittest
 
 from rmgpy import settings
-from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.kinetics.model import PDepKineticsModel
-from rmgpy.kinetics import Arrhenius, Troe, PDepArrhenius
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
+from rmgpy.data.kinetics.library import LibraryReaction
+from rmgpy.kinetics import Arrhenius, Troe, PDepArrhenius
+from rmgpy.kinetics.model import PDepKineticsModel
+
+
 ###################################################
 
 class TestLibrary(unittest.TestCase):

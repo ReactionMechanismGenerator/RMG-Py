@@ -33,26 +33,23 @@ This module contains functionality for working with kinetics libraries.
 """
 from __future__ import division
 
-import os.path
+import codecs
 import logging
+import os.path
 import re
-import numpy as np
-try:
-    from collections import OrderedDict
-except ImportError:
-    logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
-    OrderedDict = dict
-    
-from rmgpy.data.base import DatabaseError, Database, Entry
+from collections import OrderedDict
 
-from rmgpy.reaction import Reaction
+import numpy as np
+
+from rmgpy.data.base import DatabaseError, Database, Entry
+from rmgpy.data.kinetics.common import saveEntry
+from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev
 from rmgpy.molecule import Molecule
+from rmgpy.reaction import Reaction
 from rmgpy.species import Species
-from .common import saveEntry
-from .family import TemplateReaction
-import codecs
+
 
 ################################################################################
 

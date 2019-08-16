@@ -32,11 +32,12 @@
 This module contains functionality for working with kinetics depositories.
 """
 
-from rmgpy.data.base import Database, Entry, DatabaseError
 import re
 
+from rmgpy.data.base import Database, Entry, DatabaseError
+from rmgpy.data.kinetics.common import saveEntry
 from rmgpy.reaction import Reaction
-from .common import saveEntry
+
 
 ################################################################################
 

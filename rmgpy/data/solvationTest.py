@@ -30,13 +30,13 @@
 
 import os
 from unittest import TestCase, TestLoader, TextTestRunner
-from external.wip import work_in_progress
 
 from rmgpy import settings
-from rmgpy.molecule import Molecule
-from rmgpy.rmg.main import Species
 from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary
+from rmgpy.molecule import Molecule
 from rmgpy.rmg.main import RMG
+from rmgpy.rmg.main import Species
+
 
 ###################################################
 

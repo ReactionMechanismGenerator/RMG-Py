@@ -33,22 +33,23 @@ This module contains functionality for working with kinetics "rate rules",
 which provide rate coefficient parameters for various combinations of 
 functional groups.
 """
-from six import string_types
-import warnings
-import os.path
-import re
 import codecs
 import math
-import numpy
-from copy import  deepcopy
+import os.path
+import re
+import warnings
+from copy import deepcopy
+
+import numpy as np
+from six import string_types
 
 from rmgpy.data.base import Database, Entry, getAllCombinations
-
+from rmgpy.data.kinetics.common import saveEntry
+from rmgpy.exceptions import KineticsError, DatabaseError
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP, ArrheniusBM
-from .common import saveEntry
-from rmgpy.exceptions import KineticsError, DatabaseError
+
 
 ################################################################################
 
@@ -606,8 +607,8 @@ class KineticsRules(Database):
         
         originalLeaves = getTemplateLabel(template)
         templateList = [template]
-        distanceList = [numpy.zeros(len(template))]
-        minNorm = numpy.inf
+        distanceList = [np.zeros(len(template))]
+        minNorm = np.inf
         savedKinetics = []
         
         if entry is not None and entry.data:
@@ -631,7 +632,7 @@ class KineticsRules(Database):
             if len(kineticsList) > 0:                 
                 # Filter the kinetics to use templates with the lowest minimum euclidean distance 
                 # from the specified template
-                norms = [numpy.linalg.norm(d) for d in distances]
+                norms = [np.linalg.norm(d) for d in distances]
                 newMinNorm = min(norms)
                 if newMinNorm == minNorm:
                     savedKinetics.extend([pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)])
@@ -646,7 +647,7 @@ class KineticsRules(Database):
             
             if minNorm > 0:  #filter out stuff too large to be used
                 toDelete = []
-                norms = [numpy.linalg.norm(d) for d in distanceList0]
+                norms = [np.linalg.norm(d) for d in distanceList0]
                 for i in range(len(templateList0)):
                     if norms[i] > minNorm:
                         toDelete.append(i)

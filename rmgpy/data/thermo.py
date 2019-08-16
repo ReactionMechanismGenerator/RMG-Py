@@ -33,25 +33,25 @@
 """
 from __future__ import division
 
+import itertools
+import logging
+import math
 import os.path
 import re
-import math
-import logging
-import numpy
 import time
-import itertools
 from copy import deepcopy
+
+import numpy as np
 from six import string_types
 
-from base import Database, Entry, makeLogicNode, DatabaseError
-
 import rmgpy.constants as constants
-from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
-from rmgpy.molecule import Molecule, Bond, Group
 import rmgpy.molecule
-from rmgpy.species import Species
 import rmgpy.quantity
+from rmgpy.data.base import Database, Entry, makeLogicNode, DatabaseError
 from rmgpy.ml.estimator import MLEstimator
+from rmgpy.molecule import Molecule, Bond, Group
+from rmgpy.species import Species
+from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
@@ -276,15 +276,15 @@ def averageThermoData(thermoDataList=None):
                 averagedThermoData.Cpdata.value_si[i] /= numValues
 
                 cpData = [thermoData.Cpdata.value_si[i] for thermoData in thermoDataList]
-                averagedThermoData.Cpdata.uncertainty[i] = 2*numpy.std(cpData, ddof=1)
+                averagedThermoData.Cpdata.uncertainty[i] = 2*np.std(cpData, ddof=1)
 
             HData = [thermoData.H298.value_si for thermoData in thermoDataList]
             averagedThermoData.H298.value_si /= numValues
-            averagedThermoData.H298.uncertainty_si = 2*numpy.std(HData, ddof=1)
+            averagedThermoData.H298.uncertainty_si = 2*np.std(HData, ddof=1)
 
             SData = [thermoData.S298.value_si for thermoData in thermoDataList]
             averagedThermoData.S298.value_si /= numValues
-            averagedThermoData.S298.uncertainty_si = 2*numpy.std(SData, ddof=1)
+            averagedThermoData.S298.uncertainty_si = 2*np.std(SData, ddof=1)
             return averagedThermoData
 
 def commonAtoms(cycle1, cycle2):
@@ -1645,13 +1645,13 @@ class ThermoDatabase(object):
         molecule = species.molecule[0]
 
         min_heavy = ml_settings['min_heavy_atoms'] or 1
-        max_heavy = ml_settings['max_heavy_atoms'] or numpy.inf
+        max_heavy = ml_settings['max_heavy_atoms'] or np.inf
         min_carbon = ml_settings['min_carbon_atoms'] or 0
-        max_carbon = ml_settings['max_carbon_atoms'] or numpy.inf
+        max_carbon = ml_settings['max_carbon_atoms'] or np.inf
         min_oxygen = ml_settings['min_oxygen_atoms'] or 0
-        max_oxygen = ml_settings['max_oxygen_atoms'] or numpy.inf
+        max_oxygen = ml_settings['max_oxygen_atoms'] or np.inf
         min_nitrogen = ml_settings['min_nitrogen_atoms'] or 0
-        max_nitrogen = ml_settings['max_nitrogen_atoms'] or numpy.inf
+        max_nitrogen = ml_settings['max_nitrogen_atoms'] or np.inf
 
         element_count = molecule.get_element_count()
         n_heavy = sum(count for element, count in element_count.items() if element != 'H')
@@ -1674,7 +1674,7 @@ class ThermoDatabase(object):
 
         if molecule.isRadical():
             thermo = [self.estimateRadicalThermoViaHBI(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
-            H298 = numpy.array([tdata.H298 for tdata in thermo])
+            H298 = np.array([tdata.H298 for tdata in thermo])
             indices = H298.argsort()
             species.molecule = [species.molecule[ind] for ind in indices]
             thermo0 = thermo[indices[0]]
@@ -1687,7 +1687,7 @@ class ThermoDatabase(object):
         uncertainties = dict(
             H298=thermo0.H298.uncertainty_si,
             S298=thermo0.S298.uncertainty_si,
-            Cp=numpy.average(thermo0.Cpdata.uncertainty_si, weights=thermo0.Tdata.value_si)
+            Cp=np.average(thermo0.Cpdata.uncertainty_si, weights=thermo0.Tdata.value_si)
         )
 
         ml_uncertainty_cutoffs = ml_settings['uncertainty_cutoffs']
@@ -1712,7 +1712,7 @@ class ThermoDatabase(object):
                     
                     # Use rank as a metric for prioritizing thermo. 
                     # The smaller the rank, the better.
-                    sumRank = numpy.sum([3 if entry.rank is None else entry.rank for entry in ringGroups + polycyclicGroups])
+                    sumRank = np.sum([3 if entry.rank is None else entry.rank for entry in ringGroups + polycyclicGroups])
                     entries.append((thermo, sumRank))
                 
                 # Sort first by rank, then by enthalpy at 298 K
@@ -1720,9 +1720,9 @@ class ThermoDatabase(object):
                 indices = [thermoDataList.index(entry[0]) for entry in entries]
             else:
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
-                H298 = numpy.array([t.getEnthalpy(298.) for t in thermoDataList])
+                H298 = np.array([t.getEnthalpy(298.) for t in thermoDataList])
                 indices = H298.argsort()
-            indices = numpy.array([i for i in indices if species.molecule[i].reactive] +\
+            indices = np.array([i for i in indices if species.molecule[i].reactive] +\
                         [i for i in indices if not species.molecule[i].reactive])
         else:
             indices = [0]

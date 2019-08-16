@@ -30,10 +30,10 @@
 
 import os
 import unittest
+
+import numpy as np
+
 from external.wip import work_in_progress
-
-import numpy
-
 from rmgpy import settings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
@@ -671,7 +671,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         reconstructedKinetics = self.database.kinetics.reconstructKineticsFromSource(reactions[2],sources[2],fixBarrierHeight=True)
         A = reconstructedKinetics.A.value_si
         n = reconstructedKinetics.n.value_si
-        A = round(A, -int(numpy.floor(numpy.log10(abs(A))))+3)  # Do some rounding since chemkin format kinetics are rounded
+        A = round(A, -int(np.floor(np.log10(abs(A))))+3)  # Do some rounding since chemkin format kinetics are rounded
         n = round(n,3)
         self.assertAlmostEqual(reactions[2].kinetics.A.value_si,A)
         self.assertAlmostEqual(reactions[2].kinetics.n.value_si,n)

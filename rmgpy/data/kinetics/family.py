@@ -33,43 +33,38 @@ This module contains functionality for working with kinetics families.
 """
 from __future__ import division
 
-import os.path
-import numpy as np
-import logging
-import warnings
 import codecs
-import random
-import multiprocessing as mp
-
-from copy import deepcopy
-from collections import OrderedDict
-from sklearn.model_selection import KFold
-from scipy import stats
-
-from rmgpy.constraints import failsSpeciesConstraints
-from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
-                            getAllCombinations
-from rmgpy.reaction import Reaction, same_species_lists
-from rmgpy import settings
-from rmgpy.reaction import Reaction
-from rmgpy.kinetics.uncertainties import rank_accuracy_map
-from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
-                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP, ArrheniusBM
-from rmgpy.kinetics.uncertainties import RateUncertainty
-from rmgpy.molecule import Bond, GroupBond, Group, Molecule
-from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
-from rmgpy.species import Species
-from rmgpy.molecule.atomtype import atomTypes
-
-from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
-                    ensure_independent_atom_ids
-from .depository import KineticsDepository
-from .groups import KineticsGroups
-from .rules import KineticsRules
-from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
-                             UndeterminableKineticsError, ForbiddenStructureException,\
-                             KekulizationError, ActionError, DatabaseError
 import itertools
+import logging
+import multiprocessing as mp
+import os.path
+import random
+import warnings
+from collections import OrderedDict
+from copy import deepcopy
+
+import numpy as np
+from sklearn.model_selection import KFold
+
+from rmgpy import settings
+from rmgpy.constraints import failsSpeciesConstraints
+from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures, getAllCombinations
+from rmgpy.data.kinetics.common import saveEntry, find_degenerate_reactions, generate_molecule_combos, \
+                                       ensure_independent_atom_ids
+from rmgpy.data.kinetics.depository import KineticsDepository
+from rmgpy.data.kinetics.groups import KineticsGroups
+from rmgpy.data.kinetics.rules import KineticsRules
+from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
+                             ForbiddenStructureException, UndeterminableKineticsError
+from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
+                           StickingCoefficientBEP, ArrheniusBM
+from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule
+from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.reaction import Reaction, same_species_lists
+from rmgpy.species import Species
+
+
 ################################################################################
 
 class TemplateReaction(Reaction):

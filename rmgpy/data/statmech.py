@@ -29,15 +29,19 @@
 ###############################################################################
 
 from __future__ import division
-import os.path
+
 import logging
-import numpy
+import os.path
+
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, IdealGasTranslation
+from rmgpy.data.base import Database, Entry, LogicOr, makeLogicNode
+from rmgpy.data.statmechfit import fitStatmechToHeatCapacity
 from rmgpy.molecule import Molecule, Group
+from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, \
+                           IdealGasTranslation
 
-from base import Database, Entry, LogicOr, makeLogicNode
 
 ################################################################################
 
@@ -408,8 +412,8 @@ class StatmechGroups(Database):
                     if count != 0: frequencies.extend(entry.data.generateFrequencies(count))
 
         # Subtract out contributions to heat capacity from the group frequencies
-        Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
-        Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
+        Tlist = np.arange(300.0, 1501.0, 100.0, np.float64)
+        Cv = np.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], np.float64)
         logging.debug('Fitting statmech with heat capacities {0}'.format(Cv))
         ho = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
         for i in range(Tlist.shape[0]):
@@ -423,15 +427,14 @@ class StatmechGroups(Database):
         Cv -= 1.0
         logging.debug('After removing translation, rotation, and Cp->Cv, the heat capacities are {0}'.format(Cv))
         # Fit remaining frequencies and hindered rotors to the heat capacity data
-        from statmechfit import fitStatmechToHeatCapacity
         modes = fitStatmechToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
                 uncertainties = [0 for f in frequencies] # probably shouldn't be zero
                 frequencies.extend(mode.frequencies.value_si)
                 uncertainties.extend(mode.frequencies.uncertainty)
-                mode.frequencies.value_si = numpy.array(frequencies, numpy.float)
-                mode.frequencies.uncertainty = numpy.array(uncertainties, numpy.float)
+                mode.frequencies.value_si = np.array(frequencies, np.float)
+                mode.frequencies.uncertainty = np.array(uncertainties, np.float)
                 break
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))
@@ -705,5 +708,5 @@ class GroupFrequencies(object):
             if number == 1:
                 frequencies.append((lower + upper) / 2.0)
             else:
-                frequencies.extend(list(numpy.linspace(lower, upper, number, endpoint=True)))
+                frequencies.extend(list(np.linspace(lower, upper, number, endpoint=True)))
         return frequencies

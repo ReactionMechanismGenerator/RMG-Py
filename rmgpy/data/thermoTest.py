@@ -29,20 +29,28 @@
 ###############################################################################
 
 from __future__ import division
+
+import math
 import os
 import unittest
-from external.wip import work_in_progress
+
 from six import string_types
 
+import rmgpy
+import rmgpy.constants as constants
+from external.wip import work_in_progress
 from rmgpy import settings
-from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.thermo import ThermoDatabase, ThermoData, ThermoCentralDatabaseInterface, convertRingToSubMolecule, \
+                              bicyclicDecompositionForPolyring, combineCycles, combineTwoRingsIntoSubMolecule, \
+                              findAromaticBondsFromSubMolecule, getCopyForOneRing, isAromaticRing, isBicyclic, \
+                              isRingPartialMatched, saturate_ring_bonds, splitBicyclicIntoSingleRings
+from rmgpy.exceptions import DatabaseError
 from rmgpy.ml.estimator import MLEstimator
-from rmgpy.rmg.main import RMG
-from rmgpy.species import Species
-from rmgpy.data.thermo import *
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.quantity import Quantity
-import rmgpy
+from rmgpy.species import Species
+
 
 ################################################################################
 

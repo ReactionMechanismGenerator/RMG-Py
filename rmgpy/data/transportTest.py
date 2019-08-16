@@ -30,13 +30,14 @@
 
 import os
 import unittest
-from external.wip import work_in_progress
 
+from external.wip import work_in_progress
 from rmgpy import settings
-from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
-from rmgpy.transport import TransportData
+from rmgpy.quantity import Length, Energy
 from rmgpy.species import Species
+from rmgpy.transport import TransportData
+
 
 ################################################################################
 

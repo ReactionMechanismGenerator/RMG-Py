@@ -33,15 +33,15 @@ This module contains the :class:`RMGDatabase` class, which is the primary class
 for working with the RMG database.
 """
 
-import os.path
 import logging
+import os.path
 
-from base import ForbiddenStructures
-from thermo import ThermoDatabase
-from transport import TransportDatabase
+from rmgpy.data.base import ForbiddenStructures
 from rmgpy.data.kinetics.database import KineticsDatabase
-from statmech import StatmechDatabase
-from solvation import SolvationDatabase
+from rmgpy.data.solvation import SolvationDatabase
+from rmgpy.data.statmech import StatmechDatabase
+from rmgpy.data.thermo import ThermoDatabase
+from rmgpy.data.transport import TransportDatabase
 from rmgpy.exceptions import DatabaseError
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.

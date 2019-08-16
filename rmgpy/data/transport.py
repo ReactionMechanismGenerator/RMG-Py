@@ -33,15 +33,16 @@ A class for returning and estimating the transport properties of a species
 
 """
 from __future__ import division
-import os.path
+
 import logging
+import os.path
 from copy import deepcopy
+
 from six import string_types
 
-from base import Database, Entry, makeLogicNode, DatabaseError
-
 import rmgpy.constants as constants
-from rmgpy.molecule import Molecule, Atom, Bond, Group
+from rmgpy.data.base import Database, Entry, makeLogicNode, DatabaseError
+from rmgpy.molecule import Molecule, Group
 from rmgpy.transport import TransportData
 
 

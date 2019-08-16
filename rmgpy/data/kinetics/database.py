@@ -30,26 +30,28 @@
 
 
 from __future__ import division
-import os.path
+
 import logging
+import os.path
 from copy import deepcopy
-import numpy
+
+import numpy as np
 
 import rmgpy.constants as constants
+from rmgpy.data.base import LogicNode
+from rmgpy.data.kinetics.common import ensure_species, generate_molecule_combos, \
+                                       find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.data.kinetics.family import KineticsFamily
+from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
+from rmgpy.exceptions import DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
                            StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, ArrheniusBM
 from rmgpy.molecule import Molecule, Group
-from rmgpy.species import Species
 from rmgpy.reaction import Reaction, same_species_lists
-from rmgpy.data.base import LogicNode
+from rmgpy.species import Species
 
-from .family import  KineticsFamily
-from .library import LibraryReaction, KineticsLibrary
-from .common import ensure_species, generate_molecule_combos, \
-                    find_degenerate_reactions, ensure_independent_atom_ids
-from rmgpy.exceptions import DatabaseError
 
 ################################################################################
 
@@ -640,8 +642,8 @@ and immediately used in input files without any additional changes.
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                Tdata = 1000.0 / numpy.arange(0.5, 3.301, 0.1, numpy.float64)
-                kdata = numpy.zeros_like(Tdata)
+                Tdata = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
+                kdata = np.zeros_like(Tdata)
                 for i in range(Tdata.shape[0]):
                     kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
                 try:
@@ -753,12 +755,12 @@ and immediately used in input files without any additional changes.
                 alpha = 0
                 E0 = 0
                 for ruleEntry, weight in rules:
-                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
+                    logA += np.log10(ruleEntry.data.A.value_si)*weight
                     n += ruleEntry.data.n.value_si*weight
                     alpha +=ruleEntry.data.alpha.value_si*weight
                     E0 +=ruleEntry.data.E0.value_si*weight
                 for ruleEntry, trainingEntry, weight in training:
-                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
+                    logA += np.log10(ruleEntry.data.A.value_si)*weight
                     n += ruleEntry.data.n.value_si*weight
                     alpha +=ruleEntry.data.alpha.value_si*weight
                     E0 +=ruleEntry.data.E0.value_si*weight

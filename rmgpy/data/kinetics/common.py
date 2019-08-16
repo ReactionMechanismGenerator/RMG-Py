@@ -34,13 +34,13 @@ in this subpackage.
 """
 import itertools
 import logging
-import warnings
 
 from rmgpy.data.base import LogicNode
-from rmgpy.reaction import Reaction
+from rmgpy.exceptions import DatabaseError
 from rmgpy.molecule import Group, Molecule
+from rmgpy.reaction import Reaction
 from rmgpy.species import Species
-from rmgpy.exceptions import DatabaseError, KineticsError
+
 
 ################################################################################
 
@@ -50,7 +50,6 @@ def saveEntry(f, entry):
     Save an `entry` in the kinetics database by writing a string to
     the given file object `f`.
     """
-    from arkane.output import prettify
 
     def sortEfficiencies(efficiencies0):
         efficiencies = {}

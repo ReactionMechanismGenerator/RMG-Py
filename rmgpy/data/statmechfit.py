@@ -34,15 +34,16 @@ macroscopic properties, particularly the heat capacity.
 """
 from __future__ import division
 
+import logging
 import math
+
 import numpy
 import scipy.special
-import logging
+from pydqed import DQED
 
 import rmgpy.constants as constants
-from rmgpy.statmech import HarmonicOscillator, HinderedRotor
-from pydqed import DQED
 from rmgpy.exceptions import StatmechFitError
+from rmgpy.statmech import HarmonicOscillator, HinderedRotor
 
 ################################################################################
 

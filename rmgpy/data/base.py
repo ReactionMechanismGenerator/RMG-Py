@@ -34,25 +34,20 @@ particular, this module is devoted to functionality that is common across all
 components of the RMG database.
 """
 
-from six import string_types
-import os
-import logging
-import re
 import codecs
-try:
-    from collections import OrderedDict
-except ImportError:
-    logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
-    OrderedDict = dict
+import logging
+import os
+import re
+from collections import OrderedDict
 
 from builtins import str
 from six import string_types
 
-from rmgpy.molecule import Molecule, Group
-from rmgpy.kinetics.arrhenius import ArrheniusBM
+from rmgpy.data.reference import Reference, Article, Book, Thesis
+from rmgpy.exceptions import DatabaseError, InvalidAdjacencyListError
 from rmgpy.kinetics.uncertainties import RateUncertainty
-from reference import Reference, Article, Book, Thesis
-from rmgpy.exceptions import DatabaseError, ForbiddenStructureException, InvalidAdjacencyListError
+from rmgpy.molecule import Molecule, Group
+
 
 ################################################################################
 
@@ -218,7 +213,6 @@ class Database(object):
         # Do the import here to ensure it is imported from a pure Python
         # environment (as opposed to a Cythonized environment, which is not
         # allowed during an exec() call)
-        from rdkit import Chem
 
         # Clear any previously-loaded data
         self.entries = OrderedDict()
