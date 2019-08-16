@@ -608,14 +608,14 @@ class ModelMatcher():
                             2 C u0 p1 c-1 {1,D} {3,S}
                             3 H u0 p0 c0 {2,S}
                             4 H u0 p0 c0 {1,S}
-                            """,
+                            """, # aka [CH-]=[OH+]
             'triplet[CH]O': """
                             multiplicity 3
                             1 C u2 p0 c0 {2,S} {3,S}
                             2 O u0 p2 c0 {1,S} {4,S}
                             3 H u0 p0 c0 {1,S}
                             4 H u0 p0 c0 {2,S}
-                            """,
+                            """, # aka [CH]O
             '[C]':          "1 C u0 p2 c0",
             'excited[OH]':  """
                             multiplicity 2
