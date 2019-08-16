@@ -497,7 +497,7 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
         interpolationModel = (interpolationModel,)
 
     nwk = None
-    if label in networkDict.keys():
+    if label in list(networkDict.keys()):
         nwk = networkDict[label]
 
     job = PressureDependenceJob(network=nwk, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,

@@ -139,7 +139,7 @@ class ExplorerJob(object):
 
         form = mmol.getFormula()
 
-        for spec in self.bathGas.keys() + self.source:
+        for spec in list(self.bathGas.keys()) + self.source:
             nspec, is_new = reaction_model.makeNewSpecies(spec, reactive=False)
             flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec, reactEdge=False, unimolecularReact=flags,
