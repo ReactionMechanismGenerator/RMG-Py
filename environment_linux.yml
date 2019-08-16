@@ -16,6 +16,7 @@ dependencies:
   - cython >=0.25.2
   - dde
   - ffmpeg
+  - future
   - gprof2dot
   - graphviz
   - jinja2
