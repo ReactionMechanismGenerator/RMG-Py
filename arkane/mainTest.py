@@ -91,7 +91,7 @@ class TestArkaneExamples(unittest.TestCase):
         """A function that is run ONCE after all unit tests in this class."""
         cls.extensions_to_delete = ['pdf', 'csv', 'txt', 'inp']
         cls.files_to_delete = ['arkane.log', 'output.py']
-        cls.files_to_keep = ['README.txt']  # files to keep that have extentions marked for deletion
+        cls.files_to_keep = ['README.txt']  # files to keep that have extensions marked for deletion
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         for example_type in cls.example_types:
             example_type_path = os.path.join(cls.base_path, example_type)

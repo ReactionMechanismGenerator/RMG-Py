@@ -4,8 +4,8 @@ description = ''
 frequencyScaleFactor = 1.0
 """
 This example illustrates how to manually set up an Arkane input file for a small P-dep reaction system [using only the
-RRHO assumption, and without tunneling, although this can be easily implemented]. Such a calculation is desireable if
-the user wishes to supply experimentally determined freqeuncies, for example. Althgou some coommented notes below may be
+RRHO assumption, and without tunneling, although this can be easily implemented]. Such a calculation is desirable if
+the user wishes to supply experimentally determined frequencies, for example. Although some commented notes below may be
 useful, see http://reactionmechanismgenerator.github.io/RMG-Py/users/arkane/index.html for more documented information
 about Arkane and creating input files.
 (information pertaining this file is adopted by Dames and Golden, 2013, JPCA 117 (33) 7686-96.)

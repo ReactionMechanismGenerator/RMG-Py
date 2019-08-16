@@ -131,7 +131,7 @@ class QChemLog(Log):
         completed_job = False
         for line in reversed(log):
             if 'Total job time:' in line:
-                logging.debug('Found a sucessfully completed QChem Job')
+                logging.debug('Found a successfully completed QChem Job')
                 completed_job = True
                 break
 
@@ -321,7 +321,7 @@ class QChemLog(Log):
                     angle.append(values[0])
                     v_list.append(values[1])
                 if 'Summary of potential scan:' in line:
-                    logging.info('found a sucessfully completed QChem Job')
+                    logging.info('found a successfully completed QChem Job')
                     read = True
                 elif 'SCF failed to converge' in line:
                     raise LogError('QChem Job did not successfully complete: '

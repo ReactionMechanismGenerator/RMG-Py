@@ -402,7 +402,7 @@ class MolproLog(Log):
     def get_T1_diagnostic(self):
         """
         Returns the T1 diagnostic from output log.
-        If multiple occurrences exist, returns the last occurence
+        If multiple occurrences exist, returns the last occurrence
         """
         with open(self.path) as f:
             log = f.readlines()
@@ -416,7 +416,7 @@ class MolproLog(Log):
     def get_D1_diagnostic(self):
         """
         Returns the D1 diagnostic from output log.
-        If multiple occurrences exist, returns the last occurence
+        If multiple occurrences exist, returns the last occurrence
         """
         with open(self.path) as f:
             log = f.readlines()
