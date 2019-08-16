@@ -116,9 +116,9 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
                 "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         kineticsFamilies = kineticsFamilies
 
-    database = getDB() or RMGDatabase()
+    rmg_database = getDB() or RMGDatabase()
 
-    database.load(
+    rmg_database.load(
         path=databaseDirectory,
         thermoLibraries=thermoLibraries,
         transportLibraries=transportLibraries,
@@ -129,10 +129,10 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )
 
-    for family in database.kinetics.families.values():  # load training
-        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
+    for family in rmg_database.kinetics.families.values():  # load training
+        family.addKineticsRulesFromTrainingSet(thermoDatabase=rmg_database.thermo)
 
-    for family in database.kinetics.families.values():
+    for family in rmg_database.kinetics.families.values():
         family.fillKineticsRulesByAveragingUp(verbose=True)
 
 
@@ -220,8 +220,8 @@ def species(label, *args, **kwargs):
                     raise DatabaseError('Thermo database is None.')
             except DatabaseError:
                 logging.warning("The database isn't loaded, cannot estimate thermo for {0}. "
-                                "If it is a bath gas, set reactive = False to avoid generating"
-                                " thermo.".format(spec.label))
+                                "If it is a bath gas, set reactive = False to avoid generating "
+                                "thermo.".format(spec.label))
             else:
                 logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
                              ' RMG-Database...'.format(spec.label))
