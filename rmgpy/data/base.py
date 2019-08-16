@@ -104,26 +104,29 @@ class Entry(object):
         self._shortDesc = str(shortDesc)
         self._longDesc = str(longDesc)
         self.rank = rank
-        self.nodalDistance=nodalDistance
+        self.nodalDistance = nodalDistance
 
     def __str__(self):
         return self.label
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
-    
+
     @property
     def longDesc(self):
         return self._longDesc
+
     @longDesc.setter
     def longDesc(self, value):
         if value is None:
             self._longDesc = None
         else:
             self._longDesc = str(value)
+
     @property
     def shortDesc(self):
         return self._shortDesc
+
     @shortDesc.setter
     def shortDesc(self, value):
         if value is None:
@@ -147,6 +150,7 @@ class Entry(object):
 
         totNodes.remove(self)
         return totNodes
+
 
 ################################################################################
 
@@ -174,7 +178,7 @@ class Database(object):
     :meth:`generateOldLibraryEntry` methods in order to load and save from the
     new and old database formats.
     """
-    
+
     local_context = {}
     local_context['Reference'] = Reference
     local_context['Article'] = Article
@@ -234,8 +238,8 @@ class Database(object):
         local_context['RateUncertainty'] = RateUncertainty
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.items():
-            local_context[key]=value
-        
+            local_context[key] = value
+
         # Process the file
         f = open(path, 'r')
         try:
@@ -250,7 +254,7 @@ class Database(object):
         self.solvent = local_context['solvent']
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
-        
+
         # Return the loaded database (to allow for Database().load() syntax)
         return self
 
@@ -287,7 +291,7 @@ class Database(object):
             entry.index = index
 
         return entries
-    
+
     def getSpecies(self, path, resonance=True):
         """
         Load the dictionary containing all of the species in a kinetics library or depository.
@@ -304,12 +308,13 @@ class Database(object):
                         species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
-                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
+                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label,
+                                                                                                           str(self)))
                     speciesDict[label] = species
                     adjlist = ''
                 else:
                     adjlist += line
-            else: #reached end of file
+            else:  # reached end of file
                 if adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
@@ -317,12 +322,12 @@ class Database(object):
                         species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
-                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
+                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label,
+                                                                                                           str(self)))
                     speciesDict[label] = species
 
-        
         return speciesDict
-    
+
     def saveDictionary(self, path):
         """
         Extract species from all entries associated with a kinetics library or depository and save them 
@@ -339,11 +344,11 @@ class Database(object):
             for reactant in entry.item.reactants:
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                    
+
             for product in entry.item.products:
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-            
+
         with open(path, 'w') as f:
             for label in speciesDict.keys():
                 f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
@@ -367,7 +372,7 @@ class Database(object):
         f.write('longDesc = u"""\n')
         f.write(self.longDesc.strip() + '\n')
         f.write('"""\n')
-        
+
         for entry in entries:
             self.saveEntry(f, entry)
 
@@ -395,19 +400,19 @@ class Database(object):
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(dictstr)))
             raise
-        
+
         try:
             if treestr != '': self.loadOldTree(treestr)
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(treestr)))
             raise
-        
+
         try:
             self.loadOldLibrary(libstr, numParameters, numLabels)
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(libstr)))
             raise
-          
+
         return self
 
     def loadOldDictionary(self, path, pattern):
@@ -425,7 +430,7 @@ class Database(object):
         # The current record
         record = ''
 
-        fdict=None
+        fdict = None
         # Process the dictionary file
         try:
             fdict = open(path, 'r')
@@ -468,12 +473,12 @@ class Database(object):
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
                 if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
-                    self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
+                    self.entries[label].item = makeLogicNode(' '.join(lines[1:]))
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
                     self.entries[label].item = Group().fromAdjacencyList(record)
                 else:
-                    self.entries[label].item = Molecule().fromAdjacencyList(record,saturateH=True)
+                    self.entries[label].item = Molecule().fromAdjacencyList(record, saturateH=True)
         except InvalidAdjacencyListError:
             logging.error('Error while loading old-style dictionary "{0}"'.format(path))
             logging.error('Error occurred while parsing adjacency list "{0}"'.format(label))
@@ -510,16 +515,17 @@ class Database(object):
                     while len(parents) > level:
                         parents.remove(parents[-1])
                     if len(parents) > 0:
-                        parent = parents[level-1]
+                        parent = parents[level - 1]
 
                 if parent is not None: parent = self.entries[parent]
                 try:
                     entry = self.entries[label]
                 except KeyError:
                     raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
-                
+
                 if isinstance(parent, string_types):
-                    raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent, label))
+                    raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent,
+                                                                                                           label))
 
                 # Update the parent and children of the nodes accordingly
                 if parent is not None:
@@ -528,13 +534,12 @@ class Database(object):
                 else:
                     entry.parent = None
                     self.top.append(entry)
-                    
+
                 # Save the level of the tree into the entry
                 entry.level = level
-                
+
                 # Add node to list of parents for subsequent iteration
                 parents.append(label)
-
 
     def loadOldTree(self, path):
         """
@@ -571,7 +576,8 @@ class Database(object):
                 raise DatabaseError('Entry {0!r} in library was not found in dictionary.'.format(label))
             if self.entries[label].index != -1:
                 # The entry is a duplicate, so skip it
-                logging.debug("There was already something labeled {0} in the {1} library. Ignoring '{2}' ({3})".format(label, self.label, index, parameters))
+                logging.debug("There was already something labeled {0} in the {1} library. "
+                              "Ignoring '{2}' ({3})".format(label, self.label, index, parameters))
                 skippedCount += 1
             else:
                 # The entry is not a duplicate
@@ -599,7 +605,7 @@ class Database(object):
         """
 
         entries = []
-        
+
         flib = None
         try:
             flib = codecs.open(path, 'r', 'utf-8', errors='replace')
@@ -623,7 +629,7 @@ class Database(object):
                     except ValueError:
                         pass
                     # Extract label(s)
-                    label = self.__hashLabels(info[offset:offset+numLabels])
+                    label = self.__hashLabels(info[offset:offset + numLabels])
                     offset += numLabels
                     # Extract numeric parameter(s) or label of node with data to use
                     if numParameters < 0:
@@ -631,7 +637,7 @@ class Database(object):
                         comment = ''
                     else:
                         try:
-                            parameters = self.processOldLibraryEntry(info[offset:offset+numParameters])
+                            parameters = self.processOldLibraryEntry(info[offset:offset + numParameters])
                             offset += numParameters
                         except (IndexError, ValueError):
                             parameters = info[offset]
@@ -678,6 +684,7 @@ class Database(object):
 
         entries = []
         entriesNotInTree = []
+
         # If we have tree information, save the dictionary in the same order as
         # the tree (so that it saves in the same order each time)
         def getLogicNodeComponents(entry_or_item):
@@ -712,7 +719,7 @@ class Database(object):
                     for entry2 in getLogicNodeComponents(descendant):
                         if entry2 not in entries:
                             entries.append(entry2)
-                
+
             # Don't forget entries that aren't in the tree
             for entry in self.entries.values():
                 if entry not in entries:
@@ -727,6 +734,7 @@ class Database(object):
         def comment(s):
             "Return the string, with each line prefixed with '// '"
             return '\n'.join('// ' + line if line else '' for line in s.split('\n'))
+
         try:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
@@ -751,8 +759,9 @@ class Database(object):
                     assert isinstance(entry.item, LogicNode)
                     f.write('{0}\n\n'.format(entry.item))
                 else:
-                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
-            
+                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while '
+                                        'attempting to save.'.format(entry.label))
+
             if entriesNotInTree:
                 f.write(comment("These entries do not appear in the tree:\n\n"))
             for entry in entriesNotInTree:
@@ -760,16 +769,16 @@ class Database(object):
                 if isinstance(entry.item, Molecule):
                     f.write(comment(entry.item.toAdjacencyList(removeH=False) + '\n'))
                 elif isinstance(entry.item, Group):
-                    f.write(comment(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n'))
+                    f.write(comment(entry.item.toAdjacencyList().replace('{2S,2T}', '2') + '\n'))
                 elif isinstance(entry.item, LogicOr):
                     f.write(comment('{0}\n\n'.format(entry.item).replace('OR{', 'Union {')))
                 elif entry.label[0:7] == 'Others-':
                     assert isinstance(entry.item, LogicNode)
                     f.write(comment('{0}\n\n'.format(entry.item)))
                 else:
-                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
-           
-           
+                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while '
+                                        'attempting to save.'.format(entry.label))
+
             f.close()
         except IOError:
             logging.exception('Unable to save old-style dictionary to "{0}".'.format(os.path.abspath(path)))
@@ -783,9 +792,9 @@ class Database(object):
         string = ''
         for entry in entries:
             # Write current node
-            string += '{0}L{1:d}: {2}\n'.format('    ' * (level-1), level, entry.label)
+            string += '{0}L{1:d}: {2}\n'.format('    ' * (level - 1), level, entry.label)
             # Recursively descend children (depth-first)
-            string += self.generateOldTree(entry.children, level+1)
+            string += self.generateOldTree(entry.children, level + 1)
         return string
 
     def saveOldTree(self, path):
@@ -816,8 +825,8 @@ class Database(object):
             # Save the library in order by index
             entries = list(self.entries.values())
             entries.sort(key=lambda x: x.index)
-            
-            f = codecs.open(path, 'w',  'utf-8')
+
+            f = codecs.open(path, 'w', 'utf-8')
             records = []
             for entry in entries:
                 if entry.data is not None:
@@ -880,36 +889,39 @@ class Database(object):
             descendants.append(child)
             descendants.extend(self.descendants(child))
         return descendants
-    
+
     def matchNodeToNode(self, node, nodeOther):
         """ 
         Return `True` if `node` and `nodeOther` are identical.  Otherwise, return `False`.
         Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
         """
         if isinstance(node.item, Group) and isinstance(nodeOther.item, Group):
-            return self.matchNodeToStructure(node,nodeOther.item, atoms=nodeOther.item.getLabeledAtoms()) and self.matchNodeToStructure(nodeOther,node.item,atoms=node.item.getLabeledAtoms())
-        elif isinstance(node.item,LogicOr) and isinstance(nodeOther.item,LogicOr):
+            return (self.matchNodeToStructure(node, nodeOther.item, atoms=nodeOther.item.getLabeledAtoms()) and
+                    self.matchNodeToStructure(nodeOther, node.item, atoms=node.item.getLabeledAtoms()))
+        elif isinstance(node.item, LogicOr) and isinstance(nodeOther.item, LogicOr):
             return node.item.matchLogicOr(nodeOther.item)
         else:
             # Assume nonmatching
             return False
-        
-    def matchNodeToChild(self, parentNode, childNode):        
+
+    def matchNodeToChild(self, parentNode, childNode):
         """ 
         Return `True` if `parentNode` is a parent of `childNode`.  Otherwise, return `False`.
         Both `parentNode` and `childNode` must be Entry types with items containing Group or LogicNode types.
         If `parentNode` and `childNode` are identical, the function will also return `False`.
         """
-        
+
         if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
-            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms(), strict=True) is True:
-                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms(), strict=True) is False:
-                    return True                
+            if (self.matchNodeToStructure(parentNode, childNode.item,
+                                          atoms=childNode.item.getLabeledAtoms(), strict=True) and
+                    not self.matchNodeToStructure(childNode, parentNode.item,
+                                                  atoms=parentNode.item.getLabeledAtoms(), strict=True)):
+                return True
             return False
-        
-        #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
-        #except that the parent is listed in the attributes. However, we do need to check that everything down this
-        #family line is consistent, which is done in the databaseTest unitTest
+
+        # If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
+        # except that the parent is listed in the attributes. However, we do need to check that everything down this
+        # family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
             ancestorNode = childNode.parent
             while ancestorNode:
@@ -920,7 +932,7 @@ class Database(object):
             else:
                 return False
 
-        elif isinstance(parentNode.item,LogicOr):
+        elif isinstance(parentNode.item, LogicOr):
             return childNode.label in parentNode.item.components
 
     def matchNodeToStructure(self, node, structure, atoms, strict=False):
@@ -960,8 +972,8 @@ class Database(object):
                     logging.log(0, "Label {0} is in group {1} but not in structure".format(label, node))
                     if strict:
                         # structure must match all labeled atoms in node if strict is set to True
-                        return False 
-                    continue # with the next label - ring structures might not have all labeled atoms
+                        return False
+                    continue  # with the next label - ring structures might not have all labeled atoms
                 center = centers[label]
                 atom = atoms[label]
                 # Make sure labels actually point to atoms.
@@ -977,31 +989,31 @@ class Database(object):
                 # also share equivalent (or more specific) bond in the structure
                 for atom2, atom1 in initialMap.items():
                     if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
-                        bond1 = group.getBond(center, atom1)   # bond1 is group
-                        bond2 = structure.getBond(atom, atom2) # bond2 is structure
+                        bond1 = group.getBond(center, atom1)  # bond1 is group
+                        bond2 = structure.getBond(atom, atom2)  # bond2 is structure
                         if not bond2.isSpecificCaseOf(bond1):
                             return False
-                    elif group.hasBond(center, atom1): # but structure doesn't
+                    elif group.hasBond(center, atom1):  # but structure doesn't
                         return False
                     # but we don't mind if...
-                    elif structure.hasBond(atom, atom2): # but group doesn't
-                        logging.debug("We don't mind that structure "+ str(structure) +
-                            " has bond but group {0} doesn't".format(node))
+                    elif structure.hasBond(atom, atom2):  # but group doesn't
+                        logging.debug("We don't mind that structure " + str(structure) +
+                                      " has bond but group {0} doesn't".format(node))
                 # Passed semantic checks, so add to maps of already-matched atoms
-                if not (isinstance(center, list) or isinstance(atom,list)):
+                if not (isinstance(center, list) or isinstance(atom, list)):
                     initialMap[atom] = center
             # Labeled atoms in the structure that are not in the group should
             # not be considered in the isomorphism check, so flag them temporarily
             # Without this we would hit a lot of nodes that are ambiguous
             flaggedAtoms = [atom for label, atom in structure.getLabeledAtoms().items() if label not in centers]
             for atom in flaggedAtoms: atom.ignore = True
-            
+
             # use mapped (labeled) atoms to try to match subgraph
             result = structure.isSubgraphIsomorphic(group, initialMap)
-            
+
             # Restore atoms flagged in previous step
             for atom in flaggedAtoms: atom.ignore = False
-                
+
             return result
 
     def descendTree(self, structure, atoms, root=None, strict=False):
@@ -1021,12 +1033,12 @@ class Database(object):
         if root is None:
             for root in self.top:
                 if self.matchNodeToStructure(root, structure, atoms, strict):
-                    break # We've found a matching root
-            else: # didn't break - matched no top nodes
+                    break  # We've found a matching root
+            else:  # didn't break - matched no top nodes
                 return None
         elif not self.matchNodeToStructure(root, structure, atoms, strict):
             return None
-        
+
         next = []
         for child in root.children:
             if self.matchNodeToStructure(child, structure, atoms, strict):
@@ -1040,7 +1052,7 @@ class Database(object):
             else:
                 return root
         else:
-            #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
+            # logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
             return self.descendTree(structure, atoms, next[0], strict)
 
     def areSiblings(self, node, nodeOther):
@@ -1048,8 +1060,10 @@ class Database(object):
         Return `True` if `node` and `nodeOther` have the same parent node.  Otherwise, return `False`.
         Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
         """
-        if node.parent is nodeOther.parent: return True
-        else: return False
+        if node.parent is nodeOther.parent:
+            return True
+        else:
+            return False
 
     def removeGroup(self, groupToRemove):
         """
@@ -1058,45 +1072,46 @@ class Database(object):
 
         Returns the removed group
         """
-        #Don't remove top nodes or LogicOrs as this will cause lots of problems
+        # Don't remove top nodes or LogicOrs as this will cause lots of problems
         if groupToRemove in self.top:
             raise Exception("Cannot remove top node: {0} from {1} because it is a top node".format(groupToRemove, self))
         elif isinstance(groupToRemove.item, LogicOr):
-            raise Exception ("Cannot remove top node: {0} from {1} because it is a LogicOr".format(groupToRemove, self))
-        #Remove from entryToRemove from entries
+            raise Exception("Cannot remove top node: {0} from {1} because it is a LogicOr".format(groupToRemove, self))
+        # Remove from entryToRemove from entries
         self.entries.pop(groupToRemove.label)
 
-        #If there is a parent, then the group exists in a tree and we should edit relatives
-        parentR=groupToRemove.parent
+        # If there is a parent, then the group exists in a tree and we should edit relatives
+        parentR = groupToRemove.parent
         if not parentR is None:
-            #Remove from parent's children attribute
+            # Remove from parent's children attribute
             parentR.children.remove(groupToRemove)
 
-            #change children's parent attribute to former grandparent
+            # change children's parent attribute to former grandparent
             for child in groupToRemove.children:
                 child.parent = parentR
 
-            #extend parent's children attribute with new children
+            # extend parent's children attribute with new children
             parentR.children.extend(groupToRemove.children)
 
-            #A few additional changes needed if parentR is a LogicOr node
+            # A few additional changes needed if parentR is a LogicOr node
             if isinstance(parentR.item, LogicOr):
                 parentR.item.components.remove(groupToRemove.label)
                 parentR.item.components.extend([child.label for child in groupToRemove.children])
 
         return groupToRemove
 
+
 class LogicNode(object):
     """
     A base class for AND and OR logic nodes.
     """
 
-    symbol="<TBD>" # To be redefined by subclass
+    symbol = "<TBD>"  # To be redefined by subclass
 
-    def __init__(self,items,invert):
+    def __init__(self, items, invert):
         self.components = []
         for item in items:
-            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",item):
+            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
                 component = makeLogicNode(item)
             else:
                 component = item
@@ -1110,6 +1125,7 @@ class LogicNode(object):
         result += "{{{0}}}".format(', '.join([str(c) for c in self.components]))
         return result
 
+
 class LogicOr(LogicNode):
     """
     A logical OR node. Structure can match any component.
@@ -1119,7 +1135,7 @@ class LogicOr(LogicNode):
 
     symbol = "OR"
 
-    def matchToStructure(self,database,structure,atoms,strict=False):
+    def matchToStructure(self, database, structure, atoms, strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
         
@@ -1127,7 +1143,7 @@ class LogicOr(LogicNode):
         atomLabel in the node.
         """
         for node in self.components:
-            if isinstance(node,LogicNode):
+            if isinstance(node, LogicNode):
                 match = node.matchToStructure(database, structure, atoms, strict)
             else:
                 match = database.matchNodeToStructure(node, structure, atoms, strict)
@@ -1139,14 +1155,14 @@ class LogicOr(LogicNode):
         """
         Is other the same LogicOr group as self?
         """
-        if len(self.components)!=len(other.components):
+        if len(self.components) != len(other.components):
             return False
         else:
             for node in self.components:
                 if node not in other.components:
                     return False
         return True
-        
+
     def getPossibleStructures(self, entries):
         """
         Return a list of the possible structures below this node.
@@ -1159,16 +1175,17 @@ class LogicOr(LogicNode):
                 structures.extend(struct.getPossibleStructures(entries))
             else:
                 structures.append(struct)
-        for struct in structures: # check this worked
-            assert isinstance(struct,Group)
+        for struct in structures:  # check this worked
+            assert isinstance(struct, Group)
         return structures
+
 
 class LogicAnd(LogicNode):
     """A logical AND node. Structure must match all components."""
 
     symbol = "AND"
 
-    def matchToStructure(self,database,structure,atoms,strict=False):
+    def matchToStructure(self, database, structure, atoms, strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
         
@@ -1176,13 +1193,14 @@ class LogicAnd(LogicNode):
         atomLabel in the node.
         """
         for node in self.components:
-            if isinstance(node,LogicNode):
+            if isinstance(node, LogicNode):
                 match = node.matchToStructure(database, structure, atoms, strict)
             else:
                 match = database.matchNodeToStructure(node, structure, atoms, strict)
             if not match:
                 return False != self.invert
         return True != self.invert
+
 
 def makeLogicNode(string):
     """
@@ -1198,12 +1216,14 @@ def makeLogicNode(string):
     And the returned object will be of class LogicOr or LogicAnd
     """
 
-    match = re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",string)  # the (?i) makes it case-insensitive
+    match = re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", string)  # the (?i) makes it case-insensitive
     if not match:
         raise Exception("Unexpected string for Logic Node: {0}".format(string))
 
-    if match.group(1): invert = True
-    else: invert = False
+    if match.group(1):
+        invert = True
+    else:
+        invert = False
 
     logic = match.group(2)  # OR or AND (or Union)
 
@@ -1213,8 +1233,8 @@ def makeLogicNode(string):
             raise Exception("Unbalanced braces in Logic Node: {0}".format(string))
         contents = contents[1:-1]
 
-    items=[]
-    chars=[]
+    items = []
+    chars = []
     brace_depth = 0
     for character in contents:
         if character == '{':
@@ -1222,12 +1242,12 @@ def makeLogicNode(string):
         if character == '}':
             brace_depth -= 1
         if character == ',' and brace_depth == 0:
-            items.append(''.join(chars).lstrip().rstrip() )
+            items.append(''.join(chars).lstrip().rstrip())
             chars = []
         else:
             chars.append(character)
-    if chars: # add last item
-        items.append(''.join(chars).lstrip().rstrip() )
+    if chars:  # add last item
+        items.append(''.join(chars).lstrip().rstrip())
     if brace_depth != 0: raise Exception("Unbalanced braces in Logic Node: {0}".format(string))
 
     if logic.upper() in ['OR', 'UNION']:
@@ -1236,6 +1256,7 @@ def makeLogicNode(string):
         return LogicAnd(items, invert)
 
     raise Exception("Could not create Logic Node from {0}".format(string))
+
 
 ################################################################################
 
@@ -1251,6 +1272,7 @@ def removeCommentFromLine(line):
         line = line[0:index]
     return line
 
+
 def splitLineAndComment(line):
     """
     Returns a tuple(line, comment) based on a '//' comment delimiter.
@@ -1258,11 +1280,12 @@ def splitLineAndComment(line):
     Either `line` or `comment` may be ''.
     Does not strip whitespace, nor remove more than two slashes.
     """
-    split = line.split('//',1)
+    split = line.split('//', 1)
     if len(split) == 1:
-        return (split[0],'')
+        return (split[0], '')
     else:
         return tuple(split)
+
 
 def getAllCombinations(nodeLists):
     """
@@ -1276,9 +1299,10 @@ def getAllCombinations(nodeLists):
 
     items = [[]]
     for nodeList in nodeLists:
-        items = [ item + [node] for node in nodeList for item in items ]
+        items = [item + [node] for node in nodeList for item in items]
 
     return items
+
 
 ################################################################################
 
@@ -1287,7 +1311,7 @@ class ForbiddenStructures(Database):
     A database consisting solely of structures that are forbidden
     from occurring.
     """
-    
+
     def isMoleculeForbidden(self, molecule):
         """
         Return ``True`` if the given :class:`Molecule` object `molecule`
@@ -1313,13 +1337,13 @@ class ForbiddenStructures(Database):
                         return True
             else:
                 raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
-            
+
         # Until we have more thermodynamic data of molecular ions we will forbid them
         if molecule.getNetCharge() != 0:
             return True
-        
+
         return False
-    
+
     def loadOld(self, path):
         """
         Load an old forbidden structures file from the location `path` on disk.
@@ -1358,19 +1382,19 @@ class ForbiddenStructures(Database):
             else:
                 item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
-            label = label,
-            item = item,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
+            label=label,
+            item=item,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
         )
-    
+
     def saveEntry(self, f, entry, name='entry'):
         """
         Save an `entry` from the forbidden structures database. This method is
         automatically called during saving of the forbidden structures 
         database.
         """
-        
+
         f.write('{0}(\n'.format(name))
         f.write('    label = "{0}",\n'.format(entry.label))
         if isinstance(entry.item, Molecule):

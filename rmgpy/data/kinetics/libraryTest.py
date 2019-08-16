@@ -52,8 +52,9 @@ class TestLibrary(unittest.TestCase):
         """
         # Set up a dummy database
         cls.database = KineticsDatabase()
-        cls.database.loadLibraries(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries'),
-                                  libraries=None) #this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
+        cls.database.loadLibraries(
+            os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'libraries'),
+            libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
         cls.libraries = cls.database.libraries
 
     def testGetLibraryReactions(self):
@@ -62,32 +63,38 @@ class TestLibrary(unittest.TestCase):
         """
         libRxns = self.libraries['GRI-Mech3.0'].getLibraryReactions()
         for rxn in libRxns:
-            self.assertIsInstance(rxn,LibraryReaction)
-        
-        libRxns = self.libraries['ethane-oxidation'].getLibraryReactions() #should have no direct library reactions
+            self.assertIsInstance(rxn, LibraryReaction)
+
+        libRxns = self.libraries['ethane-oxidation'].getLibraryReactions()  # should have no direct library reactions
         for rxn in libRxns:
-            if isinstance(rxn.kinetics,PDepKineticsModel):
-                self.assertIsInstance(rxn,LibraryReaction) #can load pdep as networks yet so load as libraries
+            if isinstance(rxn.kinetics, PDepKineticsModel):
+                self.assertIsInstance(rxn, LibraryReaction)  # can load pdep as networks yet so load as libraries
             else:
-                self.assertIsInstance(rxn,TemplateReaction) #all reactions are template based
-                
+                self.assertIsInstance(rxn, TemplateReaction)  # all reactions are template based
+
     def testSaveLibrary(self):
         """
         This tests the the library.save method by writing a new temporary file and
         loading it and comparing the original and copied reactions
         """
-        os.makedirs(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy'))
+        os.makedirs(os.path.join(settings['test_data.directory'],
+                                 'testing_database', 'kinetics', 'libraries', 'eth-oxcopy'))
         try:
-            self.libraries['ethane-oxidation'].save(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy','reactions.py'))
-            self.database.loadLibraries(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries'),
-                                      libraries=None) #this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation','eth-oxcopy'])
+            self.libraries['ethane-oxidation'].save(
+                os.path.join(settings['test_data.directory'],
+                             'testing_database', 'kinetics', 'libraries', 'eth-oxcopy', 'reactions.py'))
+            self.database.loadLibraries(
+                os.path.join(settings['test_data.directory'],
+                             'testing_database', 'kinetics', 'libraries'),
+                libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation', 'eth-oxcopy'])
             oriRxns = self.database.libraries['ethane-oxidation'].getLibraryReactions()
             copyRxns = self.database.libraries['eth-oxcopy'].getLibraryReactions()
             for i in range(len(oriRxns)):
                 if repr(oriRxns[i]).strip() != repr(copyRxns[i]).strip():
-                    self.assertIsInstance(copyRxns[i],TemplateReaction)
+                    self.assertIsInstance(copyRxns[i], TemplateReaction)
         finally:
-            shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy'))
+            shutil.rmtree(os.path.join(settings['test_data.directory'],
+                                       'testing_database', 'kinetics', 'libraries', 'eth-oxcopy'))
 
     def test_generate_high_p_limit_kinetics(self):
         """
@@ -99,7 +106,7 @@ class TestLibrary(unittest.TestCase):
             self.assertIsNone(rxn.network_kinetics)
             logging.debug("Processing reaction {0}".format(rxn))
             success = rxn.generate_high_p_limit_kinetics()
-            if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000)\
+            if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000) \
                     or not rxn.isUnimolecular():
                 # generate_high_p_limit_kinetics() should return `False` if the reaction is not unimolecular
                 # or if it is a PDepArrhenius or Chebyshev with Pmax < 90 bar
@@ -111,7 +118,7 @@ class TestLibrary(unittest.TestCase):
                     self.assertIsNone(rxn.network_kinetics)
                 else:
                     self.assertTrue(isinstance(rxn.network_kinetics, Arrhenius))
-                    if isinstance(rxn.kinetics,Troe):
+                    if isinstance(rxn.kinetics, Troe):
                         # This block quantitative tests the "H + CH2 <=> CH3" reaction
                         # from the test library test_data/testing_database/kinetics/libraries/lib_net/reactions.py
                         # 1. Check that the T exponent in the modified Arrhenius (the "n") equals to 0

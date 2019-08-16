@@ -99,7 +99,7 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information.
         """
         import pickle
-        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution,-1))
+        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution, -1))
         self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
@@ -111,7 +111,7 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         Test that a CriticalPointGroupContribution object can be reconstructed from its repr() output with no loss of information
         """
         criticalPointContribution = None
-        exec('criticalPointContribution = {0!r}'.format(self.criticalPointContribution))
+        exec ('criticalPointContribution = {0!r}'.format(self.criticalPointContribution))
         self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
@@ -123,6 +123,7 @@ class TestTransportDatabase(unittest.TestCase):
     """
     Contains unit tests of the :class:`TransportDatabase` class.
     """
+
     @classmethod
     def setUpClass(self):
         """A function that is run ONCE before all unit tests in this class."""
@@ -145,9 +146,9 @@ class TestTransportDatabase(unittest.TestCase):
             ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
             ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, None],  # not sure what to expect, we just want to make sure it doesn't crash
             ['benzene', 'c1ccccc1', None, None, None],
-            ]
+        ]
 
-        #values calculate from joback's estimations
+        # values calculate from joback's estimations
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species().fromSMILES(smiles)
             transportData, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
@@ -206,4 +207,3 @@ class TestTransportDatabase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
-

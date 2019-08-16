@@ -59,7 +59,7 @@ def saveEntry(f, entry):
                 smiles = mol
             else:
                 smiles = mol.toSMILES()
-                
+
             efficiencies[smiles] = eff
         keys = list(efficiencies.keys())
         keys.sort()
@@ -70,12 +70,11 @@ def saveEntry(f, entry):
     if entry.label != '':
         f.write('    label = "{0}",\n'.format(entry.label))
 
-
-    #Entries for kinetic rules, libraries, training reactions
-    #and depositories will have a Reaction object for its item
+    # Entries for kinetic rules, libraries, training reactions
+    # and depositories will have a Reaction object for its item
     if isinstance(entry.item, Reaction):
-        #Write out additional data if depository or library
-        #kinetic rules would have a Group object for its reactants instead of Species
+        # Write out additional data if depository or library
+        # kinetic rules would have a Group object for its reactants instead of Species
         if isinstance(entry.item.reactants[0], Species):
             # Add degeneracy if the reaction is coming from a depository or kinetics library
             f.write('    degeneracy = {0:.1f},\n'.format(entry.item.degeneracy))
@@ -89,7 +88,7 @@ def saveEntry(f, entry):
                 f.write('    elementary_high_p = {0!r},\n'.format(entry.item.elementary_high_p))
             if entry.item.allow_max_rate_violation:
                 f.write('    allow_max_rate_violation = {0!r},\n'.format(entry.item.allow_max_rate_violation))
-    #Entries for groups with have a group or logicNode for its item
+    # Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
@@ -108,14 +107,14 @@ def saveEntry(f, entry):
         if hasattr(entry.data, 'efficiencies'):
             efficiencies = entry.data.efficiencies
             entry.data.efficiencies = dict(sortEfficiencies(entry.data.efficiencies))
-        kinetics = repr(entry.data) # todo prettify currently does not support uncertainty attribute
+        kinetics = repr(entry.data)  # todo prettify currently does not support uncertainty attribute
         kinetics = '    kinetics = {0},\n'.format(kinetics.replace('\n', '\n    '))
         f.write(kinetics)
         if hasattr(entry.data, 'efficiencies'):
             entry.data.efficiencies = efficiencies
     else:
         f.write('    kinetics = None,\n')
-            
+
     # Write reference
     if entry.reference is not None:
         reference = entry.reference.toPrettyRepr()
@@ -124,27 +123,27 @@ def saveEntry(f, entry):
         for line in lines[1:-1]:
             f.write('    {0}\n'.format(line))
         f.write('    ),\n'.format(lines[0]))
-    
+
     if entry.referenceType != "":
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
-        
-    if entry.shortDesc.strip() !='':
+
+    if entry.shortDesc.strip() != '':
         f.write('    shortDesc = u"""')
         try:
             f.write(entry.shortDesc.encode('utf-8'))
         except:
-            f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
+            f.write(entry.shortDesc.strip().encode('ascii', 'ignore') + "\n")
         f.write('""",\n')
-    
-    if entry.longDesc.strip() !='':
+
+    if entry.longDesc.strip() != '':
         f.write('    longDesc = \n')
         f.write('u"""\n')
         try:
             f.write(entry.longDesc.strip().encode('utf-8') + "\n")
         except:
-            f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+            f.write(entry.longDesc.strip().encode('ascii', 'ignore') + "\n")
         f.write('""",\n')
 
     f.write(')\n\n')
@@ -198,6 +197,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
     Returns None.
     """
     ensure_species(input_species)  # do not generate resonance structures since we do so below
+
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0
@@ -227,7 +227,8 @@ def ensure_independent_atom_ids(input_species, resonance=True):
             species.generate_resonance_structures(keep_isomorphic=True)
 
 
-def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
+def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None,
+                              kinetics_family=None):
     """
     Given a list of Reaction objects, this method combines degenerate
     reactions and increments the reaction degeneracy value. For multiple
@@ -286,9 +287,11 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                 identical = False
                 sameTemplate = True
                 for rxn in sub_list:
-                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, strict=False, checkTemplateRxnProducts=True)
+                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, strict=False,
+                                                   checkTemplateRxnProducts=True)
                     if isomorphic:
-                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, strict=False, checkTemplateRxnProducts=True)
+                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, strict=False,
+                                                      checkTemplateRxnProducts=True)
                         if identical:
                             # An exact copy of rxn0 is already in our list, so we can move on
                             break
@@ -343,6 +346,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                 rxn.degeneracy = family.calculateDegeneracy(rxn)
 
     return rxn_list
+
 
 def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     """

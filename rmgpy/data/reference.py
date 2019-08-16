@@ -44,6 +44,7 @@ also be used if the reference does not fit into any of the above categories.
 
 import re
 
+
 ################################################################################
 
 class Reference(object):
@@ -68,7 +69,7 @@ class Reference(object):
         self.year = year
         self.doi = doi
         self.url = url
-        
+
     def __repr__(self):
         """
         Return a string representation of the reference that can be used to
@@ -131,6 +132,7 @@ class Reference(object):
                 authors = authors[:-1]
         return authors
 
+
 ################################################################################
 
 class Article(Reference):
@@ -181,7 +183,7 @@ class Article(Reference):
             string += u' ({0})'.format(self.year)
         if string and string[-1] != '.': string += u'.'
         return string
-    
+
     def toPrettyRepr(self):
         """
         Return a string representation of the reference that can be used to
@@ -198,7 +200,8 @@ class Article(Reference):
         if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
         if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
-    
+
+
 ################################################################################
 
 class Book(Reference):
@@ -222,7 +225,8 @@ class Book(Reference):
 
     """
 
-    def __init__(self, authors=None, title='', publisher='', address='', volume='', series='', edition='', year='', doi='', url=''):
+    def __init__(self, authors=None, title='', publisher='', address='', volume='', series='', edition='', year='',
+                 doi='', url=''):
         Reference.__init__(self, authors=authors, title=title, year=year, doi=doi, url=url)
         self.publisher = publisher
         self.address = address
@@ -249,7 +253,7 @@ class Book(Reference):
         if self.year != '':
             string += u' ({0})'.format(self.year)
         return string + u'.'
-    
+
     def toPrettyRepr(self):
         """
         Return a string representation of the reference that can be used to
@@ -267,6 +271,7 @@ class Book(Reference):
         if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
         if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
+
 
 ################################################################################
 
@@ -309,7 +314,7 @@ class Thesis(Reference):
             string += u' ({0})'.format(self.year)
         if string and string[-1] != '.': string += u'.'
         return string
-    
+
     def toPrettyRepr(self):
         """
         Return a string representation of the reference that can be used to
