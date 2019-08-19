@@ -694,11 +694,6 @@ class StatMechJob(object):
         Plot the potential for the rotor, along with its cosine and Fourier
         series potential fits, and save it in the `hindered_rotor_plots` attribute.
         """
-        try:
-            import pylab
-        except ImportError:
-            logging.warning("Unable to import pylab. not generating hindered rotor figures")
-            return
         phi = np.arange(0, 6.3, 0.02, np.float64)
         Vlist_cosine = np.zeros_like(phi)
         Vlist_fourier = np.zeros_like(phi)
@@ -706,17 +701,17 @@ class StatMechJob(object):
             Vlist_cosine[i] = cosineRotor.getPotential(phi[i])
             Vlist_fourier[i] = fourierRotor.getPotential(phi[i])
 
-        fig = pylab.figure(figsize=(6, 5))
-        pylab.plot(angle, v_list / 4184., 'ok')
+        fig = plt.figure(figsize=(6, 5))
+        plt.plot(angle, v_list / 4184., 'ok')
         linespec = '-r' if rotor is cosineRotor else '--r'
-        pylab.plot(phi, Vlist_cosine / 4184., linespec)
+        plt.plot(phi, Vlist_cosine / 4184., linespec)
         linespec = '-b' if rotor is fourierRotor else '--b'
-        pylab.plot(phi, Vlist_fourier / 4184., linespec)
-        pylab.legend(['scan', 'cosine', 'fourier'], loc=1)
-        pylab.xlim(0, 2 * constants.pi)
-        pylab.xlabel('Angle')
-        pylab.ylabel('Potential (kcal/mol)')
-        pylab.title('{0} hindered rotor #{1:d}'.format(self.species.label, rotorIndex + 1))
+        plt.plot(phi, Vlist_fourier / 4184., linespec)
+        plt.legend(['scan', 'cosine', 'fourier'], loc=1)
+        plt.xlim(0, 2 * constants.pi)
+        plt.xlabel('Angle')
+        plt.ylabel('Potential (kcal/mol)')
+        plt.title('{0} hindered rotor #{1:d}'.format(self.species.label, rotorIndex + 1))
 
         axes = fig.get_axes()[0]
         axes.set_xticks([float(j * constants.pi / 4) for j in range(0, 9)])
