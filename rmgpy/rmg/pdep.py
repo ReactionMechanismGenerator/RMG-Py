@@ -45,8 +45,9 @@ import rmgpy.reaction
 from rmgpy.constants import R
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import PressureDependenceError, NetworkError
-from rmgpy.pdep import Conformer, Configuration
+from rmgpy.pdep import Configuration
 from rmgpy.rmg.react import react_species
+from rmgpy.statmech import Conformer
 
 
 ################################################################################
