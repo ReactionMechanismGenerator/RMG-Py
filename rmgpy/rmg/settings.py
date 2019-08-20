@@ -109,7 +109,7 @@ class ModelSettings(object):
         else:
             self.maxNumSpecies = numpy.inf
         
-        if maxNumObjsPerIter <= 0:
+        if maxNumObjsPerIter < 0:
             self.maxNumObjsPerIter = numpy.inf
         else:
             self.maxNumObjsPerIter = maxNumObjsPerIter
