@@ -54,7 +54,9 @@ cdef class RMGObject(object):
         all_attributes = [attr for attr in dir(self) if not attr.startswith('_')]
         for attr in all_attributes:
             val = getattr(self, attr)
-            if val is not None and not callable(val) and val != '':
+
+            # Check if val is a numpy array first to prevent elementwise comparisons with ''
+            if isinstance(val, np.ndarray) or (val is not None and not callable(val) and val != ''):
                 output_dict[attr] = expand_to_dict(val)
 
         return output_dict
