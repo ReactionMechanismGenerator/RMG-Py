@@ -30,22 +30,23 @@
 
 import os
 import unittest
-from external.wip import work_in_progress
 
-from .main import RMG, CoreEdgeReactionModel
-from .model import Species
+from external.wip import work_in_progress
+from rmg import parse_command_line_arguments
 from rmgpy import settings
+from rmgpy.data.base import ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react_species
-import rmgpy
-from rmgpy.data.base import ForbiddenStructures
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.species import Species
 
-from rmg import *
+
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
-    
+
     @classmethod
     def setUpClass(self):
         """
@@ -61,9 +62,10 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # kinetics family Disproportionation loading
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
-                                       kineticsFamilies=['H_Abstraction','R_Addition_MultipleBond'],reactionLibraries=[])
+                                       kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
+                                       reactionLibraries=[])
 
-        #load empty forbidden structures 
+        # load empty forbidden structures
         for family in self.rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
         self.rmg.database.forbiddenStructures = ForbiddenStructures()
@@ -75,7 +77,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
-        
+
     @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
@@ -96,24 +98,24 @@ class TestRMGWorkFlow(unittest.TestCase):
         # react
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generate_resonance_structures()
-        newReactions = react_species((spc,))
+        new_reactions = react_species((spc,))
 
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
         mol_C3H2O = Molecule().fromSMILES("C=C=C=O")
 
-        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions)
+        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, new_reactions)
         self.assertEqual(len(target_rxns), 2)
 
         # reverse the order of molecules in spc
         spc.molecule = list(reversed(spc.molecule))
 
         # react again
-        newReactions_reverse = []
-        newReactions_reverse.extend(react_species((spc,)))
+        new_reactions_reverse = []
+        new_reactions_reverse.extend(react_species((spc,)))
 
         # try to pick out the target reaction 
-        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
+        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, new_reactions_reverse)
         self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
@@ -221,7 +223,7 @@ class TestRMGScript(unittest.TestCase):
 
         # Acquire arguments
         args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', 'test/seed/', '-P',
-                                            '-t', '01:20:33:45', '-k'])
+                                             '-t', '01:20:33:45', '-k'])
 
         # Test expected values
         self.assertEqual(args.walltime, '01:20:33:45')

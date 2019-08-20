@@ -29,48 +29,52 @@
 ###############################################################################
 
 import logging
-import warnings
-import quantities
 import os
-import numpy
 from copy import deepcopy
 
-from rmgpy import settings
+import numpy as np
 
+from rmgpy import settings
+from rmgpy.exceptions import InputError
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
-from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
+from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
-from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
-from model import CoreEdgeReactionModel
 
-from rmgpy.exceptions import InputError
 ################################################################################
 
 rmg = None
 speciesDict = {}
 
+
 def database(
-             thermoLibraries = None,
-             transportLibraries = None,
-             reactionLibraries = None,
-             frequenciesLibraries = None,
-             seedMechanisms = None,
-             kineticsFamilies = 'default',
-             kineticsDepositories = 'default',
-             kineticsEstimator = 'rate rules',
-             ):
+        thermoLibraries=None,
+        transportLibraries=None,
+        reactionLibraries=None,
+        frequenciesLibraries=None,
+        seedMechanisms=None,
+        kineticsFamilies='default',
+        kineticsDepositories='default',
+        kineticsEstimator='rate rules',
+):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
-    if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
-    if isinstance(transportLibraries, str): transportLibraries = [transportLibraries]
-    if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
-    if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
-    if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
+    if isinstance(thermoLibraries, str):
+        thermoLibraries = [thermoLibraries]
+    if isinstance(transportLibraries, str):
+        transportLibraries = [transportLibraries]
+    if isinstance(reactionLibraries, str):
+        reactionLibraries = [reactionLibraries]
+    if isinstance(seedMechanisms, str):
+        seedMechanisms = [seedMechanisms]
+    if isinstance(frequenciesLibraries, str):
+        frequenciesLibraries = [frequenciesLibraries]
     rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
     rmg.transportLibraries = transportLibraries
@@ -78,9 +82,9 @@ def database(
     if reactionLibraries:
         index = 0
         while index < len(reactionLibraries):
-            if isinstance(reactionLibraries[index],tuple):
+            if isinstance(reactionLibraries[index], tuple):
                 pass
-            elif isinstance(reactionLibraries[index],str):
+            elif isinstance(reactionLibraries[index], str):
                 reactionLibraries[index] = (reactionLibraries[index], False)
             else:
                 raise TypeError('reaction libraries must be input as tuples or strings')
@@ -94,20 +98,22 @@ def database(
     elif kineticsDepositories == 'all':
         rmg.kineticsDepositories = None
     else:
-        if not isinstance(kineticsDepositories,list):
-            raise InputError("kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
+        if not isinstance(kineticsDepositories, list):
+            raise InputError("kineticsDepositories should be either 'default', 'all', or a list of names eg. "
+                             "['training','PrIMe'].")
         rmg.kineticsDepositories = kineticsDepositories
 
     if kineticsFamilies in ('default', 'all', 'none'):
         rmg.kineticsFamilies = kineticsFamilies
     else:
-        if not isinstance(kineticsFamilies,list):
-            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
+        if not isinstance(kineticsFamilies, list):
+            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. "
+                             "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kineticsFamilies = kineticsFamilies
 
 
-def catalystProperties(bindingEnergies = None,
-                       surfaceSiteDensity = None,):
+def catalystProperties(bindingEnergies=None,
+                       surfaceSiteDensity=None, ):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
@@ -131,51 +137,59 @@ def convertBindingEnergies(bindingEnergies):
     :return: the processed and checked dictionary
     """
     if bindingEnergies is None:
-        bindingEnergies = { # default values for Pt(111)
-                       'C':(-6.750, 'eV/molecule'),
-                       'H':(-2.479, 'eV/molecule'),
-                       'O':(-3.586, 'eV/molecule'),
-                       'N':(-4.352, 'eV/molecule'),
-                       }
+        bindingEnergies = {  # default values for Pt(111)
+            'C': (-6.750, 'eV/molecule'),
+            'H': (-2.479, 'eV/molecule'),
+            'O': (-3.586, 'eV/molecule'),
+            'N': (-4.352, 'eV/molecule'),
+        }
         logging.info("Using default binding energies for Pt(111):\n{0!r}".format(bindingEnergies))
-    if not isinstance(bindingEnergies, dict): raise InputError("bindingEnergies should be None (for default) or a dict.")
-    newDict = {}
+    if not isinstance(bindingEnergies, dict):
+        raise InputError("bindingEnergies should be None (for default) or a dict.")
+    new_dict = {}
     for element in 'CHON':
         try:
-            newDict[element] = Energy(bindingEnergies[element])
+            new_dict[element] = Energy(bindingEnergies[element])
         except KeyError:
             logging.error('Element {} missing from bindingEnergies dictionary'.format(element))
             raise
-    return newDict
-
+    return new_dict
 
 
 def species(label, structure, reactive=True):
-    logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
-    
+    logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive',
+                                                         label,
+                                                         structure.toSMILES()))
+
     if '+' in label:
         raise InputError('species {0} label cannot include a + sign'.format(label))
-    
-    spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
-    if not isNew:
-        raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label))
+
+    spec, is_new = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
+    if not is_new:
+        raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
+                                                                                                          spec.label))
     # Force RMG to add the species to edge first, prior to where it is added to the core, in case it is found in 
     # any reaction libraries along the way
     rmg.reactionModel.addSpeciesToEdge(spec)
     rmg.initialSpecies.append(spec)
     speciesDict[label] = spec
-    
+
+
 def SMARTS(string):
     return Molecule().fromSMARTS(string)
+
 
 def SMILES(string):
     return Molecule().fromSMILES(string)
 
+
 def InChI(string):
     return Molecule().fromInChI(string)
 
+
 def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
+
 
 # Reaction systems
 def simpleReactor(temperature,
@@ -193,96 +207,103 @@ def simpleReactor(temperature,
                   sensitivityMoleFractions=None,
                   ):
     logging.debug('Found SimpleReactor reaction system')
-    
-    for key,value in initialMoleFractions.iteritems():
-        if not isinstance(value,list):
+
+    for key, value in initialMoleFractions.items():
+        if not isinstance(value, list):
             initialMoleFractions[key] = float(value)
             if value < 0:
                 raise InputError('Initial mole fractions cannot be negative.')
         else:
             if len(value) != 2:
                 raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
-            initialMoleFractions[key] = [float(value[0]),float(value[1])]
+            initialMoleFractions[key] = [float(value[0]), float(value[1])]
             if value[0] < 0 or value[1] < 0:
                 raise InputError('Initial mole fractions cannot be negative.')
             elif value[1] < value[0]:
                 raise InputError('Initial mole fraction range out of order: {0}'.format(key))
-    
-    if not isinstance(temperature,list):
+
+    if not isinstance(temperature, list):
         T = Quantity(temperature)
     else:
         if len(temperature) != 2:
-            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
         T = [Quantity(t) for t in temperature]
-        
-    if not isinstance(pressure,list):
+
+    if not isinstance(pressure, list):
         P = Quantity(pressure)
     else:
         if len(pressure) != 2:
-            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
         P = [Quantity(p) for p in pressure]
-        
-        
-    if not isinstance(temperature,list) and not isinstance(pressure,list) and all([not isinstance(x,list) for x in initialMoleFractions.values()]):
-        nSims=1
-    
+
+    if not isinstance(temperature, list) and not isinstance(pressure, list) and all(
+            [not isinstance(x, list) for x in initialMoleFractions.values()]):
+        nSims = 1
+
     termination = []
     if terminationConversion is not None:
-        for spec, conv in terminationConversion.iteritems():
+        for spec, conv in terminationConversion.items():
             termination.append(TerminationConversion(speciesDict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
     if terminationRateRatio is not None:
         termination.append(TerminationRateRatio(terminationRateRatio))
     if len(termination) == 0:
-        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
-    
-    sensitiveSpecies = []
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
+
+    sensitive_species = []
     if sensitivity:
         if sensitivity != 'all':
-            if isinstance(sensitivity, str): sensitivity = [sensitivity]
+            if isinstance(sensitivity, str):
+                sensitivity = [sensitivity]
             for spec in sensitivity:
-                sensitiveSpecies.append(speciesDict[spec])
+                sensitive_species.append(speciesDict[spec])
 
         else:
-            sensitiveSpecies.append('all')
-    
-    if not isinstance(T,list):
+            sensitive_species.append('all')
+
+    if not isinstance(T, list):
         sensitivityTemperature = T
-    if not isinstance(P,list):
+    if not isinstance(P, list):
         sensitivityPressure = P
-    if not any([isinstance(x,list) for x in initialMoleFractions.itervalues()]):
+    if not any([isinstance(x, list) for x in initialMoleFractions.values()]):
         sensitivityMoleFractions = deepcopy(initialMoleFractions)
     if sensitivityMoleFractions is None or sensitivityTemperature is None or sensitivityPressure is None:
-        sensConditions = None
+        sens_conditions = None
     else:
-        sensConditions = sensitivityMoleFractions
-        sensConditions['T'] = Quantity(sensitivityTemperature).value_si
-        sensConditions['P'] = Quantity(sensitivityPressure).value_si
+        sens_conditions = sensitivityMoleFractions
+        sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
+        sens_conditions['P'] = Quantity(sensitivityPressure).value_si
 
-    
-    system = SimpleReactor(T, P, initialMoleFractions, nSims, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
+    system = SimpleReactor(T, P, initialMoleFractions, nSims, termination, sensitive_species, sensitivityThreshold,
+                           sens_conditions)
     rmg.reactionSystems.append(system)
-    
-    assert balanceSpecies is None or isinstance(balanceSpecies,str), 'balanceSpecies should be the string corresponding to a single species'
+
+    assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
     rmg.balanceSpecies = balanceSpecies
-    if balanceSpecies: #check that the balanceSpecies can't be taken to zero
+    if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
         total = 0.0
-        for key,item in initialMoleFractions.iteritems():
+        for key, item in initialMoleFractions.items():
             if key == balanceSpecies:
-                assert not isinstance(item,list), 'balanceSpecies must not have a defined range'
+                assert not isinstance(item, list), 'balanceSpecies must not have a defined range'
                 xbspcs = item
-            if isinstance(item,list):
-                total += item[1]-item[0]
+            if isinstance(item, list):
+                total += item[1] - item[0]
 
         if total > xbspcs:
-            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole fraction of the balance species, this would require the balanceSpecies mole fraction to be negative in some cases which is not allowed, either reduce the maximum mole fractions or dont use balanceSpecies')
+            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole '
+                             'fraction of the balance species, this would require the balanceSpecies mole fraction to '
+                             'be negative in some cases which is not allowed, either reduce the maximum mole fractions '
+                             'or dont use balanceSpecies')
+
 
 # Reaction systems
 def liquidReactor(temperature,
                   initialConcentrations,
                   terminationConversion=None,
-                  nSims = 4,
+                  nSims=4,
                   terminationTime=None,
                   terminationRateRatio=None,
                   sensitivity=None,
@@ -290,124 +311,34 @@ def liquidReactor(temperature,
                   sensitivityTemperature=None,
                   sensitivityConcentrations=None,
                   constantSpecies=None):
-    
     logging.debug('Found LiquidReactor reaction system')
-    
-    if not isinstance(temperature,list):
+
+    if not isinstance(temperature, list):
         T = Quantity(temperature)
     else:
         if len(temperature) != 2:
-            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
         T = [Quantity(t) for t in temperature]
-    
-    for spec,conc in initialConcentrations.iteritems():
-        if not isinstance(conc,list):
+
+    for spec, conc in initialConcentrations.items():
+        if not isinstance(conc, list):
             concentration = Quantity(conc)
             # check the dimensions are ok
             # convert to mol/m^3 (or something numerically nice? or must it be SI)
             initialConcentrations[spec] = concentration.value_si
         else:
             if len(conc) != 2:
-                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 entries of the same format")
-            initialConcentrations[spec] = [Quantity(conc[0]),Quantity(conc[1])]
-            
-    if not isinstance(temperature,list) and all([not isinstance(x,list) for x in initialConcentrations.itervalues()]):
-        nSims=1
-        
-    termination = []
-    if terminationConversion is not None:
-        for spec, conv in terminationConversion.iteritems():
-            termination.append(TerminationConversion(speciesDict[spec], conv))
-    if terminationTime is not None:
-        termination.append(TerminationTime(Quantity(terminationTime)))
-    if terminationRateRatio is not None:
-        termination.append(TerminationRateRatio(terminationRateRatio))
-    if len(termination) == 0:
-        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
-    
-    sensitiveSpecies = []
-    if sensitivity:
-        for spec in sensitivity:
-            sensitiveSpecies.append(speciesDict[spec])
-    
-    ##chatelak: check the constant species exist
-    if constantSpecies is not None:
-        logging.debug('  Generation with constant species:')
-        for constantSpecie in constantSpecies:
-            logging.debug("  {0}".format(constantSpecie))
-            if not speciesDict.has_key(constantSpecie):
-                raise InputError('Species {0} not found in the input file'.format(constantSpecie))
-    
-    if not isinstance(T,list):
-        sensitivityTemperature = T
-    if not any([isinstance(x,list) for x in initialConcentrations.itervalues()]):
-        sensitivityConcentrations = initialConcentrations
-    if sensitivityConcentrations is None or sensitivityTemperature is None:
-        sensConditions = None
-    else:
-        sensConditions = sensitivityConcentrations
-        sensConditions['T'] = Quantity(sensitivityTemperature).value_si
-        
-    system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
-    rmg.reactionSystems.append(system)
-    
-# Reaction systems
-def surfaceReactor(temperature,
-                   initialPressure,
-                  initialGasMoleFractions,
-                  initialSurfaceCoverages,
-                  surfaceVolumeRatio,
-                  nSims=4,
-                  terminationConversion=None,
-                  terminationTime=None,
-                  terminationRateRatio=None,
-                  sensitivity=None,
-                  sensitivityThreshold=1e-3):
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                 "entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
 
-    logging.debug('Found SurfaceReactor reaction system')
-
-    for value in initialGasMoleFractions.values():
-        if value < 0:
-            raise InputError('Initial mole fractions cannot be negative.')
-    totalInitialMoles = sum(initialGasMoleFractions.values())
-    if totalInitialMoles != 1:
-        logging.warning('Initial gas mole fractions do not sum to one; renormalizing.')
-        logging.debug('')
-        logging.debug('Original composition:')
-        for spec, molfrac in initialGasMoleFractions.iteritems():
-            logging.debug("{0} = {1}".format(spec, molfrac))
-        for spec in initialGasMoleFractions:
-            initialGasMoleFractions[spec] /= totalInitialMoles
-        logging.info('')
-        logging.debug('Normalized mole fractions:')
-        for spec, molfrac in initialGasMoleFractions.iteritems():
-            logging.debug("{0} = {1}".format(spec, molfrac))
-
-    if not isinstance(temperature, list):
-        T = Quantity(temperature)
-    else:
-        if len(temperature) != 2:
-            raise InputError('Temperature ranges can either be in the form '
-                'of (number,units) or a list with 2 entries of the same format')
-        T = [Quantity(t) for t in temperature]
-
-    if not isinstance(initialPressure, list):
-        initialP = Quantity(initialPressure)
-    else:
-        if len(initialPressure) != 2:
-            raise InputError('Initial pressure ranges can either be in the form '
-                'of (number,units) or a list with 2 entries of the same format')
-        initialP = [Quantity(p) for p in initialPressure]
-
-    if not isinstance(temperature, list) and not isinstance(initialPressure, list):
+    if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
         nSims = 1
-    if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
-       any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
-        raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
 
     termination = []
     if terminationConversion is not None:
-        for spec, conv in terminationConversion.iteritems():
+        for spec, conv in terminationConversion.items():
             termination.append(TerminationConversion(speciesDict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
@@ -420,18 +351,108 @@ def surfaceReactor(temperature,
     if sensitivity:
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
+
+    # chatelak: check the constant species exist
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for constantSpecie in constantSpecies:
+            logging.debug("  {0}".format(constantSpecie))
+            if constantSpecie not in speciesDict:
+                raise InputError('Species {0} not found in the input file'.format(constantSpecie))
+
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not any([isinstance(x, list) for x in initialConcentrations.values()]):
+        sensitivityConcentrations = initialConcentrations
+    if sensitivityConcentrations is None or sensitivityTemperature is None:
+        sens_conditions = None
+    else:
+        sens_conditions = sensitivityConcentrations
+        sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
+
+    system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold,
+                           sens_conditions, constantSpecies)
+    rmg.reactionSystems.append(system)
+
+
+# Reaction systems
+def surfaceReactor(temperature,
+                   initialPressure,
+                   initialGasMoleFractions,
+                   initialSurfaceCoverages,
+                   surfaceVolumeRatio,
+                   nSims=4,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   sensitivity=None,
+                   sensitivityThreshold=1e-3):
+    logging.debug('Found SurfaceReactor reaction system')
+
+    for value in list(initialGasMoleFractions.values()):
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
+    total_initial_moles = sum(initialGasMoleFractions.values())
+    if total_initial_moles != 1:
+        logging.warning('Initial gas mole fractions do not sum to one; renormalizing.')
+        logging.debug('')
+        logging.debug('Original composition:')
+        for spec, molfrac in initialGasMoleFractions.items():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+        for spec in initialGasMoleFractions:
+            initialGasMoleFractions[spec] /= total_initial_moles
+        logging.info('')
+        logging.debug('Normalized mole fractions:')
+        for spec, molfrac in initialGasMoleFractions.items():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature ranges can either be in the form of (number,units) or a list with 2 entries '
+                             'of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(initialPressure, list):
+        initialP = Quantity(initialPressure)
+    else:
+        if len(initialPressure) != 2:
+            raise InputError('Initial pressure ranges can either be in the form ''of (number,units) or a list with '
+                             '2 entries of the same format')
+        initialP = [Quantity(p) for p in initialPressure]
+
+    if not isinstance(temperature, list) and not isinstance(initialPressure, list):
+        nSims = 1
+    if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
+            any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
+        raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
+
+    sensitive_species = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitive_species.append(speciesDict[spec])
     if not isinstance(T, list):
         sensitivityTemperature = T
     if not isinstance(initialPressure, list):
         sensitivityPressure = initialPressure
-    sensConditions = None
+    sens_conditions = None
     if sensitivity:
         raise NotImplementedError("Can't currently do sensitivity with surface reactors.")
-        """
-        The problem is inside base.pyx it reads the dictionary 'sensConditions'
-        and guesses whether they're all concentrations (liquid reactor) or 
-        mole fractions (simple reactor). In fact, some may be surface coverages.
-        """
+        # The problem is inside base.pyx it reads the dictionary 'sensConditions'
+        # and guesses whether they're all concentrations (liquid reactor) or
+        # mole fractions (simple reactor). In fact, some may be surface coverages.
 
     system = SurfaceReactor(T=T,
                             initialP=initialP,
@@ -441,9 +462,9 @@ def surfaceReactor(temperature,
                             surfaceSiteDensity=rmg.surfaceSiteDensity,
                             nSims=nSims,
                             termination=termination,
-                            sensitiveSpecies=sensitiveSpecies,
+                            sensitiveSpecies=sensitive_species,
                             sensitivityThreshold=sensitivityThreshold,
-                            sensConditions=sensConditions)
+                            sensConditions=sens_conditions)
     rmg.reactionSystems.append(system)
     system.log_initial_conditions(number=len(rmg.reactionSystems))
 
@@ -468,18 +489,18 @@ def mbsampledReactor(temperature,
     for spec in initialMoleFractions:
         initialMoleFractions[spec] = float(initialMoleFractions[spec])
 
-    totalInitialMoles = sum(initialMoleFractions.values())
-    if totalInitialMoles != 1:
+    total_initial_moles = sum(initialMoleFractions.values())
+    if total_initial_moles != 1:
         logging.warning('Initial mole fractions do not sum to one; normalizing.')
         logging.info('')
         logging.info('Original composition:')
-        for spec, molfrac in initialMoleFractions.iteritems():
+        for spec, molfrac in initialMoleFractions.items():
             logging.info("{0} = {1}".format(spec, molfrac))
         for spec in initialMoleFractions:
-            initialMoleFractions[spec] /= totalInitialMoles
+            initialMoleFractions[spec] /= total_initial_moles
         logging.info('')
         logging.info('Normalized mole fractions:')
-        for spec, molfrac in initialMoleFractions.iteritems():
+        for spec, molfrac in initialMoleFractions.items():
             logging.info("{0} = {1}".format(spec, molfrac))
 
     T = Quantity(temperature)
@@ -487,14 +508,14 @@ def mbsampledReactor(temperature,
 
     k_sampling = RateCoefficient(mbsamplingRate, 's^-1')
 
-    constantSpeciesList = []
+    constant_species_list = []
 
     for spec in constantSpecies:
-        constantSpeciesList.append(speciesDict[spec])
+        constant_species_list.append(speciesDict[spec])
 
     termination = []
     if terminationConversion is not None:
-        for spec, conv in terminationConversion.iteritems():
+        for spec, conv in terminationConversion.items():
             termination.append(TerminationConversion(speciesDict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
@@ -502,29 +523,38 @@ def mbsampledReactor(temperature,
         raise InputError(
             'No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
 
-    sensitiveSpecies = []
+    sensitive_species = []
     if sensitivity:
-        if isinstance(sensitivity, str): sensitivity = [sensitivity]
+        if isinstance(sensitivity, str):
+            sensitivity = [sensitivity]
         for spec in sensitivity:
-            sensitiveSpecies.append(speciesDict[spec])
-    system = MBSampledReactor(T, P, initialMoleFractions, k_sampling, constantSpeciesList, termination, sensitiveSpecies, sensitivityThreshold)
+            sensitive_species.append(speciesDict[spec])
+    system = MBSampledReactor(T, P, initialMoleFractions, k_sampling, constant_species_list, termination,
+                              sensitive_species, sensitivityThreshold)
     rmg.reactionSystems.append(system)
+
 
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
-    
+
+
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
-    if not isinstance(solvent,str):
+    if not isinstance(solvent, str):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
-          toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
+
+def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
+          toleranceInterruptSimulation=1.0,
+          toleranceMoveEdgeReactionToSurface=np.inf, toleranceMoveSurfaceSpeciesToCore=np.inf,
+          toleranceMoveSurfaceReactionToCore=np.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
-          toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8, ignoreOverallFluxCriterion=False,
-          maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale=(0.0,'sec'),
+          toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50,
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8,
+          ignoreOverallFluxCriterion=False,
+          maxNumSpecies=None, maxNumObjsPerIter=1, terminateAtMaxObjects=False,
+          toleranceThermoKeepSpeciesInEdge=np.inf, dynamicsTimeScale=(0.0, 'sec'),
           toleranceBranchReactionToCore=0.0, branchingIndex=0.5, branchingRatioMax=1.0):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
@@ -535,10 +565,12 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     to the pressure dependent network expansion and not movement of species from edge to core
     """
     if toleranceMoveToCore is None:
-        raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
+        raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to "
+                         "toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
-        raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
-    
+        raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is "
+                         "currently {0}".format(toleranceInterruptSimulation))
+
     rmg.modelSettingsList.append(
         ModelSettings(
             toleranceMoveToCore=toleranceMoveToCore,
@@ -566,23 +598,25 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
             branchingRatioMax=branchingRatioMax,
         )
     )
-    
+
+
 def quantumMechanics(
-                    software,
-                    method,
-                    fileStore = None,
-                    scratchDirectory = None,
-                    onlyCyclics = False,
-                    maxRadicalNumber = 0,
-                    ):
+        software,
+        method,
+        fileStore=None,
+        scratchDirectory=None,
+        onlyCyclics=False,
+        maxRadicalNumber=0,
+):
     from rmgpy.qm.main import QMCalculator
-    rmg.quantumMechanics = QMCalculator(software = software,
-                                        method = method,
-                                        fileStore = fileStore,
-                                        scratchDirectory = scratchDirectory,
-                                        onlyCyclics = onlyCyclics,
-                                        maxRadicalNumber = maxRadicalNumber,
+    rmg.quantumMechanics = QMCalculator(software=software,
+                                        method=method,
+                                        fileStore=fileStore,
+                                        scratchDirectory=scratchDirectory,
+                                        onlyCyclics=onlyCyclics,
+                                        maxRadicalNumber=maxRadicalNumber,
                                         )
+
 
 def mlEstimator(thermo=True,
                 name='main',
@@ -634,37 +668,39 @@ def mlEstimator(thermo=True,
 
     # Shows warning when onlyCyclics is False and onlyHeterocyclics is True
     if minCycleOverlap > 0 and not onlyCyclics and not onlyHeterocyclics:
-        logging.warning('"onlyCyclics" should be True when "minCycleOverlap" is greater than zero.'
-                        ' Machine learning estimator is restricted to only cyclic species thermo with the specified minimum cycle overlap')
+        logging.warning('"onlyCyclics" should be True when "minCycleOverlap" is greater than zero. '
+                        'Machine learning estimator is restricted to only cyclic species thermo with the specified '
+                        'minimum cycle overlap')
     elif minCycleOverlap > 0 and not onlyCyclics and onlyHeterocyclics:
-        logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True and "minCycleOverlap" is greater than zero.'
-                        ' Machine learning estimator is restricted to only heterocyclic species thermo with the specified minimum cycle overlap')
+        logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True and "minCycleOverlap" is '
+                        'greater than zero. Machine learning estimator is restricted to only heterocyclic species '
+                        'thermo with the specified minimum cycle overlap')
     elif onlyHeterocyclics and not onlyCyclics:
-        logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True.'
-                        ' Machine learning estimator is restricted to only heterocyclic species thermo')
+        logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True. '
+                        'Machine learning estimator is restricted to only heterocyclic species thermo')
+
 
 def pressureDependence(
-                       method,
-                       temperatures,
-                       pressures,
-                       maximumGrainSize = 0.0,
-                       minimumNumberOfGrains = 0,
-                       interpolation = None,
-                       maximumAtoms=None,
-                       ):
-
+        method,
+        temperatures,
+        pressures,
+        maximumGrainSize=0.0,
+        minimumNumberOfGrains=0,
+        interpolation=None,
+        maximumAtoms=None,
+):
     from arkane.pdep import PressureDependenceJob
-    
+
     # Setting the pressureDependence attribute to non-None enables pressure dependence
     rmg.pressureDependence = PressureDependenceJob(network=None)
-    
+
     # Process method
     rmg.pressureDependence.method = method
-    
+
     # Process interpolation model
     if isinstance(interpolation, str):
         interpolation = (interpolation,)
-    if interpolation[0].lower() not in ("chebyshev","pdeparrhenius"):
+    if interpolation[0].lower() not in ("chebyshev", "pdeparrhenius"):
         raise InputError("Interpolation model must be set to either 'Chebyshev' or 'PDepArrhenius'.")
     rmg.pressureDependence.interpolationModel = interpolation
 
@@ -674,27 +710,28 @@ def pressureDependence(
     rmg.pressureDependence.Tmax = Quantity(Tmax, Tunits)
     rmg.pressureDependence.Tcount = Tcount
     rmg.pressureDependence.generateTemperatureList()
-    
+
     # Process pressures
     Pmin, Pmax, Punits, Pcount = pressures
     rmg.pressureDependence.Pmin = Quantity(Pmin, Punits)
     rmg.pressureDependence.Pmax = Quantity(Pmax, Punits)
     rmg.pressureDependence.Pcount = Pcount
     rmg.pressureDependence.generatePressureList()
-    
+
     # Process grain size and count
     rmg.pressureDependence.maximumGrainSize = Quantity(maximumGrainSize)
     rmg.pressureDependence.minimumGrainCount = minimumNumberOfGrains
-    
+
     # Process maximum atoms
     rmg.pressureDependence.maximumAtoms = maximumAtoms
-    
+
     rmg.pressureDependence.activeJRotor = True
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
+
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
-            generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
+            generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False,
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00'):
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
@@ -703,25 +740,26 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
                         "http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
 
     rmg.name = name
-    rmg.generateSeedEachIteration=generateSeedEachIteration
-    rmg.saveSeedToDatabase=saveSeedToDatabase
+    rmg.generateSeedEachIteration = generateSeedEachIteration
+    rmg.saveSeedToDatabase = saveSeedToDatabase
     rmg.units = units
     if generateOutputHTML:
         logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
-    rmg.generateOutputHTML = generateOutputHTML 
+    rmg.generateOutputHTML = generateOutputHTML
     rmg.generatePlots = generatePlots
     rmg.saveSimulationProfiles = saveSimulationProfiles
     rmg.verboseComments = verboseComments
     if saveEdgeSpecies:
-        logging.warning('Edge species saving was turned on. This will slow down model generation for large simulations.')
+        logging.warning(
+            'Edge species saving was turned on. This will slow down model generation for large simulations.')
     rmg.saveEdgeSpecies = saveEdgeSpecies
     rmg.keepIrreversible = keepIrreversible
     rmg.trimolecularProductReversible = trimolecularProductReversible
     rmg.wallTime = wallTime
 
-def generatedSpeciesConstraints(**kwargs):
 
-    validConstraints = [
+def generatedSpeciesConstraints(**kwargs):
+    valid_constraints = [
         'allowed',
         'maximumCarbonAtoms',
         'maximumOxygenAtoms',
@@ -736,28 +774,27 @@ def generatedSpeciesConstraints(**kwargs):
     ]
 
     for key, value in kwargs.items():
-        if key not in validConstraints:
+        if key not in valid_constraints:
             raise InputError('Invalid generated species constraint {0!r}.'.format(key))
-        
+
         rmg.speciesConstraints[key] = value
 
+
 def thermoCentralDatabase(host,
-                        port,
-                        username,
-                        password,
-                        application):
-    
+                          port,
+                          username,
+                          password,
+                          application):
     from rmgpy.data.thermo import ThermoCentralDatabaseInterface
     rmg.thermoCentralDatabase = ThermoCentralDatabaseInterface(host,
-                                                            port,
-                                                            username,
-                                                            password,
-                                                            application)
-                    
+                                                               port,
+                                                               username,
+                                                               password,
+                                                               application)
+
 
 def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, correlated=True,
                 localNumber=10, globalNumber=5, terminationTime=None, pceRunTime=1800, logx=True):
-
     if not localAnalysis and globalAnalysis:
         logging.info('Enabling local uncertainty analysis as prerequisite for running global uncertainty analysis.')
 
@@ -775,9 +812,9 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
 
 
 def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
-    parentDir = os.path.dirname(rmg.inputFile)
+    parent_dir = os.path.dirname(rmg.inputFile)
     rmg.restart = True
-    docLink = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
+    doc_link = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
 
     if path:
         if any((coreSeed, edgeSeed, filters, speciesMap)):
@@ -785,10 +822,10 @@ def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speci
                              'seed mechanism should be given as `path`, or the path for each of the required files '
                              'should be explicitly given, but not both. Please take one approach or the other. For '
                              'further information see the RMG documentation on restarting from a seed mechanism at '
-                             '{0}.'.format(docLink))
+                             '{0}.'.format(doc_link))
 
         if not os.path.isabs(path):
-            path = os.path.join(parentDir, path)
+            path = os.path.join(parent_dir, path)
 
         if not os.path.exists(path):
             raise ValueError('Unable to find the path to the restart seed folder. {0} does not exist'.format(path))
@@ -805,18 +842,19 @@ def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speci
         rmg.filtersPath = filters
         rmg.speciesMapPath = speciesMap
 
-    rmgPaths = [rmg.coreSeedPath, rmg.edgeSeedPath, rmg.filtersPath, rmg.speciesMapPath]
-    pathErrors = [filePath for filePath in rmgPaths if not os.path.exists(filePath)]
+    rmg_paths = [rmg.coreSeedPath, rmg.edgeSeedPath, rmg.filtersPath, rmg.speciesMapPath]
+    path_errors = [filePath for filePath in rmg_paths if not os.path.exists(filePath)]
 
-    if pathErrors:
+    if path_errors:
         if path:
-            raise InputError('Could not find one or more of the required files/directories for restarting from a seed ' 
+            raise InputError('Could not find one or more of the required files/directories for restarting from a seed '
                              'mechanism: {0}. Try specifying the file paths individually. See the RMG documentation '
-                             'at {1} for more information'.format(pathErrors, docLink))
+                             'at {1} for more information'.format(path_errors, doc_link))
         else:
             raise InputError('Could not find one or more of the required files/directories for restarting from a seed '
-                             'mechanism: {0}. See the RMG documentation at {1} for more information'.format(pathErrors,
-                                                                                                            docLink))
+                             'mechanism: {0}. See the RMG documentation at {1} for more information'.format(path_errors,
+                                                                                                            doc_link))
+
 
 ################################################################################
 
@@ -828,13 +866,14 @@ def setGlobalRMG(rmg0):
     global rmg
     rmg = rmg0
 
+
 def readInputFile(path, rmg0):
     """
     Read an RMG input file at `path` on disk into the :class:`RMG` object 
     `rmg`.
     """
     global rmg, speciesDict
-    
+
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
@@ -845,15 +884,15 @@ def readInputFile(path, rmg0):
 
     logging.info('Reading input file "{0}"...'.format(full_path))
     logging.info(f.read())
-    f.seek(0)# return to beginning of file
+    f.seek(0)  # return to beginning of file
 
     setGlobalRMG(rmg0)
     rmg.reactionModel = CoreEdgeReactionModel()
     rmg.initialSpecies = []
     rmg.reactionSystems = []
     speciesDict = {}
-    
-    global_context = { '__builtins__': None }
+
+    global_context = {'__builtins__': None}
     local_context = {
         '__builtins__': None,
         'True': True,
@@ -883,15 +922,15 @@ def readInputFile(path, rmg0):
     }
 
     try:
-        exec f in global_context, local_context
+        exec(f, global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise
     finally:
         f.close()
-    
-    rmg.speciesConstraints['explicitlyAllowedMolecules'] = []         
+
+    rmg.speciesConstraints['explicitlyAllowedMolecules'] = []
 
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
@@ -902,7 +941,8 @@ def readInputFile(path, rmg0):
         rmg.quantumMechanics.initialize()
 
     logging.info('')
-    
+
+
 ################################################################################
 
 def readThermoInputFile(path, rmg0):
@@ -912,7 +952,7 @@ def readThermoInputFile(path, rmg0):
     """
 
     global rmg, speciesDict
-    
+
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
@@ -928,8 +968,8 @@ def readThermoInputFile(path, rmg0):
     rmg.initialSpecies = []
     rmg.reactionSystems = []
     speciesDict = {}
-    
-    global_context = { '__builtins__': None }
+
+    global_context = {'__builtins__': None}
     local_context = {
         '__builtins__': None,
         'True': True,
@@ -947,7 +987,7 @@ def readThermoInputFile(path, rmg0):
     }
 
     try:
-        exec f in global_context, local_context
+        exec(f, global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
@@ -959,7 +999,8 @@ def readThermoInputFile(path, rmg0):
         rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
         rmg.quantumMechanics.initialize()
 
-    logging.info('')    
+    logging.info('')
+
 
 ################################################################################
 
@@ -973,7 +1014,7 @@ def saveInputFile(path, rmg):
 
     # Databases
     f.write('database(\n')
-    #f.write('    "{0}",\n'.format(rmg.databaseDirectory))
+    # f.write('    "{0}",\n'.format(rmg.databaseDirectory))
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermoLibraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))
@@ -991,48 +1032,48 @@ def saveInputFile(path, rmg):
         f.write(')\n\n')
 
     # Species
-    for species in rmg.initialSpecies:
+    for spcs in rmg.initialSpecies:
         f.write('species(\n')
-        f.write('    label = "{0}",\n'.format(species.label))
-        f.write('    reactive = {0},\n'.format(species.reactive))
+        f.write('    label = "{0}",\n'.format(spcs.label))
+        f.write('    reactive = {0},\n'.format(spcs.reactive))
         f.write('    structure = adjacencyList(\n')
         f.write('"""\n')
-        f.write(species.molecule[0].toAdjacencyList())
+        f.write(spcs.molecule[0].toAdjacencyList())
         f.write('"""),\n')
         f.write(')\n\n')
-    
+
     # Reaction systems
     for system in rmg.reactionSystems:
         if rmg.solvent:
             f.write('liquidReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(),system.T.units))
+            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(), system.T.units))
             f.write('    initialConcentrations={\n')
-            for species, conc in system.initialConcentrations.iteritems():
-                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(species.label,conc.getValue(),conc.units))
+            for spcs, conc in system.initialConcentrations.items():
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.getValue(), conc.units))
         else:
             f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(),system.T.units))
+            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(), system.T.units))
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValue(),system.P.units))
+            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValue(), system.P.units))
             f.write('    initialMoleFractions={\n')
-            for species, molfrac in system.initialMoleFractions.iteritems():
-                f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
-        f.write('    },\n')               
-        
+            for spcs, molfrac in system.initialMoleFractions.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+        f.write('    },\n')
+
         # Termination criteria
         conversions = ''
         for term in system.termination:
             if isinstance(term, TerminationTime):
-                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValue(),term.time.units))
-                
+                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValue(), term.time.units))
+
             else:
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
-        if conversions:        
+        if conversions:
             f.write('    terminationConversion = {\n')
             f.write(conversions)
             f.write('    },\n')
-        
+
         # Sensitivity analysis
         if system.sensitiveSpecies:
             sensitivity = []
@@ -1040,12 +1081,12 @@ def saveInputFile(path, rmg):
                 sensitivity.append(item.label)
             f.write('    sensitivity = {0},\n'.format(sensitivity))
             f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))
-        
+
         f.write(')\n\n')
-    
+
     if rmg.solvent:
         f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
-        
+
     # Simulator tolerances
     f.write('simulator(\n')
     f.write('    atol = {0:g},\n'.format(rmg.absoluteTolerance))
@@ -1070,7 +1111,8 @@ def saveInputFile(path, rmg):
     if rmg.pressureDependence:
         f.write('pressureDependence(\n')
         f.write('    method = {0!r},\n'.format(rmg.pressureDependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValue(),rmg.pressureDependence.grainSize.units))
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValue(),
+                                                                   rmg.pressureDependence.grainSize.units))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
             rmg.pressureDependence.Tmin.getValue(),
@@ -1084,10 +1126,10 @@ def saveInputFile(path, rmg):
             rmg.pressureDependence.Pmax.units,
             rmg.pressureDependence.Pcount,
         ))
-        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))     
+        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))
         f.write('    maximumAtoms = {0}, \n'.format(rmg.pressureDependence.maximumAtoms))
         f.write(')\n\n')
-    
+
     # Quantum Mechanics
     if rmg.quantumMechanics:
         f.write('quantumMechanics(\n')
@@ -1099,20 +1141,22 @@ def saveInputFile(path, rmg):
         else:
             f.write('    fileStore = None,\n')
         if rmg.quantumMechanics.settings.scratchDirectory:
-            f.write('    scratchDirectory = {0!r},\n'.format(os.path.split(rmg.quantumMechanics.settings.scratchDirectory)[0]))
+            f.write('    scratchDirectory = {0!r},\n'.format(
+                os.path.split(rmg.quantumMechanics.settings.scratchDirectory)[0]))
         else:
             f.write('    scratchDirectory = None,\n')
         f.write('    onlyCyclics = {0},\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
         f.write('    maxRadicalNumber = {0},\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
         f.write(')\n\n')
-    
+
     # Species Constraints
     if rmg.speciesConstraints:
         f.write('generatedSpeciesConstraints(\n')
-        for constraint, value in sorted(rmg.speciesConstraints.items(), key=lambda constraint: constraint[0]):
-            if value is not None: f.write('    {0} = {1},\n'.format(constraint,value))
+        for constraint, value in sorted(list(rmg.speciesConstraints.items()), key=lambda constraint: constraint[0]):
+            if value is not None:
+                f.write('    {0} = {1},\n'.format(constraint, value))
         f.write(')\n\n')
-    
+
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
@@ -1125,8 +1169,9 @@ def saveInputFile(path, rmg):
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write('    wallTime = {0},\n'.format(rmg.wallTime))
     f.write(')\n\n')
-    
+
     f.close()
+
 
 def getInput(name):
     """

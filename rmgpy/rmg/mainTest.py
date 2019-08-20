@@ -29,18 +29,23 @@
 ###############################################################################
 
 import os
+import shutil
 import unittest
-import shutil 
+
 from nose.plugins.attrib import attr
-from main import RMG
-from main import RMG_Memory
+
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.main import RMG_Memory
+from rmgpy import getPath
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy import getPath
 from rmgpy.rmg.model import CoreEdgeReactionModel
+
 ###################################################
 
 originalPath = getPath()
+
+
 @attr('functional')
 class TestMain(unittest.TestCase):
 
@@ -89,23 +94,23 @@ class TestMain(unittest.TestCase):
 
     def testRMGSeedMechanismCreation(self):
         """Test that the expected seed mechanisms are created in output directory."""
-        seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
+        seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed')))  # kinetics library folder made
+        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed')))  # kinetics library folder made
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed', 'dictionary.txt')))  # dictionary file made
-        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed', 'reactions.py')))  # reactions file made
+        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'dictionary.txt')))  # dictionary file made
+        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'reactions.py')))  # reactions file made
 
     def testRMGSeedEdgeMechanismCreation(self):
         """Test that the expected seed mechanisms are created in output directory."""
-        seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
+        seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed_edge')))  # kinetics library folder made
+        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge')))  # kinetics library folder made
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed_edge', 'dictionary.txt')))  # dictionary file made
-        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed_edge', 'reactions.py')))  # reactions file made
+        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'dictionary.txt')))  # dictionary file made
+        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'reactions.py')))  # reactions file made
 
     def testRMGSeedLibraryCreation(self):
         """Test that seed mechanisms are created in the correct database locations."""
@@ -130,12 +135,12 @@ class TestMain(unittest.TestCase):
             kineticsDepositories=[],
             depository=False
         )
-        
+
         self.rmg.reactionModel = CoreEdgeReactionModel()
         self.rmg.reactionModel.addReactionLibraryToEdge('testSeed')  # try adding seed as library
         self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
         self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
-        
+
         self.rmg.reactionModel = CoreEdgeReactionModel()
         self.rmg.reactionModel.addSeedMechanismToCore('testSeed')  # try adding seed as seed mech
         self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
@@ -150,25 +155,25 @@ class TestMain(unittest.TestCase):
         self.rmg.reactionModel.addSeedMechanismToCore('testSeed_edge')  # try adding seed as seed mech
         self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
         self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
-    
+
     def testRMGMemory(self):
         """
         test that RMG Memory objects function properly
         """
         for rxnsys in self.rmg.reactionSystems:
-            Rmem = RMG_Memory(rxnsys,None)
+            Rmem = RMG_Memory(rxnsys, None)
             Rmem.generate_cond()
             Rmem.get_cond()
-            Rmem.add_t_conv_N(1.0,.2,2)
+            Rmem.add_t_conv_N(1.0, .2, 2)
             Rmem.generate_cond()
             Rmem.get_cond()
-        
+
     def testMakeCanteraInputFile(self):
         """
         This tests to ensure that a usable Cantera input file is created.
         """
         import cantera as ct
-        
+
         outName = os.path.join(self.rmg.outputDirectory, 'cantera')
         files = os.listdir(outName)
         for f in files:
@@ -180,9 +185,9 @@ class TestMain(unittest.TestCase):
 
 
 class TestCanteraOutput(unittest.TestCase):
-    
+
     def setUp(self):
-        self.chemkin_files={"""ELEMENTS
+        self.chemkin_files = {"""ELEMENTS
 	H
 	D /2.014/
 	T /3.016/
@@ -318,29 +323,28 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
         """
         Tests that good and bad chemkin files raise proper exceptions
         """
-        
+
         from cantera.ck2cti import InputParseError
-        
+
         for ck_input, works in self.chemkin_files.items():
             os.chdir(originalPath)
             os.mkdir(self.dir_name)
             os.chdir(self.dir_name)
-            
-            f = open('chem001.inp','w')
+
+            f = open('chem001.inp', 'w')
             f.write(ck_input)
             f.close()
-            
-            f = open('tran.dat','w')
+
+            f = open('tran.dat', 'w')
             f.write(self.tran_dat)
             f.close()
-            
+
             if works:
-                self.rmg.generateCanteraFiles(os.path.join(os.getcwd(),'chem001.inp'))
+                self.rmg.generateCanteraFiles(os.path.join(os.getcwd(), 'chem001.inp'))
             else:
                 with self.assertRaises(InputParseError):
-                    self.rmg.generateCanteraFiles(os.path.join(os.getcwd(),'chem001.inp'))
-            
+                    self.rmg.generateCanteraFiles(os.path.join(os.getcwd(), 'chem001.inp'))
+
             # clean up
             os.chdir(originalPath)
             shutil.rmtree(self.dir_name)
-        
