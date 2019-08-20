@@ -31,14 +31,19 @@
 import unittest
 import mock
 import os
-from chemkin import *
-from chemkin import _removeLineBreaks, _process_duplicate_reactions
+
 import rmgpy
-from rmgpy.species import Species
-from rmgpy.reaction import Reaction
+from rmgpy.chemkin import getSpeciesIdentifier, loadChemkinFile, loadTransportFile, markDuplicateReactions, \
+    readKineticsEntry, readReactionComments, readThermoEntry, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
+from rmgpy.chemkin import _removeLineBreaks, _process_duplicate_reactions
 from rmgpy.data.kinetics import LibraryReaction
+from rmgpy.exceptions import ChemkinError
 from rmgpy.kinetics.arrhenius import Arrhenius, MultiArrhenius
 from rmgpy.kinetics.chebyshev import Chebyshev
+from rmgpy.reaction import Reaction
+from rmgpy.species import Species
+from rmgpy.thermo import NASA
+from rmgpy.transport import TransportData
 
 
 ###################################################
@@ -56,14 +61,15 @@ class ChemkinTest(unittest.TestCase):
         the expected logging statements are being created.
         """
         entry = """C2H6                    H   XC   X          L   100.000  5000.000  827.28      1
- 2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
--1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
--8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
-"""
+                2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
+                -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
+                -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
+                """
         with self.assertRaises(ValueError):
             readThermoEntry(entry)
 
-        mock_logging.info.assert_called_with("Trouble reading line 'C2H6                    H   XC   X          L   100.000  5000.000  827.28      1' element segment 'H   X'")
+        mock_logging.info.assert_called_with(
+            "Trouble reading line 'C2H6                    H   XC   X          L   100.000  5000.000  827.28      1' element segment 'H   X'")
 
     @mock.patch('rmgpy.chemkin.logging')
     def test_readThermoEntry_NotGasPhase(self, mock_logging):
@@ -77,10 +83,10 @@ class ChemkinTest(unittest.TestCase):
         the expected logging statements are being created.
         """
         entry = """C2H6                    H   6C   2          L   100.000  5000.000  827.28      1
- 2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
--1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
--8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
-"""
+                2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
+                -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
+                -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
+                """
         species, thermo, formula = readThermoEntry(entry)
 
         mock_logging.warning.assert_called_with("Was expecting gas phase thermo data for C2H6. Skipping thermo data.")
@@ -131,11 +137,11 @@ class ChemkinTest(unittest.TestCase):
         """
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
 
-        chemkinPath = os.path.join(folder, 'minimal', 'chem.inp')
-        dictionaryPath = os.path.join(folder, 'minimal', 'species_dictionary.txt')
+        chemkin_path = os.path.join(folder, 'minimal', 'chem.inp')
+        dictionary_path = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
         # read original chemkin file
-        species, reactions = loadChemkinFile(chemkinPath, dictionaryPath)
+        species, reactions = loadChemkinFile(chemkin_path, dictionary_path)
 
         # ensure correct reading
         reaction1 = reactions[0]
@@ -145,17 +151,17 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(reaction2.family, "H_Abstraction")
         self.assertEqual(frozenset('C/H3/Cs\H3;C_methyl'.split(';')), frozenset(reaction2.template))
         # saveChemkinFile
-        chemkinSavePath = os.path.join(folder, 'minimal', 'chem_new.inp')
-        dictionarySavePath = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
+        chemkin_save_path = os.path.join(folder, 'minimal', 'chem_new.inp')
+        dictionary_save_path = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
 
-        saveChemkinFile(chemkinSavePath, species, reactions, verbose=True, checkForDuplicates=True)
-        saveSpeciesDictionary(dictionarySavePath, species, oldStyle=False)
+        saveChemkinFile(chemkin_save_path, species, reactions, verbose=True, checkForDuplicates=True)
+        saveSpeciesDictionary(dictionary_save_path, species, oldStyle=False)
 
-        self.assertTrue(os.path.isfile(chemkinSavePath))
-        self.assertTrue(os.path.isfile(dictionarySavePath))
+        self.assertTrue(os.path.isfile(chemkin_save_path))
+        self.assertTrue(os.path.isfile(dictionary_save_path))
 
         # read newly written chemkin file to make sure the entire cycle works
-        _, reactions2 =loadChemkinFile(chemkinSavePath, dictionarySavePath)
+        _, reactions2 = loadChemkinFile(chemkin_save_path, dictionary_save_path)
 
         reaction1_new = reactions2[0]
         self.assertEqual(reaction1_new.family, reaction1_new.family)
@@ -168,8 +174,8 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(reaction2_new.degeneracy, reaction2_new.degeneracy)
 
         # clean up
-        os.remove(chemkinSavePath)
-        os.remove(dictionarySavePath)
+        os.remove(chemkin_save_path)
+        os.remove(dictionary_save_path)
 
     def testReadAndWriteTemplateReactionFamilyForPDDExample(self):
         """
@@ -181,11 +187,11 @@ class ChemkinTest(unittest.TestCase):
         """
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
 
-        chemkinPath = os.path.join(folder, 'pdd', 'chem.inp')
-        dictionaryPath = os.path.join(folder, 'pdd', 'species_dictionary.txt')
+        chemkin_path = os.path.join(folder, 'pdd', 'chem.inp')
+        dictionary_path = os.path.join(folder, 'pdd', 'species_dictionary.txt')
 
         # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkinPath, dictionaryPath)
+        species, reactions = loadChemkinFile(chemkin_path, dictionary_path)
 
         reaction1 = reactions[0]
         self.assertEqual(reaction1.family, "H_Abstraction")
@@ -194,27 +200,23 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(reaction2.family, "H_Abstraction")
 
         # saveChemkinFile
-        chemkinSavePath = os.path.join(folder, 'minimal', 'chem_new.inp')
-        dictionarySavePath = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
+        chemkin_save_path = os.path.join(folder, 'minimal', 'chem_new.inp')
+        dictionary_save_path = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
 
-        saveChemkinFile(chemkinSavePath, species, reactions, verbose=False, checkForDuplicates=False)
-        saveSpeciesDictionary(dictionarySavePath, species, oldStyle=False)
+        saveChemkinFile(chemkin_save_path, species, reactions, verbose=False, checkForDuplicates=False)
+        saveSpeciesDictionary(dictionary_save_path, species, oldStyle=False)
 
-        self.assertTrue(os.path.isfile(chemkinSavePath))
-        self.assertTrue(os.path.isfile(dictionarySavePath))
+        self.assertTrue(os.path.isfile(chemkin_save_path))
+        self.assertTrue(os.path.isfile(dictionary_save_path))
 
         # clean up
-        os.remove(chemkinSavePath)
-        os.remove(dictionarySavePath)
+        os.remove(chemkin_save_path)
+        os.remove(dictionary_save_path)
 
     def testTransportDataReadAndWrite(self):
         """
         Test that we can write to chemkin and recreate the same transport object
         """
-        from rmgpy.species import Species
-        from rmgpy.molecule import Molecule
-        from rmgpy.transport import TransportData
-
         Ar = Species(label="Ar",
                      transportData=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
                                                  dipoleMoment=(0, 'De'), polarizability=(0, 'angstrom^3'),
@@ -223,14 +225,14 @@ class ChemkinTest(unittest.TestCase):
         Ar_write = Species(label="Ar")
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data')
 
-        tempTransportPath = os.path.join(folder, 'tran_temp.dat')
+        temp_transport_path = os.path.join(folder, 'tran_temp.dat')
 
-        saveTransportFile(tempTransportPath, [Ar])
-        speciesDict = {'Ar': Ar_write}
-        loadTransportFile(tempTransportPath, speciesDict)
+        saveTransportFile(temp_transport_path, [Ar])
+        species_dict = {'Ar': Ar_write}
+        loadTransportFile(temp_transport_path, species_dict)
         self.assertEqual(repr(Ar), repr(Ar_write))
 
-        os.remove(tempTransportPath)
+        os.remove(temp_transport_path)
 
     def testUseChemkinNames(self):
         """
@@ -239,11 +241,11 @@ class ChemkinTest(unittest.TestCase):
 
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
 
-        chemkinPath = os.path.join(folder, 'minimal', 'chem.inp')
-        dictionaryPath = os.path.join(folder, 'minimal', 'species_dictionary.txt')
+        chemkin_path = os.path.join(folder, 'minimal', 'chem.inp')
+        dictionary_path = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
         # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkinPath, dictionaryPath, useChemkinNames=True)
+        species, reactions = loadChemkinFile(chemkin_path, dictionary_path, useChemkinNames=True)
 
         expected = [
             'Ar',
@@ -267,11 +269,11 @@ class ChemkinTest(unittest.TestCase):
         """
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
 
-        chemkinPath = os.path.join(folder, 'NC', 'chem.inp')
-        dictionaryPath = os.path.join(folder, 'NC', 'species_dictionary.txt')
+        chemkin_path = os.path.join(folder, 'NC', 'chem.inp')
+        dictionary_path = os.path.join(folder, 'NC', 'species_dictionary.txt')
 
         # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkinPath, dictionaryPath, useChemkinNames=True)
+        species, reactions = loadChemkinFile(chemkin_path, dictionary_path, useChemkinNames=True)
 
         for n2 in species:
             if n2.label == 'N2':
@@ -286,29 +288,29 @@ class ChemkinTest(unittest.TestCase):
         even if the species name contains parenthesis
         """
         entry = """O2(4)+H(5)(+N2(5))<=>HO2(10)(+N2(5))                          4.651e+12 0.440     0.000"""
-        speciesDict = {}
+        species_dict = {}
         s1 = Species().fromAdjacencyList("""O2(4)
-multiplicity 3
-1 O u1 p2 c0 {2,S}
-2 O u1 p2 c0 {1,S}""")
+                                         multiplicity 3
+                                         1 O u1 p2 c0 {2,S}
+                                         2 O u1 p2 c0 {1,S}""")
         s2 = Species().fromAdjacencyList("""H(5)
-multiplicity 2
-1 H u1 p0 c0""")
+                                         multiplicity 2
+                                         1 H u1 p0 c0""")
         s3 = Species().fromAdjacencyList("""N2(5)
-1 N u0 p1 c0 {2,T}
-2 N u0 p1 c0 {1,T}""")
+                                         1 N u0 p1 c0 {2,T}
+                                         2 N u0 p1 c0 {1,T}""")
         s4 = Species().fromAdjacencyList("""HO2(10)
-multiplicity 2
-1 O u0 p2 c0 {2,S} {3,S}
-2 O u1 p2 c0 {1,S}
-3 H u0 p0 c0 {1,S}""")
-        speciesDict['O2(4)'] = s1
-        speciesDict['H(5)'] = s2
-        speciesDict['N2(5)'] = s3
-        speciesDict['HO2(10)'] = s4
-        Aunits = ['','s^-1','cm^3/(mol*s)','cm^6/(mol^2*s)','cm^9/(mol^3*s)']
-        Eunits = 'kcal/mol'
-        reaction = readKineticsEntry(entry, speciesDict, Aunits, Eunits)
+                                         multiplicity 2
+                                         1 O u0 p2 c0 {2,S} {3,S}
+                                         2 O u1 p2 c0 {1,S}
+                                         3 H u0 p0 c0 {1,S}""")
+        species_dict['O2(4)'] = s1
+        species_dict['H(5)'] = s2
+        species_dict['N2(5)'] = s3
+        species_dict['HO2(10)'] = s4
+        A_units = ['', 's^-1', 'cm^3/(mol*s)', 'cm^6/(mol^2*s)', 'cm^9/(mol^3*s)']
+        E_units = 'kcal/mol'
+        reaction = readKineticsEntry(entry, species_dict, A_units, E_units)
 
         self.assertEqual(reaction.specificCollider.label, 'N2(5)')
 
@@ -429,122 +431,122 @@ multiplicity 2
 
 class TestReadReactionComments(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         r = Species().fromSMILES('[CH3]')
         r.label = '[CH3]'
         p = Species().fromSMILES('CC')
         p.label = 'CC'
 
-        self.reaction = Reaction(reactants=[r,r],
-                                 products=[p],
-                                 kinetics = Arrhenius(A=(8.26e+17,'cm^3/(mol*s)'),
-                                                      n=-1.4,
-                                                      Ea=(1,'kcal/mol'), T0=(1,'K'))
+        cls.reaction = Reaction(reactants=[r, r],
+                                products=[p],
+                                kinetics=Arrhenius(A=(8.26e+17, 'cm^3/(mol*s)'),
+                                                   n=-1.4,
+                                                   Ea=(1, 'kcal/mol'), T0=(1, 'K'))
                                 )
-        self.comments_list = ["""
-Reaction index: Chemkin #1; RMG #1
-Template reaction: R_Recombination
-Exact match found for rate rule (C_methyl;C_methyl)
-Multiplied by reaction path degeneracy 0.5
-""",
-"""
-Reaction index: Chemkin #2; RMG #4
-Template reaction: H_Abstraction
-Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\H3;C_methyl)
-Multiplied by reaction path degeneracy 6
-""",
-"""
-Reaction index: Chemkin #13; RMG #8
-Template reaction: H_Abstraction
-Flux pairs: [CH3], CC; [CH3], CC; 
-Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
-Multiplied by reaction path degeneracy 6.0
-""",
-"""
-Reaction index: Chemkin #17; RMG #31
-Template reaction: H_Abstraction
-Flux pairs: [CH3], CC; [CH3], CC; 
-Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\H3;Y_rad] for rate rule [C/H3/Cs\H3;H_rad]
-Multiplied by reaction path degeneracy 6.0
-""",
-"""
-Reaction index: Chemkin #69; RMG #171
-Template reaction: intra_H_migration
-Flux pairs: [CH3], CC; [CH3], CC; 
-Estimated using average of templates [R3H_SS;O_rad_out;Cs_H_out_2H] + [R3H_SS_Cs;Y_rad_out;Cs_H_out_2H] for rate rule
-[R3H_SS_Cs;O_rad_out;Cs_H_out_2H]
-Multiplied by reaction path degeneracy 3.0
-""",
-"""
-Reaction index: Chemkin #3; RMG #243
-Template reaction: Disproportionation
-Flux pairs: [CH3], CC; [CH3], CC; 
-Average of [Average of [O2b;O_Csrad] + Average of [O_atom_triplet;O_Csrad + CH2_triplet;O_Csrad] + Average of [Average of [Ct_rad/Ct;O_Csrad from
-training reaction 0] + Average of [O_pri_rad;O_Csrad + Average of [O_rad/NonDeC;O_Csrad + O_rad/NonDeO;O_Csrad]] + Average of [Cd_pri_rad;O_Csrad] +
-Average of [CO_pri_rad;O_Csrad] + Average of [C_methyl;O_Csrad + Average of [C_rad/H2/Cs;O_Csrad + C_rad/H2/Cd;O_Csrad + C_rad/H2/O;O_Csrad] + Average
-of [C_rad/H/NonDeC;O_Csrad] + Average of [Average of [C_rad/Cs3;O_Csrad]]] + H_rad;O_Csrad]]
-Estimated using template [Y_rad_birad_trirad_quadrad;O_Csrad] for rate rule [CH_quartet;O_Csrad]
-""",
-"""
-Reaction index: Chemkin #4; RMG #303
-Template reaction: Disproportionation
-Flux pairs: [CH3], CC; [CH3], CC; 
-Matched reaction 0 C2H + CH3O <=> C2H2 + CH2O in Disproportionation/training
-""",
-"""
-Reaction index: Chemkin #51; RMG #136
-Template reaction: H_Abstraction
-Flux pairs: [CH3], CC; [CH3], CC; 
-Estimated using an average for rate rule [C/H3/Cd\H_Cd\H2;C_rad/H2/Cs]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 3.0
-""",
-"""
-Reaction index: Chemkin #32; RMG #27
-Template reaction: R_Recombination
-Flux pairs: [CH3], CC; [CH3], CC; 
-Matched reaction 20 CH3 + CH3 <=> C2H6 in R_Recombination/training
-This reaction matched rate rule [C_methyl;C_methyl]
-""",
-"""
-Reaction index: Chemkin #2; RMG #4
-Template reaction: R_Recombination
-Flux pairs: [CH3], CC; [CH3], CC; 
-From training reaction 21 used for C_rad/H2/Cs;C_methyl
-Exact match found for rate rule [C_rad/H2/Cs;C_methyl]
-Euclidian distance = 0
-"""]
-        self.template_list = [['C_methyl','C_methyl'],
-                              ['C/H3/Cs\H3','C_methyl'],
-                              ['C/H3/Cs\H3','C_rad/H2/Cs'],
-                              ['C/H3/Cs\H3','H_rad'],
-                              ['R3H_SS_Cs','O_rad_out','Cs_H_out_2H'],
-                              ['CH_quartet','O_Csrad'],
-                              None,
-                              ['C/H3/Cd\H_Cd\H2','C_rad/H2/Cs'],
-                              ['C_methyl','C_methyl'],
-                              ['C_rad/H2/Cs','C_methyl']]
-        self.family_list = ['R_Recombination',
-                            'H_Abstraction',
-                            'H_Abstraction',
-                            'H_Abstraction',
-                            'intra_H_migration',
-                            'Disproportionation',
-                            'Disproportionation',
-                            'H_Abstraction',
-                            'R_Recombination',
-                            'R_Recombination',]
-        self.degeneracy_list = [0.5,
-                                6,
-                                6,
-                                6,
-                                3,
-                                1,
-                                1,
-                                3,
-                                1,
-                                1]
-        self.expected_lines = [4,4,5,5,5,5,4,6,5,6]
+        cls.comments_list = ["""
+                              Reaction index: Chemkin #1; RMG #1
+                              Template reaction: R_Recombination
+                              Exact match found for rate rule (C_methyl;C_methyl)
+                              Multiplied by reaction path degeneracy 0.5
+                              """,
+                             """
+                             Reaction index: Chemkin #2; RMG #4
+                             Template reaction: H_Abstraction
+                             Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\H3;C_methyl)
+                             Multiplied by reaction path degeneracy 6
+                             """,
+                             """
+                              Reaction index: Chemkin #13; RMG #8
+                              Template reaction: H_Abstraction
+                              Flux pairs: [CH3], CC; [CH3], CC; 
+                              Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
+                              Multiplied by reaction path degeneracy 6.0
+                              """,
+                             """
+                              Reaction index: Chemkin #17; RMG #31
+                              Template reaction: H_Abstraction
+                              Flux pairs: [CH3], CC; [CH3], CC; 
+                              Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\H3;Y_rad] for rate rule [C/H3/Cs\H3;H_rad]
+                              Multiplied by reaction path degeneracy 6.0
+                              """,
+                             """
+                              Reaction index: Chemkin #69; RMG #171
+                              Template reaction: intra_H_migration
+                              Flux pairs: [CH3], CC; [CH3], CC; 
+                              Estimated using average of templates [R3H_SS;O_rad_out;Cs_H_out_2H] + [R3H_SS_Cs;Y_rad_out;Cs_H_out_2H] for rate rule
+                              [R3H_SS_Cs;O_rad_out;Cs_H_out_2H]
+                              Multiplied by reaction path degeneracy 3.0
+                              """,
+                             """
+                              Reaction index: Chemkin #3; RMG #243
+                              Template reaction: Disproportionation
+                              Flux pairs: [CH3], CC; [CH3], CC; 
+                              Average of [Average of [O2b;O_Csrad] + Average of [O_atom_triplet;O_Csrad + CH2_triplet;O_Csrad] + Average of [Average of [Ct_rad/Ct;O_Csrad from
+                              training reaction 0] + Average of [O_pri_rad;O_Csrad + Average of [O_rad/NonDeC;O_Csrad + O_rad/NonDeO;O_Csrad]] + Average of [Cd_pri_rad;O_Csrad] +
+                              Average of [CO_pri_rad;O_Csrad] + Average of [C_methyl;O_Csrad + Average of [C_rad/H2/Cs;O_Csrad + C_rad/H2/Cd;O_Csrad + C_rad/H2/O;O_Csrad] + Average
+                              of [C_rad/H/NonDeC;O_Csrad] + Average of [Average of [C_rad/Cs3;O_Csrad]]] + H_rad;O_Csrad]]
+                              Estimated using template [Y_rad_birad_trirad_quadrad;O_Csrad] for rate rule [CH_quartet;O_Csrad]
+                              """,
+                             """
+                              Reaction index: Chemkin #4; RMG #303
+                              Template reaction: Disproportionation
+                              Flux pairs: [CH3], CC; [CH3], CC; 
+                              Matched reaction 0 C2H + CH3O <=> C2H2 + CH2O in Disproportionation/training
+                              """,
+                             """
+                              Reaction index: Chemkin #51; RMG #136
+                              Template reaction: H_Abstraction
+                              Flux pairs: [CH3], CC; [CH3], CC; 
+                              Estimated using an average for rate rule [C/H3/Cd\H_Cd\H2;C_rad/H2/Cs]
+                              Euclidian distance = 0
+                              Multiplied by reaction path degeneracy 3.0
+                              """,
+                             """
+                             Reaction index: Chemkin #32; RMG #27
+                             Template reaction: R_Recombination
+                             Flux pairs: [CH3], CC; [CH3], CC; 
+                             Matched reaction 20 CH3 + CH3 <=> C2H6 in R_Recombination/training
+                             This reaction matched rate rule [C_methyl;C_methyl]
+                             """,
+                             """
+                             Reaction index: Chemkin #2; RMG #4
+                             Template reaction: R_Recombination
+                             Flux pairs: [CH3], CC; [CH3], CC; 
+                             From training reaction 21 used for C_rad/H2/Cs;C_methyl
+                             Exact match found for rate rule [C_rad/H2/Cs;C_methyl]
+                             Euclidian distance = 0
+                             """]
+        cls.template_list = [['C_methyl', 'C_methyl'],
+                             ['C/H3/Cs\H3', 'C_methyl'],
+                             ['C/H3/Cs\H3', 'C_rad/H2/Cs'],
+                             ['C/H3/Cs\H3', 'H_rad'],
+                             ['R3H_SS_Cs', 'O_rad_out', 'Cs_H_out_2H'],
+                             ['CH_quartet', 'O_Csrad'],
+                             None,
+                             ['C/H3/Cd\H_Cd\H2', 'C_rad/H2/Cs'],
+                             ['C_methyl', 'C_methyl'],
+                             ['C_rad/H2/Cs', 'C_methyl']]
+        cls.family_list = ['R_Recombination',
+                           'H_Abstraction',
+                           'H_Abstraction',
+                           'H_Abstraction',
+                           'intra_H_migration',
+                           'Disproportionation',
+                           'Disproportionation',
+                           'H_Abstraction',
+                           'R_Recombination',
+                           'R_Recombination', ]
+        cls.degeneracy_list = [0.5,
+                               6,
+                               6,
+                               6,
+                               3,
+                               1,
+                               1,
+                               3,
+                               1,
+                               1]
+        cls.expected_lines = [4, 4, 5, 5, 5, 5, 4, 6, 5, 6]
 
     def testReadReactionCommentsTemplate(self):
         """
@@ -555,8 +557,10 @@ Euclidian distance = 0
 
             # only check template if meant to find one
             if self.template_list[index]:
-                self.assertTrue(new_rxn.template,'The template was not saved from the reaction comment {}'.format(comment))
-                self.assertEqual(frozenset(new_rxn.template),frozenset(self.template_list[index]),'The reaction template does not match')
+                self.assertTrue(new_rxn.template,
+                                'The template was not saved from the reaction comment {}'.format(comment))
+                self.assertEqual(frozenset(new_rxn.template), frozenset(self.template_list[index]),
+                                 'The reaction template does not match')
             else:
                 self.assertFalse(new_rxn.template)
 
@@ -587,8 +591,9 @@ Euclidian distance = 0
 
             # Check that the comment only appears once in the kinetics comment
             if new_rxn.degeneracy != 1:
-                self.assertEqual(new_rxn.kinetics.comment.count('Multiplied by reaction path degeneracy {}'.format(new_rxn.degeneracy)), 1,
-                                 'Reaction degeneracy comment duplicated while reading Chemkin comments')
+                self.assertEqual(new_rxn.kinetics.comment.count(
+                    'Multiplied by reaction path degeneracy {}'.format(new_rxn.degeneracy)), 1,
+                    'Reaction degeneracy comment duplicated while reading Chemkin comments')
             else:
                 self.assertTrue('Multiplied by reaction path degeneracy' not in new_rxn.kinetics.comment)
 
@@ -600,4 +605,5 @@ Euclidian distance = 0
             new_comment = _removeLineBreaks(comment)
             new_comment_lines = len(new_comment.strip().splitlines())
             self.assertEqual(new_comment_lines, self.expected_lines[index],
-                             'Found {} more lines than expected for comment \n\n""{}""\n\n which converted to \n\n""{}""'.format(new_comment_lines - self.expected_lines[index],comment.strip(), new_comment.strip()))
+                             'Found {} more lines than expected for comment \n\n""{}""\n\n which converted to \n\n""{}""'.format(
+                                 new_comment_lines - self.expected_lines[index], comment.strip(), new_comment.strip()))

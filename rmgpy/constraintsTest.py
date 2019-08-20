@@ -41,6 +41,7 @@ from rmgpy.species import Species
 from rmgpy.molecule import Molecule
 import rmgpy.rmg.input
 
+
 ################################################################################
 
 class TestFailsSpeciesConstraints(unittest.TestCase):

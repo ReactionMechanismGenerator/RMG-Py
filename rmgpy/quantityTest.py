@@ -31,12 +31,15 @@
 """
 This script contains unit tests of the :mod:`rmgpy.quantity` module.
 """
+from __future__ import print_function
 
 import unittest
-import numpy
+
+import numpy as np
 
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity
+
 
 ################################################################################
 
@@ -44,12 +47,12 @@ class TestAcceleration(unittest.TestCase):
     """
     Contains unit tests of the Acceleration unit type object.
     """
-            
+
     def test_mpers2(self):
         """
         Test the creation of an acceleration quantity with units of m/s^2.
         """
-        q = quantity.Acceleration(1.0,"m/s^2")
+        q = quantity.Acceleration(1.0, "m/s^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m/s^2")
@@ -58,10 +61,11 @@ class TestAcceleration(unittest.TestCase):
         """
         Test the creation of an acceleration quantity with units of cm/s^2.
         """
-        q = quantity.Acceleration(1.0,"cm/s^2")
+        q = quantity.Acceleration(1.0, "cm/s^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 0.01, delta=1e-8)
         self.assertEqual(q.units, "cm/s^2")
+
 
 ################################################################################
 
@@ -69,12 +73,12 @@ class TestArea(unittest.TestCase):
     """
     Contains unit tests of the Area unit type object.
     """
-            
+
     def test_m2(self):
         """
         Test the creation of an area quantity with units of m^2.
         """
-        q = quantity.Area(1.0,"m^2")
+        q = quantity.Area(1.0, "m^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^2")
@@ -83,10 +87,11 @@ class TestArea(unittest.TestCase):
         """
         Test the creation of an area quantity with units of m^2.
         """
-        q = quantity.Area(1.0,"cm^2")
+        q = quantity.Area(1.0, "cm^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-4, delta=1e-10)
         self.assertEqual(q.units, "cm^2")
+
 
 ################################################################################
 
@@ -94,13 +99,13 @@ class TestConcentration(unittest.TestCase):
     """
     Contains unit tests of the Concentration unit type object.
     """
-            
+
     def test_perm3(self):
         """
         Test the creation of an concentration quantity with units of m^-3.
         """
         try:
-            q = quantity.Concentration(1.0,"m^-3")
+            quantity.Concentration(1.0, "m^-3")
             self.fail('Allowed invalid unit type "m^-3".')
         except quantity.QuantityError:
             pass
@@ -109,7 +114,7 @@ class TestConcentration(unittest.TestCase):
         """
         Test the creation of an concentration quantity with units of mol/m^3.
         """
-        q = quantity.Concentration(1.0,"mol/m^3")
+        q = quantity.Concentration(1.0, "mol/m^3")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "mol/m^3")
@@ -118,10 +123,11 @@ class TestConcentration(unittest.TestCase):
         """
         Test the creation of an concentration quantity with units of molecules/m^3.
         """
-        q = quantity.Concentration(1.0,"molecules/m^3")
+        q = quantity.Concentration(1.0, "molecules/m^3")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*constants.Na, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * constants.Na, 1.0, delta=1e-6)
         self.assertEqual(q.units, "molecules/m^3")
+
 
 ################################################################################
 
@@ -129,13 +135,13 @@ class TestEnergy(unittest.TestCase):
     """
     Contains unit tests of the Energy unit type object.
     """
-            
+
     def test_J(self):
         """
         Test the creation of an energy quantity with units of J.
         """
         try:
-            q = quantity.Energy(1.0,"J")
+            quantity.Energy(1.0, "J")
             self.fail('Allowed invalid unit type "J".')
         except quantity.QuantityError:
             pass
@@ -144,7 +150,7 @@ class TestEnergy(unittest.TestCase):
         """
         Test the creation of an energy quantity with units of J/mol.
         """
-        q = quantity.Energy(1.0,"J/mol")
+        q = quantity.Energy(1.0, "J/mol")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "J/mol")
@@ -154,7 +160,7 @@ class TestEnergy(unittest.TestCase):
         Test the creation of an energy quantity with units of cal.
         """
         try:
-            q = quantity.Energy(1.0,"cal")
+            quantity.Energy(1.0, "cal")
             self.fail('Allowed invalid unit type "cal".')
         except quantity.QuantityError:
             pass
@@ -163,7 +169,7 @@ class TestEnergy(unittest.TestCase):
         """
         Test the creation of an energy quantity with units of cal/mol.
         """
-        q = quantity.Energy(1.0,"cal/mol")
+        q = quantity.Energy(1.0, "cal/mol")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 4.184, delta=1e-6)
         self.assertEqual(q.units, "cal/mol")
@@ -173,7 +179,7 @@ class TestEnergy(unittest.TestCase):
         Test the creation of an energy quantity with units of kJ.
         """
         try:
-            q = quantity.Energy(1.0,"kJ")
+            quantity.Energy(1.0, "kJ")
             self.fail('Allowed invalid unit type "kJ".')
         except quantity.QuantityError:
             pass
@@ -182,7 +188,7 @@ class TestEnergy(unittest.TestCase):
         """
         Test the creation of an energy quantity with units of kJ/mol.
         """
-        q = quantity.Energy(1.0,"kJ/mol")
+        q = quantity.Energy(1.0, "kJ/mol")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1000., delta=1e-6)
         self.assertEqual(q.units, "kJ/mol")
@@ -192,7 +198,7 @@ class TestEnergy(unittest.TestCase):
         Test the creation of an energy quantity with units of kcal.
         """
         try:
-            q = quantity.Energy(1.0,"kcal")
+            quantity.Energy(1.0, "kcal")
             self.fail('Allowed invalid unit type "kcal".')
         except quantity.QuantityError:
             pass
@@ -201,18 +207,19 @@ class TestEnergy(unittest.TestCase):
         """
         Test the creation of an energy quantity with units of kcal/mol.
         """
-        q = quantity.Energy(1.0,"kcal/mol")
+        q = quantity.Energy(1.0, "kcal/mol")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 4184., delta=1e-6)
         self.assertEqual(q.units, "kcal/mol")
-    
+
     def test_Kelvin(self):
         """
         Test the creation of an energy quantity with units of K (not really an energy!).
         """
-        q = quantity.Energy(10.0,"K")
-        self.assertAlmostEqual(q.value, 10*8.314472, delta=1e-6)
+        q = quantity.Energy(10.0, "K")
+        self.assertAlmostEqual(q.value, 10 * 8.314472, delta=1e-6)
         self.assertEqual(q.units, "J/mol")
+
 
 ################################################################################
 
@@ -220,12 +227,12 @@ class TestDipoleMoment(unittest.TestCase):
     """
     Contains unit tests of the DipoleMoment unit type object.
     """
-            
+
     def test_Ctimesm(self):
         """
         Test the creation of a dipole moment quantity with units of C*m.
         """
-        q = quantity.DipoleMoment(1.0,"C*m")
+        q = quantity.DipoleMoment(1.0, "C*m")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, 6)
         self.assertEqual(q.units, "C*m")
@@ -234,10 +241,11 @@ class TestDipoleMoment(unittest.TestCase):
         """
         Test the creation of a dipole moment quantity with units of J/mol.
         """
-        q = quantity.DipoleMoment(1.0,"De")
+        q = quantity.DipoleMoment(1.0, "De")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*constants.c*1.0e21, 1.0, 6)
+        self.assertAlmostEqual(q.value_si * constants.c * 1.0e21, 1.0, 6)
         self.assertEqual(q.units, "De")
+
 
 ################################################################################
 
@@ -245,13 +253,13 @@ class TestFlux(unittest.TestCase):
     """
     Contains unit tests of the Flux unit type object.
     """
-            
+
     def test_perm2pers(self):
         """
         Test the creation of a flux quantity with units of m^-2*s^-1.
         """
         try:
-            q = quantity.Flux(1.0,"m^-2*s^-1")
+            quantity.Flux(1.0, "m^-2*s^-1")
             self.fail('Allowed invalid unit type "m^-2*s^-1".')
         except quantity.QuantityError:
             pass
@@ -260,7 +268,7 @@ class TestFlux(unittest.TestCase):
         """
         Test the creation of a flux quantity with units of mol/(m^2*s).
         """
-        q = quantity.Flux(1.0,"mol/(m^2*s)")
+        q = quantity.Flux(1.0, "mol/(m^2*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "mol/(m^2*s)")
@@ -269,10 +277,11 @@ class TestFlux(unittest.TestCase):
         """
         Test the creation of a flux quantity with units of molecules/(m^2*s).
         """
-        q = quantity.Flux(1.0,"molecules/(m^2*s)")
+        q = quantity.Flux(1.0, "molecules/(m^2*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*constants.Na, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * constants.Na, 1.0, delta=1e-6)
         self.assertEqual(q.units, "molecules/(m^2*s)")
+
 
 ################################################################################
 
@@ -280,15 +289,16 @@ class TestForce(unittest.TestCase):
     """
     Contains unit tests of the Force unit type object.
     """
-            
+
     def test_N(self):
         """
         Test the creation of an force quantity with units of N.
         """
-        q = quantity.Force(1.0,"N")
+        q = quantity.Force(1.0, "N")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "N")
+
 
 ################################################################################
 
@@ -298,12 +308,12 @@ class TestFrequency(unittest.TestCase):
     special case, frequencies can be read in several units, but are always
     stored internally as cm^-1.
     """
-            
+
     def test_cm_1(self):
         """
         Test the creation of a frequency quantity with units of cm^-1.
         """
-        q = quantity.Frequency(1.0,"cm^-1")
+        q = quantity.Frequency(1.0, "cm^-1")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^-1")
@@ -312,64 +322,65 @@ class TestFrequency(unittest.TestCase):
         """
         Test the creation of a frequency quantity with units of s^-1.
         """
-        q = quantity.Frequency(1.0,"s^-1")
-        self.assertAlmostEqual(q.value, 1./(constants.c*100.), delta=1e-17)
-        self.assertAlmostEqual(q.value_si, 1./(constants.c*100.), delta=1e-17)
+        q = quantity.Frequency(1.0, "s^-1")
+        self.assertAlmostEqual(q.value, 1. / (constants.c * 100.), delta=1e-17)
+        self.assertAlmostEqual(q.value_si, 1. / (constants.c * 100.), delta=1e-17)
         self.assertEqual(q.units, "cm^-1")
 
     def test_K(self):
         """
         Test the creation of a frequency quantity with units of K.
         """
-        q = quantity.Frequency(1.0,"K")
-        self.assertAlmostEqual(q.value, constants.kB/(constants.h*constants.c*100.), 6)
-        self.assertAlmostEqual(q.value_si, constants.kB/(constants.h*constants.c*100.), delta=1e-6)
+        q = quantity.Frequency(1.0, "K")
+        self.assertAlmostEqual(q.value, constants.kB / (constants.h * constants.c * 100.), 6)
+        self.assertAlmostEqual(q.value_si, constants.kB / (constants.h * constants.c * 100.), delta=1e-6)
         self.assertEqual(q.units, "cm^-1")
 
     def test_eV(self):
         """
         Test the creation of a frequency quantity with units of eV.
         """
-        q = quantity.Frequency(1.0,"eV")
-        self.assertAlmostEqual(q.value, constants.e/(constants.h*constants.c*100.), 2)
-        self.assertAlmostEqual(q.value_si, constants.e/(constants.h*constants.c*100.), delta=1e-2)
+        q = quantity.Frequency(1.0, "eV")
+        self.assertAlmostEqual(q.value, constants.e / (constants.h * constants.c * 100.), 2)
+        self.assertAlmostEqual(q.value_si, constants.e / (constants.h * constants.c * 100.), delta=1e-2)
         self.assertEqual(q.units, "cm^-1")
 
     def test_Hz(self):
         """
         Test the creation of a frequency quantity with units of Hz.
         """
-        q = quantity.Frequency(1.0,"Hz")
-        self.assertAlmostEqual(q.value, 1./(constants.c*100.), delta=1e-17)
-        self.assertAlmostEqual(q.value_si, 1./(constants.c*100.), delta=1e-17)
+        q = quantity.Frequency(1.0, "Hz")
+        self.assertAlmostEqual(q.value, 1. / (constants.c * 100.), delta=1e-17)
+        self.assertAlmostEqual(q.value_si, 1. / (constants.c * 100.), delta=1e-17)
         self.assertEqual(q.units, "cm^-1")
 
     def test_kHz(self):
         """
         Test the creation of a frequency quantity with units of kHz.
         """
-        q = quantity.Frequency(1.0,"kHz")
-        self.assertAlmostEqual(q.value, 1e3/(constants.c*100.), delta=1e-14)
-        self.assertAlmostEqual(q.value_si, 1e3/(constants.c*100.), delta=1e-14)
+        q = quantity.Frequency(1.0, "kHz")
+        self.assertAlmostEqual(q.value, 1e3 / (constants.c * 100.), delta=1e-14)
+        self.assertAlmostEqual(q.value_si, 1e3 / (constants.c * 100.), delta=1e-14)
         self.assertEqual(q.units, "cm^-1")
 
     def test_MHz(self):
         """
         Test the creation of a frequency quantity with units of MHz.
         """
-        q = quantity.Frequency(1.0,"MHz")
-        self.assertAlmostEqual(q.value, 1e6/(constants.c*100.), delta=1e-11)
-        self.assertAlmostEqual(q.value_si, 1e6/(constants.c*100.), delta=1e-11)
+        q = quantity.Frequency(1.0, "MHz")
+        self.assertAlmostEqual(q.value, 1e6 / (constants.c * 100.), delta=1e-11)
+        self.assertAlmostEqual(q.value_si, 1e6 / (constants.c * 100.), delta=1e-11)
         self.assertEqual(q.units, "cm^-1")
 
     def test_GHz(self):
         """
         Test the creation of a frequency quantity with units of GHz.
         """
-        q = quantity.Frequency(1.0,"GHz")
-        self.assertAlmostEqual(q.value, 1e9/(constants.c*100.), delta=1e-08)
-        self.assertAlmostEqual(q.value_si, 1e9/(constants.c*100.), delta=1e-08)
+        q = quantity.Frequency(1.0, "GHz")
+        self.assertAlmostEqual(q.value, 1e9 / (constants.c * 100.), delta=1e-08)
+        self.assertAlmostEqual(q.value_si, 1e9 / (constants.c * 100.), delta=1e-08)
         self.assertEqual(q.units, "cm^-1")
+
 
 ################################################################################
 
@@ -377,13 +388,13 @@ class TestHeatCapacity(unittest.TestCase):
     """
     Contains unit tests of the HeatCapacity unit type object.
     """
-            
+
     def test_JperK(self):
         """
         Test the creation of a heat capacity quantity with units of J/K.
         """
         try:
-            q = quantity.HeatCapacity(1.0,"J/K")
+            quantity.HeatCapacity(1.0, "J/K")
             self.fail('Allowed invalid unit type "J/K".')
         except quantity.QuantityError:
             pass
@@ -392,7 +403,7 @@ class TestHeatCapacity(unittest.TestCase):
         """
         Test the creation of a heat capacity quantity with units of J/(mol*K).
         """
-        q = quantity.HeatCapacity(1.0,"J/(mol*K)")
+        q = quantity.HeatCapacity(1.0, "J/(mol*K)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "J/(mol*K)")
@@ -402,7 +413,7 @@ class TestHeatCapacity(unittest.TestCase):
         Test the creation of a heat capacity quantity with units of cal/K.
         """
         try:
-            q = quantity.HeatCapacity(1.0,"cal/K")
+            quantity.HeatCapacity(1.0, "cal/K")
             self.fail('Allowed invalid unit type "cal/K".')
         except quantity.QuantityError:
             pass
@@ -411,7 +422,7 @@ class TestHeatCapacity(unittest.TestCase):
         """
         Test the creation of a heat capacity quantity with units of cal/(mol*K).
         """
-        q = quantity.HeatCapacity(1.0,"cal/(mol*K)")
+        q = quantity.HeatCapacity(1.0, "cal/(mol*K)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 4.184, delta=1e-6)
         self.assertEqual(q.units, "cal/(mol*K)")
@@ -421,7 +432,7 @@ class TestHeatCapacity(unittest.TestCase):
         Test the creation of a heat capacity quantity with units of kJ/K.
         """
         try:
-            q = quantity.HeatCapacity(1.0,"kJ/K")
+            quantity.HeatCapacity(1.0, "kJ/K")
             self.fail('Allowed invalid unit type "kJ/K".')
         except quantity.QuantityError:
             pass
@@ -430,7 +441,7 @@ class TestHeatCapacity(unittest.TestCase):
         """
         Test the creation of a heat capacity quantity with units of kJ/(mol*K).
         """
-        q = quantity.HeatCapacity(1.0,"kJ/(mol*K)")
+        q = quantity.HeatCapacity(1.0, "kJ/(mol*K)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1000., delta=1e-6)
         self.assertEqual(q.units, "kJ/(mol*K)")
@@ -440,7 +451,7 @@ class TestHeatCapacity(unittest.TestCase):
         Test the creation of a heat capacity quantity with units of kcal/K.
         """
         try:
-            q = quantity.HeatCapacity(1.0,"kcal/K")
+            quantity.HeatCapacity(1.0, "kcal/K")
             self.fail('Allowed invalid unit type "kcal/K".')
         except quantity.QuantityError:
             pass
@@ -449,10 +460,11 @@ class TestHeatCapacity(unittest.TestCase):
         """
         Test the creation of a heat capacity quantity with units of kcal/(mol*K).
         """
-        q = quantity.HeatCapacity(1.0,"kcal/(mol*K)")
+        q = quantity.HeatCapacity(1.0, "kcal/(mol*K)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 4184., delta=1e-6)
         self.assertEqual(q.units, "kcal/(mol*K)")
+
 
 ################################################################################
 
@@ -460,12 +472,12 @@ class TestInertia(unittest.TestCase):
     """
     Contains unit tests of the Inertia unit type object.
     """
-            
+
     def test_kg_m2(self):
         """
         Test the creation of a moment of inertia quantity with units of kg*m^2.
         """
-        q = quantity.Inertia(1.0,"kg*m^2")
+        q = quantity.Inertia(1.0, "kg*m^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "kg*m^2")
@@ -474,10 +486,11 @@ class TestInertia(unittest.TestCase):
         """
         Test the creation of a moment of inertia quantity with units of amu*angstrom^2.
         """
-        q = quantity.Inertia(1.0,"amu*angstrom^2")
+        q = quantity.Inertia(1.0, "amu*angstrom^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*constants.Na*1e23, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * constants.Na * 1e23, 1.0, delta=1e-6)
         self.assertEqual(q.units, "amu*angstrom^2")
+
 
 ################################################################################
 
@@ -485,12 +498,12 @@ class TestLength(unittest.TestCase):
     """
     Contains unit tests of the Length unit type object.
     """
-            
+
     def test_m(self):
         """
         Test the creation of a length quantity with units of m.
         """
-        q = quantity.Length(1.0,"m")
+        q = quantity.Length(1.0, "m")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m")
@@ -499,7 +512,7 @@ class TestLength(unittest.TestCase):
         """
         Test the creation of a length quantity with units of km.
         """
-        q = quantity.Length(1.0,"km")
+        q = quantity.Length(1.0, "km")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e3, delta=1e-3)
         self.assertEqual(q.units, "km")
@@ -508,7 +521,7 @@ class TestLength(unittest.TestCase):
         """
         Test the creation of a length quantity with units of cm.
         """
-        q = quantity.Length(1.0,"cm")
+        q = quantity.Length(1.0, "cm")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-2, delta=1e-8)
         self.assertEqual(q.units, "cm")
@@ -517,7 +530,7 @@ class TestLength(unittest.TestCase):
         """
         Test the creation of a length quantity with units of mm.
         """
-        q = quantity.Length(1.0,"mm")
+        q = quantity.Length(1.0, "mm")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-3, delta=1e-9)
         self.assertEqual(q.units, "mm")
@@ -526,7 +539,7 @@ class TestLength(unittest.TestCase):
         """
         Test the creation of a length quantity with units of um.
         """
-        q = quantity.Length(1.0,"um")
+        q = quantity.Length(1.0, "um")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-6, delta=1e-12)
         self.assertEqual(q.units, "um")
@@ -535,7 +548,7 @@ class TestLength(unittest.TestCase):
         """
         Test the creation of a length quantity with units of nm.
         """
-        q = quantity.Length(1.0,"nm")
+        q = quantity.Length(1.0, "nm")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-9, delta=1e-15)
         self.assertEqual(q.units, "nm")
@@ -544,10 +557,11 @@ class TestLength(unittest.TestCase):
         """
         Test the creation of a length quantity with units of pm.
         """
-        q = quantity.Length(1.0,"pm")
+        q = quantity.Length(1.0, "pm")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-12, delta=1e-18)
         self.assertEqual(q.units, "pm")
+
 
 ################################################################################
 
@@ -557,12 +571,12 @@ class TestMass(unittest.TestCase):
     
     Note that value_si is always kg (per molecule), not kg/mol.
     """
-            
+
     def test_kg(self):
         """
         Test the creation of a mass quantity with units of kg.
         """
-        q = quantity.Mass(1.0,"kg")
+        q = quantity.Mass(1.0, "kg")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "kg")
@@ -572,7 +586,7 @@ class TestMass(unittest.TestCase):
         Test the creation of a mass quantity with units of g/mol.
         Note that g/mol is automatically coerced to amu.
         """
-        q = quantity.Mass(1.0,"g/mol")
+        q = quantity.Mass(1.0, "g/mol")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, constants.amu, delta=1e-32)
         self.assertEqual(q.units, "amu")
@@ -582,19 +596,20 @@ class TestMass(unittest.TestCase):
         Test the creation of a mass quantity with units of kg/mol.
         Note that kg/mol is automatically coerced to amu.
         """
-        q = quantity.Mass(1.0,"kg/mol")
+        q = quantity.Mass(1.0, "kg/mol")
         self.assertAlmostEqual(q.value, 1000.0, 3)
-        self.assertAlmostEqual(q.value_si, 1000.*constants.amu, delta=1e-29)
+        self.assertAlmostEqual(q.value_si, 1000. * constants.amu, delta=1e-29)
         self.assertEqual(q.units, "amu")
 
     def test_amu(self):
         """
         Test the creation of a mass quantity with units of amu.
         """
-        q = quantity.Mass(1.0,"amu")
+        q = quantity.Mass(1.0, "amu")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, constants.amu, delta=1e-32)
         self.assertEqual(q.units, "amu")
+
 
 ################################################################################
 
@@ -602,15 +617,16 @@ class TestMomentum(unittest.TestCase):
     """
     Contains unit tests of the Momentum unit type object.
     """
-            
+
     def test_kgmpers2(self):
         """
         Test the creation of a momentum quantity with units of kg*m/s^2.
         """
-        q = quantity.Momentum(1.0,"kg*m/s^2")
+        q = quantity.Momentum(1.0, "kg*m/s^2")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "kg*m/s^2")
+
 
 ################################################################################
 
@@ -618,15 +634,16 @@ class TestPower(unittest.TestCase):
     """
     Contains unit tests of the Power unit type object.
     """
-            
+
     def test_W(self):
         """
         Test the creation of a power quantity with units of W.
         """
-        q = quantity.Power(1.0,"W")
+        q = quantity.Power(1.0, "W")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "W")
+
 
 ################################################################################
 
@@ -634,12 +651,12 @@ class TestPressure(unittest.TestCase):
     """
     Contains unit tests of the Pressure unit type object.
     """
-            
+
     def test_Pa(self):
         """
         Test the creation of a pressure quantity with units of Pa.
         """
-        q = quantity.Pressure(1.0,"Pa")
+        q = quantity.Pressure(1.0, "Pa")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "Pa")
@@ -648,7 +665,7 @@ class TestPressure(unittest.TestCase):
         """
         Test the creation of a pressure quantity with units of bar.
         """
-        q = quantity.Pressure(1.0,"bar")
+        q = quantity.Pressure(1.0, "bar")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e5, delta=1e-6)
         self.assertEqual(q.units, "bar")
@@ -657,7 +674,7 @@ class TestPressure(unittest.TestCase):
         """
         Test the creation of a pressure quantity with units of atm.
         """
-        q = quantity.Pressure(1.0,"atm")
+        q = quantity.Pressure(1.0, "atm")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 101325., delta=1e-6)
         self.assertEqual(q.units, "atm")
@@ -666,19 +683,20 @@ class TestPressure(unittest.TestCase):
         """
         Test the creation of a pressure quantity with units of torr.
         """
-        q = quantity.Pressure(1.0,"torr")
+        q = quantity.Pressure(1.0, "torr")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si, 101325./760., delta=1e-6)
+        self.assertAlmostEqual(q.value_si, 101325. / 760., delta=1e-6)
         self.assertEqual(q.units, "torr")
 
     def test_psi(self):
         """
         Test the creation of a pressure quantity with units of psi.
         """
-        q = quantity.Pressure(1.0,"psi")
+        q = quantity.Pressure(1.0, "psi")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si, 101325./14.695949, delta=1e-2)
+        self.assertAlmostEqual(q.value_si, 101325. / 14.695949, delta=1e-2)
         self.assertEqual(q.units, "psi")
+
 
 ################################################################################
 
@@ -686,84 +704,88 @@ class TestRateCoefficient(unittest.TestCase):
     """
     Contains unit tests of the RateCoefficient unit type object.
     """
-            
+
     def test_s(self):
         """
         Test the creation of a rate coefficient quantity with units of s^-1.
         """
-        q = quantity.RateCoefficient(1.0,"s^-1")
+        q = quantity.RateCoefficient(1.0, "s^-1")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "s^-1")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1.0, places=1) # 1 /s  =  1 /s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1.0, places=1)  # 1 /s  =  1 /s
 
     def test_m3permols(self):
         """
         Test the creation of a rate coefficient quantity with units of m^3/(mol*s).
         """
-        q = quantity.RateCoefficient(1.0,"m^3/(mol*s)")
+        q = quantity.RateCoefficient(1.0, "m^3/(mol*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^3/(mol*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, places=1) # 1 m3/mol/s  =  1e6  cm3/mol/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, places=1)  # 1 m3/mol/s  =  1e6  cm3/mol/s
 
     def test_m6permol2s(self):
         """
         Test the creation of a rate coefficient quantity with units of m^6/(mol^2*s).
         """
-        q = quantity.RateCoefficient(1.0,"m^6/(mol^2*s)")
+        q = quantity.RateCoefficient(1.0, "m^6/(mol^2*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^6/(mol^2*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12, places=1) # 1 m6/mol2/s  =  1e12  cm6/mol2/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12,
+                               places=1)  # 1 m6/mol2/s  =  1e12  cm6/mol2/s
 
     def test_m9permol3s(self):
         """
         Test the creation of a rate coefficient quantity with units of m^9/(mol^3*s).
         """
-        q = quantity.RateCoefficient(1.0,"m^9/(mol^3*s)")
+        q = quantity.RateCoefficient(1.0, "m^9/(mol^3*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^9/(mol^3*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18, delta=1e3) # 1 m9/mol3/s  =  1e18  cm9/mol3/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18,
+                               delta=1e3)  # 1 m9/mol3/s  =  1e18  cm9/mol3/s
 
     def test_cm3permols(self):
         """
         Test the creation of a rate coefficient quantity with units of cm^3/(mol*s).
         """
-        q = quantity.RateCoefficient(1.0,"cm^3/(mol*s)")
+        q = quantity.RateCoefficient(1.0, "cm^3/(mol*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*1e6, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * 1e6, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^3/(mol*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, places=1) # 1 m3/mol/s  =  1 cm3/mol/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, places=1)  # 1 m3/mol/s  =  1 cm3/mol/s
 
     def test_cm6permol2s(self):
         """
         Test the creation of a rate coefficient quantity with units of cm^6/(mol^2*s).
         """
-        q = quantity.RateCoefficient(1.0,"cm^6/(mol^2*s)")
+        q = quantity.RateCoefficient(1.0, "cm^6/(mol^2*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*(1e6)**2, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * 1e6 ** 2, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^6/(mol^2*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12, places=1)  # 1 m6/mol2/s  =  1e12  cm6/mol2/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12,
+                               places=1)  # 1 m6/mol2/s  =  1e12  cm6/mol2/s
 
     def test_cm9permol3s(self):
         """
         Test the creation of a rate coefficient quantity with units of cm^9/(mol^3*s).
         """
-        q = quantity.RateCoefficient(1.0,"cm^9/(mol^3*s)")
+        q = quantity.RateCoefficient(1.0, "cm^9/(mol^3*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*(1e6)**3, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * 1e6 ** 3, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^9/(mol^3*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18, delta=1e3)  # 1 m9/mol3/s  =  1e18  cm9/mol3/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18,
+                               delta=1e3)  # 1 m9/mol3/s  =  1e18  cm9/mol3/s
 
     def test_cm3permolecules(self):
         """
         Test the creation of a rate coefficient quantity with units of cm^3/(molecule*s).
         """
-        q = quantity.RateCoefficient(1.0,"cm^3/(molecule*s)")
+        q = quantity.RateCoefficient(1.0, "cm^3/(molecule*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*1e6/constants.Na, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * 1e6 / constants.Na, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^3/(molecule*s)")
         self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, delta=1e0)  # 1 m3/mol/s  =  1e6 cm3/mol/s
 
@@ -771,22 +793,24 @@ class TestRateCoefficient(unittest.TestCase):
         """
         Test the creation of a rate coefficient quantity with units of cm^6/(molecule^2*s).
         """
-        q = quantity.RateCoefficient(1.0,"cm^6/(molecule^2*s)")
+        q = quantity.RateCoefficient(1.0, "cm^6/(molecule^2*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*(1e6/constants.Na)**2, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * (1e6 / constants.Na) ** 2, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^6/(molecule^2*s)")
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12 , delta=1e0)  # 1 m6/mol2/s  =  1e12 cm6/mol2/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12,
+                               delta=1e0)  # 1 m6/mol2/s  =  1e12 cm6/mol2/s
 
     def test_cm9permolecule3s(self):
         """
         Test the creation of a rate coefficient quantity with units of cm^9/(molecule^3*s).
         """
-        q = quantity.RateCoefficient(1.0,"cm^9/(molecule^3*s)")
+        q = quantity.RateCoefficient(1.0, "cm^9/(molecule^3*s)")
         self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si*(1e6/constants.Na)**3, 1.0, delta=1e-6)
+        self.assertAlmostEqual(q.value_si * (1e6 / constants.Na) ** 3, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^9/(molecule^3*s)")
-        print q.units
-        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18 , delta=1e3)  # 1 m9/mole3/s  =  1e18 cm9/mol3/s
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18,
+                               delta=1e3)  # 1 m9/mole3/s  =  1e18 cm9/mol3/s
+
 
 ################################################################################
 
@@ -794,12 +818,12 @@ class TestTemperature(unittest.TestCase):
     """
     Contains unit tests of the Temperature unit type object.
     """
-            
+
     def test_K(self):
         """
         Test the creation of a temperature quantity with units of K.
         """
-        q = quantity.Temperature(1.0,"K")
+        q = quantity.Temperature(1.0, "K")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "K")
@@ -809,44 +833,44 @@ class TestTemperature(unittest.TestCase):
         Test the creation of a temperature quantity with units of degrees C.
         """
         with self.assertRaises(NotImplementedError):
-            q = quantity.Temperature(1.0,"degC")
-
+            quantity.Temperature(1.0, "degC")
 
     def test_degF(self):
         """
         Test the creation of a temperature quantity with units of degrees F.
         """
         with self.assertRaises(NotImplementedError):
-            q = quantity.Temperature(1.0,"degF")
-        
+            quantity.Temperature(1.0, "degF")
+
     def test_degR(self):
         """
         Test the creation of a temperature quantity with units of degrees R.
         """
         with self.assertRaises(NotImplementedError):
-            q = quantity.Temperature(1.0,"degR")
-        
+            quantity.Temperature(1.0, "degR")
+
+
 ################################################################################
 
 class TestTime(unittest.TestCase):
     """
     Contains unit tests of the Time unit type object.
     """
-            
+
     def test_s(self):
         """
         Test the creation of a time quantity with units of s.
         """
-        q = quantity.Time(1.0,"s")
+        q = quantity.Time(1.0, "s")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "s")
-        
+
     def test_ms(self):
         """
         Test the creation of a time quantity with units of ms.
         """
-        q = quantity.Time(1.0,"ms")
+        q = quantity.Time(1.0, "ms")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-3, delta=1e-9)
         self.assertEqual(q.units, "ms")
@@ -855,7 +879,7 @@ class TestTime(unittest.TestCase):
         """
         Test the creation of a time quantity with units of us.
         """
-        q = quantity.Time(1.0,"us")
+        q = quantity.Time(1.0, "us")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-6, delta=1e-12)
         self.assertEqual(q.units, "us")
@@ -864,7 +888,7 @@ class TestTime(unittest.TestCase):
         """
         Test the creation of a time quantity with units of ns.
         """
-        q = quantity.Time(1.0,"ns")
+        q = quantity.Time(1.0, "ns")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-9, delta=1e-15)
         self.assertEqual(q.units, "ns")
@@ -873,7 +897,7 @@ class TestTime(unittest.TestCase):
         """
         Test the creation of a time quantity with units of ps.
         """
-        q = quantity.Time(1.0,"ps")
+        q = quantity.Time(1.0, "ps")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-12, delta=1e-18)
         self.assertEqual(q.units, "ps")
@@ -882,7 +906,7 @@ class TestTime(unittest.TestCase):
         """
         Test the creation of a time quantity with units of fs.
         """
-        q = quantity.Time(1.0,"fs")
+        q = quantity.Time(1.0, "fs")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-15, delta=1e-21)
         self.assertEqual(q.units, "fs")
@@ -891,7 +915,7 @@ class TestTime(unittest.TestCase):
         """
         Test the creation of a time quantity with units of min.
         """
-        q = quantity.Time(1.0,"min")
+        q = quantity.Time(1.0, "min")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 60.0, delta=1e-6)
         self.assertEqual(q.units, "min")
@@ -900,10 +924,11 @@ class TestTime(unittest.TestCase):
         """
         Test the creation of a time quantity with units of hr.
         """
-        q = quantity.Time(1.0,"hr")
+        q = quantity.Time(1.0, "hr")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 3600.0, delta=1e-6)
         self.assertEqual(q.units, "hr")
+
 
 ################################################################################
 
@@ -911,12 +936,12 @@ class TestVelocity(unittest.TestCase):
     """
     Contains unit tests of the Velocity unit type object.
     """
-            
+
     def test_mpers(self):
         """
         Test the creation of an velocity quantity with units of m/s.
         """
-        q = quantity.Velocity(1.0,"m/s")
+        q = quantity.Velocity(1.0, "m/s")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m/s")
@@ -925,10 +950,11 @@ class TestVelocity(unittest.TestCase):
         """
         Test the creation of an velocity quantity with units of m/s.
         """
-        q = quantity.Velocity(1.0,"cm/s")
+        q = quantity.Velocity(1.0, "cm/s")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 0.01, delta=1e-8)
         self.assertEqual(q.units, "cm/s")
+
 
 ################################################################################
 
@@ -936,24 +962,25 @@ class TestVolume(unittest.TestCase):
     """
     Contains unit tests of the Volume unit type object.
     """
-            
+
     def test_m3(self):
         """
         Test the creation of an volume quantity with units of m^3.
         """
-        q = quantity.Volume(1.0,"m^3")
+        q = quantity.Volume(1.0, "m^3")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^3")
-        
+
     def test_L(self):
         """
         Test the creation of an volume quantity with units of L.
         """
-        q = quantity.Volume(1.0,"L")
+        q = quantity.Volume(1.0, "L")
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-3, delta=1e-9)
         self.assertEqual(q.units, "L")
+
 
 class TestQuantity(unittest.TestCase):
     """
@@ -965,47 +992,48 @@ class TestQuantity(unittest.TestCase):
         A function run before each unit test in this class.  This tests the creation of several both ScalarQuantity
         and ArrayQuantity objects
         """
-        self.Cp = quantity.Quantity([-6.51,-5.19333,-4.47333,-3.76,-3.44333,-2.94667,-2.47],'cal/(mol*K)',
-            '+|-',[2.72057,3.42407,4.84068,5.11681,5.13207,5.8757,8.29108])
-        self.v = quantity.Quantity([5,10,12],'cm/s','*|/',[1.2,0.4,1])
-        self.H = quantity.Quantity(33.1097,'kcal/mol','+|-',24.8344)
+        self.Cp = quantity.Quantity([-6.51, -5.19333, -4.47333, -3.76, -3.44333, -2.94667, -2.47], 'cal/(mol*K)',
+                                    '+|-', [2.72057, 3.42407, 4.84068, 5.11681, 5.13207, 5.8757, 8.29108])
+        self.v = quantity.Quantity([5, 10, 12], 'cm/s', '*|/', [1.2, 0.4, 1])
+        self.H = quantity.Quantity(33.1097, 'kcal/mol', '+|-', 24.8344)
         self.A = quantity.Quantity(7.25e+13, 'cm^3/(mol*s)', '*|/', 5)
-        self.Cp_array =  quantity.ArrayQuantity([-6.51,-5.19333,-4.47333,-3.76,-3.44333,-2.94667,-2.47],'cal/(mol*K)',
-            [2.72057,3.42407,4.84068,5.11681,5.13207,5.8757,8.29108],'+|-')
-        self.v_array = quantity.ArrayQuantity([5,10,12],'cm/s',[1.2,0.4,1],'*|/')
-        self.H_scalar = quantity.ScalarQuantity(33.1097,'kcal/mol',24.8344,'+|-',)
-        self.A_scalar = quantity.ScalarQuantity(7.25e+13, 'cm^3/(mol*s)',  5,'*|/')
-        
+        self.Cp_array = quantity.ArrayQuantity([-6.51, -5.19333, -4.47333, -3.76, -3.44333, -2.94667, -2.47],
+                                               'cal/(mol*K)',
+                                               [2.72057, 3.42407, 4.84068, 5.11681, 5.13207, 5.8757, 8.29108], '+|-')
+        self.v_array = quantity.ArrayQuantity([5, 10, 12], 'cm/s', [1.2, 0.4, 1], '*|/')
+        self.H_scalar = quantity.ScalarQuantity(33.1097, 'kcal/mol', 24.8344, '+|-', )
+        self.A_scalar = quantity.ScalarQuantity(7.25e+13, 'cm^3/(mol*s)', 5, '*|/')
+
     def test_scalar_conversion(self):
         """
         ScalarQuantity: test that the value and uncertainty get converted to the proper si value.
         """
         # Uncertainty of type +|- must be adjusted by units
-        self.assertAlmostEqual(self.H.value_si,self.H.value*4184)
-        self.assertAlmostEqual(self.H.uncertainty_si, self.H.uncertainty*4184)
-        self.assertAlmostEqual(self.H_scalar.value_si,self.H_scalar.value*4184)
-        self.assertAlmostEqual(self.H_scalar.uncertainty_si, self.H_scalar.uncertainty*4184)
-        
+        self.assertAlmostEqual(self.H.value_si, self.H.value * 4184)
+        self.assertAlmostEqual(self.H.uncertainty_si, self.H.uncertainty * 4184)
+        self.assertAlmostEqual(self.H_scalar.value_si, self.H_scalar.value * 4184)
+        self.assertAlmostEqual(self.H_scalar.uncertainty_si, self.H_scalar.uncertainty * 4184)
+
         # Uncertainty of type *|/ does not need to be adjusted by units
-        self.assertAlmostEqual(self.A.value_si,self.A.value*1e-6)
+        self.assertAlmostEqual(self.A.value_si, self.A.value * 1e-6)
         self.assertAlmostEqual(self.A.uncertainty_si, self.A.uncertainty)
-        self.assertAlmostEqual(self.A_scalar.value_si, self.A_scalar.value*1e-6)
+        self.assertAlmostEqual(self.A_scalar.value_si, self.A_scalar.value * 1e-6)
         self.assertAlmostEqual(self.A_scalar.uncertainty_si, self.A_scalar.uncertainty)
-    
+
     def test_array_conversion(self):
         """
         ArrayQuantity: test that the value and uncertainty get converted to the proper si value.
         """
-        numpy.testing.assert_array_almost_equal(self.v.value_si, self.v.value*1e-2)
-        numpy.testing.assert_array_almost_equal(self.v.uncertainty_si, self.v.uncertainty)
-        numpy.testing.assert_array_almost_equal(self.v_array.value_si, self.v.value*1e-2)
-        numpy.testing.assert_array_almost_equal(self.v_array.uncertainty_si, self.v.uncertainty)
+        np.testing.assert_array_almost_equal(self.v.value_si, self.v.value * 1e-2)
+        np.testing.assert_array_almost_equal(self.v.uncertainty_si, self.v.uncertainty)
+        np.testing.assert_array_almost_equal(self.v_array.value_si, self.v.value * 1e-2)
+        np.testing.assert_array_almost_equal(self.v_array.uncertainty_si, self.v.uncertainty)
 
-        numpy.testing.assert_array_almost_equal(self.Cp.value_si, self.Cp.value*4.184)
-        numpy.testing.assert_array_almost_equal(self.Cp.uncertainty_si, self.Cp.uncertainty*4.184)
-        numpy.testing.assert_array_almost_equal(self.Cp_array.value_si, self.Cp.value*4.184)
-        numpy.testing.assert_array_almost_equal(self.Cp_array.uncertainty_si, self.Cp.uncertainty*4.184)
-        
+        np.testing.assert_array_almost_equal(self.Cp.value_si, self.Cp.value * 4.184)
+        np.testing.assert_array_almost_equal(self.Cp.uncertainty_si, self.Cp.uncertainty * 4.184)
+        np.testing.assert_array_almost_equal(self.Cp_array.value_si, self.Cp.value * 4.184)
+        np.testing.assert_array_almost_equal(self.Cp_array.uncertainty_si, self.Cp.uncertainty * 4.184)
+
     def test_scalar_repr(self):
         """
         Test that the ScalarQuantity objects can be recreated using their __repr__ function
@@ -1016,18 +1044,18 @@ class TestQuantity(unittest.TestCase):
         self.assertEqual(H.uncertainty_si, self.H.uncertainty_si)
         self.assertEqual(H.uncertaintyType, self.H.uncertaintyType)
         self.assertEqual(H.units, self.H.units)
-        
+
         A = quantity.Quantity(eval(repr(self.A)))
         self.assertEqual(A.value_si, self.A.value_si)
         self.assertEqual(A.uncertainty_si, self.A.uncertainty_si)
         self.assertEqual(A.uncertaintyType, self.A.uncertaintyType)
         self.assertEqual(A.units, self.A.units)
-        
+
         # Test that the __repr__ strings are the same
-        self.assertEqual(repr(H),repr(self.H))
-        self.assertEqual(repr(self.H),repr(self.H_scalar))
-        self.assertEqual(repr(A),repr(self.A))
-        self.assertEqual(repr(self.A),repr(self.A_scalar))
+        self.assertEqual(repr(H), repr(self.H))
+        self.assertEqual(repr(self.H), repr(self.H_scalar))
+        self.assertEqual(repr(A), repr(self.A))
+        self.assertEqual(repr(self.A), repr(self.A_scalar))
 
     def test_array_repr(self):
         """
@@ -1035,35 +1063,36 @@ class TestQuantity(unittest.TestCase):
         """
         # Test that the values can be reconstituted
         Cp = quantity.Quantity(eval(repr(self.Cp)))
-        numpy.testing.assert_array_almost_equal(Cp.value_si, self.Cp.value_si)
-        numpy.testing.assert_array_almost_equal(Cp.uncertainty_si, self.Cp.uncertainty_si)
+        np.testing.assert_array_almost_equal(Cp.value_si, self.Cp.value_si)
+        np.testing.assert_array_almost_equal(Cp.uncertainty_si, self.Cp.uncertainty_si)
         self.assertEqual(Cp.uncertaintyType, self.Cp.uncertaintyType)
         self.assertEqual(Cp.units, self.Cp.units)
-        
+
         v = quantity.Quantity(eval(repr(self.v)))
-        numpy.testing.assert_array_almost_equal(v.value_si, self.v.value_si)
-        numpy.testing.assert_array_almost_equal(v.uncertainty_si, self.v.uncertainty_si)
+        np.testing.assert_array_almost_equal(v.value_si, self.v.value_si)
+        np.testing.assert_array_almost_equal(v.uncertainty_si, self.v.uncertainty_si)
         self.assertEqual(v.uncertaintyType, self.v.uncertaintyType)
         self.assertEqual(v.units, self.v.units)
-        
+
         # Test that the __repr__ strings are the same
-        self.assertEqual(repr(Cp),repr(self.Cp))
-        self.assertEqual(repr(self.Cp),repr(self.Cp_array))
-        self.assertEqual(repr(v),repr(self.v))
-        self.assertEqual(repr(self.v),repr(self.v_array))
+        self.assertEqual(repr(Cp), repr(self.Cp))
+        self.assertEqual(repr(self.Cp), repr(self.Cp_array))
+        self.assertEqual(repr(v), repr(self.v))
+        self.assertEqual(repr(self.v), repr(self.v_array))
 
 
 class TestQuantityDictionaryConversion(unittest.TestCase):
     """
     Test that Scalar and Array Quantity objects can be represented and reconstructed from dictionaries
     """
+
     def setUp(self):
         """
         Initialize necessary variables for the TestQuantityDictionaryConversion unit test
         """
         self.class_dict = {'ScalarQuantity': quantity.ScalarQuantity,
                            'ArrayQuantity': quantity.ArrayQuantity,
-                           'np_array': numpy.array
+                           'np_array': np.array
                            }
 
         self.empty_scalar = quantity.ScalarQuantity()
@@ -1072,14 +1101,14 @@ class TestQuantityDictionaryConversion(unittest.TestCase):
         self.uncertain_scalar = quantity.ScalarQuantity(value=3, uncertainty=0.2)
 
         self.empty_array = quantity.ArrayQuantity()
-        self.minimal_array = quantity.ArrayQuantity(value=numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
-        self.known_array = quantity.ArrayQuantity(value=numpy.array([[1.2, 2.4, 3.4], [4.8, 5.0, 6.0], [7.4, 8.6, 9]]),
+        self.minimal_array = quantity.ArrayQuantity(value=np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+        self.known_array = quantity.ArrayQuantity(value=np.array([[1.2, 2.4, 3.4], [4.8, 5.0, 6.0], [7.4, 8.6, 9]]),
                                                   units='kcal/mol')
-        self.uncertain_array = quantity.ArrayQuantity(value=numpy.array([[1.2, 2.4, 3.4],
+        self.uncertain_array = quantity.ArrayQuantity(value=np.array([[1.2, 2.4, 3.4],
                                                                          [4.8, 5.0, 6.0],
                                                                          [7.4, 8.6, 9.0]]
                                                                         ),
-                                                      uncertainty=numpy.array([[0.2, 0.4, 0.6],
+                                                      uncertainty=np.array([[0.2, 0.4, 0.6],
                                                                                [0.6, 0.4, 0.2],
                                                                                [0.8, 0.2, 0.4]])
                                                       )

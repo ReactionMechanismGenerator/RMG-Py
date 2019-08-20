@@ -32,6 +32,7 @@
 This module contains classes which extend Exception for usage in the RMG module
 """
 
+
 class ActionError(Exception):
     """
     An exception class for errors that occur while applying reaction recipe
@@ -39,6 +40,7 @@ class ActionError(Exception):
     exceptional behavior.
     """
     pass
+
 
 class AtomTypeError(Exception):
     """
@@ -48,6 +50,7 @@ class AtomTypeError(Exception):
     """
     pass
 
+
 class ChemicallySignificantEigenvaluesError(Exception):
     """
     An exception raised when the chemically significant eigenvalue method is 
@@ -56,12 +59,14 @@ class ChemicallySignificantEigenvaluesError(Exception):
     """
     pass
 
+
 class ChemkinError(Exception):
     """
     An exception class for exceptional behavior involving Chemkin files. Pass a
     string describing the circumstances that caused the exceptional behavior.
     """
     pass
+
 
 class CollisionError(Exception):
     """
@@ -71,6 +76,7 @@ class CollisionError(Exception):
     """
     pass
 
+
 class DatabaseError(Exception):
     """
     A exception that occurs when working with an RMG database. Pass a string
@@ -78,12 +84,14 @@ class DatabaseError(Exception):
     """
     pass
 
+
 class DependencyError(Exception):
     """
     An exception that occurs when an error is encountered with a dependency.
     Pass a string describing the circumstances that caused the exception.
     """
     pass
+
 
 class ElementError(Exception):
     """
@@ -93,12 +101,14 @@ class ElementError(Exception):
     """
     pass
 
+
 class ForbiddenStructureException(Exception):
     """
     An exception passed when RMG encounters a forbidden structure. These are usually
     caught and the reaction that created it is ignored.
     """
     pass
+
 
 class ILPSolutionError(Exception):
     """
@@ -108,6 +118,7 @@ class ILPSolutionError(Exception):
     """
     pass
 
+
 class ImplicitBenzeneError(Exception):
     """
     An exception class when encountering a group with too many implicit benzene
@@ -116,12 +127,14 @@ class ImplicitBenzeneError(Exception):
     """
     pass
 
+
 class InchiException(Exception):
     """
     An exception used when encountering a non-valid Inchi expression are encountered.
     Pass a string describing the error.
     """
     pass
+
 
 class InputError(Exception):
     """
@@ -131,12 +144,14 @@ class InputError(Exception):
     """
     pass
 
+
 class InvalidActionError(Exception):
     """
     An exception to be raised when an invalid action is encountered in a
     reaction recipe.
     """
     pass
+
 
 class InvalidAdjacencyListError(Exception):
     """
@@ -145,12 +160,14 @@ class InvalidAdjacencyListError(Exception):
     """
     pass
 
+
 class KekulizationError(Exception):
     """
     An exception to be raised when encountering an error while kekulizing an aromatic molecule.
     Can pass a string to indicate the reason for failure.
     """
     pass
+
 
 class KineticsError(Exception):
     """
@@ -160,7 +177,8 @@ class KineticsError(Exception):
     """
     pass
 
-class ModifiedStrongCollisionError(Exception): 
+
+class ModifiedStrongCollisionError(Exception):
     """
     An exception raised when the modified strong collision method is unsuccessful
     for any reason. Pass a string describing the cause of the exceptional 
@@ -168,17 +186,20 @@ class ModifiedStrongCollisionError(Exception):
     """
     pass
 
+
 class NegativeBarrierException(Exception):
     """ This Exception occurs when the energy barrier for a hindered Rotor is negative.
     This can occur if the scan or fourier fit is poor. """
-    
+
     pass
 
-class NetworkError(Exception): 
+
+class NetworkError(Exception):
     """
     Raised when an error occurs while working with a pressure-dependent reaction network
     """
     pass
+
 
 class OutputError(Exception):
     """
@@ -188,6 +209,7 @@ class OutputError(Exception):
     """
     pass
 
+
 class PressureDependenceError(Exception):
     """
     An exception class to use when an error involving pressure dependence is
@@ -195,6 +217,7 @@ class PressureDependenceError(Exception):
     behavior.
     """
     pass
+
 
 class QuantityError(Exception):
     """
@@ -204,6 +227,7 @@ class QuantityError(Exception):
     """
     pass
 
+
 class ReactionError(Exception):
     """
     An exception class for exceptional behavior involving :class:`Reaction`
@@ -212,6 +236,7 @@ class ReactionError(Exception):
     """
     pass
 
+
 class ReactionPairsError(Exception):
     """
     An exception to be raised when an error occurs while working with reaction
@@ -219,18 +244,21 @@ class ReactionPairsError(Exception):
     """
     pass
 
-class ReservoirStateError(Exception): 
+
+class ReservoirStateError(Exception):
     """
     An exception raised when the reservoir state method is unsuccessful for
     any reason. Pass a string describing the cause of the exceptional behavior.
     """
     pass
 
+
 class SettingsError(Exception):
     """
     An exception raised when dealing with settings.
     """
     pass
+
 
 class SpeciesError(Exception):
     """
@@ -240,10 +268,12 @@ class SpeciesError(Exception):
     """
     pass
 
+
 class StatmechError(Exception):
     """
     An exception used when an error occurs in estimating Statmech.
     """
+
 
 class StatmechFitError(StatmechError):
     """
@@ -252,6 +282,7 @@ class StatmechFitError(StatmechError):
     exceptional behavior.
     """
     pass
+
 
 class UnexpectedChargeError(Exception):
     """
@@ -263,8 +294,10 @@ class UnexpectedChargeError(Exception):
     Attributes:
     `graph` is the molecule or group object with the unexpected charge
     """
+
     def __init__(self, graph):
         self.graph = graph
+
 
 class VF2Error(Exception):
     """
@@ -273,11 +306,13 @@ class VF2Error(Exception):
     """
     pass
 
+
 class CoreError(Exception):
     """
     An exception raised if there is a problem within the model core
     """
     pass
+
 
 class ResonanceError(Exception):
     """
@@ -285,17 +320,21 @@ class ResonanceError(Exception):
     """
     pass
 
-################## move classes that extend off previous exceptions here
+################################################################################
+# move classes that extend off previous exceptions here
+
 
 class InvalidMicrocanonicalRateError(NetworkError):
     """
     Used in pressure dependence when the k(E) calculation does not give 
     the correct kf(T) or Kc(T)
     """
-    def __init__(self,message, k_ratio=1.0, Keq_ratio=1.0):
+
+    def __init__(self, message, k_ratio=1.0, Keq_ratio=1.0):
         self.message = message
         self.k_ratio = k_ratio
         self.Keq_ratio = Keq_ratio
+
     def badness(self):
         """
         How bad is the error?
@@ -305,11 +344,13 @@ class InvalidMicrocanonicalRateError(NetworkError):
         import math
         return max(abs(math.log10(self.k_ratio)), abs(math.log10(self.Keq_ratio)))
 
+
 class UndeterminableKineticsError(ReactionError):
     """
     An exception raised when attempts to estimate appropriate kinetic parameters
     for a chemical reaction are unsuccessful.
     """
+
     def __init__(self, reaction, message=''):
-        new_message = 'Kinetics could not be determined. '+message
-        ReactionError.__init__(self,reaction,new_message)
+        new_message = 'Kinetics could not be determined. ' + message
+        ReactionError.__init__(self, reaction, new_message)
