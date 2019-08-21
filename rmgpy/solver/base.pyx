@@ -656,7 +656,7 @@ cdef class ReactionSystem(DASx):
         
 
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
-        terminateAtMaxObjects = True if not prune else modelSettings.terminateAtMaxObjects 
+        terminateAtMaxObjects = True if (not prune and not maxNumObjsPerIter == 0) else modelSettings.terminateAtMaxObjects 
 
         dynamicsTimeScale = modelSettings.dynamicsTimeScale
         
