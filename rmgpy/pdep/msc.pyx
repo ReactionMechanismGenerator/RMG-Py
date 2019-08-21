@@ -30,149 +30,157 @@ Contains functionality for computing pressure-dependent phenomenological
 rate coefficients :math:`k(T,P)` using the modified strong collision method.
 """
 
-import numpy
-cimport numpy
+import logging
 
-from libc.math cimport exp, log, sqrt
+import numpy as np
+cimport numpy as np
+from libc.math cimport exp
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ModifiedStrongCollisionError
-import logging
+
 ################################################################################
 
 cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default'):
-
-    cdef numpy.ndarray[numpy.int_t,ndim=1] Jlist
-    cdef numpy.ndarray[numpy.float64_t,ndim=1] Elist, collFreq, collEff, dEdown, E0, Ereac
-    cdef numpy.ndarray[numpy.float64_t,ndim=2] A, b, K, x
-    cdef numpy.ndarray[numpy.float64_t,ndim=3] densStates
-    cdef numpy.ndarray[numpy.float64_t,ndim=4] Kij, Gnj, Fim, pa
-    cdef double T, P, E, Emin, val, beta
-    cdef int Nisom, Nreac, Nprod, Ngrains, NJ
+    """A method for applying the Modified Strong Collision approach for solving the master equation."""
+    cdef np.ndarray[np.int_t,ndim=1] j_list
+    cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, e0, e_reac
+    cdef np.ndarray[np.float64_t,ndim=2] a_mat, b, k, x
+    cdef np.ndarray[np.float64_t,ndim=3] dens_states
+    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
+    cdef double temperature, val, beta
+    cdef int n_isom, n_reac, n_prod, n_grains, n_j
     cdef int i, j, n, r, s, start, src
 
-    T = network.T
-    P = network.P
-    Elist = network.Elist
-    Jlist = network.Jlist
-    densStates = network.densStates
-    collFreq = network.collFreq
-    Kij = network.Kij
-    Fim = network.Fim
-    Gnj = network.Gnj
-    E0 = network.E0
-    Nisom = network.Nisom
-    Nreac = network.Nreac
-    Nprod = network.Nprod
-    Ngrains = network.Ngrains
-    NJ = network.NJ
+    temperature = network.T
+    e_list = network.Elist
+    j_list = network.Jlist
+    dens_states = network.densStates
+    coll_freq = network.collFreq
+    k_ij = network.Kij
+    f_im = network.Fim
+    g_nj = network.Gnj
+    e0 = network.E0
+    n_isom = network.Nisom
+    n_reac = network.Nreac
+    n_prod = network.Nprod
+    n_grains = network.Ngrains
+    n_j = network.NJ
     
-    if numpy.isnan(densStates.sum()):
+    if np.isnan(dens_states.sum()):
         raise AttributeError('Network {0} has NaN in the density of states. '
                              'This will prevent adequate solution to the network'.format(network.label))
 
-    K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
-    pa = numpy.zeros((Nisom,Nisom+Nreac,Ngrains,NJ), numpy.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
+    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float64)
 
-    beta = 1. / (constants.R * T)        # [=] mol/kJ
+    beta = 1. / (constants.R * temperature)  # [=] mol/kJ
     
     # Determine the starting grain for the calculation
-    Ereac = numpy.zeros(Nisom)
-    start = Ngrains
-    for i in range(Nisom):
-        for r in range(Ngrains):
-            if (Kij[:,i,r,0] > 0).any() or (Gnj[:,i,r,0] > 0).any():
+    e_reac = np.zeros(n_isom)
+    start = n_grains
+    for i in range(n_isom):
+        for r in range(n_grains):
+            if (k_ij[:, i, r, 0] > 0).any() or (g_nj[:, i, r, 0] > 0).any():
                 if start > r: start = r
-                Ereac[i] = Elist[r]
+                e_reac[i] = e_list[r]
                 break
         else:
             raise ModifiedStrongCollisionError('Unable to determine starting grain; check active-state energies.')
     
-    dEdown = numpy.zeros(Nisom)
-    for i in range(Nisom):
-        dEdown[i] = network.isomers[i].species[0].energyTransferModel.getAlpha(T)
+    d_e_down = np.zeros(n_isom)
+    for i in range(n_isom):
+        d_e_down[i] = network.isomers[i].species[0].energyTransferModel.getAlpha(temperature)
     
     # Compute collision efficiencies
-    collEff = numpy.ones(Nisom)
+    coll_eff = np.ones(n_isom)
     if efficiencyModel == 'default':
-        for i in range(Nisom):
-            collEff[i] = network.isomers[i].species[0].energyTransferModel.calculateCollisionEfficiency(T, Elist, Jlist, densStates[i,:,:], E0[i], Ereac[i])
+        for i in range(n_isom):
+            coll_eff[i] = network.isomers[i].species[0].energyTransferModel.calculateCollisionEfficiency(
+                temperature, e_list, j_list, dens_states[i, :, :], e0[i], e_reac[i])
     elif efficiencyModel == 'none':
         pass
     else:
         raise ValueError('Unknown efficiency model "{0}".'.format(efficiencyModel))
     
     # Zero LHS matrix and RHS vectors
-    A = numpy.zeros((Nisom,Nisom), numpy.float64)
-    b = numpy.zeros((Nisom,Nisom+Nreac), numpy.float64)
+    a_mat = np.zeros((n_isom, n_isom), np.float64)
+    b = np.zeros((n_isom, n_isom + n_reac), np.float64)
 
     # Iterate over the grains, calculating the PSSA concentrations
-    for r in range(start, Ngrains):
-        for s in range(NJ):
+    for r in range(start, n_grains):
+        for s in range(n_j):
             # Populate LHS matrix
             # Collisional deactivation
-            for i in range(Nisom):
-                A[i,i] = -collFreq[i] * collEff[i]
+            for i in range(n_isom):
+                a_mat[i, i] = -coll_freq[i] * coll_eff[i]
             # Isomerization reactions
-            for i in range(Nisom):
+            for i in range(n_isom):
                 for j in range(i):
-                    A[i,j] = Kij[i,j,r,s]
-                    A[j,j] -= Kij[i,j,r,s]
-                    A[j,i] = Kij[j,i,r,s]
-                    A[i,i] -= Kij[j,i,r,s]
+                    a_mat[i, j] = k_ij[i, j, r, s]
+                    a_mat[j, j] -= k_ij[i, j, r, s]
+                    a_mat[j, i] = k_ij[j, i, r, s]
+                    a_mat[i, i] -= k_ij[j, i, r, s]
             # Dissociation reactions
-            for n in range(Nreac+Nprod):
-                for j in range(Nisom):
-                    A[j,j] -= Gnj[n,j,r,s]
+            for n in range(n_reac + n_prod):
+                for j in range(n_isom):
+                    a_mat[j, j] -= g_nj[n, j, r, s]
     
             # Populate RHS vectors, one per isomer and reactant
-            for i in range(Nisom):
+            for i in range(n_isom):
                 # Thermal activation via collisions
-                b[i,i] = collFreq[i] * collEff[i] * densStates[i,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
-                if numpy.isnan(b[i,i]):
+                b[i, i] = coll_freq[i] * coll_eff[i] * dens_states[i, r, s] \
+                          * (2 * j_list[s] + 1) * exp(-e_list[r] * beta)
+                if np.isnan(b[i, i]):
                     logging.warning('Non-number generated for grain {0} for isomer {1}'.format(r,network.isomers[i]))
-            for n in range(Nisom, Nisom+Nreac):
+            for n in range(n_isom, n_isom + n_reac):
                 # Chemical activation via association reaction
-                for j in range(Nisom):
-                    b[j,n] = Fim[j,n-Nisom,r,s] * densStates[n,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
-                    if numpy.isnan(b[j,n]):
-                        logging.warning('Non-number generated for grain {0} for isomer {1} and isomer/reactant {2}'.format(r,network.isomers[j],(network.reactants)[n-Nisom]))
-                        logging.debug(str([Fim[j,n-Nisom,r,s], densStates[n,r,s], (2*Jlist[s]+1), exp(-Elist[r] * beta), Elist[r], beta]))
+                for j in range(n_isom):
+                    b[j, n] = f_im[j, n - n_isom, r, s] * dens_states[n, r, s] * (2 * j_list[s] + 1) \
+                              * exp(-e_list[r] * beta)
+                    if np.isnan(b[j, n]):
+                        logging.warning('Non-number generated for grain {0} for isomer {1} and isomer/reactant '
+                                        '{2}'.format(r, network.isomers[j], network.reactants[ - n_isom]))
+                        logging.debug(str([f_im[j, n - n_isom, r, s], dens_states[n, r, s],
+                                           (2 * j_list[s] + 1), exp(-e_list[r] * beta), e_list[r], beta]))
             # Solve for steady-state population
-            x = -numpy.linalg.solve(A, b)
-            for n in range(Nisom+Nreac):
-                for i in range(Nisom):
-                    pa[i,n,r,s] = x[i,n]
+            x = -np.linalg.solve(a_mat, b)
+            for n in range(n_isom + n_reac):
+                for i in range(n_isom):
+                    pa[i, n, r, s] = x[i, n]
                         
     # Check that our populations are all positive
     if not (pa >= 0).all():
-        for reactant_index in range(len(pa[:,0,0,0])):
-            for isomer_index in range(len(pa[0,:,0,0])):
-                populations =pa[reactant_index,isomer_index,:,:]
-                if not (populations >=0).all():
-                    logging.debug('A negative concentration was encountered for reactant/isomer {0} and isomer {1} with matrix\n{2}'.format(network.isomers+network.reactants, network.reactants,populations))
+        for reactant_index in range(len(pa[:, 0, 0, 0])):
+            for isomer_index in range(len(pa[0, :, 0, 0])):
+                populations =pa[reactant_index,isomer_index, :, :]
+                if not (populations >= 0).all():
+                    logging.debug('A negative concentration was encountered for reactant/isomer {0} and isomer {1} '
+                                  'with matrix\n{2}'.format(network.isomers + network.reactants,
+                                                            network.reactants,populations))
         raise ModifiedStrongCollisionError('A negative steady-state concentration was encountered.')
 
     # Compute rate coefficients from PSSA concentrations
-    for src in range(Nisom+Nreac):
+    for src in range(n_isom + n_reac):
         # Calculate stabilization rates (i.e.) R + R' --> Ai or M --> Ai
-        for i in range(Nisom):
+        for i in range(n_isom):
             if i != src:
-                val = collFreq[i] * collEff[i] * numpy.sum(pa[i,src,:,:])
-                K[i,src] += val
-                K[src,src] -= val
+                val = coll_freq[i] * coll_eff[i] * np.sum(pa[i,src, :, :])
+                k[i, src] += val
+                k[src, src] -= val
         # Calculate dissociation rates (i.e.) R + R' --> Bn + Cn or M --> Bn + Cn
-        for n in range(Nreac+Nprod):
-            for j in range(Nisom):
-                if n + Nisom != src:
-                    val = numpy.sum(Gnj[n,j,:,:] * pa[j,src,:,:])
-                    K[n+Nisom,src] += val
-                    K[src,src] -= val
+        for n in range(n_reac+n_prod):
+            for j in range(n_isom):
+                if n + n_isom != src:
+                    val = np.sum(g_nj[n, j, :, :] * pa[j, src, :, :])
+                    k[n + n_isom, src] += val
+                    k[src, src] -= val
     # To complete pa we need the Boltzmann distribution at low energies
-    for i in range(Nisom):
-        for r in range(Ngrains):
-            for s in range(NJ):
-                if pa[i,i,r,s] == 0: pa[i,i,r,s] = densStates[i,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
+    for i in range(n_isom):
+        for r in range(n_grains):
+            for s in range(n_j):
+                if pa[i, i, r, s] == 0:
+                    pa[i,i, r, s] = dens_states[i, r, s] * (2 * j_list[s] + 1) * exp(-e_list[r] * beta)
                 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
-    return K, pa
+    return k, pa

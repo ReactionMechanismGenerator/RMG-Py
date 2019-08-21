@@ -25,17 +25,17 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.rmgobject cimport RMGObject
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
-
 ################################################################################
+
 
 cdef class SingleExponentialDown(RMGObject):
 
-    cdef public ScalarQuantity _alpha0, _T0
+    cdef public ScalarQuantity _alpha0, _t0
     cdef public double n
     
     cpdef double getAlpha(self, double T) except -1000000000

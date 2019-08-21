@@ -25,16 +25,16 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 ################################################################################
 
-cdef class Configuration:
+cdef class Configuration(object):
 
     cdef public list species
-    cdef public numpy.ndarray Elist
-    cdef public numpy.ndarray densStates
-    cdef public numpy.ndarray sumStates
+    cdef public np.ndarray Elist
+    cdef public np.ndarray densStates
+    cdef public np.ndarray sumStates
     cdef public bint activeJRotor
     cdef public bint activeKRotor
 
@@ -62,6 +62,7 @@ cdef class Configuration:
     
     cpdef double calculateCollisionFrequency(self, double T, double P, dict bathGas) except -1
         
-    cpdef numpy.ndarray generateCollisionMatrix(self, double T, numpy.ndarray densStates, numpy.ndarray Elist, numpy.ndarray Jlist=?)
+    cpdef np.ndarray generateCollisionMatrix(self, double T, np.ndarray dens_states,
+                                             np.ndarray e_list, np.ndarray Jlist=?)
     
-    cpdef calculateDensityOfStates(self, numpy.ndarray Elist, bint activeJRotor=?, bint activeKRotor=?, bint rmgmode=?)
+    cpdef calculateDensityOfStates(self, np.ndarray Elist, bint activeJRotor=?, bint activeKRotor=?, bint rmgmode=?)
