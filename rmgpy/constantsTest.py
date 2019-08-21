@@ -37,6 +37,7 @@ import math
 
 import rmgpy.constants as constants
 
+
 ################################################################################
 
 class TestConstants(unittest.TestCase):
@@ -45,7 +46,7 @@ class TestConstants(unittest.TestCase):
     both pure Python and compiled Cython modes, and in both cases are set to
     the appropriate values.
     """
-    
+
     def test_avogadroConstant(self):
         """
         Test the value of the Avogadro constant.
@@ -59,35 +60,35 @@ class TestConstants(unittest.TestCase):
         """
         kB = 1.3806504e-23
         self.assertAlmostEqual(constants.kB / kB, 1.0, 6, '{0} != {1}'.format(constants.kB, kB))
-    
+
     def test_elementaryCharge(self):
         """
         Test the value of the elementary charge constant.
         """
         e = 1.602176565e-19
         self.assertAlmostEqual(constants.e / e, 1.0, 6, '{0} != {1}'.format(constants.e, e))
-    
+
     def test_gasLawConstant(self):
         """
         Test the value of the gas law constant.
         """
         R = 8.314472
         self.assertAlmostEqual(constants.R / R, 1.0, 6, '{0} != {1}'.format(constants.R, R))
-    
+
     def test_planckConstant(self):
         """
         Test the value of the Planck constant.
         """
         h = 6.62606896e-34
         self.assertAlmostEqual(constants.h / h, 1.0, 6, '{0} != {1}'.format(constants.h, h))
-    
+
     def test_reducedPlanckConstant(self):
         """
         Test the value of the reduced Planck constant.
         """
         hbar = 1.054571726e-34
         self.assertAlmostEqual(constants.hbar / hbar, 1.0, 6, '{0} != {1}'.format(constants.hbar, hbar))
-    
+
     def test_pi(self):
         """
         Test the value of pi.
@@ -142,6 +143,7 @@ class TestConstants(unittest.TestCase):
         """
         E_h = 4.35974434e-18
         self.assertAlmostEqual(constants.E_h / E_h, 1.0, 6, '{0} != {1}'.format(constants.E_h, E_h))
+
 
 ################################################################################
 

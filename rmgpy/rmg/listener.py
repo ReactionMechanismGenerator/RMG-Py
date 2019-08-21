@@ -30,8 +30,10 @@
 
 import csv
 import os
+
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.tools.plot import SimulationPlot
+
 
 class SimulationProfileWriter(object):
     """
@@ -55,9 +57,10 @@ class SimulationProfileWriter(object):
     reactionSystem.detach(listener)
 
     """
+
     def __init__(self, outputDirectory, reaction_sys_index, coreSpecies):
         super(SimulationProfileWriter, self).__init__()
-        
+
         self.outputDirectory = outputDirectory
         self.reaction_sys_index = reaction_sys_index
         self.coreSpecies = coreSpecies
@@ -78,8 +81,8 @@ class SimulationProfileWriter(object):
             'solver',
             'simulation_{0}_{1:d}.csv'.format(
                 self.reaction_sys_index + 1, len(self.coreSpecies)
-                )
             )
+        )
 
         header = ['Time (s)', 'Volume (m^3)']
         for spc in self.coreSpecies:
@@ -89,11 +92,11 @@ class SimulationProfileWriter(object):
             worksheet = csv.writer(csvfile)
 
             # add header row:
-            worksheet.writerow(header) 
+            worksheet.writerow(header)
 
             # add mole fractions:
             worksheet.writerows(reactionSystem.snapshots)
-            
+
 
 class SimulationProfilePlotter(object):
     """
@@ -114,10 +117,10 @@ class SimulationProfilePlotter(object):
 
     reactionSystem.detach(listener)
     """
-    
+
     def __init__(self, outputDirectory, reaction_sys_index, coreSpecies):
         super(SimulationProfilePlotter, self).__init__()
-        
+
         self.outputDirectory = outputDirectory
         self.reaction_sys_index = reaction_sys_index
         self.coreSpecies = coreSpecies
@@ -129,20 +132,20 @@ class SimulationProfilePlotter(object):
             - number of core species
         """
 
-        csvFile = os.path.join(
+        csv_file = os.path.join(
             self.outputDirectory,
             'solver',
             'simulation_{0}_{1:d}.csv'.format(
                 self.reaction_sys_index + 1, len(self.coreSpecies)
-                )
             )
-        
-        pngFile = os.path.join(
+        )
+
+        png_file = os.path.join(
             self.outputDirectory,
             'solver',
             'simulation_{0}_{1:d}.png'.format(
                 self.reaction_sys_index + 1, len(self.coreSpecies)
-                )
             )
-            
-        SimulationPlot(csvFile=csvFile, numSpecies=10, ylabel='Moles').plot(pngFile)
+        )
+
+        SimulationPlot(csvFile=csv_file, numSpecies=10, ylabel='Moles').plot(png_file)

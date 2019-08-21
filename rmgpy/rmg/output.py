@@ -33,13 +33,16 @@ This module contains functionality for saving the output of RMG jobs to output
 files.
 """
 
-import os.path
 import logging
+import os.path
 import re
 import textwrap
-from rmgpy.util import makeOutputSubdirectory
+
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.exceptions import OutputError
+from rmgpy.util import makeOutputSubdirectory
+
+
 ################################################################################
 
 def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
@@ -51,9 +54,9 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     package is used to generate the HTML; if this package is not found, no
     HTML will be generated (but the program will carry on).
     """
-    
+
     from rmgpy.rmg.model import PDepReaction
-    
+
     from rmgpy.molecule.draw import MoleculeDrawer
 
     try:
@@ -67,17 +70,17 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
 
     # Prepare parameters to pass to jinja template
     title = 'RMG Output'
-    
+
     if partCoreEdge == 'core':
         species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
     elif partCoreEdge == 'edge':
         species = reactionModel.edge.species[:] + reactionModel.outputSpeciesList
-        
-    if not os.path.isdir(os.path.join(dirname,'species')):
-        os.makedirs(os.path.join(dirname,'species'))
+
+    if not os.path.isdir(os.path.join(dirname, 'species')):
+        os.makedirs(os.path.join(dirname, 'species'))
 
     re_index_search = re.compile(r'\((\d+)\)$').search
-    
+
     for spec in species:
         # if the species dictionary came from an RMG-Java job, make them prettier
         # We use the presence of a trailing index on the label to discern this
@@ -92,26 +95,27 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
-                logging.error("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                logging.error("{0} species could not be drawn because it did not contain a molecular structure. "
+                              "Please recheck your files.".format(getSpeciesIdentifier(spec)))
                 raise
-        #spec.thermo.comment=
+        # spec.thermo.comment=
         # Text wrap the thermo comments
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
-#    species.sort(key=lambda x: x.index)
-    
-    if partCoreEdge == 'core': 
-        reactions = [rxn for rxn in reactionModel.core.reactions ] + reactionModel.outputReactionList
+    #    species.sort(key=lambda x: x.index)
+
+    if partCoreEdge == 'core':
+        reactions = [rxn for rxn in reactionModel.core.reactions] + reactionModel.outputReactionList
     elif partCoreEdge == 'edge':
-        reactions = [rxn for rxn in reactionModel.edge.reactions ] + reactionModel.outputReactionList
+        reactions = [rxn for rxn in reactionModel.edge.reactions] + reactionModel.outputReactionList
 
     # We want to keep reactions sorted in original order in which they were added to core
     # rather than ordered by index
-    #reactions.sort(key=lambda x: x.index)
+    # reactions.sort(key=lambda x: x.index)
 
     familyCount = {}
     for rxn in reactions:
-        
+
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
@@ -120,21 +124,19 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
             familyCount[family] += 1
         else:
             familyCount[family] = 1
-    families = familyCount.keys()
+    families = list(familyCount.keys())
     families.sort()
-    
-    
+
     ## jinja2 filters etc.
     to_remove_from_css_names = re.compile('[/.\-+,]')
+
     def csssafe(input):
         "Replace unsafe CSS class name characters with an underscore."
-        return to_remove_from_css_names.sub('_',input)
-        
+        return to_remove_from_css_names.sub('_', input)
+
     environment = jinja2.Environment()
     environment.filters['csssafe'] = csssafe
-    
-    
-    
+
     # Make HTML file
     template = environment.from_string(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
@@ -506,19 +508,20 @@ $(document).ready(function() {
 </html>
 """)
 
-        
     f = open(path, 'w')
-    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount, getSpeciesIdentifier=getSpeciesIdentifier,textwrap=textwrap))
+    f.write(template.render(title=title, species=species, reactions=reactions, families=families,
+                            familyCount=familyCount, getSpeciesIdentifier=getSpeciesIdentifier, textwrap=textwrap))
     f.close()
 
 
-def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReactions, uniqueReactions1, uniqueReactions2):
+def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReactions, uniqueReactions1,
+                 uniqueReactions2):
     """
     This function outputs the species and reactions on an HTML page
     for the comparison of two RMG models.
     """
     from rmgpy.rmg.model import PDepReaction
-    from rmgpy.kinetics import Arrhenius, MultiArrhenius, MultiPDepArrhenius
+    from rmgpy.kinetics import MultiArrhenius, MultiPDepArrhenius
 
     from rmgpy.molecule.draw import MoleculeDrawer
     try:
@@ -533,15 +536,15 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     # Prepare parameters to pass to jinja template
     title = 'RMG Model Comparison'
 
-    speciesList = [spec1 for spec1, spec2 in commonSpeciesList] + [spec2 for spec1, spec2 in commonSpeciesList] + speciesList1 + speciesList2
+    speciesList = [spec1 for spec1, spec2 in commonSpeciesList] + [spec2 for spec1, spec2 in
+                                                                   commonSpeciesList] + speciesList1 + speciesList2
     re_index = re.compile(r'\((\d+)\)$')
 
-        
-    if not os.path.isdir(os.path.join(dirname,'species1')):
-        os.makedirs(os.path.join(dirname,'species1'))    
-    
-    if not os.path.isdir(os.path.join(dirname,'species2')):
-        os.makedirs(os.path.join(dirname,'species2'))
+    if not os.path.isdir(os.path.join(dirname, 'species1')):
+        os.makedirs(os.path.join(dirname, 'species1'))
+
+    if not os.path.isdir(os.path.join(dirname, 'species2')):
+        os.makedirs(os.path.join(dirname, 'species2'))
 
     for spec1, spec2 in commonSpeciesList:
         # if the species dictionary came from an RMG-Java job, make them prettier
@@ -552,28 +555,29 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             spec1.index = int(match1.group(0)[1:-1])
             spec1.label = spec1.label[0:match1.start()]
 
-        match2 = re_index.search(spec2.label)            
+        match2 = re_index.search(spec2.label)
         if match2:
             spec2.index = int(match2.group(0)[1:-1])
-            spec2.label = spec2.label[0:match2.start()]            
-        
-        # Draw molecules if necessary
+            spec2.label = spec2.label[0:match2.start()]
+
+            # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species1', '{0}.png'.format(spec1))
         if not os.path.exists(fstr):
             try:
                 MoleculeDrawer().draw(spec1.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec1)))
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
+                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec1)))
 
-            
         fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec2))
         if not os.path.exists(fstr):
             try:
                 MoleculeDrawer().draw(spec2.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec2)))
-    
-                
+                raise OutputError(
+                    '{0} species could not be drawn because it did not contain a molecular structure. Please recheck '
+                    'your files.'.format(getSpeciesIdentifier(spec2)))
+
     for spec in speciesList1:
         match = re_index.search(spec.label)
         if match:
@@ -585,8 +589,9 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
-    
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
+                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+
     for spec in speciesList2:
         match = re_index.search(spec.label)
         if match:
@@ -598,19 +603,20 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
-    
-    #Add pictures for species that may not have different thermo but are in reactions with different kinetics
-    allRxns = [rxnTuple[0] for rxnTuple in commonReactions] + uniqueReactions1 + uniqueReactions2
-    allSpecies = []
-    for rxn in allRxns:
-        for prod in rxn.products:
-            allSpecies.append(prod)
-        for rxt in rxn.reactants:
-            allSpecies.append(rxt)
-    allSpecies = set(allSpecies)
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
+                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec)))
 
-    for spec in allSpecies:
+    # Add pictures for species that may not have different thermo but are in reactions with different kinetics
+    all_rxns = [rxnTuple[0] for rxnTuple in commonReactions] + uniqueReactions1 + uniqueReactions2
+    all_species = []
+    for rxn in all_rxns:
+        for prod in rxn.products:
+            all_species.append(prod)
+        for rxt in rxn.reactants:
+            all_species.append(rxt)
+    all_species = set(all_species)
+
+    for spec in all_species:
         match = re_index.search(spec.label)
         if match:
             spec.index = int(match.group(0)[1:-1])
@@ -621,62 +627,61 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
+                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec)))
 
-
-    familyCount1 = {}
-    familyCount2 = {}
+    family_count1 = {}
+    family_count2 = {}
     for rxn1, rxn2 in commonReactions:
-        if isinstance(rxn2.kinetics, (MultiArrhenius,MultiPDepArrhenius)):
-            rxn2.duplicate = True   
+        if isinstance(rxn2.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
+            rxn2.duplicate = True
         if isinstance(rxn1, PDepReaction):
             family = "PDepNetwork"
         else:
             family = rxn1.getSource()
-        if family in familyCount1:
-            familyCount1[family] += 1
-            familyCount2[family] += 1
+        if family in family_count1:
+            family_count1[family] += 1
+            family_count2[family] += 1
         else:
-            familyCount1[family] = 1
-            familyCount2[family] = 1
+            family_count1[family] = 1
+            family_count2[family] = 1
 
     for rxn in uniqueReactions1:
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
             family = rxn.getSource()
-        if family in familyCount1:
-            familyCount1[family] += 1
+        if family in family_count1:
+            family_count1[family] += 1
         else:
-            familyCount1[family] = 1
+            family_count1[family] = 1
 
     for rxn in uniqueReactions2:
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
             family = rxn.getSource()
-        if family in familyCount2:
-            familyCount2[family] += 1
+        if family in family_count2:
+            family_count2[family] += 1
         else:
-            familyCount2[family] = 1
+            family_count2[family] = 1
 
-    families1 = familyCount1.keys()
-    families2 = familyCount2.keys()
+    families1 = list(family_count1.keys())
+    families2 = list(family_count2.keys())
     families1.sort()
     families2.sort()
 
-
-
-    ## jinja2 filters etc.
+    # jinja2 filters etc.
     to_remove_from_css_names = re.compile('[/.\-+,]')
+
     def csssafe(input):
         "Replace unsafe CSS class name characters with an underscore."
-        return to_remove_from_css_names.sub('_',input)
+        return to_remove_from_css_names.sub('_', input)
 
     environment = jinja2.Environment()
     environment.filters['csssafe'] = csssafe
 
-# Make HTML file
+    # Make HTML file
     template = environment.from_string(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
@@ -1301,10 +1306,14 @@ $(document).ready(function() {
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, 
-                            commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, 
-                            families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, families_union=set(families1+families2),speciesList=speciesList,
-                            getSpeciesIdentifier=getSpeciesIdentifier,textwrap=textwrap))
+    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1,
+                            speciesList2=speciesList2,
+                            commonReactions=commonReactions, uniqueReactions1=uniqueReactions1,
+                            uniqueReactions2=uniqueReactions2,
+                            families1=families1, families2=families2, familyCount1=family_count1,
+                            familyCount2=family_count2, families_union=set(families1 + families2),
+                            speciesList=speciesList,
+                            getSpeciesIdentifier=getSpeciesIdentifier, textwrap=textwrap))
     f.close()
 
 
@@ -1314,10 +1323,11 @@ def saveOutput(rmg):
     """
     logging.info('Saving current model core to HTML file...')
     saveOutputHTML(os.path.join(rmg.outputDirectory, 'output.html'), rmg.reactionModel, 'core')
-    
+
     if rmg.saveEdgeSpecies == True:
         logging.info('Saving current model edge to HTML file...')
         saveOutputHTML(os.path.join(rmg.outputDirectory, 'output_edge.html'), rmg.reactionModel, 'edge')
+
 
 class OutputHTMLWriter(object):
     """
@@ -1340,9 +1350,10 @@ class OutputHTMLWriter(object):
     rmg.detach(listener)
 
     """
+
     def __init__(self, outputDirectory=''):
         super(OutputHTMLWriter, self).__init__()
         makeOutputSubdirectory(outputDirectory, 'species')
-    
+
     def update(self, rmg):
         saveOutput(rmg)

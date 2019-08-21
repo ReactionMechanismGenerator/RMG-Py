@@ -37,10 +37,11 @@ of species images is available, it can be passed as an optional argument. A
 Chemkin output file can also be passed as an optional positional argument.
 """
 
-import os
 import argparse
+import os
 
 from rmgpy.tools.fluxdiagram import createFluxDiagram
+
 
 ################################################################################
 
@@ -78,18 +79,18 @@ def parse_arguments():
 
     args = parser.parse_args()
 
-    inputFile = os.path.abspath(args.input)
-    chemkinFile = os.path.abspath(args.chemkin)
-    dictFile = os.path.abspath(args.dictionary)
-    speciesPath = os.path.abspath(args.species) if args.species is not None else None
-    chemkinOutput = os.path.abspath(args.chemkinOutput) if args.chemkinOutput is not None else ''
-    useJava = args.java
+    input_file = os.path.abspath(args.input)
+    chemkin_file = os.path.abspath(args.chemkin)
+    dict_file = os.path.abspath(args.dictionary)
+    species_path = os.path.abspath(args.species) if args.species is not None else None
+    chemkin_output = os.path.abspath(args.chemkinOutput) if args.chemkinOutput is not None else ''
+    use_java = args.java
     dflag = args.dlim
-    checkDuplicates = args.checkDuplicates
-    centralSpeciesList = args.centralSpecies
+    check_duplicates = args.checkDuplicates
+    central_species_list = args.centralSpecies
     superimpose = args.super
-    saveStates = args.saveStates
-    readStates = args.readStates
+    save_states = args.saveStates
+    read_states = args.readStates
 
     keys = ('maximumNodeCount',
             'maximumEdgeCount',
@@ -100,20 +101,21 @@ def parse_arguments():
             'timeStep')
     vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
-    
-    return (inputFile,
-            chemkinFile,
-            dictFile,
-            speciesPath,
-            chemkinOutput,
-            useJava,
+
+    return (input_file,
+            chemkin_file,
+            dict_file,
+            species_path,
+            chemkin_output,
+            use_java,
             dflag,
-            checkDuplicates,
+            check_duplicates,
             settings,
-            centralSpeciesList,
+            central_species_list,
             superimpose,
-            saveStates,
-            readStates)
+            save_states,
+            read_states)
+
 
 def main():
     (inputFile,
@@ -134,6 +136,7 @@ def main():
                       chemkinOutput=chemkinOutput, diffusionLimited=dflag, centralSpeciesList=centralSpeciesList,
                       superimpose=superimpose, saveStates=saveStates, readStates=readStates,
                       checkDuplicates=checkDuplicates)
+
 
 if __name__ == '__main__':
     main()

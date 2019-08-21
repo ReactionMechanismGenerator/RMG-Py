@@ -54,12 +54,12 @@ Flag                    Description
 """
 import rmgpy.tools.diff_models as diff_models
 
+
 ################################################################################
 
 def main():
     diff_models.main()
 
+
 if __name__ == '__main__':
     main()
-    
-    

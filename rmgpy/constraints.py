@@ -29,78 +29,78 @@
 ###############################################################################
 
 import logging
-from numpy import isclose
-from rmgpy.molecule.element import getElement
+
 from rmgpy.species import Species
+
 
 def failsSpeciesConstraints(species):
     """
     Pass in either a `Species` or `Molecule` object and checks whether it passes 
     the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
     """
-    
+
     from rmgpy.rmg.input import getInput
 
     try:
-        speciesConstraints = getInput('speciesConstraints')
+        species_constraints = getInput('speciesConstraints')
     except Exception:
         logging.debug('Species constraints could not be found.')
-        speciesConstraints = {}
-    
+        species_constraints = {}
+
     if isinstance(species, Species):
         struct = species.molecule[0]
     else:
         # expects a molecule here
         struct = species
 
-    explicitlyAllowedMolecules = speciesConstraints.get('explicitlyAllowedMolecules', [])
-    for molecule in explicitlyAllowedMolecules:
+    explicitly_allowed_molecules = species_constraints.get('explicitlyAllowedMolecules', [])
+    for molecule in explicitly_allowed_molecules:
         if struct.isIsomorphic(molecule):
-            return False  
-    
-    maxCarbonAtoms = speciesConstraints.get('maximumCarbonAtoms', -1)          
-    if maxCarbonAtoms != -1:
-        if struct.getNumAtoms('C') > maxCarbonAtoms:
+            return False
+
+    max_carbon_atoms = species_constraints.get('maximumCarbonAtoms', -1)
+    if max_carbon_atoms != -1:
+        if struct.getNumAtoms('C') > max_carbon_atoms:
             return True
 
-    maxOxygenAtoms = speciesConstraints.get('maximumOxygenAtoms', -1)
-    if maxOxygenAtoms != -1:
-        if struct.getNumAtoms('O') > maxOxygenAtoms:
+    max_oxygen_atoms = species_constraints.get('maximumOxygenAtoms', -1)
+    if max_oxygen_atoms != -1:
+        if struct.getNumAtoms('O') > max_oxygen_atoms:
             return True
 
-    maxNitrogenAtoms = speciesConstraints.get('maximumNitrogenAtoms', -1)
-    if maxNitrogenAtoms != -1:
-        if struct.getNumAtoms('N') > maxNitrogenAtoms:
+    max_nitrogen_atoms = species_constraints.get('maximumNitrogenAtoms', -1)
+    if max_nitrogen_atoms != -1:
+        if struct.getNumAtoms('N') > max_nitrogen_atoms:
             return True
 
-    maxSiliconAtoms = speciesConstraints.get('maximumSiliconAtoms', -1)
-    if maxSiliconAtoms != -1:
-        if struct.getNumAtoms('Si') > maxSiliconAtoms:
+    max_silicon_atoms = species_constraints.get('maximumSiliconAtoms', -1)
+    if max_silicon_atoms != -1:
+        if struct.getNumAtoms('Si') > max_silicon_atoms:
             return True
 
-    maxSulfurAtoms = speciesConstraints.get('maximumSulfurAtoms', -1)
-    if maxSulfurAtoms != -1:
-        if struct.getNumAtoms('S') > maxSulfurAtoms:
+    max_sulfur_atoms = species_constraints.get('maximumSulfurAtoms', -1)
+    if max_sulfur_atoms != -1:
+        if struct.getNumAtoms('S') > max_sulfur_atoms:
             return True
 
-    maxHeavyAtoms = speciesConstraints.get('maximumHeavyAtoms', -1)
-    if maxHeavyAtoms != -1:
-        if struct.getNumAtoms() - struct.getNumAtoms('H') > maxHeavyAtoms:
+    max_heavy_atoms = species_constraints.get('maximumHeavyAtoms', -1)
+    if max_heavy_atoms != -1:
+        if struct.getNumAtoms() - struct.getNumAtoms('H') > max_heavy_atoms:
             return True
 
-    maxRadicals = speciesConstraints.get('maximumRadicalElectrons', -1)
-    if maxRadicals != -1:
-        if (struct.getRadicalCount() > maxRadicals):
+    max_radicals = species_constraints.get('maximumRadicalElectrons', -1)
+    if max_radicals != -1:
+        if (struct.getRadicalCount() > max_radicals):
             return True
 
-    maxCarbenes = speciesConstraints.get('maximumSingletCarbenes', 1)
-    if maxRadicals != -1:
-        if struct.getSingletCarbeneCount() > maxCarbenes:
+    max_carbenes = species_constraints.get('maximumSingletCarbenes', 1)
+    if max_radicals != -1:
+        if struct.getSingletCarbeneCount() > max_carbenes:
             return True
 
-    maxCarbeneRadicals = speciesConstraints.get('maximumCarbeneRadicals', 0)
-    if maxCarbeneRadicals != -1:
-        if struct.getSingletCarbeneCount() > 0 and struct.getRadicalCount() > maxCarbeneRadicals:
+    max_carbene_radicals = species_constraints.get('maximumCarbeneRadicals', 0)
+    if max_carbene_radicals != -1:
+        if struct.getSingletCarbeneCount() > 0 and struct.getRadicalCount() > max_carbene_radicals:
             return True
 
     return False

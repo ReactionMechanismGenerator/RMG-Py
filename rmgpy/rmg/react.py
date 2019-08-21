@@ -32,9 +32,10 @@
 Contains functions for generating reactions.
 """
 import logging
+from multiprocessing import Pool
 
 from rmgpy.data.rmg import getDB
-from multiprocessing import Pool
+
 
 ################################################################################
 
@@ -63,7 +64,7 @@ def react(spc_fam_tuples, procnum=1):
     # submits to the process pool as separate tasks.
     if procnum == 1:
         logging.info('For reaction generation {0} process is used.'.format(procnum))
-        reactions = map(_react_species_star, spc_fam_tuples)
+        reactions = list(map(_react_species_star, spc_fam_tuples))
     else:
         logging.info('For reaction generation {0} processes are used.'.format(procnum))
         p = Pool(processes=procnum)
@@ -117,10 +118,10 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
     """
     # Select reactive species that can undergo unimolecular reactions:
     spc_tuples = [(core_spc_list[i],)
-                  for i in xrange(numOldCoreSpecies) if (unimolecularReact[i] and core_spc_list[i].reactive)]
+                  for i in range(numOldCoreSpecies) if (unimolecularReact[i] and core_spc_list[i].reactive)]
 
-    for i in xrange(numOldCoreSpecies):
-        for j in xrange(i, numOldCoreSpecies):
+    for i in range(numOldCoreSpecies):
+        for j in range(i, numOldCoreSpecies):
             # Find reactions involving the species that are bimolecular.
             # This includes a species reacting with itself (if its own concentration is high enough).
             if bimolecularReact[i, j]:
@@ -128,9 +129,9 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
                     spc_tuples.append((core_spc_list[i], core_spc_list[j]))
 
     if trimolecularReact is not None:
-        for i in xrange(numOldCoreSpecies):
-            for j in xrange(i, numOldCoreSpecies):
-                for k in xrange(j, numOldCoreSpecies):
+        for i in range(numOldCoreSpecies):
+            for j in range(i, numOldCoreSpecies):
+                for k in range(j, numOldCoreSpecies):
                     # Find reactions involving the species that are trimolecular.
                     if trimolecularReact[i, j, k]:
                         if core_spc_list[i].reactive and core_spc_list[j].reactive and core_spc_list[k].reactive:
@@ -138,10 +139,10 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
 
     if procnum == 1:
         # React all families like normal (provide empty argument for only_families)
-        spc_fam_tuples = zip(spc_tuples)
+        spc_fam_tuples = list(zip(spc_tuples))
     else:
         # Identify and split families that are prone to generate many reactions into sublists.
-        family_list = getDB('kinetics').families.keys()
+        family_list = list(getDB('kinetics').families.keys())
         major_families = [
             'H_Abstraction', 'R_Recombination', 'Intra_Disproportionation', 'Intra_RH_Add_Endocyclic',
             'Singlet_Carbene_Intra_Disproportionation', 'Intra_ene_reaction', 'Disproportionation',
@@ -167,7 +168,6 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
                 for item in split_list:
                     spc_fam_tuples.append((spc_tuple, item))
             else:
-                spc_fam_tuples.append((spc_tuple, ))
+                spc_fam_tuples.append((spc_tuple,))
 
     return react(spc_fam_tuples, procnum), [fam_tuple[0] for fam_tuple in spc_fam_tuples]
-

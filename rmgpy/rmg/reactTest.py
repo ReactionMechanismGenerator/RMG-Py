@@ -30,16 +30,16 @@
 
 import itertools
 import os
-import unittest 
+import unittest
+
 import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.species import Species
-
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.react import react, react_all
+from rmgpy.species import Species
 
 ###################################################
 
@@ -109,11 +109,11 @@ class TestReact(unittest.TestCase):
         procnum = 1
 
         spcs = [
-                Species().fromSMILES('C=C'),
-                Species().fromSMILES('[CH3]'),
-                Species().fromSMILES('[OH]'),
-                Species().fromSMILES('CCCCCCCCCCC')
-                ]
+            Species().fromSMILES('C=C'),
+            Species().fromSMILES('[CH3]'),
+            Species().fromSMILES('[OH]'),
+            Species().fromSMILES('CCCCCCCCCCC')
+        ]
 
         n = len(spcs)
         reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
@@ -134,11 +134,11 @@ class TestReact(unittest.TestCase):
         procnum = 2
 
         spcs = [
-                Species().fromSMILES('C=C'),
-                Species().fromSMILES('[CH3]'),
-                Species().fromSMILES('[OH]'),
-                Species().fromSMILES('CCCCCCCCCCC')
-                ]
+            Species().fromSMILES('C=C'),
+            Species().fromSMILES('[CH3]'),
+            Species().fromSMILES('[OH]'),
+            Species().fromSMILES('CCCCCCCCCCC')
+        ]
 
         n = len(spcs)
         reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)

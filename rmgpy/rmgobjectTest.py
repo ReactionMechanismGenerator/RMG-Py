@@ -39,6 +39,7 @@ import numpy as np
 from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.rmgobject import RMGObject, expand_to_dict, recursive_make_object
 
+
 ################################################################################
 
 
@@ -59,7 +60,7 @@ class TestRMGObject(unittest.TestCase):
     """
     Contains unit tests for the RMGObject class
     """
-    
+
     def test_save_int(self):
         """Test saving ints"""
         obj = PseudoRMGObject(a=1, b=5)
@@ -271,19 +272,18 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         self.scalar_quantity = ScalarQuantity(value=500.0, units='K')
         self.scalar_dict = {'class': 'ScalarQuantity', 'value': 500.0, 'units': 'K'}
 
-        # Abbreviate name
-        PRO = PseudoRMGObject
-
-        self.highly_nested_object = PRO(a=PRO(a=PRO(b=self.np_array,
-                                                    c=PRO(c=self.array_quantity,
-                                                          d=PRO(a=self.scalar_quantity,
-                                                                b=PRO()
-                                                                )
-                                                          )
+        self.highly_nested_object = PseudoRMGObject(a=PseudoRMGObject(a=PseudoRMGObject(b=self.np_array,
+                                                                                        c=PseudoRMGObject(
+                                                                                            c=self.array_quantity,
+                                                                                            d=PseudoRMGObject(
+                                                                                                a=self.scalar_quantity,
+                                                                                                b=PseudoRMGObject()
+                                                                                                )
+                                                                                            )
+                                                                                        )
+                                                                      ),
+                                                    b=6
                                                     )
-                                              ),
-                                        b=6
-                                        )
         self.highly_nest_dictionary = {'class': 'PseudoRMGObject',
                                        'a': {'class': 'PseudoRMGObject',
                                              'a': {'class': 'PseudoRMGObject',
@@ -400,6 +400,7 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         Test that numpy arrays can be recreated from their dictionary representation
         """
         self.assertTrue(np.array_equal(recursive_make_object(self.np_dict, self.class_dictionary), self.np_array))
+
 
 ################################################################################
 

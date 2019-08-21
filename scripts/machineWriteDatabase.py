@@ -37,6 +37,6 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 
 database = RMGDatabase()
-database.load(settings['database.directory'], kineticsFamilies = 'all')
+database.load(settings['database.directory'], kineticsFamilies='all')
 
 database.save(settings['database.directory'])
