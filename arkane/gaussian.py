@@ -202,12 +202,20 @@ class GaussianLog(Log):
 
                         # Read moments of inertia for external rotational modes
                         elif 'Rotational constants (GHZ):' in line:
-                            inertia = [float(d) for d in line.split()[-3:]]
-                            for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
-                                             * constants.Na * 1e23
-                            rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                            modes.append(rotation)
+                            try:
+                                inertia = [float(d) for d in line.split()[-3:]]
+                                for i in range(3):
+                                    inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                                * constants.Na * 1e23
+                                rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                                modes.append(rotation)
+                            except:
+                                inertia = [float(line.split()[-1])]
+                                inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9)\
+                                         * constants.Na * 1e23
+                                rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
+                                modes.append(rotation)
+
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
                             inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9)\
