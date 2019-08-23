@@ -636,7 +636,24 @@ class ModelMatcher():
                             2 O u0 p3 c-1 {1,S}
                             3 H u0 p0 c0 {1,S}
                             4 H u0 p0 c0 {1,S}
-                            """.strip(),  # workaround a bug
+                            """,  # workaround a bug
+            'singlet[CH]F': """
+                            multiplicity 1
+                            1 C u0 p1 c0 {2,S} {3,S}
+                            2 H u0 p0 c0 {1,S}
+                            3 F u0 p3 c0 {1,S}
+                            """,
+            'singletF[C]F': """
+                            multiplicity 1
+                            1 F u0 p3 c0 {2,S}
+                            2 C u0 p1 c0 {1,S} {3,S}
+                            3 F u0 p3 c0 {2,S}
+                            """,
+            'doublet[C]F': """
+                            multiplicity 2
+                            1 C u1 p1 c0 {2,S}
+                            2 F u0 p3 c0 {1,S}
+                            """,
             }
 
         for species_label in known_names:
