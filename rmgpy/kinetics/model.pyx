@@ -121,7 +121,7 @@ cdef class KineticsModel:
         Return a string representation that can be used to reconstruct the
         KineticsModel object.
         """
-        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={0!r}, Pmax={1!r}, comment="""{2}""")'.format(
+        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, uncertainty={4!r}, comment="""{5}""")'.format(
             self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment)
 
     def __reduce__(self):
