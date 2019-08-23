@@ -1042,42 +1042,21 @@ class Reaction:
             reactants = self.reactants[:]
             products = self.products[:]
 
-            reactantCarbons   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()])   for reactant in reactants]
-            productCarbons    = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()])   for product  in products ]
-            reactantOxygens   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()])   for reactant in reactants]
-            productOxygens    = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()])   for product  in products ]
-            reactantNitrogens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isNitrogen()]) for reactant in reactants]
-            productNitrogens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isNitrogen()]) for product  in products ]
-            reactantSilicons  = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSilicon()])  for reactant in reactants]
-            productSilicons   = [sum([1 for atom in  product.molecule[0].atoms if atom.isSilicon()])  for product  in products ]
-            reactantSulfurs   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSulfur()])   for reactant in reactants]
-            productSulfurs    = [sum([1 for atom in  product.molecule[0].atoms if atom.isSulfur()])   for product  in products ]
-            reactantChlorines = [sum([1 for atom in reactant.molecule[0].atoms if atom.isChlorine()]) for reactant in reactants]
-            productChlorines  = [sum([1 for atom in  product.molecule[0].atoms if atom.isChlorine()]) for product  in products ]
-            reactantIodines   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isIodine()])   for reactant in reactants]
-            productIodines    = [sum([1 for atom in  product.molecule[0].atoms if atom.isIodine()])   for product  in products ]
-            reactantFluorines = [sum([1 for atom in reactant.molecule[0].atoms if atom.isFluorine()]) for reactant in reactants]
-            productFluorines  = [sum([1 for atom in  product.molecule[0].atoms if atom.isFluorine()]) for product  in products ]
-            
-            # Sort the reactants and products by C/O/N/S numbers
-            reactants = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, fluorine, reactant) for
-                         carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, fluorine, reactant
-                         in zip(reactantCarbons, reactantOxygens, reactantNitrogens, reactantSilicons, reactantSulfurs,
-                                reactantChlorines, reactantIodines, reactantFluorines, reactants)]
-            reactants.sort()
-            products = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, fluorine, product) for
-                        carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, fluorine, product
-                        in zip(productCarbons, productOxygens, productNitrogens, productSilicons, productSulfurs,
-                               productChlorines, productIodines, productFluorines, products)]
-            products.sort()
+            def get_sorting_key(spc):
+                # List of elements to sort by, order is intentional
+                numbers = [6, 8, 7, 14, 16, 17, 53, 9]  # C, O, N, Si, S, Cl, I, F
+                return tuple(sum([1 for atom in spc.molecule[0].atoms if atom.element.number == n]) for n in numbers)
+
+            # Sort the reactants and products by element counts
+            reactants.sort(key=get_sorting_key)
+            products.sort(key=get_sorting_key)
 
             while len(reactants) > 1 and len(products) > 1:
-                self.pairs.append((reactants[-1][-1], products[-1][-1]))
-                reactants.pop()
-                products.pop()
+                self.pairs.append((reactants.pop(), products.pop()))
+
             for reactant in reactants:
                 for product in products:
-                    self.pairs.append((reactant[-1], product[-1]))
+                    self.pairs.append((reactant, product))
 
     def draw(self, path):
         """
