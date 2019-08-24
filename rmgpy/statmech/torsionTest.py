@@ -32,426 +32,433 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.torsion` module.
 """
 
-import unittest
-import math
-import numpy
+from __future__ import division
 
-from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
+import unittest
+import numpy as np
+
 import rmgpy.constants as constants
+from rmgpy.statmech.torsion import FreeRotor, HinderedRotor
 
 ################################################################################
+
 
 class TestHinderedRotor(unittest.TestCase):
     """
     Contains unit tests of the HinderedRotor class.
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
         self.inertia = 1.56764
         self.symmetry = 3
-        self.barrier = 11.373 
+        self.barrier = 11.373
         self.quantum = True
         self.mode = HinderedRotor(
-            inertia = (self.inertia,"amu*angstrom^2"), 
-            symmetry = self.symmetry,
-            barrier = (self.barrier,"kJ/mol"),
-            fourier = ([ [4.58375, 0.841648, -5702.71, 6.02657, 4.7446], [0.726951, -0.677255, 0.207032, 0.553307, -0.503303] ],"J/mol"),
-            quantum = self.quantum,
+            inertia=(self.inertia, "amu*angstrom^2"),
+            symmetry=self.symmetry,
+            barrier=(self.barrier, "kJ/mol"),
+            fourier=([[4.58375, 0.841648, -5702.71, 6.02657, 4.7446],
+                      [0.726951, -0.677255, 0.207032, 0.553307, -0.503303]], "J/mol"),
+            quantum=self.quantum,
         )
         self.freemode = FreeRotor(
-            inertia = (self.inertia,"amu*angstrom^2"), 
-            symmetry = self.symmetry,
+            inertia=(self.inertia, "amu*angstrom^2"),
+            symmetry=self.symmetry,
         )
-        
-    def test_getRotationalConstant(self):
+
+    def test_get_rotational_constant(self):
         """
         Test getting the HinderedRotor.rotationalConstant property.
         """
-        Bexp = 10.7535
-        Bact = self.mode.rotationalConstant.value_si
-        self.assertAlmostEqual(Bexp, Bact, 4)
-        Bact2 = self.freemode.rotationalConstant.value_si
-        self.assertAlmostEqual(Bexp,Bact2,4)
-        
-    def test_setRotationalConstant(self):
+        b_exp = 10.7535
+        b_act = self.mode.rotationalConstant.value_si
+        self.assertAlmostEqual(b_exp, b_act, 4)
+        b_act2 = self.freemode.rotationalConstant.value_si
+        self.assertAlmostEqual(b_exp, b_act2, 4)
+
+    def test_set_rotational_constant(self):
         """
         Test setting the HinderedRotor.rotationalConstant property.
         """
-        B = self.mode.rotationalConstant
-        B.value_si *= 2
-        self.mode.rotationalConstant = B
-        self.freemode.rotationalConstant = B
-        Iexp = 0.5 * self.inertia
-        Iact = self.mode.inertia.value_si * constants.Na * 1e23
-        Iact2 = self.freemode.inertia.value_si * constants.Na * 1e23
-        self.assertAlmostEqual(Iexp, Iact, 4)
-        self.assertAlmostEqual(Iexp, Iact2, 4)
-    
-    def test_getPotential_cosine(self):
+        rotational_constant = self.mode.rotationalConstant
+        rotational_constant.value_si *= 2
+        self.mode.rotationalConstant = rotational_constant
+        self.freemode.rotationalConstant = rotational_constant
+        i_exp = 0.5 * self.inertia
+        i_act = self.mode.inertia.value_si * constants.Na * 1e23
+        i_act2 = self.freemode.inertia.value_si * constants.Na * 1e23
+        self.assertAlmostEqual(i_exp, i_act, 4)
+        self.assertAlmostEqual(i_exp, i_act2, 4)
+
+    def test_get_potential_cosine(self):
         """
         Test the HinderedRotor.getPotential() method for a cosine potential.
         """
         self.mode.fourier = None
-        phi = numpy.arange(0.0, 2 * constants.pi + 0.0001, constants.pi / 24.)
-        V = numpy.zeros_like(phi)
+        phi = np.arange(0.0, 2 * constants.pi + 0.0001, constants.pi / 24.)
+        potential = np.zeros_like(phi)
         for i in range(phi.shape[0]):
-            V[i] = self.mode.getPotential(phi[i])
-    
-    def test_getPotential_fourier(self):
+            potential[i] = self.mode.getPotential(phi[i])
+
+    def test_get_potential_fourier(self):
         """
         Test the HinderedRotor.getPotential() method for a Fourier series
         potential.
         """
-        phi = numpy.arange(0.0, 2 * constants.pi + 0.0001, constants.pi / 24.)
-        V = numpy.zeros_like(phi)
+        phi = np.arange(0.0, 2 * constants.pi + 0.0001, constants.pi / 24.)
+        potential = np.zeros_like(phi)
         for i in range(phi.shape[0]):
-            V[i] = self.mode.getPotential(phi[i])
-    
-    def test_getPartitionFunction_free(self):
+            potential[i] = self.mode.getPotential(phi[i])
+
+    def test_get_partition_function_free(self):
         """
-        Test the FreeRotor.getPartitionFunction() method 
+        Test the FreeRotor.getPartitionFunction() method
         """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.sqrt(8*numpy.pi**3*constants.kB*Tlist*self.freemode.inertia.value_si)/(self.symmetry*constants.h)
-        for T, Qexp in zip(Tlist,Qexplist):
-            Qact = self.freemode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp,Qact,delta=1e-4*Qexp)
-            
-    def test_getPartitionFunction_classical_cosine(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.sqrt(8 * np.pi**3 * constants.kB * t_list
+                             * self.freemode.inertia.value_si) / (self.symmetry * constants.h)
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.freemode.getPartitionFunction(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+
+    def test_get_partition_function_classical_cosine(self):
         """
         Test the HinderedRotor.getPartitionFunction() method for a cosine
         potential in the classical limit.
         """
         self.mode.quantum = False
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.array([0.741953, 1.30465, 2.68553, 3.88146, 4.91235])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
-            
-    def test_getPartitionFunction_classical_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([0.741953, 1.30465, 2.68553, 3.88146, 4.91235])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.mode.getPartitionFunction(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+
+    def test_get_partition_function_classical_fourier(self):
         """
         Test the HinderedRotor.getPartitionFunction() method for a Fourier
         series potential in the classical limit.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.array([0.745526, 1.30751, 2.68722, 3.88258, 4.91315])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
-            
-    def test_getPartitionFunction_quantum_cosine(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([0.745526, 1.30751, 2.68722, 3.88258, 4.91315])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.mode.getPartitionFunction(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+
+    def test_get_partition_function_quantum_cosine(self):
         """
         Test the HinderedRotor.getPartitionFunction() method for a cosine
         potential in the quantum limit.
         """
         self.mode.quantum = True
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.array([1.39947, 1.94793, 3.30171, 4.45856, 5.45188])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
-            
-    def test_getPartitionFunction_quantum_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([1.39947, 1.94793, 3.30171, 4.45856, 5.45188])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.mode.getPartitionFunction(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+
+    def test_get_partition_function_quantum_fourier(self):
         """
         Test the HinderedRotor.getPartitionFunction() method for a Fourier
         series potential in the quantum limit.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.array([1.39364, 1.94182, 3.29509, 4.45205, 5.44563])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=5e-4*Qexp)
-    
-    def test_getHeatCapacity_free(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([1.39364, 1.94182, 3.29509, 4.45205, 5.44563])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.mode.getPartitionFunction(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=5e-4 * q_exp)
+
+    def test_get_heat_capacity_free(self):
         """
-        Test the FreeRotor.getHeatCapacity() method 
+        Test the FreeRotor.getHeatCapacity() method
         """
-        Cvexp = constants.R/2.0
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        for T in Tlist:
-            Cvact = self.freemode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp,Cvact,delta=1e-4*Cvexp)
-            
-    def test_getHeatCapacity_classical_cosine(self):
+        cv_exp = constants.R/2.0
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        for temperature in t_list:
+            cv_act = self.freemode.getHeatCapacity(temperature)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+
+    def test_get_heat_capacity_classical_cosine(self):
         """
         Test the HinderedRotor.getHeatCapacity() method using a cosine
         potential in the classical limit.
         """
         self.mode.quantum = False
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Cvexplist = numpy.array([1.01741, 0.951141, 0.681919, 0.589263, 0.552028]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
-    
-    def test_getHeatCapacity_classical_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.01741, 0.951141, 0.681919, 0.589263, 0.552028]) * constants.R
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(temperature)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+
+    def test_get_heat_capacity_classical_fourier(self):
         """
         Test the HinderedRotor.getHeatCapacity() method using a Fourier series
         potential in the classical limit.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Cvexplist = numpy.array([1.17682, 1.01369, 0.698588, 0.596797, 0.556293]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
-        
-    def test_getHeatCapacity_quantum_cosine(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.17682, 1.01369, 0.698588, 0.596797, 0.556293]) * constants.R
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(temperature)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+
+    def test_get_heat_capacity_quantum_cosine(self):
         """
         Test the HinderedRotor.getHeatCapacity() method using a cosine
         potential in the quantum limit.
         """
         self.mode.quantum = True
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Cvexplist = numpy.array([1.01271, 0.945341, 0.684451, 0.591949, 0.554087]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
-     
-    def test_getHeatCapacity_quantum_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.01271, 0.945341, 0.684451, 0.591949, 0.554087]) * constants.R
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(temperature)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+
+    def test_get_heat_capacity_quantum_fourier(self):
         """
         Test the HinderedRotor.getHeatCapacity() method using a Fourier series
         potential in the quantum limit.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Cvexplist = numpy.array([1.01263, 0.946618, 0.685345, 0.592427, 0.554374]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-3*Cvexp)
- 
-    def test_getEnthalpy_free(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([1.01263, 0.946618, 0.685345, 0.592427, 0.554374]) * constants.R
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = self.mode.getHeatCapacity(temperature)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-3 * cv_exp)
+
+    def test_get_enthalpy_free(self):
         """
         Test the FreeRotor.getEnthalpy() method
         """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = constants.R*Tlist/2.0
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.freemode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
-            
-    def test_getEnthalpy_classical_cosine(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = constants.R * t_list / 2.0
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.freemode.getEnthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+
+    def test_get_enthalpy_classical_cosine(self):
         """
         Test the HinderedRotor.getEnthalpy() method using a cosine potential
         in the classical limit.
         """
         self.mode.quantum = False
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = numpy.array([1.09556, 1.09949, 0.962738, 0.854617, 0.784333]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
-     
-    def test_getEnthalpy_classical_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([1.09556, 1.09949, 0.962738, 0.854617, 0.784333]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.mode.getEnthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+
+    def test_get_enthalpy_classical_fourier(self):
         """
-        Test the HinderedRotor.getEnthalpy() method using a Fourier series 
+        Test the HinderedRotor.getEnthalpy() method using a Fourier series
         potential in the classical limit.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = numpy.array([1.08882, 1.09584, 0.961543, 0.854054, 0.784009]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([1.08882, 1.09584, 0.961543, 0.854054, 0.784009]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.mode.getEnthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
-    def test_getEnthalpy_quantum_cosine(self):
+    def test_get_enthalpy_quantum_cosine(self):
         """
         Test the HinderedRotor.getEnthalpy() method using a cosine potential
         in the quantum limit.
         """
         self.mode.quantum = True
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = numpy.array([0.545814, 0.727200, 0.760918, 0.717496, 0.680767]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
-    
-    def test_getEnthalpy_quantum_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([0.545814, 0.727200, 0.760918, 0.717496, 0.680767]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.mode.getEnthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+
+    def test_get_enthalpy_quantum_fourier(self):
         """
-        Test the HinderedRotor.getEnthalpy() method using a Fourier series 
+        Test the HinderedRotor.getEnthalpy() method using a Fourier series
         potential in the quantum limit.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = numpy.array([0.548251, 0.728974, 0.762396, 0.718702, 0.681764]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-3*Hexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([0.548251, 0.728974, 0.762396, 0.718702, 0.681764]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.mode.getEnthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-3 * h_exp)
 
-    def test_getEntropy_free(self):
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Q = numpy.array([self.freemode.getPartitionFunction(T) for T in Tlist])
-        Sexplist = constants.R*(numpy.log(Q)+.5)
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.freemode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
-            
-    def test_getEntropy_classical_cosine(self):
+    def test_get_entropy_free(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        pf = np.array([self.freemode.getPartitionFunction(temperature) for temperature in t_list])
+        s_exp_list = constants.R * (np.log(pf) + .5)
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.freemode.getEntropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+
+    def test_get_entropy_classical_cosine(self):
         """
         Test the HinderedRotor.getEntropy() method using a cosine potential
         in the classical limit.
         """
         self.mode.quantum = False
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Sexplist = numpy.array([0.797089, 1.36543, 1.95062, 2.21083, 2.37608]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([0.797089, 1.36543, 1.95062, 2.21083, 2.37608]) * constants.R
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.mode.getEntropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
 
-    def test_getEntropy_classical_fourier(self):
+    def test_get_entropy_classical_fourier(self):
         """
-        Test the HinderedRotor.getEntropy() method using a Fourier series 
+        Test the HinderedRotor.getEntropy() method using a Fourier series
         potential in the classical limit.
         """
         self.mode.quantum = False
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Sexplist = numpy.array([0.795154, 1.36396, 1.95005, 2.21055, 2.37592]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([0.795154, 1.36396, 1.95005, 2.21055, 2.37592]) * constants.R
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.mode.getEntropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
 
-    def test_getEntropy_quantum_cosine(self):
+    def test_get_entropy_quantum_cosine(self):
         """
         Test the HinderedRotor.getEntropy() method using a cosine potential
         in the quantum limit.
         """
         self.mode.quantum = True
         self.mode.fourier = None
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Sexplist = numpy.array([0.881906, 1.39397, 1.95536, 2.21232, 2.37673]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
-    
-    def test_getEntropy_quantum_fourier(self):
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([0.881906, 1.39397, 1.95536, 2.21232, 2.37673]) * constants.R
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.mode.getEntropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+
+    def test_get_entropy_quantum_fourier(self):
         """
-        Test the HinderedRotor.getEntropy() method using a Fourier series 
+        Test the HinderedRotor.getEntropy() method using a Fourier series
         potential in the quantum limit.
         """
         self.mode.quantum = True
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Sexplist = numpy.array([0.880170, 1.39260, 1.95483, 2.21207, 2.37658]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-3*Sexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([0.880170, 1.39260, 1.95483, 2.21207, 2.37658]) * constants.R
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.mode.getEntropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-3 * s_exp)
 
-    def test_getSumOfStates_classical_cosine(self):
+    def test_get_sum_of_states_classical_cosine(self):
         """
         Test the HinderedRotor.getSumOfStates() method using a cosine potential
         in the classical limit.
         """
         self.mode.quantum = False
         self.mode.fourier = None
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
-        for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        sum_states = self.mode.getSumOfStates(e_list)
+        dens_states = self.mode.getDensityOfStates(e_list)
+        for n in range(10, len(e_list)):
+            self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
+                             '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
-    def test_getSumOfStates_classical_fourier(self):
+    def test_get_sum_of_states_classical_fourier(self):
         """
         Test the HinderedRotor.getSumOfStates() method using a Fourier series
         potential in the classical limit.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
         try:
-            sumStates = self.mode.getSumOfStates(Elist)
+            sum_states = self.mode.getSumOfStates(e_list)
             self.fail('NotImplementedError not raised by HinderedRotor.getSumOfStates()')
         except NotImplementedError:
             pass
-        
-    def test_getSumOfStates_quantum_cosine(self):
+
+    def test_get_sum_of_states_quantum_cosine(self):
         """
         Test the HinderedRotor.getSumOfStates() method using a cosine potential
         in the quantum limit.
         """
         self.mode.quantum = True
         self.mode.fourier = None
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
-        for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        sum_states = self.mode.getSumOfStates(e_list)
+        dens_states = self.mode.getDensityOfStates(e_list)
+        for n in range(10, len(e_list)):
+            self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
+                             '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
-    def test_getSumOfStates_quantum_fourier(self):
+    def test_get_sum_of_states_quantum_fourier(self):
         """
         Test the HinderedRotor.getSumOfStates() method using a Fourier series
         potential in the quantum limit.
         """
         self.mode.quantum = True
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
-        for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
-        
-    def test_getDensityOfStates_classical_cosine(self):
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        sum_states = self.mode.getSumOfStates(e_list)
+        dens_states = self.mode.getDensityOfStates(e_list)
+        for n in range(10, len(e_list)):
+            self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
+                             '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
+
+    def test_get_density_of_states_classical_cosine(self):
         """
         Test the HinderedRotor.getDensityOfStates() method using a classical
         potential in the classical limit.
         """
         self.mode.quantum = False
         self.mode.fourier = None
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        densStates = self.mode.getDensityOfStates(Elist)
-        T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.mode.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-2*Qexp)
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        dens_states = self.mode.getDensityOfStates(e_list)
+        temperature = 100
+        q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+        q_exp = self.mode.getPartitionFunction(temperature)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-2 * q_exp)
 
-    def test_getDensityOfStates_classical_fourier(self):
+    def test_get_density_of_states_classical_fourier(self):
         """
-        Test the HinderedRotor.getDensityOfStates() method using a Fourier 
+        Test the HinderedRotor.getDensityOfStates() method using a Fourier
         series potential in the classical limit.
         """
         self.mode.quantum = False
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
         try:
-            densStates = self.mode.getDensityOfStates(Elist)
+            dens_states = self.mode.getDensityOfStates(e_list)
             self.fail('NotImplementedError not raised by HinderedRotor.getDensityOfStates()')
         except NotImplementedError:
             pass
-        
-    def test_getDensityOfStates_quantum_cosine(self):
+
+    def test_get_density_of_states_quantum_cosine(self):
         """
         Test the HinderedRotor.getDensityOfStates() method using a classical
         potential in the quantum limit.
         """
         self.mode.quantum = True
         self.mode.fourier = None
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        densStates = self.mode.getDensityOfStates(Elist)
-        T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.mode.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-2*Qexp)
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        dens_states = self.mode.getDensityOfStates(e_list)
+        temperature = 100
+        q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+        q_exp = self.mode.getPartitionFunction(temperature)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-2 * q_exp)
 
-    def test_getDensityOfStates_quantum_fourier(self):
+    def test_get_density_of_states_quantum_fourier(self):
         """
-        Test the HinderedRotor.getDensityOfStates() method using a Fourier 
+        Test the HinderedRotor.getDensityOfStates() method using a Fourier
         series potential in the quantum limit.
         """
         self.mode.quantum = True
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        densStates = self.mode.getDensityOfStates(Elist)
-        T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.mode.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-2*Qexp)
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        dens_states = self.mode.getDensityOfStates(e_list)
+        temperature = 100
+        q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+        q_exp = self.mode.getPartitionFunction(temperature)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-2 * q_exp)
 
     def test_repr(self):
         """
@@ -470,14 +477,14 @@ class TestHinderedRotor(unittest.TestCase):
         self.assertEqual(self.mode.barrier.units, mode.barrier.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
-        
+
     def test_pickle(self):
         """
         Test that a HinderedRotor object can be pickled and unpickled with no
         loss of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units, 6)
         self.assertEqual(self.mode.fourier.value.shape, mode.fourier.value.shape)
@@ -488,8 +495,9 @@ class TestHinderedRotor(unittest.TestCase):
         self.assertEqual(self.mode.barrier.units, mode.barrier.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
-        
+
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
