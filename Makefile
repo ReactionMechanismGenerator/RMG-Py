@@ -4,9 +4,6 @@
 #
 ################################################################################
 
-DASPK=$(shell python -c 'import pydas.daspk; print(pydas.daspk.__file__)')
-DASSL=$(shell python -c 'import pydas.dassl; print(pydas.dassl.__file__)')
-
 .PHONY : all minimal main solver check cantherm clean install decython documentation mopac_travis
 
 all: main solver check
@@ -18,17 +15,7 @@ main:
 	python setup.py build_ext main --inplace --build-temp .
 
 solver:
-
-ifneq ($(DASPK),)
-	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi 
-else ifneq ($(DASSL),)
-	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
-	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
-else
-	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
-	@ python -c 'import pydas.dassl' 
-endif
+	@ python utilities.py check-pydas
 	python setup.py build_ext solver --inplace --build-temp .
 
 arkane:

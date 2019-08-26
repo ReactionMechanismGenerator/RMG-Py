@@ -198,6 +198,56 @@ def _check_symmetry():
         print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip().decode()))
 
 
+def check_pydas():
+    """
+    Check which solvers PyDAS was compiled with and update rmgpy/solver/settings.pxi accordingly.
+
+    If settings.pxi already exists, check it's contents to avoid unnecessary overwriting and compiling.
+    """
+    print('\nChecking for solvers before compiling...\n')
+
+    try:
+        import pydas.daspk
+    except ImportError:
+        daspk = False
+    else:
+        daspk = True
+
+    try:
+        import pydas.dassl
+    except ImportError:
+        dassl = False
+    else:
+        dassl = True
+
+    if daspk:
+        print('DASPK solver found. Compiling with DASPK and sensitivity analysis capability...\n')
+    elif dassl:
+        print('DASSL solver found. Compiling with DASSL. Sensitivity analysis capabilities are off...\n')
+    else:
+        print('No PyDAS solvers found. Please check that you have the latest version of PyDAS '
+              'or that you have activated the appropriate conda environment.\n')
+        raise Exception('Cannot compile RMG solver without PyDAS.')
+
+    settings_path = os.path.join(os.path.dirname(__file__), 'rmgpy', 'solver', 'settings.pxi')
+
+    if os.path.isfile(settings_path):
+        with open(settings_path, 'r') as f:
+            settings = f.read()
+
+        # Only update the settings file if its contents do not match what we found
+        write = not ((daspk and 'DASPK = 1' in settings) or (dassl and 'DASPK = 0' in settings))
+    else:
+        write = True
+
+    if write:
+        with open(settings_path, 'w') as f:
+            if daspk:
+                f.write('DEF DASPK = 1\n')
+            elif dassl:
+                f.write('DEF DASPK = 0\n')
+
+
 def clean(subdirectory=''):
     """
     Removes files generated during compilation.
@@ -343,13 +393,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RMG Code Utilities')
 
     parser.add_argument('command', metavar='COMMAND', type=str,
-                        choices=['check-dependencies', 'clean', 'clean-solver', 'update-headers'],
+                        choices=['check-dependencies',
+                                 'check-pydas',
+                                 'clean',
+                                 'clean-solver',
+                                 'update-headers'],
                         help='command to execute')
 
     args = parser.parse_args()
 
     if args.command == 'check-dependencies':
         check_dependencies()
+    elif args.command == 'check-pydas':
+        check_pydas()
     elif args.command == 'clean':
         clean()
     elif args.command == 'clean-solver':
