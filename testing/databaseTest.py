@@ -10,7 +10,8 @@ from copy import copy
 import rmgpy.kinetics
 import quantities as pq
 from rmgpy.data.base import LogicOr
-from rmgpy.molecule import Group, ImplicitBenzeneError, UnexpectedChargeError
+from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
+from rmgpy.molecule import Group
 from rmgpy.molecule.atomtype import atomTypes
 from rmgpy.molecule.pathfinder import find_shortest_path
 
