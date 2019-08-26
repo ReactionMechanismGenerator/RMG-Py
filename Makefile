@@ -15,8 +15,6 @@ minimal:
 	python setup.py build_ext minimal --inplace --build-temp .
 
 main:
-	@ echo "Checking you have PyDQED..."
-	@ python -c 'import pydqed; print(pydqed.__file__)'
 	python setup.py build_ext main --inplace --build-temp .
 
 solver:

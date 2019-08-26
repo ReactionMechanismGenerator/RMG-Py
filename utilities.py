@@ -114,6 +114,17 @@ def check_dependencies():
         location = lpsolve55.__file__
         print('{0:<30}{1}'.format('lpsolve55', location))
 
+    # Check for pydqed
+    try:
+        import pydqed
+    except ImportError:
+        print('{0:<30}{1}'.format('pydqed', 'Not found. Necessary for estimating statmech for pressure dependence.'))
+        missing = True
+    else:
+        version = pydqed.__version__
+        location = pydqed.__file__
+        print('{0:<15}{1:<15}{2}'.format('pydqed', version, location))
+
     # Check for pyrdl
     try:
         import py_rdl
