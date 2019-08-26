@@ -32,27 +32,29 @@
 This module contains unit tests of the rmgpy.molecule.atomtype module.
 """
 
-import unittest
 import os
 import os.path
+import unittest
 
-from rmgpy.molecule import  Molecule
+from rmgpy.molecule import Molecule
 from rmgpy.molecule.draw import MoleculeDrawer
 from rmgpy.species import Species
+
+
 ################################################################################
 
 class TestMoleculeDrawer(unittest.TestCase):
     """
     Contains unit tests of the MoleculeDrawer class.
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
         self.drawer = MoleculeDrawer()
         self.molecule = Molecule(SMILES='CC(=O)CC')
-        
+
     def testDrawPNG(self):
         """
         Test we can create PNG files from molecules.
@@ -115,7 +117,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         self.assertGreater(width, height)
 
     def testDrawNonStandardBonds(self):
-        
+
         spec = Species().fromSMILES('[CH2]C=C[CH2]')
         hybrid = spec.getResonanceHybrid()
         try:
@@ -124,6 +126,7 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairo import PDFSurface
         surface, cr, (xoff, yoff, width, height) = self.drawer.draw(hybrid, format='pdf')
         self.assertIsInstance(surface, PDFSurface)
+
 
 ################################################################################
 

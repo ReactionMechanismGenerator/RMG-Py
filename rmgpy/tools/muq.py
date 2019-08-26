@@ -28,6 +28,8 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
+
 import copy
 import logging
 from time import time
@@ -228,9 +230,9 @@ class ReactorModPiece(ModPiece):
                 for spcIndex, uncertaintyFactor in self.gUncertaintyFactors[gParam]:
                     mappedSpeciesScaling[spcIndex] += G_rv[i] * uncertaintyFactor
 
-            for rxnIndex, uncertaintyFactor in mappedReactionScaling.iteritems():
+            for rxnIndex, uncertaintyFactor in mappedReactionScaling.items():
                 self.scaleToKinetics(1.0, uncertaintyFactor, rxnIndex)
-            for spcIndex, uncertaintyFactor in mappedSpeciesScaling.iteritems():
+            for spcIndex, uncertaintyFactor in mappedSpeciesScaling.items():
                 self.scaleToThermo(1.0, uncertaintyFactor, spcIndex)
 
         # The model must be refreshed when there are any thermo changes
@@ -317,7 +319,7 @@ class ReactorModPiece(ModPiece):
         self.cantera.modifySpeciesThermo(speciesIndex, species, useChemkinIdentifier=True)
 
 
-class ReactorPCEFactory:
+class ReactorPCEFactory(object):
     """
     This class uses MUQ to generate adaptive Polynomial Chaos Expansions for global uncertainty analysis in chemical reaction systems. 
     It uses RMG, Cantera, and MUQ dependencies.

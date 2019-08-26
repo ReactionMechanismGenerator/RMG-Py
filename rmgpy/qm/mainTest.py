@@ -28,18 +28,17 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
-import subprocess
 import os
 import shutil
+import subprocess
+import unittest
 
 from rmgpy import getPath
-from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.molecule import Molecule
-from rmgpy.species import Species
-
 from rmgpy.qm.gaussian import Gaussian
+from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.qm.mopac import Mopac
+from rmgpy.species import Species
 
 
 class TestQMSettings(unittest.TestCase):
@@ -51,11 +50,11 @@ class TestQMSettings(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmg_path = os.path.normpath(os.path.join(getPath(), '..'))
 
         self.settings1 = QMSettings(software='mopac',
                                     method='pm3',
-                                    fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+                                    fileStore=os.path.join(rmg_path, 'testing', 'qm', 'QMfiles'),
                                     scratchDirectory=None,
                                     onlyCyclics=False,
                                     maxRadicalNumber=0,
@@ -209,10 +208,10 @@ class TestQMCalculator(unittest.TestCase):
         """
         Test that getThermoData() fails when expected.
         """
-        outputDirectory = os.path.join(self.mop4.settings.fileStore, '..', '..')
-        self.mop4.setDefaultOutputDirectory(outputDirectory)
-        self.gauss3.setDefaultOutputDirectory(outputDirectory)
-        self.molpro1.setDefaultOutputDirectory(outputDirectory)
+        output_directory = os.path.join(self.mop4.settings.fileStore, '..', '..')
+        self.mop4.setDefaultOutputDirectory(output_directory)
+        self.gauss3.setDefaultOutputDirectory(output_directory)
+        self.molpro1.setDefaultOutputDirectory(output_directory)
 
         mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
@@ -227,10 +226,10 @@ class TestQMCalculator(unittest.TestCase):
         """
         Test that Mocpac getThermoData() works correctly.
         """
-        outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-        self.mop1.setDefaultOutputDirectory(outputDirectory)
-        self.mop2.setDefaultOutputDirectory(outputDirectory)
-        self.mop3.setDefaultOutputDirectory(outputDirectory)
+        output_directory = os.path.join(self.mop1.settings.fileStore, '..', '..')
+        self.mop1.setDefaultOutputDirectory(output_directory)
+        self.mop2.setDefaultOutputDirectory(output_directory)
+        self.mop3.setDefaultOutputDirectory(output_directory)
 
         mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
@@ -263,9 +262,9 @@ class TestQMCalculator(unittest.TestCase):
         """
         Test that Gaussian getThermoData() works correctly.
         """
-        outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-        self.gauss1.setDefaultOutputDirectory(outputDirectory)
-        self.gauss2.setDefaultOutputDirectory(outputDirectory)
+        output_directory = os.path.join(self.mop1.settings.fileStore, '..', '..')
+        self.gauss1.setDefaultOutputDirectory(output_directory)
+        self.gauss2.setDefaultOutputDirectory(output_directory)
 
         mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
@@ -296,14 +295,14 @@ class TestQMCalculator(unittest.TestCase):
                           onlyCyclics=True,
                           maxRadicalNumber=0,
                           )
-        outputDirectory = os.path.join(qm.settings.fileStore, '..', '..')
-        qm.setDefaultOutputDirectory(outputDirectory)
+        output_directory = os.path.join(qm.settings.fileStore, '..', '..')
+        qm.setDefaultOutputDirectory(output_directory)
 
         spc1 = Species().fromSMILES('c1ccccc1')
         spc2 = Species().fromSMILES('CC1C=CC=CC=1')
-        spcList = [spc1, spc2]
+        spc_list = [spc1, spc2]
 
-        qm.runJobs(spcList, procnum=1)
+        qm.runJobs(spc_list, procnum=1)
 
 
 ################################################################################

@@ -32,12 +32,14 @@
 This module contains the TransportData class for storing transport properties.
 """
 
-import numpy
+from __future__ import division
 
-from rmgpy.rmgobject import RMGObject
+import numpy as np
+
+import rmgpy.constants as constants
 from rmgpy import quantity
 from rmgpy.quantity import DipoleMoment, Energy, Length, Volume
-import rmgpy.constants as constants
+from rmgpy.rmgobject import RMGObject
 
 
 class TransportData(RMGObject):
@@ -59,14 +61,14 @@ class TransportData(RMGObject):
     """
 
     def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None,
-                 rotrelaxcollnum=None, comment = ''):
+                 rotrelaxcollnum=None, comment=''):
         self.shapeIndex = shapeIndex
         try:
             self.epsilon = Energy(epsilon)
         except quantity.QuantityError:
-                self.epsilon = quantity.Temperature(epsilon)
-                self.epsilon.value_si *= constants.R
-                self.epsilon.units = 'kJ/mol'
+            self.epsilon = quantity.Temperature(epsilon)
+            self.epsilon.value_si *= constants.R
+            self.epsilon.units = 'kJ/mol'
         self.sigma = Length(sigma)
         self.dipoleMoment = DipoleMoment(dipoleMoment)
         self.polarizability = Volume(polarizability)
@@ -78,7 +80,7 @@ class TransportData(RMGObject):
         Return a string representation that can be used to reconstruct the
         TransportData object.
         """
-        attributes=[]
+        attributes = []
         if self.shapeIndex is not None:
             attributes.append('shapeIndex={0!r}'.format(self.shapeIndex))
         if self.epsilon is not None:
@@ -100,7 +102,8 @@ class TransportData(RMGObject):
         """
         A helper function used when picking a TransportData object.
         """
-        return (TransportData, (self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment, self.polarizability, self.rotrelaxcollnum, self.comment))
+        return (TransportData, (self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment,
+                                self.polarizability, self.rotrelaxcollnum, self.comment))
 
     def getCollisionFrequency(self, T, M, mu):
         """
@@ -113,12 +116,12 @@ class TransportData(RMGObject):
         """
         sigma = self.sigma.value_si
         epsilon = self.epsilon.value_si
-        M *= constants.Na       # mol/m^3 -> molecules/m^3
-        Tred = constants.R*T / epsilon
-        omega22 = 1.16145 * Tred**(-0.14874) + 0.52487 * numpy.exp(-0.77320 * Tred) + 2.16178 * numpy.exp(-2.43787 * Tred)
+        M *= constants.Na  # mol/m^3 -> molecules/m^3
+        Tred = constants.R * T / epsilon
+        omega22 = 1.16145 * Tred ** (-0.14874) + 0.52487 * np.exp(-0.77320 * Tred) + 2.16178 * np.exp(-2.43787 * Tred)
         mu *= constants.amu
-        return omega22 * numpy.sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma * sigma * M
-    
+        return omega22 * np.sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma * sigma * M
+
     def toCantera(self):
         """
         Returns a Cantera GasTransportData object.
@@ -130,27 +133,28 @@ class TransportData(RMGObject):
         These are the units used in in CK-style input files.
         """
         import cantera as ct
-        
-        ctTransport = ct.GasTransportData()
+
+        ct_transport = ct.GasTransportData()
 
         if self.shapeIndex == 0:
             geometry = 'atom'
         elif self.shapeIndex == 1:
             geometry = 'linear'
         elif self.shapeIndex == 2:
-            geometry = 'nonlinear' 
-        
+            geometry = 'nonlinear'
+
         # collision diameter in angstroms
         diameter = self.sigma.value_si * 1e10
         # Well depth in Kelvins
-        well_depth = self.epsilon.value_si / constants.R   
+        well_depth = self.epsilon.value_si / constants.R
         # Dipole in debye
         dipole = self.dipoleMoment.value_si * constants.c * 1e21 if self.dipoleMoment else 0.0
         # polarizability in cubic angstroms
         polarizability = self.polarizability.value_si * 1e30 if self.polarizability else 0.0
         rotational_relaxation = self.rotrelaxcollnum if self.rotrelaxcollnum else 0.0
         acentric_factor = 0.0
-        
-        ctTransport.set_customary_units(geometry, diameter, well_depth, dipole, polarizability, rotational_relaxation, acentric_factor)
 
-        return ctTransport
+        ct_transport.set_customary_units(geometry, diameter, well_depth, dipole, polarizability,
+                                         rotational_relaxation, acentric_factor)
+
+        return ct_transport

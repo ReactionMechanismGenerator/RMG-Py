@@ -37,6 +37,7 @@ import argparse
 import os
 import platform
 import re
+import shutil
 import subprocess
 
 
@@ -159,13 +160,21 @@ def clean(subdirectory=''):
     else:
         extensions = ['.so', '.pyc']
 
-    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), subdirectory)
+    # Remove temporary build files
+    print('Removing build directory...')
+    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build', subdirectory)
+    shutil.rmtree(directory)
 
+    # Remove C shared object files and compiled Python files
+    print('Removing compiled files...')
+    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), subdirectory)
     for root, dirs, files in os.walk(directory):
         for f in files:
             ext = os.path.splitext(f)[1]
             if ext in extensions:
                 os.remove(os.path.join(root, f))
+
+    print('Cleanup completed.')
 
 
 def update_headers():

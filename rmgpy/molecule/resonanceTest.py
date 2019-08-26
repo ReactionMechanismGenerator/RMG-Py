@@ -28,72 +28,74 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
+
 import unittest
+
 from external.wip import work_in_progress
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.resonance import _clar_optimization, _clar_transformation, generate_clar_structures, \
+    generate_kekule_structure, generate_optimal_aromatic_resonance_structures, generate_resonance_structures
 
-from .molecule import Molecule
-
-from .resonance import *
-from .resonance import _clar_optimization, _clar_transformation
 
 class ResonanceTest(unittest.TestCase):
 
     def testAllylShift(self):
         """Test allyl shift for hexadienyl radical"""
-        molList = generate_resonance_structures(Molecule(SMILES="C=C[CH]C=CC"))
-        self.assertEqual(len(molList), 3)
+        mol_list = generate_resonance_structures(Molecule(SMILES="C=C[CH]C=CC"))
+        self.assertEqual(len(mol_list), 3)
 
     def testTriradAllylShift(self):
         """Test allyl shift for a tri-rad carbon"""
-        molList = generate_resonance_structures(Molecule(SMILES="[C]N=N"))
-        self.assertEqual(len(molList), 3)
-        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))  # expecting [C]=[N+.][NH-]
+        mol_list = generate_resonance_structures(Molecule(SMILES="[C]N=N"))
+        self.assertEqual(len(mol_list), 3)
+        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in mol_list]))  # expecting [C]=[N+.][NH-]
 
     def testOxime(self):
         """Test resonance structure generation for CC=N[O] radical
 
         Simple case for lone pair <=> radical resonance"""
-        molList = generate_resonance_structures(Molecule(SMILES="CC=N[O]"))
-        self.assertEqual(len(molList), 3)
-        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
+        mol_list = generate_resonance_structures(Molecule(SMILES="CC=N[O]"))
+        self.assertEqual(len(mol_list), 3)
+        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in mol_list]))
 
     def testRingAllylShift(self):
         """Test allyl shift for a cyclic species with heteroatoms"""
-        molList = generate_resonance_structures(Molecule(SMILES="[CH]1C=NC=N1"))
-        self.assertEqual(len(molList), 5)
+        mol_list = generate_resonance_structures(Molecule(SMILES="[CH]1C=NC=N1"))
+        self.assertEqual(len(mol_list), 5)
 
     def testCarbeneAllylShift(self):
         """Test allyl shift for a carbene species"""
-        molList = generate_resonance_structures(Molecule(SMILES="[C]=C=O"))
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(Molecule(SMILES="[C]=C=O"))
+        self.assertEqual(len(mol_list), 2)
 
     def testCH2CHCHO(self):
         """Test resonance structure generation for C=C[CH][O] bi-radical
 
         Test case for allyl bi-radical resonance"""
-        molList = generate_resonance_structures(Molecule(SMILES="C=C[CH][O]"))
-        self.assertEqual(len(molList), 3)
+        mol_list = generate_resonance_structures(Molecule(SMILES="C=C[CH][O]"))
+        self.assertEqual(len(mol_list), 3)
 
     def CH2NO(self):
         """Test combined resonance transitions of allyl-shift and lonePair-radical"""
-        molList = generate_resonance_structures(Molecule(SMILES="[CH2]N=O"))
-        self.assertEqual(len(molList), 3)
+        mol_list = generate_resonance_structures(Molecule(SMILES="[CH2]N=O"))
+        self.assertEqual(len(mol_list), 3)
 
     def CH3S2O2(self):
         """Test combined resonance transitions of one_pair_radical_multiple_bond"""
-        molList = generate_resonance_structures(Molecule(SMILES="CSS(=O)[O]"))
-        self.assertEqual(len(molList), 3)
+        mol_list = generate_resonance_structures(Molecule(SMILES="CSS(=O)[O]"))
+        self.assertEqual(len(mol_list), 3)
 
     def N2SO2(self):
         """Test the resonance transitions of a species with several hereroatoms and several multiple bonds"""
-        molList = generate_resonance_structures(Molecule(SMILES="[N-]=[N+]=S(=O)=O"))
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(Molecule(SMILES="[N-]=[N+]=S(=O)=O"))
+        self.assertEqual(len(mol_list), 2)
 
     def NSH(self):
         """Test that a resonance structure with a minimal octet deviation but higher charge span is filtered out"""
-        molList = generate_resonance_structures(Molecule(SMILES="N#S"))
-        self.assertEqual(len(molList), 1)
-        self.assertTrue(all([atom.charge == 0 for atom in molList[0].vertices]))
+        mol_list = generate_resonance_structures(Molecule(SMILES="N#S"))
+        self.assertEqual(len(mol_list), 1)
+        self.assertTrue(all([atom.charge == 0 for atom in mol_list[0].vertices]))
 
     def testNCO(self):
         """Test resonance structure generation for NCO
@@ -110,26 +112,26 @@ class ResonanceTest(unittest.TestCase):
 
         Test case for the lone pair <=> radical resonance transition.
         Also tests that the filtering function allows charge separation when the radical site is changed."""
-        molList = generate_resonance_structures(Molecule(SMILES="[O]N=O"))
-        self.assertEqual(len(molList), 2)
-        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))  # one of the
+        mol_list = generate_resonance_structures(Molecule(SMILES="[O]N=O"))
+        self.assertEqual(len(mol_list), 2)
+        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in mol_list]))  # one of the
         # structures should be charged
 
     def testN2O(self):
         """Test resonance structure generation for N#[N+][O-]
 
         A classic N5ddc <=> N5tc resonance transition"""
-        molList = generate_resonance_structures(Molecule(SMILES="N#[N+][O-]"))
-        self.assertEqual(len(molList), 2)
-        self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))  # both structures
+        mol_list = generate_resonance_structures(Molecule(SMILES="N#[N+][O-]"))
+        self.assertEqual(len(mol_list), 2)
+        self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in mol_list]))  # both structures
         # should have some charged atoms
 
         sbonds = 0
         dbonds = 0
         tbonds = 0
-        for mol in molList:
+        for mol in mol_list:
             for atom in mol.atoms:
-                for bond in atom.bonds.itervalues():
+                for bond in atom.bonds.values():
                     if bond.isSingle():
                         sbonds += 1
                     elif bond.isDouble():
@@ -145,9 +147,9 @@ class ResonanceTest(unittest.TestCase):
 
         Simple case for N5ddc <=> N5tc resonance
         Azides are described by three resonance structures: N=[N+]=[N-] <=> [NH-][N+]#N <=> [NH+]#[N+][N-2]"""
-        molList = generate_resonance_structures(Molecule(SMILES="CCN=[N+]=[N-]"))
-        self.assertEqual(len(molList), 2)
-        self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
+        mol_list = generate_resonance_structures(Molecule(SMILES="CCN=[N+]=[N-]"))
+        self.assertEqual(len(mol_list), 2)
+        self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in mol_list]))
 
     def test_ozone(self):
         """Test resonance structure generation for O3, S3 and SO2.
@@ -187,7 +189,7 @@ class ResonanceTest(unittest.TestCase):
         """Test the N5dc radical resonance transformation
 
         We should see N=[N+]([O])([O-]) <=> [NH-][N+]([O])=O
-        Two isomorphic structures should be included in molList: N=[N+]([O])([O-]) <=> N=[N+]([O-])([O])"""
+        Two isomorphic structures should be included in mol_list: N=[N+]([O])([O-]) <=> N=[N+]([O-])([O])"""
         mol = Molecule(SMILES="N=[N+]([O-])[O]")
         mol_list = generate_resonance_structures(mol, keep_isomorphic=True)
         self.assertEqual(len(mol_list), 6)
@@ -215,53 +217,53 @@ class ResonanceTest(unittest.TestCase):
         """Test resonance structure generation for styryl, with radical on branch
 
         In this case, the radical can be delocalized into the aromatic ring"""
-        molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1[C]=C"))
-        self.assertEqual(len(molList), 4)
+        mol_list = generate_resonance_structures(Molecule(SMILES="c1ccccc1[C]=C"))
+        self.assertEqual(len(mol_list), 4)
 
     def testStyryl2(self):
         """Test resonance structure generation for styryl, with radical on ring
 
         In this case, the radical can be delocalized into the aromatic ring"""
-        molList = generate_resonance_structures(Molecule(SMILES="C=C=C1C=C[CH]C=C1"))
-        self.assertEqual(len(molList), 3)
+        mol_list = generate_resonance_structures(Molecule(SMILES="C=C=C1C=C[CH]C=C1"))
+        self.assertEqual(len(mol_list), 3)
 
     def testNaphthyl(self):
         """Test resonance structure generation for naphthyl radical
 
         In this case, the radical is orthogonal to the pi-orbital plane and cannot delocalize"""
-        molList = generate_resonance_structures(Molecule(SMILES="c12[c]cccc1cccc2"))
-        self.assertEqual(len(molList), 4)
+        mol_list = generate_resonance_structures(Molecule(SMILES="c12[c]cccc1cccc2"))
+        self.assertEqual(len(mol_list), 4)
 
     def testMethylNapthalene(self):
         """Test resonance structure generation for methyl naphthalene
 
         Example of stable polycyclic aromatic species"""
-        molList = generate_resonance_structures(Molecule(SMILES="CC1=CC=CC2=CC=CC=C12"))
-        self.assertEqual(len(molList), 4)
+        mol_list = generate_resonance_structures(Molecule(SMILES="CC1=CC=CC2=CC=CC=C12"))
+        self.assertEqual(len(mol_list), 4)
 
     def testMethylPhenanthrene(self):
         """Test resonance structure generation for methyl phenanthrene
 
         Example of stable polycyclic aromatic species"""
-        molList = generate_resonance_structures(Molecule(SMILES="CC1=CC=CC2C3=CC=CC=C3C=CC=21"))
-        self.assertEqual(len(molList), 3)
+        mol_list = generate_resonance_structures(Molecule(SMILES="CC1=CC=CC2C3=CC=CC=C3C=CC=21"))
+        self.assertEqual(len(mol_list), 3)
 
     def testMethylPhenanthreneRadical(self):
         """Test resonance structure generation for methyl phenanthrene radical
 
         Example radical polycyclic aromatic species where the radical can delocalize"""
-        molList = generate_resonance_structures(Molecule(SMILES="[CH2]C1=CC=CC2C3=CC=CC=C3C=CC=21"))
-        self.assertEqual(len(molList), 9)
+        mol_list = generate_resonance_structures(Molecule(SMILES="[CH2]C1=CC=CC2C3=CC=CC=C3C=CC=21"))
+        self.assertEqual(len(mol_list), 9)
 
     def testAromaticWithLonePairResonance(self):
         """Test resonance structure generation for aromatic species with lone pair <=> radical resonance"""
-        molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1CC=N[O]"))
-        self.assertEqual(len(molList), 4)
+        mol_list = generate_resonance_structures(Molecule(SMILES="c1ccccc1CC=N[O]"))
+        self.assertEqual(len(mol_list), 4)
 
     def testAromaticWithNResonance(self):
         """Test resonance structure generation for aromatic species with lone pair resonance"""
-        molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1CCN=[N+]=[N-]"))
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(Molecule(SMILES="c1ccccc1CCN=[N+]=[N-]"))
+        self.assertEqual(len(mol_list), 2)
 
     def testAromaticWithONResonance(self):
         """Test resonance structure generation for aromatic species with heteroatoms
@@ -269,7 +271,7 @@ class ResonanceTest(unittest.TestCase):
         This test was specifically designed to recreate RMG-Py issue #1598.
         Key conditions: having heteroatoms, starting with aromatic structure, and keep_isomorphic=True
         """
-        molList = generate_resonance_structures(Molecule().fromAdjacencyList("""
+        mol_list = generate_resonance_structures(Molecule().fromAdjacencyList("""
 multiplicity 2
 1 O u0 p2 c0 {4,S} {16,S}
 2 O u1 p2 c0 {4,S}
@@ -288,94 +290,94 @@ multiplicity 2
 15 H u0 p0 c0 {7,S}
 16 H u0 p0 c0 {1,S}
 """), keep_isomorphic=True)
-        self.assertEqual(len(molList), 1)
+        self.assertEqual(len(mol_list), 1)
 
     def testNoClarStructures(self):
         """Test that we can turn off Clar structure generation."""
-        molList = generate_resonance_structures(Molecule(SMILES='C1=CC=CC2C3=CC=CC=C3C=CC=21'), clar_structures=False)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(Molecule(SMILES='C1=CC=CC2C3=CC=CC=C3C=CC=21'), clar_structures=False)
+        self.assertEqual(len(mol_list), 2)
 
     def testC13H11Rad(self):
         """Test resonance structure generation for p-methylbenzylbenzene radical
 
         Has multiple resonance structures that break aromaticity of a ring"""
-        molList = generate_resonance_structures(Molecule(SMILES="[CH](c1ccccc1)c1ccc(C)cc1"))
-        self.assertEqual(len(molList), 6)
+        mol_list = generate_resonance_structures(Molecule(SMILES="[CH](c1ccccc1)c1ccc(C)cc1"))
+        self.assertEqual(len(mol_list), 6)
 
     def testC8H8(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene
 
         Example of molecule that RDKit considers aromatic, but RMG does not"""
-        molList = generate_resonance_structures(Molecule(SMILES="C=C1C=CC=CC1=C"))
-        self.assertEqual(len(molList), 1)
+        mol_list = generate_resonance_structures(Molecule(SMILES="C=C1C=CC=CC1=C"))
+        self.assertEqual(len(mol_list), 1)
 
     def testC8H7J(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene radical
 
         Example of molecule that RDKit considers aromatic, but RMG does not"""
-        molList = generate_resonance_structures(Molecule(SMILES="C=C1C=CC=CC1=[CH]"))
-        self.assertEqual(len(molList), 1)
+        mol_list = generate_resonance_structures(Molecule(SMILES="C=C1C=CC=CC1=[CH]"))
+        self.assertEqual(len(mol_list), 1)
 
     def testC8H7J2(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene radical
 
         Example of molecule that RDKit considers aromatic, but RMG does not"""
-        molList = generate_resonance_structures(Molecule(SMILES="C=C1C=[C]C=CC1=C"))
-        self.assertEqual(len(molList), 1)
+        mol_list = generate_resonance_structures(Molecule(SMILES="C=C1C=[C]C=CC1=C"))
+        self.assertEqual(len(mol_list), 1)
 
     def test_C9H9_aro(self):
         """Test cyclopropyl benzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH]1CC1c1ccccc1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
-    
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
+
     def test_C9H9_kek(self):
         """Test cyclopropyl benzene radical, kekulized SMILES"""
         mol = Molecule(SMILES="[CH]1CC1C1C=CC=CC=1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
 
     def test_Benzene_aro(self):
         """Test benzene, aromatic SMILES"""
         mol = Molecule(SMILES="c1ccccc1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
-    
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
+
     def test_Benzene_kek(self):
         """Test benzene, kekulized SMILES"""
         mol = Molecule(SMILES="C1C=CC=CC=1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
 
     def test_C9H11_aro(self):
         """Test propylbenzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH2]CCc1ccccc1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
 
     def test_C10H11_aro(self):
         """Test cyclobutylbenzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH]1CCC1c1ccccc1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
 
     def test_C9H10_aro(self):
         """Test cyclopropylbenzene, aromatic SMILES"""
         mol = Molecule(SMILES="C1CC1c1ccccc1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
 
     def test_C10H12_aro(self):
         """Test cyclopropylmethyl benzene, aromatic SMILES"""
         mol = Molecule(SMILES="C1CC1c1c(C)cccc1")
-        molList = generate_resonance_structures(mol)
-        self.assertEqual(len(molList), 2)
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
 
     def test_C9H10_aro_2(self):
         """Test cyclopropyl benzene, generate aromatic resonance isomers"""
         mol = Molecule(SMILES="C1CC1c1ccccc1")
-        molList = generate_optimal_aromatic_resonance_structures(mol)
-        self.assertEqual(len(molList), 1)
+        mol_list = generate_optimal_aromatic_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 1)
 
     def test_aryne_1_ring(self):
         """Test aryne resonance for benzyne"""
@@ -778,14 +780,14 @@ multiplicity 2
 
         bonds = set()
         for atom in out[0].atoms:
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 bonds.add(bond)
-        dBonds = 0
+        d_bonds = 0
         for bond in bonds:
             if bond.isDouble():
-                dBonds += 1
+                d_bonds += 1
 
-        self.assertEqual(dBonds, 5)
+        self.assertEqual(d_bonds, 5)
 
     def testKekulizePhenanthrene(self):
         """Test that we can kekulize phenanthrene."""
@@ -822,14 +824,14 @@ multiplicity 2
 
         bonds = set()
         for atom in out[0].atoms:
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 bonds.add(bond)
-        dBonds = 0
+        d_bonds = 0
         for bond in bonds:
             if bond.isDouble():
-                dBonds += 1
+                d_bonds += 1
 
-        self.assertEqual(dBonds, 7)
+        self.assertEqual(d_bonds, 7)
 
     def testKekulizePyrene(self):
         """Test that we can kekulize pyrene."""
@@ -868,14 +870,14 @@ multiplicity 2
 
         bonds = set()
         for atom in out[0].atoms:
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 bonds.add(bond)
-        dBonds = 0
+        d_bonds = 0
         for bond in bonds:
             if bond.isDouble():
-                dBonds += 1
+                d_bonds += 1
 
-        self.assertEqual(dBonds, 8)
+        self.assertEqual(d_bonds, 8)
 
     def testKekulizeCorannulene(self):
         """Test that we can kekulize corannulene."""
@@ -918,14 +920,14 @@ multiplicity 2
 
         bonds = set()
         for atom in out[0].atoms:
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 bonds.add(bond)
-        dBonds = 0
+        d_bonds = 0
         for bond in bonds:
             if bond.isDouble():
-                dBonds += 1
+                d_bonds += 1
 
-        self.assertEqual(dBonds, 10)
+        self.assertEqual(d_bonds, 10)
 
     def testKekulizeCoronene(self):
         """Test that we can kekulize coronene."""
@@ -974,14 +976,14 @@ multiplicity 2
 
         bonds = set()
         for atom in out[0].atoms:
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 bonds.add(bond)
-        dBonds = 0
+        d_bonds = 0
         for bond in bonds:
             if bond.isDouble():
-                dBonds += 1
+                d_bonds += 1
 
-        self.assertEqual(dBonds, 12)
+        self.assertEqual(d_bonds, 12)
 
     def testKekulizeBridgedAromatic(self):
         """Test that we can kekulize a bridged polycyclic aromatic species."""
@@ -1010,14 +1012,14 @@ multiplicity 2
 
         bonds = set()
         for atom in out[0].atoms:
-            for bond in atom.bonds.itervalues():
+            for bond in atom.bonds.values():
                 bonds.add(bond)
-        dBonds = 0
+        d_bonds = 0
         for bond in bonds:
             if bond.isDouble():
-                dBonds += 1
+                d_bonds += 1
 
-        self.assertEqual(dBonds, 5)
+        self.assertEqual(d_bonds, 5)
 
     def testMultipleKekulizedResonanceIsomersRad(self):
         """Test we can make all resonance structures of o-cresol radical"""
@@ -1041,10 +1043,10 @@ multiplicity 2
 """
         molecule = Molecule().fromAdjacencyList(adjlist_aromatic)
         self.assertTrue(molecule.isAromatic(), "Starting molecule should be aromatic")
-        molList = generate_resonance_structures(molecule)
-        self.assertEqual(len(molList), 4, "Expected 4 resonance structures, but generated {0}.".format(len(molList)))
+        mol_list = generate_resonance_structures(molecule)
+        self.assertEqual(len(mol_list), 4, "Expected 4 resonance structures, but generated {0}.".format(len(mol_list)))
         aromatic = 0
-        for mol in molList:
+        for mol in mol_list:
             if mol.isAromatic():
                 aromatic += 1
         self.assertEqual(aromatic, 1, "Should only have 1 aromatic resonance structure")

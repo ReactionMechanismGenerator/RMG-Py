@@ -28,23 +28,26 @@
 #                                                                             #
 ###############################################################################
 
-import csv
-import numpy
-from rmgpy.chemkin import getSpeciesIdentifier
-
 """
 Assume ckcsv contains only one Soln
 """
 
+import csv
+
+import numpy as np
+
+from rmgpy.chemkin import getSpeciesIdentifier
+
+
 def getROPFromCKCSV(ckcsvFile):
     """
-    from ckcsv file get three dicts: firstColDict (e.g., Time/Distance_units:numpy.array)
+    from ckcsv file get three dicts: first_col_dict (e.g., Time/Distance_units:numpy.array)
     spc_total_dict (e.g., species_string: (header,numpy.array)), where header is sth like
     'spc ROP GasRxn Total_units', and 
     spc_indiv_dict (e.g., species_string: list of (header,numpy.array)), where header is 
     sth like 'spc ROP GasRxn#123_units'
     """
-    firstColDict = {} # store Time/Distance series
+    first_col_dict = {}  # store Time/Distance series
     spc_total_dict = {}
     spc_indiv_dict = {}
     read_flag = False
@@ -61,23 +64,23 @@ def getROPFromCKCSV(ckcsvFile):
                 if 'Soln' in tokens[-1]:
                     raise Exception("This function only supports ckcsv with one Soln!")
                 units = row[1].strip()[1:-1].lower()
-                header = tokens[0] + '_(' + units + ')' 
+                header = tokens[0] + '_(' + units + ')'
 
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)                
-                contentCol *= {'sec': 1.0, 'min': 60., 'hr': 3600., 'msec': 1e-3, 'microsec': 1e-6}[units]
-                firstColDict[header] = contentCol
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col *= {'sec': 1.0, 'min': 60., 'hr': 3600., 'msec': 1e-3, 'microsec': 1e-6}[units]
+                first_col_dict[header] = content_col
                 continue
-            
-            if tokens[0] == 'Distance':      
+
+            if tokens[0] == 'Distance':
                 if 'Soln' in tokens[-1]:
                     raise Exception("This function only supports ckcsv with one Soln!")
 
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
-                
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
-                contentCol *= {'cm': 1.0, 'mm': 0.1, 'm': 100.}[units]
-                firstColDict[header] = contentCol
+
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col *= {'cm': 1.0, 'mm': 0.1, 'm': 100.}[units]
+                first_col_dict[header] = content_col
                 continue
 
             if len(tokens) > 1 and 'ROP' in tokens:
@@ -86,31 +89,31 @@ def getROPFromCKCSV(ckcsvFile):
                 species_string = label.split('_ROP_')[0]
                 units = row[1].strip()[1:-1].lower()
                 header = ''
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
+                content_col = np.array([float(r) for r in row[2:]], np.float)
                 if tokens[-1] == 'Total':
                     header += species_string + ' ROP ' + tokens[2] \
-                    + ' ' + tokens[-1] + '_(' + units + ')'
+                              + ' ' + tokens[-1] + '_(' + units + ')'
                     if species_string not in spc_total_dict:
-                        spc_total_dict[species_string] = (header, contentCol)
+                        spc_total_dict[species_string] = (header, content_col)
                     else:
                         raise Exception("ckcsv file has two {} which is not in proper format!".format(species_string))
-                else: # where tokens[-1] is something like GasRxn#123
+                else:  # where tokens[-1] is something like GasRxn#123
                     header += species_string + ' ROP ' \
-                    + tokens[-1] + '_(' + units + ')'
+                              + tokens[-1] + '_(' + units + ')'
                     if species_string not in spc_indiv_dict:
-                        spc_indiv_dict[species_string] = [(header, contentCol)]
+                        spc_indiv_dict[species_string] = [(header, content_col)]
                     else:
-                        spc_indiv_dict[species_string].append((header, contentCol))
+                        spc_indiv_dict[species_string].append((header, content_col))
 
+    return first_col_dict, spc_total_dict, spc_indiv_dict
 
-    return firstColDict, spc_total_dict, spc_indiv_dict
 
 def getConcentrationDictFromCKCSV(ckcsvFile):
     """
-    from ckcsv file get two dicts: firstColDict (e.g., Time/Distance_units:numpy.array)
+    from ckcsv file get two dicts: first_col_dict (e.g., Time/Distance_units:numpy.array)
     spc_conc_dict (e.g., species_string: numpy.array)
     """
-    firstColDict = {} # store Time/Distance series
+    first_col_dict = {}  # store Time/Distance series
     spc_conc_dict = {}
 
     with open(ckcsvFile, 'r') as stream:
@@ -122,23 +125,23 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 if 'Soln' in tokens[-1]:
                     raise Exception("This function only supports ckcsv with one Soln!")
                 units = row[1].strip()[1:-1].lower()
-                header = tokens[0] + '_(' + units + ')' 
+                header = tokens[0] + '_(' + units + ')'
 
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)                
-                contentCol *= {'sec': 1.0, 'min': 60., 'hr': 3600., 'msec': 1e-3, 'microsec': 1e-6}[units]
-                firstColDict[header] = contentCol
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col *= {'sec': 1.0, 'min': 60., 'hr': 3600., 'msec': 1e-3, 'microsec': 1e-6}[units]
+                first_col_dict[header] = content_col
                 continue
-            
-            if tokens[0] == 'Distance':      
+
+            if tokens[0] == 'Distance':
                 if 'Soln' in tokens[-1]:
                     raise Exception("This function only supports ckcsv with one Soln!")
 
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
-                
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
-                contentCol *= {'cm': 1.0, 'mm': 0.1, 'm': 100.}[units]
-                firstColDict[header] = contentCol
+
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col *= {'cm': 1.0, 'mm': 0.1, 'm': 100.}[units]
+                first_col_dict[header] = content_col
                 continue
 
             if tokens[0] == 'Volume':
@@ -148,9 +151,9 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
-                contentCol *= {'cm3': 1.0, 'm3': 1.00e+6}[units]
-                firstColDict[header] = contentCol
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col *= {'cm3': 1.0, 'm3': 1.00e+6}[units]
+                first_col_dict[header] = content_col
                 continue
 
             if tokens[0] == 'Temperature':
@@ -160,20 +163,20 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
-                firstColDict[header] = contentCol
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                first_col_dict[header] = content_col
                 continue
 
-            if tokens[0] == 'Pressure':      
+            if tokens[0] == 'Pressure':
                 if 'Soln' in tokens[-1]:
                     raise Exception("This function only supports ckcsv with one Soln!")
 
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
-                
-                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
-                contentCol *= {'bar': 1.0, 'atm': 1.01325}[units]
-                firstColDict[header] = contentCol
+
+                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col *= {'bar': 1.0, 'atm': 1.01325}[units]
+                first_col_dict[header] = content_col
                 continue
 
             # read concentration (mole fraction profile)
@@ -182,17 +185,17 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                     if 'Soln' in tokens[-1]:
                         raise Exception("This function only supports ckcsv with one Soln!")
                     species_string = label.split('Mole_fraction_')[1]
-                    contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
+                    content_col = np.array([float(r) for r in row[2:]], np.float)
                     header = species_string + ' Mole_fraction'
                     if species_string not in spc_conc_dict:
-                        spc_conc_dict[species_string] = contentCol
+                        spc_conc_dict[species_string] = content_col
                     else:
                         raise Exception("ckcsv file has two {} which is not in proper format!".format(species_string))
 
-    return firstColDict, spc_conc_dict
+    return first_col_dict, spc_conc_dict
+
 
 def getFluxGraphEdgesDict(spc_rop_dict, core_reactions):
-    
     graph_edges_dict = {}
     for rxn in core_reactions:
         for pair in rxn.pairs:
@@ -233,6 +236,7 @@ def getFluxGraphEdgesDict(spc_rop_dict, core_reactions):
                         graph_edges_dict[pair][rxn] = -flux
     return graph_edges_dict
 
+
 def getROPFlux(spc_rop_dict, species_string, rxn_index):
     """
     get the flux (numpy:array) for a given species and given rxn
@@ -241,8 +245,8 @@ def getROPFlux(spc_rop_dict, species_string, rxn_index):
         flux_tup_list = spc_rop_dict[species_string]
         for flux_tup in flux_tup_list:
             header = flux_tup[0]
-            rxnNum = int(header.split("Rxn#")[1].split('_')[0])
-            if rxnNum == rxn_index:
+            rxn_num = int(header.split("Rxn#")[1].split('_')[0])
+            if rxn_num == rxn_index:
                 flux = flux_tup[1]
                 return flux
     return []

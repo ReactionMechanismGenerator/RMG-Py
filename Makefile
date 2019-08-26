@@ -12,12 +12,12 @@ DASSL=$(shell python -c 'import pydas.dassl; print(pydas.dassl.__file__)')
 all: main solver check
 
 minimal:
-	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext minimal --inplace --build-temp .
 
 main:
 	@ echo "Checking you have PyDQED..."
 	@ python -c 'import pydqed; print(pydqed.__file__)'
-	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext main --inplace --build-temp .
 
 solver:
 
@@ -31,10 +31,10 @@ else
 	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
 	@ python -c 'import pydas.dassl' 
 endif
-	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext solver --inplace --build-temp .
 
 arkane:
-	python setup.py build_ext arkane --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext arkane --inplace --build-temp .
 
 check:
 	@ python utilities.py check-dependencies
@@ -44,24 +44,10 @@ documentation:
 	@ echo "Start at: documentation/build/html/index.html"
 
 clean:
-	@ echo "Removing build directory..."
-	@ python setup.py clean --build-temp build
-	@ echo "Removing compiled files..."
 	@ python utilities.py clean
-	@ echo "Cleanup completed."
 
 clean-solver:
-	@ echo "Removing solver build directories..."
-ifeq ($(OS),Windows_NT)
-	@ -rd /s /q build\pyrex\rmgpy\solver
-	@ -rd /s /q build\build\pyrex\rmgpy\solver
-else
-	@ -rm -r build/pyrex/rmgpy/solver/
-	@ -rm -r build/build/pyrex/rmgpy/solver/
-endif
-	@ echo "Removing compiled files..."
 	@ python utilities.py clean-solver
-	@ echo "Cleanup completed."
 
 install:
 	@ echo "Checking you have PyDQED..."

@@ -28,14 +28,18 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
+
 import os
 
 import matplotlib as mpl
+
 # Force matplotlib to not use any Xwindows backend.
 # This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
-mpl.use('Agg')
+# Do not warn if the backend has already been set, e.g. when running from an IPython notebook
+mpl.use('Agg', warn=False)
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 from rmgpy.tools.data import GenericData
 
@@ -48,7 +52,7 @@ def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList,
     """
 
     for species in sensitiveSpeciesList:
-        csvFile = os.path.join(
+        csv_file = os.path.join(
             outputDirectory,
             'solver',
             'sensitivity_{0}_SPC_{1}.csv'.format(
@@ -56,7 +60,7 @@ def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList,
             )
         )
 
-        reactionPlotFile = os.path.join(
+        reaction_plot_file = os.path.join(
             outputDirectory,
             'solver',
             'sensitivity_{0}_SPC_{1}_reactions'.format(
@@ -64,7 +68,7 @@ def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList,
             ) + fileformat
         )
 
-        thermoPlotFile = os.path.join(
+        thermo_plot_file = os.path.join(
             outputDirectory,
             'solver',
             'sensitivity_{0}_SPC_{1}_thermo'.format(
@@ -72,8 +76,8 @@ def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList,
             ) + fileformat
         )
 
-        ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
-        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
+        ReactionSensitivityPlot(csvFile=csv_file, numReactions=number).barplot(reaction_plot_file)
+        ThermoSensitivityPlot(csvFile=csv_file, numSpecies=number).barplot(thermo_plot_file)
 
 
 def parseCSVData(csvFile):
@@ -94,66 +98,65 @@ def parseCSVData(csvFile):
     """
     import csv
     import re
-    
+
     # Pattern for matching indices or units
-    indexPattern = re.compile(r'^\S+\(\d+\)$')
-    unitsPattern = re.compile(r'\s\(.+\)$')
-    rxnSensPattern = re.compile('^dln\[\S+\]\/dln\[k\d+\]:\s\S+$')
-    thermoSensPattern = re.compile('^dln\[\S+\]\/dG\[\S+\]$')
-    
-    timeData = []; data = {}
+    index_pattern = re.compile(r'^\S+\(\d+\)$')
+    units_pattern = re.compile(r'\s\(.+\)$')
+    rxn_sens_pattern = re.compile('^dln\[\S+\]\/dln\[k\d+\]:\s\S+$')
+    thermo_sens_pattern = re.compile('^dln\[\S+\]\/dG\[\S+\]$')
+
+    time_data = []
+    data = {}
     f = csv.reader(open(csvFile, 'r'))
-    
-    columns = zip(*f)
-    time = GenericData(label = columns[0][0],
-                       data = numpy.array(columns[0][1:],dtype=numpy.float64),
-                      )
-    
+
+    columns = list(zip(*f))
+    time = GenericData(label=columns[0][0],
+                       data=np.array(columns[0][1:], dtype=np.float64),
+                       )
+
     # Parse the units from the Time header
-    if unitsPattern.search(time.label):
+    if units_pattern.search(time.label):
         label, sep, units = time.label[:-1].rpartition('(')
         time.label = label
         time.units = units
-            
-            
-    dataList = []
+
+    data_list = []
     for col in columns[1:]:
         header = col[0]
-        values = numpy.array(col[1:],dtype=numpy.float64)
-        data = GenericData(label=header,data=values)
-        
+        values = np.array(col[1:], dtype=np.float64)
+        data = GenericData(label=header, data=values)
+
         # Parse the index or the label from the header
-        if indexPattern.search(data.label):
+        if index_pattern.search(data.label):
             species, sep, index = data.label[:-1].rpartition('(')
             # Save the species attribute if an index was found
             data.species = species
             data.index = int(index)
-        elif unitsPattern.search(data.label):
+        elif units_pattern.search(data.label):
             label, sep, units = data.label[:-1].rpartition('(')
             data.label = label
             data.units = units
-        elif rxnSensPattern.search(data.label):
+        elif rxn_sens_pattern.search(data.label):
             rxn = data.label.split()[1]
             index = data.label.split()[0][:-2].rpartition('dln[k')[2]
             data.reaction = rxn
             data.index = int(index)
-        elif thermoSensPattern.search(data.label):
+        elif thermo_sens_pattern.search(data.label):
             species = data.label[:-1].rpartition('dG[')[2]
             data.species = species
-            if indexPattern.search(species):
+            if index_pattern.search(species):
                 data.index = int(species[:-1].rpartition('(')[2])
-            
-        dataList.append(data)
-        
-        
-    return time, dataList
+
+        data_list.append(data)
+
+    return time, data_list
 
 
 def findNearest(array, value):
     """
     Returns the index of the closest value in a sorted array
     """
-    idx = (numpy.abs(array-value)).argmin()
+    idx = (np.abs(array - value)).argmin()
     return idx
 
 
@@ -161,26 +164,26 @@ def linearlyInterpolatePoint(xArray, yArray, xValue):
     """
     Returns the interpolated yValue for given xValue using data from the two sorted arrays:
     """
-    #Find the next largest point in xArray that is still smaller than xValue:
-    lowerIndex=None
+    # Find the next largest point in xArray that is still smaller than xValue:
+    lower_index = None
     for index, x in enumerate(xArray):
-        if x>xValue:
+        if x > xValue:
             break
-        lowerIndex=index
+        lower_index = index
 
-    #If xValue is outside the domain of xArray, we use either the min or max points for dydx
-    if lowerIndex is None:
-        lowerIndex=0
-    elif lowerIndex==len(xArray)-1:
-        lowerIndex=lowerIndex-1
-    higherIndex=lowerIndex+1
+    # If xValue is outside the domain of xArray, we use either the min or max points for dydx
+    if lower_index is None:
+        lower_index = 0
+    elif lower_index == len(xArray) - 1:
+        lower_index = lower_index - 1
+    higher_index = lower_index + 1
 
-    dydx=(yArray[higherIndex]-yArray[lowerIndex])/(xArray[higherIndex]-xArray[lowerIndex])
+    dydx = (yArray[higher_index] - yArray[lower_index]) / (xArray[higher_index] - xArray[lower_index])
 
-    if xValue < xArray[lowerIndex]:
-        yValue=yArray[lowerIndex]-dydx*(xValue-xArray[lowerIndex])
+    if xValue < xArray[lower_index]:
+        yValue = yArray[lower_index] - dydx * (xValue - xArray[lower_index])
     else:
-        yValue=yArray[lowerIndex]+dydx*(xValue-xArray[lowerIndex])
+        yValue = yArray[lower_index] + dydx * (xValue - xArray[lower_index])
     return yValue
 
 
@@ -188,6 +191,7 @@ class GenericPlot(object):
     """
     A generic plotting class that can be extended to plot other things.
     """
+
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel=''):
         self.xVar = xVar
         # Convert yVar to a list if it wasn't one already
@@ -198,123 +202,124 @@ class GenericPlot(object):
         self.title = title
         self.xlabel = xlabel
         self.ylabel = ylabel
-        
+
     def plot(self, filename=''):
         """
         Execute the actual plotting
         """
-        mpl.rc('font',family='sans-serif')
-        fig=plt.figure()
-        
+        mpl.rc('font', family='sans-serif')
+        fig = plt.figure()
+
         ax = fig.add_subplot(111)
 
-        xVar = self.xVar
-        yVar = self.yVar
-            
-        if len(yVar) == 1:
-            y = yVar[0]
-            ax.plot(xVar.data, y.data)
-            
+        x_var = self.xVar
+        y_var = self.yVar
+
+        if len(y_var) == 1:
+            y = y_var[0]
+            ax.plot(x_var.data, y.data)
+
             # Create a ylabel for the label of the y variable
             if not self.ylabel and y.label:
                 ylabel = y.label
                 if y.units: ylabel += ' ({0})'.format(y.units)
                 plt.ylabel(ylabel)
         else:
-            for y in yVar:
-                ax.plot(xVar.data, y.data, '-', label=y.label)
-        
+            for y in y_var:
+                ax.plot(x_var.data, y.data, '-', label=y.label)
+
         if self.xlabel:
             plt.xlabel(self.xlabel)
-        elif xVar.label:
-            xlabel = xVar.label
-            if xVar.units: xlabel += ' ({0})'.format(xVar.units)
+        elif x_var.label:
+            xlabel = x_var.label
+            if x_var.units: xlabel += ' ({0})'.format(x_var.units)
             plt.xlabel(xlabel)
-            
+
         if self.ylabel:
             plt.ylabel(self.ylabel)
-            
+
         if self.title:
             plt.title(self.title)
-            
+
         ax.grid(True)
         handles, labels = ax.get_legend_handles_labels()
         if labels:
             # Create a legend outside the plot and adjust width based off of longest legend label
-            maxStringLength = max([len(label) for label in labels])
-            width = 1.05 + .011*maxStringLength
-            legend = ax.legend(handles,labels,loc='upper center', numpoints=1, bbox_to_anchor=(width,1)) #bbox_to_anchor=(1.01,.9)
+            max_string_length = max([len(label) for label in labels])
+            width = 1.05 + .011 * max_string_length
+            legend = ax.legend(handles, labels, loc='upper center', numpoints=1,
+                               bbox_to_anchor=(width, 1))  # bbox_to_anchor=(1.01,.9)
             fig.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
         else:
             fig.savefig(filename, bbox_inches='tight')
-            
+
     def barplot(self, filename='', idx=None):
         """
         Plot a generic barplot using just the yVars.
         idx is the index of the each y-variable to be plotted. if not given, the last value will be used
         """
-        mpl.rc('font',family='sans-serif')
-        
+        mpl.rc('font', family='sans-serif')
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        
-        position = numpy.arange(len(self.yVar),0,-1)
+
+        position = np.arange(len(self.yVar), 0, -1)
         # Reverse in order to go front top to bottom
         if not idx:
             idx = -1
-        ax.barh(position, numpy.array([y.data[idx] for y in self.yVar]), align='center', alpha=0.5)
+        ax.barh(position, np.array([y.data[idx] for y in self.yVar]), align='center', alpha=0.5)
         plt.yticks(position, [y.label for y in self.yVar])
-        
+
         # If any labels or titles are explicitly specified, write them
         if self.xlabel:
             plt.xlabel(self.xlabel)
-            
+
         if self.ylabel:
             plt.ylabel(self.ylabel)
-            
+
         if self.title:
             plt.title(self.title)
-            
+
         plt.axis('tight')
         fig.savefig(filename, bbox_inches='tight')
-    
+
     def comparePlot(self, otherGenericPlot, filename='', title='', xlabel='', ylabel=''):
         """
         Plot a comparison data plot of this data vs a second GenericPlot class
         """
-        
-        mpl.rc('font',family='sans-serif')
-        #mpl.rc('text', usetex=True)
-        fig=plt.figure()
-        
+
+        mpl.rc('font', family='sans-serif')
+        # mpl.rc('text', usetex=True)
+        fig = plt.figure()
+
         ax = fig.add_subplot(111)
-        
-        styles = ['-',':']
+
+        styles = ['-', ':']
         # Plot the sets of data
         for i, plot in enumerate([self, otherGenericPlot]):
             # Reset the color cycle per plot to get matching colors in each set
             plt.gca().set_prop_cycle(None)
-            
-            xVar = plot.xVar
-            yVar = plot.yVar
-            # Convert yVar to a list if it wasn't one already
-            if isinstance(yVar, GenericData):
-                yVar = [yVar]
-            
-                
-            if len(yVar) == 1:
-                y = yVar[0]
-                ax.plot(xVar.data, y.data, styles[i])
-                # Save a ylabel based on the y variable's label if length of yVar contains only 1 variable
+
+            x_var = plot.xVar
+            y_var = plot.yVar
+            # Convert y_var to a list if it wasn't one already
+            if isinstance(y_var, GenericData):
+                y_var = [y_var]
+
+            if len(y_var) == 1:
+                y = y_var[0]
+                ax.plot(x_var.data, y.data, styles[i])
+                # Save a ylabel based on the y variable's label if length of y_var contains only 1 variable
                 if not self.ylabel and y.label:
                     self.ylabel = y.label
-                    if y.units: self.ylabel += ' ({0})'.format(y.units)
+                    if y.units:
+                        self.ylabel += ' ({0})'.format(y.units)
             else:
-                for y in yVar:
-                    ax.plot(xVar.data, y.data, styles[i], label=y.label)
-            
+                for y in y_var:
+                    ax.plot(x_var.data, y.data, styles[i], label=y.label)
+
             # Plot the second set of data
-            
+
         # Prioritize using the function's x and y labels, otherwise the labels from this data object
         if xlabel:
             plt.xlabel(xlabel)
@@ -324,27 +329,29 @@ class GenericPlot(object):
             xlabel = self.xVar.label
             if self.xVar.units: xlabel += ' ({0})'.format(self.xVar.units)
             plt.xlabel(xlabel)
-        
+
         if ylabel:
             plt.ylabel(ylabel)
         elif self.ylabel:
             plt.ylabel(self.ylabel)
-        
+
         # Use user inputted title
         if title:
             plt.title(title)
-            
+
         ax.grid(True)
         handles, labels = ax.get_legend_handles_labels()
         if labels:
             # Create a legend outside the plot and adjust width based off of longest legend label
-            maxStringLength = max([len(label) for label in labels])
-            width = 1.2+ .011*maxStringLength*2
-            legend = ax.legend(handles,labels,loc='upper center', numpoints=1, bbox_to_anchor=(width,1), ncol=2) #bbox_to_anchor=(1.01,.9)
+            max_string_length = max([len(label) for label in labels])
+            width = 1.2 + .011 * max_string_length * 2
+            legend = ax.legend(handles, labels, loc='upper center', numpoints=1,
+                               bbox_to_anchor=(width, 1), ncol=2)  # bbox_to_anchor=(1.01,.9)
             fig.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
         else:
             fig.savefig(filename, bbox_inches='tight')
-    
+
+
 class SimulationPlot(GenericPlot):
     """
     A class for plotting simulations containing mole fraction vs time data. 
@@ -360,63 +367,64 @@ class SimulationPlot(GenericPlot):
     This should be formulated as 
     {'desired_name_for_species': 'corresponding_chemkin_name_of_species'}
     """
+
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
         self.species = species if species else {}
-        
+
     def load(self):
         if self.xVar == None and self.yVar == None:
-            time, dataList = parseCSVData(self.csvFile)
+            time, data_list = parseCSVData(self.csvFile)
         else:
             time = self.xVar
-            dataList = self.yVar
-            
-        speciesData = []
+            data_list = self.yVar
+
+        species_data = []
         if self.species:
             # A specific set of species was specified to be plotted
-            for speciesLabel, chemkinLabel in self.species.iteritems():
-                for data in dataList:
+            for speciesLabel, chemkinLabel in self.species.items():
+                for data in data_list:
                     if chemkinLabel == data.label:
                         # replace the data label with the desired species label
                         data.label = speciesLabel
-                        speciesData.append(data)
-                        break 
-        
+                        species_data.append(data)
+                        break
+
         else:
-            for data in dataList:
+            for data in data_list:
                 # Only plot if RMG detects that the data corresponds with a species
                 # This will not include bath gases
                 if data.species:
-                    speciesData.append(data)
-            
+                    species_data.append(data)
+
         self.xVar = time
-        self.yVar = speciesData
-            
+        self.yVar = species_data
+
     def plot(self, filename=''):
         filename = filename if filename else 'simulation.png'
         self.load()
         self.yVar.sort(key=lambda x: max(x.data), reverse=True)
-            
+
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        
+
         GenericPlot.plot(self, filename=filename)
-    
-    
+
     def comparePlot(self, otherSimulationPlot, filename='', title='', xlabel='', ylabel=''):
-        
+
         filename = filename if filename else 'simulation_compare.png'
         self.load()
         otherSimulationPlot.load()
-        
+
         # Restrict the number of species
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
             otherSimulationPlot.yVar = otherSimulationPlot.yVar[:self.numSpecies]
         GenericPlot.comparePlot(self, otherSimulationPlot, filename, title, xlabel, ylabel)
-        
+
+
 class ReactionSensitivityPlot(GenericPlot):
     """
     A class for plotting the top reaction sensitivites in a generic sensitivity csv file generated by RMG-Py.
@@ -432,35 +440,37 @@ class ReactionSensitivityPlot(GenericPlot):
     barplot() will instead plot a horizontal bar plot of the sensitivities at a given
     time step.  If time step is not given, the end step will automatically be chosen
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None, reactions=None):
+
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None,
+                 reactions=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numReactions = numReactions
         self.reactions = reactions if reactions else {}
-        
+
     def load(self):
         if self.xVar == None and self.yVar == None:
-            time, dataList = parseCSVData(self.csvFile)
+            time, data_list = parseCSVData(self.csvFile)
         else:
             time = self.xVar
-            dataList = self.yVar
-        reactionData = []
+            data_list = self.yVar
+        reaction_data = []
         if self.reactions:
             # A specific set of reaction sensitivities was specified to be plotted
-            for reactionLabel, chemkinLabel in self.reactions.iteritems():
-                for data in dataList:
-                    if chemkinLabel == data.reaction:
+            for reaction_label, chemkin_label in self.reactions.items():
+                for data in data_list:
+                    if chemkin_label == data.reaction:
                         # replace the data label with the desired species label
-                        data.label = reactionLabel
-                        reactionData.append(data)
-                        break 
+                        data.label = reaction_label
+                        reaction_data.append(data)
+                        break
         else:
-            for data in dataList:
+            for data in data_list:
                 if data.reaction:
-                    reactionData.append(data)
+                    reaction_data.append(data)
         self.xVar = time
-        self.yVar = reactionData
-            
+        self.yVar = reaction_data
+
     def plot(self, filename=''):
         filename = filename if filename else "reaction_sensitivity.png"
         self.load()
@@ -470,7 +480,7 @@ class ReactionSensitivityPlot(GenericPlot):
             self.yVar = self.yVar[:self.numReactions]
         self.ylabel = 'dln(c)/dln(k_i)'
         GenericPlot.plot(self, filename=filename)
-        
+
     def barplot(self, filename='', t=None):
         """
         Time must be indicated in seconds
@@ -485,11 +495,11 @@ class ReactionSensitivityPlot(GenericPlot):
             idx = findNearest(self.xVar.data, t)
         else:
             idx = -1
-            
+
         self.yVar.sort(key=lambda x: abs(x.data[idx]), reverse=True)
         if self.numReactions:
             self.yVar = self.yVar[:self.numReactions]
-        
+
         if not self.xlabel:
             self.xlabel = 'dln(c)/dln(k_i)'
         GenericPlot.barplot(self, filename=filename, idx=idx)
@@ -509,32 +519,32 @@ class ReactionSensitivityPlot(GenericPlot):
         else:
             idx = -1
 
-        reactionUncertainty = []
+        reaction_uncertainty = []
 
-        totalUncertainty = totalVariance
+        total_uncertainty = totalVariance
 
         for reactionSens in self.yVar:
-            if isinstance(reactionSens,numpy.ndarray):
+            if isinstance(reactionSens, np.ndarray):
                 # The parameter uncertainties are an array which should have the same length as the sensitivity data
-                uncertaintyData = reactionSens*reactionSens.uncertainty
-                uncertaintyContribution = uncertaintyData[idx]**2
+                uncertainty_data = reactionSens * reactionSens.uncertainty
+                uncertainty_contribution = uncertainty_data[idx] ** 2
             else:
-                uncertaintyContribution = (reactionSens.data[idx]*reactionSens.uncertainty)**2
+                uncertainty_contribution = (reactionSens.data[idx] * reactionSens.uncertainty) ** 2
 
-            reactionUncertainty.append([reactionSens.label, reactionSens.reaction, uncertaintyContribution])
+            reaction_uncertainty.append([reactionSens.label, reactionSens.reaction, uncertainty_contribution])
 
         # Normalize and create new list of GenericData
-        newYVar = []
-        for label, reaction, uncertainty in reactionUncertainty:
-            data = GenericData(label=label, reaction=reaction, data = [uncertainty/totalUncertainty*100])
-            newYVar.append(data)
+        new_y_var = []
+        for label, reaction, uncertainty in reaction_uncertainty:
+            data = GenericData(label=label, reaction=reaction, data=[uncertainty / total_uncertainty * 100])
+            new_y_var.append(data)
 
-        newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
-        newYVar = newYVar[:self.numReactions]
+        new_y_var.sort(key=lambda x: abs(x.data[0]), reverse=True)
+        new_y_var = new_y_var[:self.numReactions]
 
-        GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
+        GenericPlot(xVar=None, yVar=new_y_var, xlabel="Uncertainty Contribution (%)").barplot(filename=filename)
 
-        return reactionUncertainty
+        return reaction_uncertainty
 
 
 class ThermoSensitivityPlot(GenericPlot):
@@ -548,46 +558,47 @@ class ThermoSensitivityPlot(GenericPlot):
     barplot() will instead plot a horizontal bar plot of the sensitivities at a given
     time step.  If time step is not given, the end step will automatically be chosen
     """
+
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
         self.species = species if species else {}
-    
+
     def load(self):
         if self.xVar == None and self.yVar == None:
-            time, dataList = parseCSVData(self.csvFile)
+            time, data_list = parseCSVData(self.csvFile)
         else:
             time = self.xVar
-            dataList = self.yVar
-        thermoData = []
+            data_list = self.yVar
+        thermo_data = []
         if self.species:
             # A specific set of species sensitivities was specified to be plotted
-            for speciesLabel, chemkinLabel in self.species.iteritems():
-                for data in dataList:
+            for speciesLabel, chemkinLabel in self.species.items():
+                for data in data_list:
                     if chemkinLabel == data.species:
                         # replace the data label with the desired species label
                         data.label = speciesLabel
-                        thermoData.append(data)
-                        break 
+                        thermo_data.append(data)
+                        break
         else:
-            for data in dataList:
+            for data in data_list:
                 if data.species:
-                    thermoData.append(data)
-                    
+                    thermo_data.append(data)
+
         self.xVar = time
-        self.yVar = thermoData
-            
+        self.yVar = thermo_data
+
     def plot(self, filename=''):
         filename = filename if filename else "thermo_sensitivity.png"
         self.load()
-        self.yVar.sort(key=lambda x: abs(x.data[-1]), reverse = True)
+        self.yVar.sort(key=lambda x: abs(x.data[-1]), reverse=True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
         if not self.ylabel:
             self.ylabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.plot(self, filename=filename)
-    
+
     def barplot(self, filename='', t=None):
         filename = filename if filename else "thermo_sensitivity.png"
         self.load()
@@ -595,14 +606,13 @@ class ThermoSensitivityPlot(GenericPlot):
             idx = findNearest(self.xVar.data, t)
         else:
             idx = -1
-        self.yVar.sort(key=lambda x: abs(x.data[idx]), reverse = True)
+        self.yVar.sort(key=lambda x: abs(x.data[idx]), reverse=True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
 
         if not self.xlabel:
             self.xlabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.barplot(self, filename=filename, idx=idx)
-
 
     def uncertaintyPlot(self, totalVariance, t=None, filename=''):
         """
@@ -619,30 +629,28 @@ class ThermoSensitivityPlot(GenericPlot):
         else:
             idx = -1
 
-        thermoUncertainty = []
+        thermo_uncertainty = []
 
-        totalUncertainty = totalVariance
+        total_uncertainty = totalVariance
 
         for thermoSens in self.yVar:
-            if isinstance(thermoSens,numpy.ndarray):
+            if isinstance(thermoSens, np.ndarray):
                 # The parameter uncertainties are an array which should have the same length as the sensitivity data
-                uncertaintyData = thermoSens*thermoSens.uncertainty
-                uncertaintyContribution = uncertaintyData[idx]**2
+                uncertainty_data = thermoSens * thermoSens.uncertainty
+                uncertainty_contribution = uncertainty_data[idx] ** 2
             else:
                 # The parameter uncertainty is a scalar
-                uncertaintyContribution = (thermoSens.data[idx]*thermoSens.uncertainty)**2
-            thermoUncertainty.append([thermoSens.label, thermoSens.species, uncertaintyContribution])
-
+                uncertainty_contribution = (thermoSens.data[idx] * thermoSens.uncertainty) ** 2
+            thermo_uncertainty.append([thermoSens.label, thermoSens.species, uncertainty_contribution])
 
         # Normalize and create new list of GenericData
-        newYVar = []
-        for label, species, uncertainty in thermoUncertainty:
-            data = GenericData(label=label, species = species, data = [uncertainty/totalUncertainty*100])
-            newYVar.append(data)
+        new_y_var = []
+        for label, species, uncertainty in thermo_uncertainty:
+            data = GenericData(label=label, species=species, data=[uncertainty / total_uncertainty * 100])
+            new_y_var.append(data)
 
+        new_y_var.sort(key=lambda x: abs(x.data[0]), reverse=True)
+        new_y_var = new_y_var[:self.numSpecies]
+        GenericPlot(xVar=None, yVar=new_y_var, xlabel="Uncertainty Contribution (%)").barplot(filename=filename)
 
-        newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
-        newYVar = newYVar[:self.numSpecies]
-        GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
-
-        return thermoUncertainty
+        return thermo_uncertainty

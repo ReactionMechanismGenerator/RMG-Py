@@ -30,6 +30,7 @@
 
 import os
 import unittest
+
 import numpy as np
 
 import rmgpy
@@ -56,16 +57,16 @@ class TestUncertainty(unittest.TestCase):
         cls.uncertainty.database = RMGDatabase()
         cls.uncertainty.database.load(
             data_dir,
-            kineticsFamilies=['1,2_shiftC','6_membered_central_C-C_shift','Disproportionation','H_Abstraction',
-                              'Intra_ene_reaction','intra_H_migration','Intra_R_Add_Exo_scission',
-                              'intra_substitutionS_isomerization','R_Addition_MultipleBond','R_Recombination'],
+            kineticsFamilies=['1,2_shiftC', '6_membered_central_C-C_shift', 'Disproportionation', 'H_Abstraction',
+                              'Intra_ene_reaction', 'intra_H_migration', 'Intra_R_Add_Exo_scission',
+                              'intra_substitutionS_isomerization', 'R_Addition_MultipleBond', 'R_Recombination'],
             kineticsDepositories=['training'],
             thermoLibraries=['primaryThermoLibrary'],
             reactionLibraries=['GRI-Mech3.0'],
         )
 
         # Prepare the database by loading training reactions and averaging the rate rules verbosely
-        for family in cls.uncertainty.database.kinetics.families.itervalues():
+        for family in cls.uncertainty.database.kinetics.families.values():
             family.addKineticsRulesFromTrainingSet(thermoDatabase=cls.uncertainty.database.thermo)
             family.fillKineticsRulesByAveragingUp(verbose=True)
 
@@ -90,8 +91,8 @@ class TestUncertainty(unittest.TestCase):
 
         # Check thermo sources
         grp_expected = {
-            'O2s-CsH', 'O2s-OsH', 'O2d-Cd', 'Cds-OdHH', 'Cds-(Cdd-O2d)HH', 'Ct-CtH', 'Cds-CdsHH', 'Cs-OsHHH', 'Cs-CsHHH',
-            'Cdd-CdsOd'
+            'O2s-CsH', 'O2s-OsH', 'O2d-Cd', 'Cds-OdHH', 'Cds-(Cdd-O2d)HH', 'Ct-CtH', 'Cds-CdsHH', 'Cs-OsHHH',
+            'Cs-CsHHH', 'Cdd-CdsOd'
         }
         rad_expected = {'Acetyl', 'HOOJ', 'Cds_P', 'CCJ', 'CsJOH', 'CJ3'}
         other_expected = {'ketene', 'R'}
@@ -114,18 +115,19 @@ class TestUncertainty(unittest.TestCase):
             'C_methyl;O_Csrad', 'C_rad/H2/Cs;O_Csrad', 'C_rad/H2/O;O_Csrad', 'CO_pri_rad;O_Csrad'
         }
         self.assertEqual(set(self.uncertainty.allKineticSources), {'Rate Rules', 'Training', 'Library', 'PDep'})
-        self.assertEqual(self.uncertainty.allKineticSources['Rate Rules'].keys(), ['Disproportionation'])
+        self.assertEqual(list(self.uncertainty.allKineticSources['Rate Rules'].keys()), ['Disproportionation'])
         rr = set([e.label for e in self.uncertainty.allKineticSources['Rate Rules']['Disproportionation']])
         self.assertEqual(rr, rr_expected)
-        self.assertEqual(self.uncertainty.allKineticSources['Training'].keys(), ['Disproportionation'])
+        self.assertEqual(list(self.uncertainty.allKineticSources['Training'].keys()), ['Disproportionation'])
         self.assertEqual(self.uncertainty.allKineticSources['Library'], [0])
         self.assertEqual(self.uncertainty.allKineticSources['PDep'], [4])
 
         # Step 3: assign and propagate uncertainties
         self.uncertainty.assignParameterUncertainties()
-        
+
         thermo_unc = self.uncertainty.thermoInputUncertainties
         kinetic_unc = self.uncertainty.kineticInputUncertainties
-        
-        np.testing.assert_allclose(thermo_unc, [1.5, 1.5, 2.0, 1.9, 3.1, 1.5, 1.9, 2.0, 2.0, 1.9, 2.2, 1.9, 2.0, 1.5], rtol=1e-4)
+
+        np.testing.assert_allclose(thermo_unc, [1.5, 1.5, 2.0, 1.9, 3.1, 1.5, 1.9, 2.0, 2.0, 1.9, 2.2, 1.9, 2.0, 1.5],
+                                   rtol=1e-4)
         np.testing.assert_allclose(kinetic_unc, [0.5, 1.5, 5.806571, 0.5, 2.0], rtol=1e-4)

@@ -28,21 +28,22 @@
 #                                                                             #
 ###############################################################################
 
+import distutils.spawn
+import logging
 import os
 import re
-import cclib as cclib
-import logging
-from subprocess import Popen, PIPE
-import distutils.spawn
-import tempfile
 import shutil
+import tempfile
+from subprocess import Popen, PIPE
 
-from rmgpy.molecule import Molecule
-from molecule import QMMolecule
+import cclib
+
 from rmgpy.exceptions import DependencyError
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.qm.molecule import QMMolecule
 
 
-class Mopac:
+class Mopac(object):
     """
     A base class for all QM calculations that use MOPAC.
     
@@ -51,7 +52,7 @@ class Mopac:
 
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
-    
+
     executablesToTry = ('MOPAC2016.exe', 'MOPAC2012.exe', 'MOPAC2009.exe', 'mopac')
 
     for exe in executablesToTry:
@@ -69,40 +70,41 @@ class Mopac:
             if os.path.exists(executablePath):
                 break
         else:  # didn't break
-            executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012 or 2016)')
+            executablePath = os.path.join(mopacEnv, '(MOPAC 2009 or 2012 or 2016)')
 
-    usePolar = False #use polar keyword in MOPAC
-    
+    usePolar = False  # use polar keyword in MOPAC
+
     "Keywords for the multiplicity"
     multiplicityKeywords = {
-                            1: '',
-                            2: 'uhf doublet',
-                            3: 'uhf triplet',
-                            4: 'uhf quartet',
-                            5: 'uhf quintet',
-                            6: 'uhf sextet',
-                            7: 'uhf septet',
-                            8: 'uhf octet',
-                            9: 'uhf nonet',
-                           }
-    
+        1: '',
+        2: 'uhf doublet',
+        3: 'uhf triplet',
+        4: 'uhf quartet',
+        5: 'uhf quintet',
+        6: 'uhf sextet',
+        7: 'uhf septet',
+        8: 'uhf octet',
+        9: 'uhf nonet',
+    }
+
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
     failureKeys = [
-                   'IMAGINARY FREQUENCIES',
-                   'EXCESS NUMBER OF OPTIMIZATION CYCLES',
-                   'NOT ENOUGH TIME FOR ANOTHER CYCLE',
-                   ]
+        'IMAGINARY FREQUENCIES',
+        'EXCESS NUMBER OF OPTIMIZATION CYCLES',
+        'NOT ENOUGH TIME FOR ANOTHER CYCLE',
+    ]
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
     successKeys = [
-                   'DESCRIPTION OF VIBRATIONS',
-                   'MOPAC DONE'
-                  ]
+        'DESCRIPTION OF VIBRATIONS',
+        'MOPAC DONE'
+    ]
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
-            raise DependencyError("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
+            raise DependencyError("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR "
+                                  "environment variable.".format(self.executablePath))
 
         # Check if MOPAC executable works properly
         process = Popen(self.executablePath,
@@ -126,11 +128,11 @@ class Mopac:
     def run(self):
         self.testReady()
         # submits the input file to mopac
-        
+
         dirpath = tempfile.mkdtemp()
         # copy input file to temp dir:
         tempInpFile = os.path.join(dirpath, os.path.basename(self.inputFilePath))
-        shutil.copy(self.inputFilePath, dirpath)      
+        shutil.copy(self.inputFilePath, dirpath)
 
         process = Popen([self.executablePath, tempInpFile], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         command = '\n' if self.expired else None  # press enter to pass expiration notice
@@ -145,7 +147,7 @@ class Mopac:
         # delete temp folder:
         shutil.rmtree(dirpath)
         return self.verifyOutputFile()
-        
+
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
@@ -167,26 +169,26 @@ class Mopac:
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
 
-        InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
-        
+        InChIFound = False  # flag (1 or 0) indicating whether an InChI was found in the log file
+
         # Initialize dictionary with "False"s 
         successKeysFound = dict([(key, False) for key in self.successKeys])
-        
+
         with open(self.outputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
-                for element in self.failureKeys: #search for failure keywords
+
+                for element in self.failureKeys:  # search for failure keywords
                     if element in line:
-                        logging.error("MOPAC output file contains the following error: {0}".format(element) )
+                        logging.error("MOPAC output file contains the following error: {0}".format(element))
                         return False
-                
-                for element in self.successKeys: #search for success keywords
+
+                for element in self.successKeys:  # search for success keywords
                     if element in line:
                         successKeysFound[element] = True
-                
+
                 if "InChI=" in line:
-                    logFileInChI = line #output files should take up to 240 characters of the name in the input file
+                    logFileInChI = line  # output files should take up to 240 characters of the name in the input file
                     InChIFound = True
                     if self.uniqueIDlong in logFileInChI:
                         pass
@@ -194,16 +196,17 @@ class Mopac:
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
 
                     else:
-                        logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
+                        logging.warning("InChI in log file ({0}) didn't match that in geometry "
+                                        "({1}).".format(logFileInChI, self.uniqueIDlong))
                         # Use only up to first 80 characters to match due to MOPAC bug which deletes 81st character of InChI string
                         if self.uniqueIDlong.startswith(logFileInChI[:80]):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
 
         # Check that ALL 'success' keywords were found in the file.
-        if not all( successKeysFound.values() ):
+        if not all(successKeysFound.values()):
             logging.error('Not all of the required keywords for success were found in the output file!')
             return False
-        
+
         if not InChIFound:
             logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
             return False
@@ -219,12 +222,13 @@ class Mopac:
 
         logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
-    
+
     def getParser(self, outputFile):
         """
         Returns the appropriate cclib parser.
         """
         return cclib.parser.Mopac(outputFile)
+
 
 class MopacMol(QMMolecule, Mopac):
     """
@@ -235,53 +239,54 @@ class MopacMol(QMMolecule, Mopac):
 
     #: Keywords that will be added at the top and bottom of the qm input file
     keywords = [
-                {'top':"precise nosym THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
-                {'top':"precise nosym gnorm=0.0 nonr THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
-                {'top':"precise nosym gnorm=0.0 THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
-                {'top':"precise nosym gnorm=0.0 bfgs THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
-                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000 THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
-                ]
+        {'top': "precise nosym THREADS=1", 'bottom': "oldgeo thermo nosym precise THREADS=1 "},
+        {'top': "precise nosym gnorm=0.0 nonr THREADS=1", 'bottom': "oldgeo thermo nosym precise THREADS=1 "},
+        {'top': "precise nosym gnorm=0.0 THREADS=1", 'bottom': "oldgeo thermo nosym precise THREADS=1 "},
+        {'top': "precise nosym gnorm=0.0 bfgs THREADS=1", 'bottom': "oldgeo thermo nosym precise THREADS=1 "},
+        {'top': "precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000 THREADS=1", 'bottom': "oldgeo thermo nosym precise THREADS=1 "},
+    ]
 
     def writeInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attempt`.
         """
-        
-        molfile = self.getMolFilePathForCalculation(attempt) 
+
+        molfile = self.getMolFilePathForCalculation(attempt)
         atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
-        
-        output = [ self.geometry.uniqueIDlong, '' ]
- 
-        atomCount = 0
+
+        output = [self.geometry.uniqueIDlong, '']
+
+        atom_count = 0
         with open(molfile) as molinput:
             for line in molinput:
                 match = atomline.match(line)
                 if match:
-                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(4), match.group(1), match.group(2), match.group(3)))
-                    atomCount += 1
-        assert atomCount == len(self.molecule.atoms)
-    
+                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(4), match.group(1),
+                                                                    match.group(2), match.group(3)))
+                    atom_count += 1
+        assert atom_count == len(self.molecule.atoms)
+
         output.append('')
         input_string = '\n'.join(output)
-        
+
         top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
-        with open(self.inputFilePath, 'w') as mopacFile:
-            mopacFile.write(top_keys)
-            mopacFile.write('\n')
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-            mopacFile.write(bottom_keys)
+        with open(self.inputFilePath, 'w') as mopac_file:
+            mopac_file.write(top_keys)
+            mopac_file.write('\n')
+            mopac_file.write(input_string)
+            mopac_file.write('\n')
+            mopac_file.write(bottom_keys)
             if self.usePolar:
-                mopacFile.write('\n\n\n')
-                mopacFile.write(polar_keys)
-                
+                mopac_file.write('\n\n\n')
+                mopac_file.write(polar_keys)
+
     def inputFileKeywords(self, attempt):
         """
         Return the top, bottom, and polar keywords.
         """
         raise NotImplementedError("Should be defined by subclass, eg. MopacMolPM3")
-        
+
     def generateQMData(self):
         """
         Calculate the QM data and return a QMData object, or None if it fails.
@@ -296,18 +301,21 @@ class MopacMol(QMMolecule, Mopac):
         else:
             self.createGeometry()
             success = False
-            for attempt in range(1, self.maxAttempts+1):
+            for attempt in range(1, self.maxAttempts + 1):
                 self.writeInputFile(attempt)
-                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts,
+                                                                                     self.molecule.toSMILES(),
+                                                                                     self.__class__.__name__))
                 success = self.run()
                 if success:
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
-                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
+                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts,
+                                                                                       self.molecule.toAugmentedInChI()))
+                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt)
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
                 return None
-        result = self.parse() # parsed in cclib
+        result = self.parse()  # parsed in cclib
         result.source = source
         return result
 
@@ -321,6 +329,7 @@ class MopacMolPMn(MopacMol):
     anything you wish to do differently.
     """
     pm_method = '(should be defined by sub class)'
+
     def inputFileKeywords(self, attempt):
         """
         Return the top, bottom, and polar keywords for attempt number `attempt`.
@@ -328,29 +337,30 @@ class MopacMolPMn(MopacMol):
         NB. `attempt` begins at 1, not 0.
         """
         assert attempt <= self.maxAttempts
-        
+
         if attempt > self.scriptAttempts:
             attempt -= self.scriptAttempts
-        
+
         multiplicity_keys = self.multiplicityKeywords[self.geometry.molecule.multiplicity]
 
         top_keys = "{method} {mult} {top}".format(
-                method = self.pm_method,
-                mult = multiplicity_keys,
-                top = self.keywords[attempt-1]['top'],
-                )
+            method=self.pm_method,
+            mult=multiplicity_keys,
+            top=self.keywords[attempt - 1]['top'],
+        )
         bottom_keys = "{bottom} {method} {mult}".format(
-                method = self.pm_method,
-                bottom = self.keywords[attempt-1]['bottom'],
-                mult = multiplicity_keys,
-                )
+            method=self.pm_method,
+            bottom=self.keywords[attempt - 1]['bottom'],
+            mult=multiplicity_keys,
+        )
         polar_keys = "oldgeo {polar} nosym precise {method} {mult}".format(
-                method = self.pm_method,
-                polar = ('polar' if self.geometry.molecule.multiplicity == 1 else 'static'),
-                mult = multiplicity_keys,
-                )
+            method=self.pm_method,
+            polar=('polar' if self.geometry.molecule.multiplicity == 1 else 'static'),
+            mult=multiplicity_keys,
+        )
 
         return top_keys, bottom_keys, polar_keys
+
 
 class MopacMolPM3(MopacMolPMn):
     """
@@ -361,6 +371,7 @@ class MopacMolPM3(MopacMolPMn):
     """
     pm_method = 'pm3'
 
+
 class MopacMolPM6(MopacMolPMn):
     """
     Mopac PM6 calculations for molecules
@@ -369,6 +380,7 @@ class MopacMolPM6(MopacMolPMn):
     but for now it's the same as all the MOPAC PMn calculations, only pm6
     """
     pm_method = 'pm6'
+
 
 class MopacMolPM7(MopacMolPMn):
     """

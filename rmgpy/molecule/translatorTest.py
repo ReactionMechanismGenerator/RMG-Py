@@ -82,7 +82,6 @@ class InChIGenerationTest(unittest.TestCase):
         aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/u1'
         self.compare(adjlist, aug_inchi)
 
-
     def test_C7H8(self):
         """Looks a lot like toluene but with 1 double bond replaced by a biradical.
 
@@ -134,7 +133,6 @@ class InChIGenerationTest(unittest.TestCase):
         self.compare(adjlist, aug_inchi)
 
     def test_benzyne(self):
-
         adjlist = """
 1  C u0 p0 c0 {2,T} {6,S}
 2  C u0 p0 c0 {1,T} {3,S}
@@ -158,7 +156,6 @@ multiplicity 2
         aug_inchi = 'InChI=1S/H/u1'
         self.compare(adjlist, aug_inchi)
 
-
     def test_C6H8(self):
         """
         Test that the 2 unpaired electrons of .CC(=C)C(C.)=C
@@ -175,7 +172,6 @@ multiplicity 2
 
         aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/u1,3'
         self.compare(adjlist, aug_inchi)
-
 
     def test_C6H10_tetrarad(self):
         adjlist = """
@@ -222,7 +218,6 @@ multiplicity 2
         self.compare(adjlist, aug_inchi)
 
     def test_CH2O2(self):
-
         adjlist = """
 1 C 1 {2,S} {3,S}
 2 O 0 {1,S}
@@ -248,7 +243,6 @@ multiplicity 2
         self.compare(adjlist, aug_inchi)
 
     def test_C5H6O(self):
-
         adjlist = """
 1 C 1 {2,S}
 2 C 0 {1,S} {3,D}
@@ -262,7 +256,6 @@ multiplicity 2
         self.compare(adjlist, aug_inchi)
 
     def test_C7H9(self):
-
         adjlist = """
 1 C 0 {4,D} 
 2 C 0 {5,D}
@@ -277,7 +270,6 @@ multiplicity 2
         self.compare(adjlist, aug_inchi)
 
     def test_C11H16(self):
-
         adjlist = """
 1 C 0 {5,D}
 2 C 1 {6,S}
@@ -478,7 +470,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'C'
         self.compare(adjlist, smiles)
 
-
         # Test H2O
         adjlist = '''
         1 O u0 p2 c0 {2,S} {3,S}
@@ -487,7 +478,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = 'O'
         self.compare(adjlist, smiles)
-
 
         # Test C2H6
         adjlist = '''
@@ -503,7 +493,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'CC'
         self.compare(adjlist, smiles)
 
-
         # Test H2
         adjlist = '''
         1 H u0 p0 c0 {2,S}
@@ -511,7 +500,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = '[H][H]'
         self.compare(adjlist, smiles)
-
 
         # Test H2O2
         adjlist = '''
@@ -522,7 +510,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = 'OO'
         self.compare(adjlist, smiles)
-
 
         # Test C3H8
         adjlist = '''
@@ -541,7 +528,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'CCC'
         self.compare(adjlist, smiles)
 
-
         # Test Ar
         adjlist = '''
         1 Ar u0 p4 c0
@@ -549,14 +535,12 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[Ar]'
         self.compare(adjlist, smiles)
 
-
         # Test He
         adjlist = '''
         1 He u0 p1 c0
         '''
         smiles = '[He]'
         self.compare(adjlist, smiles)
-
 
         # Test CH4O
         adjlist = '''
@@ -570,7 +554,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'CO'
         self.compare(adjlist, smiles)
 
-
         # Test CO2
         adjlist = '''
         1 O u0 p2 c0 {2,D}
@@ -580,7 +563,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'O=C=O'
         self.compare(adjlist, smiles)
 
-
         # Test CO
         adjlist = '''
         1 C u0 p1 c-1 {2,T}
@@ -588,7 +570,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = '[C-]#[O+]'
         self.compare(adjlist, smiles)
-
 
         # Test C2H4
         adjlist = '''
@@ -602,7 +583,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'C=C'
         self.compare(adjlist, smiles)
 
-
         # Test O2
         adjlist = '''
         1 O u0 p2 c0 {2,D}
@@ -610,7 +590,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = 'O=O'
         self.compare(adjlist, smiles)
-
 
         # Test CH3
         adjlist = '''
@@ -623,7 +602,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[CH3]'
         self.compare(adjlist, smiles)
 
-
         # Test HO
         adjlist = '''
         multiplicity 2
@@ -632,7 +610,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = '[OH]'
         self.compare(adjlist, smiles)
-
 
         # Test C2H5
         adjlist = '''
@@ -648,7 +625,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = 'C[CH2]'
         self.compare(adjlist, smiles)
 
-
         # Test O
         adjlist = '''
         multiplicity 3
@@ -656,7 +632,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = '[O]'
         self.compare(adjlist, smiles)
-
 
         # Test HO2
         adjlist = '''
@@ -668,7 +643,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[O]O'
         self.compare(adjlist, smiles)
 
-
         # Test CH
         adjlist = '''
         multiplicity 4
@@ -678,7 +652,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[CH]'
         self.compare(adjlist, smiles)
 
-
         # Test H
         adjlist = '''
         multiplicity 2
@@ -687,7 +660,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[H]'
         self.compare(adjlist, smiles)
 
-
         # Test C
         adjlist = '''
         multiplicity 5
@@ -695,7 +667,6 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = '[C]'
         self.compare(adjlist, smiles)
-
 
         # Test O2
         adjlist = '''
@@ -774,7 +745,6 @@ class SMILESGenerationTest(unittest.TestCase):
 
 class ParsingTest(unittest.TestCase):
     def setUp(self):
-
         self.methane = Molecule().fromAdjacencyList("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
