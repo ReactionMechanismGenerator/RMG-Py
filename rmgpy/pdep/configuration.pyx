@@ -292,9 +292,11 @@ cdef class Configuration(object):
                         raise AttributeError('Length of masses should be three for termolecular reactants. '
                                              'We got {0}.'.format(len(mass)))
                     mu = 1.0 / (1.0 / mass[0] + 1.0 / mass[1])
-                    modes.insert(0, IdealGasTranslation(mass=(mu / constants.amu, "amu")))
-                    mu2 = 1.0 / (1.0 / mass[0] + 1.0 / mass[2])
-                    modes.insert(0, IdealGasTranslation(mass=(mu2 / constants.amu, "amu")))
+                    mu2 = 1.0 / (1.0 / mass[1] + 1.0 / mass[2])
+                    mu3 = 1.0 / (1.0 / mass[0] + 1.0 / mass[2])
+                    mu_avg = (mu + mu2 + mu3) / 3 * 1.1447142
+                    modes.insert(0, IdealGasTranslation(mass=(mu_avg / constants.amu, "amu")))
+                    modes.insert(0, IdealGasTranslation(mass=(mu_avg / constants.amu, "amu")))
             if rmgmode:
                 # Compute the density of states by direct count
                 # This is currently faster than the method of steepest descents,
