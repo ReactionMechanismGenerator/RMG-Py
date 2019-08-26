@@ -59,7 +59,8 @@ import argparse
 import logging
 import math
 import os
-import os.path
+
+import matplotlib.pyplot as plt
 
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.rmg.model import ReactionModel
@@ -73,7 +74,6 @@ def compareModelKinetics(model1, model2):
     Compare the kinetics of :class:`ReactionModel` objects `model1` and 
     `model2`, printing the results to stdout.
     """
-    from matplotlib import pylab
     # Determine reactions that both models have in common
     common_reactions = {}
     for rxn1 in model1.reactions:
@@ -105,18 +105,17 @@ def compareModelKinetics(model1, model2):
             kinetics2.append(rxn2.getRateCoefficient(T, P))
         else:
             kinetics2.append(rxn2.getRateCoefficient(T, P) / rxn2.getEquilibriumConstant(T))
-    fig = pylab.figure(figsize=(8, 6))
-    ax = pylab.subplot(1, 1, 1)
-    pylab.loglog(kinetics1, kinetics2, 'o', picker=5)
-    xlim = pylab.xlim()
-    ylim = pylab.ylim()
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+    plt.loglog(kinetics1, kinetics2, 'o', picker=5)
+    xlim = plt.xlim()
+    ylim = plt.ylim()
     lim = (min(xlim[0], ylim[0]), max(xlim[1], ylim[1]))
-    ax.loglog(lim, lim, '-k')
-    pylab.xlabel('Model 1 rate coefficient (SI units)')
-    pylab.ylabel('Model 2 rate coefficient (SI units)')
-    pylab.title('T = {0:g} K, P = {1:g} bar'.format(T, P / 1e5))
-    pylab.xlim(lim)
-    pylab.ylim(lim)
+    ax.loglog(lim, lim, '--k')
+    plt.xlabel('Model 1 rate coefficient (SI units)')
+    plt.ylabel('Model 2 rate coefficient (SI units)')
+    plt.title('T = {0:g} K, P = {1:g} bar'.format(T, P / 1e5))
+    plt.xlim(lim)
+    plt.ylim(lim)
 
     def onpick(event):
         xdata = event.artist.get_xdata()
@@ -129,7 +128,7 @@ def compareModelKinetics(model1, model2):
 
     connection_id = fig.canvas.mpl_connect('pick_event', onpick)
 
-    pylab.show()
+    plt.show()
 
 
 def compareModelSpecies(model1, model2):
