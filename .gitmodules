@@ -1,0 +1,3 @@
+[submodule "AutoFragmentModeling"]
+	path = AutoFragmentModeling
+	url = https://github.com/ReactionMechanismGenerator/AutoFragmentModeling.git
