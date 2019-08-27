@@ -32,6 +32,7 @@ This module provides methods for converting molecules between RMG, RDKit, and Op
 """
 
 import logging
+import re
 import sys
 
 import cython
