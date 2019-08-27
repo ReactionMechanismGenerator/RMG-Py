@@ -2274,7 +2274,9 @@ multiplicity 2
         mol = Molecule().fromSMILES('CC')
         mol.atoms[0].element = getElement('C', 13)
 
-        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        table = str.maketrans({'\n': None, ' ': None})  # Translation table to remove whitespace
+
+        adjlist = mol.toAdjacencyList().translate(table)
         adjlist_exp = """
         1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
         2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
@@ -2284,14 +2286,14 @@ multiplicity 2
         6 H u0 p0 c0 {2,S}
         7 H u0 p0 c0 {2,S}
         8 H u0 p0 c0 {2,S}
-        """.translate(None, '\n ')
+        """.translate(table)
 
         self.assertEquals(adjlist, adjlist_exp)
 
         mol = Molecule().fromSMILES('CC')
         mol.atoms[2].element = getElement('H', 2)
 
-        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlist = mol.toAdjacencyList().translate(table)
         adjlist_exp = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
@@ -2301,14 +2303,14 @@ multiplicity 2
         6 H u0 p0 c0 {2,S}
         7 H u0 p0 c0 {2,S}
         8 H u0 p0 c0 {2,S}
-        """.translate(None, '\n ')
+        """.translate(table)
 
         self.assertEquals(adjlist, adjlist_exp)
 
         mol = Molecule().fromSMILES('OC')
         mol.atoms[0].element = getElement('O', 18)
 
-        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlist = mol.toAdjacencyList().translate(table)
         adjlist_exp = """
         1 O u0 p2 c0 i18 {2,S} {3,S}
         2 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
@@ -2316,7 +2318,7 @@ multiplicity 2
         4 H u0 p0 c0 {2,S}
         5 H u0 p0 c0 {2,S}
         6 H u0 p0 c0 {2,S}
-        """.translate(None, '\n ')
+        """.translate(table)
 
         self.assertEquals(adjlist, adjlist_exp)
 
