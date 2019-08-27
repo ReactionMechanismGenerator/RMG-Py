@@ -31,6 +31,7 @@
 This script contains unit tests of the :mod:`rmgpy.pdep.network` module.
 """
 
+import numpy as np
 import unittest
 
 from rmgpy.pdep.collision import SingleExponentialDown
@@ -160,6 +161,14 @@ class TestConfiguration(unittest.TestCase):
         for label in attributes:
             self.assertNotIn(label, output)
 
+    def test_no_nan_in_densStates(self):
+        """
+        This test asserts that there shouldn't be any NaN in the density of
+        states produced by calculateDensityofStates
+        """
+        elist = np.linspace(0, 1e5)
+        self.configuration.calculate_density_of_states(elist)
+        self.assertFalse(np.isnan(self.configuration.dens_states).any())
 
 ################################################################################
 
