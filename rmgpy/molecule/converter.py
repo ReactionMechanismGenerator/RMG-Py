@@ -206,7 +206,7 @@ def debugRDKitMol(rdmol, level=logging.INFO):
     rdmol.Debug()
     os.dup2(old_stdout_file_descriptor, sys.stdout.fileno())
     my_temp_file.file.seek(0)
-    message = my_temp_file.file.read()
+    message = my_temp_file.file.read().decode('utf-8')
     message = "RDKit Molecule debugging information:\n" + message
     logging.log(level, message)
     return message

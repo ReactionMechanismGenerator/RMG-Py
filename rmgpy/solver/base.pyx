@@ -1248,7 +1248,7 @@ cdef class ReactionSystem(DASx):
 
         if sensitivity:
             for i in range(len(self.sensitiveSpecies)):
-                with open(sensWorksheet[i], 'wb') as outfile:
+                with open(sensWorksheet[i], 'w') as outfile:
                     worksheet = csv.writer(outfile)
                     reactions_above_threshold = []
                     for j in range(num_core_reactions + num_core_species):

@@ -114,6 +114,7 @@ class Mopac(object):
         stdout, stderr = process.communicate()
 
         self.expired = False
+        stderr = stderr.decode('utf-8')
         if 'has expired' in stderr:
             # The MOPAC executable is expired
             logging.warning('\n'.join(stderr.split('\n')[2:7]))
@@ -135,10 +136,10 @@ class Mopac(object):
         shutil.copy(self.inputFilePath, dirpath)
 
         process = Popen([self.executablePath, tempInpFile], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        command = '\n' if self.expired else None  # press enter to pass expiration notice
+        command = b'\n' if self.expired else None  # press enter to pass expiration notice
         stdout, stderr = process.communicate(input=command)  # necessary to wait for executable termination!
-        if "ended normally" not in stderr.strip():
-            logging.warning("Mopac error message:" + stderr)
+        if b"ended normally" not in stderr.strip():
+            logging.warning("Mopac error message:" + stderr.decode('utf-8'))
 
         # copy output file from temp dir to output dir:
         tempOutFile = os.path.join(dirpath, os.path.basename(self.outputFilePath))

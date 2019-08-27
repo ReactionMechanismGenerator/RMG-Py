@@ -234,7 +234,7 @@ class SymmetryJob(object):
         if stderr:
             logging.error("Error message from SYMMETRY calculation:")
             logging.error(stderr)
-        return stdout
+        return stdout.decode('utf-8')
 
     def writeInputFile(self):
         """

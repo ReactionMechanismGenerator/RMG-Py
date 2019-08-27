@@ -845,17 +845,6 @@ def removeCommentFromLine(line):
     if index < len(line):
         line = line[0:index] + '\n'
 
-    try:
-        ucomment = comment.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            ucomment = comment.decode('latin-1')
-        except UnicodeDecodeError:
-            ucomment = comment.decode('windows-1252', errors='replace')
-    # Convert back to utf-8.
-    # Other parts of RMG-Py expect a string object not a unicode object,
-    # but at least this way we know what the encoding is.
-    comment = ucomment.encode('utf-8', 'replace')
     return line, comment
 
 
@@ -903,8 +892,8 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=
     if dictionaryPath:
         species_dict = loadSpeciesDictionary(dictionaryPath)
 
-    with open(path, 'r+b') as f:
-
+    with open(path, 'r') as f:
+        previous_line = f.tell()
         line0 = f.readline()
         while line0 != '':
             line = removeCommentFromLine(line0)[0]
@@ -912,21 +901,22 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=
 
             if 'SPECIES' in line.upper():
                 # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(-len(line0), 1)
+                f.seek(previous_line)
                 readSpeciesBlock(f, species_dict, species_aliases, species_list)
 
             elif 'THERM' in line.upper() and thermoPath is None:
                 # Skip this if a thermo file is specified
                 # Unread the line (we'll re-read it in readThermoBlock())
-                f.seek(-len(line0), 1)
+                f.seek(previous_line)
                 readThermoBlock(f, species_dict)
 
             elif 'REACTIONS' in line.upper():
                 # Reactions section
                 # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(-len(line0), 1)
+                f.seek(previous_line)
                 reaction_list = readReactionsBlock(f, species_dict, readComments=readComments)
 
+            previous_line = f.tell()
             line0 = f.readline()
 
     # Read in the thermo data from the thermo file        
