@@ -90,9 +90,12 @@ class TestAtomType(unittest.TestCase):
         Test that we can reconstruct an AtomType object from its repr()
         with no loss of information.
         """
+        namespace = {}
         exec('atomType = rmgpy.molecule.atomtype.atomTypes[{0!r}]'.format(
-            self.atomType.__repr__().split('"')[1]))
-        return self.atomType.equivalent(atomType)
+            self.atomType.__repr__().split('"')[1]), globals(), namespace)
+        self.assertIn('atomType', namespace)
+        atomType = namespace['atomType']
+        self.assertTrue(self.atomType.equivalent(atomType))
 
     def testEquivalent(self):
         """

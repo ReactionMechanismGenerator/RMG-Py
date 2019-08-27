@@ -110,8 +110,10 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         """
         Test that a CriticalPointGroupContribution object can be reconstructed from its repr() output with no loss of information
         """
-        criticalPointContribution = None
-        exec('criticalPointContribution = {0!r}'.format(self.criticalPointContribution))
+        namespace = {}
+        exec('criticalPointContribution = {0!r}'.format(self.criticalPointContribution), globals(), namespace)
+        self.assertIn('criticalPointContribution', namespace)
+        criticalPointContribution = namespace['criticalPointContribution']
         self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)

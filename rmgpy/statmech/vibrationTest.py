@@ -220,8 +220,10 @@ class TestHarmonicOscillator(unittest.TestCase):
         Test that a HarmonicOscillator object can be reconstructed from its
         repr() output with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertEqual(self.mode.frequencies.value.shape, mode.frequencies.value.shape)
         for freq0, freq in zip(self.mode.frequencies.value, mode.frequencies.value):
             self.assertAlmostEqual(freq0, freq, 6)

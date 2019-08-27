@@ -407,7 +407,7 @@ class KineticsLibrary(Database):
         # Process the file
         f = open(path, 'r')
         try:
-            exec(f, global_context, local_context)
+            exec(f.read(), global_context, local_context)
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(path))
             raise

@@ -69,7 +69,10 @@ class TestElement(unittest.TestCase):
         Test that we can reconstruct an Element object from its repr()
         output with no loss of information.
         """
-        exec('element = {0!r}'.format(self.element))
+        namespace = {}
+        exec('element = {0!r}'.format(self.element), globals(), namespace)
+        self.assertIn('element', namespace)
+        element = namespace['element']
         self.assertEqual(self.element.number, element.number)
         self.assertEqual(self.element.symbol, element.symbol)
         self.assertEqual(self.element.name, element.name)

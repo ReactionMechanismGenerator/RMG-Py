@@ -133,8 +133,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         Test that an IdealGasTranslation object can be reconstructed from its
         repr() output with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         self.assertEqual(self.mode.quantum, mode.quantum)

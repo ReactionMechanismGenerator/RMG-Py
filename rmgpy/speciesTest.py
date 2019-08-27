@@ -132,8 +132,10 @@ class TestSpecies(unittest.TestCase):
         
         ...with no loss of information.
         """
-        species = None
-        exec('species = {0!r}'.format(self.species))
+        namespace = {}
+        exec('species = {0!r}'.format(self.species), globals(), namespace)
+        self.assertIn('species', namespace)
+        species = namespace['species']
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
         self.assertEqual(self.species.molecule[0].multiplicity, species.molecule[0].multiplicity)
@@ -195,7 +197,10 @@ class TestSpecies(unittest.TestCase):
         """Test that both resonance forms of 1-penten-3-yl are printed by __repr__"""
         spec = Species().fromSMILES('C=C[CH]CC')
         spec.generate_resonance_structures()
-        exec('spec2 = {0!r}'.format(spec))
+        namespace = {}
+        exec('spec2 = {0!r}'.format(spec), globals(), namespace)
+        self.assertIn('spec2', namespace)
+        spec2 = namespace['spec2']
         self.assertEqual(len(spec.molecule), len(spec2.molecule))
         for i, j in zip(spec.molecule, spec2.molecule):
             self.assertTrue(j.isIsomorphic(i),

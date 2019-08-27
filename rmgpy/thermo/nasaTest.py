@@ -217,8 +217,10 @@ class TestNASA(unittest.TestCase):
         Test that a NASA object can be reconstructed from its repr() output
         with no loss of information.
         """
-        nasa = None
-        exec('nasa = {0!r}'.format(self.nasa))
+        namespace = {}
+        exec('nasa = {0!r}'.format(self.nasa), globals(), namespace)
+        self.assertIn('nasa', namespace)
+        nasa = namespace['nasa']
         self.assertEqual(len(self.nasa.poly1.coeffs), len(nasa.poly1.coeffs))
         for coeff0, coeff in zip(self.nasa.poly1.coeffs, nasa.poly1.coeffs):
             self.assertAlmostEqual(coeff / coeff0, 1.0, 6)

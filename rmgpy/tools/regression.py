@@ -82,7 +82,7 @@ def readInputFile(path):
     }
 
     try:
-        exec f in global_context, local_context
+        exec(f.read(), global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
