@@ -185,6 +185,11 @@ class Species(object):
                           self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
     @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Species objects. Read-only"""
+        return self.fingerprint, self.label, self.index
+
+    @property
     def fingerprint(self):
         """Fingerprint of this species, taken from molecule attribute. Read-only."""
         if self._fingerprint is None:

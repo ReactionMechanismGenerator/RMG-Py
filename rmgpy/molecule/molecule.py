@@ -180,6 +180,11 @@ class Atom(Vertex):
     def bonds(self):
         return self.edges
 
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Atom objects. Read-only"""
+        return self.number, -getVertexConnectivityValue(self), self.radicalElectrons, self.lonePairs, self.charge
+
     def equivalent(self, other, strict=True):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
@@ -553,6 +558,13 @@ class Bond(Edge):
     @property
     def atom2(self):
         return self.vertex2
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Bond objects. Read-only"""
+        return (self.order,
+                self.atom1.number if self.atom1 is not None else 0,
+                self.atom2.number if self.atom2 is not None else 0)
 
     def getBDE(self):
         """
@@ -947,6 +959,11 @@ class Molecule(Graph):
         if self._smiles is None:
             self._smiles = self.toSMILES()
         return self._smiles
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Molecule objects. Read-only"""
+        return self.fingerprint
 
     def addAtom(self, atom):
         """
