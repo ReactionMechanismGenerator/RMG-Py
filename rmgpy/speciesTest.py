@@ -365,7 +365,7 @@ Thermo library: primaryThermoLibrary
 
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
-        self.assertEqual(self.species2.fingerprint, 'C6H6')
+        self.assertEqual(self.species2.fingerprint, 'C06H06N00O00S00')
 
     def test_inchi_property(self):
         """Test that the InChI property works"""

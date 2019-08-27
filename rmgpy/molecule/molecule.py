@@ -921,10 +921,13 @@ class Molecule(Graph):
         strings matching is a necessary (but not sufficient) condition for
         the associated molecules to be isomorphic.
 
-        Currently, the fingerprint is simply the chemical formula.
+        Use an expanded molecular formula to also enable sorting.
         """
         if self._fingerprint is None:
-            self.fingerprint = self.getFormula()
+            # Include these elements in this order at minimum
+            element_dict = {'C': 0, 'H': 0, 'N': 0, 'O': 0, 'S': 0}
+            element_dict.update(self.get_element_count())
+            self._fingerprint = ''.join([f'{symbol}{num:0>2}' for symbol, num in element_dict.items()])
         return self._fingerprint
 
     @fingerprint.setter

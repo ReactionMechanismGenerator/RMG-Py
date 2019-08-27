@@ -2438,7 +2438,7 @@ multiplicity 2
     def testFingerprintProperty(self):
         """Test that the Molecule.fingerprint property works"""
         # Test getting fingerprint
-        self.assertEqual(self.molecule[0].fingerprint, 'CH2NO2')
+        self.assertEqual(self.molecule[0].fingerprint, 'C01H02N01O02S00')
 
         # Test setting fingerprint
         self.molecule[0].fingerprint = 'nitronate'
