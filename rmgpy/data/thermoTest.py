@@ -1200,9 +1200,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         test_molecule = Molecule(atoms=test_atom_list)
         copied_molecule = Molecule(atoms=copied_atom_list)
 
-        self.assertTrue(test_atom_list != copied_atom_list)
-        self.assertTrue(len(test_atom_list) == len(copied_atom_list))
-        self.assertTrue(test_molecule.is_equal(copied_molecule))
+        self.assertNotEqual(test_atom_list, copied_atom_list)
+        self.assertEqual(len(test_atom_list), len(copied_atom_list))
+        self.assertEqual(test_molecule, copied_molecule)
 
     def testToFailCombineTwoRingsIntoSubMolecule(self):
         """
@@ -1462,7 +1462,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         test_cycle1 = main_cycle[0:8]
         test_cycle2 = main_cycle[6:]
         joined_cycle = combineCycles(test_cycle1, test_cycle2)
-        self.assertTrue(sorted(main_cycle) == sorted(joined_cycle))
+        self.assertEqual(set(main_cycle), set(joined_cycle))
 
     def testSplitBicyclicIntoSingleRings1(self):
         """
