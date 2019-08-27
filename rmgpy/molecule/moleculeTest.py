@@ -2214,7 +2214,6 @@ multiplicity 2
             self.assertEqual(atom_symbols_list, previous_atom_symbols_list)
             previous_atom_symbols_list = atom_symbols_list
 
-    @work_in_progress
     def testGetDeterministicSmallestSetOfSmallestRingsCase3(self):
         """
         Test if two possible smallest rings can join the smallest set
