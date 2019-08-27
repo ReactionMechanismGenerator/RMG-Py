@@ -558,7 +558,7 @@ def calculateSymmetryNumber(molecule):
             symmetry_number *= calculateAtomSymmetryNumber(molecule, atom)
 
     for atom1 in molecule.vertices:
-        for atom2 in atom1.edges:
+        for atom2 in list(atom1.edges):  # Make a copy of the list of neighbors since we modify the dictionary
             if (molecule.vertices.index(atom1) < molecule.vertices.index(atom2) and
                     not molecule.isBondInCycle(atom1.edges[atom2])):
                 symmetry_number *= calculateBondSymmetryNumber(molecule, atom1, atom2)
