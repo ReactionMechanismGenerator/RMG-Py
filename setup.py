@@ -56,8 +56,8 @@ except ImportError:
 Options.annotate = True
 
 directives = {
-    # Set input language version to python 2
-    'language_level': 2,
+    # Set input language version to python 3
+    'language_level': 3,
     # Turn on profiling capacity for all Cython modules
     # 'profile': True,
     # Embed call signatures in cythonized files - enable when building documentation
