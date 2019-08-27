@@ -1132,10 +1132,9 @@ class Group(Graph):
         Remove all bonds that are definitely only van der Waals bonds.
         """
         cython.declare(atom=GroupAtom, bond=GroupBond)
-        for atom in self.atoms:
-            for bond in atom.edges.values():
-                if bond.isVanDerWaals(wildcards=False):
-                    self.removeBond(bond)
+        for bond in self.getAllEdges():
+            if bond.isVanDerWaals(wildcards=False):
+                self.removeBond(bond)
 
     def sortAtoms(self):
         """
