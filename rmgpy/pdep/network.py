@@ -391,12 +391,27 @@ class Network(object):
 
                 # Rescale densities of states such that, when they are integrated
                 # using the Boltzmann factor as a weighting factor, the result is unity
-                for i in range(n_isom + n_reac):
+                # this converts the denisty of states into a population distribution
+                # as described in Allen 2012, equation 1
+                # check for numerical errors in Boltzman distribution
+                if np.exp(-self.e_list.max() / constants.R / self.T) == 0.0 or\
+                   np.exp(-self.e_list.min() / constants.R / self.T) * self.dens_states.max() == np.inf:
+                    logging.warning("The energies of range ({0}, {1}) J/mol result in numerical rounding errors in the Bolzman distribution. "
+                                    "Check that your energy corrections are accurate.".format(self.e_list.min(), self.e_list.max()))
+                self.dens_states_raw = self.dens_states.copy()
+                for i in range(n_isom + n_reac + n_prod):
                     Q = 0.0
                     for s in range(n_j):
                         Q += np.sum(
                             self.dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list / constants.R / T))
-                    self.dens_states[i, :, :] /= Q
+                    if Q == 0.:
+                        logging.warning('No density of states found for structure {1} in network {0}. '
+                                        'possibly a product witout any thermo.'.format(self.label, i))
+                    else:
+                        self.dens_states[i, :, :] /= Q
+                if np.isnan(self.dens_states).any():
+                    logging.warning('Density of states for network {0} has NaN values after '
+                                    'rescaling densities. Double check issues with network.'.format(self.label))
 
             # Update parameters that depend on temperature and pressure if necessary
             if temperature_changed or pressure_changed:
@@ -581,10 +596,8 @@ class Network(object):
                 logging.debug('Mapping density of states for product channel "{0}"'.format(self.products[n]))
                 self.dens_states[n + n_isom + n_reac, :, :] = self.products[n].map_density_of_states(self.e_list, self.j_list)
 
-        # import pylab
-        # for i in range(n_isom + n_reac + n_prod):
-        #    pylab.semilogy(self.e_list*0.001, self.dens_states[i,:])
-        # pylab.show()
+        if np.isnan(self.dens_states).any():
+            raise Exception('Density of states has a NaN value.\n{0}'.format(self.dens_states))
 
     def calculate_microcanonical_rates(self):
         """
