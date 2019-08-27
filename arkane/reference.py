@@ -50,6 +50,8 @@ from rmgpy.thermo import ThermoData
 from rmgpy.thermo.model import HeatCapacityModel
 
 
+
+
 class ReferenceSpecies(ArkaneSpecies):
     """
     A class for storing high level reference data and quantum chemistry calculations for a variety of model chemistry
@@ -58,7 +60,7 @@ class ReferenceSpecies(ArkaneSpecies):
 
     def __init__(self, species=None, smiles=None, adjacency_list=None, inchi=None, reference_data=None,
                  calculated_data=None, preferred_reference=None, index=None, label=None, cas_number=None,
-                 symmetry_number=None, **kwargs):
+                 symmetry_number=None, atct_id = None, **kwargs):
         """
         One of the following must be provided: species, smiles, adjacency_list, inchi.
 
@@ -100,6 +102,7 @@ class ReferenceSpecies(ArkaneSpecies):
         self.index = index
         self.cas_number = cas_number
         self.preferred_reference = preferred_reference
+        self.atct_id = atct_id
 
         # Alter the symmetry number calculated by RMG to the one provided by the user
         if symmetry_number:
@@ -242,7 +245,7 @@ class ReferenceSpecies(ArkaneSpecies):
         return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, fod, preferred_source)
 
 
-    def write_fod_input(ref,coords,directory='./fod_inputs'):
+    def write_fod_input(self,model_chemistry,method,directory='.'):
         """
         Generates input files to run finite temperaure DFT to determine the Fractional Occupation number weighted Density (FOD number).
         Uses the default functional, basis set, and SmearTemp (TPSS, def2-TZVP, 5000 K) in Orca.
@@ -250,13 +253,36 @@ class ReferenceSpecies(ArkaneSpecies):
         Bauer, C. A., Hansen, A., & Grimme, S. (2017). The Fractional Occupation Number Weighted Density as a Versatile Analysis Tool for Molecules with a Complicated Electronic Structure. 
         Chemistry - A European Journal, 23(25), 6150–6164. https://doi.org/10.1002/chem.201604682
         """
-        if '(' in ref.smiles or '#' in ref.smiles:
-            base = ref.smiles.replace('(', '{').replace(')', '}').replace('#', '=-')
-        else:
-            base = ref.smiles
 
-        # Make sure we have required properties of conformer to run the job
-        assert None not in [ref.multiplicity,ref.charge,coords]
+        method = method.lower()
+
+        assert method in ['default','tpss','m062x']
+
+        if '(' in self.smiles or '#' in self.smiles:
+            base = self.smiles.replace('(', '{').replace(')', '}').replace('#', '=-')
+        else:
+            base = self.smiles
+
+        atom_dict = {
+            6:'C',
+            1:'H',
+            1:'Cl',
+            9:'F',
+            8:'O',
+            35:'Br',
+            7:'N'
+        }
+
+        conf = self.calculated_data[model_chemistry].conformer
+        #coords = conf.as_dict()['coordinates']['value']['object']
+        coords = conf.coordinates.value
+        atoms = [int(i) for i in conf.number.value]
+        # atoms = conf.as_dict()['number']['value']['object']
+        atoms = [atom_dict.get(a) for a in atoms]
+        coordinates = []
+        for atom,coords in zip(atoms,coords):
+            coordinates.append('{}  {}  {}  {}\n'.format(atom,coords[0],coords[1],coords[-1]))
+
         
         # If directory is not specified, use the instance directory
         if directory is None:
@@ -266,20 +292,27 @@ class ReferenceSpecies(ArkaneSpecies):
                 os.makedirs(directory)
 
         # Path for FOD input file
-        outfile = os.path.join(directory,ref.smiles+'_fod.inp')
+        outfile = os.path.join(directory,self.smiles+'_fod.inp')
+
+
 
         # Write FOD input
         with open(outfile, 'w+') as f:
-            f.write('# FOD anaylsis for {} \n'.format(ref.smiles))
-            f.write('! FOD \n')
-            f.write('\n')
+            f.write('# FOD anaylsis for {} \n'.format(self.smiles))
+            if method in ['tpss','default']:
+                f.write('! FOD D3 Grid4\n\n')
+            if method == 'm062x':
+                f.write('! M062X {} TightSCF\n\n'.format(basis))
+            f.write('%scf\n  MaxIter  600\n')
+            if method == 'm062x':
+                f.write('  SmearTemp 15800\n')
+            f.write('end\n')
             f.write('%pal nprocs 4 end \n')
-            f.write('%scf\n  MaxIter  600\nend\n')
             f.write('%base "{}_fod" \n'.format(base))
-            f.write('*xyz {} {}\n'.format(ref.charge, ref.multiplicity))
-            f.writelines(coords)
+            f.write('*xyz {} {}\n'.format(self.charge, self.multiplicity))
+            f.writelines(coordinates)
             f.write('*\n')
-
+            f.close()
         
 class ReferenceDataEntry(RMGObject):
     """
@@ -392,7 +425,7 @@ class ReferenceDatabase(object):
     """
     A class for loading and working with database of reference species, located at RMG-database/input/reference_sets/
     """
-    def __init__(self,paths = None, parse_model_chemistries=True):
+    def __init__(self,paths = None, parse_model_chemistries=False):
         """
         Attributes:
             self.reference_sets (Dict[str, ReferenceSpecies]): {'set name': [ReferenceSpecies, ...], ...}
@@ -440,10 +473,10 @@ class ReferenceDatabase(object):
                     if model_chem not in model_chemistries:
                         model_chemistries.append(model_chem)
                 molecule = Molecule(SMILES=ref_spcs.smiles)
-                if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
-                    logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
-                                    'calculated data. This entry will not be added'.format(ref_spcs.smiles, set_name))
-                    continue
+                # if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
+                #     logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
+                #                     'calculated data. This entry will not be added'.format(ref_spcs.smiles, set_name))
+                #     continue
                 # perform isomorphism checks to prevent duplicate species
                 for mol in molecule_list:
                     if molecule.isIsomorphic(mol):
@@ -538,26 +571,41 @@ class ReferenceDatabase(object):
 
         return descriptors
 
-    def test(self, model_chemistry, number_of_reactions, constraint_classes = None, sets=None):
+    def test(self, model_chemistry, number_of_reactions, reference_list=None, subset_indicies= None, constraint_classes = None, sets=None):
 
         import pandas as pd
+        import numpy as np
         
-        reference_list = []
+        if reference_list:
+            reference_list = reference_list
 
-        if not sets:
-            sets = self.errorCancellingSets.keys()
-        
-        for s in sets:
-            if s in self.errorCancellingSets.keys():
-                if model_chemistry in self.errorCancellingSets[s].keys():
-                    for spcs in self.errorCancellingSets[s][model_chemistry]:
+        else:
+            reference_list = []
+
+            if not sets:
+                sets = self.errorCancellingSets.keys()
+            
+            for s in sets:
+                if s in self.errorCancellingSets.keys():
+                    if model_chemistry in self.errorCancellingSets[s].keys():
+                        for spcs in self.errorCancellingSets[s][model_chemistry]:
+                            reference_list.append(spcs)
+                else:
+                    for spcs in self.extract_model_chemistry(model_chemistry, sets=[s]):
                         reference_list.append(spcs)
-            else:
-                for spcs in self.extract_model_chemistry(model_chemistry, sets=[s]):
-                    reference_list.append(spcs)
         
+        if subset_indicies is None:
+            subset_indicies = range(0,len(reference_list))
+
+        reference_species_index_dict = {}
+        for i, ref in enumerate(reference_list):
+            reference_species_index_dict[ref] = i
+
         data = []
+        reactions_matrix = []
         for i,error_canceling_spcs in enumerate(reference_list):
+            if i not in subset_indicies:
+                continue
             print('calculating thermo for {}, {} of {}'.format(error_canceling_spcs.molecule.toSMILES(),i+1,len(reference_list)))
             reference_set = reference_list[:]
             target_spcs = error_canceling_spcs
@@ -577,21 +625,41 @@ class ReferenceDatabase(object):
             h298_calc, reactions, rejected_reactions = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=number_of_reactions, milp_software='lpsolve')
             if h298_calc:
                 h298 = h298_calc.value_si/h298_calc.conversionFactors['kcal/mol']
+                print(target_spcs.molecule.toSMILES(),h298-ref_h298)
                 obj_fod_h298_weight = []
                 for (reaction,constraint_class),(obj,fod,h,weight) in reactions.items():
                     h_rxn = h.value_si/h.conversionFactors['kcal/mol']
-                    obj_fod_h298_weight.append((constraint_class,obj,fod,abs(h-ref_h298),weight))
-                species_data = [target_spcs.molecule.toSMILES(),reactions,target_fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298,obj_fod_h298_weight]
-                data.append(species_data)
-                print(target_spcs.molecule.toSMILES(),h298-ref_h298,obj_fod_h298_weight)
+                    print('c_class:{} ( {} ) \n fod_sum={}  h298_error={}({}) kcal/mol'.format(constraint_class.split('_')[-1],
+                    reaction,fod,h_rxn-ref_h298,ref_h298_uncertainty))
+                    reaction_vector = np.zeros(len(reference_list)+4)
+                    reaction_vector[reference_species_index_dict[reaction.target]] = -1
+                    spcs_dict = reaction.get_dict()
+                    for spcs,v in spcs_dict.items():
+                        print(spcs,v)
+                        reaction_vector[reference_species_index_dict[spcs]] = v
+                    reaction_vector[-1] = h_rxn-ref_h298
+                    reaction_vector[-2] = obj
+                    reaction_vector[-3] = fod
+                    reaction_vector[-4] = int(constaint_class.split('_')[-1])
+                    reactions_matrix.append(reaction_vector)
+                #     obj_fod_h298_weight.append((constraint_class,obj,fod,h_rxn-ref_h298))
+                # species_data = [target_spcs.molecule.toSMILES(),reactions,target_fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298,obj_fod_h298_weight]
+                # data.append(species_data)
+                # print(target_spcs.molecule.toSMILES(),h298-ref_h298)
+                # print('-------------------------------------------')
+                # print('constraint_class  objective   fod_sum    h-refh    ')
+                # for x in obj_fod_h298_weight:
+                #     print(x)
                 
             else:
                 continue
 
-        columns = ['SMILES','Reactions','target_fod','H298_calc(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref','constraintclass_obj_fod_h298_weight']
-        df = pd.DataFrame(data,columns=columns)
+        # columns = ['SMILES','Reactions','target_fod','H298_calc(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref','constraintclass_obj_fod_h298_weight']
+        # df = pd.DataFrame(data,columns=columns)
 
-        return df
+        # return df
+
+        return reference_species_index_dict,np.array(reactions_matrix)
 
 
 
