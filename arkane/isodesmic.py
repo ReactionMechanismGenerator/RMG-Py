@@ -125,7 +125,7 @@ class ErrorCancelingReaction(object):
         # Does not include the target, which is handled separately.
         self.species = species
 
-        self.fod = self.calculated_fod()
+        self.fod = self.calculate_fod()
         self.species_dict = self.get_dict()
 
     def __repr__(self):
@@ -162,24 +162,30 @@ class ErrorCancelingReaction(object):
             low_level_h_rxn
         return ScalarQuantity(target_thermo, 'J/mol')
 
-    def calculated_fod(self):
+    def calculate_fod(self):
         """
         Returns the sum of the fod number for all the species in the reaction.
         If a species is in the reaction does not have an fod number, it will return None.
         """
 
+        fods = []
+
         if self.target.fod:
-            fod = self.target.fod
+            fod_sum = self.target.fod
+            fods.append(-1.0*self.target.fod)
         else:
             return None
 
         for spcs,v in self.species.items():
             if spcs.fod:
-                fod += spcs.fod * abs(v)
+                fod_sum += spcs.fod * abs(v)
+                fods.append(v*spcs.fod)
             else:
                 return None
 
-        return fod
+        fod_diff = sum(fods)
+
+        return fod_sum
 
 class SpeciesConstraints(object):
     """
@@ -529,7 +535,11 @@ class ErrorCancelingScheme(object):
 
         self.reference_species = self.constraints.reference_species
 
-        self.target_constraints, self.constraint_matrix = self.constraints.calculate_constraints()
+        try:
+            self.target_constraints, self.constraint_matrix = self.constraints.calculate_constraints()
+        except:
+            self.target_constraints = None
+            self.constraint_matrix = None
         # except:
         #     self.target_constraint = self.constraint_matrix = None
 
@@ -548,35 +558,27 @@ class ErrorCancelingScheme(object):
             np.ndarray: indices (of the subset) for the species that participated in the return reaction
         """
 
-        constraint_class_penalty = {
-            'class_5': 1.0,
-            'class_4': 2.0,
-            'class_3': 4.0,
-            'class_2': 8.0,
-            'class_1': 16.0,
-            'class_0': 32.0,
-        }
-
         if constraint_class is None:
-            constraint_class = self.constraints.taget_constraint_classes[-1]
+            constraint_class = self.constraints.target_constraint_classes[-1]
         
-        class_penalty = constraint_class_penalty[constraint_class]
+        #class_penalty = constraint_class_penalty[constraint_class]
         constraint_matrix = np.array(self.constraint_matrix[constraint_class], dtype=int)
-        weights = self.constraints.descriptor_weights[constraint_class]
+        #weights = self.constraints.descriptor_weights[constraint_class]
 
         # Define the constraints based on the provided subset
-        #c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
+      
         c_matrix = np.take(constraint_matrix, reference_subset, axis=0)
         c_matrix = np.tile(c_matrix, (2, 1))
-        fod_vector = self.constraints.fod_vector[reference_subset]
-        fod_vector = np.tile(fod_vector,(2,1))
+        #fod_vector = self.constraints.fod_vector[reference_subset]
+        #fod_vector = np.tile(fod_vector,(2,1))
         # objective_fn: vector, one per reference species (doubled) 
         # objective_fn = np.sum(c_matrix, 1, dtype=int) # indicating ~size of molecule
         # objective_fn = np.sum(c_matrix * fod_vector * weights * class_penalty, 1, dtype=float)
-        objective_matrix = np.ones_like(fod_vector,dtype=int) # all species are equal
-        fod_penalty = 5.0 # arbitrary chosen penalty for high FOD
+        objective_matrix = np.ones_like(c_matrix,dtype=int) # all species are equal
+        #fod_penalty = 5.0 # arbitrary chosen penalty for high FOD
         # objective_fn = 1.0 + fod_penalty*fod_vector # penalize things with higher FOD
-        objective_fn = np.sum(objective_matrix * (2*fod_vector) * weights * class_penalty,1,dtype=float)
+        #objective_fn = np.sum(objective_matrix * (2.0*fod_vector) * weights * class_penalty,1,dtype=float)
+        objective_fn = np.sum(objective_matrix,1,dtype=float)
         targets = -1 * self.target_constraints[constraint_class]
         m, n  = c_matrix.shape
         split = int(m/2)
@@ -667,7 +669,7 @@ class ErrorCancelingScheme(object):
                     reaction.species.update({self.reference_species[reference_subset[index]]: -v})
                 else:
                     reaction.species.update({self.reference_species[reference_subset[index % split]]: v})
-   
+
         return reaction, np.array(subset_indices), obj
 
     def multiple_error_canceling_reaction_search(self, reactions=None, rejected_reactions=None, n_reactions_max=20, reject_reactions = False, milp_software='lpsolve'):
@@ -687,13 +689,14 @@ class ErrorCancelingScheme(object):
             :obj:list of :obj:ErrorCancelingReaction: A list of the found error canceling reactions
         """
         
-        if self.constraint_matrix is None:
+        if (self.constraint_matrix is None) or (len(self.constraints.target_constraint_classes) == 0):
             return None,None
         
         if not reactions:
             reactions = OrderedDict()
         if not rejected_reactions:
             rejected_reactions = OrderedDict()
+
         current_constraint_class = self.constraints.target_constraint_classes[-1]
         full_set = np.arange(0, len(self.reference_species))
         if reject_reactions and len(self.constraints.target_constraint_classes) > 1:
@@ -712,21 +715,21 @@ class ErrorCancelingScheme(object):
                 continue
             reaction, subset_indices, obj = self._find_error_canceling_reaction(subset,current_constraint_class, milp_software=milp_software)
             attempts += 1
-            #print(attempts)
+
             if reaction is None:
                 continue
-                #unique = True
+
             if len(reactions) == 0:
                 h298 = reaction.calculate_target_thermo()
-                fod = reaction.fod
+                fod = reaction.calculate_fod()
                 ref_obj = obj
                 reactions[(reaction,current_constraint_class)] = (ref_obj,fod,h298,1.0)
                 for index in subset_indices:
                     subset_queue.append((np.delete(subset, index)))
                 continue
             
-            elif current_constraint_class not in [key[1] for key in reactions.keys()]:
-                ref_obj = obj
+            # elif current_constraint_class not in [key[1] for key in reactions.keys()]:
+            #     ref_obj = obj
             
             unique = True
             for rxn in [r[0] for r in reactions.keys() + rejected_reactions.keys()]:
@@ -738,36 +741,38 @@ class ErrorCancelingScheme(object):
            
             if unique:
                 h298 = reaction.calculate_target_thermo()
-                fod = reaction.fod
+                fod = reaction.calculate_fod()
                 
-                if ref_obj <= obj:
-                    weight = 1-0.5*((obj-ref_obj)/(obj+ref_obj))
-                else:
-                    weight = 1.0
-                    ref_obj = obj
+                weight = 1.0
+                # if ref_obj <= obj:
+                #     weight = 1-0.5*((obj-ref_obj)/(obj+ref_obj))
+                # else:
+                #     weight = 1.0
+                #     ref_obj = obj
 
-                if (len(reactions) <= 10) or (not reject_reactions):
-                    reactions[(reaction,current_constraint_class)] = (obj,fod,h298,weight)
-                    for index in subset_indices:
-                        subset_queue.append((np.delete(subset, index)))
-                    continue
+                #if (len(reactions) <= 10) or (not reject_reactions):
                 
-                if reject_reactions:
-                    data = np.array(reactions.values(),ndmin=2)
-                    sum_of_weights = np.sum(data[:,-1])
+                reactions[(reaction,current_constraint_class)] = (obj,fod,h298,weight)
+                for index in subset_indices:
+                    subset_queue.append((np.delete(subset, index)))
+                continue
+                
+                # if reject_reactions:
+                #     data = np.array(reactions.values(),ndmin=2)
+                #     sum_of_weights = np.sum(data[:,-1])
 
-                    h298_sum = np.sum(np.array([h.value_si for h in data[:,-2]]) * data[:,-1])
-                    h298_mean = h298_sum/sum_of_weights
-                    new_h298_mean = (h298.value_si*weight + h298_sum)/(sum_of_weights + weight)
-                    if (abs(new_h298_mean-h298_mean) >= abs(2 * np.std([h.value_si for h in data[:,-2]]))) or (obj>lower_class_obj):
-                        rejected += 1
-                        rejected_reactions[(reaction,current_constraint_class)] = (obj,h298,weight)
-                        for index in subset_indices:
-                            subset_queue.append((np.delete(subset, index)))
-                    else:
-                        reactions[(reaction,current_constraint_class)] = (obj,h298,weight)
-                        for index in subset_indices:
-                            subset_queue.append((np.delete(subset, index)))
+                #     h298_sum = np.sum(np.array([h.value_si for h in data[:,-2]]) * data[:,-1])
+                #     h298_mean = h298_sum/sum_of_weights
+                #     new_h298_mean = (h298.value_si*weight + h298_sum)/(sum_of_weights + weight)
+                #     if (abs(new_h298_mean-h298_mean) >= abs(2 * np.std([h.value_si for h in data[:,-2]]))) or (obj>lower_class_obj):
+                #         rejected += 1
+                #         rejected_reactions[(reaction,current_constraint_class)] = (obj,fod,h298,weight)
+                #         for index in subset_indices:
+                #             subset_queue.append((np.delete(subset, index)))
+                #     else:
+                #         reactions[(reaction,current_constraint_class)] = (obj,fod,h298,weight)
+                #         for index in subset_indices:
+                #             subset_queue.append((np.delete(subset, index)))
 
 
         self.constraints.target_constraint_classes.pop()
@@ -792,21 +797,25 @@ class ErrorCancelingScheme(object):
             list: reaction list containing all error canceling reactions found
 
         """
+        if self.constraint_matrix is None:
+            return None,None,None
         reactions, rejected_reactions = self.multiple_error_canceling_reaction_search(n_reactions_max=n_reactions_max, milp_software=milp_software)
         if reactions is None:
             return None, None, None
-        data = np.array(reactions.values(),ndmin=2)
+        data = np.array(reactions.values())
         if len(reactions) == 0:
             return None,None,None
         elif len(reactions) == 1:
-            h298_mean = data[-2]
+            h298_mean = float(data[0][-2].value_si)
         else:
             try:
                 sum_of_weights = np.sum(data[:,-1])
                 h298_sum = np.sum(np.array([h.value_si for h in data[:,-2]]) * data[:,-1])
                 h298_mean = h298_sum/sum_of_weights
             except:
-                print data
+                print "something went wrong when calculating H298 for {}".format(self.target)
+                logging.info("something went wrong when calculating H298 for {}".format(self.target))
+                logging.info(data)
                 return None,None,None
         # h298_list = np.zeros(len(reaction_list))
         # h298_kcal_mol = np.zeros(len(reaction_list))
