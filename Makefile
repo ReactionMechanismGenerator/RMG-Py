@@ -84,7 +84,7 @@ ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
+	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
 
 test-database:
 	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
