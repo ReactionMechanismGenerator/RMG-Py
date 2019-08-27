@@ -143,7 +143,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         a6_low = Ffloat(lines[3][45:60].strip())
     except (IndexError, ValueError) as e:
         logging.warning('Error while reading thermo entry for species {0}'.format(species))
-        logging.warning(e.message)
+        logging.warning(str(e))
         return species, None, None
 
     # Construct and return the thermodynamics model

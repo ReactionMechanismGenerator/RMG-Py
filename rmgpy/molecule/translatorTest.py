@@ -1048,14 +1048,14 @@ class ParsingTest(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             Molecule().fromSMILES('InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
 
-        self.assertTrue('Improper identifier type' in cm.exception.message)
+        self.assertTrue('Improper identifier type' in str(cm.exception))
 
     def test_read_inchikey_error(self):
         """Test that the correct error is raised when reading an InChIKey"""
         with self.assertRaises(ValueError) as cm:
             Molecule().fromInChI('InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N')
 
-        self.assertTrue('InChIKey is a write-only format' in cm.exception.message)
+        self.assertTrue('InChIKey is a write-only format' in str(cm.exception))
 
 
 class InChIParsingTest(unittest.TestCase):
