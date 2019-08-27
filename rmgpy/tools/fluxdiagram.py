@@ -227,7 +227,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.add_edge(edge)
 
     # Generate the coordinates for all of the nodes using the specified program
-    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))[0]
+    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program).decode('utf-8'))[0]
 
     # Now iterate over the time points, setting the pen widths appropriately
     # This should preserve the coordinates of the nodes from frame to frame
