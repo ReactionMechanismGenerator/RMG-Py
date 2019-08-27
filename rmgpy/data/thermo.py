@@ -1747,7 +1747,7 @@ class ThermoDatabase(object):
 
         if molecule.isRadical():
             thermo = [self.estimateRadicalThermoViaHBI(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
-            H298 = np.array([tdata.H298 for tdata in thermo])
+            H298 = np.array([tdata.H298.value_si for tdata in thermo])
             indices = H298.argsort()
             species.molecule = [species.molecule[ind] for ind in indices]
             thermo0 = thermo[indices[0]]
