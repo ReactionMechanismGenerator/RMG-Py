@@ -101,13 +101,13 @@ class TestAtomType(unittest.TestCase):
         """
         Test the AtomType.equivalent() method.
         """
-        return self.atomType.equivalent(rmgpy.molecule.atomtype.atomTypes['Cd'])
+        self.assertTrue(self.atomType.equivalent(rmgpy.molecule.atomtype.atomTypes['Cd']))
 
     def testIsSpecficCaseOf(self):
         """
         Test the AtomType.isSpecificCaseOf() method.
         """
-        return self.atomType.isSpecificCaseOf(rmgpy.molecule.atomtype.atomTypes['C'])
+        self.assertTrue(self.atomType.isSpecificCaseOf(rmgpy.molecule.atomtype.atomTypes['C']))
 
     def testSetActions(self):
         """

@@ -305,7 +305,8 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         )
 
         # Function should complain if there's no thermo comments
-        self.assertRaises(self.database.extractSourceFromComments(cineole_rad))
+        with self.assertRaises(ValueError):
+            self.database.extractSourceFromComments(other)
 
         # Check a dummy species that has plus and minus thermo group contributions
         polycyclic = Species(
