@@ -131,21 +131,9 @@ def saveEntry(f, entry):
         f.write('    rank = {0},\n'.format(entry.rank))
 
     if entry.shortDesc.strip() != '':
-        f.write('    shortDesc = u"""')
-        try:
-            f.write(entry.shortDesc.encode('utf-8'))
-        except:
-            f.write(entry.shortDesc.strip().encode('ascii', 'ignore') + "\n")
-        f.write('""",\n')
-
+        f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
     if entry.longDesc.strip() != '':
-        f.write('    longDesc = \n')
-        f.write('u"""\n')
-        try:
-            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-        except:
-            f.write(entry.longDesc.strip().encode('ascii', 'ignore') + "\n")
-        f.write('""",\n')
+        f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
 
     f.write(')\n\n')
 

@@ -133,19 +133,8 @@ def saveEntry(f, entry):
         f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "":
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write('    shortDesc = u"""')
-    try:
-        f.write(entry.shortDesc.encode('utf-8'))
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        f.write(entry.shortDesc.strip().encode('ascii', 'replace'))
-    f.write('""",\n')
-    f.write('    longDesc = \n')
-    f.write('u"""\n')
-    try:
-        f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        f.write(entry.longDesc.strip().encode('ascii', 'replace') + "\n")
-    f.write('""",\n')
+    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
 

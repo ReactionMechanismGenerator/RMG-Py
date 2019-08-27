@@ -90,22 +90,8 @@ def saveEntry(f, entry):
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
 
-    f.write('    shortDesc = u"""')
-    try:
-        f.write(entry.shortDesc.encode('utf-8'))
-    except:
-        f.write(entry.shortDesc.strip().encode('ascii', 'ignore'))
-    f.write('""",\n')
-    if entry.longDesc:
-        f.write('    longDesc = \n')
-        f.write('u"""\n')
-        try:
-            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-        except:
-            f.write(entry.longDesc.strip().encode('ascii', 'ignore') + "\n")
-        f.write('""",\n')
-    else:
-        f.write('    longDesc = u"""""",\n')
+    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
