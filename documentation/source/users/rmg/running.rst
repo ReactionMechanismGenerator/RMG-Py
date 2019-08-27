@@ -53,7 +53,7 @@ Make sure that:
 
     source activate rmg_env
 
-    python  -n $Processes $RMG_WS/RMG-Py/rmg.py input.py
+    python $RMG_WS/RMG-Py/rmg.py -n $Processes input.py
 
     source deactivate
 
@@ -89,7 +89,7 @@ Make sure that:
 
     source activate rmg_env
 
-    python -n $Processes $RMG_WS/RMG-Py/rmg.py input.py
+    python $RMG_WS/RMG-Py/rmg.py -n $Processes input.py
 
     source deactivate
 
