@@ -34,6 +34,8 @@ molecule from its chemical graph representation.
 """
 from __future__ import division
 
+import itertools
+
 
 def calculateAtomSymmetryNumber(molecule, atom):
     """
@@ -454,7 +456,7 @@ def calculateCyclicSymmetryNumber(molecule):
                 if size % 2 == 0:  # look at two atoms
                     atom1 = ring[flipping_atom_index]
                     atom2 = ring[flipping_atom_index + size // 2]
-                    non_ring_bonded_atoms = [bonded_atom for bonded_atom in atom1.bonds.keys() + atom2.bonds.keys()
+                    non_ring_bonded_atoms = [bonded_atom for bonded_atom in itertools.chain(atom1.bonds.keys(), atom2.bonds.keys())
                                              if id(bonded_atom) not in ringed_atom_ids]
                     if len(non_ring_bonded_atoms) < 3:
                         pass  # all_the_same still true

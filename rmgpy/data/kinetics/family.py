@@ -3404,7 +3404,7 @@ class KineticsFamily(Database):
 
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
 
-        entries = self.groups.entries.values()
+        entries = list(self.groups.entries.values())
         rxnlists = [(templateRxnMap[entry.label], entry.label)
                     if entry.label in templateRxnMap.keys() else [] for entry in entries]
         inputs = np.array([(self.forwardRecipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])

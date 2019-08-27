@@ -220,7 +220,7 @@ cdef class NASA(HeatCapacityModel):
     def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         if isinstance(polynomials, dict):
-            self.polynomials = polynomials.values()
+            self.polynomials = list(polynomials.values())
         else:
             self.polynomials = polynomials
     
