@@ -154,6 +154,56 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
 
+    def test_equality(self):
+        """Test that we can perform equality comparison with Species objects"""
+        spc1 = Species(SMILES='C')
+        spc2 = Species(SMILES='C')
+
+        self.assertNotEqual(spc1, spc2)
+        self.assertEqual(spc1, spc1)
+        self.assertEqual(spc2, spc2)
+
+    def test_less_than(self):
+        """Test that we can perform less than comparison with Species objects"""
+        spc1 = Species(index=1, label='a', SMILES='C')
+        spc2 = Species(index=2, label='a', SMILES='C')
+        spc3 = Species(index=2, label='b', SMILES='C')
+        spc4 = Species(index=1, label='a', SMILES='CC')
+
+        self.assertLess(spc1, spc2)
+        self.assertLess(spc1, spc3)
+        self.assertLess(spc2, spc3)
+        self.assertLess(spc1, spc4)
+        self.assertLess(spc2, spc4)
+        self.assertLess(spc3, spc4)
+
+    def test_greater_than(self):
+        """Test that we can perform greater than comparison with Species objects"""
+        spc1 = Species(index=1, label='a', SMILES='C')
+        spc2 = Species(index=2, label='a', SMILES='C')
+        spc3 = Species(index=2, label='b', SMILES='C')
+        spc4 = Species(index=1, label='a', SMILES='CC')
+
+        self.assertGreater(spc2, spc1)
+        self.assertGreater(spc3, spc1)
+        self.assertGreater(spc3, spc2)
+        self.assertGreater(spc4, spc1)
+        self.assertGreater(spc4, spc2)
+        self.assertGreater(spc4, spc3)
+
+    def test_hash(self):
+        """Test behavior of Species hashing using dictionaries and sets"""
+        spc1 = Species(index=1, label='a', SMILES='C')
+        spc2 = Species(index=2, label='a', SMILES='C')
+        spc3 = Species(index=2, label='b', SMILES='C')
+        spc4 = Species(index=1, label='a', SMILES='CC')
+
+        # Test dictionary behavior
+        self.assertEqual(len(dict.fromkeys([spc1, spc2, spc3, spc4])), 4)
+
+        # Test set behavior
+        self.assertEqual(len({spc1, spc2, spc3, spc4}), 4)
+
     def testToAdjacencyList(self):
         """
         Test that toAdjacencyList() works as expected.

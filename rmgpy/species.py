@@ -184,6 +184,36 @@ class Species(object):
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData,
                           self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
+    def __hash__(self):
+        """
+        Define a custom hash method to allow Species objects to be used in dictionaries and sets.
+
+        Use the fingerprint property, which is taken from the first molecule entry.
+        This is currently defined as the molecular formula, which is not an ideal hash, since there will be significant
+        hash collisions, leading to inefficient lookups.
+        """
+        return hash(('Species', self.fingerprint))
+
+    def __eq__(self, other):
+        """Define equality comparison. Define as a reference comparison"""
+        return self is other
+
+    def __lt__(self, other):
+        """Define less than comparison. For comparing against other Species objects (e.g. when sorting)."""
+        if isinstance(other, Species):
+            return self.sorting_key < other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform less than comparison between Species and '
+                                      '{0}.'.format(type(other).__name__))
+
+    def __gt__(self, other):
+        """Define greater than comparison. For comparing against other Species objects (e.g. when sorting)."""
+        if isinstance(other, Species):
+            return self.sorting_key > other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform greater than comparison between Species and '
+                                      '{0}.'.format(type(other).__name__))
+
     @property
     def sorting_key(self):
         """Returns a sorting key for comparing Species objects. Read-only"""
