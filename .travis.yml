@@ -48,7 +48,7 @@ jobs:
         # Setup MOPAC license key
         - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
         # Install Q2DTor
-        - git clone -b arkane https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
+        - git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
         # Compile RMG
         - make
       script:

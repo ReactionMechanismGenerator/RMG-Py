@@ -58,7 +58,7 @@ q2dtor:
  and HinderedRotor2D within Arkane please cite:  \n\nD. Ferro-Costas, M. N. D. S.Cordeiro, D. G. Truhlar, A.\
 		  Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.\n"
 	@ read -p "Press ENTER to continue" dummy
-	@ git clone https://github.com/mjohnson541/Q2DTor.git external/Q2DTor --branch arkane
+	@ git clone https://github.com/mjohnson541/Q2DTor.git external/Q2DTor --branch arkanepy3
 	
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
