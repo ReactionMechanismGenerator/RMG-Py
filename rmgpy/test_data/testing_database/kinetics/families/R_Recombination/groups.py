@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "R_Recombination/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 
@@ -43,9 +43,9 @@ forbidden(
 """
 1 *1 Cl u1
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -56,9 +56,9 @@ forbidden(
 """
 1 *2 Cl u1
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -72,9 +72,9 @@ forbidden(
 3 *2 O u0 {2,S} {4,S}
 4    O u1 {3,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

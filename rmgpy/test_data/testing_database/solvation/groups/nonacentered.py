@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Non Atom Centered Platts Groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -14,9 +14,9 @@ entry(
 1 * R u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -29,9 +29,9 @@ entry(
 1 * CO u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -54,9 +54,9 @@ entry(
         L = -0.39,
         A = 0,
     ),
-    shortDesc = u"""Platts fragment 43 non-cyclic ester""",
+    shortDesc = """Platts fragment 43 non-cyclic ester""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -84,9 +84,9 @@ entry(
         L = 0.05,
         A = 0,
     ),
-    shortDesc = u"""Platts fragment 68 1,2 diol""",
+    shortDesc = """Platts fragment 68 1,2 diol""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -108,9 +108,9 @@ entry(
         L = -0.145,
         A = 0,
     ),
-    shortDesc = u"""Platts fragment 79 benzyl alcohol""",
+    shortDesc = """Platts fragment 79 benzyl alcohol""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -131,9 +131,9 @@ entry(
         L = 0,
         A = 0.345,
     ),
-    shortDesc = u"""-OH (connected to aliphatic) correction for A""",
+    shortDesc = """-OH (connected to aliphatic) correction for A""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -154,9 +154,9 @@ entry(
         L = 0,
         A = 0.543,
     ),
-    shortDesc = u"""phenol correction for A""",
+    shortDesc = """phenol correction for A""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -172,9 +172,9 @@ entry(
         L = -0.001,
         A = 0,
     ),
-    shortDesc = u"""Correction for an Oss group in a ring""",
+    shortDesc = """Correction for an Oss group in a ring""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -201,9 +201,9 @@ entry(
         L = 0.0,
         A = 0.247,
     ),
-    shortDesc = u"""aniline correction for A (fragment 4)""",
+    shortDesc = """aniline correction for A (fragment 4)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -226,9 +226,9 @@ entry(
         L = 0.0,
         A = 0.275,
     ),
-    shortDesc = u"""primary amide correction for A (fragment 10)""",
+    shortDesc = """primary amide correction for A (fragment 10)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -251,9 +251,9 @@ entry(
         L = 0.0,
         A = 0.281,
     ),
-    shortDesc = u"""secondary amide correction for A (fragment 11)""",
+    shortDesc = """secondary amide correction for A (fragment 11)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -276,9 +276,9 @@ entry(
         L = 0.0,
         A = -0.091,
     ),
-    shortDesc = u"""aromatic amide correction for A (fragment 12)""",
+    shortDesc = """aromatic amide correction for A (fragment 12)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -302,9 +302,9 @@ entry(
         L = 0.0,
         A = -0.0825,
     ),
-    shortDesc = u"""urea correction for A (fragment 14)""",
+    shortDesc = """urea correction for A (fragment 14)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -329,9 +329,9 @@ entry(
         L = 0.0,
         A = -0.119,
     ),
-    shortDesc = u"""urea correction for A (fragment 15)""",
+    shortDesc = """urea correction for A (fragment 15)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -358,9 +358,9 @@ entry(
         L = 0.0,
         A = 0.17,
     ),
-    shortDesc = u"""guanidine correction for A (fragment 17)""",
+    shortDesc = """guanidine correction for A (fragment 17)""",
     longDesc = 
-u"""
+"""
 
 """,
 )

@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "R_Addition_MultipleBond/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -18,6 +18,6 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Original label: Cds-HH_Cds-HH;CsJ-HHH""",
+    shortDesc = """Original label: Cds-HH_Cds-HH;CsJ-HHH""",
 )
 

@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Gauche Interaction Corrections"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -19,9 +19,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -39,9 +39,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -63,9 +63,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -90,9 +90,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -117,9 +117,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -144,9 +144,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -168,9 +168,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -198,9 +198,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -228,9 +228,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -258,9 +258,9 @@ entry(
         H298 = (0.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -288,9 +288,9 @@ entry(
         H298 = (0.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -318,9 +318,9 @@ entry(
         H298 = (0.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -348,9 +348,9 @@ entry(
         H298 = (0.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -378,9 +378,9 @@ entry(
         H298 = (0.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -408,9 +408,9 @@ entry(
         H298 = (1.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -438,9 +438,9 @@ entry(
         H298 = (1.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -462,9 +462,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -495,9 +495,9 @@ entry(
         H298 = (0.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -528,9 +528,9 @@ entry(
         H298 = (0.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -561,9 +561,9 @@ entry(
         H298 = (1.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -594,9 +594,9 @@ entry(
         H298 = (0.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -627,9 +627,9 @@ entry(
         H298 = (1.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -660,9 +660,9 @@ entry(
         H298 = (1.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -693,9 +693,9 @@ entry(
         H298 = (2.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -726,9 +726,9 @@ entry(
         H298 = (2.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -759,9 +759,9 @@ entry(
         H298 = (3.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -792,9 +792,9 @@ entry(
         H298 = (1.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -825,9 +825,9 @@ entry(
         H298 = (2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -858,9 +858,9 @@ entry(
         H298 = (2.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -891,9 +891,9 @@ entry(
         H298 = (2.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -924,9 +924,9 @@ entry(
         H298 = (2.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -957,9 +957,9 @@ entry(
         H298 = (4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -990,9 +990,9 @@ entry(
         H298 = (3.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1023,9 +1023,9 @@ entry(
         H298 = (3.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1056,9 +1056,9 @@ entry(
         H298 = (4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1089,9 +1089,9 @@ entry(
         H298 = (4.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1113,9 +1113,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1149,9 +1149,9 @@ entry(
         H298 = (0.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1185,9 +1185,9 @@ entry(
         H298 = (1.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1221,9 +1221,9 @@ entry(
         H298 = (2.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1257,9 +1257,9 @@ entry(
         H298 = (3.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1293,9 +1293,9 @@ entry(
         H298 = (1.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1329,9 +1329,9 @@ entry(
         H298 = (2.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1365,9 +1365,9 @@ entry(
         H298 = (3.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1401,9 +1401,9 @@ entry(
         H298 = (4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1437,9 +1437,9 @@ entry(
         H298 = (3.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1473,9 +1473,9 @@ entry(
         H298 = (4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1509,9 +1509,9 @@ entry(
         H298 = (4.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1545,9 +1545,9 @@ entry(
         H298 = (4.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1581,9 +1581,9 @@ entry(
         H298 = (5.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1617,9 +1617,9 @@ entry(
         H298 = (6.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1653,9 +1653,9 @@ entry(
         H298 = (2.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1689,9 +1689,9 @@ entry(
         H298 = (3.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1725,9 +1725,9 @@ entry(
         H298 = (4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1761,9 +1761,9 @@ entry(
         H298 = (4.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1797,9 +1797,9 @@ entry(
         H298 = (4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1833,9 +1833,9 @@ entry(
         H298 = (4.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1869,9 +1869,9 @@ entry(
         H298 = (5.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1905,9 +1905,9 @@ entry(
         H298 = (5.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1941,9 +1941,9 @@ entry(
         H298 = (6.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -1977,9 +1977,9 @@ entry(
         H298 = (7.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2013,9 +2013,9 @@ entry(
         H298 = (4.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2049,9 +2049,9 @@ entry(
         H298 = (5.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2085,9 +2085,9 @@ entry(
         H298 = (6.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2121,9 +2121,9 @@ entry(
         H298 = (6.4,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2157,9 +2157,9 @@ entry(
         H298 = (7.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2193,9 +2193,9 @@ entry(
         H298 = (8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2229,9 +2229,9 @@ entry(
         H298 = (7.2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2265,9 +2265,9 @@ entry(
         H298 = (8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2301,9 +2301,9 @@ entry(
         H298 = (8.8,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2337,9 +2337,9 @@ entry(
         H298 = (9.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2357,9 +2357,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2379,9 +2379,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2404,9 +2404,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2429,9 +2429,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2454,9 +2454,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2476,9 +2476,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2504,9 +2504,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2532,9 +2532,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2560,9 +2560,9 @@ entry(
         H298 = (0.5,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2588,9 +2588,9 @@ entry(
         H298 = (0.5,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2616,9 +2616,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2644,9 +2644,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2672,9 +2672,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2700,9 +2700,9 @@ entry(
         H298 = (1.5,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2728,9 +2728,9 @@ entry(
         H298 = (2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2751,9 +2751,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2780,9 +2780,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2809,9 +2809,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2838,9 +2838,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2867,9 +2867,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2896,9 +2896,9 @@ entry(
         H298 = (2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2925,9 +2925,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2954,9 +2954,9 @@ entry(
         H298 = (1,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2983,9 +2983,9 @@ entry(
         H298 = (2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -3012,9 +3012,9 @@ entry(
         H298 = (2,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -3032,9 +3032,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -3054,9 +3054,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -3076,9 +3076,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -3101,9 +3101,9 @@ entry(
         H298 = (-0.97,'kcal/mol'),
         S298 = (-1.01,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -3123,9 +3123,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

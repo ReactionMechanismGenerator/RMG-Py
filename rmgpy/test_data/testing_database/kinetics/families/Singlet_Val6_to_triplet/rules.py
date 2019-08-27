@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Singlet_Val6_to_triplet/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 """
 
 entry(
@@ -11,9 +11,9 @@ entry(
     label = "singlet",
     kinetics = Arrhenius(A=(4.5E+10, 's^-1'), n=0, Ea=(397, 'cal/mol')),
     rank = 1,
-    shortDesc = u"""Default""",
+    shortDesc = """Default""",
     longDesc =
-u"""
+"""
 taken from:
 R. Atkinson, D.L. Baulch, R.A. Cox, R.F. Hampson, J.A. Kerr, J. Troe,
 Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry: Supplement IV.

@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Disproportionation/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -18,7 +18,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 0,
-    shortDesc = u"""Default""",
+    shortDesc = """Default""",
 )
 
 entry(
@@ -33,9 +33,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""[AJ] Miyoshi 2011 (Table 4, Node 'sp') dx.doi.org/10.1021/jp112152n""",
+    shortDesc = """[AJ] Miyoshi 2011 (Table 4, Node 'sp') dx.doi.org/10.1021/jp112152n""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review: i-C3H7 + O2 = HO2 + C3H6
 
@@ -67,9 +67,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2(triplet) + i-C3H7 --> C3H6 + CH3
 
@@ -95,9 +95,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  H + i-C3H7 --> C3H6 + H2
 
@@ -122,9 +122,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [89] Literature review.""",
+    shortDesc = """Tsang [89] Literature review.""",
     longDesc = 
-u"""
+"""
 [89] Tsang, W.; Hampson, R.F.; Journal of Physical and Chemical Reference Data (1986) 15(3), 1087-1279.
 Literature review.  H + C2H5 --> C2H4 + H2
 
@@ -149,9 +149,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH3 + i-C3H7 --> C3H6 + CH4
 
@@ -192,9 +192,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H5 + i-C3H7 --> C3H6 + C2H6
 
@@ -221,9 +221,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [93] Literature review.""",
+    shortDesc = """Tsang [93] Literature review.""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + iC3H7 --> C3H6 + C3H6
 
@@ -251,9 +251,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2OH + i-C3H7 --> C3H6 + CH3OH
 
@@ -278,9 +278,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  i-C3H7 + i-C3H7 --> C3H6 + C3H8
 
@@ -306,9 +306,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + i-C3H7 --> C3H6 + i-C4H10
 
@@ -335,9 +335,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H3 + i-C3H7 --> C3H6 + C2H4
 
@@ -364,9 +364,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H + i-C3H7 --> C3H6 + C2H2
 
@@ -391,9 +391,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  OH + i-C3H7 --> C3H6 + H2O
 
@@ -418,9 +418,9 @@ entry(
         Tmax = (1000, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Baulch et al [95] literature review.""",
+    shortDesc = """Baulch et al [95] literature review.""",
     longDesc = 
-u"""
+"""
 [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; Troe, J.; Walker, R.W.; Warnatz, J.; Journal of Physical and Chemical Reference Data (1992), 21(3), 411-734.
 pg.523: Discussion of evaluated data
 
@@ -444,9 +444,9 @@ entry(
         Tmax = (900, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""[AJ] Miyoshi 2011 (Table 4, Node 'ss') dx.doi.org/10.1021/jp112152n""",
+    shortDesc = """[AJ] Miyoshi 2011 (Table 4, Node 'ss') dx.doi.org/10.1021/jp112152n""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review: n-C3H7 + O2 = HO2 + C3H6
 
@@ -477,9 +477,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2_triplet + n-C3H7 --> C3H6 + CH3
 
@@ -506,7 +506,7 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""CAC calc CBS-QB3, 1dhr""",
+    shortDesc = """CAC calc CBS-QB3, 1dhr""",
 )
 
 entry(
@@ -521,9 +521,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  H + n-C3H7 --> C3H6 + H2
 
@@ -548,9 +548,9 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Rough estimate based on 1/10 of #3026 in R_Recombination""",
+    shortDesc = """Rough estimate based on 1/10 of #3026 in R_Recombination""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH3 + n-C3H7 --> C3H6 + CH4
 
@@ -579,9 +579,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH3 + n-C3H7 --> C3H6 + CH4
 
@@ -610,9 +610,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H5 + n-C3H7 --> C3H6 + C2H6
 
@@ -641,9 +641,9 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Rough estimate based on 1/10 of #3027 in R_Recombination""",
+    shortDesc = """Rough estimate based on 1/10 of #3027 in R_Recombination""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H5 + n-C3H7 --> C3H6 + C2H6
 
@@ -672,9 +672,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [93] Literature review.""",
+    shortDesc = """Tsang [93] Literature review.""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + nC3H7 --> C3H6 + C3H6
 
@@ -702,7 +702,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""VERY Rough estimate based on 1/10 of #3026 in R_Recombination""",
+    shortDesc = """VERY Rough estimate based on 1/10 of #3026 in R_Recombination""",
 )
 
 entry(
@@ -717,9 +717,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2OH + n-C3H7 --> C3H6 + CH3OH
 
@@ -745,9 +745,9 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Rough estimate based on 1/10 of #3026 in R_Recombination""",
+    shortDesc = """Rough estimate based on 1/10 of #3026 in R_Recombination""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2OH + n-C3H7 --> C3H6 + CH3OH
 
@@ -773,9 +773,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  i-C3H7 + n-C3H7 --> C3H6 + C3H8
 
@@ -803,9 +803,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + n-C3H7 --> C3H6 + i-C4H10
 
@@ -833,9 +833,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H3 + n-C3H7 --> C3H6 + C2H4
 
@@ -860,7 +860,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Very rough based on R_Recomb #491""",
+    shortDesc = """Very rough based on R_Recomb #491""",
 )
 
 entry(
@@ -875,9 +875,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H + n-C3H7 --> C3H6 + C2H2
 
@@ -903,7 +903,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Very rough based on R_Recomb #491""",
+    shortDesc = """Very rough based on R_Recomb #491""",
 )
 
 entry(
@@ -918,9 +918,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  OH + n-C3H7 --> C3H6 + H2O
 
@@ -945,9 +945,9 @@ entry(
         Tmax = (1000, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: O2 + iC4H9 --> iC4H8 + HO2
 
@@ -976,9 +976,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: C2H + i-C4H9 --> i-C4H8 + C2H2
 
@@ -1005,9 +1005,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: H + i-C4H9 --> i-C4H8 + H2
 
@@ -1035,9 +1035,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: CH3 + i-C4H9 --> i-C4H8 + CH4
 
@@ -1063,9 +1063,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: C2H5 + i-C4H9 --> i-C4H8 + C2H6
 
@@ -1093,9 +1093,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: CH2OH + i-C4H9 --> i-C4H8 + CH3OH
 
@@ -1126,9 +1126,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [93] Literature review.""",
+    shortDesc = """Tsang [93] Literature review.""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + iC4H9 --> iC4H8 + C3H6
 
@@ -1155,9 +1155,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: i-C3H7 + i-C4H9 --> i-C4H8 + C3H8
 
@@ -1187,9 +1187,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + i-C4H9 --> i-C4H8 + i-C4H10
 
@@ -1220,9 +1220,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: C2H3 + i-C4H9 --> i-C4H8 + C2H4
 
@@ -1247,9 +1247,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: OH + i-C4H9 --> i-C4H8 + H2O
 
@@ -1275,9 +1275,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [93] Literature review.""",
+    shortDesc = """Tsang [93] Literature review.""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: O2 + C3H5 --> H2C=C=CH2 + HO2
 
@@ -1312,9 +1312,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: CH3 + C3H5 --> H2C=C=CH2 + CH4
 
@@ -1348,9 +1348,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C2H5 + C3H5 --> H2C=C=CH2 + C2H6
 
@@ -1377,9 +1377,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + C3H5 --> H2C=C=CH2 + C3H6
 
@@ -1406,9 +1406,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: iC3H7 + C3H5 --> H2C=C=CH2 + C3H8
 
@@ -1436,9 +1436,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: tC4H9 + C3H5 --> H2C=C=CH2 + iC4H10
 
@@ -1466,9 +1466,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C2H3 + C3H5 --> H2C=C=CH2 + C2H4
 
@@ -1493,9 +1493,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: OH + C3H5 --> H2C=C=CH2 + H2O
 
@@ -1519,9 +1519,9 @@ entry(
         Tmin = (298, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Atkinson et al [98] literature review.""",
+    shortDesc = """Atkinson et al [98] literature review.""",
     longDesc = 
-u"""
+"""
 [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. "Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
 Literature review: CH3CHOH + O2 --> CH3CHO + HO2
 
@@ -1546,9 +1546,9 @@ entry(
         Tmin = (298, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Atkinson et al [98] literature review.""",
+    shortDesc = """Atkinson et al [98] literature review.""",
     longDesc = 
-u"""
+"""
 [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. "Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
 Literature review: CH2OH + O2 --> CH2O + HO2
 
@@ -1574,9 +1574,9 @@ entry(
         Tmax = (300, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""DeMore et al [183] literature review.""",
+    shortDesc = """DeMore et al [183] literature review.""",
     longDesc = 
-u"""
+"""
 [183] DeMore, W.B.; Sander, S.P.; Golden, D.M.; Hampson, R.F.; Kurylo, M.J.; Howard, C.J.; Ravishankara, A.R.; Kolb, C.E.; Molina, M.J.; JPL Publication 97-4
 Literature review: CH2OH + O2 --> CH2O + HO2
 
@@ -1602,9 +1602,9 @@ entry(
         Tmin = (298, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""Grotheer et al [189].""",
+    shortDesc = """Grotheer et al [189].""",
     longDesc = 
-u"""
+"""
 [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
 Absolute value measured directly. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 3.0E+13
 
@@ -1632,9 +1632,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH2 + CH2OH --> CH3 + CH2O
 
@@ -1659,9 +1659,9 @@ entry(
         Tmin = (295, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Edelbuttel-Einhaus et al [190].""",
+    shortDesc = """Edelbuttel-Einhaus et al [190].""",
     longDesc = 
-u"""
+"""
 [190] Edelbuttel-Einhaus, J.; Hoyermann, K.; Rohde, G.; Seeba, J. Symp. Int. Combust. Proc. 1992, 22, 661.
 Data derived from fitting to a complex mechanism. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 1.0E+13
 
@@ -1692,9 +1692,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: H + CH2OH --> H2 + CH2O
 
@@ -1720,9 +1720,9 @@ entry(
         Tmin = (298, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""Pagsberg et al [191].""",
+    shortDesc = """Pagsberg et al [191].""",
     longDesc = 
-u"""
+"""
 [191] Pagsberg, P.; Munk, J.; Sillesen, A.; Anastasi, C. Chem. Phys. Lett. 1988, 146, 375.
 Absolute value measured directly. Excitatio: electron beam, analysis: Vis-UV absorption.
 
@@ -1754,9 +1754,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH3 + CH2OH --> CH4 + CH2O
 
@@ -1783,9 +1783,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: C2H5 + CH2OH --> C2H6 + CH2O
 
@@ -1812,9 +1812,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [93] Literature review.""",
+    shortDesc = """Tsang [93] Literature review.""",
     longDesc = 
-u"""
+"""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + CH2OH --> CH2O + C3H6
 
@@ -1841,9 +1841,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH2OH + CH2OH --> CH3OH + CH2O
 
@@ -1877,9 +1877,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [91] Literature review.""",
+    shortDesc = """Tsang [91] Literature review.""",
     longDesc = 
-u"""
+"""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review: CH2OH + i-C3H7 = C3H8 + CH2O
 
@@ -1904,9 +1904,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [92] Literature review.""",
+    shortDesc = """Tsang [92] Literature review.""",
     longDesc = 
-u"""
+"""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + CH2OH = CH2O + i-C4H10
 
@@ -1936,9 +1936,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH2OH + C2H3 --> C2H4 + CH2O
 
@@ -1965,9 +1965,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: HCO + CH2OH --> CH2O + CH2O
 
@@ -1994,9 +1994,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: OH + CH2OH --> H2O + CH2O
 
@@ -2023,9 +2023,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH3O + CH2OH --> CH3OH + CH2O
 
@@ -2052,9 +2052,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang [90] Literature review.""",
+    shortDesc = """Tsang [90] Literature review.""",
     longDesc = 
-u"""
+"""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: HO2 + CH2OH --> CH3OH + H2O2
 
@@ -2080,7 +2080,7 @@ entry(
         Tmin = (298, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tycholiz et al [A].""",
+    shortDesc = """Tycholiz et al [A].""",
 )
 
 entry(
@@ -2095,7 +2095,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""CAC calc CBS-QB3 1dhr""",
+    shortDesc = """CAC calc CBS-QB3 1dhr""",
 )
 
 entry(
@@ -2110,9 +2110,9 @@ entry(
         Tmax = (1000, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""S.S. Merchant estimate""",
+    shortDesc = """S.S. Merchant estimate""",
     longDesc = 
-u"""
+"""
 Estimate on basis of C3H7 + O2 rate from NIST kinetic datbase, Measurements, Theory, and Modeling of OH Formation in Ethyl + O2 and Propyl + O2 Reactions
 ref: DOI: 10.1021/jp0221946
 """,
@@ -2130,9 +2130,9 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""S.S. Merchant estimate""",
+    shortDesc = """S.S. Merchant estimate""",
     longDesc = 
-u"""
+"""
 This rate rule is a estimate taken from NIST, ref: Aromatic and Polycyclic Aromatic
 Hydrocarbon Formation in a Laminar Premixed n-butane Flame
 Derived from fitting to a complex mechanism for C2H3 + O2 = C2H2 + HO2
@@ -2151,9 +2151,9 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""S.S. Merchant estimate""",
+    shortDesc = """S.S. Merchant estimate""",
     longDesc = 
-u"""
+"""
 SSM estimate based on Miyoshi rate rule for secondary carbon in dx.doi.org/10.1021/jp112152n, 
 modified to account for allylic stability (+7 kcal)
 """,
@@ -2171,7 +2171,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""A.G. Vandeputte estimated value""",
+    shortDesc = """A.G. Vandeputte estimated value""",
 )
 
 entry(
@@ -2186,7 +2186,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2201,7 +2201,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2216,7 +2216,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2231,7 +2231,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2246,7 +2246,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2261,7 +2261,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2276,7 +2276,7 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Estimated value, AG Vandeputte""",
+    shortDesc = """Estimated value, AG Vandeputte""",
 )
 
 entry(
@@ -2291,9 +2291,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2 + HO2 = NH3 + O2 (B&D #14d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2310,9 +2310,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + O2 = N2 + HO2 (B&D #28b1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2329,9 +2329,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + H = N2 + H2 (B&D #28c) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2348,9 +2348,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + OH = N2 + H2O (B&D #28d2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2367,9 +2367,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + O = N2 + OH (B&D #28e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2386,9 +2386,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + NH2 = N2 + NH3 (B&D #28f) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2405,9 +2405,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + HO2 = N2 + H2O2 (B&D #28g1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2424,9 +2424,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NNH + NO = N2 + HNO (B&D #28h) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2443,9 +2443,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2NN + H = NNH + H2 (B&D #30c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2462,9 +2462,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2NN + O = NNH + OH (B&D #30d2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2481,9 +2481,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2NN + OH = NNH + H2O (B&D #30e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2500,9 +2500,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2NN + CH3 = NNH + CH4 (B&D #30f3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2519,9 +2519,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2NN + NH2 = NNH + NH3 (B&D #30g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2538,9 +2538,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2NN + HO2 = NNH + H2O2 (B&D #30h2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2557,9 +2557,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + H = N2H2 + H2 (B&D #31b) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2576,9 +2576,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + O = N2H2 + OH (B&D #31c3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2595,9 +2595,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + OH = N2H2 + H2O (B&D #31d1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2614,9 +2614,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + CH3 = N2H2 + CH4 (B&D #31e1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2633,9 +2633,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + NH2 = N2H2 + NH3 (B&D #31f1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2652,9 +2652,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + HO2 = N2H2 + H2O2 (B&D #31g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2671,9 +2671,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: N2H3 + HO2 = N2H4 + O2 (B&D #31g3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2690,9 +2690,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + H = HNO + H2 (B&D #37c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2709,9 +2709,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + O = HNO + OH (B&D #37d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2728,9 +2728,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + OH = HNO + H2O (B&D #37e) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2747,9 +2747,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + CH3 = CH4 + HNO (B&D #37f2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2766,9 +2766,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + NH2 = HNO + NH3 (B&D #37g) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2785,9 +2785,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + HO2 = HNO + H2O2 (B&D #37h1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2804,9 +2804,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: NH2O + HO2 = NH2OH + O2 (B&D #37h2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2823,9 +2823,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + H = HNO + H2 (B&D #38b2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2842,9 +2842,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + O = HNO + OH (B&D #38c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2861,9 +2861,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + OH = HNO + H2O (B&D #38d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2880,9 +2880,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + CH3 = CH4 + HNO (B&D #38e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2899,9 +2899,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + NH2 = HNO + NH3 (B&D #38f3)  in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2918,9 +2918,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + HO2 = HNO + H2O2 (B&D #38g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2937,9 +2937,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HNOH + HO2 = NH2OH + O2 (B&D #38g3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2956,9 +2956,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + HO2 = HCN + H2O2 (B&D #45b1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2975,9 +2975,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + HO2 = H2CNH + O2 (B&D #45b2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -2994,9 +2994,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + CH3 = HCN + CH4 (B&D #45d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3013,9 +3013,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + OH = HCN + H2O (B&D #45e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3032,9 +3032,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + H = HCN + H2 (B&D #45g) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3051,9 +3051,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + NH2 = HCN + NH3 (B&D #45h) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3070,9 +3070,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: H2CN + O = HCN + OH (B&D #45i1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3089,9 +3089,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HCNH + H = HCN + H2 (B&D #46a2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3108,9 +3108,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HCNH + O = HCN + OH (B&D #46b2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3127,9 +3127,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HCNH + OH = HCN + H2O (B&D #46c) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3146,9 +3146,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: HCNH + CH3 = HCN + CH4 (B&D #46d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3165,9 +3165,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH3NH + H = H2CNH + H2 (B&D #49b) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3184,9 +3184,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH3NH + O = H2CNH + OH (B&D #49c) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3203,9 +3203,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH3NH + OH = H2CNH + H2O (B&D #49d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3222,9 +3222,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH3NH + CH3 = H2CNH + CH4 (B&D #49e) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3241,9 +3241,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NH2 + H = H2CNH + H2 (B&D #50b) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3260,9 +3260,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NH2 + O = H2CNH + OH (B&D #50c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3279,9 +3279,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NH2 + OH = H2CNH + H2O (B&D #50d2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3298,9 +3298,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc = 
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NH2 + CH3 = H2CNH + CH4 (B&D #50e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
@@ -3317,9 +3317,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc =
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NO + H = HCNO + H2
 The reacting structures are CH2=[N.+][O-] + R = [CH]#[N+][O-] + RH
 (D&B #57c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
@@ -3338,9 +3338,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc =
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NO + OH = HCNO + H2O
 (D&B #57e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
@@ -3358,9 +3358,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc =
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NO + CH3 = HCNO + CH4
 (D&B #57f2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
@@ -3378,9 +3378,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 1,
-    shortDesc = u"""Added by Beat Buesser""",
+    shortDesc = """Added by Beat Buesser""",
     longDesc =
-u"""
+"""
 Added by Beat Buesser, value for reaction: CH2NO + NH2 = HCNO + NH3
 (D&B #57g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
@@ -3398,9 +3398,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Estimated by S.S. Merchant""",
+    shortDesc = """Estimated by S.S. Merchant""",
     longDesc = 
-u"""
+"""
 Estimating rate coefficient for cyclopentadienyl radical + butadieneyl radical
 NIST estimate for allyl + iso-butyl is 8E+11 at 1000 K, however in our system the butadieneyl radical is also resonance stabilized
 and it will be harder to break the bond to give butadiene + cyclopentadiene. Currently estimate it to be a factor of 5 slower.

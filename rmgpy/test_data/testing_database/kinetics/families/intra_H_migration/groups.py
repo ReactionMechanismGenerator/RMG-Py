@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "intra_H_migration/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 
@@ -366,9 +366,9 @@ forbidden(
 8 *6 C u0 {1,S} {6,D}
 9 *3 H u0 {2,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -387,9 +387,9 @@ forbidden(
 8 *6 C u0 {1,S} {6,D}
 9 *3 H u0 {3,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -408,9 +408,9 @@ forbidden(
 8    C u0 {1,S} {6,D}
 9 *3 H u0 {3,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -428,9 +428,9 @@ forbidden(
 7    C u0 {2,S} {5,S}
 8 *3 H u0 {3,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -448,9 +448,9 @@ forbidden(
 7    C u0 {2,S} {5,S}
 8 *3 H u0 {4,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

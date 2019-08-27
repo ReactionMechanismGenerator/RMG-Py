@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Long distance interaction correction for cyclic molecule"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 Designed to account for the long distance interaction for cyclic molecule.
 Currently we only have the data for aromatic ortho/meta/para corrections.
 Watch out:  if the groups on the two labeled atoms are identical, it's value should be halved because it'll be counted twice.

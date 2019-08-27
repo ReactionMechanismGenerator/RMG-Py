@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Solute Descriptors"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 From Abraham J. Chem. Soc. 1994
 """
 entry(
@@ -18,9 +18,9 @@ entry(
         A = 0,
         V = 0.2495,
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -37,9 +37,9 @@ entry(
         A = 0,
         V = 0.3904,
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -56,9 +56,9 @@ entry(
         A = 0,
         V = 0.5313,
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -75,9 +75,9 @@ entry(
         A = 0,
         V = 0.6722,
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

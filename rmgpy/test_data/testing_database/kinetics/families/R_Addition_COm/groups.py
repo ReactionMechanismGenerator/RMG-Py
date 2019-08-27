@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "R_Addition_COm/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 
@@ -911,9 +911,9 @@ forbidden(
 1 *2 O u1 p2 {2,S}
 2    O u1 p2 {1,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

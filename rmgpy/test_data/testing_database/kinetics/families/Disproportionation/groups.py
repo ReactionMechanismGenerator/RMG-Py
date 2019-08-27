@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Disproportionation/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 If a birad, reaction site *1 needs to be a triplet.
 If a birad, reaction site *3 needs to be a triplet.
 If a tri-rad or quad-rad, reaction site *1 and *3 can be anything but singlet.
@@ -2887,9 +2887,9 @@ forbidden(
 1 *2 O u0 {2,D}
 2 *3 O u0 {1,D}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2902,9 +2902,9 @@ forbidden(
 2 *2 R!H   ux {1,[S,D,T]} {3,S}
 3 *4 H     u0 {2,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2917,9 +2917,9 @@ forbidden(
 2 *3 O u1 {1,S}
 3 *4 H u0 {1,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2932,9 +2932,9 @@ forbidden(
 2 *2 R!H ux {1,[S,D]} {3,S}
 3 *4 H   u0 {2,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2947,9 +2947,9 @@ forbidden(
 2 *2 R!H    ux {1,[S,D,T]} {3,S}
 3 *4 H      u0 {2,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -2962,9 +2962,9 @@ forbidden(
 2 *2 R!H    ux {1,[S,D,T]} {3,S}
 3 *4 H      u0 {2,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
