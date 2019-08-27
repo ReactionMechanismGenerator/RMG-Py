@@ -705,7 +705,7 @@ class ErrorCancelingScheme(object):
             lower_class_obj = 1e6
         subset_queue = deque()
         subset_queue.append(full_set)
-        max_attempts = 100
+        max_attempts = 1000
         attempts = 0
         rejected = 0
 
