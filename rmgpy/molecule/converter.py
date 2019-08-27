@@ -32,6 +32,7 @@
 This module provides methods for converting molecules between RMG, RDKit, and OpenBabel.
 """
 import logging
+import re
 import sys
 
 import cython
@@ -84,7 +85,9 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             pass
         else:
             rdAtomIndices[atom] = index
-        if atom.label:
+
+        # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
+        if re.match(r'^[LR][0-9]*$', atom.label):  # Valid cutting labels include R, L, R#, L#, where # is any int
             saved_index = index
             label = atom.label
             if label in label_dict:
