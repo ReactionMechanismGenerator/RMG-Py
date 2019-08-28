@@ -28,8 +28,7 @@
 #                                                                             #
 ###############################################################################
 
-from rmgpy.pdep.collision import *
-from rmgpy.pdep.reaction import *
-from rmgpy.pdep.configuration import *
-from rmgpy.pdep.network import *
-from rmgpy.pdep.draw import *
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.pdep.configuration import Configuration
+from rmgpy.pdep.network import Network
+from rmgpy.pdep.draw import NetworkDrawer
