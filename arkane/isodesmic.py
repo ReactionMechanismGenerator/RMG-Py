@@ -86,14 +86,51 @@ class ErrorCancelingSpecies(object):
 
         self.low_level_hf298 = ScalarQuantity(*low_level_hf298)
         self.fod = fod
+        
 
         # If the species is a reference species, then the high level data is already known
         self.high_level_hf298 = ScalarQuantity(*high_level_hf298) if high_level_hf298 else None
         self.source = source
 
+        self.group = self.classify()
+
+
     def __repr__(self):
         return '<ErrorCancelingSpecies {0}>'.format(self.molecule.toSMILES())
 
+
+    def classify(self):
+
+        group = ""
+
+        atom_symbols = sorted(list(set([a.symbol for a in self.molecule.atoms])))
+        #bond_orders = list(set([b.getOrderNum() for b in self.molecule.getAllEdges()]))
+        radical_count = self.molecule.getRadicalCount()
+        if radical_count > 0:
+            radical_atoms = sorted(list(set([(a.symbol,a.radicalElectrons) for a in self.molecule.getRadicalAtoms()])))
+        
+        for symbol in atom_symbols:
+            if symbol not in ['F','Cl','Br']:
+                group += symbol
+        for element in atom_symbols:
+            if element in ['F','Cl','Br']:
+                group += 'X'
+                break
+
+        if radical_count > 0:
+            for atom,rad in radical_atoms:
+                group += '_{}rad-{}'.format(atom,rad)
+        if self.fod:
+            if self.fod >= 0.2:
+                group += "_MR"
+                if len(self.molecule.generate_resonance_structures())>1:
+                    group += "_delocal"
+                else:
+                    group += '_local'
+            else:
+                group += "_SR"
+
+        return group
 
 class ErrorCancelingReaction(object):
     """Class for representing an error canceling reaction, with the target species being an implicit reactant"""
