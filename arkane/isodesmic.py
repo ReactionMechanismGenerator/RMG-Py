@@ -574,11 +574,11 @@ class ErrorCancelingScheme(object):
         # objective_fn: vector, one per reference species (doubled) 
         # objective_fn = np.sum(c_matrix, 1, dtype=int) # indicating ~size of molecule
         # objective_fn = np.sum(c_matrix * fod_vector * weights * class_penalty, 1, dtype=float)
-        objective_matrix = np.ones_like(c_matrix,dtype=int) # all species are equal
+        #objective_matrix = np.ones_like(c_matrix,dtype=int) # all species are equal
         #fod_penalty = 5.0 # arbitrary chosen penalty for high FOD
         # objective_fn = 1.0 + fod_penalty*fod_vector # penalize things with higher FOD
         #objective_fn = np.sum(objective_matrix * (2.0*fod_vector) * weights * class_penalty,1,dtype=float)
-        objective_fn = np.sum(objective_matrix,1,dtype=float)
+        objective_fn = np.sum(c_matrix,1,dtype=float)
         targets = -1 * self.target_constraints[constraint_class]
         m, n  = c_matrix.shape
         split = int(m/2)
