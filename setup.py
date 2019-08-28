@@ -234,6 +234,15 @@ for root, dirs, files in os.walk('arkane'):
                 module = 'arkane' + root.partition('arkane')[-1].replace('/','.') + '.' + file.partition('.py')[0]
                 modules.append(module)
 
+for root, dirs, files in os.walk('afm'):
+    if 'bin' in root:
+        continue
+    for file in files:
+        if file.endswith('.py') or file.endswith('.pyx'):
+            if 'Test' not in file and '__init__' not in file:
+                module = 'afm' + root.partition('afm')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                modules.append(module)
+
 # Initiate the build and/or installation
 
 # Read the version number
@@ -245,7 +254,7 @@ setup(name='RMG-Py',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
     url='http://reactionmechanismgenerator.github.io',
-    packages=['rmgpy','arkane'],
+    packages=['rmgpy','arkane','afm'],
     py_modules = modules,
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},
