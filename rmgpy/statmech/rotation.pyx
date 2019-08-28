@@ -34,14 +34,14 @@ is sufficient since typical rotational energies are much smaller in magnitude
 than :math:`k_\\mathrm{B} T`.
 """
 
-import math
-import numpy
+import numpy as np
+cimport numpy as np
 from libc.math cimport log, sqrt
 
 cimport rmgpy.constants as constants
-import rmgpy.statmech.schrodinger as schrodinger 
-cimport rmgpy.statmech.schrodinger as schrodinger 
 import rmgpy.quantity as quantity
+import rmgpy.statmech.schrodinger as schrodinger
+cimport rmgpy.statmech.schrodinger as schrodinger
 from rmgpy.rmgobject import recursive_make_object
 
 ################################################################################
@@ -87,7 +87,7 @@ cdef class Rotation(Mode):
     def make_object(self, data, class_dict):
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
         if ('inertia' in kwargs) and ('rotationalConstant' in kwargs):  # Only one of these can be specified
-            kwargs = {key: kwargs[key] for key in kwargs.iterkeys() if key != 'inertia'}
+            del kwargs['inertia']
         self.__init__(**kwargs)
 
 ################################################################################
@@ -123,7 +123,7 @@ cdef class LinearRotor(Rotation):
     rigid rotor place it very nearly in the classical limit at all relevant
     temperatures; therefore, the classical model is used by default. 
     """
-    
+
     def __init__(self, inertia=None, symmetry=1, quantum=False, rotationalConstant=None):
         Rotation.__init__(self, symmetry, quantum)
         if inertia is not None and rotationalConstant is not None:
@@ -157,13 +157,13 @@ cdef class LinearRotor(Rotation):
             return self._inertia
         def __set__(self, value):
             self._inertia = quantity.Inertia(value)
-    
+
     property rotationalConstant:
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef double I = self._inertia.value_si
             cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
-            return quantity.Quantity(B,"cm^-1")
+            return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
@@ -175,13 +175,13 @@ cdef class LinearRotor(Rotation):
         Return the energy of level `J` in kJ/mol.
         """
         return getRotationalConstantEnergy(self.inertia.value_si) * J * (J + 1)
-    
+
     cpdef int getLevelDegeneracy(self, int J) except -1:
         """
         Return the degeneracy of level `J`.
         """
         return 2 * J + 1
-    
+
     cpdef double getPartitionFunction(self, double T) except -1:
         """
         Return the value of the partition function :math:`Q(T)` at the
@@ -194,7 +194,7 @@ cdef class LinearRotor(Rotation):
             B = getRotationalConstantEnergy(self._inertia.value_si)
             Q = constants.R * T / B / self.symmetry
         return Q
-    
+
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
@@ -218,7 +218,7 @@ cdef class LinearRotor(Rotation):
         else:
             H = 1.0
         return H * constants.R * T
-    
+
     cpdef double getEntropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
@@ -231,7 +231,7 @@ cdef class LinearRotor(Rotation):
             S = log(self.getPartitionFunction(T)) + 1.0
         return S * constants.R
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=None):
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `Elist`
         in J/mol above the ground state. If an initial sum of states 
@@ -239,17 +239,18 @@ cdef class LinearRotor(Rotation):
         these states.
         """
         cdef double B
-        cdef numpy.ndarray sumStates
+        cdef np.ndarray sum_states
         if self.quantum:
-            sumStates = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0, sumStates0) / self.symmetry
+            sum_states = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
+                                                    sumStates0) / self.symmetry
         elif sumStates0 is not None:
-            sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
+            sum_states = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
         else:
             B = getRotationalConstantEnergy(self._inertia.value_si)
-            sumStates = Elist / B / self.symmetry
-        return sumStates
-            
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
+            sum_states = Elist / B / self.symmetry
+        return sum_states
+
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state. If an initial density
@@ -257,16 +258,17 @@ cdef class LinearRotor(Rotation):
         convoluted into these states.
         """
         cdef double B, dE
-        cdef numpy.ndarray densStates
+        cdef np.ndarray dens_states
         if self.quantum:
-            densStates = schrodinger.getDensityOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0, densStates0) / self.symmetry
+            dens_states = schrodinger.getDensityOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
+                                                         densStates0) / self.symmetry
         else:
             B = getRotationalConstantEnergy(self._inertia.value_si)
             dE = Elist[1] - Elist[0]
-            densStates = numpy.ones_like(Elist) * dE / B / self.symmetry
+            dens_states = np.ones_like(Elist) * dE / B / self.symmetry
             if densStates0 is not None:
-                densStates = schrodinger.convolve(densStates0, densStates)
-        return densStates
+                dens_states = schrodinger.convolve(densStates0, dens_states)
+        return dens_states
 
 ################################################################################
 
@@ -295,7 +297,7 @@ cdef class NonlinearRotor(Rotation):
     implemented, and a :class:`NotImplementedError` will be raised if you try
     to use it. 
     """
-    
+
     def __init__(self, inertia=None, symmetry=1, quantum=False, rotationalConstant=None):
         Rotation.__init__(self, symmetry, quantum)
         if inertia is not None and rotationalConstant is not None:
@@ -329,20 +331,20 @@ cdef class NonlinearRotor(Rotation):
             return self._inertia
         def __set__(self, value):
             self._inertia = quantity.Inertia(value)
-    
+
     property rotationalConstant:
         """The rotational constant of the rotor."""
         def __get__(self):
-            cdef numpy.ndarray I = self._inertia.value_si
-            cdef numpy.ndarray B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
-            return quantity.Quantity(B,"cm^-1")
+            cdef np.ndarray I = self._inertia.value_si
+            cdef np.ndarray B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
-            cdef numpy.ndarray I
+            cdef np.ndarray I
             B = quantity.Frequency(B)
             I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
             self._inertia = quantity.ArrayQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
-    cdef numpy.ndarray getRotationalConstantEnergy(self):
+    cdef np.ndarray getRotationalConstantEnergy(self):
         """
         Return the values of the rotational constants in kJ/mol.
         """
@@ -355,16 +357,16 @@ cdef class NonlinearRotor(Rotation):
         """
         cdef double Q, theta = 1.0
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] rotationalConstants
+        cdef np.ndarray[np.float64_t, ndim=1] rotational_constants
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
         else:
-            rotationalConstants = self.getRotationalConstantEnergy()
-            for i in range(rotationalConstants.shape[0]):
-                theta *= rotationalConstants[i] / constants.R
-            Q = sqrt(constants.pi * T**rotationalConstants.shape[0] / theta) / self.symmetry
+            rotational_constants = self.getRotationalConstantEnergy()
+            for i in range(rotational_constants.shape[0]):
+                theta *= rotational_constants[i] / constants.R
+            Q = sqrt(constants.pi * T ** rotational_constants.shape[0] / theta) / self.symmetry
         return Q
-    
+
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
@@ -388,7 +390,7 @@ cdef class NonlinearRotor(Rotation):
         else:
             H = 0.5 * self._inertia.value_si.shape[0]
         return H * constants.R * T
-    
+
     cpdef double getEntropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
@@ -398,10 +400,10 @@ cdef class NonlinearRotor(Rotation):
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
         else:
-            S = numpy.log(self.getPartitionFunction(T)) + 0.5 * self._inertia.value_si.shape[0]
+            S = np.log(self.getPartitionFunction(T)) + 0.5 * self._inertia.value_si.shape[0]
         return S * constants.R
-    
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=None):
+
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `Elist`
         in J/mol above the ground state. If an initial sum of states 
@@ -410,22 +412,22 @@ cdef class NonlinearRotor(Rotation):
         """
         cdef double theta = 1.0
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] rotationalConstants
-        cdef numpy.ndarray sumStates
+        cdef np.ndarray[np.float64_t, ndim=1] rotational_constants
+        cdef np.ndarray sum_states
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
         else:
             if sumStates0 is not None:
-                sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
+                sum_states = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
             else:
-                rotationalConstants = self.getRotationalConstantEnergy()
-                assert rotationalConstants.shape[0] == 3
-                for i in range(rotationalConstants.shape[0]):
-                    theta *= rotationalConstants[i]
-                sumStates = 4.0/3.0 * Elist * numpy.sqrt(Elist / theta) / self.symmetry
-        return sumStates
-    
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
+                rotational_constants = self.getRotationalConstantEnergy()
+                assert rotational_constants.shape[0] == 3
+                for i in range(rotational_constants.shape[0]):
+                    theta *= rotational_constants[i]
+                sum_states = 4.0 / 3.0 * Elist * np.sqrt(Elist / theta) / self.symmetry
+        return sum_states
+
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state. If an initial density
@@ -434,20 +436,20 @@ cdef class NonlinearRotor(Rotation):
         """
         cdef double theta = 1.0, inertia, dE
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] rotationalConstants
-        cdef numpy.ndarray densStates
+        cdef np.ndarray[np.float64_t, ndim=1] rotational_constants
+        cdef np.ndarray dens_states
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
         else:
             dE = Elist[1] - Elist[0]
-            rotationalConstants = self.getRotationalConstantEnergy()
-            assert rotationalConstants.shape[0] == 3
-            for i in range(rotationalConstants.shape[0]):
-                theta *= rotationalConstants[i]
-            densStates = 2.0 * numpy.sqrt(Elist / theta) / self.symmetry * dE
+            rotational_constants = self.getRotationalConstantEnergy()
+            assert rotational_constants.shape[0] == 3
+            for i in range(rotational_constants.shape[0]):
+                theta *= rotational_constants[i]
+            dens_states = 2.0 * np.sqrt(Elist / theta) / self.symmetry * dE
             if densStates0 is not None:
-                densStates = schrodinger.convolve(densStates0, densStates)
-        return densStates
+                dens_states = schrodinger.convolve(densStates0, dens_states)
+        return dens_states
 
 ################################################################################
 
@@ -473,7 +475,7 @@ cdef class KRotor(Rotation):
     K-rotor place it very nearly in the classical limit at all relevant
     temperatures; therefore, the classical model is used by default. 
     """
-    
+
     def __init__(self, inertia=None, symmetry=1, quantum=False, rotationalConstant=None):
         Rotation.__init__(self, symmetry, quantum)
         if inertia is not None and rotationalConstant is not None:
@@ -507,13 +509,13 @@ cdef class KRotor(Rotation):
             return self._inertia
         def __set__(self, value):
             self._inertia = quantity.Inertia(value)
-    
+
     property rotationalConstant:
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef double I = self._inertia.value_si
             cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
-            return quantity.Quantity(B,"cm^-1")
+            return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
@@ -525,13 +527,13 @@ cdef class KRotor(Rotation):
         Return the energy of level `J` in kJ/mol.
         """
         return getRotationalConstantEnergy(self.inertia.value_si) * J * J
-    
+
     cpdef int getLevelDegeneracy(self, int J) except -1:
         """
         Return the degeneracy of level `J`.
         """
         return 1 if J == 0 else 2
-        
+
     cpdef double getPartitionFunction(self, double T) except -1:
         """
         Return the value of the partition function :math:`Q(T)` at the
@@ -544,7 +546,7 @@ cdef class KRotor(Rotation):
             B = getRotationalConstantEnergy(self._inertia.value_si)
             Q = sqrt(constants.pi * constants.R * T / B) / self.symmetry
         return Q
-    
+
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
@@ -556,7 +558,7 @@ cdef class KRotor(Rotation):
         else:
             Cv = 0.5
         return Cv * constants.R
-    
+
     cpdef double getEnthalpy(self, double T) except 100000000:
         """
         Return the enthalpy in J/mol for the degree of freedom at the
@@ -568,7 +570,7 @@ cdef class KRotor(Rotation):
         else:
             H = 0.5
         return H * constants.R * T
-    
+
     cpdef double getEntropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
@@ -580,8 +582,8 @@ cdef class KRotor(Rotation):
         else:
             S = log(self.getPartitionFunction(T)) + 0.5
         return S * constants.R
-    
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=None):
+
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `Elist`
         in J/mol above the ground state. If an initial sum of states 
@@ -589,17 +591,18 @@ cdef class KRotor(Rotation):
         these states.
         """
         cdef double B
-        cdef numpy.ndarray sumStates
+        cdef np.ndarray sum_states
         if self.quantum:
-            sumStates = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0, sumStates0) / self.symmetry
+            sum_states = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
+                                                    sumStates0) / self.symmetry
         elif sumStates0 is not None:
-            sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
+            sum_states = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
         else:
             B = getRotationalConstantEnergy(self._inertia.value_si)
-            sumStates = 2.0 * numpy.sqrt(Elist / B) / self.symmetry
-        return sumStates
-    
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
+            sum_states = 2.0 * np.sqrt(Elist / B) / self.symmetry
+        return sum_states
+
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state. If an initial density
@@ -608,19 +611,20 @@ cdef class KRotor(Rotation):
         """
         cdef double B, dE
         cdef int r
-        cdef numpy.ndarray densStates
+        cdef np.ndarray dens_states
         if self.quantum:
-            densStates = schrodinger.getDensityOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0, densStates0) / self.symmetry
+            dens_states = schrodinger.getDensityOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
+                                                         densStates0) / self.symmetry
         else:
-            densStates = numpy.zeros(Elist.shape[0], dtype=numpy.float)
+            dens_states = np.zeros(Elist.shape[0], dtype=np.float)
             B = getRotationalConstantEnergy(self._inertia.value_si)
             dE = Elist[1] - Elist[0]
             for r in range(Elist.shape[0]):
                 if Elist[r] == 0: continue
-                densStates[r] = 1.0 / sqrt(B * Elist[r]) * dE / self.symmetry
+                dens_states[r] = 1.0 / sqrt(B * Elist[r]) * dE / self.symmetry
             if densStates0 is not None:
-                densStates = schrodinger.convolve(densStates0, densStates)
-        return densStates
+                dens_states = schrodinger.convolve(densStates0, dens_states)
+        return dens_states
 
 ################################################################################
 
@@ -646,7 +650,7 @@ cdef class SphericalTopRotor(Rotation):
     rigid rotor place it very nearly in the classical limit at all relevant
     temperatures; therefore, the classical model is used by default. 
     """
-    
+
     def __init__(self, inertia=None, symmetry=1, quantum=False, rotationalConstant=None):
         Rotation.__init__(self, symmetry, quantum)
         if inertia is not None and rotationalConstant is not None:
@@ -673,20 +677,20 @@ cdef class SphericalTopRotor(Rotation):
         A helper function used when pickling a SphericalTopRotor object.
         """
         return (SphericalTopRotor, (self.inertia, self.symmetry, self.quantum, None))
-            
+
     property inertia:
         """The moment of inertia of the rotor."""
         def __get__(self):
             return self._inertia
         def __set__(self, value):
             self._inertia = quantity.Inertia(value)
-    
+
     property rotationalConstant:
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef double I = self._inertia.value_si
             cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
-            return quantity.Quantity(B,"cm^-1")
+            return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
@@ -698,13 +702,13 @@ cdef class SphericalTopRotor(Rotation):
         Return the energy of level `J` in kJ/mol.
         """
         return getRotationalConstantEnergy(self.inertia.value_si) * J * (J + 1)
-    
+
     cpdef int getLevelDegeneracy(self, int J) except -1:
         """
         Return the degeneracy of level `J`.
         """
         return (2 * J + 1) * (2 * J + 1)
-    
+
     cpdef double getPartitionFunction(self, double T) except -1:
         """
         Return the value of the partition function :math:`Q(T)` at the
@@ -718,7 +722,7 @@ cdef class SphericalTopRotor(Rotation):
             theta = constants.R * T / B
             Q = sqrt(theta * theta * theta * constants.pi) / self.symmetry
         return Q
-    
+
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
@@ -742,7 +746,7 @@ cdef class SphericalTopRotor(Rotation):
         else:
             H = 1.5
         return H * constants.R * T
-    
+
     cpdef double getEntropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
@@ -755,7 +759,7 @@ cdef class SphericalTopRotor(Rotation):
             S = log(self.getPartitionFunction(T)) + 1.5
         return S * constants.R
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=None):
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `Elist`
         in J/mol above the ground state. If an initial sum of states 
@@ -763,21 +767,22 @@ cdef class SphericalTopRotor(Rotation):
         these states.
         """
         cdef double B, theta
-        cdef numpy.ndarray sumStates
+        cdef np.ndarray sum_states
         if self.quantum:
-            sumStates = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0, sumStates0) / self.symmetry
+            sum_states = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
+                                                    sumStates0) / self.symmetry
         elif sumStates0 is not None:
-            sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
+            sum_states = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
         else:
             if sumStates0 is not None:
-                sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
+                sum_states = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
             else:
                 B = getRotationalConstantEnergy(self._inertia.value_si)
                 theta = B * B * B
-                sumStates = 4.0/3.0 * Elist * numpy.sqrt(Elist / theta) / self.symmetry
-        return sumStates
-    
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
+                sum_states = 4.0 / 3.0 * Elist * np.sqrt(Elist / theta) / self.symmetry
+        return sum_states
+
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state. If an initial density
@@ -785,14 +790,15 @@ cdef class SphericalTopRotor(Rotation):
         convoluted into these states.
         """
         cdef double theta, inertia, dE
-        cdef numpy.ndarray densStates
+        cdef np.ndarray dens_states
         if self.quantum:
-            densStates = schrodinger.getDensityOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0, densStates0) / self.symmetry
+            dens_states = schrodinger.getDensityOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
+                                                         densStates0) / self.symmetry
         else:
             dE = Elist[1] - Elist[0]
             B = getRotationalConstantEnergy(self._inertia.value_si)
             theta = B * B * B
-            densStates = 2.0 * numpy.sqrt(Elist / theta) / self.symmetry * dE
+            dens_states = 2.0 * np.sqrt(Elist / theta) / self.symmetry * dE
             if densStates0 is not None:
-                densStates = schrodinger.convolve(densStates0, densStates)
-        return densStates
+                dens_states = schrodinger.convolve(densStates0, dens_states)
+        return dens_states

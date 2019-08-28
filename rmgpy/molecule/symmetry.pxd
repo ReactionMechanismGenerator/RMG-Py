@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-from .molecule cimport Atom, Bond, Molecule
+from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 ################################################################################
 

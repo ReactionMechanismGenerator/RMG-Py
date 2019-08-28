@@ -25,10 +25,10 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
-from rmgpy.statmech.mode cimport Mode
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.statmech.mode cimport Mode
 
 ################################################################################
 
@@ -45,7 +45,7 @@ cdef class HinderedRotor(Torsion):
     cdef public int symmetry
     cdef public bint semiclassical
     cdef public double frequency
-    cdef public numpy.ndarray energies
+    cdef public np.ndarray energies
     
     cpdef double getFrequency(self) except -1
 
@@ -53,9 +53,9 @@ cdef class HinderedRotor(Torsion):
     
     cpdef int getLevelDegeneracy(self, int J) except -1
     
-    cpdef numpy.ndarray solveSchrodingerEquation(self, int Nbasis=?)
+    cpdef np.ndarray solveSchrodingerEquation(self, int Nbasis=?)
     
-    cpdef numpy.ndarray getHamiltonian(self, int Nbasis)
+    cpdef np.ndarray getHamiltonian(self, int Nbasis)
     
     cdef double getRotationalConstantEnergy(self)
     
@@ -69,13 +69,13 @@ cdef class HinderedRotor(Torsion):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=?)
     
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=?)
 
-    cpdef fitFourierPotentialToData(self, numpy.ndarray angle, numpy.ndarray V)
+    cpdef fitFourierPotentialToData(self, np.ndarray angle, np.ndarray V)
     
-    cpdef fitCosinePotentialToData(self, numpy.ndarray angle, numpy.ndarray V)
+    cpdef fitCosinePotentialToData(self, np.ndarray angle, np.ndarray V)
 
 cdef class FreeRotor(Torsion):
     

@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.kinetics.model cimport KineticsModel, PDepKineticsModel
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
@@ -47,7 +47,7 @@ cdef class Chebyshev(PDepKineticsModel):
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits,
+    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits,
         int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2

@@ -43,13 +43,16 @@ comparisons.
 
 import cython
 from rdkit.Chem import GetPeriodicTable
+
 from rmgpy.exceptions import ElementError
 from rmgpy.quantity import Quantity
 
 ################################################################################
 
 _rdkit_periodic_table = GetPeriodicTable()
-class Element:
+
+
+class Element(object):
     """
     A chemical element. The attributes are:
 
@@ -71,7 +74,7 @@ class Element:
 
     def __init__(self, number, symbol, name, mass, isotope=-1, chemkinName=None):
         self.number = number
-        self.symbol = intern(symbol)
+        self.symbol = symbol
         self.name = name
         self.mass = mass
         self.isotope = isotope
@@ -85,7 +88,7 @@ class Element:
                 import logging
                 logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
                 self.covRadius = 0
-    
+
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -120,15 +123,16 @@ class PeriodicSystem(object):
     https://sciencenotes.org/list-of-electronegativity-values-of-the-elements/
     isotops of the same element may have slight different electronegativities, which is not reflected below
     """
-    valences          = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
-                         'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'I': 1, 'X':4}
+    valences = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
+                'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'I': 1, 'X': 4}
     valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8,
-                         'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'I': 7, 'X':4}
-    lone_pairs        = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4,
-                         'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3, 'X':0}
+                         'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'I': 7, 'X': 4}
+    lone_pairs = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4,
+                  'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3, 'X': 0}
     electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
                          'F': 3.98, 'Si': 1.90, 'S': 2.58, 'Cl': 3.16, 'I': 2.66, 'X': 0.0}
-    
+
+
 ################################################################################
 
 
@@ -140,7 +144,7 @@ def getElement(value, isotope=-1):
     :class:`ElementError` is raised if no matching element is found.
     """
     cython.declare(element=Element, number=cython.int, symbol=str)
-    if isinstance(value, int) or isinstance(value, long):
+    if isinstance(value, int):
         # The parameter is an integer; assume this is the atomic number
         number = value
         for element in elementList:
@@ -160,6 +164,7 @@ def getElement(value, isotope=-1):
         raise ElementError("No element found with symbol %s, and isotope %i." % (symbol, isotope))
     else:
         raise ElementError('No element found based on parameter %s "%r", isotope: %i.' % (type(value), value, isotope))
+
 
 ################################################################################
 
@@ -312,38 +317,43 @@ elementList = [
     Na, Mg, Al, Si, P, S, Cl, Ar,
     K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
     Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
-    Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
+    Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi,
+    Po, At, Rn,
     Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
 ]
 
-#Bond Dissociation Energies
-#Reference: Huheey, pps. A-21 to A-34; T.L. Cottrell, "The Strengths of Chemical Bonds," 2nd ed., Butterworths, London, 1958; B. deB. Darwent, "National Standard Reference Data Series," National Bureau of Standards, No. 31, Washington, DC, 1970; S.W. Benson, J. Chem. Educ., 42, 502 (1965).
-#(C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced if a sourced value becomes available
-#(C,C,2.5) is C#C - (CbenzeneC - C-C)
-BDE_elements = ['C','N','H','O','S','Cl','Si'] # elements supported by BDE
-BDEDict = {('H','H',1.0):(432.0,'kJ/mol'),('H','C',1):(411.0,'kJ/mol'),
-          ('H','N',1):(386.0,'kJ/mol'), ('H','O',1.0):(459.0,'kJ/mol'),
-          ('H','S',1):(363.0,'kJ/mol'), ('H','Cl',1): (428.0,'kJ/mol'),
-          ('C','C',1):(346.0,'kJ/mol'), ('C','C',2):(602.0,'kJ/mol'),
-          ('C','C',3):(835.0,'kJ/mol'), ('C','Si',1):(318.0,'kJ/mol'),
-          ('C','N',1): (305.0,'kJ/mol'), ('C','N',2):(615.0,'kJ/mol'),
-          ('C','N',3):(887.0,'kJ/mol'), ('C','O',1):(358.0,'kJ/mol'),
-          ('C','O',2): (799.0,'kJ/mol'), ('C','O',3):(1072.0,'kJ/mol'),
-          ('C','S',1) : (272.0,'kJ/mol'), ('C','S',2):(573.0,'kJ/mol'),
-          ('C','Cl',1): (327.0,'kJ/mol'), ('Si','Si',1): (222.0,'kJ/mol'),
-          ('Si','N',1): (355.0,'kJ/mol'), ('Si','O',1):(452.0,'kJ/mol'),
-          ('Si','S',1):(293.0,'kJ/mol'), ('Si','Cl',1): (381.0,'kJ/mol'),
-          ('N','N',1): (167.0,'kJ/mol'), ('N','N',2) : (418.0,'kJ/mol'),
-          ('N','N',3) : (942.0,'kJ/mol'), ('N','O',1):(201.0,'kJ/mol'),
-          ('N','O',2) : (607.0,'kJ/mol'), ('N','Cl',1): (313.0,'kJ/mol'),
-          ('O','O',1) : (142.0, 'kJ/mol'), ('O','O',2): (494.0,'kJ/mol'),
-          ('S','O',2) : (522.0, 'kJ/mol'), ('S','S',1) : (226.0,'kJ/mol'),
-          ('S','S',2) : (425.0,'kJ/mol'), ('S','Cl',1) : (255.0,'kJ/mol'),
-          ('Cl','Cl',1) : (240.0, 'kJ/mol'), ('C','C',1.5): (518.0,'kJ/mol'),
-          ('O','S',1): (265.0,'kJ/mol'),('C','C',2.5): (663.0,'kJ/mol')}
+# Bond Dissociation Energies
+# References:
+# Huheey, pps. A-21 to A-34; T.L. Cottrell, "The Strengths of Chemical Bonds," 2nd ed., Butterworths, London, 1958
+# B. deB. Darwent, "National Standard Reference Data Series," National Bureau of Standards, No. 31, Washington, DC, 1970
+# S.W. Benson, J. Chem. Educ., 42, 502 (1965)
+# (C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced
+# if a sourced value becomes available
+# (C,C,2.5) is C#C - (CbenzeneC - C-C)
+BDE_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si']  # elements supported by BDE
+BDEDict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
+           ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
+           ('H', 'S', 1): (363.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
+           ('C', 'C', 1): (346.0, 'kJ/mol'), ('C', 'C', 2): (602.0, 'kJ/mol'),
+           ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
+           ('C', 'N', 1): (305.0, 'kJ/mol'), ('C', 'N', 2): (615.0, 'kJ/mol'),
+           ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
+           ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
+           ('C', 'S', 1): (272.0, 'kJ/mol'), ('C', 'S', 2): (573.0, 'kJ/mol'),
+           ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('Si', 'Si', 1): (222.0, 'kJ/mol'),
+           ('Si', 'N', 1): (355.0, 'kJ/mol'), ('Si', 'O', 1): (452.0, 'kJ/mol'),
+           ('Si', 'S', 1): (293.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
+           ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
+           ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
+           ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'Cl', 1): (313.0, 'kJ/mol'),
+           ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
+           ('S', 'O', 2): (522.0, 'kJ/mol'), ('S', 'S', 1): (226.0, 'kJ/mol'),
+           ('S', 'S', 2): (425.0, 'kJ/mol'), ('S', 'Cl', 1): (255.0, 'kJ/mol'),
+           ('Cl', 'Cl', 1): (240.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
+           ('O', 'S', 1): (265.0, 'kJ/mol'), ('C', 'C', 2.5): (663.0, 'kJ/mol')}
 
 BDEs = {}
-for key,value in BDEDict.iteritems():
+for key, value in BDEDict.items():
     q = Quantity(value).value_si
-    BDEs[(key[0],key[1],key[2])] = q
-    BDEs[(key[1],key[0],key[2])] = q
+    BDEs[(key[0], key[1], key[2])] = q
+    BDEs[(key[1], key[0], key[2])] = q

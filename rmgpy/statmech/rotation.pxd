@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.statmech.mode cimport Mode
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
@@ -54,9 +54,9 @@ cdef class LinearRotor(Rotation):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=?)
     
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=?)
 
 ################################################################################
 
@@ -64,7 +64,7 @@ cdef class NonlinearRotor(Rotation):
 
     cdef public ArrayQuantity _inertia
 
-    cdef numpy.ndarray getRotationalConstantEnergy(self)
+    cdef np.ndarray getRotationalConstantEnergy(self)
 
     cpdef double getPartitionFunction(self, double T) except -1
 
@@ -74,9 +74,9 @@ cdef class NonlinearRotor(Rotation):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=?)
 
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=?)
 
 ################################################################################
 
@@ -96,9 +96,9 @@ cdef class KRotor(Rotation):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=?)
 
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=?)
 
 ################################################################################
 
@@ -118,6 +118,6 @@ cdef class SphericalTopRotor(Rotation):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=?)
     
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=?)

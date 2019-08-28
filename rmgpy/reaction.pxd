@@ -32,7 +32,7 @@ from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
 
-cimport numpy
+cimport numpy as np
 
 ################################################################################
 
@@ -83,13 +83,13 @@ cdef class Reaction:
 
     cpdef double getEquilibriumConstant(self, double T, str type=?)
 
-    cpdef numpy.ndarray getEnthalpiesOfReaction(self, numpy.ndarray Tlist)
+    cpdef np.ndarray getEnthalpiesOfReaction(self, np.ndarray Tlist)
 
-    cpdef numpy.ndarray getEntropiesOfReaction(self, numpy.ndarray Tlist)
+    cpdef np.ndarray getEntropiesOfReaction(self, np.ndarray Tlist)
 
-    cpdef numpy.ndarray getFreeEnergiesOfReaction(self, numpy.ndarray Tlist)
+    cpdef np.ndarray getFreeEnergiesOfReaction(self, np.ndarray Tlist)
 
-    cpdef numpy.ndarray getEquilibriumConstants(self, numpy.ndarray Tlist, str type=?)
+    cpdef np.ndarray getEquilibriumConstants(self, np.ndarray Tlist, str type=?)
 
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
@@ -103,13 +103,13 @@ cdef class Reaction:
 
     cpdef generateReverseRateCoefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
 
-    cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
+    cpdef np.ndarray calculateTSTRateCoefficients(self, np.ndarray Tlist)
 
     cpdef double calculateTSTRateCoefficient(self, double T) except -2
 
     cpdef bint canTST(self) except -2
 
-    cpdef calculateMicrocanonicalRateCoefficient(self, numpy.ndarray Elist, numpy.ndarray Jlist, numpy.ndarray reacDensStates, numpy.ndarray prodDensStates=?, double T=?)
+    cpdef calculateMicrocanonicalRateCoefficient(self, np.ndarray Elist, np.ndarray Jlist, np.ndarray reacDensStates, np.ndarray prodDensStates=?, double T=?)
 
     cpdef bint isBalanced(self)
     

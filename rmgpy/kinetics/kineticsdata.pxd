@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.kinetics.model cimport KineticsModel, PDepKineticsModel
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity

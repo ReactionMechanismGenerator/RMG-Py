@@ -697,7 +697,7 @@ def getFeatures(atom, bonds):
     triple = 0;
     benzene = 0;
     quadruple = 0
-    for atom2, bond12 in bonds.iteritems():
+    for atom2, bond12 in bonds.items():
         if bond12.isSingle():
             single += 1
         elif bond12.isDouble():

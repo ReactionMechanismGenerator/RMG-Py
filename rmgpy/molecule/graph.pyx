@@ -34,8 +34,10 @@ are the components of a graph.
 """
 
 import itertools
+
 import py_rdl
-from .vf2 cimport VF2
+
+from rmgpy.molecule.vf2 cimport VF2
 
 ################################################################################
 
@@ -217,7 +219,7 @@ cdef class Graph(object):
 
     def __init__(self, vertices=None):
         self.vertices = vertices or []
-        
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -247,16 +249,16 @@ cdef class Graph(object):
         """
         Returns a list of all edges in the graph.
         """
-        cdef set edgeSet
+        cdef set edge_set
         cdef Vertex vertex
         cdef Edge edge
 
-        edgeSet = set()
+        edge_set = set()
         for vertex in self.vertices:
-            for edge in vertex.edges.itervalues():
-                edgeSet.add(edge)
+            for edge in vertex.edges.values():
+                edge_set.add(edge)
 
-        return list(edgeSet)
+        return list(edge_set)
 
     cpdef dict getEdges(self, Vertex vertex):
         """
@@ -321,7 +323,7 @@ cdef class Graph(object):
         cdef dict edges, mapping
         cdef list vertices
         cdef int index1, index2
-        
+
         other = Graph()
         vertices = self.vertices
         mapping = {}
@@ -404,9 +406,9 @@ cdef class Graph(object):
         """
         cdef Graph new1, new2
         cdef Vertex vertex, vertex1, vertex2
-        cdef list verticesToMove
+        cdef list vertices_to_move
         cdef int index
-        
+
         # Create potential output graphs
         new1 = self.copy()
         new2 = Graph()
@@ -415,25 +417,25 @@ cdef class Graph(object):
             return [new1]
 
         # Arbitrarily choose last atom as starting point
-        verticesToMove = [ self.vertices[-1] ]
+        vertices_to_move = [self.vertices[-1]]
 
         # Iterate until there are no more atoms to move
         index = 0
-        while index < len(verticesToMove):
-            for v2 in verticesToMove[index].edges:
-                if v2 not in verticesToMove:
-                    verticesToMove.append(v2)
+        while index < len(vertices_to_move):
+            for v2 in vertices_to_move[index].edges:
+                if v2 not in vertices_to_move:
+                    vertices_to_move.append(v2)
             index += 1
-        
+
         # If all atoms are to be moved, simply return new1
-        if len(new1.vertices) == len(verticesToMove):
+        if len(new1.vertices) == len(vertices_to_move):
             return [new1]
 
         # Copy to new graph and remove from old graph
-        for vertex in verticesToMove:
+        for vertex in vertices_to_move:
             new2.vertices.append(vertex)
             new1.vertices.remove(vertex)
-        
+
         new = [new2]
         new.extend(new1.split())
         return new
@@ -445,7 +447,7 @@ cdef class Graph(object):
         """
         cdef Vertex vertex
         for vertex in self.vertices: vertex.resetConnectivityValues()
-        
+
     cpdef updateConnectivityValues(self):
         """
         Update the connectivity values for each vertex in the graph. These are
@@ -453,7 +455,7 @@ cdef class Graph(object):
         """
         cdef Vertex vertex1, vertex2
         cdef short count
-        
+
         for vertex1 in self.vertices:
             count = len(vertex1.edges)
             vertex1.connectivity1 = count
@@ -473,10 +475,10 @@ cdef class Graph(object):
         """
         cdef Vertex vertex
         cdef int index
-        
+
         if saveOrder:
             self.ordered_vertices = self.vertices[:]
-            
+
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
@@ -488,7 +490,7 @@ cdef class Graph(object):
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
-    
+
     cpdef restore_vertex_order(self):
         """
         reorder the vertices to what they were before sorting
@@ -498,7 +500,7 @@ cdef class Graph(object):
             raise ValueError('Number of vertices has changed cannot restore original vertex order')
         else:
             self.vertices = self.ordered_vertices
-            
+
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False, bint strict=True) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -594,37 +596,37 @@ cdef class Graph(object):
                     chain.remove(vertex2)
         # If we reach this point then we did not find any cycles involving this chain
         return False
-    
+
     cpdef list getAllCyclicVertices(self):
         """ 
         Returns all vertices belonging to one or more cycles.        
         """
-        cdef list cyclicVertices
+        cdef list cyclic_vertices
         # Loop through all vertices and check whether they are cyclic
-        cyclicVertices = []
+        cyclic_vertices = []
         for vertex in self.vertices:
             if self.isVertexInCycle(vertex):
-                cyclicVertices.append(vertex)                
-        return cyclicVertices
-    
+                cyclic_vertices.append(vertex)
+        return cyclic_vertices
+
     cpdef list getAllPolycyclicVertices(self):
         """
         Return all vertices belonging to two or more cycles, fused or spirocyclic.
         """
-        cdef list SSSR, vertices, polycyclicVertices
-        SSSR = self.getSmallestSetOfSmallestRings()
-        polycyclicVertices = []
-        if SSSR:            
+        cdef list sssr, vertices, polycyclic_vertices
+        sssr = self.getSmallestSetOfSmallestRings()
+        polycyclic_vertices = []
+        if sssr:
             vertices = []
-            for cycle in SSSR:
+            for cycle in sssr:
                 for vertex in cycle:
                     if vertex not in vertices:
                         vertices.append(vertex)
                     else:
-                        if vertex not in polycyclicVertices:
-                            polycyclicVertices.append(vertex)     
-        return polycyclicVertices        
-    
+                        if vertex not in polycyclic_vertices:
+                            polycyclic_vertices.append(vertex)
+        return polycyclic_vertices
+
     cpdef list getPolycyclicRings(self):
         """
         Return a list of cycles that are polycyclic.
@@ -632,73 +634,73 @@ cdef class Graph(object):
         a single polycyclic cycle, and return only those cycles. 
         Cycles which are not polycyclic are not returned.
         """
-        cdef list polycyclicVertices, continuousCycles, SSSR
-        cdef set polycyclicCycle
+        cdef list polycyclic_vertices, continuous_cycles, sssr
+        cdef set polycyclic_cycle
         cdef Vertex vertex
-        
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if not SSSR:
+
+        sssr = self.getSmallestSetOfSmallestRings()
+        if not sssr:
             return []
-        
-        polycyclicVertices = self.getAllPolycyclicVertices()
-        
-        if not polycyclicVertices:
+
+        polycyclic_vertices = self.getAllPolycyclicVertices()
+
+        if not polycyclic_vertices:
             # no polycyclic vertices detected
             return []
-        else: 
+        else:
             # polycyclic vertices found, merge cycles together
             # that have common polycyclic vertices            
-            continuousCycles = []
-            for vertex in polycyclicVertices:
+            continuous_cycles = []
+            for vertex in polycyclic_vertices:
                 # First check if it is in any existing continuous cycles
-                for cycle in continuousCycles:
+                for cycle in continuous_cycles:
                     if vertex in cycle:
-                        polycyclicCycle = cycle
+                        polycyclic_cycle = cycle
                         break
                 else:
                     # Otherwise create a new cycle
-                    polycyclicCycle = set()
-                    continuousCycles.append(polycyclicCycle)
-                    
-                for cycle in SSSR:
+                    polycyclic_cycle = set()
+                    continuous_cycles.append(polycyclic_cycle)
+
+                for cycle in sssr:
                     if vertex in cycle:
-                        polycyclicCycle.update(cycle)
-                        
+                        polycyclic_cycle.update(cycle)
+
             # convert each set to a list
-            continuousCycles = [list(cycle) for cycle in continuousCycles]
-            return continuousCycles
-    
+            continuous_cycles = [list(cycle) for cycle in continuous_cycles]
+            return continuous_cycles
+
     cpdef list getMonocyclicRings(self):
         """
         Return a list of cycles that are monocyclic.
         """
-        cdef list polycyclicVertices, SSSR, monocyclicCycles, polycyclicSSSR
+        cdef list polycyclic_vertices, sssr, monocyclic_cycles, polycyclic_sssr
         cdef Vertex vertex
-        
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if not SSSR:
+
+        sssr = self.getSmallestSetOfSmallestRings()
+        if not sssr:
             return []
-        
-        polycyclicVertices = self.getAllPolycyclicVertices()
-        
-        if not polycyclicVertices:
-            # No polycyclicVertices detected, all the rings from getSmallestSetOfSmallestRings
+
+        polycyclic_vertices = self.getAllPolycyclicVertices()
+
+        if not polycyclic_vertices:
+            # No polycyclic_vertices detected, all the rings from getSmallestSetOfSmallestRings
             # are monocyclic
-            return SSSR
-        
-        polycyclicSSSR = []
-        for vertex in polycyclicVertices:
-            for cycle in SSSR:
+            return sssr
+
+        polycyclic_sssr = []
+        for vertex in polycyclic_vertices:
+            for cycle in sssr:
                 if vertex in cycle:
-                    if cycle not in polycyclicSSSR:
-                        polycyclicSSSR.append(cycle)
-        
+                    if cycle not in polycyclic_sssr:
+                        polycyclic_sssr.append(cycle)
+
         # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
-        monocyclicCycles = SSSR
-        for cycle in polycyclicSSSR:
-            monocyclicCycles.remove(cycle)
-        return monocyclicCycles
-    
+        monocyclic_cycles = sssr
+        for cycle in polycyclic_sssr:
+            monocyclic_cycles.remove(cycle)
+        return monocyclic_cycles
+
     cpdef tuple getDisparateRings(self):
         """
         Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
@@ -778,7 +780,7 @@ cdef class Graph(object):
             merged_cycles = u + m
 
         return unmerged_cycles, merged_cycles
-       
+
     cpdef list getAllCycles(self, Vertex startingVertex):
         """
         Given a starting vertex, returns a list of all the cycles containing
@@ -801,9 +803,9 @@ cdef class Graph(object):
         p. 657-662 (1993).
         """
         cdef Graph graph
-        cdef bint done, found
-        cdef list cycleList, cycles, cycle, graphs, neighbors, verticesToRemove, vertices, cycleSetList
-        cdef Vertex vertex, rootVertex
+        cdef bint done, found, lone_carbon
+        cdef list cycle_list, cycles, cycle, graphs, neighbors, vertices_to_remove, vertices, cycle_set_list
+        cdef Vertex vertex, root_vertex
         cdef set set1, set2
 
         # Make a copy of the graph so we don't modify the original
@@ -813,92 +815,93 @@ cdef class Graph(object):
         # Step 1: Remove all terminal vertices
         done = False
         while not done:
-            verticesToRemove = []
+            vertices_to_remove = []
             for vertex in graph.vertices:
-                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
-            done = len(verticesToRemove) == 0
+                if len(vertex.edges) == 1: vertices_to_remove.append(vertex)
+            done = len(vertices_to_remove) == 0
             # Remove identified vertices from graph
-            for vertex in verticesToRemove:
+            for vertex in vertices_to_remove:
                 graph.removeVertex(vertex)
 
         # Step 2: Remove all other vertices that are not part of cycles
-        verticesToRemove = []
+        vertices_to_remove = []
         for vertex in graph.vertices:
             found = graph.isVertexInCycle(vertex)
             if not found:
-                verticesToRemove.append(vertex)
+                vertices_to_remove.append(vertex)
         # Remove identified vertices from graph
-        for vertex in verticesToRemove:
+        for vertex in vertices_to_remove:
             graph.removeVertex(vertex)
 
         # Step 3: Split graph into remaining subgraphs
         graphs = graph.split()
 
         # Step 4: Find ring sets in each subgraph
-        cycleList = []
+        cycle_list = []
 
         for graph in graphs:
 
             while len(graph.vertices) > 0:
 
                 # Choose root vertex as vertex with smallest number of edges
-                rootVertex = None
+                root_vertex = None
                 graph.updateConnectivityValues()
                 for vertex in graph.vertices:
-                    if rootVertex is None:
-                        rootVertex = vertex
-                    elif getVertexConnectivityValue(vertex) > getVertexConnectivityValue(rootVertex):
-                        rootVertex = vertex
+                    if root_vertex is None:
+                        root_vertex = vertex
+                    elif getVertexConnectivityValue(vertex) > getVertexConnectivityValue(root_vertex):
+                        root_vertex = vertex
 
                 # Get all cycles involving the root vertex
-                cycles = graph.getAllCycles(rootVertex)
+                cycles = graph.getAllCycles(root_vertex)
                 if len(cycles) == 0:
                     # This vertex is no longer in a ring, so remove it
-                    graph.removeVertex(rootVertex)
+                    graph.removeVertex(root_vertex)
                     continue
 
                 # Keep the smallest of the cycles found above
                 cycle = cycles[0]
                 for c in cycles:
-                    if len(c) == size: cycleList.append(c)
+                    if len(c) == size: cycle_list.append(c)
 
                 # Remove the root vertex to create single edges, note this will not
                 # function properly if there is no vertex with 2 edges (i.e. cubane)
-                graph.removeVertex(rootVertex)
+                graph.removeVertex(root_vertex)
 
                 # Remove from the graph all vertices in the cycle that have only one edge
-                loneCarbon = True
-                while loneCarbon:
-                    loneCarbon = False
-                    verticesToRemove = []
+                lone_carbon = True
+                while lone_carbon:
+                    lone_carbon = False
+                    vertices_to_remove = []
 
                     for vertex in cycle:
                         if len(vertex.edges) == 1:
-                            loneCarbon = True
-                            verticesToRemove.append(vertex)
+                            lone_carbon = True
+                            vertices_to_remove.append(vertex)
                     else:
-                        for vertex in verticesToRemove:
+                        for vertex in vertices_to_remove:
                             graph.removeVertex(vertex)
 
         # Map atoms in cycles back to atoms in original graph
-        for i in range(len(cycleList)):
-            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
+        for i in range(len(cycle_list)):
+            cycle_list[i] = [self.vertices[vertices.index(v)] for v in cycle_list[i]]
 
         #remove duplicates if there are more than 2 cycles:
-        if len(cycleList) <2 : return cycleList
-        cycleSetList = [set(cycleList[0])]
-        for cycle1 in cycleList[1:]:
+        if len(cycle_list) < 2: return cycle_list
+        cycle_set_list = [set(cycle_list[0])]
+        for cycle1 in cycle_list[1:]:
             set1 = set(cycle1)
-            for set2 in cycleSetList:
+            for set2 in cycle_set_list:
                 if set1 == set2:
                     break
-            #not a duplicate so add it to cycleSetList
-            else: cycleSetList.append(set1)
+            #not a duplicate so add it to cycle_set_list
+            else:
+                cycle_set_list.append(set1)
 
         #transform back to list of lists:
-        cycleSetList = [list(set1) for set1 in cycleSetList]
+        cycle_set_list = [list(set1) for set1 in cycle_set_list]
 
-        return cycleSetList
+        return cycle_set_list
 
     cpdef list getAllSimpleCyclesOfSize(self, int size):
         """
@@ -907,23 +910,23 @@ cdef class Graph(object):
         Naive approach by eliminating polycyclic rings that are returned by
         ``getAllCyclicsOfSize``.
         """
-        cdef list cycleList
-        cdef int i
+        cdef list cycle_list
+        cdef int i, internal_connectivity
         cdef Vertex vertex
 
-        cycleList = self.getAllCyclesOfSize(size)
+        cycle_list = self.getAllCyclesOfSize(size)
 
         i = 0
-        while i < len(cycleList):
-            for vertex in cycleList[i]:
-                internalConnectivity = sum([1 if vertex2 in cycleList[i] else 0 for vertex2 in vertex.edges.iterkeys()])
-                if internalConnectivity > 2:
-                    del cycleList[i]
+        while i < len(cycle_list):
+            for vertex in cycle_list[i]:
+                internal_connectivity = sum([1 if vertex2 in cycle_list[i] else 0 for vertex2 in vertex.edges.keys()])
+                if internal_connectivity > 2:
+                    del cycle_list[i]
                     break
             else:
                 i += 1
 
-        return cycleList
+        return cycle_list
 
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles):
         """
@@ -936,7 +939,7 @@ cdef class Graph(object):
         is counted as separate from [0,3,2,1]
         """
         cdef Vertex vertex1, vertex2
-        
+
         vertex1 = chain[-1]
         # Loop over each of the atoms neighboring the last atom in the chain
         for vertex2 in vertex1.edges:
@@ -976,7 +979,7 @@ cdef class Graph(object):
             _getEdgeVertex2,
         )
 
-        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().keys())
         data.calculate()
 
         sssr = []
@@ -1009,7 +1012,7 @@ cdef class Graph(object):
             _getEdgeVertex2,
         )
 
-        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().keys())
         data.calculate()
 
         rc = []
@@ -1077,8 +1080,7 @@ cdef class Graph(object):
             if len(cycle) > len(longest_cycle):
                 longest_cycle = cycle
         return longest_cycle
-        
-        
+
     cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
@@ -1090,7 +1092,7 @@ cdef class Graph(object):
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
-        cdef bint selfHasEdge, otherHasEdge
+        cdef bint self_has_edge, other_has_edge
         cdef int i, j
 
         # Check that the mapped pairs of vertices compare True
@@ -1101,15 +1103,15 @@ cdef class Graph(object):
             else:
                 if not vertex1.isSpecificCaseOf(vertex2):
                     return False
-            
+
         # Check that any edges connected mapped vertices are equivalent
-        vertices1 = mapping.keys()
-        vertices2 = mapping.values()
+        vertices1 = list(mapping.keys())
+        vertices2 = list(mapping.values())
         for i in range(len(vertices1)):
-            for j in range(i+1, len(vertices1)):
-                selfHasEdge = self.hasEdge(vertices1[i], vertices1[j])
-                otherHasEdge = other.hasEdge(vertices2[i], vertices2[j])
-                if selfHasEdge and otherHasEdge:
+            for j in range(i + 1, len(vertices1)):
+                self_has_edge = self.hasEdge(vertices1[i], vertices1[j])
+                other_has_edge = other.hasEdge(vertices2[i], vertices2[j])
+                if self_has_edge and other_has_edge:
                     # Both graphs have the edge, so we must check it for equivalence
                     if strict:
                         edge1 = self.getEdge(vertices1[i], vertices1[j])
@@ -1120,17 +1122,17 @@ cdef class Graph(object):
                         else:
                             if not edge1.isSpecificCaseOf(edge2):
                                 return False
-                elif not equivalent and selfHasEdge and not otherHasEdge: 
+                elif not equivalent and self_has_edge and not other_has_edge:
                     #in the subgraph case self can have edges other doesn't have
                     continue
-                elif selfHasEdge or otherHasEdge:
+                elif self_has_edge or other_has_edge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
-            
+
         # If we're here then the vertices and edges compare True, so the
         # mapping is valid
         return True
-        
+
     cpdef list get_edges_in_cycle(self, list vertices, bint sort=False):
         """
         For a given list of atoms comprising a ring, return the set of bonds
@@ -1147,7 +1149,7 @@ cdef class Graph(object):
             self._sortCyclicVertices(vertices)
 
         edges = []
-        for i, j in zip(range(len(vertices)), range(-1, len(vertices)-1)):
+        for i, j in zip(range(len(vertices)), range(-1, len(vertices) - 1)):
             try:
                 edges.append(self.getEdge(vertices[i], vertices[j]))
             except ValueError:

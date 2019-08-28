@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.rmgobject cimport RMGObject
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
@@ -52,15 +52,15 @@ cdef class Conformer(RMGObject):
 
     cpdef double getFreeEnergy(self, double T) except 100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist)
 
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
 
     cpdef double getTotalMass(self, atoms=?) except -1
 
-    cpdef numpy.ndarray getCenterOfMass(self, atoms=?)
+    cpdef np.ndarray getCenterOfMass(self, atoms=?)
 
-    cpdef numpy.ndarray getMomentOfInertiaTensor(self)
+    cpdef np.ndarray getMomentOfInertiaTensor(self)
 
     cpdef getPrincipalMomentsOfInertia(self)
 

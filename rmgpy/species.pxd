@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 cimport rmgpy.constants as constants
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
@@ -88,9 +88,9 @@ cdef class Species:
 
     cpdef double getFreeEnergy(self, double T) except 100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist)
 
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
 
     cpdef double calculateCp0(self) except -1
 
@@ -122,10 +122,10 @@ cdef class TransitionState:
 
     cpdef double getFreeEnergy(self, double T) except 100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist)
 
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
     
     cpdef double calculateTunnelingFactor(self, double T) except -1
     
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
+    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)

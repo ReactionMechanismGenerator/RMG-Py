@@ -52,17 +52,17 @@ Currently supported resonance types:
     - ``generate_clar_structures``: generate all structures with the maximum number of pi-sextet assignments
 """
 
-import cython
 import logging
-import itertools
 
-from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-from .molecule import Atom, Bond, Molecule
-from .kekulize import kekulize
+import cython
+
+import rmgpy.molecule.filtration as filtration
 import rmgpy.molecule.pathfinder as pathfinder
 from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
-import rmgpy.molecule.filtration as filtration
 from rmgpy.molecule.adjlist import Saturator
+from rmgpy.molecule.graph import Vertex
+from rmgpy.molecule.kekulize import kekulize
+from rmgpy.molecule.molecule import Atom, Bond, Molecule
 
 
 def populate_resonance_algorithms(features=None):
@@ -186,11 +186,11 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
         raise ValueError("Got the following structure:\nSMILES: {0}\nAdjacencyList:\n{1}\nNet charge: {2}\n\n"
                          "Currently RMG cannot process charged species correctly."
                          "\nIf this structure was entered in SMILES, try using the adjacencyList format for an"
-                         " unambiguous definition.".format(mol.toSMILES(),mol.toAdjacencyList(),mol.getNetCharge()))
+                         " unambiguous definition.".format(mol.toSMILES(), mol.toAdjacencyList(), mol.getNetCharge()))
 
     if not mol.reactive:
-        raise ResonanceError('Can only generate resonance structures for reactive molecules! Got the following unreactive'
-                         ' structure:\n{0}Reactive = {1}'.format(mol.toAdjacencyList(),mol.reactive))
+        raise ResonanceError('Can only generate resonance structures for reactive molecules! Got the following '
+                             'unreactive structure:\n{0}Reactive = {1}'.format(mol.toAdjacencyList(), mol.reactive))
 
     mol_list = [mol]
 
@@ -673,13 +673,13 @@ def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
     except AtomTypeError:
         # If this didn't work the first time, then there might be a ring that is not actually aromatic
         # Reset our changes
-        for ring, original_order in itertools.izip(aromatic_bonds, original_bonds):
-            for bond, order in itertools.izip(ring, original_order):
+        for ring, original_order in zip(aromatic_bonds, original_bonds):
+            for bond, order in zip(ring, original_order):
                 bond.order = order
         # Try to make each ring aromatic, one by one
         i = 0  # Track how many rings are aromatic
         counter = 0  # Track total number of attempts to avoid infinite loops
-        while i < len(aromatic_bonds) and counter < 2*len(aromatic_bonds):
+        while i < len(aromatic_bonds) and counter < 2 * len(aromatic_bonds):
             counter += 1
             original_order = []
             for bond in aromatic_bonds[i]:
@@ -690,7 +690,7 @@ def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
             except AtomTypeError:
                 # This ring could not be made aromatic, possibly because it depends on other rings
                 # Undo changes
-                for bond, order in itertools.izip(aromatic_bonds[i], original_order):
+                for bond, order in zip(aromatic_bonds[i], original_order):
                     bond.order = order
                 # Move it to the end of the list, and go on to the next ring
                 aromatic_bonds.append(aromatic_bonds.pop(i))
@@ -834,11 +834,11 @@ def generate_isomorphic_resonance_structures(mol, saturate_h=False):
     index = 0
     while index < len(isomers):
         isomer = isomers[index]
-        
+
         new_isomers = []
         for algo in populate_resonance_algorithms():
             new_isomers.extend(algo(isomer))
-        
+
         for newIsomer in new_isomers:
             # Append to isomer list if unique
             for isom in isomers:
@@ -893,9 +893,9 @@ def generate_clar_structures(mol):
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
             if x[index] == 0:
-                bond.order = 1 # single
+                bond.order = 1  # single
             elif x[index] == 1:
-                bond.order = 2 # double
+                bond.order = 2  # double
             else:
                 raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 

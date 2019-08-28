@@ -31,12 +31,14 @@
 This module contains base classes that represent various rate coefficient
 models.
 """
-import numpy
+from __future__ import division
+
+import numpy as np
+cimport numpy as np
+from libc.math cimport log10
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
-
-from libc.math cimport log10
 
 ################################################################################
 
@@ -49,7 +51,7 @@ cpdef str getRateCoefficientUnitsFromReactionOrder(order):
     a rate coefficient. Raises a :class:`ValueError` if the units could not be
     determined.
     """
-    if order == 0: 
+    if order == 0:
         kunits = 'mol/(m^3*s)'
     elif order == 1:
         kunits = 's^-1'
@@ -106,7 +108,7 @@ cdef class KineticsModel:
     =============== ============================================================
 
     """
-    
+
     def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
@@ -114,13 +116,14 @@ cdef class KineticsModel:
         self.Pmax = Pmax
         self.uncertainty = uncertainty
         self.comment = comment
-        
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         KineticsModel object.
         """
-        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={0!r}, Pmax={1!r}, comment="""{2}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment)
+        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={0!r}, Pmax={1!r}, comment="""{2}""")'.format(
+            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment)
 
     def __reduce__(self):
         """
@@ -178,23 +181,24 @@ cdef class KineticsModel:
         mol, and s at the specified temperature `T` in K. This method must be
         overloaded in the derived class.
         """
-        raise NotImplementedError('Unexpected call to KineticsModel.getRateCoefficient(); you should be using a class derived from KineticsModel.')
+        raise NotImplementedError('Unexpected call to KineticsModel.getRateCoefficient(); '
+                                  'you should be using a class derived from KineticsModel.')
 
     cpdef toHTML(self):
         """
         Return an HTML rendering.
-        """  
+        """
         cdef double T
         cdef str string
         cdef list Tdata
-        
-        Tdata = [500,1000,1500,2000]
-          
+
+        Tdata = [500, 1000, 1500, 2000]
+
         string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
         try:
             for T in Tdata:
                 string += '<td>{0:.0f}</td>'.format(T)
-    
+
             string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[mole,m,s])\n    '
 
             for T in Tdata:
@@ -202,9 +206,9 @@ cdef class KineticsModel:
         except:
             string += '<td>An error occurred in processing kinetics</td>'
         string += '\n</tr></table>'
-            
+
         string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
-        
+
         return string
 
     cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2:
@@ -213,11 +217,11 @@ cdef class KineticsModel:
         and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
         """
         cdef double T
-        
+
         if otherKinetics.isPressureDependent():
             return False
-        
-        for T in [500,1000,1500,2000]:
+
+        for T in [500, 1000, 1500, 2000]:
             if abs(log10(self.getRateCoefficient(T)) - log10(otherKinetics.getRateCoefficient(T))) > 0.5:
                 return False
         return True
@@ -242,29 +246,30 @@ cdef class KineticsModel:
             return False
 
         return True
-        
+
     cpdef double discrepancy(self, KineticsModel otherKinetics) except -2:
         """
         Returns some measure of the discrepancy based on two different reaction models.
         """
         cdef double T
         cdef double discrepancy
-        
+
         discrepancy = 0.0
         if otherKinetics.isPressureDependent():
             return 9999999
-        
-        for T in [500,1000,1500,2000]:
+
+        for T in [500, 1000, 1500, 2000]:
             discrepancy += abs(log10(self.getRateCoefficient(T)) - log10(otherKinetics.getRateCoefficient(T)))
-                
+
         return discrepancy
-    
+
     def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics for a cantera reaction object.
         """
-        raise NotImplementedError('Unexpected call to KineticsModel.setCanteraKinetics(); you should be using a class derived from KineticsModel.')
-    
+        raise NotImplementedError('Unexpected call to KineticsModel.setCanteraKinetics(); '
+                                  'you should be using a class derived from KineticsModel.')
+
 ################################################################################
 
 cdef class PDepKineticsModel(KineticsModel):
@@ -285,33 +290,39 @@ cdef class PDepKineticsModel(KineticsModel):
     =============== ============================================================
 
     """
-    
-    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, uncertainty=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
+
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, uncertainty=None,
+                 comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
+                               comment=comment)
         self.efficiencies = {}
-        if efficiencies: 
+        if efficiencies:
             for mol, eff in efficiencies.iteritems():
                 if isinstance(mol, str):
                     # Assume it is a SMILES string
                     self.efficiencies[Molecule().fromSMILES(mol)] = eff
                 elif isinstance(mol, Molecule):
                     self.efficiencies[mol] = eff
-                else: 
-                    raise ValueError("Efficiencies must be declared as a dictionary of chemical species with associated efficiencies. The keys of the dictionary must be Molecule objects or SMILES strings.")
+                else:
+                    raise ValueError("Efficiencies must be declared as a dictionary of chemical species "
+                                     "with associated efficiencies. The keys of the dictionary must be "
+                                     "Molecule objects or SMILES strings.")
         self.highPlimit = highPlimit
-        
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         PDepKineticsModel object.
         """
-        return 'PDepKineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, efficiencies={4!r}, highPlimit={5!r}, comment="""{6}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit, self.comment)
+        return 'PDepKineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, efficiencies={4!r}, highPlimit={5!r}, comment="""{6}""")'.format(
+            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a PDepKineticsModel object.
         """
-        return (PDepKineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit, self.comment))
+        return (PDepKineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit,
+                                    self.comment))
 
     cpdef bint isPressureDependent(self) except -2:
         """
@@ -328,21 +339,21 @@ cdef class PDepKineticsModel(KineticsModel):
         returned.
         """
         return (self.Pmin is None or self._Pmin.value_si <= P) and (self.Pmax is None or P <= self._Pmax.value_si)
-    
-    cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1:
+
+    cpdef double getEffectivePressure(self, double P, list species, np.ndarray fractions) except -1:
         """
         Return the effective pressure in Pa for a system at a given pressure
         `P` in Pa composed of the given list of `species` (Species or Molecule objects) with the given
         `fractions`.  
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] _fractions
+        cdef np.ndarray[np.float64_t, ndim=1] _fractions
         cdef double Peff, frac, eff, total_frac, eff_frac
         cdef int i
-        
+
         assert len(species) == len(fractions)
-        
+
         _fractions = fractions
-        
+
         # We probably have fewer efficiencies than we do fractions, so 
         # iterating over the species with efficiencies is faster
         Peff = 0.0
@@ -358,38 +369,38 @@ cdef class PDepKineticsModel(KineticsModel):
 
             # If species not in list of fractions, assume fraction of zero
             # and skip to the next species
-        
+
         # For the species with no efficiency data, assume an efficiency of 
         # unity and add to the calculation of the effective pressure
-        total_frac = numpy.sum(_fractions)
+        total_frac = np.sum(_fractions)
         Peff += (total_frac - eff_frac) * 1.0
-        
+
         # Don't forget to include the actual pressure and scale by the total
         # fraction (in case fractions is not normalized)
         Peff *= P / total_frac
-        
+
         return Peff
-    
-    cpdef numpy.ndarray getEffectiveColliderEfficiencies(self, list species):
+
+    cpdef np.ndarray getEffectiveColliderEfficiencies(self, list species):
         """
         Return the effective collider efficiencies for all species in the form of
         a numpy array.  This function helps assist rapid effective pressure calculations in the solver.
         """
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] all_efficiencies        
+        cdef np.ndarray[np.float64_t, ndim=1] all_efficiencies
         cdef double eff
         cdef int i
-        
-        all_efficiencies = numpy.ones(len(species), numpy.float64)
+
+        all_efficiencies = np.ones(len(species), np.float64)
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
                 if spec.isIsomorphic(mol):
                     i = species.index(spec)
                     # override default unity value to the actual efficiency of the collider
-                    all_efficiencies[i] = eff 
+                    all_efficiencies[i] = eff
                     break
-                
+
         return all_efficiencies
-        
+
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
@@ -399,36 +410,37 @@ cdef class PDepKineticsModel(KineticsModel):
         pressure, and pass that value as the pressure to this method. This
         method must be overloaded in the derived class.
         """
-        raise NotImplementedError('Unexpected call to PDepKineticsModel.getRateCoefficient(); you should be using a class derived from PDepKineticsModel.')
+        raise NotImplementedError('Unexpected call to PDepKineticsModel.getRateCoefficient(); '
+                                  'you should be using a class derived from PDepKineticsModel.')
 
     cpdef toHTML(self):
         """
         Return an HTML rendering.
-        """  
+        """
         cdef double T, P
         cdef str string
         cdef list Tdata, Pdata
-        
-        Tdata = [500,1000,1500,2000]
-        Pdata = [1e5,1e6]
-          
+
+        Tdata = [500, 1000, 1500, 2000]
+        Pdata = [1e5, 1e6]
+
         string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
-        
+
         try:
             for T in Tdata:
                 string += '<td>{0:.0f}</td>'.format(T)
-                
+
             for P in Pdata:
                 string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k({0:g} bar)/[mole,m,s])\n    '.format(P*1e-5)
                 for T in Tdata:
-                    string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T,P)))
+                    string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T, P)))
         except:
             string += '<td>An error occurred in processing kinetics</td>'
-                    
+
         string += '\n</tr></table>'
-            
+
         string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
-        
+
         return string
 
     cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2:
@@ -437,13 +449,13 @@ cdef class PDepKineticsModel(KineticsModel):
         and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
         """
         cdef double T, P
-        
+
         if not otherKinetics.isPressureDependent():
             return False
-        
-        for T in [500,1000,1500,2000]:
-            for P in [1e5,1e6]:
-                if abs(log10(self.getRateCoefficient(T,P)) - log10(otherKinetics.getRateCoefficient(T,P))) > 0.5:
+
+        for T in [500, 1000, 1500, 2000]:
+            for P in [1e5, 1e6]:
+                if abs(log10(self.getRateCoefficient(T, P)) - log10(otherKinetics.getRateCoefficient(T, P))) > 0.5:
                     return False
         return True
 
@@ -495,12 +507,13 @@ cdef class PDepKineticsModel(KineticsModel):
                     efficiencies[species.toChemkin()] = efficiency
                     break
         return efficiencies
-    
+
     def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics for a cantera reaction object.
         """
-        raise NotImplementedError('Unexpected call to KineticsModel.setCanteraKinetics(); you should be using a class derived from KineticsModel.')
+        raise NotImplementedError('Unexpected call to KineticsModel.setCanteraKinetics(); '
+                                  'you should be using a class derived from KineticsModel.')
 
 ################################################################################
 
@@ -532,11 +545,13 @@ cdef class TunnelingModel:
         Calculate and return the value of the tunneling correction for
         the reaction at the temperature `T` in K.
         """
-        raise NotImplementedError('Unexpected call to Tunneling.calculateTunnelingFactor(); you should be using a class derived from TunnelingModel.')
+        raise NotImplementedError('Unexpected call to Tunneling.calculateTunnelingFactor(); '
+                                  'you should be using a class derived from TunnelingModel.')
 
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist):
+    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist):
         """
         Calculate and return the value of the tunneling correction for
         the reaction at the energies `Elist` in J/mol.
         """
-        raise NotImplementedError('Unexpected call to Tunneling.calculateTunnelingFunction(); you should be using a class derived from TunnelingModel.')
+        raise NotImplementedError('Unexpected call to Tunneling.calculateTunnelingFunction(); '
+                                  'you should be using a class derived from TunnelingModel.')
