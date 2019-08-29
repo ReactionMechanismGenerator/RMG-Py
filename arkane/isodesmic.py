@@ -117,6 +117,10 @@ class ErrorCancelingSpecies(object):
                 group += 'X'
                 break
 
+        rings = self.molecule.getSmallestSetOfSmallestRings()
+        if len(rings) > 0:
+            group += '_ring'
+
         if radical_count > 0:
             for atom,rad in radical_atoms:
                 group += '_{}rad-{}'.format(atom,rad)
@@ -742,7 +746,7 @@ class ErrorCancelingScheme(object):
             lower_class_obj = 1e6
         subset_queue = deque()
         subset_queue.append(full_set)
-        max_attempts = 200
+        max_attempts = 300
         attempts = 0
         rejected = 0
 
