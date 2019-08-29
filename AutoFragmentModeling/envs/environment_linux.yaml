@@ -1,0 +1,19 @@
+name: afm_env
+channels:
+  - defaults
+  - afm
+  - rmg
+  - rdkit
+  - cantera
+  - anaconda
+  - omnia
+dependencies:
+  - rmg::cantera
+  - jupyter
+  - matplotlib
+  - nose
+  - numpy
+  - pandas
+  - rdkit::rdkit
+  - afm::rmg==2.4.1.1
+  - afm::rmgdatabase

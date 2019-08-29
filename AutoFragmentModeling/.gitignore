@@ -1,0 +1,22 @@
+
+.DS_Store
+*.pyc
+*.csv
+*.inp
+*.pdf
+*.txt
+*.iml
+*.xml
+
+# Ignore PyCharm files
+.idea/*
+
+chemkin_ode/*
+
+*ipynb_checkpoints*
+
+*old*
+
+*misc_rules*
+
+*results*

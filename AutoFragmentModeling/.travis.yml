@@ -1,0 +1,47 @@
+language: python
+sudo: false
+python:
+  - "2.7"
+virtualenv:
+    system_site_packages: true
+
+addons:
+  apt:
+    packages:
+    - git
+
+before_install:
+  # Set up anaconda
+  - wget http://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p $HOME/miniconda
+  - export PATH=$HOME/miniconda/bin:$PATH
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
+  # Update conda itself
+  - conda update --yes conda
+  - cd $TRAVIS_BUILD_DIR
+  - pwd
+
+install:
+  - conda env create -q -f envs/environment_linux.yaml
+  - source activate afm_env
+  - conda list
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - make unittests
+
+    - script:
+        - conda remove -y -q rmg
+        - conda list
+        - cd ..
+        - git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git --branch afm_latest
+        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git --branch afm_latest
+        - export PYTHONPATH=$TRAVIS_BUILD_DIR/../RMG-Py:$PYTHONPATH
+        - export PATH=$TRAVIS_BUILD_DIR/../RMG-Py:$PATH
+        - cd RMG-Py
+        - make
+        - cd $TRAVIS_BUILD_DIR
+        - make unittests
