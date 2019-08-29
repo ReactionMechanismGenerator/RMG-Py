@@ -14,6 +14,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - ffmpeg
+  - future
   - gprof2dot
   - graphviz
   - h5py
@@ -27,6 +28,7 @@ dependencies:
   - mpmath
   - networkx
   - nose
+  - numdifftools
   - numpy >=1.10.0
   - openbabel
   - psutil

@@ -32,11 +32,12 @@
 This module contains functionality for working with kinetics depositories.
 """
 
-from rmgpy.data.base import Database, Entry, DatabaseError
 import re
 
+from rmgpy.data.base import Database, Entry, DatabaseError
+from rmgpy.data.kinetics.common import saveEntry
 from rmgpy.reaction import Reaction
-from .common import saveEntry
+
 
 ################################################################################
 
@@ -104,6 +105,7 @@ class DepositoryReaction(Reaction):
         """
         return self.depository.label
 
+
 ################################################################################
 
 class KineticsDepository(Database):
@@ -116,27 +118,27 @@ class KineticsDepository(Database):
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
-        
+
     def __str__(self):
         return 'Kinetics Depository {0}'.format(self.label)
 
     def __repr__(self):
         return '<KineticsDepository "{0}">'.format(self.label)
-    
+
     def load(self, path, local_context=None, global_context=None):
         import os
         Database.load(self, path, local_context, global_context)
-        
+
         # Load the species in the kinetics library
         # Do not generate resonance structures, since training reactions may be written for a specific resonance form
-        speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'), resonance=False)
+        species_dict = self.getSpecies(os.path.join(os.path.dirname(path), 'dictionary.txt'), resonance=False)
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
         for entry in entries:
             # Create a new reaction per entry
             rxn = entry.item
             rxn_string = entry.label
-            # Convert the reactants and products to Species objects using the speciesDict
+            # Convert the reactants and products to Species objects using the species_dict
             reactants, products = rxn_string.split('=')
             reversible = True
             if '<=>' in rxn_string:
@@ -145,40 +147,50 @@ class KineticsDepository(Database):
             elif '=>' in rxn_string:
                 products = products[1:]
                 reversible = False
-            assert reversible == rxn.reversible, "Reaction string reversibility (=>) and entry attribute `reversible` (set to `False`) must agree if reaction is irreversible."
+            if reversible != rxn.reversible:
+                raise DatabaseError('Reaction string reversibility ({0}) and entry attribute `reversible` ({1}) '
+                                    'must agree if reaction is irreversible.'.format(rxn.reversible, reversible))
 
-            specificCollider = None
-            collider = re.search('\(\+[^\)]+\)',reactants)
+            specific_collider = None
+            collider = re.search(r'\(\+[^\)]+\)', reactants)
             if collider is not None:
-                collider = collider.group(0) # save string value rather than the object
-                assert collider == re.search('\(\+[^\)]+\)',products).group(0), "Third body colliders in reaction {0} in kinetics library {1} are not identical!".format(rxn_string, self.label)
-                extraParenthesis = collider.count('(') -1
-                for i in xrange(extraParenthesis):
-                    collider += ')' # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders, although currently not implemented in Chemkin. See RMG-Py #1070
-                reactants = reactants.replace(collider,'')
-                products = products.replace(collider,'')
-                if collider.upper().strip() != "(+M)": # the collider is a specific species, not (+M) or (+m)
-                    if collider.strip()[2:-1] not in speciesDict: # stripping spaces, '(+' and ')'
-                        raise DatabaseError('Collider species {0} in kinetics library {1} is missing from its dictionary.'.format(collider.strip()[2:-1], self.label))
-                    specificCollider = speciesDict[collider.strip()[2:-1]]
+                collider = collider.group(0)  # save string value rather than the object
+                if collider != re.search(r'\(\+[^\)]+\)',products).group(0):
+                    raise ValueError('Third body colliders in reaction {0} in kinetics library {1} are not identical!'
+                                     ''.format(rxn_string, self.label))
+                extra_parenthesis = collider.count('(') - 1
+                for i in range(extra_parenthesis):
+                    # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders,
+                    # although currently not implemented in Chemkin. See RMG-Py #1070
+                    collider += ')'
+                reactants = reactants.replace(collider, '')
+                products = products.replace(collider, '')
+                if collider.upper().strip() != "(+M)":  # the collider is a specific species, not (+M) or (+m)
+                    if collider.strip()[2:-1] not in species_dict:  # stripping spaces, '(+' and ')'
+                        raise DatabaseError('Collider species {0} in kinetics library {1} is missing from its '
+                                            'dictionary.'.format(collider.strip()[2:-1], self.label))
+                    specific_collider = species_dict[collider.strip()[2:-1]]
 
             for reactant in reactants.split('+'):
                 reactant = reactant.strip()
-                if reactant not in speciesDict:
-                    raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(reactant, self.label))
+                if reactant not in species_dict:
+                    raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'
+                                        ''.format(reactant, self.label))
                 # Depository reactions should have molecule objects because they are needed in order to descend the
                 # tree using `getReactionTemplate()` later, but species objects work because `getReactionTemplate()`
                 # will simply pick the first molecule object in `Species().molecule`.
-                rxn.reactants.append(speciesDict[reactant])
+                rxn.reactants.append(species_dict[reactant])
             for product in products.split('+'):
                 product = product.strip()
-                if product not in speciesDict:
-                    raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(product, self.label))
+                if product not in species_dict:
+                    raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'
+                                        ''.format(product, self.label))
                 # Same comment about molecule vs species objects as above.
-                rxn.products.append(speciesDict[product])
-                
+                rxn.products.append(species_dict[product])
+
             if not rxn.isBalanced():
-                raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
+                raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'
+                                    ''.format(rxn, self.label))
 
 
     def loadEntry(self,
@@ -201,28 +213,20 @@ class KineticsDepository(Database):
                   longDesc='',
                   rank=None,
                   ):
-        
-#        reactants = [Species().fromAdjacencyList(reactant1)]
-#        if reactant2 is not None: reactants.append(Species().fromAdjacencyList(reactant2))
-#        if reactant3 is not None: reactants.append(Species().fromAdjacencyList(reactant3))
-#
-#        products = [Species().fromAdjacencyList(product1)]
-#        if product2 is not None: products.append(Species().fromAdjacencyList(product2))
-#        if product3 is not None: products.append(Species().fromAdjacencyList(product3))
-        
+
         reaction = Reaction(reactants=[], products=[], specificCollider=specificCollider,
-          degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
-        
+                            degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+
         entry = Entry(
-            index = index,
-            label = label,
-            item = reaction,
-            data = kinetics,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
-            rank = rank,
+            index=index,
+            label=label,
+            item=reaction,
+            data=kinetics,
+            reference=reference,
+            referenceType=referenceType,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
+            rank=rank,
         )
         assert index not in self.entries
         self.entries[index] = entry

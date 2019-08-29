@@ -28,15 +28,20 @@
 #                                                                             #
 ###############################################################################
 
-import os.path
+from __future__ import division
+
 import logging
-import numpy
+import os.path
+
+import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, IdealGasTranslation
+from rmgpy.data.base import Database, Entry, LogicOr, makeLogicNode
+from rmgpy.data.statmechfit import fitStatmechToHeatCapacity
 from rmgpy.molecule import Molecule, Group
+from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, \
+                           IdealGasTranslation
 
-from base import Database, Entry, LogicOr, makeLogicNode
 
 ################################################################################
 
@@ -73,8 +78,10 @@ def saveEntry(f, entry):
     else:
         f.write('    statmech = {0!r},\n'.format(entry.data))
 
-    if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
-    if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+    if entry.reference is not None:
+        f.write('    reference = {0!r},\n'.format(entry.reference))
+    if entry.referenceType != "":
+        f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     f.write('    shortDesc = u"""')
     f.write(entry.shortDesc)
     f.write('""",\n')
@@ -85,6 +92,7 @@ def saveEntry(f, entry):
 
     f.write(')\n\n')
 
+
 def generateOldLibraryEntry(data):
     """
     Return a list of values used to save entries to the old-style RMG
@@ -92,8 +100,9 @@ def generateOldLibraryEntry(data):
     """
     items = '{0:3d}'.format(data.symmetry)
     for lower, upper, degeneracy in data.frequencies:
-        items += '     {0:3d} {1:9.1f} {2:9.1f}'.format(degeneracy,lower,upper)
+        items += '     {0:3d} {1:9.1f} {2:9.1f}'.format(degeneracy, lower, upper)
     return items
+
 
 def processOldLibraryEntry(data, format):
     """
@@ -109,6 +118,7 @@ def processOldLibraryEntry(data, format):
         return GroupFrequencies(frequencies=frequencies, symmetry=int(data[0]))
     else:
         raise ValueError('format parameter must be "library" or "groups"; got "{0}" instead'.format(format))
+
 
 ################################################################################
 
@@ -131,18 +141,17 @@ class StatmechDepository(Database):
                   shortDesc='',
                   longDesc='',
                   ):
-        
         item = Molecule().fromAdjacencyList(molecule)
-        
+
         self.entries[label] = Entry(
-            index = index,
-            label = label,
-            item = item,
-            data = statmech,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
+            index=index,
+            label=label,
+            item=item,
+            data=statmech,
+            reference=reference,
+            referenceType=referenceType,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
         )
 
     def saveEntry(self, f, entry):
@@ -150,6 +159,7 @@ class StatmechDepository(Database):
         Write the given `entry` in the thermo database to the file object `f`.
         """
         return saveEntry(f, entry)
+
 
 ################################################################################
 
@@ -172,14 +182,14 @@ class StatmechLibrary(Database):
                   longDesc='',
                   ):
         self.entries[label] = Entry(
-            index = index,
-            label = label,
-            item = Molecule().fromAdjacencyList(molecule),
-            data = statmech,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
+            index=index,
+            label=label,
+            item=Molecule().fromAdjacencyList(molecule),
+            data=statmech,
+            reference=reference,
+            referenceType=referenceType,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
         )
 
     def saveEntry(self, f, entry):
@@ -202,6 +212,7 @@ class StatmechLibrary(Database):
         """
         return processOldLibraryEntry(data, "library")
 
+
 ################################################################################
 
 class StatmechGroups(Database):
@@ -223,23 +234,23 @@ class StatmechGroups(Database):
                   shortDesc='',
                   longDesc='',
                   ):
-        if ( group[0:3].upper() == 'OR{' or
-             group[0:4].upper() == 'AND{' or
-             group[0:7].upper() == 'NOT OR{' or
-             group[0:8].upper() == 'NOT AND{'
-            ):
+        if (group[0:3].upper() == 'OR{' or
+                group[0:4].upper() == 'AND{' or
+                group[0:7].upper() == 'NOT OR{' or
+                group[0:8].upper() == 'NOT AND{'
+        ):
             item = makeLogicNode(group)
         else:
             item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
-            index = index,
-            label = label,
-            item = item,
-            data = statmech,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
+            index=index,
+            label=label,
+            item=item,
+            data=statmech,
+            reference=reference,
+            referenceType=referenceType,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
         )
 
     def saveEntry(self, f, entry):
@@ -309,17 +320,17 @@ class StatmechGroups(Database):
         """
 
         frequencies = []
-        groupCount = {}
+        group_count = {}
 
         # This is an additional hardcoded functional group for C-H with C in a ring
         # It is hardcoded because the adjacency list format isn't well-equipped
         # to handle this sort of functional group
-        ringCH = Entry(
-            label = 'ringCH',
-            item = None,
-            data = GroupFrequencies([(2750., 3150., 1), (900., 1100., 1)]),
+        ring_ch = Entry(
+            label='ringCH',
+            item=None,
+            data=GroupFrequencies([(2750., 3150., 1), (900., 1100., 1)]),
         )
-        
+
         # Generate estimate of thermodynamics
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
@@ -332,19 +343,19 @@ class StatmechGroups(Database):
                     for atom2 in atom.edges:
                         if atom2.isHydrogen():
                             try:
-                                groupCount[ringCH] += 1
+                                group_count[ring_ch] += 1
                             except KeyError:
-                                groupCount[ringCH] = 1
+                                group_count[ring_ch] = 1
             else:
                 # Atom is not in cycle, so find a group for it
-                node = self.__getNode(molecule, {'*':atom})
+                node = self.__getNode(molecule, {'*': atom})
                 if node is not None:
                     try:
-                        groupCount[node] += 1
+                        group_count[node] += 1
                     except KeyError:
-                        groupCount[node] = 1
+                        group_count[node] = 1
 
-        return groupCount
+        return group_count
 
     def getStatmechData(self, molecule, thermoModel):
         """
@@ -354,63 +365,70 @@ class StatmechGroups(Database):
         some frequencies and all hindered rotors to heat capacity data.
         """
         conformer = Conformer()
-        
+
         # Compute spin multiplicity
         # For closed-shell molecule the spin multiplicity is 1
         # For monoradicals the spin multiplicity is 2
         # For higher-order radicals the highest allowed spin multiplicity is assumed
         conformer.spinMultiplicity = molecule.getRadicalCount() + 1
-        
+
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:
-            return (conformer, None, None)
+            return conformer, None, None
 
         linear = molecule.isLinear()
-        numRotors = molecule.countInternalRotors()
-        numVibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - numRotors
+        num_rotors = molecule.countInternalRotors()
+        num_vibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - num_rotors
 
         # Get characteristic frequency groups and the associated frequencies
-        groupCount = self.getFrequencyGroups(molecule)
-        logging.debug('Found frequencies from groups {}'.format(groupCount))
+        group_count = self.getFrequencyGroups(molecule)
+        logging.debug('Found frequencies from groups {}'.format(group_count))
         frequencies = []
-        for entry, count in groupCount.iteritems():
-            if count != 0 and entry.data is not None: frequencies.extend(entry.data.generateFrequencies(count))
+        for entry, count in group_count.items():
+            if count != 0 and entry.data is not None:
+                frequencies.extend(entry.data.generateFrequencies(count))
 
         # Check that we have the right number of degrees of freedom specified
-        if len(frequencies) > numVibrations:
+        if len(frequencies) > num_vibrations:
             # We have too many vibrational modes
-            difference = len(frequencies) - numVibrations
+            difference = len(frequencies) - num_vibrations
             # First try to remove hindered rotor modes until the proper number of modes remain
-            if numRotors > difference:
-                numRotors -= difference
-                numVibrations = len(frequencies)
-                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} internal rotors to compensate.'.format(molecule.toSMILES(), difference))
+            if num_rotors > difference:
+                num_rotors -= difference
+                num_vibrations = len(frequencies)
+                logging.warning('For {0}, more characteristic frequencies were generated than '
+                                'vibrational modes allowed. Removed {1:d} internal rotors to '
+                                'compensate.'.format(molecule.toSMILES(), difference))
             # If that won't work, turn off functional groups until the problem is underspecified again
             else:
-                groupsRemoved = 0
-                freqsRemoved = 0
-                freqCount = len(frequencies)
-                while freqCount > numVibrations:
-                    minDegeneracy, minEntry = min([(entry.data.symmetry, entry) for entry in groupCount if groupCount[entry] > 0])
-                    if groupCount[minEntry] > 1:
-                        groupCount[minEntry] -= 1
+                groups_removed = 0
+                freqs_removed = 0
+                freq_count = len(frequencies)
+                while freq_count > num_vibrations:
+                    min_degeneracy, min_entry = min([(entry.data.symmetry, entry)
+                                                     for entry in group_count if group_count[entry] > 0])
+                    if group_count[min_entry] > 1:
+                        group_count[min_entry] -= 1
                     else:
-                        del groupCount[minEntry]
-                    groupsRemoved += 1
-                    freqsRemoved += minDegeneracy
-                    freqCount -= minDegeneracy
+                        del group_count[min_entry]
+                    groups_removed += 1
+                    freqs_removed += min_degeneracy
+                    freq_count -= min_degeneracy
                 # Log warning
-                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to compensate.'.format(molecule.toSMILES(), groupsRemoved, freqsRemoved))
+                logging.warning('For {0}, more characteristic frequencies were generated than '
+                                'vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to '
+                                'compensate.'.format(molecule.toSMILES(), groups_removed, freqs_removed))
                 # Regenerate characteristic frequencies
                 frequencies = []
-                for entry, count in groupCount.iteritems():
-                    if count != 0: frequencies.extend(entry.data.generateFrequencies(count))
+                for entry, count in group_count.items():
+                    if count != 0:
+                        frequencies.extend(entry.data.generateFrequencies(count))
 
         # Subtract out contributions to heat capacity from the group frequencies
-        Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
-        Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
+        Tlist = np.arange(300.0, 1501.0, 100.0, np.float64)
+        Cv = np.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], np.float64)
         logging.debug('Fitting statmech with heat capacities {0}'.format(Cv))
-        ho = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+        ho = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
         for i in range(Tlist.shape[0]):
             Cv[i] -= ho.getHeatCapacity(Tlist[i]) / constants.R
         logging.debug('After removing found frequencies, the heat capacities are {0}'.format(Cv))
@@ -422,22 +440,22 @@ class StatmechGroups(Database):
         Cv -= 1.0
         logging.debug('After removing translation, rotation, and Cp->Cv, the heat capacities are {0}'.format(Cv))
         # Fit remaining frequencies and hindered rotors to the heat capacity data
-        from statmechfit import fitStatmechToHeatCapacity
-        modes = fitStatmechToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
+        modes = fitStatmechToHeatCapacity(Tlist, Cv, num_vibrations - len(frequencies), num_rotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
-                uncertainties = [0 for f in frequencies] # probably shouldn't be zero
+                uncertainties = [0 for f in frequencies]  # probably shouldn't be zero
                 frequencies.extend(mode.frequencies.value_si)
                 uncertainties.extend(mode.frequencies.uncertainty)
-                mode.frequencies.value_si = numpy.array(frequencies, numpy.float)
-                mode.frequencies.uncertainty = numpy.array(uncertainties, numpy.float)
+                mode.frequencies.value_si = np.array(frequencies, np.float)
+                mode.frequencies.uncertainty = np.array(uncertainties, np.float)
                 break
         else:
-            modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))
+            modes.insert(0, HarmonicOscillator(frequencies=(frequencies, "cm^-1")))
 
         conformer.modes = modes
 
-        return (conformer, None, None)
+        return conformer, None, None
+
 
 ################################################################################
 
@@ -471,7 +489,7 @@ class StatmechDatabase(object):
             'groups': self.groups,
             'libraryOrder': self.libraryOrder,
         }
-        return (StatmechDatabase, (), d)
+        return StatmechDatabase, (), d
 
     def __setstate__(self, d):
         """
@@ -499,15 +517,16 @@ class StatmechDatabase(object):
         Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.depository = {}
-        self.depository['depository']  = StatmechDepository().load(os.path.join(path, 'depository.py'), self.local_context, self.global_context)
+        self.depository = {'depository': StatmechDepository().load(os.path.join(path, 'depository.py'),
+                                                                   self.local_context, self.global_context)}
 
     def loadLibraries(self, path, libraries=None):
         """
         Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.libraries = {}; self.libraryOrder = []
+        self.libraries = {}
+        self.libraryOrder = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 name, ext = os.path.splitext(f)
@@ -527,8 +546,8 @@ class StatmechDatabase(object):
         points to the top-level folder of the thermo database.
         """
         logging.info('Loading frequencies group database from {0}...'.format(path))
-        self.groups = {}
-        self.groups['groups'] = StatmechGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
+        self.groups = {'groups': StatmechGroups().load(os.path.join(path, 'groups.py'),
+                                                       self.local_context, self.global_context)}
 
     def save(self, path):
         """
@@ -536,7 +555,8 @@ class StatmechDatabase(object):
         points to the top-level folder of the statmech database.
         """
         path = os.path.abspath(path)
-        if not os.path.exists(path): os.mkdir(path)
+        if not os.path.exists(path):
+            os.mkdir(path)
         self.saveDepository(os.path.join(path, 'depository'))
         self.saveLibraries(os.path.join(path, 'libraries'))
         self.saveGroups(os.path.join(path, 'groups'))
@@ -546,8 +566,9 @@ class StatmechDatabase(object):
         Save the statmech depository to the given `path` on disk, where `path`
         points to the top-level folder of the statmech depository.
         """
-        if not os.path.exists(path): os.mkdir(path)
-        for name, depository in self.depository.iteritems():
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for name, depository in self.depository.items():
             depository.save(os.path.join(path, name + '.py'))
 
     def saveLibraries(self, path):
@@ -555,7 +576,8 @@ class StatmechDatabase(object):
         Save the statmech libraries to the given `path` on disk, where `path`
         points to the top-level folder of the statmech libraries.
         """
-        if not os.path.exists(path): os.mkdir(path)
+        if not os.path.exists(path):
+            os.mkdir(path)
         for library in self.libraries.values():
             library.save(os.path.join(path, '{0}.py'.format(library.label)))
 
@@ -564,8 +586,9 @@ class StatmechDatabase(object):
         Save the statmech groups to the given `path` on disk, where `path`
         points to the top-level folder of the statmech groups.
         """
-        if not os.path.exists(path): os.mkdir(path)
-        for name, groups in self.groups.iteritems():
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for name, groups in self.groups.items():
             groups.save(os.path.join(path, name + '.py'))
 
     def loadOld(self, path):
@@ -574,30 +597,30 @@ class StatmechDatabase(object):
         `path` points to the top-level folder of the old RMG database.
         """
         # The old database does not have a depository, so create an empty one
-        self.depository = {}
-        self.depository['depository'] = StatmechDepository(label='depository', name='Statmech Depository')
+        self.depository = {'depository': StatmechDepository(label='depository', name='Statmech Depository')}
 
         for (root, dirs, files) in os.walk(os.path.join(path, 'frequencies_libraries')):
-            if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
+            if (os.path.exists(os.path.join(root, 'Dictionary.txt')) and
+                    os.path.exists(os.path.join(root, 'Library.txt'))):
                 library = StatmechLibrary(label=os.path.basename(root), name=os.path.basename(root))
                 library.loadOld(
-                    dictstr = os.path.join(root, 'Dictionary.txt'),
-                    treestr = '',
-                    libstr = os.path.join(root, 'Library.txt'),
-                    numParameters = -1,
-                    numLabels = 1,
-                    pattern = False,
+                    dictstr=os.path.join(root, 'Dictionary.txt'),
+                    treestr='',
+                    libstr=os.path.join(root, 'Library.txt'),
+                    numParameters=-1,
+                    numLabels=1,
+                    pattern=False,
                 )
                 library.label = os.path.basename(root)
                 self.libraries[library.label] = library
 
         self.groups['groups'] = StatmechGroups(label='group', name='Functional Group Values').loadOld(
-            dictstr = os.path.join(path, 'frequencies_groups', 'Dictionary.txt'),
-            treestr = os.path.join(path, 'frequencies_groups', 'Tree.txt'),
-            libstr = os.path.join(path, 'frequencies_groups', 'Library.txt'),
-            numParameters = -1,
-            numLabels = 1,
-            pattern = True,
+            dictstr=os.path.join(path, 'frequencies_groups', 'Dictionary.txt'),
+            treestr=os.path.join(path, 'frequencies_groups', 'Tree.txt'),
+            libstr=os.path.join(path, 'frequencies_groups', 'Library.txt'),
+            numParameters=-1,
+            numLabels=1,
+            pattern=True,
         )
 
     def saveOld(self, path):
@@ -608,23 +631,26 @@ class StatmechDatabase(object):
 
         # Depository not used in old database, so it is not saved
 
-        librariesPath = os.path.join(path, 'frequencies_libraries')
+        libraries_path = os.path.join(path, 'frequencies_libraries')
         for library in self.libraries.values():
-            if not os.path.exists(librariesPath): os.mkdir(librariesPath)
-            libraryPath = os.path.join(librariesPath, library.label)
-            if not os.path.exists(libraryPath): os.mkdir(libraryPath)
+            if not os.path.exists(libraries_path):
+                os.mkdir(libraries_path)
+            library_path = os.path.join(libraries_path, library.label)
+            if not os.path.exists(library_path):
+                os.mkdir(library_path)
             library.saveOld(
-                dictstr = os.path.join(libraryPath, 'Dictionary.txt'),
-                treestr = '',
-                libstr = os.path.join(libraryPath, 'Library.txt'),
+                dictstr=os.path.join(library_path, 'Dictionary.txt'),
+                treestr='',
+                libstr=os.path.join(library_path, 'Library.txt'),
             )
 
-        groupsPath = os.path.join(path, 'frequencies_groups')
-        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+        groups_path = os.path.join(path, 'frequencies_groups')
+        if not os.path.exists(groups_path):
+            os.mkdir(groups_path)
         self.groups.saveOld(
-            dictstr = os.path.join(groupsPath, 'Dictionary.txt'),
-            treestr = os.path.join(groupsPath, 'Tree.txt'),
-            libstr = os.path.join(groupsPath, 'Library.txt'),
+            dictstr=os.path.join(groups_path, 'Dictionary.txt'),
+            treestr=os.path.join(groups_path, 'Tree.txt'),
+            libstr=os.path.join(groups_path, 'Library.txt'),
         )
 
     def getStatmechData(self, molecule, thermoModel=None):
@@ -635,15 +661,16 @@ class StatmechDatabase(object):
         estimation via group additivity.
         """
         logging.debug('Retrieving stat mech data for {}.'.format(molecule.toSMILES()))
-        statmechModel = None
+        statmech_model = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
-            statmechModel = self.getStatmechDataFromLibrary(molecule, self.libraries[label])
-            if statmechModel: break
+            statmech_model = self.getStatmechDataFromLibrary(molecule, self.libraries[label])
+            if statmech_model:
+                break
         else:
             # Thermo not found in any loaded libraries, so estimate
-            statmechModel = self.getStatmechDataFromGroups(molecule, thermoModel)
-        return statmechModel[0]
+            statmech_model = self.getStatmechDataFromGroups(molecule, thermoModel)
+        return statmech_model[0]
 
     def getStatmechDataFromDepository(self, molecule):
         """
@@ -652,8 +679,8 @@ class StatmechDatabase(object):
         Returns a list of tuples  (statmechData, depository, entry).
         """
         items = []
-        for name, depository in self.depository.iteritems():
-            for label, entry in depository.entries.iteritems():
+        for name, depository in self.depository.items():
+            for label, entry in depository.entries.items():
                 if molecule.isIsomorphic(entry.item):
                     items.append((entry.data, self.depository[name], entry))
         return items
@@ -664,9 +691,9 @@ class StatmechDatabase(object):
         by searching the entries in the specified :class:`StatmechLibrary` object
         `library`. Returns ``None`` if no data was found.
         """
-        for label, entry in library.entries.iteritems():
+        for label, entry in library.entries.items():
             if molecule.isIsomorphic(entry.item):
-                return (entry.data, library, entry)
+                return entry.data, library, entry
         return None
 
     def getStatmechDataFromGroups(self, molecule, thermoModel):
@@ -677,10 +704,11 @@ class StatmechDatabase(object):
         model `thermoModel`. This always returns valid degrees of freedom data.
         """
         return self.groups['groups'].getStatmechData(molecule, thermoModel)
-        
+
+
 ################################################################################
 
-class GroupFrequencies:
+class GroupFrequencies(object):
     """
     Represent a set of characteristic frequencies for a group in the frequency
     database. These frequencies are stored in the `frequencies` attribute, which
@@ -691,7 +719,7 @@ class GroupFrequencies:
     def __init__(self, frequencies=None, symmetry=1):
         self.frequencies = frequencies or []
         self.symmetry = symmetry
-    
+
     def generateFrequencies(self, count=1):
         """
         Generate a set of frequencies. For each characteristic frequency group,
@@ -704,5 +732,5 @@ class GroupFrequencies:
             if number == 1:
                 frequencies.append((lower + upper) / 2.0)
             else:
-                frequencies.extend(list(numpy.linspace(lower, upper, number, endpoint=True)))
+                frequencies.extend(list(np.linspace(lower, upper, number, endpoint=True)))
         return frequencies

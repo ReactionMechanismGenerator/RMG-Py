@@ -28,220 +28,229 @@
 #                                                                             #
 ###############################################################################
 
-import os.path
-import numpy as np
-import logging
-import subprocess
-import os
-from scipy import interpolate
-from scipy import integrate as inte
-import numdifftools as nd
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn import linear_model
+from __future__ import division
 
+import logging
+import os
+import os.path
+import subprocess
+
+import numdifftools as nd
+import numpy as np
+from scipy import integrate as inte
+from scipy import interpolate
+from sklearn import linear_model
+from sklearn.preprocessing import PolynomialFeatures
+
+import rmgpy
 import rmgpy.constants as constants
-from rmgpy.statmech.conformer import Conformer
-from rmgpy.statmech import schrodinger
-from rmgpy.statmech.mode import Mode
 from rmgpy.molecule.element import elementList
+from rmgpy.statmech import schrodinger
+from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.mode import Mode
+
 
 class HinderedRotor2D(Mode):
-   """
-   A statistical mechanical model of a 2D-dimensional hindered rotor.
-   Computation of eigenvalues and fourier fitting outsourced to
-   Q2DTor software
+    """
+    A statistical mechanical model of a 2D-dimensional hindered rotor.
+    Computation of eigenvalues and fourier fitting outsourced to
+    Q2DTor software
 
-   The attributes are:
+    The attributes are:
 
-   ======================== ===================================================
-   Attribute                Description
-   ======================== ===================================================
-   `name`                   The Q2DTor name of the rotor
-   `torsion1`               The 1-indexed atom indices of the atoms involved in the first rotor
-   `torsion2`               The 1-indexed atom indices of the atoms involved in the second rotor
-   `torsigma1`              The symmetry number of the first rotor
-   `torsigma2`              The symmetry number of the second rotor
-   `calcPath`               The directory containing all of the rotor point calculations formated:  name_angle1_angle2
-   `symmetry`               Q2DTor symmetry identifier ('none','a','b','c','ab','bc','ac','abc')
-   `evals`                  Array of energy levels for the 2D-HR
-   `energy`                 Function mapping quantum number to energy level
-   ======================== ===================================================
-   """
-   
-   q2dtor_path = os.path.join(os.path.split(os.path.split(os.path.abspath(os.path.dirname(__file__)))[0])[0], 'external', 'Q2DTor', 'src', 'Q2DTor.py')
-   q2dtor_message = """\nUsing Q2DTor...
-   Q2DTor is a software for calculating the partition functions and themodynamic properties of molecular systems with two or more
-   torsional modes developed by David Ferro Costas (david.ferro@usc.es) and Antonio Fernandez Ramos (qf.ramos@usc.es) at
-   the Universidade de Santiago de Compostela. Arkane can integrate Q2DTor to compute the quantum mechanical partition function 
-   of 2D rotors.  
+    ======================== ===================================================
+    Attribute                Description
+    ======================== ===================================================
+    `name`                   The Q2DTor name of the rotor
+    `torsion1`               The 1-indexed atom indices of the atoms involved in the first rotor
+    `torsion2`               The 1-indexed atom indices of the atoms involved in the second rotor
+    `torsigma1`              The symmetry number of the first rotor
+    `torsigma2`              The symmetry number of the second rotor
+    `calcPath`               The directory containing all of the rotor point calculations formated:  name_angle1_angle2
+    `symmetry`               Q2DTor symmetry identifier ('none','a','b','c','ab','bc','ac','abc')
+    `evals`                  Array of energy levels for the 2D-HR
+    `energy`                 Function mapping quantum number to energy level
+    ======================== ===================================================
+    """
 
-   For use of HinderedRotor2D within Arkane please cite:  
-   D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.
-   """
-   q2dtor_message_used = False
-   
-   def __init__(self, name, torsigma1, torsigma2, calcPath, symmetry='none', pivots1=None, pivots2=None, top1=None, top2=None):
-       Mode.__init__(self, True)
-       self.dof = 2
+    rmg_path = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
+    q2dtor_path = os.path.join(rmg_path, 'external', 'Q2DTor', 'src', 'Q2DTor.py')
 
-       self.name = name
-       self.calcPath = calcPath
+    q2dtor_message = """\nUsing Q2DTor...
+Q2DTor is a software for calculating the partition functions and themodynamic properties of molecular systems with two or more
+torsional modes developed by David Ferro Costas (david.ferro@usc.es) and Antonio Fernandez Ramos (qf.ramos@usc.es) at
+the Universidade de Santiago de Compostela. Arkane can integrate Q2DTor to compute the quantum mechanical partition function 
+of 2D rotors.  
 
-       self.torsion1 = None
-       self.torsion2 = None
-       self.torsigma1 = torsigma1
-       self.torsigma2 = torsigma2
-       self.symmetry = symmetry
-       self.charge = None
-       self.multiplicity = None
+For use of HinderedRotor2D within Arkane please cite:  
+D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.
+"""
+    q2dtor_message_used = False
 
-       self.pivots1 = pivots1
-       self.pivots2 = pivots2
-       self.top1 = top1
-       self.top2 = top2
+    def __init__(self, name, torsigma1, torsigma2, calcPath, symmetry='none', pivots1=None, pivots2=None, top1=None,
+                 top2=None):
+        Mode.__init__(self, True)
+        self.dof = 2
 
-       self.xyzs = []
-       self.phi1s = []
-       self.phi2s = []
-       self.Es = []
-       self.atnums = []
-       self.element_names = []
-       
-       if not self.q2dtor_message_used:
-           logging.info(self.q2dtor_message)
-           self.q2dtor_message_used = True
+        self.name = name
+        self.calcPath = calcPath
 
-       # prepare a directory to run q2dtor in
-       self.q2dtor_dir = os.path.join(os.path.split(calcPath)[0],name)
-       try:
-           os.mkdir(self.q2dtor_dir)
-           os.mkdir(os.path.join(self.q2dtor_dir,'IOfiles'))
-       except OSError:
-           pass
+        self.torsion1 = None
+        self.torsion2 = None
+        self.torsigma1 = torsigma1
+        self.torsigma2 = torsigma2
+        self.symmetry = symmetry
+        self.charge = None
+        self.multiplicity = None
 
-   def getTorsions(self):
-       """
-       determine torsions, not entirely necessary for 2D-NS (2D rotor not separated), 
-       but important for E2DT (couples frequencies with a 2D-NS rotor)
-       """
-       if not self.torsion1:
-           self.readGjf()  # check if there is a gaussian format file
+        self.pivots1 = pivots1
+        self.pivots2 = pivots2
+        self.top1 = top1
+        self.top2 = top2
 
-       Natoms = len(self.xyzs[0])  # define a feasible torsion from pivots and tops
-       aset = set(list(xrange(1,Natoms+1)))
-       if not self.torsion1 and self.pivots1 and self.top1:
-           if self.pivots1[0] in self.top1:
-               self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[0],self.pivots1[1],self.top1[0]]
-           else:
-               self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[1],self.pivots1[0],self.top1[0]]
+        self.xyzs = []
+        self.phi1s = []
+        self.phi2s = []
+        self.Es = []
+        self.atnums = []
+        self.element_names = []
 
-       if not self.torsion2 and self.pivots2 and self.top2:
-           if self.pivots2[0] in self.top2:
-               self.torsion2 = [list(aset-set(self.top2))[0],self.pivots2[0],self.pivots2[1],self.top2[0]]
-           else:
-               self.torsion2 = [list(aset-set(self.top2))[0],self.pivots2[1],self.pivots2[0],self.top2[0]]
+        if not self.q2dtor_message_used:
+            logging.info(self.q2dtor_message)
+            self.q2dtor_message_used = True
 
-   def readScan(self):
-       """
-       Read quantum optimization job files at self.calcPath to determine
-       vectors of angles (self.phi1s, self.phi2s), xyz coordinates (self.xyzs)
-       energies (self.Es) and atom numbers (self.atnums) for each point
-       """
-       from arkane.util import determine_qm_software
-       from arkane.common import symbol_by_number
-       phi1s = []
-       phi2s = []
-       xyzs = []
-       Es = []
-       atnums = []
-       for f in os.listdir(self.calcPath):
-           if len(f.split('_')) != 4:
-               continue
-           s, name, phi1, phi2 = f.split('_') # scangeom_r0_0.0_360.0.log
-           phi2,identifier = '.'.join(phi2.split('.')[:-1]),phi2.split('.')[-1]
-           if identifier != 'out':
-               continue
-           phi1s.append(float(phi1))
-           phi2s.append(float(phi2.split(".")[0]))
+        # prepare a directory to run q2dtor in
+        self.q2dtor_dir = os.path.join(os.path.split(calcPath)[0], name)
+        try:
+            os.mkdir(self.q2dtor_dir)
+            os.mkdir(os.path.join(self.q2dtor_dir, 'IOfiles'))
+        except OSError:
+            pass
 
-           fpath = os.path.join(self.calcPath,f)
-           lg = determine_qm_software(fpath)
-           
-           Es.append(lg.loadEnergy())
-           xyz,atnums,_ = lg.loadGeometry()
-           xyzs.append(xyz)
+    def getTorsions(self):
+        """
+        determine torsions, not entirely necessary for 2D-NS (2D rotor not separated),
+        but important for E2DT (couples frequencies with a 2D-NS rotor)
+        """
+        if not self.torsion1:
+            self.readGjf()  # check if there is a gaussian format file
 
-       self.xyzs = xyzs
-       self.phi1s = phi1s
-       self.phi2s = phi2s
-       self.Es = Es
-       self.atnums = atnums
-       self.element_names = [symbol_by_number[k] for k in self.atnums]
-       
-   def readGjf(self):
-       """
-       read gaussian input file to determine torsions, charge and multiplicity
-       unnecessary for 2D-NS
-       """
-       for f in os.listdir(self.calcPath):
-           if len(f.split('_')) != 4:
-               continue
-           s, name, phi1, phi2 = f.split('_') # scangeom_r0_0.0_360.0.log
-           phi2,identifier = phi2.split('.')
-           if identifier == 'gjf' and float(phi1) == 0.0 and float(phi2) == 0.0:
-               with open(os.path.join(self.calcPath,f), 'r') as fop:
-                   lines = fop.readlines()
-                   for i,line in enumerate(lines):
-                       split_line = line.split()
-                       if len(split_line) < 2:
-                           continue
-                       elif split_line[-1] == 'F' and len(split_line) == 5: # F 1 2 11 14
-                           if not self.torsion1:
-                               self.torsion1 = [int(split_line[i]) for i in xrange(4)]
-                           elif not self.torsion2:
-                               self.torsion2 = [int(split_line[i]) for i in xrange(4)]
-                       elif (not self.charge or not self.multiplicity) and len(split_line) == 2 and \
-                             len(lines[i+1].split()) == 4 and len(lines[i+1].split()[0]) <= 2:
-                           self.charge = int(split_line[0])
-                           self.multiplicity = int(split_line[1])
+        Natoms = len(self.xyzs[0])  # define a feasible torsion from pivots and tops
+        aset = set(list(range(1, Natoms + 1)))
+        if not self.torsion1 and self.pivots1 and self.top1:
+            if self.pivots1[0] in self.top1:
+                self.torsion1 = [list(aset - set(self.top1))[0], self.pivots1[0], self.pivots1[1], self.top1[0]]
+            else:
+                self.torsion1 = [list(aset - set(self.top1))[0], self.pivots1[1], self.pivots1[0], self.top1[0]]
 
-   def writeXYZ(self):
-       """
-       write an .xyz file for Q2DTor
-       done based on the angle coordinates (0.0,0.0)
-       """
-       for i in xrange(len(self.phi1s)):
-           if self.phi1s[i] == 0.0 and self.phi2s[i] == 0.0:
-               with open(os.path.join(self.q2dtor_dir,self.name+".xyz"),'w') as f:
-                   f.write(str(len(self.atnums))+'\n')
-                   f.write("reference geometry for {0}\n".format(self.name))
-                   for j,ename in enumerate(self.element_names):
-                       f.write('{ename}    {x}   {y}   {z}\n'.format(ename=ename,
-                               x=self.xyzs[i][j][0],y=self.xyzs[i][j][1],z=self.xyzs[i][j][2]))
-                   break
+        if not self.torsion2 and self.pivots2 and self.top2:
+            if self.pivots2[0] in self.top2:
+                self.torsion2 = [list(aset - set(self.top2))[0], self.pivots2[0], self.pivots2[1], self.top2[0]]
+            else:
+                self.torsion2 = [list(aset - set(self.top2))[0], self.pivots2[1], self.pivots2[0], self.top2[0]]
 
-   def writePes(self):
-       """
-       write a .pes file for Q2DTor based on the
-       read in scans
-       """
-       if not len(self.Es) > 0:
-           raise ValueError("Cannot write PES file with no scan information")
-       with open(os.path.join(self.q2dtor_dir,'IOfiles',self.name+".pes"),'w') as f:
-           for i in xrange(len(self.phi1s)):
-               f.write(str(len(self.atnums))+'\n')
-               f.write("Geometry   {E}   {phi1}   {phi2}  {name}_{phi1}_{phi2}  YES\n".format(E=self.Es[i]/(constants.E_h*constants.Na),
-                       phi1=self.phi1s[i],phi2=self.phi2s[i],name=self.name))
-               for j,ename in enumerate(self.element_names):
-                   f.write('{ename}    {x}   {y}   {z}\n'.format(ename=ename,
-                               x=self.xyzs[i][j][0],y=self.xyzs[i][j][1],z=self.xyzs[i][j][2]))
+    def readScan(self):
+        """
+        Read quantum optimization job files at self.calcPath to determine
+        vectors of angles (self.phi1s, self.phi2s), xyz coordinates (self.xyzs)
+        energies (self.Es) and atom numbers (self.atnums) for each point
+        """
+        from arkane.util import determine_qm_software
+        from arkane.common import symbol_by_number
+        phi1s = []
+        phi2s = []
+        xyzs = []
+        Es = []
+        atnums = []
+        for f in os.listdir(self.calcPath):
+            if len(f.split('_')) != 4:
+                continue
+            s, name, phi1, phi2 = f.split('_')  # scangeom_r0_0.0_360.0.log
+            phi2, identifier = '.'.join(phi2.split('.')[:-1]), phi2.split('.')[-1]
+            if identifier != 'out':
+                continue
+            phi1s.append(float(phi1))
+            phi2s.append(float(phi2.split(".")[0]))
 
-   def writeInp(self):
-       """
-       Write an input file for Q2DTor based on object
-       information
-       """
-       inp = """#----------------------------------#
+            fpath = os.path.join(self.calcPath, f)
+            lg = determine_qm_software(fpath)
+
+            Es.append(lg.loadEnergy())
+            xyz, atnums, _ = lg.loadGeometry()
+            xyzs.append(xyz)
+
+        self.xyzs = xyzs
+        self.phi1s = phi1s
+        self.phi2s = phi2s
+        self.Es = Es
+        self.atnums = atnums
+        self.element_names = [symbol_by_number[k] for k in self.atnums]
+
+    def readGjf(self):
+        """
+        read gaussian input file to determine torsions, charge and multiplicity
+        unnecessary for 2D-NS
+        """
+        for f in os.listdir(self.calcPath):
+            if len(f.split('_')) != 4:
+                continue
+            s, name, phi1, phi2 = f.split('_')  # scangeom_r0_0.0_360.0.log
+            phi2, identifier = phi2.split('.')
+            if identifier == 'gjf' and float(phi1) == 0.0 and float(phi2) == 0.0:
+                with open(os.path.join(self.calcPath, f), 'r') as fop:
+                    lines = fop.readlines()
+                    for i, line in enumerate(lines):
+                        split_line = line.split()
+                        if len(split_line) < 2:
+                            continue
+                        elif split_line[-1] == 'F' and len(split_line) == 5:  # F 1 2 11 14
+                            if not self.torsion1:
+                                self.torsion1 = [int(split_line[i]) for i in range(4)]
+                            elif not self.torsion2:
+                                self.torsion2 = [int(split_line[i]) for i in range(4)]
+                        elif (not self.charge or not self.multiplicity) and len(split_line) == 2 and \
+                                len(lines[i + 1].split()) == 4 and len(lines[i + 1].split()[0]) <= 2:
+                            self.charge = int(split_line[0])
+                            self.multiplicity = int(split_line[1])
+
+    def writeXYZ(self):
+        """
+        write an .xyz file for Q2DTor
+        done based on the angle coordinates (0.0,0.0)
+        """
+        for i in range(len(self.phi1s)):
+            if self.phi1s[i] == 0.0 and self.phi2s[i] == 0.0:
+                with open(os.path.join(self.q2dtor_dir, self.name + ".xyz"), 'w') as f:
+                    f.write(str(len(self.atnums)) + '\n')
+                    f.write("reference geometry for {0}\n".format(self.name))
+                    for j, ename in enumerate(self.element_names):
+                        f.write('{ename}    {x}   {y}   {z}\n'.format(
+                            ename=ename, x=self.xyzs[i][j][0], y=self.xyzs[i][j][1], z=self.xyzs[i][j][2]))
+                    break
+
+    def writePes(self):
+        """
+        write a .pes file for Q2DTor based on the
+        read in scans
+        """
+        if not len(self.Es) > 0:
+            raise ValueError("Cannot write PES file with no scan information")
+        with open(os.path.join(self.q2dtor_dir, 'IOfiles', self.name + ".pes"), 'w') as f:
+            for i in range(len(self.phi1s)):
+                f.write(str(len(self.atnums)) + '\n')
+                f.write("Geometry   {E}   {phi1}   {phi2}  {name}_{phi1}_{phi2}  YES\n".format(
+                    E=self.Es[i] / (constants.E_h * constants.Na),
+                    phi1=self.phi1s[i], phi2=self.phi2s[i], name=self.name))
+                for j, ename in enumerate(self.element_names):
+                    f.write('{ename}    {x}   {y}   {z}\n'.format(
+                        ename=ename, x=self.xyzs[i][j][0], y=self.xyzs[i][j][1], z=self.xyzs[i][j][2]))
+
+    def writeInp(self):
+        """
+        Write an input file for Q2DTor based on object
+        information
+        """
+        inp = """#----------------------------------#
 # Torsional information            #
 #----------------------------------#
 start_torsions
@@ -315,100 +324,101 @@ start_temperatures                 #
    1500.0  2000.0  2500.0         #
 end_temperatures                   #
 #----------------------------------#""".format(tor1="-".join([str(x) for x in self.torsion1]),
-                  tor2="-".join([str(x) for x in self.torsion2]),
-           torsigma1=self.torsigma1,torsigma2=self.torsigma2,
-           charge=self.charge,multiplicity=self.multiplicity,
-           symmetry=self.symmetry)
-       f = open(os.path.join(self.q2dtor_dir,self.name+".inp"),'w')
-       f.write(inp)
-       f.close()
+                                               tor2="-".join([str(x) for x in self.torsion2]),
+                                               torsigma1=self.torsigma1, torsigma2=self.torsigma2,
+                                               charge=self.charge, multiplicity=self.multiplicity,
+                                               symmetry=self.symmetry)
+        f = open(os.path.join(self.q2dtor_dir, self.name + ".inp"), 'w')
+        f.write(inp)
+        f.close()
 
-   def getIcsFile(self):
-       """
-       use Q2DTor to generate a .ics file the Q2DTor file that
-       has torsional information
-       """
-       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--init'],
-                       cwd=self.q2dtor_dir)
+    def getIcsFile(self):
+        """
+        use Q2DTor to generate a .ics file the Q2DTor file that
+        has torsional information
+        """
+        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--init'],
+                                    cwd=self.q2dtor_dir)
 
-   def fitFourier(self):
-       """
-       use Q2DTor to fit fourier coefficients
-       to the potential
-       """
-       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--fourier'],
-                       cwd=self.q2dtor_dir)
+    def fitFourier(self):
+        """
+        use Q2DTor to fit fourier coefficients
+        to the potential
+        """
+        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--fourier'],
+                                    cwd=self.q2dtor_dir)
 
-   def getSplistfile(self):
-       """
-       use Q2DTor to generate a .splist file
-       """
-       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--findsp'],
-                       cwd=self.q2dtor_dir)
+    def getSplistfile(self):
+        """
+        use Q2DTor to generate a .splist file
+        """
+        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--findsp'],
+                                    cwd=self.q2dtor_dir)
 
-   def getEigvals(self):
-       """
-       use Q2DTor to determine the QM energy levels for the 2D-NS
-       rotors
-       writes a .evals file and reads it to fill self.evals and self.energy
-       """
-       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--tor2dns'],
-                       cwd=self.q2dtor_dir)
-       self.readEigvals()
+    def getEigvals(self):
+        """
+        use Q2DTor to determine the QM energy levels for the 2D-NS
+        rotors
+        writes a .evals file and reads it to fill self.evals and self.energy
+        """
+        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--tor2dns'],
+                                    cwd=self.q2dtor_dir)
+        self.readEigvals()
 
-   def readEigvals(self):
-       """
-       reads an available .evals file to get the QM energy levels
-       for the 2D-NS rotors
-       """
-       with open(os.path.join(self.q2dtor_dir,'IOfiles',self.name+'.evals'),'r') as f:
-           out = f.readlines()
-           evals = [float(x.split()[1]) for x in out[2:]]  # cm^-1
-           self.evals = np.array(evals)*10**2*constants.c*constants.h*constants.Na  # J/mol
-           self.energy = lambda x: self.evals[x]
+    def readEigvals(self):
+        """
+        reads an available .evals file to get the QM energy levels
+        for the 2D-NS rotors
+        """
+        with open(os.path.join(self.q2dtor_dir, 'IOfiles', self.name + '.evals'), 'r') as f:
+            out = f.readlines()
+            evals = [float(x.split()[1]) for x in out[2:]]  # cm^-1
+            self.evals = np.array(evals) * 10 ** 2 * constants.c * constants.h * constants.Na  # J/mol
+            self.energy = lambda x: self.evals[x]
 
-   def getPartitionFunction(self, T):
-       return schrodinger.getPartitionFunction(T,self.energy,nmax=len(self.evals))
+    def getPartitionFunction(self, T):
+        return schrodinger.getPartitionFunction(T, self.energy, nmax=len(self.evals))
 
-   def getHeatCapacity(self, T):
-       return schrodinger.getHeatCapacity(T,self.energy,nmax=len(self.evals))
+    def getHeatCapacity(self, T):
+        return schrodinger.getHeatCapacity(T, self.energy, nmax=len(self.evals))
 
-   def getEnthalpy(self, T):
-       return schrodinger.getEnthalpy(T,self.energy,nmax=len(self.evals))
+    def getEnthalpy(self, T):
+        return schrodinger.getEnthalpy(T, self.energy, nmax=len(self.evals))
 
-   def getEntropy(self, T):
-       return schrodinger.getEntropy(T,self.energy,nmax=len(self.evals))
+    def getEntropy(self, T):
+        return schrodinger.getEntropy(T, self.energy, nmax=len(self.evals))
 
-   def getSumOfStates(self, Elist, sumStates0=None):
-       if sumStates0:
-           return schrodinger.getSumOfStates(Elist,self.energy,sumStates0=sumStates0,nmax=len(self.evals))
-       else:
-           return schrodinger.getSumOfStates(Elist,self.energy,nmax=len(self.evals))
+    def getSumOfStates(self, Elist, sumStates0=None):
+        if sumStates0:
+            return schrodinger.getSumOfStates(Elist, self.energy, sumStates0=sumStates0, nmax=len(self.evals))
+        else:
+            return schrodinger.getSumOfStates(Elist, self.energy, nmax=len(self.evals))
 
-   def getDensityOfStates(self, Elist, densStates0=None):
-       if densStates0:
-           return schrodinger.getDensityOfStates(Elist,self.energy,densStates0=densStates0,nmax=len(self.evals))
-       else:
-           return schrodinger.getDensityOfStates(Elist,self.energy,nmax=len(self.evals))
+    def getDensityOfStates(self, Elist, densStates0=None):
+        if densStates0:
+            return schrodinger.getDensityOfStates(Elist, self.energy, densStates0=densStates0, nmax=len(self.evals))
+        else:
+            return schrodinger.getDensityOfStates(Elist, self.energy, nmax=len(self.evals))
 
-   def run(self):
-       """
-       determines the eigenvalues and energy function for the
-       2D-NS rotors either by reading in a finished .evals file
-       or running Q2DTor
-       """
-       try:
-           self.readEigvals()
-       except IOError:
-           self.readScan()
-           self.writeXYZ()
-           self.getTorsions()
-           self.writeInp()
-           self.writePes()
-           self.getIcsFile()
-           self.fitFourier()
-           self.getSplistfile()
-           self.getEigvals()
+    def run(self):
+        """
+        determines the eigenvalues and energy function for the
+        2D-NS rotors either by reading in a finished .evals file
+        or running Q2DTor
+        """
+        try:
+            self.readEigvals()
+        except IOError:
+            self.readScan()
+            self.writeXYZ()
+            self.getTorsions()
+            self.writeInp()
+            self.writePes()
+            self.getIcsFile()
+            self.fitFourier()
+            self.getSplistfile()
+            self.getEigvals()
+
 
 class HinderedRotorClassicalND(Mode):
     """
@@ -442,7 +452,7 @@ class HinderedRotorClassicalND(Mode):
         self.sigmas = np.array(sigmas)
         self.conformer = conformer
         self.F = F
-        self.semiclassical= semiclassical
+        self.semiclassical = semiclassical
         self.isLinear = isLinear
         self.isTS = isTS
         self.freqs = None
@@ -452,7 +462,6 @@ class HinderedRotorClassicalND(Mode):
         self.Es = []
         self.atnums = []
 
-
     def readScan(self):
         """
         Read quantum optimization job files at self.calcPath to determine
@@ -461,43 +470,43 @@ class HinderedRotorClassicalND(Mode):
         """
         from arkane.util import determine_qm_software
         if os.path.isdir(self.calcPath):
-            massdict = {el.number:el.mass for el in elementList if el.isotope == -1}
+            massdict = {el.number: el.mass for el in elementList if el.isotope == -1}
             N = len(self.pivots)
             phis = []
             xyzs = []
             Es = []
             atnums = []
             for f in os.listdir(self.calcPath):
-                name,identifier = '.'.join(f.split('.')[:-1]), f.split('.')[-1]
+                name, identifier = '.'.join(f.split('.')[:-1]), f.split('.')[-1]
                 if identifier != 'out':
                     continue
                 outs = name.split('_')
                 phivals = [float(x) for x in outs[-N:]]
                 phivals = fill360s(phivals)
 
-                fpath = os.path.join(self.calcPath,f)
+                fpath = os.path.join(self.calcPath, f)
                 lg = determine_qm_software(fpath)
                 E = lg.loadEnergy()
-                xyz,atnum,_ = lg.loadGeometry()
+                xyz, atnum, _ = lg.loadGeometry()
 
                 for phival in phivals:
                     phis.append(np.array(phival))
                     Es.append(lg.loadEnergy())
                     xyzs.append(xyz)
-                    if self.atnums == []:
+                    if not self.atnums:
                         atnums.append(atnum)
-            
+
             if atnums:
                 self.atnums = atnums
 
             q = len(phis)
-            for i in xrange(N): #add the negative values to improve fit near 0.0
-                for j in xrange(q):
+            for i in range(N):  # add the negative values to improve fit near 0.0
+                for j in range(q):
                     phi = phis[j]
-                    if np.isclose(phi[i],360.0):
+                    if np.isclose(phi[i], 360.0):
                         continue
                     nvec = deepcopy(phi)
-                    nvec[i] = nvec[i]-360.0
+                    nvec[i] -= 360.0
                     if any([np.array_equal(nvec, x) for x in phis]):
                         continue
                     phis.append(nvec)
@@ -512,18 +521,25 @@ class HinderedRotorClassicalND(Mode):
             self.Es -= self.E0
 
             self.phis = np.array(phis)
-            self.phis *= np.pi/180.0
+            self.phis *= np.pi / 180.0
 
             inds = None
             if len(self.phis[0]) == 1:
                 self.phis = np.array([phi[0] for phi in self.phis])
                 inds = np.argsort(self.phis)
 
-            self.confs = [Conformer(number=self.atnums,coordinates=(self.xyzs[k], "angstrom"),
-                               mass=(np.array([massdict[x] for x in self.atnums]), "amu")) for k in xrange(len(self.xyzs))]
+            self.confs = [
+                Conformer(number=self.atnums, coordinates=(self.xyzs[k], "angstrom"),
+                          mass=(np.array([massdict[x] for x in self.atnums]), "amu"))
+                for k in range(len(self.xyzs))
+            ]
 
-            self.rootDs = np.array([np.prod([conf.getInternalReducedMomentOfInertia(self.pivots[k],
-                        self.tops[k], option=3) for k in xrange(len(self.pivots))])**0.5 for conf in self.confs])
+            self.rootDs = np.array([
+                np.prod([conf.getInternalReducedMomentOfInertia(self.pivots[k], self.tops[k], option=3)
+                         for k in range(len(self.pivots))]) ** 0.5
+                for conf in self.confs
+            ])
+
             if inds is not None:
                 self.rootDs = self.rootDs[inds]
                 self.phis = self.phis[inds]
@@ -532,16 +548,16 @@ class HinderedRotorClassicalND(Mode):
         elif os.path.isfile(self.calcPath):  # reading a 1-D scan file, assume internal reduced moment of inertia is constant
             N = len(self.pivots)
             lg = determine_qm_software(self.calcPath)
-            self.Es,self.phis = lg.loadScanEnergies()
+            self.Es, self.phis = lg.loadScanEnergies()
             self.atnums = self.conformer.number
-            rootD = self.conformer.getInternalReducedMomentOfInertia(self.pivots[0], self.tops[0])**0.5
-            self.rootDs = [rootD for i in xrange(len(self.Es))]
-            
+            rootD = self.conformer.getInternalReducedMomentOfInertia(self.pivots[0], self.tops[0]) ** 0.5
+            self.rootDs = [rootD for i in range(len(self.Es))]
+
             phis = self.phis.tolist()
-            
-            for j,phi in enumerate(self.phis):  # add the negative values to improve fit near 0.0
-                if phi != 2.0*np.pi:
-                    phis.append(phi-2.0*np.pi)
+
+            for j, phi in enumerate(self.phis):  # add the negative values to improve fit near 0.0
+                if phi != 2.0 * np.pi:
+                    phis.append(phi - 2.0 * np.pi)
 
             phis = np.array(phis)
             inds = np.argsort(phis)
@@ -564,14 +580,14 @@ class HinderedRotorClassicalND(Mode):
         """
         N = len(self.pivots)
         if N > 2:
-            self.V = interpolate.LinearNDInterpolator(self.phis,self.Es)
-            self.rootD = interpolate.LinearNDInterpolator(self.phis,self.rootDs)
+            self.V = interpolate.LinearNDInterpolator(self.phis, self.Es)
+            self.rootD = interpolate.LinearNDInterpolator(self.phis, self.rootDs)
         elif N == 2:
-            self.V = interpolate.SmoothBivariateSpline(self.phis[:,0],self.phis[:,1],self.Es)
-            self.rootD = interpolate.SmoothBivariateSpline(self.phis[:,0],self.phis[:,1],self.rootDs)
+            self.V = interpolate.SmoothBivariateSpline(self.phis[:, 0], self.phis[:, 1], self.Es)
+            self.rootD = interpolate.SmoothBivariateSpline(self.phis[:, 0], self.phis[:, 1], self.rootDs)
         else:
-            self.V = interpolate.CubicSpline(self.phis,self.Es)
-            self.rootD = interpolate.CubicSpline(self.phis,self.rootDs)
+            self.V = interpolate.CubicSpline(self.phis, self.Es)
+            self.rootD = interpolate.CubicSpline(self.phis, self.rootDs)
 
         Tlist = np.linspace(10.0, 3001.0, num=20, dtype=np.float64)
 
@@ -579,28 +595,28 @@ class HinderedRotorClassicalND(Mode):
         for T in Tlist:
             Qs.append(self.calcPartitionFunction(T))
 
-        self.Q = interpolate.CubicSpline(Tlist,Qs)
+        self.Q = interpolate.CubicSpline(Tlist, Qs)
         self.dQdT = self.Q.derivative()
         self.d2QdT2 = self.dQdT.derivative()
-        
+
     def calcPartitionFunction(self, T):
         """
         calculate the classical/semiclassical partition function at a given temperature
         """
-        rngs = [(0.0,2.0*np.pi) for x in xrange(len(self.pivots))]
+        rngs = [(0.0, 2.0 * np.pi) for x in range(len(self.pivots))]
 
         def f(*phis):
-            return self.rootD(*phis)*np.exp(-self.V(*phis)/(constants.R*T))
+            return self.rootD(*phis) * np.exp(-self.V(*phis) / (constants.R * T))
 
-        intg = inte.nquad(f,ranges=rngs)[0]
-        Q = intg*(2.0*np.pi*constants.kB*T/constants.h**2)**(len(self.pivots)/2.0)/np.prod(self.sigmas)
+        intg = inte.nquad(f, ranges=rngs)[0]
+        Q = intg * (2.0 * np.pi * constants.kB * T / constants.h**2) ** (len(self.pivots) / 2.0) / np.prod(self.sigmas)
 
         if self.semiclassical:
             if self.freqs is None:
                 self.freqs = self.getFrequencies()
-            freqs = self.freqs*constants.c*100.0
-            x = constants.h*freqs/(constants.kB*T)
-            out = x/(1.0-np.exp(-x))
+            freqs = self.freqs * constants.c * 100.0
+            x = constants.h * freqs / (constants.kB * T)
+            out = x / (1.0 - np.exp(-x))
             Q *= np.prod(out)
 
         return Q
@@ -615,19 +631,21 @@ class HinderedRotorClassicalND(Mode):
         """
         calculate the enthalpy
         """
-        return self.dQdT(T)/self.Q(T)*constants.R*T**2
+        return self.dQdT(T) / self.Q(T) * constants.R * T ** 2
 
     def getHeatCapacity(self, T):
         """
         calculate the heat capacity
         """
-        return constants.R*(self.d2QdT2(T)/self.Q(T)*T**2-(T*self.dQdT(T)/self.Q(T))**2+2.0*T*self.dQdT(T)/self.Q(T))
+        return constants.R * (self.d2QdT2(T) / self.Q(T) * T ** 2
+                              - (T * self.dQdT(T) / self.Q(T)) ** 2
+                              + 2.0 * T * self.dQdT(T) / self.Q(T))
 
     def getEntropy(self, T):
         """
         calculate the entropy
         """
-        return constants.R*(np.log(self.Q(T))+T*self.dQdT(T)/self.Q(T))
+        return constants.R * (np.log(self.Q(T)) + T * self.dQdT(T) / self.Q(T))
 
     def getFrequencies(self):
         """
@@ -635,14 +653,14 @@ class HinderedRotorClassicalND(Mode):
         this is done by projecting their frequencies out of the force constant matrix
         """
         phis = self.phis
-        if isinstance(phis[0],float):
+        if isinstance(phis[0], float):
             Ndims = 1
             phis = np.array([np.array([x]) for x in phis])
         else:
             Ndims = len(phis[0])
 
         zs = np.zeros(Ndims)
-        Npts = 3**Ndims
+        Npts = 3 ** Ndims
 
         norms = np.array([np.linalg.norm(phi) for phi in phis])
         inds = norms.argsort()[:Npts]
@@ -652,10 +670,10 @@ class HinderedRotorClassicalND(Mode):
         poly = PolynomialFeatures(degree=2)
         phisfit = poly.fit_transform(phistars)
         clf = linear_model.LinearRegression()
-        clf.fit(phisfit,Estars)
+        clf.fit(phisfit, Estars)
 
         def f(x):
-            for i in xrange(Ndims-1):
+            for i in range(Ndims - 1):
                 x = np.expand_dims(x, axis=0)
             xp = poly.fit_transform(x)
             return clf.predict(xp)
@@ -668,8 +686,8 @@ class HinderedRotorClassicalND(Mode):
         H = hes(zs)
         eigs = np.linalg.eigvals(hes(zs))
 
-        I = self.rootD(*zs)**(2.0/Ndims)*constants.Na*1e23*1.66053904e-47
-        freq = np.sqrt(eigs/(I*constants.Na))/(2.0*np.pi)/(constants.c*100.0)
+        I = self.rootD(*zs) ** (2.0 / Ndims) * constants.Na * 1e23 * 1.66053904e-47
+        freq = np.sqrt(eigs / (I * constants.Na)) / (2.0 * np.pi) / (constants.c * 100.0)
         return freq
 
     def run(self):
@@ -678,6 +696,7 @@ class HinderedRotorClassicalND(Mode):
         """
         self.readScan()
         self.fit()
+
 
 def fill360s(vec):
     """
@@ -691,7 +710,7 @@ def fill360s(vec):
     while breakout:
         breakout = False
         for vec in vecs:
-            for i,v in enumerate(vec):
+            for i, v in enumerate(vec):
                 if v == 0.0:
                     nvec = vec[:]
                     nvec[i] = 360.0
