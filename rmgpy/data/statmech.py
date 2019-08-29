@@ -400,8 +400,9 @@ class StatmechGroups(Database):
                 freqs_removed = 0
                 freq_count = len(frequencies)
                 while freq_count > num_vibrations:
-                    min_degeneracy, min_entry = min([(entry.data.symmetry, entry)
-                                                     for entry in group_count if group_count[entry] > 0])
+                    min_entry = min((entry for entry in group_count if group_count[entry] > 0),
+                                    key=lambda x: x.data.symmetry)
+                    min_degeneracy = min_entry.data.symmetry
                     if group_count[min_entry] > 1:
                         group_count[min_entry] -= 1
                     else:
