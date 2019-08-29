@@ -40,9 +40,6 @@ import os
 import re
 from collections import OrderedDict
 
-from builtins import str
-from six import string_types
-
 from rmgpy.data.reference import Reference, Article, Book, Thesis
 from rmgpy.exceptions import DatabaseError, InvalidAdjacencyListError
 from rmgpy.kinetics.uncertainties import RateUncertainty
@@ -518,7 +515,7 @@ class Database(object):
                 except KeyError:
                     raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
 
-                if isinstance(parent, string_types):
+                if isinstance(parent, str):
                     raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent,
                                                                                                            label))
 
@@ -826,7 +823,7 @@ class Database(object):
             for entry in entries:
                 if entry.data is not None:
                     data = entry.data
-                    if not isinstance(data, string_types):
+                    if not isinstance(data, str):
                         data = self.generateOldLibraryEntry(data)
                     records.append((entry.index, [entry.label], data, entry.shortDesc))
 
@@ -842,7 +839,7 @@ class Database(object):
                 f.write('{:<6d} '.format(index))
                 for label in labels:
                     f.write('{:<32s} '.format(label))
-                if isinstance(data, string_types):
+                if isinstance(data, str):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
@@ -866,7 +863,8 @@ class Database(object):
         """
         Returns all the ancestors of a node, climbing up the tree to the top.
         """
-        if isinstance(node, string_types): node = self.entries[node]
+        if isinstance(node, str):
+            node = self.entries[node]
         ancestors = []
         parent = node.parent
         if parent is not None:
@@ -878,7 +876,8 @@ class Database(object):
         """
         Returns all the descendants of a node, climbing down the tree to the bottom.
         """
-        if isinstance(node, string_types): node = self.entries[node]
+        if isinstance(node, str):
+            node = self.entries[node]
         descendants = []
         for child in node.children:
             descendants.append(child)
@@ -953,7 +952,8 @@ class Database(object):
         `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
         =================== ========================================================
         """
-        if isinstance(node, string_types): node = self.entries[node]
+        if isinstance(node, str):
+            node = self.entries[node]
         group = node.item
         if isinstance(group, LogicNode):
             return group.matchToStructure(self, structure, atoms, strict)

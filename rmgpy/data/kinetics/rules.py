@@ -41,7 +41,6 @@ import warnings
 from copy import deepcopy
 
 import numpy as np
-from six import string_types
 
 from rmgpy.data.base import Database, Entry, getAllCombinations
 from rmgpy.data.kinetics.common import saveEntry
@@ -229,7 +228,7 @@ class KineticsRules(Database):
         self.entries = {}
         for entry in entries:
             index, label, data, shortDesc = entry
-            if isinstance(data, string_types):
+            if isinstance(data, str):
                 kinetics = data
                 rank = 0
             elif isinstance(data, tuple) and len(data) == 2:

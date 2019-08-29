@@ -34,8 +34,6 @@ import math
 import os
 import unittest
 
-from six import string_types
-
 import rmgpy
 import rmgpy.constants as constants
 from external.wip import work_in_progress
@@ -854,7 +852,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertEqual(rad_group.entries['RJ2_triplet'].data, group_to_remove2.parent.label)
         # If the parent pointed toward group_to_remove, we need should have copied data object
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
-        self.assertNotIsInstance(group_to_remove2.parent.data, string_types)
+        self.assertNotIsInstance(group_to_remove2.parent.data, str)
         self.assertEqual(group_to_remove2.parent.data.getEnthalpy(298), group_to_remove2.data.getEnthalpy(298))
         self.assertEqual(group_to_remove2.parent.data.getEntropy(298), group_to_remove2.data.getEntropy(298))
         self.assertTrue(all([group_to_remove2.parent.data.getHeatCapacity(x) == group_to_remove2.data.getHeatCapacity(x)
