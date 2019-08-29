@@ -42,7 +42,7 @@ import yaml
 
 import rmgpy.constants as constants
 from rmgpy import __version__
-from rmgpy.molecule.element import elementList
+from rmgpy.molecule.element import elementList, getElement
 from rmgpy.molecule.translator import toInChI, toInChIKey
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.quantity import ScalarQuantity, ArrayQuantity
@@ -195,26 +195,22 @@ class ArkaneSpecies(RMGObject):
 
     def update_xyz_string(self):
         """
-        Return an xyz string built from self.conformer
+        Generate an xyz string built from self.conformer, and standardize the result
+
+        Returns:
+            str: 3D coordinates in an XYZ format.
         """
+        xyz_list = list()
         if self.conformer is not None and self.conformer.number is not None:
-            # generate the xyz-format string from the Conformer coordinates
-            xyz_string = '{0}\n{1}'.format(len(self.conformer.number.value_si), self.label)
-            for i, coorlist in enumerate(self.conformer.coordinates.value_si):
-                for element in elementList:
-                    if element.number == int(self.conformer.number.value_si[i]):
-                        element_symbol = element.symbol
-                        break
-                else:
-                    raise ValueError('Could not find element symbol corresponding to atom number {0}'.format(
-                        self.conformer.number.value_si[i]))
-                xyz_string += '\n{0} {1} {2} {3}'.format(element_symbol,
-                                                         coorlist[0],
-                                                         coorlist[1],
-                                                         coorlist[2])
-        else:
-            xyz_string = ''
-        return xyz_string
+            # generate the xyz-format string from self.conformer.coordinates and self.conformer.number
+            xyz_list.append(str(len(self.conformer.number.value_si)))
+            xyz_list.append(self.label)
+            for number, coordinate in zip(self.conformer.number.value_si, self.conformer.coordinates.value_si):
+                element_symbol = getElement(int(number)).symbol
+                row = '{0:4}'.format(element_symbol)
+                row += '{0:14.8f}{1:14.8f}{2:14.8f}'.format(*(coordinate * 1e10).tolist())  # convert m to Angstrom
+                xyz_list.append(row)
+        return '\n'.join(xyz_list)
 
     def save_yaml(self, path):
         """

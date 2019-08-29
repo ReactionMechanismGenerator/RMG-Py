@@ -366,8 +366,18 @@ class TestArkaneSpecies(unittest.TestCase):
         self.assertEqual(arkane_spc.level_of_theory, 'cbs-qb3')
         self.assertIsInstance(arkane_spc.thermo_data, ThermoData)
         self.assertTrue(arkane_spc.use_hindered_rotors)
-        self.assertTrue('C 7.54e-14 1.193e-13 5.52e-14' in arkane_spc.xyz)
         self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)
+        expected_xyz = """8
+C2H6
+C       0.00075400    0.00119300    0.00055200
+H       0.00074000    0.00117100    1.09413800
+H       1.04376600    0.00117100   -0.32820200
+H      -0.44760300    0.94289500   -0.32825300
+C      -0.76014200   -1.20389600   -0.55748300
+H      -0.76012800   -1.20387400   -1.65106900
+H      -0.31178500   -2.14559800   -0.22867800
+H      -1.80315400   -1.20387400   -0.22872900"""
+        self.assertEqual(arkane_spc.xyz, expected_xyz)
 
     def test_load_existing_yaml(self):
         """
