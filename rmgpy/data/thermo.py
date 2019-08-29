@@ -758,10 +758,8 @@ class ThermoGroups(Database):
         """
         destination.data = source.data
         destination.reference = source.reference
-        destination._longDesc = source._longDesc
-        destination._shortDesc = source._shortDesc
-        destination._longDesc = source.longDesc
-        destination._shortDesc = source.shortDesc
+        destination.shortDesc = source.shortDesc
+        destination.longDesc = source.longDesc
         destination.rank = source.rank
         destination.referenceType = source.referenceType
 

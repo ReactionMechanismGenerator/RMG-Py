@@ -98,8 +98,8 @@ class Entry(object):
         self.data = data
         self.reference = reference
         self.referenceType = referenceType
-        self._shortDesc = str(shortDesc)
-        self._longDesc = str(longDesc)
+        self.shortDesc = shortDesc
+        self.longDesc = longDesc
         self.rank = rank
         self.nodalDistance = nodalDistance
 
@@ -108,28 +108,6 @@ class Entry(object):
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
-
-    @property
-    def longDesc(self):
-        return self._longDesc
-
-    @longDesc.setter
-    def longDesc(self, value):
-        if value is None:
-            self._longDesc = None
-        else:
-            self._longDesc = str(value)
-
-    @property
-    def shortDesc(self):
-        return self._shortDesc
-
-    @shortDesc.setter
-    def shortDesc(self, value):
-        if value is None:
-            self._shortDesc = None
-        else:
-            self._shortDesc = str(value)
 
     def getAllDescendants(self):
         """
