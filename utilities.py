@@ -67,7 +67,7 @@ Using Anaconda, these dependencies can be individually installed from the RMG ch
 {0}
 You can alternatively update your environment and install all missing dependencies as follows:
 
-    conda env update -f environment_[linux/mac/windows].yml  # Choose the correct file for your OS
+    conda env update -f environment.yml
 
 Be sure to activate your conda environment (rmg_env by default) before installing or updating.
 """.format("""

@@ -40,7 +40,7 @@ jobs:
         - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
         - cd RMG-Py
         # Create and activate environment
-        - conda env create -q -f environment_py3.yml
+        - conda env create -q -f environment.yml
         - source activate rmg_env
         # Install codecov for coverage report
         - conda install -y -c conda-forge codecov
@@ -61,7 +61,7 @@ jobs:
     - stage: documentation
       install:
         - cd RMG-Py
-        - conda env create -q -f environment_py3.yml
+        - conda env create -q -f environment.yml
         - source activate rmg_env
         # Install sphinx for building documentation
         - conda install -y sphinx
