@@ -39,10 +39,10 @@ The input file is a subset of that used with regular RMG jobs.
 import logging
 import os.path
 
-from rmg import parse_command_line_arguments
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.main import initialize_log, RMG
 from rmgpy.rmg.output import OutputHTMLWriter
+from rmgpy.util import parse_command_line_arguments
 
 
 def main():
