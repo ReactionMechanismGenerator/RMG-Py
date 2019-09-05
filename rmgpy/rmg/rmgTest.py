@@ -42,6 +42,7 @@ import rmgpy
 from rmgpy.data.base import ForbiddenStructures
 
 from rmg import *
+from rmgpy.util import parse_command_line_arguments
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):

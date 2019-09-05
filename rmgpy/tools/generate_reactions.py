@@ -42,7 +42,7 @@ import logging
 from rmgpy.rmg.main import initializeLog, RMG
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmg import parse_command_line_arguments
+from rmgpy.util import parse_command_line_arguments
 
 
 def main():
