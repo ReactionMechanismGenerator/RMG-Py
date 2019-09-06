@@ -340,7 +340,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
             raise ChemkinError(
                 'Third body colliders in reactants and products of reaction {0} are not identical!'.format(reaction))
         extra_parenthesis = collider.count('(') - 1
-        for i in xrange(extra_parenthesis):
+        for i in range(extra_parenthesis):
             # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders,
             #     although currently not implemented in Chemkin. See RMG-Py #1070
             collider += ')'
@@ -978,12 +978,12 @@ cpdef _process_duplicate_reactions(list reactionList):
     cdef Reaction reaction, reaction1, reaction2
     cdef KineticsModel kinetics
 
-    for index1 in xrange(len(reactionList)):
+    for index1 in range(len(reactionList)):
         reaction1 = reactionList[index1]
         if reaction1 in duplicate_reactions_to_remove:
             continue
 
-        for index2 in xrange(index1 + 1, len(reactionList)):
+        for index2 in range(index1 + 1, len(reactionList)):
             reaction2 = reactionList[index2]
             if (reaction1.reactants == reaction2.reactants
                     and reaction1.products == reaction2.products
