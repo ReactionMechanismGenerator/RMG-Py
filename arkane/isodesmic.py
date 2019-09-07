@@ -310,8 +310,8 @@ class SpeciesConstraints(object):
 
             descriptors['class_0'].append(atom_general)
             descriptors['class_1'].append(atom_specific)
-            descriptors['class_2'].append(atom_specific)
-            descriptors['class_4'].append(atom_specific)
+            # descriptors['class_2'].append(atom_specific)
+            # descriptors['class_4'].append(atom_specific)
 
             bonds_general = [] # for constraint class 3
             bonds_specific = [] # for constraint class 5
@@ -323,8 +323,8 @@ class SpeciesConstraints(object):
                 bonds_specific.append((bonded_atom.number,bonded_atom.radicalElectrons,bonded_atom.lonePairs,bonded_atom.charge,order_number))
             bonds_general.sort()
             bonds_specific.sort()
-            class_3 = atom_specific + tuple(bonds_general) + (radical_count,)
-            class_5 = atom_specific + tuple(bonds_specific) + (radical_count,)
+            class_3 = atom_specific + tuple(bonds_general) #+ (radical_count,)
+            class_5 = atom_specific + tuple(bonds_specific) #+ (radical_count,)
             descriptors['class_3'].append(class_3)
             descriptors['class_5'].append(class_5)
 
@@ -332,8 +332,8 @@ class SpeciesConstraints(object):
             atom1 = bond.atom1
             atom2 = bond.atom2
             radical_count = atom1.radicalElectrons + atom2.radicalElectrons
-            class_2 = tuple(sorted([atom1.number, atom2.number]) + [bond.getOrderNum()]) + (radical_count,)
-            class_4 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [bond.getOrderNum()]) + (radical_count,)
+            class_2 = tuple(sorted([atom1.number, atom2.number]) + [bond.getOrderNum()]) #+ (radical_count,)
+            class_4 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [bond.getOrderNum()]) #+ (radical_count,)
             descriptors['class_2'].append(class_2)
             descriptors['class_4'].append(class_4)
 
@@ -680,7 +680,7 @@ class ErrorCancelingScheme(object):
                         targets[j])
 
             lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
-            lpsolve('set_timeout', lp, 1)  # Move on if lpsolve can't find a solution quickly
+            lpsolve('set_timeout', lp, 2)  # Move on if lpsolve can't find a solution quickly
 
             # Constrain v_i to be 4 or less
             for i in range(m):
@@ -749,7 +749,7 @@ class ErrorCancelingScheme(object):
             lower_class_obj = 1e6
         subset_queue = deque()
         subset_queue.append(full_set)
-        max_attempts = 500
+        max_attempts = 1000
         attempts = 0
         rejected = 0
 
