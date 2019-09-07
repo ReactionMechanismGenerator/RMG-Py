@@ -210,10 +210,11 @@ class ReferenceSpecies(ArkaneSpecies):
         """
         if model_chemistry not in self.calculated_data:
             raise KeyError('Model chemistry `{0}` not available for species {1}'.format(model_chemistry, self))
-        if not self.reference_data:
+        if not self.reference_data or len(self.reference_data) == 0:
             raise ValueError('No reference data is included for species {0}'.format(self))
 
-        molecule = Molecule(SMILES=self.smiles)
+        #molecule = Molecule(SMILES=self.smiles)
+        molecule = Molecule().fromAdjacencyList(self.adjacency_list)
         preferred_source = source
 
         if not preferred_source:
@@ -233,14 +234,6 @@ class ReferenceSpecies(ArkaneSpecies):
         high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
         low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
         fod = self.calculated_data[model_chemistry].fod
-        # if 'tpss/def2-tzvp' in self.calculated_data.keys():
-        #     try:
-        #         fod = float(self.calculated_data['tpss/def2-tzvp'].fod)
-        #     except:
-        #         fod = None
-        # else:
-        #     fod = None
-
 
         return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, fod, preferred_source)
 
@@ -441,7 +434,7 @@ class ReferenceDatabase(object):
         if paths:
             self.load(paths=paths,parse_model_chemistries=parse_model_chemistries)
 
-    def load(self, paths='', parse_model_chemistries=False):
+    def load(self, paths=None, parse_model_chemistries=False):
         """
         Load one or more set of reference species and append it on to the database
 
@@ -476,10 +469,9 @@ class ReferenceDatabase(object):
                 for model_chem in ref_spcs.calculated_data.keys():
                     if model_chem not in model_chemistries:
                         model_chemistries.append(model_chem)
-                try:
-                    molecule = Molecule().fromAdjacencyList(ref_spcs.adjacency_list)
-                except:
-                    molecule = Molecule(SMILES=ref_spcs.smiles)
+
+                molecule = Molecule().fromAdjacencyList(ref_spcs.adjacency_list)
+               
                 # if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
                 #     logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
                 #                     'calculated data. This entry will not be added'.format(ref_spcs.smiles, set_name))
@@ -538,7 +530,12 @@ class ReferenceDatabase(object):
                     continue
                 if not ref_spcs.calculated_data[model_chemistry].thermo: # Make sure refernce species has thermo
                     continue
-                if not ref_spcs.reference_data:  # This reference species does not have any sources, continue on
+                if not ref_spcs.reference_data or len(ref_spcs.reference_data) == 0:  # This reference species does not have any sources, continue on
+                    continue
+                model_chem_mult = ref_spcs.calculated_data[model_chemistry].conformer.spinMultiplicity
+                if model_chem_mult != ref_spcs.multiplicity:
+                    logging.warning("reference species {} has multiplicity {}, but the {} calculation has multiplicity {} \n"
+                                    "reference species will not be used".format(ref_spcs,ref_spcs.multiplicity,model_chemistry,model_chem_mult))
                     continue
                 reference_list.append(ref_spcs.to_error_canceling_spcs(model_chemistry))
 
