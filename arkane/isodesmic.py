@@ -310,8 +310,8 @@ class SpeciesConstraints(object):
 
             descriptors['class_0'].append(atom_general)
             descriptors['class_1'].append(atom_specific)
-            # descriptors['class_2'].append(atom_specific)
-            # descriptors['class_4'].append(atom_specific)
+            descriptors['class_2'].append(atom_specific)
+            descriptors['class_4'].append(atom_specific)
 
             bonds_general = [] # for constraint class 3
             bonds_specific = [] # for constraint class 5
@@ -399,16 +399,16 @@ class SpeciesConstraints(object):
                         constraint_map[constraint_class][d] += 1
 
 
-        for constraint_class, descriptors in constraint_map.items():
-            objective_vector = np.zeros(shape=(1,len(descriptors.keys())))
-            for i,d in enumerate(descriptors.keys()):
-                if isinstance(d,int): # descriptor is ring
-                    weight = 1.5
-                else:
-                    radical_electrons = d[-1]
-                    weight = float(radical_electrons) + 1.0
-                objective_vector[0][i] = weight
-            objective_vectors[constraint_class] = objective_vector
+        # for constraint_class, descriptors in constraint_map.items():
+        #     objective_vector = np.zeros(shape=(1,len(descriptors.keys())))
+        #     for i,d in enumerate(descriptors.keys()):
+        #         if isinstance(d,int): # descriptor is ring
+        #             weight = 1.5
+        #         else:
+        #             radical_electrons = d[-1]
+        #             weight = float(radical_electrons) + 1.0
+        #         objective_vector[0][i] = weight
+        #     objective_vectors[constraint_class] = objective_vector
 
         fod_vector.shape = (len(self.reference_species),1)
 
