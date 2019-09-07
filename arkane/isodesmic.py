@@ -127,10 +127,13 @@ class ErrorCancelingSpecies(object):
         if self.fod:
             if self.fod >= 0.2:
                 group += "_MR"
-                if len(self.molecule.generate_resonance_structures())>1:
-                    group += "_delocal"
-                else:
-                    group += '_local'
+                try:
+                    if len(self.molecule.generate_resonance_structures())>1:
+                        group += "_delocal"
+                    else:
+                        group += '_local'
+                except:
+                    pass
             else:
                 group += "_SR"
 
@@ -746,7 +749,7 @@ class ErrorCancelingScheme(object):
             lower_class_obj = 1e6
         subset_queue = deque()
         subset_queue.append(full_set)
-        max_attempts = 300
+        max_attempts = 500
         attempts = 0
         rejected = 0
 

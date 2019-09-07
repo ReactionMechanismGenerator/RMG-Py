@@ -83,12 +83,12 @@ class ReferenceSpecies(ArkaneSpecies):
         """
 
         if species is None:
-            if smiles:
+            if adjacency_list:
+                species = Species().fromAdjacencyList(adjacency_list)
+            elif smiles:
                 species = Species(SMILES=smiles)
             elif inchi:
                 species = Species(InChI=inchi)
-            elif adjacency_list:
-                species = Species().fromAdjacencyList(adjacency_list)
             else:
                 raise ValueError('Either an rmgpy species object, smiles string, InChI string, or an adjacency list '
                                  'must be given to create a ReferenceSpecies object')
@@ -468,16 +468,23 @@ class ReferenceDatabase(object):
             reference_set = []
             for spcs in spcs_dirs:
                 ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
-                ref_spcs.load_yaml(os.path.join(path, spcs, '{0}.yml'.format(spcs)))
+                try:
+                    ref_spcs.load_yaml(os.path.join(path, spcs, '{0}.yml'.format(spcs)))
+                except:
+                    logging.info('could not load {}'.format(spcs))
+                    continue
                 for model_chem in ref_spcs.calculated_data.keys():
                     if model_chem not in model_chemistries:
                         model_chemistries.append(model_chem)
-                molecule = Molecule(SMILES=ref_spcs.smiles)
+                try:
+                    molecule = Molecule().fromAdjacencyList(ref_spcs.adjacency_list)
+                except:
+                    molecule = Molecule(SMILES=ref_spcs.smiles)
                 # if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
                 #     logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
                 #                     'calculated data. This entry will not be added'.format(ref_spcs.smiles, set_name))
                 #     continue
-                # perform isomorphism checks to prevent duplicate species
+                #perform isomorphism checks to prevent duplicate species
                 for mol in molecule_list:
                     if molecule.isIsomorphic(mol):
                         logging.warning('Molecule {0} from reference set `{1}` already exists in the reference '
