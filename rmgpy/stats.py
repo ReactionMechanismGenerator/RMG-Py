@@ -188,7 +188,7 @@ class ExecutionStatsWriter(object):
         ax2.semilogx(rmg.execTime, self.coreReactionCount, 'o-r')
         ax2.set_ylabel('Number of core reactions')
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/coreSize.svg'))
-        plt.clf()
+        plt.close()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
@@ -205,7 +205,7 @@ class ExecutionStatsWriter(object):
             ax2.semilogx(rmg.execTime, self.edgeReactionCount, 'o-r')
         ax2.set_ylabel('Number of edge reactions')
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/edgeSize.svg'))
-        plt.clf()
+        plt.close()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
@@ -214,4 +214,4 @@ class ExecutionStatsWriter(object):
         ax1.set_ylabel('Memory (MB)')
         ax1.legend(['RAM'], loc=2)
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/memoryUse.svg'))
-        plt.clf()
+        plt.close()
