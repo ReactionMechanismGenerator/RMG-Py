@@ -857,10 +857,8 @@ class ErrorCancelingScheme(object):
                 h298_array = np.array([h.value_si for h in data[:,-2]] * data[:,-1])
                 h298_mean = np.mean(h298_array)
                 std = np.std(h298_array)
-                condlist = [abs(h298_array-h298_mean) <= 2.5*std]
-                choicelist = [h298_array]
-                h298 = np.select(condlist, choicelist)
-                h298_mean = np.mean(h298)
+                h298_array = h298_array[abs(h298_array-h298_mean) <= 2.5*std]
+                h298_mean = np.mean(h298_array)
                 #h298_sum = np.sum(np.array([h.value_si for h in data[:,-2]]) * data[:,-1])
                 #h298_mean = h298_sum/sum_of_weights
             except:
