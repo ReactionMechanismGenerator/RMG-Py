@@ -114,7 +114,7 @@ class ErrorCancelingSpecies(object):
                 group += symbol
         for element in atom_symbols:
             if element in ['F','Cl','Br']:
-                group += 'X'
+                group += '_hal'
                 break
 
         rings = self.molecule.getSmallestSetOfSmallestRings()
@@ -127,13 +127,13 @@ class ErrorCancelingSpecies(object):
         if self.fod:
             if self.fod >= 0.2:
                 group += "_MR"
-                try:
-                    if len(self.molecule.generate_resonance_structures())>1:
-                        group += "_delocal"
-                    else:
-                        group += '_local'
-                except:
-                    pass
+                # try:
+                #     if len(self.molecule.generate_resonance_structures())>1:
+                #         group += "_delocal"
+                #     else:
+                #         group += '_local'
+                # except:
+                #     pass
             else:
                 group += "_SR"
 
