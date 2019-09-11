@@ -48,6 +48,7 @@ from rmgpy.species import Species
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import ThermoData
 from rmgpy.thermo.model import HeatCapacityModel
+from rmgpy.exceptions import AtomTypeError
 
 
 
@@ -518,6 +519,34 @@ class ReferenceDatabase(object):
         Returns:
             List[ErrorCancelingSpecies]
         """
+
+        def check_isomorphism(ref,model_chem):
+            """
+            A method to check is reference species is isomorphic
+            """
+            try:
+                reference_mol_smiles = Molecule(SMILES=ref.smiles)
+                reference_mol_smiles = reference_mol_smiles.toSingleBonds()
+                reference_mol_adj = Molecule().fromAdjacencyList(ref.adjacency_list)
+                reference_mol_adj = reference_mol_adj.toSingleBonds()
+            except AtomTypeError:
+                logging.info("Could not create RMG Molecule for {}".format(ref))
+                return True
+            if not reference_mol_adj.isIsomorphic(reference_mol_smiles):
+                return False
+            coords = ref.calculated_data[model_chem].conformer.coordinates.getValue()
+            numbers = ref.calculated_data[model_chem].conformer.number.value
+            model_chem_mol = Molecule()
+            try:
+                model_chem_mol.fromXYZ(numbers,coords)
+            except AtomTypeError:
+                logging.info("The {} conformer for {} raised an AtomTypeError and will not be used".format(model_chem,ref))
+                return False
+            if not model_chem_mol.isIsomorphic(reference_mol_adj):
+                logging.info("Since {0} {1} is not isomorphic to reference species, {0} and will not be used".format(ref,model_chem))
+                return False
+            return True
+        
         reference_list = []
 
         if sets is None:  # Load in all of the sets
@@ -534,8 +563,10 @@ class ReferenceDatabase(object):
                     continue
                 model_chem_mult = ref_spcs.calculated_data[model_chemistry].conformer.spinMultiplicity
                 if model_chem_mult != ref_spcs.multiplicity:
-                    logging.warning("reference species {} has multiplicity {}, but the {} calculation has multiplicity {} \n"
+                    logging.warning("reference species {} has multiplicity {}, but the {} calculation has multiplicity {}"
                                     "reference species will not be used".format(ref_spcs,ref_spcs.multiplicity,model_chemistry,model_chem_mult))
+                    continue
+                if not check_isomorphism(ref_spcs,model_chemistry):
                     continue
                 reference_list.append(ref_spcs.to_error_canceling_spcs(model_chemistry))
 
