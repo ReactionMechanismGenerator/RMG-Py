@@ -879,7 +879,7 @@ class ErrorCancelingScheme(object):
         #     fod_dict[rxn] = (h298_kcal_mol[i],rxn.target.fod) + tuple(s.fod for s in rxn.species)
 
         # return ScalarQuantity(np.median(h298_list), 'J/mol'), zip(reaction_list,h298_kcal_mol), fod_dict
-        return ScalarQuantity(h298, 'J/mol'), reactions, rejected_reactions
+        return ScalarQuantity(h298_mean, 'J/mol'), reactions, rejected_reactions
 
 class IsodesmicScheme(ErrorCancelingScheme):
     """
