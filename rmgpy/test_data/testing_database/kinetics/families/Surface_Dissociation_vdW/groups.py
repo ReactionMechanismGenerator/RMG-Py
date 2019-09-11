@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Surface_Dissociation_vdW/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 Surface bond fission of one vdW species into two distinct adsorbates. Atom *3 is vdW, but we leave that out of the graph.
 
  *1--*2                 *1     *2

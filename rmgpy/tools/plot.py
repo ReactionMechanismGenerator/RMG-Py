@@ -253,6 +253,8 @@ class GenericPlot(object):
         else:
             fig.savefig(filename, bbox_inches='tight')
 
+        plt.close()
+
     def barplot(self, filename='', idx=None):
         """
         Plot a generic barplot using just the yVars.
@@ -282,6 +284,7 @@ class GenericPlot(object):
 
         plt.axis('tight')
         fig.savefig(filename, bbox_inches='tight')
+        plt.close()
 
     def comparePlot(self, otherGenericPlot, filename='', title='', xlabel='', ylabel=''):
         """
@@ -350,6 +353,8 @@ class GenericPlot(object):
             fig.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
         else:
             fig.savefig(filename, bbox_inches='tight')
+
+        plt.close()
 
 
 class SimulationPlot(GenericPlot):

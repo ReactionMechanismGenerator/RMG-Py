@@ -185,8 +185,10 @@ class TestArrhenius(unittest.TestCase):
         Test that an Arrhenius object can be reconstructed from its repr()
         output with no loss of information.
         """
-        arrhenius = None
-        exec('arrhenius = {0!r}'.format(self.arrhenius))
+        namespace = {}
+        exec('arrhenius = {0!r}'.format(self.arrhenius), globals(), namespace)
+        self.assertIn('arrhenius', namespace)
+        arrhenius = namespace['arrhenius']
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
@@ -361,8 +363,10 @@ class TestArrheniusEP(unittest.TestCase):
         Test that an ArrheniusEP object can be reconstructed from its repr()
         output with no loss of information.
         """
-        arrhenius = None
-        exec('arrhenius = {0!r}'.format(self.arrhenius))
+        namespace = {}
+        exec('arrhenius = {0!r}'.format(self.arrhenius), globals(), namespace)
+        self.assertIn('arrhenius', namespace)
+        arrhenius = namespace['arrhenius']
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
@@ -568,8 +572,10 @@ class TestPDepArrhenius(unittest.TestCase):
         Test that a PDepArrhenius object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
-        kinetics = None
-        exec('kinetics = {0!r}'.format(self.kinetics))
+        namespace = {}
+        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
+        self.assertIn('kinetics', namespace)
+        kinetics = namespace['kinetics']
         Narrh = 2
         self.assertEqual(len(self.kinetics.pressures.value), Narrh)
         self.assertEqual(len(kinetics.pressures.value), Narrh)
@@ -726,8 +732,10 @@ class TestMultiArrhenius(unittest.TestCase):
         Test that a MultiArrhenius object can be reconstructed from its repr()
         output with no loss of information.
         """
-        kinetics = None
-        exec('kinetics = {0!r}'.format(self.kinetics))
+        namespace = {}
+        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
+        self.assertIn('kinetics', namespace)
+        kinetics = namespace['kinetics']
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
             self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
@@ -993,8 +1001,10 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         Test that a MultiPDepArrhenius object can be reconstructed from its
         repr() output with no loss of information.
         """
-        kinetics = None
-        exec('kinetics = {0!r}'.format(self.kinetics))
+        namespace = {}
+        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
+        self.assertIn('kinetics', namespace)
+        kinetics = namespace['kinetics']
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)

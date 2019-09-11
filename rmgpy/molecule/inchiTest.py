@@ -85,6 +85,7 @@ class AugmentedInChITest(unittest.TestCase):
         self.assertTrue(aug_inchi1 == aug_inchi2)
         self.assertTrue(not aug_inchi1 != aug_inchi2)
 
+    @work_in_progress
     def testReduce(self):
         import pickle
 

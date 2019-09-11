@@ -1928,9 +1928,12 @@ def generateReactionKey(rxn, useProducts=False):
     key_family = rxn.family
 
     spc_list = rxn.products if useProducts else rxn.reactants
-    key1 = getKey(spc_list[0])
-    key2 = None if len(spc_list) == 1 else getKey(spc_list[1])
-    key1, key2 = sorted([key1, key2], reverse=True)  # ensure None is always at end
+
+    if len(spc_list) == 1:
+        key1, key2 = getKey(spc_list[0]), None
+    else:
+        # Use 2 keys, even for trimolecular reactions?
+        key1, key2 = sorted([getKey(spc_list[0]), getKey(spc_list[1])])
 
     return key_family, key1, key2
 

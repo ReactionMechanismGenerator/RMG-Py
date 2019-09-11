@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "H_Abstraction/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 The reaction site *3 needs a lone pair in order to react. It cannot be 2S or 4S.
 """
 
@@ -369,9 +369,9 @@ forbidden(
 2    C u1 {1,S}
 3 *2 H u0 {1,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -386,9 +386,9 @@ forbidden(
 4    R u0 {2,D} {5,S}
 5    R u1 {4,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -403,9 +403,9 @@ forbidden(
 4    R u0 {2,T} {5,S}
 5    R u1 {4,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -422,9 +422,9 @@ forbidden(
 6    R u0 {5,D} {7,S}
 7    R u1 {6,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -441,9 +441,9 @@ forbidden(
 6    R u0 {5,D} {7,S}
 7    R u1 {6,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

@@ -249,8 +249,10 @@ class TestThirdBody(unittest.TestCase):
         Test that a ThirdBody object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
-        thirdBody = None
-        exec('thirdBody = {0!r}'.format(self.thirdBody))
+        namespace = {}
+        exec('thirdBody = {0!r}'.format(self.thirdBody), globals(), namespace)
+        self.assertIn('thirdBody', namespace)
+        thirdBody = namespace['thirdBody']
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.A.value, thirdBody.arrheniusLow.A.value, delta=1e0)
         self.assertEqual(self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units)
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4)
@@ -438,8 +440,10 @@ class TestLindemann(unittest.TestCase):
         Test that a Lindemann object can be reconstructed from its repr()
         output with no loss of information.
         """
-        lindemann = None
-        exec('lindemann = {0!r}'.format(self.lindemann))
+        namespace = {}
+        exec('lindemann = {0!r}'.format(self.lindemann), globals(), namespace)
+        self.assertIn('lindemann', namespace)
+        lindemann = namespace['lindemann']
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.A.value, lindemann.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units)
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4)
@@ -674,8 +678,10 @@ class TestTroe(unittest.TestCase):
         Test that a Troe object can be reconstructed from its repr() output
         with no loss of information.
         """
-        troe = None
-        exec('troe = {0!r}'.format(self.troe))
+        namespace = {}
+        exec('troe = {0!r}'.format(self.troe), globals(), namespace)
+        self.assertIn('troe', namespace)
+        troe = namespace['troe']
         self.assertAlmostEqual(self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.troe.arrheniusHigh.A.units, troe.arrheniusHigh.A.units)
         self.assertAlmostEqual(self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4)

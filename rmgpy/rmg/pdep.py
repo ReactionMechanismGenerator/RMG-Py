@@ -757,7 +757,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if len(self.explored) == 0 and len(self.source) > 1:
             return
         # Log the network being updated
-        logging.info("Updating {0:s}".format(self))
+        logging.info("Updating {0!s}".format(self))
 
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:

@@ -45,12 +45,143 @@ def check_dependencies():
     """
     Checks for and locates major dependencies that RMG requires.
     """
-    missing = install_rdkit = False
-
     print('\nChecking vital dependencies...\n')
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
-    # Check for symmetry
+    missing = {
+        'lpsolve': _check_lpsolve(),
+        'openbabel': _check_openbabel(),
+        'pydqed': _check_pydqed(),
+        'pyrdl': _check_pyrdl(),
+        'rdkit': _check_rdkit(),
+        'symmetry': _check_symmetry(),
+    }
+
+    if any(missing.values()):
+        print("""
+There are missing dependencies as listed above. Please install them before proceeding.
+
+Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
+
+    conda install -c rmg [package name]
+{0}
+You can alternatively update your environment and install all missing dependencies as follows:
+
+    conda env update -f environment.yml
+
+Be sure to activate your conda environment (rmg_env by default) before installing or updating.
+""".format("""
+RDKit should be installed from the RDKit channel instead:
+
+    conda install -c rdkit rdkit
+""" if missing['rdkit'] else ''))
+    else:
+        print("""
+Everything was found :)
+""")
+
+
+def _check_lpsolve():
+    """Check for lpsolve"""
+    missing = False
+
+    try:
+        import lpsolve55
+    except ImportError:
+        print('{0:<30}{1}'.format('lpsolve55',
+                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
+        missing = True
+    else:
+        location = lpsolve55.__file__
+        print('{0:<30}{1}'.format('lpsolve55', location))
+
+    return missing
+
+
+def _check_openbabel():
+    """Check for OpenBabel"""
+    missing = False
+
+    try:
+        import openbabel
+    except ImportError:
+        print('{0:<30}{1}'.format('OpenBabel',
+                                  'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
+        missing = True
+    else:
+        version = openbabel.OBReleaseVersion()
+        location = openbabel.__file__
+        print('{0:<15}{1:<15}{2}'.format('OpenBabel', version, location))
+
+    return missing
+
+
+def _check_pydqed():
+    """Check for pydqed"""
+    missing = False
+
+    try:
+        import pydqed
+    except ImportError:
+        print('{0:<30}{1}'.format('pydqed', 'Not found. Necessary for estimating statmech for pressure dependence.'))
+        missing = True
+    else:
+        version = pydqed.__version__
+        location = pydqed.__file__
+        print('{0:<15}{1:<15}{2}'.format('pydqed', version, location))
+
+    return missing
+
+
+def _check_pyrdl():
+    """Check for pyrdl"""
+    missing = False
+
+    try:
+        import py_rdl
+    except ImportError:
+        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
+        missing = True
+    else:
+        location = py_rdl.__file__
+        print('{0:<30}{1}'.format('pyrdl', location))
+
+    return missing
+
+
+def _check_rdkit():
+    """Check for RDKit"""
+    missing = False
+
+    try:
+        import rdkit
+        from rdkit import Chem
+    except ImportError:
+        print('{0:<30}{1}'.format('RDKit',
+                                  'Not found. Please install RDKit version 2015.03.1 or later with InChI support.'))
+        missing = True
+    else:
+        try:
+            version = rdkit.__version__
+        except AttributeError:
+            version = False
+        location = rdkit.__file__
+        inchi = Chem.inchi.INCHI_AVAILABLE
+
+        if version:
+            print('{0:<15}{1:<15}{2}'.format('RDKit', version, location))
+            if not inchi:
+                print('    !!! RDKit installed without InChI Support. Please install with InChI.')
+                missing = True
+        else:
+            print('    !!! RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.')
+            missing = True
+
+    return missing
+
+
+def _check_symmetry():
+    """Check for symmetry package"""
     try:
         result = subprocess.check_output('symmetry -h', stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError:
@@ -66,86 +197,55 @@ def check_dependencies():
 
         print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip().decode()))
 
-    # Check for RDKit
+
+def check_pydas():
+    """
+    Check which solvers PyDAS was compiled with and update rmgpy/solver/settings.pxi accordingly.
+
+    If settings.pxi already exists, check it's contents to avoid unnecessary overwriting and compiling.
+    """
+    print('\nChecking for solvers before compiling...\n')
+
     try:
-        import rdkit
-        from rdkit import Chem
+        import pydas.daspk
     except ImportError:
-        print('{0:<30}{1}'.format('RDKit',
-                                  'Not found. Please install RDKit version 2015.03.1 or later with InChI support.'))
-        missing = install_rdkit = True
+        daspk = False
     else:
-        try:
-            version = rdkit.__version__
-        except AttributeError:
-            version = False
-        location = rdkit.__file__
-        inchi = Chem.inchi.INCHI_AVAILABLE
+        daspk = True
 
-        if version:
-            print('{0:<15}{1:<15}{2}'.format('RDKit', version, location))
-            if not inchi:
-                print('    !!! RDKit installed without InChI Support. Please install with InChI.')
-                missing = install_rdkit = True
-        else:
-            print('    !!! RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.')
-            missing = install_rdkit = True
-
-    # Check for OpenBabel
     try:
-        import openbabel
+        import pydas.dassl
     except ImportError:
-        print('{0:<30}{1}'.format('OpenBabel',
-                                  'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
-        missing = True
+        dassl = False
     else:
-        version = openbabel.OBReleaseVersion()
-        location = openbabel.__file__
-        print('{0:<15}{1:<15}{2}'.format('OpenBabel', version, location))
+        dassl = True
 
-    # Check for lpsolve
-    try:
-        import lpsolve55
-    except ImportError:
-        print('{0:<30}{1}'.format('lpsolve55',
-                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
-        missing = True
+    if daspk:
+        print('DASPK solver found. Compiling with DASPK and sensitivity analysis capability...\n')
+    elif dassl:
+        print('DASSL solver found. Compiling with DASSL. Sensitivity analysis capabilities are off...\n')
     else:
-        location = lpsolve55.__file__
-        print('{0:<30}{1}'.format('lpsolve55', location))
+        print('No PyDAS solvers found. Please check that you have the latest version of PyDAS '
+              'or that you have activated the appropriate conda environment.\n')
+        raise Exception('Cannot compile RMG solver without PyDAS.')
 
-    # Check for pyrdl
-    try:
-        import py_rdl
-    except ImportError:
-        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
-        missing = True
+    settings_path = os.path.join(os.path.dirname(__file__), 'rmgpy', 'solver', 'settings.pxi')
+
+    if os.path.isfile(settings_path):
+        with open(settings_path, 'r') as f:
+            settings = f.read()
+
+        # Only update the settings file if its contents do not match what we found
+        write = not ((daspk and 'DASPK = 1' in settings) or (dassl and 'DASPK = 0' in settings))
     else:
-        location = py_rdl.__file__
-        print('{0:<30}{1}'.format('pyrdl', location))
+        write = True
 
-    if missing:
-        print("""
-There are missing dependencies as listed above. Please install them before proceeding.
-
-Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
-
-    conda install -c rmg [package name]
-{0}
-You can alternatively update your environment and install all missing dependencies as follows:
-
-    conda env update -f environment_[linux/mac/windows].yml  # Choose the correct file for your OS
-
-Be sure to activate your conda environment (rmg_env by default) before installing or updating.
-""".format("""
-RDKit should be installed from the RDKit channel instead:
-
-    conda install -c rdkit rdkit
-""" if install_rdkit else ''))
-    else:
-        print("""
-Everything was found :)
-""")
+    if write:
+        with open(settings_path, 'w') as f:
+            if daspk:
+                f.write('DEF DASPK = 1\n')
+            elif dassl:
+                f.write('DEF DASPK = 0\n')
 
 
 def clean(subdirectory=''):
@@ -293,13 +393,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RMG Code Utilities')
 
     parser.add_argument('command', metavar='COMMAND', type=str,
-                        choices=['check-dependencies', 'clean', 'clean-solver', 'update-headers'],
+                        choices=['check-dependencies',
+                                 'check-pydas',
+                                 'clean',
+                                 'clean-solver',
+                                 'update-headers'],
                         help='command to execute')
 
     args = parser.parse_args()
 
     if args.command == 'check-dependencies':
         check_dependencies()
+    elif args.command == 'check-pydas':
+        check_pydas()
     elif args.command == 'clean':
         clean()
     elif args.command == 'clean-solver':

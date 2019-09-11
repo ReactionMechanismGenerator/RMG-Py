@@ -658,11 +658,11 @@ class RMG(util.Subject):
         self.done = False
 
         # determine min and max values for T and P (don't determine P values for liquid reactors)
-        self.Tmin = min([r_sys.Trange[0] if r_sys.Trange else r_sys.T for r_sys in self.reactionSystems]).value_si
-        self.Tmax = max([r_sys.Trange[1] if r_sys.Trange else r_sys.T for r_sys in self.reactionSystems]).value_si
+        self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reactionSystems])
+        self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reactionSystems])
         try:
-            self.Pmin = min([x.Prange[0] if x.Prange else x.P for x in self.reactionSystems]).value_si
-            self.Pmax = max([x.Prange[1] if x.Prange else x.P for x in self.reactionSystems]).value_si
+            self.Pmin = min([x.Prange[0].value_si if x.Prange else x.P.value_si for x in self.reactionSystems])
+            self.Pmax = max([x.Prange[1].value_si if x.Prange else x.P.value_si for x in self.reactionSystems])
         except AttributeError:
             # For LiquidReactor, Pmin and Pmax remain with the default value of `None`
             pass

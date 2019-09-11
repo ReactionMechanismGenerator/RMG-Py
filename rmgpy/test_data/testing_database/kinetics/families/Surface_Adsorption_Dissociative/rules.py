@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Surface_Adsorption_Dissociative/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 Dissociative adsorption of a gas-phase species forming two adsorbates, each with a single bond to a surface site
 """
 entry(
@@ -18,8 +18,8 @@ entry(
         Tmax = (3000, 'K'),
     ),
     rank = 0,
-    shortDesc = u"""Default""",
-    longDesc = u"""Made up"""
+    shortDesc = """Default""",
+    longDesc = """Made up"""
 )
 
 

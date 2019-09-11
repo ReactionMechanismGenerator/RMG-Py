@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Radical Groups"
-shortDesc = u"Radical corrections to A"
-longDesc = u"""
+shortDesc = "Radical corrections to A"
+longDesc = """
 H-bonding parameter A should be modified for when we saturate 
 radical molecules with hydrogens and look up the saturated
 structure.
@@ -16,9 +16,9 @@ entry(
 1 * R u1
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -31,9 +31,9 @@ entry(
 1 * O u1 p2
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -53,9 +53,9 @@ entry(
         L = 0.0,
         A = -0.345,
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -74,9 +74,9 @@ entry(
         L = 0.0,
         A = -0.087,
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -102,9 +102,9 @@ entry(
         L = 0.0,
         A = -0.17
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

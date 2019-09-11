@@ -112,7 +112,7 @@ class ChemkinTest(unittest.TestCase):
 """
         species, thermo, formula = readThermoEntry(entry)
 
-        mock_logging.warning.assert_called_with("could not convert string to float: X.44813916E+00")
+        mock_logging.warning.assert_called_with("could not convert string to float: 'X.44813916E+00'")
         self.assertEqual(species, 'C2H6')
         self.assertIsNone(formula)
         self.assertIsNone(thermo)

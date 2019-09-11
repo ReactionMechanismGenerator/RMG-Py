@@ -149,8 +149,10 @@ class TestKineticsData(unittest.TestCase):
         Test that a KineticsData object can be reconstructed from its repr()
         output with no loss of information.
         """
-        kinetics = None
-        exec ('kinetics = {0!r}'.format(self.kinetics))
+        namespace = {}
+        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
+        self.assertIn('kinetics', namespace)
+        kinetics = namespace['kinetics']
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)
@@ -330,8 +332,10 @@ class TestPDepKineticsData(unittest.TestCase):
         Test that a PDepKineticsData object can be reconstructed from its repr()
         output with no loss of information.
         """
-        kinetics = None
-        exec ('kinetics = {0!r}'.format(self.kinetics))
+        namespace = {}
+        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
+        self.assertIn('kinetics', namespace)
+        kinetics = namespace['kinetics']
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)

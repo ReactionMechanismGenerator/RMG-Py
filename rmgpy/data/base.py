@@ -40,9 +40,6 @@ import os
 import re
 from collections import OrderedDict
 
-from builtins import str
-from six import string_types
-
 from rmgpy.data.reference import Reference, Article, Book, Thesis
 from rmgpy.exceptions import DatabaseError, InvalidAdjacencyListError
 from rmgpy.kinetics.uncertainties import RateUncertainty
@@ -101,8 +98,8 @@ class Entry(object):
         self.data = data
         self.reference = reference
         self.referenceType = referenceType
-        self._shortDesc = str(shortDesc)
-        self._longDesc = str(longDesc)
+        self.shortDesc = shortDesc
+        self.longDesc = longDesc
         self.rank = rank
         self.nodalDistance = nodalDistance
 
@@ -111,28 +108,6 @@ class Entry(object):
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
-
-    @property
-    def longDesc(self):
-        return self._longDesc
-
-    @longDesc.setter
-    def longDesc(self, value):
-        if value is None:
-            self._longDesc = None
-        else:
-            self._longDesc = str(value)
-
-    @property
-    def shortDesc(self):
-        return self._shortDesc
-
-    @shortDesc.setter
-    def shortDesc(self, value):
-        if value is None:
-            self._shortDesc = None
-        else:
-            self._shortDesc = str(value)
 
     def getAllDescendants(self):
         """
@@ -237,7 +212,7 @@ class Database(object):
         # Process the file
         f = open(path, 'r')
         try:
-            exec(f, global_context, local_context)
+            exec(f.read(), global_context, local_context)
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(path))
             raise
@@ -362,8 +337,8 @@ class Database(object):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
-        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
-        f.write('longDesc = u"""\n')
+        f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
+        f.write('longDesc = """\n')
         f.write(self.longDesc.strip() + '\n')
         f.write('"""\n')
 
@@ -518,7 +493,7 @@ class Database(object):
                 except KeyError:
                     raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
 
-                if isinstance(parent, string_types):
+                if isinstance(parent, str):
                     raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent,
                                                                                                            label))
 
@@ -826,7 +801,7 @@ class Database(object):
             for entry in entries:
                 if entry.data is not None:
                     data = entry.data
-                    if not isinstance(data, string_types):
+                    if not isinstance(data, str):
                         data = self.generateOldLibraryEntry(data)
                     records.append((entry.index, [entry.label], data, entry.shortDesc))
 
@@ -842,7 +817,7 @@ class Database(object):
                 f.write('{:<6d} '.format(index))
                 for label in labels:
                     f.write('{:<32s} '.format(label))
-                if isinstance(data, string_types):
+                if isinstance(data, str):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
@@ -866,7 +841,8 @@ class Database(object):
         """
         Returns all the ancestors of a node, climbing up the tree to the top.
         """
-        if isinstance(node, string_types): node = self.entries[node]
+        if isinstance(node, str):
+            node = self.entries[node]
         ancestors = []
         parent = node.parent
         if parent is not None:
@@ -878,7 +854,8 @@ class Database(object):
         """
         Returns all the descendants of a node, climbing down the tree to the bottom.
         """
-        if isinstance(node, string_types): node = self.entries[node]
+        if isinstance(node, str):
+            node = self.entries[node]
         descendants = []
         for child in node.children:
             descendants.append(child)
@@ -953,7 +930,8 @@ class Database(object):
         `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
         =================== ========================================================
         """
-        if isinstance(node, string_types): node = self.entries[node]
+        if isinstance(node, str):
+            node = self.entries[node]
         group = node.item
         if isinstance(group, LogicNode):
             return group.matchToStructure(self, structure, atoms, strict)
@@ -1411,10 +1389,7 @@ class ForbiddenStructures(Database):
         else:
             f.write('    group = "{0}",\n'.format(entry.item))
 
-        f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
-        f.write('    longDesc = \n')
-        f.write('u"""\n')
-        f.write(entry.longDesc.strip() + "\n")
-        f.write('""",\n')
+        f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
+        f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
 
         f.write(')\n\n')

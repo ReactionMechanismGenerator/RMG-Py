@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Intra_ene_reaction/groups"
-shortDesc = u"6-membered Intramolecular H-shift from an allylic to an unsaturated endgroup (like in cyclopentadiene)"
-longDesc = u"""
+shortDesc = "6-membered Intramolecular H-shift from an allylic to an unsaturated endgroup (like in cyclopentadiene)"
+longDesc = """
 
 """
 
@@ -46,7 +46,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -61,7 +61,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -145,7 +145,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -162,7 +162,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -180,7 +180,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -198,7 +198,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -216,7 +216,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -233,7 +233,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -330,7 +330,7 @@ entry(
     kinetics = None,
     shortDesc = "",
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -413,9 +413,9 @@ forbidden(
 6 *5 C u0 {4,D} {5,S}
 7 *6 H u0 {5,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Prevents an H on the far edge of a fulvene-like ring molecule from shifting to the tail
 """,
 )
@@ -432,9 +432,9 @@ forbidden(
 6 *3 C u0 {4,S} {5,D}
 7 *6 H u0 {1,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Prevents an H on the tail of a fulvene-like molecule from shifting to the far edge of the ring
 """,
 )
@@ -451,9 +451,9 @@ forbidden(
 6 *6 H u0 {1,S}
 7    R!H u1 {3,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid an H from shifting to a resonant radical site on a CPD ring,
 in order to avoid redundancy with Intra_H_migration family, the radical atom can be anything element
 """,
@@ -471,9 +471,9 @@ forbidden(
 6 *6 H u0 {1,S}
 7    R!H u1 {5,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid an H from shifting to a doubly resonant radical site on a CPD ring,
 in order to avoid redundancy with Intra_H_migration family, the radical atom can be anything element
 """,
@@ -492,9 +492,9 @@ forbidden(
 6 *6 H u0 {1,S}
 7    R!H u1 {3,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid an H from shifting to a resonant radical site on a linear 1,3-unsaturated hexane chain,
 in order to avoid redundancy with Intra_H_migration family, the radical atom can be anything element
 """,
@@ -512,9 +512,9 @@ forbidden(
 6 *6 H u0 {1,S}
 7    R!H u1 {5,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid an H from shifting to a doubly resonant radical site on a linear 1,3-unsaturated hexane chain,
 in order to avoid redundancy with Intra_H_migration family, the radical atom can be anything element
 """,
@@ -533,9 +533,9 @@ forbidden(
 7  R!H ux {2,[S,D]} {6,[D,T]}
 8  *6 H u0 {1,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Prevents an H on para position of a benzene ring from shifting to the benzylic position of a tail
 """,
 )
@@ -553,9 +553,9 @@ forbidden(
 7  R!H ux {2,[S,D]} {6,[D,T]}
 8  *6 H u0 {5,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Prevents an H on the benzylic position of a tail from shifting to the para position of the benzene ring
 """,
 )

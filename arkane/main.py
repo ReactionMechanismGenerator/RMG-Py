@@ -221,7 +221,7 @@ class Arkane(object):
         if supporting_info:
             # write supporting_info.csv for statmech jobs
             supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
-            with open(supporting_info_file, 'wb') as csvfile:
+            with open(supporting_info_file, 'w') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(['Label', 'Symmetry Number', 'Number of optical isomers', 'Symmetry Group',
                                  'Rotational constant (cm-1)',
@@ -251,7 +251,7 @@ class Arkane(object):
             hr_file = os.path.join(self.outputDirectory, 'hindered_rotor_scan_data.csv')
             # find longest length to set column number for energies
             max_energy_length = max([len(hr[4]) for hr in hindered_rotor_info])
-            with open(hr_file, 'wb') as csvfile:
+            with open(hr_file, 'w') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(['species', 'rotor_number', 'symmetry', 'resolution (degrees)',
                                  'pivot_atoms', 'frozen_atoms'] +

@@ -1072,19 +1072,19 @@ class Network(object):
         logging.log(level, '-' * (len(self.label) + 20))
         logging.log(level, 'Isomers:')
         for isomer in self.isomers:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(isomer, isomer.E0 * 0.001))
         logging.log(level, 'Reactant channels:')
         for reactants in self.reactants:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(reactants), reactants.E0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(reactants, reactants.E0 * 0.001))
         logging.log(level, 'Product channels:')
         for products in self.products:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(products), products.E0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(products, products.E0 * 0.001))
         logging.log(level, 'Path reactions:')
         for rxn in self.pathReactions:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(
                 rxn, float(rxn.transitionState.conformer.E0.value_si * 0.001)))
         logging.log(level, 'Net reactions:')
         for rxn in self.netReactions:
-            logging.log(level, '    {0:<48s}'.format(rxn))
+            logging.log(level, '    {0!s:<48}'.format(rxn))
         logging.log(level, '========================================================================')
         logging.log(level, '')

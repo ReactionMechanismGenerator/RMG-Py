@@ -44,9 +44,9 @@ NO_MOPAC = NO_LICENCE = False
 try:
     Mopac().testReady()
 except DependencyError as e:
-    if "Couldn't find MOPAC executable" in e.message:
+    if "Couldn't find MOPAC executable" in str(e):
         NO_MOPAC = NO_LICENCE = True
-    elif 'To install the MOPAC license' in e.message or 'MOPAC_LICENSE' in e.message:
+    elif 'To install the MOPAC license' in str(e) or 'MOPAC_LICENSE' in str(e):
         NO_LICENCE = True
     else:
         raise

@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 name = ""
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 """
 

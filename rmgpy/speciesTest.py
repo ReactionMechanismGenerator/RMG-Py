@@ -132,8 +132,10 @@ class TestSpecies(unittest.TestCase):
         
         ...with no loss of information.
         """
-        species = None
-        exec('species = {0!r}'.format(self.species))
+        namespace = {}
+        exec('species = {0!r}'.format(self.species), globals(), namespace)
+        self.assertIn('species', namespace)
+        species = namespace['species']
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
         self.assertEqual(self.species.molecule[0].multiplicity, species.molecule[0].multiplicity)
@@ -151,6 +153,56 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
+
+    def test_equality(self):
+        """Test that we can perform equality comparison with Species objects"""
+        spc1 = Species(SMILES='C')
+        spc2 = Species(SMILES='C')
+
+        self.assertNotEqual(spc1, spc2)
+        self.assertEqual(spc1, spc1)
+        self.assertEqual(spc2, spc2)
+
+    def test_less_than(self):
+        """Test that we can perform less than comparison with Species objects"""
+        spc1 = Species(index=1, label='a', SMILES='C')
+        spc2 = Species(index=2, label='a', SMILES='C')
+        spc3 = Species(index=2, label='b', SMILES='C')
+        spc4 = Species(index=1, label='a', SMILES='CC')
+
+        self.assertLess(spc1, spc2)
+        self.assertLess(spc1, spc3)
+        self.assertLess(spc2, spc3)
+        self.assertLess(spc1, spc4)
+        self.assertLess(spc2, spc4)
+        self.assertLess(spc3, spc4)
+
+    def test_greater_than(self):
+        """Test that we can perform greater than comparison with Species objects"""
+        spc1 = Species(index=1, label='a', SMILES='C')
+        spc2 = Species(index=2, label='a', SMILES='C')
+        spc3 = Species(index=2, label='b', SMILES='C')
+        spc4 = Species(index=1, label='a', SMILES='CC')
+
+        self.assertGreater(spc2, spc1)
+        self.assertGreater(spc3, spc1)
+        self.assertGreater(spc3, spc2)
+        self.assertGreater(spc4, spc1)
+        self.assertGreater(spc4, spc2)
+        self.assertGreater(spc4, spc3)
+
+    def test_hash(self):
+        """Test behavior of Species hashing using dictionaries and sets"""
+        spc1 = Species(index=1, label='a', SMILES='C')
+        spc2 = Species(index=2, label='a', SMILES='C')
+        spc3 = Species(index=2, label='b', SMILES='C')
+        spc4 = Species(index=1, label='a', SMILES='CC')
+
+        # Test dictionary behavior
+        self.assertEqual(len(dict.fromkeys([spc1, spc2, spc3, spc4])), 4)
+
+        # Test set behavior
+        self.assertEqual(len({spc1, spc2, spc3, spc4}), 4)
 
     def testToAdjacencyList(self):
         """
@@ -195,7 +247,10 @@ class TestSpecies(unittest.TestCase):
         """Test that both resonance forms of 1-penten-3-yl are printed by __repr__"""
         spec = Species().fromSMILES('C=C[CH]CC')
         spec.generate_resonance_structures()
-        exec('spec2 = {0!r}'.format(spec))
+        namespace = {}
+        exec('spec2 = {0!r}'.format(spec), globals(), namespace)
+        self.assertIn('spec2', namespace)
+        spec2 = namespace['spec2']
         self.assertEqual(len(spec.molecule), len(spec2.molecule))
         for i, j in zip(spec.molecule, spec2.molecule):
             self.assertTrue(j.isIsomorphic(i),
@@ -360,7 +415,7 @@ Thermo library: primaryThermoLibrary
 
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
-        self.assertEqual(self.species2.fingerprint, 'C6H6')
+        self.assertEqual(self.species2.fingerprint, 'C06H06N00O00S00')
 
     def test_inchi_property(self):
         """Test that the InChI property works"""

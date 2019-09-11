@@ -105,14 +105,13 @@ class QMSettings(object):
         """
         Check that all the required settings are set.
         """
-        from types import BooleanType, IntType
         assert self.fileStore
         assert self.software
         assert self.method
         assert self.onlyCyclics is not None  # but it can be False
-        assert type(self.onlyCyclics) is BooleanType
+        assert isinstance(self.onlyCyclics, bool)
         assert self.maxRadicalNumber is not None  # but it can be 0
-        assert type(self.maxRadicalNumber) is IntType
+        assert isinstance(self.maxRadicalNumber, int)
 
 
 class QMCalculator(object):

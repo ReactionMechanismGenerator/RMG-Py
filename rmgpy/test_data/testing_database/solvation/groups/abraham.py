@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Abraham Solute Descriptors"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -14,9 +14,9 @@ entry(
 1 * R u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -29,9 +29,9 @@ entry(
 1 * C u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -50,9 +50,9 @@ entry(
         L = 0.744,
         A = 0,
     ),
-    shortDesc = u"""Platts' fragment 8 fused aromatic""",
+    shortDesc = """Platts' fragment 8 fused aromatic""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -65,9 +65,9 @@ entry(
 1 * [O2s,O2d] u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -80,9 +80,9 @@ entry(
 1 * O2s u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -102,9 +102,9 @@ entry(
         L = 0.672,
         A = 0,
     ),
-    shortDesc = u"""Platts fragment 26 -OH""",
+    shortDesc = """Platts fragment 26 -OH""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -117,9 +117,9 @@ entry(
 1 * N u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -132,9 +132,9 @@ entry(
 1 * N3s u0
 """,
     solute = None,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -156,9 +156,9 @@ entry(
         L = 0.278,
         A = 0.0,
     ),
-    shortDesc = u"""Platts fragment 23 -NO2""",
+    shortDesc = """Platts fragment 23 -NO2""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -177,9 +177,9 @@ entry(
         L = 0.554,
         A = 0,
     ),
-    shortDesc = u"""Platts fragment 36 (any other sulfur)""",
+    shortDesc = """Platts fragment 36 (any other sulfur)""",
     longDesc = 
-u"""
+"""
 
 """,
 )

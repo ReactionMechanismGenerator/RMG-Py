@@ -141,8 +141,10 @@ class TestTransportData(unittest.TestCase):
         """
         Test that a TransportData object can be reconstructed from its repr() output with no loss of information
         """
-        transport = None
-        exec('transport = {0!r}'.format(self.transport))
+        namespace = {}
+        exec('transport = {0!r}'.format(self.transport), globals(), namespace)
+        self.assertIn('transport', namespace)
+        transport = namespace['transport']
         self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
         self.assertAlmostEqual(self.transport.epsilon.value_si, transport.epsilon.value_si, 4)
         self.assertAlmostEqual(self.transport.sigma.value_si, transport.sigma.value_si, 4)

@@ -86,8 +86,10 @@ class TestWigner(unittest.TestCase):
         Test that a Wigner object can be successfully reconstructed from its
         repr() output with no loss of information.
         """
-        tunneling = None
-        exec('tunneling = {0!r}'.format(self.tunneling))
+        namespace = {}
+        exec('tunneling = {0!r}'.format(self.tunneling), globals(), namespace)
+        self.assertIn('tunneling', namespace)
+        tunneling = namespace['tunneling']
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
 
@@ -169,8 +171,10 @@ class TestEckart(unittest.TestCase):
         Test that an Eckart object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
-        tunneling = None
-        exec('tunneling = {0!r}'.format(self.tunneling))
+        namespace = {}
+        exec('tunneling = {0!r}'.format(self.tunneling), globals(), namespace)
+        self.assertIn('tunneling', namespace)
+        tunneling = namespace['tunneling']
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
         self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)

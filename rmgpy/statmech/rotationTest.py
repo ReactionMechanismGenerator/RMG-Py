@@ -248,8 +248,10 @@ class TestLinearRotor(unittest.TestCase):
         Test that a LinearRotor object can be reconstructed from its repr()
         output with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -385,8 +387,10 @@ class TestNonlinearRotor(unittest.TestCase):
         Test that a NonlinearRotor object can be reconstructed from its
         repr() output with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
         for inertia_0, inertia in zip(self.mode.inertia.value, mode.inertia.value):
             self.assertAlmostEqual(inertia_0, inertia, 6)
@@ -615,8 +619,10 @@ class TestKRotor(unittest.TestCase):
         Test that a KRotor object can be reconstructed from its repr() output
         with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -841,8 +847,10 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test that a SphericalTopRotor object can be reconstructed from its
         repr() output with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)

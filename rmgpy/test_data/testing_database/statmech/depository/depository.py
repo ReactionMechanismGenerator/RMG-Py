@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 name = "Statmech Depository"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """

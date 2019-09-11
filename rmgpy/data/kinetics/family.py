@@ -930,8 +930,8 @@ class KineticsFamily(Database):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}/groups"\n'.format(self.name))
-        f.write('shortDesc = u"{0}"\n'.format(self.groups.shortDesc))
-        f.write('longDesc = u"""\n')
+        f.write('shortDesc = "{0}"\n'.format(self.groups.shortDesc))
+        f.write('longDesc = """\n')
         f.write(self.groups.longDesc)
         f.write('\n"""\n\n')
 
@@ -3404,7 +3404,7 @@ class KineticsFamily(Database):
 
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
 
-        entries = self.groups.entries.values()
+        entries = list(self.groups.entries.values())
         rxnlists = [(templateRxnMap[entry.label], entry.label)
                     if entry.label in templateRxnMap.keys() else [] for entry in entries]
         inputs = np.array([(self.forwardRecipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])

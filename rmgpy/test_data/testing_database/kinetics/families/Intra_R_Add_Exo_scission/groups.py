@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Intra_R_Add_Exo_scission/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 
@@ -89,9 +89,9 @@ forbidden(
 11 Cb u0 {10,B} {12,B}
 12 *2 Cb u0 {4,S} {7,B} {11,B}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid a benzofulvenyl radical  from isomerizing to 1H_naphthalene in one step using this family. No transition state was
 found for such a reaction.
 """,
@@ -112,9 +112,9 @@ forbidden(
 11 Cb u0 {10,B} {12,B}
 12 *2 Cb u0 {4,S} {7,B} {11,B}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid a benzofulvenyl radical  from isomerizing to 1H_naphthalene in one step using this family. No transition state was
 found for such a reaction.
 """,
@@ -135,9 +135,9 @@ forbidden(
 10 *2 Cb u0 {5,B} {9,B} {11,S}
 11 *3 C u0 {1,S} {10,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid a 1H_naphthalene radical  from isomerizing to benzofulvenyl radical in one step using this family. No transition state was
 found for such a reaction.
 """,
@@ -158,9 +158,9 @@ forbidden(
 10 *2 Cb u0 {5,B} {9,B} {11,S}
 11 *3 C u0 {1,S} {10,S}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Forbid a 1H_naphthalene radical  from isomerizing to benzofulvenyl radical in one step using this family. No transition state was
 found for such a reaction.
 """,

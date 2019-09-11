@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Surface_Dissociation/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 """
 entry(
     index = 1,
@@ -17,8 +17,8 @@ entry(
         Tmax = (3000, 'K'),
     ),
     rank = 0,
-    shortDesc = u"""Default""",
-    longDesc = u"""
+    shortDesc = """Default""",
+    longDesc = """
 "Arrhenius preexponential values for surface recombination...reactions
 are, in the SI system,... 10^13 - 10^14 m2/mol/s ...for bimolecular reactions"
 from page 54 of "Silicon epitaxy"

@@ -164,6 +164,32 @@ class Atom(Vertex):
         self.atomType = atomTypes[d['atomType']] if d['atomType'] else None
         self.lonePairs = d['lonePairs']
 
+    def __hash__(self):
+        """
+        Define a custom hash method to allow Atom objects to be used in dictionaries and sets.
+        """
+        return hash(('Atom', self.symbol))
+
+    def __eq__(self, other):
+        """Method to test equality of two Atom objects."""
+        return self is other
+
+    def __lt__(self, other):
+        """Define less than comparison. For comparing against other Atom objects (e.g. when sorting)."""
+        if isinstance(other, Atom):
+            return self.sorting_key < other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform less than comparison between Atom and '
+                                      '{0}.'.format(type(other).__name__))
+
+    def __gt__(self, other):
+        """Define greater than comparison. For comparing against other Atom objects (e.g. when sorting)."""
+        if isinstance(other, Atom):
+            return self.sorting_key > other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform greater than comparison between Atom and '
+                                      '{0}.'.format(type(other).__name__))
+
     @property
     def mass(self):
         return self.element.mass
@@ -179,6 +205,11 @@ class Atom(Vertex):
     @property
     def bonds(self):
         return self.edges
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Atom objects. Read-only"""
+        return self.number, -getVertexConnectivityValue(self), self.radicalElectrons, self.lonePairs, self.charge
 
     def equivalent(self, other, strict=True):
         """
@@ -229,14 +260,6 @@ class Atom(Vertex):
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
             return True
-
-    def get_descriptor(self):
-        """
-        Return a tuple used for sorting atoms.
-        Currently uses atomic number, connectivity value,
-        radical electrons, lone pairs, and charge
-        """
-        return self.number, -getVertexConnectivityValue(self), self.radicalElectrons, self.lonePairs, self.charge
 
     def isSpecificCaseOf(self, other):
         """
@@ -546,6 +569,34 @@ class Bond(Edge):
         """
         return (Bond, (self.vertex1, self.vertex2, self.order))
 
+    def __hash__(self):
+        """
+        Define a custom hash method to allow Bond objects to be used in dictionaries and sets.
+        """
+        return hash(('Bond', self.order,
+                     self.atom1.symbol if self.atom1 is not None else '',
+                     self.atom2.symbol if self.atom2 is not None else ''))
+
+    def __eq__(self, other):
+        """Method to test equality of two Bond objects."""
+        return self is other
+
+    def __lt__(self, other):
+        """Define less than comparison. For comparing against other Bond objects (e.g. when sorting)."""
+        if isinstance(other, Bond):
+            return self.sorting_key < other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform less than comparison between Bond and '
+                                      '{0}.'.format(type(other).__name__))
+
+    def __gt__(self, other):
+        """Define greater than comparison. For comparing against other Bond objects (e.g. when sorting)."""
+        if isinstance(other, Bond):
+            return self.sorting_key > other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform greater than comparison between Bond and '
+                                      '{0}.'.format(type(other).__name__))
+
     @property
     def atom1(self):
         return self.vertex1
@@ -553,6 +604,13 @@ class Bond(Edge):
     @property
     def atom2(self):
         return self.vertex2
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Bond objects. Read-only"""
+        return (self.order,
+                self.atom1.number if self.atom1 is not None else 0,
+                self.atom2.number if self.atom2 is not None else 0)
 
     def getBDE(self):
         """
@@ -850,26 +908,35 @@ class Molecule(Graph):
         return self.copy(deep=True)
 
     def __hash__(self):
-        return hash((self.fingerprint))
+        """
+        Define a custom hash method to allow Molecule objects to be used in dictionaries and sets.
 
-    def __richcmp__(x, y, op):
-        if op == 2:  # Py_EQ
-            return x.is_equal(y)
-        if op == 3:  # Py_NE
-            return not x.is_equal(y)
-        else:
-            raise NotImplementedError("Can only check equality of molecules, not > or <")
+        Use the fingerprint property, which is currently defined as the molecular formula, though
+        this is not an ideal hash since there will be significant hash collision, leading to inefficient lookups.
+        """
+        return hash(('Molecule', self.fingerprint))
 
-    def is_equal(self, other):
+    def __eq__(self, other):
         """Method to test equality of two Molecule objects."""
-        if not isinstance(other, Molecule):
-            return False  # different type
-        elif self is other:
-            return True  # same reference in memory
-        elif self.fingerprint != other.fingerprint:
-            return False
+        return self is other or (isinstance(other, Molecule) and
+                                 self.fingerprint == other.fingerprint and
+                                 self.isIsomorphic(other))
+
+    def __lt__(self, other):
+        """Define less than comparison. For comparing against other Molecule objects (e.g. when sorting)."""
+        if isinstance(other, Molecule):
+            return self.sorting_key < other.sorting_key
         else:
-            return self.isIsomorphic(other)
+            raise NotImplementedError('Cannot perform less than comparison between Molecule and '
+                                      '{0}.'.format(type(other).__name__))
+
+    def __gt__(self, other):
+        """Define greater than comparison. For comparing against other Molecule objects (e.g. when sorting)."""
+        if isinstance(other, Molecule):
+            return self.sorting_key > other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform greater than comparison between Molecule and '
+                                      '{0}.'.format(type(other).__name__))
 
     def __str__(self):
         """
@@ -921,10 +988,13 @@ class Molecule(Graph):
         strings matching is a necessary (but not sufficient) condition for
         the associated molecules to be isomorphic.
 
-        Currently, the fingerprint is simply the chemical formula.
+        Use an expanded molecular formula to also enable sorting.
         """
         if self._fingerprint is None:
-            self.fingerprint = self.getFormula()
+            # Include these elements in this order at minimum
+            element_dict = {'C': 0, 'H': 0, 'N': 0, 'O': 0, 'S': 0}
+            element_dict.update(self.get_element_count())
+            self._fingerprint = ''.join([f'{symbol}{num:0>2}' for symbol, num in element_dict.items()])
         return self._fingerprint
 
     @fingerprint.setter
@@ -944,6 +1014,11 @@ class Molecule(Graph):
         if self._smiles is None:
             self._smiles = self.toSMILES()
         return self._smiles
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Molecule objects. Read-only"""
+        return self.fingerprint
 
     def addAtom(self, atom):
         """
@@ -1043,7 +1118,7 @@ class Molecule(Graph):
             if vertex.sortingLabel < 0:
                 self.updateConnectivityValues()
                 break
-        self.atoms.sort(key=lambda a: a.get_descriptor(), reverse=True)
+        self.atoms.sort(reverse=True)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 

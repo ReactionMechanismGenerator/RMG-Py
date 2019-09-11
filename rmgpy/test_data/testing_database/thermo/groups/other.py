@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Other Corrections"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -19,9 +19,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""dummy root""",
+    shortDesc = """dummy root""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -43,9 +43,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""All the corrections from this family are from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    shortDesc = """All the corrections from this family are from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -69,9 +69,9 @@ entry(
         H298 = (-1.6,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""This is correction NN2 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    shortDesc = """This is correction NN2 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -97,9 +97,9 @@ entry(
         H298 = (-0.5,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""This is correction NN1 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    shortDesc = """This is correction NN1 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -126,9 +126,9 @@ entry(
         H298 = (-0.9,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""This is correction NN3 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    shortDesc = """This is correction NN3 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -156,9 +156,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (0,'cal/(mol*K)'),
     ),
-    shortDesc = u"""This is correction NN0 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    shortDesc = """This is correction NN0 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
     longDesc = 
-u"""
+"""
 
 """,
 )

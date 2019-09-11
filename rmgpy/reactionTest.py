@@ -1218,7 +1218,10 @@ class TestReaction(unittest.TestCase):
         Test that a Reaction object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
-        exec('reaction = %r' % (self.reaction))
+        namespace = {}
+        exec('reaction = {0!r}'.format(self.reaction), globals(), namespace)
+        self.assertIn('reaction', namespace)
+        reaction = namespace['reaction']
 
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
         self.assertEqual(len(self.reaction.products), len(reaction.products))

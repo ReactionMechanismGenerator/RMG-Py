@@ -207,7 +207,7 @@ def loadThermoDataFile(filePath):
                 'array': np.array,
                 'int32': np.int32,
             }
-            exec(resultFile, global_context, local_context)
+            exec(resultFile.read(), global_context, local_context)
     except IOError:
         logging.info("Couldn't read thermo file {0}".format(filePath))
         return None

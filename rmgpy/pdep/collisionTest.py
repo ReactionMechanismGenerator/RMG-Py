@@ -101,7 +101,10 @@ class TestSingleExponentialDown(unittest.TestCase):
         Test that a SingleExponentialDown object can be successfully 
         reconstructed from its repr() with no loss of information.
         """
-        exec('singleExponentialDown = {0!r}'.format(self.singleExponentialDown))
+        namespace = {}
+        exec('singleExponentialDown = {0!r}'.format(self.singleExponentialDown), globals(), namespace)
+        self.assertIn('singleExponentialDown', namespace)
+        singleExponentialDown = namespace['singleExponentialDown']
         self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
         self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
         self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)

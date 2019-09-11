@@ -42,7 +42,6 @@ import time
 from copy import deepcopy
 
 import numpy as np
-from six import string_types
 
 import rmgpy.constants as constants
 import rmgpy.molecule
@@ -133,19 +132,8 @@ def saveEntry(f, entry):
         f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "":
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write('    shortDesc = u"""')
-    try:
-        f.write(entry.shortDesc.encode('utf-8'))
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        f.write(entry.shortDesc.strip().encode('ascii', 'replace'))
-    f.write('""",\n')
-    f.write('    longDesc = \n')
-    f.write('u"""\n')
-    try:
-        f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        f.write(entry.longDesc.strip().encode('ascii', 'replace') + "\n")
-    f.write('""",\n')
+    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
 
@@ -172,7 +160,7 @@ def generateOldLibraryEntry(data):
             data.S298.uncertainty / 4.184,
             max(data.Cpdata.uncertainty) / 4.184,
         )
-    elif isinstance(data, string_types):
+    elif isinstance(data, str):
         return data
     else:
         return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
@@ -770,10 +758,8 @@ class ThermoGroups(Database):
         """
         destination.data = source.data
         destination.reference = source.reference
-        destination._longDesc = source._longDesc
-        destination._shortDesc = source._shortDesc
-        destination._longDesc = source.longDesc
-        destination._shortDesc = source.shortDesc
+        destination.shortDesc = source.shortDesc
+        destination.longDesc = source.longDesc
         destination.rank = source.rank
         destination.referenceType = source.referenceType
 
@@ -793,10 +779,10 @@ class ThermoGroups(Database):
 
         # look for other pointers that point toward entry
         for entry in self.entries.values():
-            if isinstance(entry.data, string_types):
+            if isinstance(entry.data, str):
                 if entry.data == groupToRemove.label:
                     # if the entryToRemove.data is also a pointer, then copy
-                    if isinstance(groupToRemove.data, string_types):
+                    if isinstance(groupToRemove.data, str):
                         entry.data = groupToRemove.data
                     # if the parent points toward entry and the data is
                     # not a base string, we need to copy the data to the parent
@@ -1758,7 +1744,7 @@ class ThermoDatabase(object):
 
         if molecule.isRadical():
             thermo = [self.estimateRadicalThermoViaHBI(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
-            H298 = np.array([tdata.H298 for tdata in thermo])
+            H298 = np.array([tdata.H298.value_si for tdata in thermo])
             indices = H298.argsort()
             species.molecule = [species.molecule[ind] for ind in indices]
             thermo0 = thermo[indices[0]]
@@ -2263,7 +2249,7 @@ class ThermoDatabase(object):
 
         data = node.data
         comment = node.label
-        while isinstance(data, string_types) and data is not None:
+        while isinstance(data, str) and data is not None:
             for entry in ring_database.entries.values():
                 if entry.label == data:
                     data = entry.data
@@ -2331,7 +2317,7 @@ class ThermoDatabase(object):
         data = node.data
         comment = node.label
         loop_count = 0
-        while isinstance(data, string_types):
+        while isinstance(data, str):
             loop_count += 1
             if loop_count > 100:
                 raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
@@ -2383,7 +2369,7 @@ class ThermoDatabase(object):
         data = node.data
         comment = node.label
         loop_count = 0
-        while isinstance(data, string_types):
+        while isinstance(data, str):
             loop_count += 1
             if loop_count > 100:
                 raise DatabaseError(

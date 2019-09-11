@@ -996,7 +996,8 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     lpsolve('set_maxim', lp)                    # set solver to maximize objective
     lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
     lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
-    lpsolve('set_constr_type', lp, ['='] * m)   # set all constraints as equality constraints
+    for i in range(m):                          # set all constraints as equality constraints
+        lpsolve('set_constr_type', lp, i + 1, '=')
     lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
 
     # Constrain values of exocyclic bonds, since we don't want to modify them

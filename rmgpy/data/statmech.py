@@ -82,13 +82,8 @@ def saveEntry(f, entry):
         f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "":
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write('    shortDesc = u"""')
-    f.write(entry.shortDesc)
-    f.write('""",\n')
-    f.write('    longDesc = \n')
-    f.write('u"""\n')
-    f.write(entry.longDesc.strip() + "\n")
-    f.write('\n""",\n')
+    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -405,8 +400,9 @@ class StatmechGroups(Database):
                 freqs_removed = 0
                 freq_count = len(frequencies)
                 while freq_count > num_vibrations:
-                    min_degeneracy, min_entry = min([(entry.data.symmetry, entry)
-                                                     for entry in group_count if group_count[entry] > 0])
+                    min_entry = min((entry for entry in group_count if group_count[entry] > 0),
+                                    key=lambda x: x.data.symmetry)
+                    min_degeneracy = min_entry.data.symmetry
                     if group_count[min_entry] > 1:
                         group_count[min_entry] -= 1
                     else:

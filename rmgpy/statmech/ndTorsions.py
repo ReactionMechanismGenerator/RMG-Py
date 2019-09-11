@@ -337,7 +337,7 @@ end_temperatures                   #
         use Q2DTor to generate a .ics file the Q2DTor file that
         has torsional information
         """
-        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--init'],
+        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--init'],
                                     cwd=self.q2dtor_dir)
 
     def fitFourier(self):
@@ -345,14 +345,14 @@ end_temperatures                   #
         use Q2DTor to fit fourier coefficients
         to the potential
         """
-        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--fourier'],
+        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--fourier'],
                                     cwd=self.q2dtor_dir)
 
     def getSplistfile(self):
         """
         use Q2DTor to generate a .splist file
         """
-        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--findsp'],
+        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--findsp'],
                                     cwd=self.q2dtor_dir)
 
     def getEigvals(self):
@@ -361,7 +361,7 @@ end_temperatures                   #
         rotors
         writes a .evals file and reads it to fill self.evals and self.energy
         """
-        out = subprocess.check_call(['python2', self.q2dtor_path, self.name, '--tor2dns'],
+        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--tor2dns'],
                                     cwd=self.q2dtor_dir)
         self.readEigvals()
 

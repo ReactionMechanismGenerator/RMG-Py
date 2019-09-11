@@ -89,8 +89,8 @@ class TestQMCalculator(unittest.TestCase):
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
-        stdut, stderr = process.communicate("\n")
-        NO_LICENCE = 'To install the MOPAC license' in stderr
+        stdut, stderr = process.communicate(b'\n')
+        NO_LICENCE = b'To install the MOPAC license' in stderr
 
     gaussExecutablePath = Gaussian.executablePath
     NO_GAUSSIAN = not os.path.exists(gaussExecutablePath)

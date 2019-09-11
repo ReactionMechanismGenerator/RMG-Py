@@ -1385,7 +1385,7 @@ class TestGroup(unittest.TestCase):
 4 *4 [C,Cd,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
 """
         # Use of tabs in the expected string is intentional
-        expected = """
+        expected = rb"""
 graph G {
 	graph [dpi=52];
 	node [label="\N"];
@@ -1414,7 +1414,7 @@ graph G {
         """
         group = Group().fromAdjacencyList(adjlist)
         result = group.draw('canon')
-        self.assertEqual(''.join(result.split()), ''.join(expected.split()))
+        self.assertEqual(b''.join(result.split()), b''.join(expected.split()))
 
     def testMergeGroups(self):
         """

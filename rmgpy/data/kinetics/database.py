@@ -161,11 +161,9 @@ class KineticsDatabase(object):
         If all items begin with a `!` (e.g. ['!H_Abstraction']), then the
         selection will be inverted to families NOT in the list.
         """
-        for (root, dirs, files) in os.walk(os.path.join(path)):
-            if root == path:
-                break  # all we wanted was the list of dirs in the base path
-
-        all_families = set(dirs)
+        dirs = os.listdir(path)
+        all_families = set([item for item in dirs if os.path.isdir(os.path.join(path, item))])  # Only keep folders
+        all_families.discard('__pycache__')
 
         # Convert input to a list to simplify processing
         if not isinstance(families, list):

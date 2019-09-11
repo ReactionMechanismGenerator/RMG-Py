@@ -254,8 +254,10 @@ class TestWilhoit(unittest.TestCase):
         Test that a Wilhoit object can be reconstructed from its repr() output
         with no loss of information.
         """
-        wilhoit = None
-        exec('wilhoit = {0!r}'.format(self.wilhoit))
+        namespace = {}
+        exec('wilhoit = {0!r}'.format(self.wilhoit), globals(), namespace)
+        self.assertIn('wilhoit', namespace)
+        wilhoit = namespace['wilhoit']
         self.assertAlmostEqual(self.wilhoit.Cp0.value, wilhoit.Cp0.value, 4)
         self.assertEqual(self.wilhoit.Cp0.units, wilhoit.Cp0.units)
         self.assertAlmostEqual(self.wilhoit.CpInf.value, wilhoit.CpInf.value, 3)

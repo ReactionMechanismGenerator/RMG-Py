@@ -208,8 +208,10 @@ class TestChebyshev(unittest.TestCase):
         Test that a Chebyshev object can be reconstructed from its repr()
         output with no loss of information.
         """
-        chebyshev = None
-        exec('chebyshev = {0!r}'.format(self.chebyshev))
+        namespace = {}
+        exec('chebyshev = {0!r}'.format(self.chebyshev), globals(), namespace)
+        self.assertIn('chebyshev', namespace)
+        chebyshev = namespace['chebyshev']
         self.assertEqual(self.chebyshev.coeffs.value.shape[0], chebyshev.coeffs.value.shape[0])
         self.assertEqual(self.chebyshev.coeffs.value.shape[1], chebyshev.coeffs.value.shape[1])
         for i in range(self.chebyshev.coeffs.value.shape[0]):

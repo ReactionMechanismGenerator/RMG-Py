@@ -143,7 +143,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         a6_low = Ffloat(lines[3][45:60].strip())
     except (IndexError, ValueError) as e:
         logging.warning('Error while reading thermo entry for species {0}'.format(species))
-        logging.warning(e.message)
+        logging.warning(str(e))
         return species, None, None
 
     # Construct and return the thermodynamics model
@@ -340,7 +340,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
             raise ChemkinError(
                 'Third body colliders in reactants and products of reaction {0} are not identical!'.format(reaction))
         extra_parenthesis = collider.count('(') - 1
-        for i in xrange(extra_parenthesis):
+        for i in range(extra_parenthesis):
             # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders,
             #     although currently not implemented in Chemkin. See RMG-Py #1070
             collider += ')'
@@ -845,17 +845,6 @@ def removeCommentFromLine(line):
     if index < len(line):
         line = line[0:index] + '\n'
 
-    try:
-        ucomment = comment.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            ucomment = comment.decode('latin-1')
-        except UnicodeDecodeError:
-            ucomment = comment.decode('windows-1252', errors='replace')
-    # Convert back to utf-8.
-    # Other parts of RMG-Py expect a string object not a unicode object,
-    # but at least this way we know what the encoding is.
-    comment = ucomment.encode('utf-8', 'replace')
     return line, comment
 
 
@@ -903,8 +892,8 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=
     if dictionaryPath:
         species_dict = loadSpeciesDictionary(dictionaryPath)
 
-    with open(path, 'r+b') as f:
-
+    with open(path, 'r') as f:
+        previous_line = f.tell()
         line0 = f.readline()
         while line0 != '':
             line = removeCommentFromLine(line0)[0]
@@ -912,21 +901,22 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=
 
             if 'SPECIES' in line.upper():
                 # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(-len(line0), 1)
+                f.seek(previous_line)
                 readSpeciesBlock(f, species_dict, species_aliases, species_list)
 
             elif 'THERM' in line.upper() and thermoPath is None:
                 # Skip this if a thermo file is specified
                 # Unread the line (we'll re-read it in readThermoBlock())
-                f.seek(-len(line0), 1)
+                f.seek(previous_line)
                 readThermoBlock(f, species_dict)
 
             elif 'REACTIONS' in line.upper():
                 # Reactions section
                 # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(-len(line0), 1)
+                f.seek(previous_line)
                 reaction_list = readReactionsBlock(f, species_dict, readComments=readComments)
 
+            previous_line = f.tell()
             line0 = f.readline()
 
     # Read in the thermo data from the thermo file        
@@ -988,12 +978,12 @@ cpdef _process_duplicate_reactions(list reactionList):
     cdef Reaction reaction, reaction1, reaction2
     cdef KineticsModel kinetics
 
-    for index1 in xrange(len(reactionList)):
+    for index1 in range(len(reactionList)):
         reaction1 = reactionList[index1]
         if reaction1 in duplicate_reactions_to_remove:
             continue
 
-        for index2 in xrange(index1 + 1, len(reactionList)):
+        for index2 in range(index1 + 1, len(reactionList)):
             reaction2 = reactionList[index2]
             if (reaction1.reactants == reaction2.reactants
                     and reaction1.products == reaction2.products

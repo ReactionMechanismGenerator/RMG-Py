@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "intra_substitutionS_isomerization/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 
@@ -584,9 +584,9 @@ forbidden(
 1 *1 R u0 {2,[S,D]}
 2 *3 R u1 {1,[S,D]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 """,
 )
 
@@ -597,9 +597,9 @@ forbidden(
 1 *3 R u1 {2,[S,D]}
 2    R u1 {1,[S,D]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

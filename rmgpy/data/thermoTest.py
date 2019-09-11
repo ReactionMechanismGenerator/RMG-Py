@@ -34,8 +34,6 @@ import math
 import os
 import unittest
 
-from six import string_types
-
 import rmgpy
 import rmgpy.constants as constants
 from external.wip import work_in_progress
@@ -94,10 +92,9 @@ class TestThermoDatabase(unittest.TestCase):
 
         # Set up ML estimator
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
-        Hf298_path = os.path.join(models_path, 'H298')
-        S298_path = os.path.join(models_path, 'S298')
-        Cp_path = os.path.join(models_path, 'Cp')
-        self.ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
+        hf298_path = os.path.join(models_path, 'hf298')
+        s298_cp_path = os.path.join(models_path, 's298_cp')
+        self.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
     def testPickle(self):
         """
@@ -306,7 +303,8 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         )
 
         # Function should complain if there's no thermo comments
-        self.assertRaises(self.database.extractSourceFromComments(cineole_rad))
+        with self.assertRaises(ValueError):
+            self.database.extractSourceFromComments(other)
 
         # Check a dummy species that has plus and minus thermo group contributions
         polycyclic = Species(
@@ -854,7 +852,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertEqual(rad_group.entries['RJ2_triplet'].data, group_to_remove2.parent.label)
         # If the parent pointed toward group_to_remove, we need should have copied data object
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
-        self.assertNotIsInstance(group_to_remove2.parent.data, string_types)
+        self.assertNotIsInstance(group_to_remove2.parent.data, str)
         self.assertEqual(group_to_remove2.parent.data.getEnthalpy(298), group_to_remove2.data.getEnthalpy(298))
         self.assertEqual(group_to_remove2.parent.data.getEntropy(298), group_to_remove2.data.getEntropy(298))
         self.assertTrue(all([group_to_remove2.parent.data.getHeatCapacity(x) == group_to_remove2.data.getHeatCapacity(x)
@@ -1201,9 +1199,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         test_molecule = Molecule(atoms=test_atom_list)
         copied_molecule = Molecule(atoms=copied_atom_list)
 
-        self.assertTrue(test_atom_list != copied_atom_list)
-        self.assertTrue(len(test_atom_list) == len(copied_atom_list))
-        self.assertTrue(test_molecule.is_equal(copied_molecule))
+        self.assertNotEqual(test_atom_list, copied_atom_list)
+        self.assertEqual(len(test_atom_list), len(copied_atom_list))
+        self.assertEqual(test_molecule, copied_molecule)
 
     def testToFailCombineTwoRingsIntoSubMolecule(self):
         """
@@ -1463,7 +1461,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         test_cycle1 = main_cycle[0:8]
         test_cycle2 = main_cycle[6:]
         joined_cycle = combineCycles(test_cycle1, test_cycle2)
-        self.assertTrue(sorted(main_cycle) == sorted(joined_cycle))
+        self.assertEqual(set(main_cycle), set(joined_cycle))
 
     def testSplitBicyclicIntoSingleRings1(self):
         """

@@ -58,7 +58,8 @@ def convertChemkin2yml(chemkinPath, spcDictPath=None, output="chem.rms"):
 
 def writeyml(spcs, rxns, solvent=None, solventData=None, path="chem.yml"):
     D = getMechDict(spcs, rxns, solvent=solvent, solventData=solventData)
-    yaml.dump(D, stream=file(path, 'w'))
+    with open(path, 'w') as f:
+        yaml.dump(D, stream=f)
 
 
 def getMechDict(spcs, rxns, solvent='solvent', solventData=None):

@@ -38,8 +38,6 @@ import logging
 import os.path
 from copy import deepcopy
 
-from six import string_types
-
 import rmgpy.constants as constants
 from rmgpy.data.base import Database, Entry, makeLogicNode, DatabaseError
 from rmgpy.molecule import Molecule, Group
@@ -90,22 +88,8 @@ def saveEntry(f, entry):
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
 
-    f.write('    shortDesc = u"""')
-    try:
-        f.write(entry.shortDesc.encode('utf-8'))
-    except:
-        f.write(entry.shortDesc.strip().encode('ascii', 'ignore'))
-    f.write('""",\n')
-    if entry.longDesc:
-        f.write('    longDesc = \n')
-        f.write('u"""\n')
-        try:
-            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-        except:
-            f.write(entry.longDesc.strip().encode('ascii', 'ignore') + "\n")
-        f.write('""",\n')
-    else:
-        f.write('    longDesc = u"""""",\n')
+    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -545,7 +529,7 @@ class TransportDatabase(object):
             raise KeyError('Node {!r} has no parent with data in the transport database.'.format(node0))
         data = node.data
         comment = node.label
-        while isinstance(data, string_types) and data is not None:
+        while isinstance(data, str) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data

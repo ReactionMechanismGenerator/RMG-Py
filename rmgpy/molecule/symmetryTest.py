@@ -176,7 +176,7 @@ multiplicity 3
         molecule = Molecule().fromSMILES('CC')
         symmetry_number = 1
         for atom1 in molecule.atoms:
-            for atom2 in atom1.bonds:
+            for atom2 in list(atom1.bonds):
                 if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
                     symmetry_number *= calculateBondSymmetryNumber(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
@@ -188,7 +188,7 @@ multiplicity 3
         molecule = Molecule().fromSMILES('CCC')
         symmetry_number = 1
         for atom1 in molecule.atoms:
-            for atom2 in atom1.bonds:
+            for atom2 in list(atom1.bonds):
                 if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
                     symmetry_number *= calculateBondSymmetryNumber(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 1)
@@ -200,7 +200,7 @@ multiplicity 3
         molecule = Molecule().fromSMILES('CCCC')
         symmetry_number = 1
         for atom1 in molecule.atoms:
-            for atom2 in atom1.bonds:
+            for atom2 in list(atom1.bonds):
                 if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
                     symmetry_number *= calculateBondSymmetryNumber(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
@@ -212,7 +212,7 @@ multiplicity 3
         molecule = Molecule().fromSMILES('C=C')
         symmetry_number = 1
         for atom1 in molecule.atoms:
-            for atom2 in atom1.bonds:
+            for atom2 in list(atom1.bonds):
                 if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
                     symmetry_number *= calculateBondSymmetryNumber(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
@@ -224,7 +224,7 @@ multiplicity 3
         molecule = Molecule().fromSMILES('C#C')
         symmetry_number = 1
         for atom1 in molecule.atoms:
-            for atom2 in atom1.bonds:
+            for atom2 in list(atom1.bonds):
                 if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
                     symmetry_number *= calculateBondSymmetryNumber(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
