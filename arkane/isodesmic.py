@@ -853,9 +853,16 @@ class ErrorCancelingScheme(object):
             h298_mean = float(data[0][-2].value_si)
         else:
             try:
-                sum_of_weights = np.sum(data[:,-1])
-                h298_sum = np.sum(np.array([h.value_si for h in data[:,-2]]) * data[:,-1])
-                h298_mean = h298_sum/sum_of_weights
+                #sum_of_weights = np.sum(data[:,-1])
+                h298_array = np.array([h.value_si for h in data[:,-2]] * data[:,-1])
+                h298_mean = np.mean(h298_array)
+                std = np.std(h298_array)
+                condlist = [abs(h298_array)<= 3*std]
+                choicelist = [h298_array]
+                h298 = np.select(condlist, choicelist)
+                h298 = np.mean(h298)
+                #h298_sum = np.sum(np.array([h.value_si for h in data[:,-2]]) * data[:,-1])
+                #h298_mean = h298_sum/sum_of_weights
             except:
                 print "something went wrong when calculating H298 for {}".format(self.target)
                 logging.info("something went wrong when calculating H298 for {}".format(self.target))
@@ -872,7 +879,7 @@ class ErrorCancelingScheme(object):
         #     fod_dict[rxn] = (h298_kcal_mol[i],rxn.target.fod) + tuple(s.fod for s in rxn.species)
 
         # return ScalarQuantity(np.median(h298_list), 'J/mol'), zip(reaction_list,h298_kcal_mol), fod_dict
-        return ScalarQuantity(h298_mean, 'J/mol'), reactions, rejected_reactions
+        return ScalarQuantity(h298, 'J/mol'), reactions, rejected_reactions
 
 class IsodesmicScheme(ErrorCancelingScheme):
     """
