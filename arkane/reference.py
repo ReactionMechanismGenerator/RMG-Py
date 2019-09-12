@@ -235,8 +235,9 @@ class ReferenceSpecies(ArkaneSpecies):
         high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
         low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
         fod = self.calculated_data[model_chemistry].fod
+        error_metric = self.calculated_data[model_chemistry].error_metric
 
-        return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, fod, preferred_source)
+        return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, fod, error_metric,preferred_source)
 
 
     def write_fod_input(self,model_chemistry,method,directory='.'):
@@ -347,7 +348,7 @@ class CalculatedDataEntry(RMGObject):
     A class for storing a single entry of statistical mechanical and thermochemistry information calculated at a single
     model chemistry or level of theory
     """
-    def __init__(self, conformer=None, thermo=None, thermo_data=None, t1_diagnostic=None, fod=None):
+    def __init__(self, conformer=None, thermo=None, thermo_data=None, t1_diagnostic=None, fod=None, error_metric=None):
         """
 
         Args:
@@ -369,6 +370,7 @@ class CalculatedDataEntry(RMGObject):
         self.thermo_data = thermo_data
         self.t1_diagnostic = t1_diagnostic
         self.fod = fod
+        self.error_metric = error_metric
 
     def __repr__(self):
         return str(self.as_dict())

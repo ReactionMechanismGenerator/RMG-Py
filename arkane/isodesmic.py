@@ -61,7 +61,7 @@ import logging
 class ErrorCancelingSpecies(object):
     """Class for target and known (benchmark) species participating in an error canceling reaction"""
 
-    def __init__(self, molecule, low_level_hf298, model_chemistry, high_level_hf298=None, fod=None, source=None):
+    def __init__(self, molecule, low_level_hf298, model_chemistry, high_level_hf298=None, fod=None, error_metric=None, source=None):
         """
 
         Args:
@@ -93,6 +93,7 @@ class ErrorCancelingSpecies(object):
         self.source = source
 
         self.group = self.classify()
+        self.error_metric = error_metric
 
 
     def __repr__(self):
@@ -283,7 +284,7 @@ class SpeciesConstraints(object):
         self.target_constraint_classes = None
 
         if self.reference_species:
-            self.constraint_map, self.descriptor_weights, self.fod_vector = self.get_constraint_map()
+            self.constraint_map, self.descriptor_weights, self.error_vector = self.get_constraint_map()
         else:
             self.constraint_map = None
 
@@ -372,7 +373,7 @@ class SpeciesConstraints(object):
 
         constraint_map = defaultdict(defaultdict)
         objective_vectors = defaultdict(np.array)
-        fod_vector = np.zeros(len(self.reference_species))
+        error_vector = np.zeros(len(self.reference_species))
         
         # constraint_map['class_0'] = defaultdict()
         # constraint_map['class_1'] = defaultdict()
@@ -385,11 +386,11 @@ class SpeciesConstraints(object):
         #all_species = self.all_reference_species + [self.target]
 
         for i,species in enumerate(self.reference_species):
-            if species.fod is None:
-                fod = 0.01
+            if species.error_metric is None:
+                error_metric = 1.0
             else:
-                fod = species.fod
-            fod_vector[i] = fod
+                error_metric = species.error_metric
+            error_vector[i] = error_metric
             descriptors = self.get_descriptors(species)
             for constraint_class, descriptor_list in descriptors.items():
                 for d in descriptor_list:
@@ -410,9 +411,9 @@ class SpeciesConstraints(object):
         #         objective_vector[0][i] = weight
         #     objective_vectors[constraint_class] = objective_vector
 
-        fod_vector.shape = (len(self.reference_species),1)
+        error_vector.shape = (len(self.reference_species),1)
 
-        return constraint_map, objective_vectors, fod_vector
+        return constraint_map, objective_vectors, error_vector
 
     def filter_constraint_classes(self,target=None):
 
@@ -421,7 +422,7 @@ class SpeciesConstraints(object):
                 target = self.target
     
         # if not self.constraint_map and len(self.reference_species) > 0:
-        #     self.constraint_map, self.descriptor_weights, self.fod_vector = self.get_constraint_map()
+        #     self.constraint_map, self.descriptor_weights, self.error_vector = self.get_constraint_map()
         # else:
         #     raise ValueError('There are no reference species for this SpeciesConstraints object from which' 
         #     'to generate a constraint map')
@@ -613,16 +614,16 @@ class ErrorCancelingScheme(object):
       
         c_matrix = np.take(constraint_matrix, reference_subset, axis=0)
         c_matrix = np.tile(c_matrix, (2, 1))
-        #fod_vector = self.constraints.fod_vector[reference_subset]
-        #fod_vector = np.tile(fod_vector,(2,1))
+        error_vector = self.constraints.error_vector[reference_subset]
+        error_vector = np.tile(error_vector,(2,1))
         # objective_fn: vector, one per reference species (doubled) 
         # objective_fn = np.sum(c_matrix, 1, dtype=int) # indicating ~size of molecule
-        # objective_fn = np.sum(c_matrix * fod_vector * weights * class_penalty, 1, dtype=float)
+        # objective_fn = np.sum(c_matrix * error_vector * weights * class_penalty, 1, dtype=float)
         #objective_matrix = np.ones_like(c_matrix,dtype=int) # all species are equal
         #fod_penalty = 5.0 # arbitrary chosen penalty for high FOD
-        # objective_fn = 1.0 + fod_penalty*fod_vector # penalize things with higher FOD
-        #objective_fn = np.sum(objective_matrix * (2.0*fod_vector) * weights * class_penalty,1,dtype=float)
-        objective_fn = np.sum(c_matrix,1,dtype=float)
+        # objective_fn = 1.0 + fod_penalty*error_vector # penalize things with higher FOD
+        objective_fn = np.sum(c_matrix * error_vector,1,dtype=float)
+        #objective_fn = np.sum(c_matrix,1,dtype=float)
         targets = -1 * self.target_constraints[constraint_class]
         m, n  = c_matrix.shape
         split = int(m/2)
@@ -680,7 +681,7 @@ class ErrorCancelingScheme(object):
                         targets[j])
 
             lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
-            lpsolve('set_timeout', lp, 2)  # Move on if lpsolve can't find a solution quickly
+            lpsolve('set_timeout', lp, 3)  # Move on if lpsolve can't find a solution quickly
 
             # Constrain v_i to be 4 or less
             for i in range(m):
@@ -749,7 +750,7 @@ class ErrorCancelingScheme(object):
             lower_class_obj = 1e6
         subset_queue = deque()
         subset_queue.append(full_set)
-        max_attempts = 1000
+        max_attempts = 500
         attempts = 0
         rejected = 0
 
