@@ -303,11 +303,12 @@ class SpeciesConstraints(object):
             type(Molecule), type(species)))
         
         descriptors = defaultdict(list)
-
+        mol.identifyRingMembership()
         for atom in mol.atoms:
             
             atom_general = (atom.number, atom.radicalElectrons)
             atom_specific = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons)
+            atom_specific_with_ring = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons, int(atom.props['inRing']))
 
             descriptors['class_0'].append(atom_general)
             descriptors['class_1'].append(atom_specific)
@@ -319,22 +320,24 @@ class SpeciesConstraints(object):
             radical_count = atom.radicalElectrons
             for bonded_atom, bond in atom.bonds.items():
                 radical_count += bonded_atom.radicalElectrons
-                order_number = bond.getOrderNum()
+                order_number = int(bond.getOrderNum())
                 bonds_general.append((bonded_atom.number,order_number))
                 bonds_specific.append((bonded_atom.number,bonded_atom.radicalElectrons,bonded_atom.lonePairs,bonded_atom.charge,order_number))
             bonds_general.sort()
             bonds_specific.sort()
             class_3 = atom_specific + tuple(bonds_general) #+ (radical_count,)
             class_5 = atom_specific + tuple(bonds_specific) #+ (radical_count,)
+            class_6 = atom_specific_with_ring + tuple(bonds_specific)
             descriptors['class_3'].append(class_3)
             descriptors['class_5'].append(class_5)
+            descriptors['class_6'].append(class_6)
 
         for bond in mol.getAllEdges():
             atom1 = bond.atom1
             atom2 = bond.atom2
             radical_count = atom1.radicalElectrons + atom2.radicalElectrons
-            class_2 = tuple(sorted([atom1.number, atom2.number]) + [bond.getOrderNum()]) #+ (radical_count,)
-            class_4 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [bond.getOrderNum()]) #+ (radical_count,)
+            class_2 = tuple(sorted([atom1.number, atom2.number]) + [int(bond.getOrderNum())]) #+ (radical_count,)
+            class_4 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [int(bond.getOrderNum())]) #+ (radical_count,)
             descriptors['class_2'].append(class_2)
             descriptors['class_4'].append(class_4)
 
