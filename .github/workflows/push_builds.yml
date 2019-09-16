@@ -1,0 +1,30 @@
+name: RMG-Py Unit Test Suite (Push)
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Build and Test
+      shell: bash
+      run: |
+        cd ..
+        rm -r RMG-Py
+        git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
+        git clone https://github.com/ReactionMechanismGenerator/RMG-database
+        wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        export PATH=$HOME/miniconda/bin:$PATH
+        cd RMG-Py
+        echo "Listing directory"
+        ls -a
+        echo "Done listing directory"
+        conda env create -q -f environment.yml
+        source activate rmg_env
+        make
+        make test
+        make test-functional
+        make test-database
