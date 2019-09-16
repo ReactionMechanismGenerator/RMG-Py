@@ -11,5 +11,8 @@ jobs:
     - name: Set up Repositories and Environment
       shell: bash
       run: |
-        pwd
-        ls
+        cd ..
+        git clone https://github.com/ReactionMechanismGenerator/RMG-database
+        wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+
