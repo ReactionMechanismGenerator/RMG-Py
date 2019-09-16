@@ -21,3 +21,15 @@ jobs:
         source activate rmg_env
         make
 
+  unit_tests:
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Run RMG-Py Unit Tests
+        shell: bash
+        run: |
+          export PATH=$HOME/miniconda/bin:$PATH
+          source activate rmg_env
+          make test
