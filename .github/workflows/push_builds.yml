@@ -1,0 +1,15 @@
+name: RMG-Py Unit Test Suite (Push)
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Repositories and Environment
+      shell: bash
+      run: |
+        pwd
+        ls
