@@ -513,70 +513,78 @@ class ReferenceDatabase(object):
         A method to check is reference species is isomorphic to calculated data
         """
         try:
-            reference_mol_smiles = Molecule(SMILES=ref.smiles)
-            reference_mol_smiles = reference_mol_smiles.toSingleBonds()
-            reference_mol_adj = Molecule().fromAdjacencyList(ref.adjacency_list)
-            reference_mol_adj = reference_mol_adj.toSingleBonds()
+            reference_mol = Molecule().fromAdjacencyList(ref.adjacency_list)
+            reference_mol = reference_mol.toSingleBonds()
         except AtomTypeError:
-            logging.info("Could not create RMG Molecule for {}".format(ref))
+            logging.warning("Could not create RMG Molecule for {}".format(ref))
             return True
-        if not reference_mol_adj.isIsomorphic(reference_mol_smiles):
-            logging.info("RMG Molecule created from SMILES is not isomorphic to adjacency list mol for {}".format(ref))
-            return False
         coords = ref.calculated_data[model_chem].conformer.coordinates.getValue()
         numbers = ref.calculated_data[model_chem].conformer.number.value
         model_chem_mol = Molecule()
         try:
             model_chem_mol.fromXYZ(numbers,coords)
         except AtomTypeError:
-            logging.info("The {} conformer for {} raised an AtomTypeError and will not be used".format(model_chem,ref))
+            logging.warning("The {} conformer for {} raised an AtomTypeError and will not be used".format(model_chem,ref))
             return False
-        if not model_chem_mol.isIsomorphic(reference_mol_adj):
-            logging.info("Since {0} {1} is not isomorphic to reference species, {0} and will not be used".format(ref,model_chem))
+        if not model_chem_mol.isIsomorphic(reference_mol):
+            logging.warning("Since {0} {1} is not isomorphic to reference species, {0} and will not be used".format(ref,model_chem))
             return False
         return True
 
-    def toThermoLibrary(self,set_name,reference_preference=['atct'],model_chemistry_preference=['g4','m062x-gd3_jun-cc-pvtz','mn15_jun-cc-pvtz',
-                                                        'b3lyp-gd3bj_jun-cc-pvtz','wb97xd_jun-cc-pvtz',
-                                                        'm06hf-gd3_jun-cc-pvtz','m062x_cc-pvtz'])
+    def toThermoLibrary(self,
+                        set_name,
+                        reference_preference =['atct'],
+                        model_chemistry_preference=['g4','m062x-gd3_jun-cc-pvtz','mn15_jun-cc-pvtz',
+                        'b3lyp-gd3bj_jun-cc-pvtz','wb97xd_jun-cc-pvtz','m06hf-gd3_jun-cc-pvtz','m062x_cc-pvtz']):
+
         from rmgpy.data.thermo import ThermoLibrary
         from rmgpy.data.base import Entry
 
-        ThermoLibrary = ThermoLibrary()
+        ThermoLibrary = ThermoLibrary(name='Isodesmic-Reference-Set')
         index = 0
-        for ref in self.reference_set[set_name]:
+        for ref in self.reference_sets[set_name]:
             thermo = None
             for model_chem in model_chemistry_preference:
+                if model_chem not in ref.calculated_data.keys():
+                    continue
+                if ref.multiplicity != ref.calculated_data[model_chem].conformer.spinMultiplicity:
+                    logging.warning("{} has different spin mult than reference {}!".format(model_chem,ref))
+                    continue
                 isomorphic = self.check_isomorphism(ref,model_chem)
                 if isomorphic:
-                    thermo = ref.calculated_data[mode_chem].thermo
+                    thermo = ref.calculated_data[model_chem].thermo
                     break
             if not thermo:
                 logging.warning("Could not add {} to thermo library as the calculated data is not isomorphic".format(ref))
                 continue
             Hf298 = None
             atct_id = ''
-            for source in reference_preference + ref.reference_data.keys()
+            for source in reference_preference + ref.reference_data.keys():
                 if source in ref.reference_data.keys():
-                    if source = 'atct':
+                    if source == 'atct':
                         atct_id = ref.reference_data[source].atct_id
-                    Hf298= ref.reference_data[source].thermo_data.H298.value_si
-                    uncertainty= ref.reference_data[source].thermo_data.H298.uncertainty_si
+                    Hf298 = ref.reference_data[source].thermo_data.H298.value_si
+                    uncertainty = ref.reference_data[source].thermo_data.H298.uncertainty_si
                     break
-            if not Hf298:
+            if Hf298 is None:
                 logging.warning("{} has no reference data...excluding from thermolibrary".format(ref))
+                continue
             i = index
             index += 1
-            molecule = Molecule().fromAdjacencyList(ref.adjacency_list)
-            label = ref.formula + '_' + ref.label
+            #molecule = Molecule().fromAdjacencyList(ref.adjacency_list)
+            label = str(ref.formula) + '_' + str(ref.label)
             current_H298 = thermo.getEnthalpy(298.15)
-            thermo.thermo.changeBaseEnthalpy(Hf298-current_H298)
+            thermo.changeBaseEnthalpy(Hf298-current_H298)
             diff = abs(Hf298 - thermo.getEnthalpy(298.15))
-            if abs(diff) > 1e-3:
+            if thermo.poly1.Tmax > 298.15:
+                diff_poly = abs(Hf298 - thermo.poly1.getEnthalpy(298.15))
+            elif thermo.poly2.Tmax > 298.15:
+                diff_poly = abs(Hf298 - thermo.poly2.getEnthalpy(298.15))
+            if (abs(diff) > 1e-3) or (abs(diff_poly) > 1e-3):
                 logging.warning("Could not set reference thermo for {}...excluding from thermo library".format(ref))
                 continue
             thermo = ref.calculated_data[model_chem].thermo
-            ThermoLibrary.loadEntry(i,label,molecule,thermo,
+            ThermoLibrary.loadEntry(i,label,ref.adjacency_list,thermo,
             shortDesc='{}-{}'.format(source,model_chem), longDesc='H298 taken from {} {} and used to tweak {} calculation'.format(source,atct_id,model_chem))
 
         return ThermoLibrary
