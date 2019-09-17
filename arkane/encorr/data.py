@@ -68,8 +68,12 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
 # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state.
 # The splittings are obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV.
 # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226,
-        'Cl':-0.001338}
+# Halogen Atoms taken from https://cccbdb.nist.gov/elecspin.asp
+SOC = {
+    'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 
+    'S': -0.000893, 'P': 0.0, 'I': -0.011547226,
+    'Cl':-0.001338, 'Br':-0.005597, 'F':-0.000614
+}
 
 
 # Atomic energies
@@ -96,6 +100,38 @@ atom_energies = {
 
     'g3': {
         'H': -0.5010030, 'N': -54.564343, 'O': -75.030991, 'C': -37.827717, 'P': -341.116432, 'S': -397.961110
+    },
+
+    'g4': {
+        'Br': -2573.583595298207 + SOC['Br'], 'C': -37.83274825674235 + SOC['C'],'Cl': -460.01357732146823 + SOC['Cl'],
+        'F': -99.7035542059512 + SOC['F'],'H': -0.5000051145765665, 'N': -54.572244078555364,
+        'O': -75.04407641470698 + SOC['O']
+    },
+
+    'b3lyp-gd3bj_jun-cc-pvtz': {
+        'Br': -2574.1875226196235 + SOC['Br'],'C': -37.85905670561903 + SOC['C'],'Cl': -460.1751342594461 + SOC['Cl'],
+        'F': -99.76599874142578 + SOC['F'], 'O': -75.09405247620397 + SOC['O']
+    },
+
+    'm062x-gd3_jun-cc-pvtz': {
+        'Br': -2574.1981614882384 + SOC['Br'], 'C': -37.84283423642995 + SOC['C'], 'Cl': -460.14102245588464 + SOC['Cl'],
+        'F': -99.73219425452456 + SOC['F'], 'H': -0.49813588717679524, 'N': -54.587423613280166,
+        'O': -75.06579209968129 + SOC['O']
+    },
+
+    'm06hf-gd3_jun-cc-pvtz': {
+        'Br': -2574.385001963926 + SOC['Br'], 'C': -37.85704620758064 + SOC['C'],'Cl': -460.1530080643251 + SOC['Cl'],
+        'F': -99.74460663490936 + SOC['F'],'O': -75.07808694358144 + SOC['O']
+    },
+
+    'mn15_jun-cc-pvtz': {
+        'Br': -2574.488328990481 + SOC['Br'], 'C': -37.80974876153511 + SOC['C'], 'Cl': -460.0507670586289 + SOC['Cl'],
+        'F': -99.68176734398618 + SOC['F'], 'H': -0.49850400650689464, 'N': -54.54198264839306,
+        'O': -75.01779384012698 + SOC['O']
+    },
+
+    'wb97xd_jun-cc-pvtz': {
+        'C': -37.84201073383711 + SOC['C'], 'O': -75.06821605326587 + SOC['O']
     },
 
     # * indicates that the grid size used in the [QChem] electronic
