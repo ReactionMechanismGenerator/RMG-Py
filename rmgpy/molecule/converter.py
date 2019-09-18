@@ -76,7 +76,8 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rdAtom.SetIsotope(atom.element.isotope)
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         rdAtom.SetFormalCharge(atom.charge)
-        if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
+        if atom.element.symbol == 'C' and atom.lonePairs == 1 and atom.radicalElectrons == 0: rdAtom.SetNumRadicalElectrons(2)
+        if atom.element.symbol == 'C' and atom.lonePairs == 1 and atom.radicalElectrons == 1: rdAtom.SetNumRadicalElectrons(3)
         rdkitmol.AddAtom(rdAtom)
         if removeHs and atom.symbol == 'H':
             pass
