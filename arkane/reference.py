@@ -313,7 +313,7 @@ class ReferenceDataEntry(RMGObject):
     """
     A class for storing reference data for a specific species from a single source
     """
-    def __init__(self, thermo_data, atct_id=None):
+    def __init__(self, thermo_data, atct_id=None, source=None):
         """
 
         Args:
@@ -324,6 +324,7 @@ class ReferenceDataEntry(RMGObject):
         self._thermo_data = None
         self.thermo_data = thermo_data
         self.atct_id = atct_id
+        self.source = source
 
     def __repr__(self):
         return str(self.as_dict())
@@ -461,7 +462,7 @@ class ReferenceDatabase(object):
             set_name = os.path.basename(path)
             logging.info('Loading in reference set `{0}` from {1} ...'.format(set_name, path))
             spcs_dirs = os.listdir(path)
-            reference_set = []
+            reference_set = {}
             for spcs in spcs_dirs:
                 ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
                 try:
@@ -488,7 +489,7 @@ class ReferenceDatabase(object):
                         break
                 else:
                     molecule_list.append(molecule)
-                    reference_set.append(ref_spcs)
+                    reference_set[ref_spcs.smiles]=ref_spcs
             
             self.model_chemistries[set_name] = model_chemistries
             self.paths[set_name] = path
@@ -507,6 +508,8 @@ class ReferenceDatabase(object):
 
         for ref in ref_spcs:
             ref.save_yaml(path)
+        
+        
     
     def check_isomorphism(self,ref,model_chem):
         """
