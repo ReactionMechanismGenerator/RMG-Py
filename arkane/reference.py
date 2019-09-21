@@ -39,6 +39,7 @@ import logging
 import os
 
 import yaml
+import string
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
 from arkane.isodesmic import SpeciesConstraints,ErrorCancelingSpecies,ErrorCancelingReaction,ErrorCancelingScheme
@@ -502,14 +503,28 @@ class ReferenceDatabase(object):
                     errorCancellingSet = self.extract_model_chemistry(chem, [set_name])
                     self.errorCancellingSets[set_name][chem] = errorCancellingSet
 
-    def save(self,path,set_name):
+ def save(self,set_name,dir_path):
+    """
+    save reference species as yamls to directory path:
 
-        ref_spcs = self.reference_sets[set_name]
+    Args:
+        set_name (str): name of reference set
+        dir_path (str): path to save ymls
+    """
 
-        for ref in ref_spcs:
-            ref.save_yaml(path)
-        
-        
+    assert set_name in self.reference_sets.keys()
+    ref_set = self.reference_sets[set_name].values()
+
+    for ref in ref_set:
+        ref.label = str(ref.label)
+        valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
+        name = ''.join(c for c in ref.label if c in valid_chars)
+        if not os.path.exists(os.path.join(os.path.abspath(dir_path),name)):
+            os.makedirs(os.path.join(os.path.abspath(dir_path),name))
+        filepath = os.path.join(name + '.yml')
+        full_path = os.path.join(dir_path,name,filepath)
+        with open(full_path, 'w') as f:
+            yaml.dump(data=ref.as_dict(), stream=f)
     
     def check_isomorphism(self,ref,model_chem):
         """
