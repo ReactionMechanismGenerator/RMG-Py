@@ -333,8 +333,8 @@ class TestWilhoit(unittest.TestCase):
 
         # Load databases
         database = RMGDatabase()
-        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
-        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+        database.load_thermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
+        database.load_solvation(os.path.join(settings['database.directory'], 'solvation'))
 
         spc = Species().fromSMILES('CC')
         spc.getThermoData()

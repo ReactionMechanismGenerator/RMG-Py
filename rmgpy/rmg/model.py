@@ -46,7 +46,7 @@ from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
-from rmgpy.data.rmg import getDB
+from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.kinetics import KineticsData, Arrhenius
@@ -422,8 +422,8 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         reactants = [self.makeNewSpecies(reactant, generateThermo=generateThermo)[0] for reactant in forward.reactants]
         products = [self.makeNewSpecies(product, generateThermo=generateThermo)[0] for product in forward.products]
-        if forward.specificCollider is not None:
-            forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
+        if forward.specific_collider is not None:
+            forward.specific_collider = self.makeNewSpecies(forward.specific_collider)[0]
 
         if forward.pairs is not None:
             for pairIndex in range(len(forward.pairs)):
@@ -452,7 +452,7 @@ class CoreEdgeReactionModel:
         if isinstance(forward, TemplateReaction):
             logging.debug('Creating new {0} template reaction {1}'.format(forward.family, forward))
         elif isinstance(forward, DepositoryReaction):
-            logging.debug('Creating new {0} reaction {1}'.format(forward.getSource(), forward))
+            logging.debug('Creating new {0} reaction {1}'.format(forward.get_source(), forward))
         elif isinstance(forward, LibraryReaction):
             logging.debug('Creating new library reaction {0}'.format(forward))
         else:
@@ -838,12 +838,12 @@ class CoreEdgeReactionModel:
         retrieve the best kinetics for the reaction and apply it towards the forward 
         or reverse direction (if reverse, flip the direaction).
         """
-        from rmgpy.data.rmg import getDB
+        from rmgpy.data.rmg import get_db
         # Find the reaction kinetics
         kinetics, source, entry, is_forward = self.generateKinetics(reaction)
         # Flip the reaction direction if the kinetics are defined in the reverse direction
         if not is_forward:
-            family = getDB('kinetics').families[reaction.family]
+            family = get_db('kinetics').families[reaction.family]
             reaction.reactants, reaction.products = reaction.products, reaction.reactants
             reaction.pairs = [(p, r) for r, p in reaction.pairs]
             if family.ownReverse and hasattr(reaction, 'reverse'):
@@ -865,10 +865,10 @@ class CoreEdgeReactionModel:
         family = getFamilyLibraryObject(reaction.family)
 
         # Get the kinetics for the reaction
-        kinetics, source, entry, is_forward = family.getKinetics(reaction, templateLabels=reaction.template,
-                                                                 degeneracy=reaction.degeneracy,
-                                                                 estimator=self.kineticsEstimator,
-                                                                 returnAllKinetics=False)
+        kinetics, source, entry, is_forward = family.get_kinetics(reaction, template_labels=reaction.template,
+                                                                  degeneracy=reaction.degeneracy,
+                                                                  estimator=self.kineticsEstimator,
+                                                                  return_all_kinetics=False)
         # Get the gibbs free energy of reaction at 298 K
         G298 = reaction.getFreeEnergyOfReaction(298)
         gibbs_is_positive = G298 > -1e-8
@@ -878,11 +878,11 @@ class CoreEdgeReactionModel:
                 # The kinetics family is its own reverse, so we could estimate kinetics in either direction
 
                 # First get the kinetics for the other direction
-                rev_kinetics, rev_source, rev_entry, rev_is_forward = family.getKinetics(reaction.reverse,
-                                                                                         templateLabels=reaction.reverse.template,
-                                                                                         degeneracy=reaction.reverse.degeneracy,
-                                                                                         estimator=self.kineticsEstimator,
-                                                                                         returnAllKinetics=False)
+                rev_kinetics, rev_source, rev_entry, rev_is_forward = family.get_kinetics(reaction.reverse,
+                                                                                          template_labels=reaction.reverse.template,
+                                                                                          degeneracy=reaction.reverse.degeneracy,
+                                                                                          estimator=self.kineticsEstimator,
+                                                                                          return_all_kinetics=False)
                 # Now decide which direction's kinetics to keep
                 keep_reverse = False
                 if entry is not None and rev_entry is None:
@@ -1021,10 +1021,10 @@ class CoreEdgeReactionModel:
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
-        forbidden_structures = getDB('forbidden')
+        forbidden_structures = get_db('forbidden')
 
         # check RMG globally forbidden structures
-        if not spec.explicitlyAllowed and forbidden_structures.isMoleculeForbidden(spec.molecule[0]):
+        if not spec.explicitlyAllowed and forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
 
             rxn_list = []
             if spec in self.edge.species:
@@ -1447,18 +1447,18 @@ class CoreEdgeReactionModel:
 
         seedMechanism = database.kinetics.libraries[seedMechanism]
 
-        rxns = seedMechanism.getLibraryReactions()
+        rxns = seedMechanism.get_library_reactions()
 
         for rxn in rxns:
             if isinstance(rxn, LibraryReaction) and not (rxn.library in library_names) and not (rxn.library == 'kineticsjobs'):  # if one of the reactions in the library is from another library load that library
                 database.kinetics.libraryOrder.append((rxn.library, 'Internal'))
-                database.kinetics.loadLibraries(path=path, libraries=[rxn.library])
+                database.kinetics.load_libraries(path=path, libraries=[rxn.library])
                 library_names = list(database.kinetics.libraries.keys())
             if isinstance(rxn, TemplateReaction) and not (rxn.family in family_names):
                 logging.warning('loading reaction {0} originally from family {1} as a library reaction'.format(str(rxn),
                                                                                                                rxn.family))
                 rxn = LibraryReaction(reactants=rxn.reactants[:], products=rxn.products[:],
-                                      library=seedMechanism.name, specificCollider=rxn.specificCollider,
+                                      library=seedMechanism.name, specific_collider=rxn.specific_collider,
                                       kinetics=rxn.kinetics, duplicate=rxn.duplicate,
                                       reversible=rxn.reversible
                                       )
@@ -1477,7 +1477,7 @@ class CoreEdgeReactionModel:
         # Perform species constraints and forbidden species checks
 
         for spec in self.newSpeciesList:
-            if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
+            if database.forbiddenStructures.is_molecule_forbidden(spec.molecule[0]):
                 if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
                     spec.explicitlyAllowed = True
                     logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  "
@@ -1545,17 +1545,17 @@ class CoreEdgeReactionModel:
         logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
-        rxns = reactionLibrary.getLibraryReactions()
+        rxns = reactionLibrary.get_library_reactions()
         for rxn in rxns:
             if isinstance(rxn, LibraryReaction) and not (rxn.library in library_names):  # if one of the reactions in the library is from another library load that library
                 database.kinetics.libraryOrder.append((rxn.library, 'Internal'))
-                database.kinetics.loadLibraries(path=path, libraries=[rxn.library])
+                database.kinetics.load_libraries(path=path, libraries=[rxn.library])
                 library_names = list(database.kinetics.libraries.keys())
             if isinstance(rxn, TemplateReaction) and not (rxn.family in family_names):
                 logging.warning('loading reaction {0} originally from family {1} as a library reaction'.format(str(rxn),
                                                                                                                rxn.family))
                 rxn = LibraryReaction(reactants=rxn.reactants[:], products=rxn.products[:],
-                                      library=reactionLibrary.name, specificCollider=rxn.specificCollider,
+                                      library=reactionLibrary.name, specific_collider=rxn.specific_collider,
                                       kinetics=rxn.kinetics, duplicate=rxn.duplicate,
                                       reversible=rxn.reversible
                                       )
@@ -1574,7 +1574,7 @@ class CoreEdgeReactionModel:
         # Perform species constraints and forbidden species checks
         for spec in self.newSpeciesList:
             if not reactionLibrary.autoGenerated:  # No need to check for forbidden species otherwise
-                if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
+                if database.forbiddenStructures.is_molecule_forbidden(spec.molecule[0]):
                     if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
                         spec.explicitlyAllowed = True
                         logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave "
@@ -1995,6 +1995,6 @@ def areIdenticalSpeciesReferences(rxn1, rxn2):
     """
     identical_same_direction = rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products
     identical_opposite_directions = rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
-    identical_collider = rxn1.specificCollider == rxn2.specificCollider
+    identical_collider = rxn1.specific_collider == rxn2.specific_collider
 
     return (identical_same_direction or identical_opposite_directions) and identical_collider

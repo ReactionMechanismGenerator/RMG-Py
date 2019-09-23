@@ -59,12 +59,12 @@ class PDepReaction(rmgpy.reaction.Reaction):
                  label='',
                  reactants=None,
                  products=None,
-                 specificCollider=None,
+                 specific_collider=None,
                  network=None,
                  kinetics=None,
                  network_kinetics=None,
                  reversible=True,
-                 transitionState=None,
+                 transition_state=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None
@@ -74,11 +74,11 @@ class PDepReaction(rmgpy.reaction.Reaction):
                                          label=label,
                                          reactants=reactants,
                                          products=products,
-                                         specificCollider=specificCollider,
+                                         specific_collider=specific_collider,
                                          kinetics=kinetics,
                                          network_kinetics=network_kinetics,
                                          reversible=reversible,
-                                         transitionState=transitionState,
+                                         transition_state=transition_state,
                                          duplicate=duplicate,
                                          degeneracy=degeneracy,
                                          pairs=pairs
@@ -93,17 +93,17 @@ class PDepReaction(rmgpy.reaction.Reaction):
                                self.label,
                                self.reactants,
                                self.products,
-                               self.specificCollider,
+                               self.specific_collider,
                                self.network,
                                self.kinetics,
                                self.reversible,
-                               self.transitionState,
+                               self.transition_state,
                                self.duplicate,
                                self.degeneracy,
                                self.pairs
                                ))
 
-    def getSource(self):
+    def get_source(self):
         """
         Get the source of this PDepReaction
         """
@@ -346,7 +346,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         filtered_rxns = []
         for rxn in self.pathReactions:
-            E0 = rxn.transitionState.conformer.E0.value_si
+            E0 = rxn.transition_state.conformer.E0.value_si
             if E0 - E0source > dE:
                 filtered_rxns.append(rxn)
 
@@ -811,7 +811,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
             else:
                 E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
-            rxn.transitionState = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
+            rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
 
         # Set collision model
         bath_gas = [spec for spec in reactionModel.core.species if not spec.reactive]

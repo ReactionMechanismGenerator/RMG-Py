@@ -42,9 +42,9 @@ cdef class Reaction:
     cdef public str label
     cdef public list reactants
     cdef public list products
-    cdef public Species specificCollider
+    cdef public Species specific_collider
     cdef public bint reversible
-    cdef public TransitionState transitionState
+    cdef public TransitionState transition_state
     cdef public KineticsModel kinetics
     cdef public Arrhenius network_kinetics
     cdef public bint duplicate

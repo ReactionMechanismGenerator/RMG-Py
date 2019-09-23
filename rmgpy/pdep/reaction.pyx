@@ -100,18 +100,18 @@ def calculateMicrocanonicalRateCoefficient(reaction,
     c0_inv = constants.R * T / 1.0e5
 
     if reaction.canTST():
-        modes = reaction.transitionState.conformer.getActiveModes(activeJRotor=active_j_rotor,
+        modes = reaction.transition_state.conformer.getActiveModes(activeJRotor=active_j_rotor,
                                                                   activeKRotor=active_k_rotor)
 
         # We've been provided with molecular degree of freedom data for the
         # transition state, so let's use the more accurate RRKM theory
         logging.debug('Calculating microcanonical rate coefficient using RRKM theory for {0}...'.format(reaction))
         if reactant_states_known and (reaction.isIsomerization() or reaction.isDissociation()):
-            kf = applyRRKMTheory(reaction.transitionState, Elist, Jlist, reacDensStates)
+            kf = applyRRKMTheory(reaction.transition_state, Elist, Jlist, reacDensStates)
             kf *= c0_inv ** (len(reaction.reactants) - 1)
             forward = True
         elif product_states_known and reaction.isAssociation():
-            kr = applyRRKMTheory(reaction.transitionState, Elist, Jlist, prodDensStates)
+            kr = applyRRKMTheory(reaction.transition_state, Elist, Jlist, prodDensStates)
             kr *= c0_inv ** (len(reaction.products) - 1)        
             forward = False
         else:
@@ -124,11 +124,11 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         logging.debug('Calculating microcanonical rate coefficient using ILT method for {0}...'.format(reaction))
         if reactant_states_known:
             kinetics = reaction.kinetics if reaction.network_kinetics is None else reaction.network_kinetics
-            kf = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, reacDensStates, T)
+            kf = applyInverseLaplaceTransformMethod(reaction.transition_state, kinetics, Elist, Jlist, reacDensStates, T)
             forward = True
         elif product_states_known:
             kinetics = reaction.generateReverseRateCoefficient(network_kinetics=True)
-            kr = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
+            kr = applyInverseLaplaceTransformMethod(reaction.transition_state, kinetics, Elist, Jlist, prodDensStates, T)
             forward = False
         else:
             raise PressureDependenceError('Unable to compute k(E) values via ILT method for path reaction '
@@ -182,7 +182,7 @@ def applyRRKMTheory(transitionState,
                     np.ndarray[np.float64_t,ndim=2] densStates):
     """
     Calculate the microcanonical rate coefficient for a reaction using RRKM
-    theory, where `transitionState` is the transition state of the reaction,
+    theory, where `transition_state` is the transition state of the reaction,
     `Elist` is the array of energies in J/mol at which to evaluate the
     microcanonial rate, and `densStates` is the density of states of the
     reactant.

@@ -52,20 +52,20 @@ class TestLibrary(unittest.TestCase):
         """
         # Set up a dummy database
         cls.database = KineticsDatabase()
-        cls.database.loadLibraries(
+        cls.database.load_libraries(
             os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'libraries'),
             libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
         cls.libraries = cls.database.libraries
 
     def testGetLibraryReactions(self):
         """
-        test that getLibraryReactions loads reactions correctly 
+        test that get_library_reactions loads reactions correctly
         """
-        lib_rxns = self.libraries['GRI-Mech3.0'].getLibraryReactions()
+        lib_rxns = self.libraries['GRI-Mech3.0'].get_library_reactions()
         for rxn in lib_rxns:
             self.assertIsInstance(rxn, LibraryReaction)
 
-        lib_rxns = self.libraries['ethane-oxidation'].getLibraryReactions()  # should have no direct library reactions
+        lib_rxns = self.libraries['ethane-oxidation'].get_library_reactions()  # should have no direct library reactions
         for rxn in lib_rxns:
             if isinstance(rxn.kinetics, PDepKineticsModel):
                 self.assertIsInstance(rxn, LibraryReaction)  # can load pdep as networks yet so load as libraries
@@ -83,12 +83,12 @@ class TestLibrary(unittest.TestCase):
             self.libraries['ethane-oxidation'].save(
                 os.path.join(settings['test_data.directory'],
                              'testing_database', 'kinetics', 'libraries', 'eth-oxcopy', 'reactions.py'))
-            self.database.loadLibraries(
+            self.database.load_libraries(
                 os.path.join(settings['test_data.directory'],
                              'testing_database', 'kinetics', 'libraries'),
                 libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation', 'eth-oxcopy'])
-            ori_rxns = self.database.libraries['ethane-oxidation'].getLibraryReactions()
-            copy_rxns = self.database.libraries['eth-oxcopy'].getLibraryReactions()
+            ori_rxns = self.database.libraries['ethane-oxidation'].get_library_reactions()
+            copy_rxns = self.database.libraries['eth-oxcopy'].get_library_reactions()
             for i in range(len(ori_rxns)):
                 if repr(ori_rxns[i]).strip() != repr(copy_rxns[i]).strip():
                     self.assertIsInstance(copy_rxns[i], TemplateReaction)
@@ -101,7 +101,7 @@ class TestLibrary(unittest.TestCase):
         Test that a :class:Arrhenius kinetics object representing the high pressure limit rate
         is returned from Troe/Lindmann/PDepArrhenius/Chebyshev kinetic classes
         """
-        lib_rxns = self.libraries['lib_net'].getLibraryReactions()
+        lib_rxns = self.libraries['lib_net'].get_library_reactions()
         for rxn in lib_rxns:
             self.assertIsNone(rxn.network_kinetics)
             logging.debug("Processing reaction {0}".format(rxn))

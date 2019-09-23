@@ -47,8 +47,8 @@ import rmgpy.constants as constants
 import rmgpy.molecule.element
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.data.rmg import getDB
-from rmgpy.data.thermo import findCp0andCpInf
+from rmgpy.data.rmg import get_db
+from rmgpy.data.thermo import find_cp0_and_cpinf
 from rmgpy.kinetics.arrhenius import MultiArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.element import getElement
@@ -229,8 +229,8 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
         for pair in reactant_pairs:
             # copy species so they don't get modified
             species_tuple = tuple([spc.copy(deep=True) for spc in pair])
-            unfiltered_rxns = getDB('kinetics').generate_reactions_from_families(species_tuple,
-                                                                                 only_families=[rxn.family])
+            unfiltered_rxns = get_db('kinetics').generate_reactions_from_families(species_tuple,
+                                                                                  only_families=[rxn.family])
             # remove reactions whose products don't match the original reactions
             rxn_index5 = 0
             while rxn_index5 < len(unfiltered_rxns):
@@ -435,7 +435,7 @@ def ensure_reaction_direction(isotopomerRxns):
 
     # find isotopeless reaction as standard
     reference = isotopomerRxns[0]
-    family = getDB('kinetics').families[reference.family]
+    family = get_db('kinetics').families[reference.family]
     if family.ownReverse:
         for rxn in isotopomerRxns:
             if not compare_isotopomers(rxn, reference, eitherDirection=False):
@@ -443,7 +443,7 @@ def ensure_reaction_direction(isotopomerRxns):
                 logging.info('isotope: identified flipped reaction direction in reaction number {} of reaction {}. '
                              'Altering the direction.'.format( rxn.index, str(rxn)))
                 # obtain reverse attribute with template and degeneracy
-                family.addReverseAttribute(rxn)
+                family.add_reverse_attribute(rxn)
                 if frozenset(rxn.reverse.template) != frozenset(reference.template):
                     logging.warning("Reaction {} did not find proper reverse template, might cause "
                                     "degeneracy error.".format(str(rxn)))
@@ -613,7 +613,7 @@ def get_labeled_reactants(reaction, family):
     reactants = list(reaction.reactants)
     products = list(reaction.products)
 
-    family.addAtomLabelsForReaction(reaction, output_with_resonance=True)
+    family.add_atom_labels_for_reaction(reaction, output_with_resonance=True)
     labeled_reactants = [species.molecule[0] for species in reaction.reactants]
 
     # replace the original reactants and products
@@ -871,7 +871,7 @@ def run(inputFile, outputDir, original=None, maximumIsotopicAtoms=1,
 
     logging.info("isotope: adding all the new and old isotopomers")
     for spc in rmg.reactionModel.core.species:
-        findCp0andCpInf(spc, spc.thermo)
+        find_cp0_and_cpinf(spc, spc.thermo)
         isotopes.append([spc] + generate_isotopomers(spc, maximumIsotopicAtoms))
 
     logging.info('isotope: number of isotopomers: {}'.format(

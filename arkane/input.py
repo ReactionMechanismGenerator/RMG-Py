@@ -39,7 +39,7 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.data.rmg import getDB
+from rmgpy.data.rmg import get_db
 from rmgpy.exceptions import InputError, DatabaseError
 from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
@@ -116,7 +116,7 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
                 "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         kineticsFamilies = kineticsFamilies
 
-    rmg_database = getDB() or RMGDatabase()
+    rmg_database = get_db() or RMGDatabase()
 
     rmg_database.load(
         path=databaseDirectory,
@@ -130,10 +130,10 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     )
 
     for family in rmg_database.kinetics.families.values():  # load training
-        family.addKineticsRulesFromTrainingSet(thermoDatabase=rmg_database.thermo)
+        family.add_rules_from_training(thermoDatabase=rmg_database.thermo)
 
     for family in rmg_database.kinetics.families.values():
-        family.fillKineticsRulesByAveragingUp(verbose=True)
+        family.fill_rules_by_averaging_up(verbose=True)
 
 
 def species(label, *args, **kwargs):
@@ -215,7 +215,7 @@ def species(label, *args, **kwargs):
                 raise InputError('Neither thermo, E0, species file path, nor structure specified, cannot estimate'
                                  ' thermo properties of species {0}'.format(spec.label))
             try:
-                db = getDB('thermo')
+                db = get_db('thermo')
                 if db is None:
                     raise DatabaseError('Thermo database is None.')
             except DatabaseError:
@@ -225,7 +225,7 @@ def species(label, *args, **kwargs):
             else:
                 logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
                              ' RMG-Database...'.format(spec.label))
-                spec.thermo = db.getThermoData(spec)
+                spec.thermo = db.get_thermo_data(spec)
                 if spec.thermo.E0 is None:
                     th = spec.thermo.toWilhoit()
                     spec.conformer.E0 = th.E0
@@ -278,15 +278,15 @@ def transitionState(label, *args, **kwargs):
             elif key == 'frequency':
                 frequency = value
             else:
-                raise TypeError('transitionState() got an unexpected keyword argument {0!r}.'.format(key))
+                raise TypeError('transition_state() got an unexpected keyword argument {0!r}.'.format(key))
 
         ts.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         ts.frequency = frequency
     else:
         if len(args) == 0 and len(kwargs) == 0:
             raise InputError(
-                'The transitionState needs to reference a quantum job file or contain kinetic information.')
-        raise InputError('The transitionState can only link a quantum job or directly input information, not both.')
+                'The transition_state needs to reference a quantum job file or contain kinetic information.')
+        raise InputError('The transition_state can only link a quantum job or directly input information, not both.')
 
     return ts
 
@@ -311,15 +311,15 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         transitionState.tunneling = None
     elif transitionState and not isinstance(tunneling, TunnelingModel):
         raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
-    rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState,
+    rxn = Reaction(label=label, reactants=reactants, products=products, transition_state=transitionState,
                    kinetics=kinetics)
 
-    if rxn.transitionState is None and rxn.kinetics is None:
+    if rxn.transition_state is None and rxn.kinetics is None:
         logging.info('estimating rate of reaction {0} using RMG-database')
         if not all([m.molecule != [] for m in rxn.reactants + rxn.products]):
             raise ValueError('chemical structures of reactants and products not available for RMG estimation of '
                              'reaction {0}'.format(label))
-        db = getDB('kinetics')
+        db = get_db('kinetics')
         rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants, products=rxn.products)
         rxns = [r for r in rxns if r.elementary_high_p]
 
@@ -544,8 +544,8 @@ def loadNecessaryDatabases():
 
     # only load if they are not there already.
     try:
-        getDB('transport')
-        getDB('statmech')
+        get_db('transport')
+        get_db('statmech')
     except DatabaseError:
         logging.info("Databases not found. Making databases")
         db = RMGDatabase()

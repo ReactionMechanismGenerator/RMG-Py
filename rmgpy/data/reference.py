@@ -75,7 +75,7 @@ class Reference(object):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = self.toPrettyRepr()
+        string = self.to_pretty_repr()
         string = re.sub(r'\(\n    ', '(', string)
         string = re.sub(r',\n    ', ', ', string)
         string = re.sub(r',\n\)', ')', string)
@@ -87,7 +87,7 @@ class Reference(object):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' *{0}*'.format(self.title)
         if self.year != '':
@@ -96,7 +96,7 @@ class Reference(object):
             string += '.'
         return string
 
-    def toPrettyRepr(self):
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
@@ -115,7 +115,7 @@ class Reference(object):
             string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
 
-    def getAuthorString(self):
+    def get_author_string(self):
         """
         Return a pretty, reStructuredText-formatted string of the authors.
         """
@@ -175,7 +175,7 @@ class Article(Reference):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' "{0}."'.format(self.title)
         if self.journal != '':
@@ -192,7 +192,7 @@ class Article(Reference):
             string += u'.'
         return string
 
-    def toPrettyRepr(self):
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
@@ -257,7 +257,7 @@ class Book(Reference):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' *{0}.*'.format(self.title)
         if self.edition != '':
@@ -272,7 +272,7 @@ class Book(Reference):
             string += u' ({0})'.format(self.year)
         return string + u'.'
 
-    def toPrettyRepr(self):
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
@@ -332,7 +332,7 @@ class Thesis(Reference):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' "{0}."'.format(self.title)
         if self.degree != '':
@@ -345,7 +345,7 @@ class Thesis(Reference):
             string += u'.'
         return string
 
-    def toPrettyRepr(self):
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.

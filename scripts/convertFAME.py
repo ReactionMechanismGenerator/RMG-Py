@@ -295,9 +295,9 @@ def loadFAMEInput(path, moleculeDict=None):
 
         # Read and ignore reaction equation
         equation = readMeaningfulLine(f)
-        reaction = Reaction(transitionState=TransitionState(), reversible=True)
+        reaction = Reaction(transition_state=TransitionState(), reversible=True)
         job.network.pathReactions.append(reaction)
-        reaction.transitionState.conformer = Conformer()
+        reaction.transition_state.conformer = Conformer()
 
         # Read reactant and product indices
         data = readMeaningfulLine(f).split()
@@ -318,8 +318,8 @@ def loadFAMEInput(path, moleculeDict=None):
 
         # Read reaction E0
         E0units, E0 = readMeaningfulLine(f).split()
-        reaction.transitionState.conformer.E0 = Quantity(float(E0), E0units)
-        reaction.transitionState.conformer.E0.units = 'kJ/mol'
+        reaction.transition_state.conformer.E0 = Quantity(float(E0), E0units)
+        reaction.transition_state.conformer.E0.units = 'kJ/mol'
 
         # Read high-pressure limit kinetics
         data = readMeaningfulLine(f)

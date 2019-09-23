@@ -318,8 +318,8 @@ class Uncertainty(object):
 
         # Prepare the database by loading training reactions but not averaging the rate rules
         for familyLabel, family in self.database.kinetics.families.items():
-            family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
-            family.fillKineticsRulesByAveragingUp(verbose=True)
+            family.add_rules_from_training(thermoDatabase=self.database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
     def loadModel(self, chemkinPath, dictionaryPath, transportPath=None):
         """
@@ -355,7 +355,7 @@ class Uncertainty(object):
 
         # couldn't find saturated species in the model, try libraries
         new_spc = Species(molecule=[saturated_struct])
-        thermo = self.database.thermo.getThermoDataFromLibraries(new_spc)
+        thermo = self.database.thermo.get_thermo_data_from_libraries(new_spc)
 
         if thermo is not None:
             new_spc.thermo = thermo
@@ -372,7 +372,7 @@ class Uncertainty(object):
         self.speciesSourcesDict = {}
         for species in self.speciesList:
             if species not in self.extraSpecies:
-                source = self.database.thermo.extractSourceFromComments(species)
+                source = self.database.thermo.extract_source_from_comments(species)
 
                 # Now prep the source data
                 # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
@@ -403,7 +403,7 @@ class Uncertainty(object):
 
         self.reactionSourcesDict = {}
         for reaction in self.reactionList:
-            source = self.database.kinetics.extractSourceFromComments(reaction)
+            source = self.database.kinetics.extract_source_from_comments(reaction)
             # Prep the source data 
             # Consider any library or PDep reaction to be an independent parameter for now
             # and assign the source to the index of the reaction within self.reactionList

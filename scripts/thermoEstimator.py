@@ -60,11 +60,11 @@ def runThermoEstimator(inputFile, library_flag):
     path = os.path.join(settings['database.directory'])
 
     # forbidden structure loading
-    rmg.database.loadThermo(os.path.join(path, 'thermo'), rmg.thermoLibraries, depository=False)
+    rmg.database.load_thermo(os.path.join(path, 'thermo'), rmg.thermoLibraries, depository=False)
 
     if rmg.solvent:
-        rmg.database.loadSolvation(os.path.join(path, 'solvation'))
-        Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+        rmg.database.load_solvation(os.path.join(path, 'solvation'))
+        Species.solventData = rmg.database.solvation.get_solvent_data(rmg.solvent)
         Species.solventName = rmg.solvent
 
     for species in rmg.initialSpecies:

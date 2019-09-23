@@ -34,7 +34,7 @@ Contains functions for generating reactions.
 import logging
 from multiprocessing import Pool
 
-from rmgpy.data.rmg import getDB
+from rmgpy.data.rmg import get_db
 
 
 ################################################################################
@@ -92,7 +92,7 @@ def react_species(species_tuple, only_families=None):
     Returns:
         list of generated reactions
     """
-    reactions = getDB('kinetics').generate_reactions_from_families(species_tuple, only_families=only_families)
+    reactions = get_db('kinetics').generate_reactions_from_families(species_tuple, only_families=only_families)
 
     return reactions
 
@@ -142,7 +142,7 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
         spc_fam_tuples = list(zip(spc_tuples))
     else:
         # Identify and split families that are prone to generate many reactions into sublists.
-        family_list = list(getDB('kinetics').families.keys())
+        family_list = list(get_db('kinetics').families.keys())
         major_families = [
             'H_Abstraction', 'R_Recombination', 'Intra_Disproportionation', 'Intra_RH_Add_Endocyclic',
             'Singlet_Carbene_Intra_Disproportionation', 'Intra_ene_reaction', 'Disproportionation',

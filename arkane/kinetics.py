@@ -82,7 +82,7 @@ class KineticsJob(object):
         else:
             self.sensitivity_conditions = None
 
-        self.arkane_species = ArkaneSpecies(species=self.reaction.transitionState)
+        self.arkane_species = ArkaneSpecies(species=self.reaction.transition_state)
 
     @property
     def Tmin(self):
@@ -157,14 +157,14 @@ class KineticsJob(object):
         self.usedTST = True
         kinetics_class = 'Arrhenius'
 
-        tunneling = self.reaction.transitionState.tunneling
+        tunneling = self.reaction.transition_state.tunneling
         if isinstance(tunneling, Wigner) and tunneling.frequency is None:
-            tunneling.frequency = (self.reaction.transitionState.frequency.value_si, "cm^-1")
+            tunneling.frequency = (self.reaction.transition_state.frequency.value_si, "cm^-1")
         elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
-            tunneling.frequency = (self.reaction.transitionState.frequency.value_si, "cm^-1")
+            tunneling.frequency = (self.reaction.transition_state.frequency.value_si, "cm^-1")
             tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
                                       for reactant in self.reaction.reactants]) * 0.001, "kJ/mol")
-            tunneling.E0_TS = (self.reaction.transitionState.conformer.E0.value_si * 0.001, "kJ/mol")
+            tunneling.E0_TS = (self.reaction.transition_state.conformer.E0.value_si * 0.001, "kJ/mol")
             tunneling.E0_prod = (sum([product.conformer.E0.value_si
                                       for product in self.reaction.products]) * 0.001, "kJ/mol")
         elif tunneling is not None:
@@ -218,13 +218,13 @@ class KineticsJob(object):
                 t_list = self.Tlist.value_si
 
             for T in t_list:
-                tunneling = reaction.transitionState.tunneling
-                reaction.transitionState.tunneling = None
+                tunneling = reaction.transition_state.tunneling
+                reaction.transition_state.tunneling = None
                 try:
                     k0 = reaction.calculateTSTRateCoefficient(T) * factor
                 except SpeciesError:
                     k0 = 0
-                reaction.transitionState.tunneling = tunneling
+                reaction.transition_state.tunneling = tunneling
                 try:
                     k = reaction.calculateTSTRateCoefficient(T) * factor
                     kappa = k / k0
@@ -233,7 +233,7 @@ class KineticsJob(object):
                     kappa = 0
                     logging.info("The species in reaction {0} do not have adequate information for TST, "
                                  "using default kinetics values.".format(reaction))
-                tunneling = reaction.transitionState.tunneling
+                tunneling = reaction.transition_state.tunneling
                 ks.append(k)
                 k0s.append(k0)
 
@@ -307,7 +307,7 @@ class KineticsJob(object):
         """
         if all([spc.molecule is not None and len(spc.molecule)
                 for spc in self.reaction.reactants + self.reaction.products]):
-            self.arkane_species.update_species_attributes(self.reaction.transitionState)
+            self.arkane_species.update_species_attributes(self.reaction.transition_state)
             self.arkane_species.reaction_label = self.reaction.label
             self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
                                              for spc in self.reaction.reactants]
@@ -426,15 +426,15 @@ class KineticsDrawer(object):
         """
         Return the minimum and maximum energy in J/mol on the potential energy surface.
         """
-        e0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
-        e0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        e0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transition_state.conformer.E0.value_si)
+        e0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transition_state.conformer.E0.value_si)
         if e0_max - e0_min > 5e5:
             # the energy barrier in one of the reaction directions is larger than 500 kJ/mol, warn the user
             logging.warning('The energy differences between the stationary points of reaction {0} '
                             'seems too large.'.format(self.reaction))
             logging.warning('Got the following energies:\nWell 1: {0} kJ/mol\nTS: {1} kJ/mol\nWell 2: {2}'
                             ' kJ/mol'.format(self.wells[0].E0 / 1000., self.wells[1].E0 / 1000.,
-                                             self.reaction.transitionState.conformer.E0.value_si / 1000.))
+                                             self.reaction.transition_state.conformer.E0.value_si / 1000.))
         return e0_min, e0_max
 
     def __useStructureForLabel(self, configuration):
@@ -692,7 +692,7 @@ class KineticsDrawer(object):
         # Draw reactions
         e0_reac = self.wells[0].E0 * 0.001 - e0_offset
         e0_prod = self.wells[1].E0 * 0.001 - e0_offset
-        e0_ts = self.reaction.transitionState.conformer.E0.value_si * 0.001 - e0_offset
+        e0_ts = self.reaction.transition_state.conformer.E0.value_si * 0.001 - e0_offset
         x1, y1 = coordinates[0, :]
         x2, y2 = coordinates[1, :]
         x1 += well_spacing / 2.0

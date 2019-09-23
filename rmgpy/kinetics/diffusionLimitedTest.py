@@ -175,7 +175,7 @@ class TestDiffusionLimited(unittest.TestCase):
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.solvent = 'octane'
-        diffusionLimiter.enable(self.database.getSolventData(self.solvent), self.database)
+        diffusionLimiter.enable(self.database.get_solvent_data(self.solvent), self.database)
         self.T = 298
         self.uni_reaction = Reaction(reactants=[octyl_pri], products=[octyl_sec])
         self.uni_reaction.kinetics = Arrhenius(A=(2.0, '1/s'), n=0, Ea=(0, 'kJ/mol'))

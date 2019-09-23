@@ -87,7 +87,7 @@ class KineticsSensitivity(object):
         Execute the sensitivity analysis for a :class:KineticsJob: object
         """
         for species in [self.job.reaction.reactants[0], self.job.reaction.products[0],
-                        self.job.reaction.transitionState]:
+                        self.job.reaction.transition_state]:
             self.perturb(species)
             self.job.execute(outputFile=None, plot=False)  # run the perturbed job
             self.f_sa_rates[species] = [self.job.reaction.kinetics.getRateCoefficient(condition.value_si)
@@ -130,7 +130,7 @@ class KineticsSensitivity(object):
                        "by perturbing E0 of each well or TS by {1}, and are given in "
                        "`mol/J` units.\n\n\n".format(reaction_str, self.perturbation))
             reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
-            ts_label = self.job.reaction.transitionState.label
+            ts_label = self.job.reaction.transition_state.label
             products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
             max_label = max(len(reactants_label), len(products_label), len(ts_label), 10)
             sa_f.write('========================={0}=============================================\n'
@@ -148,7 +148,7 @@ class KineticsSensitivity(object):
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
-                    self.f_sa_coefficients[self.job.reaction.transitionState][i]))
+                    self.f_sa_coefficients[self.job.reaction.transition_state][i]))
             sa_f.write('|-----------+------------{0}+-----------------+-------------------------|\n'.format(
                 '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
@@ -162,7 +162,7 @@ class KineticsSensitivity(object):
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
-                    self.r_sa_coefficients[self.job.reaction.transitionState][i]))
+                    self.r_sa_coefficients[self.job.reaction.transition_state][i]))
             sa_f.write('========================={0}=============================================\n'.format(
                 '=' * (max_label - 10)))
 
@@ -174,7 +174,7 @@ class KineticsSensitivity(object):
             return
 
         reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
-        ts_label = self.job.reaction.transitionState.label
+        ts_label = self.job.reaction.transition_state.label
         products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
 
         plt.rcdefaults()
@@ -184,10 +184,10 @@ class KineticsSensitivity(object):
         max_sa = max(max(max(self.f_sa_coefficients.values())), max(max(self.r_sa_coefficients.values())))
         for i, condition in enumerate(self.conditions):
             f_values = [self.f_sa_coefficients[self.job.reaction.reactants[0]][i],
-                        self.f_sa_coefficients[self.job.reaction.transitionState][i],
+                        self.f_sa_coefficients[self.job.reaction.transition_state][i],
                         self.f_sa_coefficients[self.job.reaction.products[0]][i]]
             r_values = [self.r_sa_coefficients[self.job.reaction.reactants[0]][i],
-                        self.r_sa_coefficients[self.job.reaction.transitionState][i],
+                        self.r_sa_coefficients[self.job.reaction.transition_state][i],
                         self.r_sa_coefficients[self.job.reaction.products[0]][i]]
             y_pos = np.arange(3)
             ax[i][0].barh(y_pos, f_values, align='center', color='green')
@@ -268,8 +268,8 @@ class PDepSensitivity(object):
         wells.extend(self.job.network.products)
         transition_states = []
         for rxn in self.job.network.pathReactions:
-            # if rxn.transitionState is not None:
-            transition_states.append(rxn.transitionState)
+            # if rxn.transition_state is not None:
+            transition_states.append(rxn.transition_state)
 
         for entry in wells + transition_states:
             if entry in wells:

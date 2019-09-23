@@ -167,7 +167,7 @@ class TestPdep(unittest.TestCase):
             label='dehydration',
             reactants=[self.nC4H10O],
             products=[self.nC4H8, self.H2O],
-            transitionState=self.TS,
+            transition_state=self.TS,
             kinetics=Arrhenius(A=(0.0387, 'm^3/(mol*s)'), n=2.7, Ea=(2.6192e4, 'J/mol'), T0=(1, 'K'))
         )
 

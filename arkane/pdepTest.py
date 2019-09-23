@@ -89,8 +89,8 @@ class ArkaneTest(unittest.TestCase):
         self.assertFalse(job.rmgmode)
         self.assertTrue(job.activeJRotor)
         self.assertEquals(job.network.pathReactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.E0_TS.value_si, -24267.2)
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.frequency.value_si, -1679.04)
+        self.assertAlmostEquals(job.network.pathReactions[0].transition_state.tunneling.E0_TS.value_si, -24267.2)
+        self.assertAlmostEquals(job.network.pathReactions[0].transition_state.tunneling.frequency.value_si, -1679.04)
         self.assertEquals(len(job.network.netReactions[0].reactants[0].conformer.modes), 6)
         # self.assertEquals(self.tst1.frequencyScaleFactor, 0.947)
 

@@ -43,7 +43,7 @@ from copy import deepcopy
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.data.base import Database, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
+from rmgpy.data.base import Database, Entry, Group, LogicNode, get_all_combinations, make_logic_node
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
 from rmgpy.species import Species
@@ -78,8 +78,8 @@ class KineticsGroups(Database):
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
 
-    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',
-                  nodalDistance=None):
+    def load_entry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',
+                   nodalDistance=None):
         """
         nodalDistance is the distance between a given entry and its parent specified by a float
         """
@@ -87,13 +87,13 @@ class KineticsGroups(Database):
                 group[0:4].upper() == 'AND{' or
                 group[0:7].upper() == 'NOT OR{' or
                 group[0:8].upper() == 'NOT AND{'):
-            item = makeLogicNode(group)
+            item = make_logic_node(group)
         else:
             item = Group().fromAdjacencyList(group)
 
         if label in self.entries:
             raise DatabaseError("Duplicate group name {label} found in kinetics groups for {family} "
-                                "family.".format(label=label,family=self.label))
+                                "family.".format(label=label, family=self.label))
         self.entries[label] = Entry(
             index=index,
             label=label,
@@ -106,7 +106,7 @@ class KineticsGroups(Database):
             nodalDistance=nodalDistance
         )
 
-    def getReactionTemplate(self, reaction):
+    def get_reaction_template(self, reaction):
         """
         For a given `reaction` with properly-labeled :class:`Molecule` objects
         as the reactants, determine the most specific nodes in the tree that
@@ -148,7 +148,7 @@ class KineticsGroups(Database):
 
             atoms = r.getLabeledAtoms()
 
-            matched_node = self.descendTree(r, atoms, root=entry, strict=True)
+            matched_node = self.descend_tree(r, atoms, root=entry, strict=True)
 
             if matched_node is not None:
                 template.append(matched_node)
@@ -169,13 +169,13 @@ class KineticsGroups(Database):
                     # Match labeled atoms
                     # Check that this reactant has each of the atom labels in this group.
                     # If it is a LogicNode, the atom_list is empty and
-                    # it will proceed directly to the descendTree step.
+                    # it will proceed directly to the descend_tree step.
                     if not all([reactant.containsLabeledAtom(label) for label in atom_list]):
                         continue  # don't try to match this structure - the atoms aren't there!
                     # Match structures
                     atoms = reactant.getLabeledAtoms()
                     # Descend the tree, making sure to match atomlabels exactly using strict = True
-                    matched_node = self.descendTree(reactant, atoms, root=entry, strict=True)
+                    matched_node = self.descend_tree(reactant, atoms, root=entry, strict=True)
                     if matched_node is not None:
                         template.append(matched_node)
                     # else:
@@ -215,7 +215,7 @@ class KineticsGroups(Database):
 
         return template
 
-    def estimateKineticsUsingGroupAdditivity(self, template, referenceKinetics, degeneracy=1):
+    def estimate_kinetics_using_group_additivity(self, template, reference_kinetics, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
@@ -226,7 +226,7 @@ class KineticsGroups(Database):
                       " removed in version 2.3.", DeprecationWarning)
         # Start with the generic kinetics of the top-level nodes
         # Make a copy so we don't modify the original
-        kinetics = deepcopy(referenceKinetics)
+        kinetics = deepcopy(reference_kinetics)
 
         # Now add in more specific corrections if possible
         for node in template:
@@ -237,7 +237,7 @@ class KineticsGroups(Database):
                 comment_line += "{0} >> ".format(entry.label)
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
-                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
+                kinetics = self._multiply_kinetics_data(kinetics, entry.data)
                 comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
             elif entry in self.top:
                 comment_line += "{0} (Top node)".format(entry.label)
@@ -251,7 +251,7 @@ class KineticsGroups(Database):
 
         return kinetics
 
-    def __multiplyKineticsData(self, kinetics1, kinetics2):
+    def _multiply_kinetics_data(self, kinetics1, kinetics2):
         """
         Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
         class together, returning their product as a new kinetics object of 
@@ -345,9 +345,9 @@ class KineticsGroups(Database):
             kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
         return kinetics
 
-    def generateGroupAdditivityValues(self, trainingSet, kunits, method='Arrhenius'):
+    def generate_group_additivity_values(self, training_set, kunits, method='Arrhenius'):
         """
-        Generate the group additivity values using the given `trainingSet`,
+        Generate the group additivity values using the given `training_set`,
         a list of 2-tuples of the form ``(template, kinetics)``. You must also
         specify the `kunits` for the family and the `method` to use when
         generating the group values. Returns ``True`` if the group values have
@@ -369,7 +369,7 @@ class KineticsGroups(Database):
 
         # Determine a unique list of the groups we will be able to fit parameters for
         group_list = []
-        for template, kinetics in trainingSet:
+        for template, kinetics in training_set:
             for group in template:
                 if group not in self.top:
                     group_list.append(group)
@@ -398,7 +398,7 @@ class KineticsGroups(Database):
             b = []
 
             kdata = []
-            for template, kinetics in trainingSet:
+            for template, kinetics in training_set:
 
                 if isinstance(kinetics, (Arrhenius, KineticsData)):
                     kd = [kinetics.getRateCoefficient(T) for T in Tdata]
@@ -415,7 +415,7 @@ class KineticsGroups(Database):
                     groups = [group]
                     groups.extend(self.ancestors(group))
                     combinations.append(groups)
-                combinations = getAllCombinations(combinations)
+                combinations = get_all_combinations(combinations)
                 # Add a row to the matrix for each combination
                 for groups in combinations:
                     Arow = [1 if group in groups else 0 for group in group_list]
@@ -443,8 +443,8 @@ class KineticsGroups(Database):
                 stdev = np.zeros(len(group_list) + 1, np.float64)
                 count = np.zeros(len(group_list) + 1, np.int)
 
-                for index in range(len(trainingSet)):
-                    template, kinetics = trainingSet[index]
+                for index in range(len(training_set)):
+                    template, kinetics = training_set[index]
                     kd = math.log10(kdata[index, t])
                     km = x[-1, t] + sum([x[group_list.index(group), t] for group in template if group in group_list])
                     variance = (km - kd) ** 2
@@ -502,7 +502,7 @@ class KineticsGroups(Database):
             b = []
 
             kdata = []
-            for template, kinetics in trainingSet:
+            for template, kinetics in training_set:
 
                 if isinstance(kinetics, (Arrhenius, KineticsData)):
                     kd = [kinetics.getRateCoefficient(T) for T in Tdata]
@@ -519,7 +519,7 @@ class KineticsGroups(Database):
                     groups = [group]
                     groups.extend(self.ancestors(group))
                     combinations.append(groups)
-                combinations = getAllCombinations(combinations)
+                combinations = get_all_combinations(combinations)
 
                 # Add a row to the matrix for each combination at each temperature
                 for t, T in enumerate(Tdata):
@@ -568,7 +568,7 @@ class KineticsGroups(Database):
             A = []
             b = []
 
-            for template, kinetics in trainingSet:
+            for template, kinetics in training_set:
 
                 # Create every combination of each group and its ancestors with each other
                 combinations = []
@@ -576,7 +576,7 @@ class KineticsGroups(Database):
                     groups = [group]
                     groups.extend(self.ancestors(group))
                     combinations.append(groups)
-                combinations = getAllCombinations(combinations)
+                combinations = get_all_combinations(combinations)
 
                 # Add a row to the matrix for each parameter
                 if (isinstance(kinetics, Arrhenius) or

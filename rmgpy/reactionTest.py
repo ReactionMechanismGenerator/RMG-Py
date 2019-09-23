@@ -383,7 +383,7 @@ class TestReaction(unittest.TestCase):
                 Tmin=(300, 'K'),
                 Tmax=(2500, 'K'),
             ),
-            transitionState=TS,
+            transition_state=TS,
             degeneracy=2,
         )
         self.reaction.kinetics.comment = '''
@@ -616,7 +616,7 @@ class TestReaction(unittest.TestCase):
 
     def testFixBarrierHeight(self):
         """
-        Test that fixBarrierHeight:
+        Test that fix_barrier_height:
             1) raises Ea to match endothermicity of reaction
             2) forces Ea to be positive if forcePositive=True
             3) Evans-Polanyi kinetics are handled so that negative Ea if Ea<E0 are set to min(0,E0)
@@ -1197,12 +1197,12 @@ class TestReaction(unittest.TestCase):
         for product0, product in zip(self.reaction.products, reaction.products):
             self.assertAlmostEqual(product0.conformer.E0.value_si / 1e6, product.conformer.E0.value_si / 1e6, 2)
             self.assertEqual(product0.conformer.E0.units, product.conformer.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.conformer.E0.value_si / 1e6,
-                               reaction.transitionState.conformer.E0.value_si / 1e6, 2)
-        self.assertEqual(self.reaction.transitionState.conformer.E0.units, reaction.transitionState.conformer.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.frequency.value_si,
-                               reaction.transitionState.frequency.value_si, 2)
-        self.assertEqual(self.reaction.transitionState.frequency.units, reaction.transitionState.frequency.units)
+        self.assertAlmostEqual(self.reaction.transition_state.conformer.E0.value_si / 1e6,
+                               reaction.transition_state.conformer.E0.value_si / 1e6, 2)
+        self.assertEqual(self.reaction.transition_state.conformer.E0.units, reaction.transition_state.conformer.E0.units)
+        self.assertAlmostEqual(self.reaction.transition_state.frequency.value_si,
+                               reaction.transition_state.frequency.value_si, 2)
+        self.assertEqual(self.reaction.transition_state.frequency.units, reaction.transition_state.frequency.units)
 
         self.assertAlmostEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si, delta=1e-6)
         self.assertAlmostEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si, delta=1e-6)
@@ -1231,12 +1231,12 @@ class TestReaction(unittest.TestCase):
         for product0, product in zip(self.reaction.products, reaction.products):
             self.assertAlmostEqual(product0.conformer.E0.value_si / 1e6, product.conformer.E0.value_si / 1e6, 2)
             self.assertEqual(product0.conformer.E0.units, product.conformer.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.conformer.E0.value_si / 1e6,
-                               reaction.transitionState.conformer.E0.value_si / 1e6, 2)
-        self.assertEqual(self.reaction.transitionState.conformer.E0.units, reaction.transitionState.conformer.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.frequency.value_si,
-                               reaction.transitionState.frequency.value_si, 2)
-        self.assertEqual(self.reaction.transitionState.frequency.units, reaction.transitionState.frequency.units)
+        self.assertAlmostEqual(self.reaction.transition_state.conformer.E0.value_si / 1e6,
+                               reaction.transition_state.conformer.E0.value_si / 1e6, 2)
+        self.assertEqual(self.reaction.transition_state.conformer.E0.units, reaction.transition_state.conformer.E0.units)
+        self.assertAlmostEqual(self.reaction.transition_state.frequency.value_si,
+                               reaction.transition_state.frequency.value_si, 2)
+        self.assertEqual(self.reaction.transition_state.frequency.units, reaction.transition_state.frequency.units)
 
         self.assertAlmostEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si, delta=1e-6)
         self.assertAlmostEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si, delta=1e-6)

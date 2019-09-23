@@ -60,12 +60,12 @@ class TestReact(unittest.TestCase):
         path = os.path.join(settings['database.directory'])
 
         # forbidden structure loading
-        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        self.rmg.database.load_forbidden_structures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family loading
-        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
-                                       kineticsFamilies=TESTFAMILIES,
-                                       reactionLibraries=[]
-                                       )
+        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
+                                        kineticsFamilies=TESTFAMILIES,
+                                        reactionLibraries=[]
+                                        )
 
     def testReact(self):
         """

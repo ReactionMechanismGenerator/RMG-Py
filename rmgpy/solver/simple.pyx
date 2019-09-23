@@ -216,9 +216,9 @@ cdef class SimpleReactor(ReactionSystem):
 
         or as:
 
-        .. math:: P_{eff} = \\frac{P * y_{specificCollider}}{\\sum_j y_j}
+        .. math:: P_{eff} = \\frac{P * y_{specific_collider}}{\\sum_j y_j}
 
-        if a specificCollider is mentioned.
+        if a specific_collider is mentioned.
         """
 
         y0_core_species = self.y0[:self.numCoreSpecies]
@@ -228,11 +228,11 @@ cdef class SimpleReactor(ReactionSystem):
         for i in range(self.pdepColliderReactionIndices.shape[0]):
             if j == self.pdepColliderReactionIndices[i]:
                 # Calculate effective pressure
-                if rxn.specificCollider is None:
+                if rxn.specific_collider is None:
                     Peff = self.P.value_si * np.sum(self.colliderEfficiencies[i] * y0_core_species / sum_core_species)
                 else:
-                    logging.debug("Calculating Peff using {0} as a specificCollider".format(rxn.specificCollider))
-                    Peff = self.P.value_si * self.y0[self.speciesIndex[rxn.specificCollider]] / sum_core_species
+                    logging.debug("Calculating Peff using {0} as a specific_collider".format(rxn.specific_collider))
+                    Peff = self.P.value_si * self.y0[self.speciesIndex[rxn.specific_collider]] / sum_core_species
                 return Peff
         return self.P.value_si
 
@@ -288,10 +288,10 @@ cdef class SimpleReactor(ReactionSystem):
                     pdep_collider_reaction_indices.append(j)
                     self.pdepColliderKinetics.append(rxn.kinetics)
                     collider_efficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
-                if rxn.specificCollider:
+                if rxn.specific_collider:
                     pdep_specific_collider_reaction_indices.append(self.reactionIndex[rxn])
                     self.pdepSpecificColliderKinetics.append(rxn.kinetics)
-                    self.specificColliderSpecies.append(rxn.specificCollider)
+                    self.specificColliderSpecies.append(rxn.specific_collider)
 
         self.pdepColliderReactionIndices = np.array(pdep_collider_reaction_indices, np.int)
         self.colliderEfficiencies = np.array(collider_efficiencies, np.float64)

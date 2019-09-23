@@ -45,13 +45,13 @@ from rmgpy.species import Species
 ################################################################################
 
 
-def saveEntry(f, entry):
+def save_entry(f, entry):
     """
     Save an `entry` in the kinetics database by writing a string to
     the given file object `f`.
     """
 
-    def sortEfficiencies(efficiencies0):
+    def sort_efficiencies(efficiencies0):
         efficiencies = {}
         for mol, eff in efficiencies0.items():
             if isinstance(mol, str):
@@ -107,7 +107,7 @@ def saveEntry(f, entry):
         efficiencies = None
         if hasattr(entry.data, 'efficiencies'):
             efficiencies = entry.data.efficiencies
-            entry.data.efficiencies = dict(sortEfficiencies(entry.data.efficiencies))
+            entry.data.efficiencies = dict(sort_efficiencies(entry.data.efficiencies))
         kinetics = repr(entry.data)  # todo prettify currently does not support uncertainty attribute
         kinetics = '    kinetics = {0},\n'.format(kinetics.replace('\n', '\n    '))
         f.write(kinetics)
@@ -118,7 +118,7 @@ def saveEntry(f, entry):
 
     # Write reference
     if entry.reference is not None:
-        reference = entry.reference.toPrettyRepr()
+        reference = entry.reference.to_pretty_repr()
         lines = reference.splitlines()
         f.write('    reference = {0}\n'.format(lines[0]))
         for line in lines[1:-1]:
@@ -231,7 +231,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
     calculate the degeneracy for reactions generated in the reverse direction.
     If not provided, then it will be retrieved from the global database.
 
-    This algorithm used to exist in family.__generateReactions, but was moved
+    This algorithm used to exist in family._generate_reactions, but was moved
     here so it could operate across reaction families.
 
     This method returns an updated list with degenerate reactions removed.
@@ -329,10 +329,10 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
             try:
                 family = kinetics_family or kinetics_database.families[rxn.family]
             except AttributeError:
-                from rmgpy.data.rmg import getDB
-                family = getDB('kinetics').families[rxn.family]
+                from rmgpy.data.rmg import get_db
+                family = get_db('kinetics').families[rxn.family]
             if not family.ownReverse:
-                rxn.degeneracy = family.calculateDegeneracy(rxn)
+                rxn.degeneracy = family.calculate_degeneracy(rxn)
 
     return rxn_list
 

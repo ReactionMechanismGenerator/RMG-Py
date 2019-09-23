@@ -162,7 +162,7 @@ class TestNetwork(unittest.TestCase):
             label='dehydration',
             reactants=[self.nC4H10O],
             products=[self.nC4H8, self.H2O],
-            transitionState=self.TS,
+            transition_state=self.TS,
         )
 
         self.network = Network(

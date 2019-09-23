@@ -61,9 +61,9 @@ class TestRMGWorkFlow(unittest.TestCase):
         path = os.path.join(settings['test_data.directory'], 'testing_database')
 
         # kinetics family Disproportionation loading
-        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
-                                       kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
-                                       reactionLibraries=[])
+        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'), \
+                                        kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
+                                        reactionLibraries=[])
 
         # load empty forbidden structures
         for family in self.rmg.database.kinetics.families.values():

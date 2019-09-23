@@ -164,7 +164,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 forward = fam_rxn.is_forward
 
                 # Find the labeled atoms using family and reactants & products from fam_rxn
-                database.kinetics.families[fam_rxn.family].addAtomLabelsForReaction(fam_rxn)
+                database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn)
 
                 # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
                 if forward:
@@ -180,12 +180,12 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 else:
                     reaction_dict[fam_rxn.family] = [lib_rxn]
 
-                template = database.kinetics.families[fam_rxn.family].retrieveTemplate(fam_rxn.template)
+                template = database.kinetics.families[fam_rxn.family].retrieve_template(fam_rxn.template)
 
                 if compareKinetics:
                     # Check what the current kinetics for this template are
                     newKinetics = lib_rxn.kinetics
-                    oldKinetics = database.kinetics.families[fam_rxn.family].getKineticsForTemplate(template, degeneracy=fam_rxn.degeneracy)[0]
+                    oldKinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
@@ -240,10 +240,10 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 for i, rxn in enumerate(fam_rxn_list):
                     forward = rxn.is_forward
 
-                    template = database.kinetics.families[rxn.family].retrieveTemplate(rxn.template)
+                    template = database.kinetics.families[rxn.family].retrieve_template(rxn.template)
 
                     if compareKinetics:
-                        oldKinetics.append(database.kinetics.families[rxn.family].getKineticsForTemplate(template, degeneracy=rxn.degeneracy)[0])
+                        oldKinetics.append(database.kinetics.families[rxn.family].get_kinetics_for_template(template, degeneracy=rxn.degeneracy)[0])
 
                     if i == 0:
                         html = generate_header_html(2, rxn, lib_rxn, library_name, families)
@@ -394,7 +394,7 @@ def manual_selection(master_dict, multiple_dict, database):
             forward = fam_rxn.is_forward
 
             # Find the labeled atoms using family and reactants & products from fam_rxn
-            database.kinetics.families[fam_rxn.family].addAtomLabelsForReaction(fam_rxn)
+            database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn)
 
             # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
             if forward:

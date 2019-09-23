@@ -254,7 +254,7 @@ class PressureDependenceJob(object):
 
         # set transition state Energy if not set previously using same method as RMG pdep
         for reaction in self.network.pathReactions:
-            transition_state = reaction.transitionState
+            transition_state = reaction.transition_state
             if transition_state.conformer and transition_state.conformer.E0 is None:
                 transition_state.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants])
                                                  + reaction.kinetics.Ea.value_si, 'J/mol')
@@ -332,20 +332,20 @@ class PressureDependenceJob(object):
     def initialize(self):
         """Initialize a PressureDependenceJob"""
         for reaction in self.network.pathReactions:
-            tunneling = reaction.transitionState.tunneling
+            tunneling = reaction.transition_state.tunneling
             # throw descriptive error if tunneling not allowed
-            if tunneling and reaction.transitionState.frequency is None and reaction.kinetics is not None:
+            if tunneling and reaction.transition_state.frequency is None and reaction.kinetics is not None:
                 raise ValueError("""Cannot apply tunneling for reaction {0} when inverse laplace is used.
                                  Either remove tunnelling parameter or input transitionState
                                  frequencies/quantum file""".format(reaction.label))
             # add tunneling parameters
             if isinstance(tunneling, Wigner) and tunneling.frequency is None:
-                tunneling.frequency = (reaction.transitionState.frequency.value_si, "cm^-1")
+                tunneling.frequency = (reaction.transition_state.frequency.value_si, "cm^-1")
             elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
-                tunneling.frequency = (reaction.transitionState.frequency.value_si, "cm^-1")
+                tunneling.frequency = (reaction.transition_state.frequency.value_si, "cm^-1")
                 tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
                                           for reactant in reaction.reactants]) * 0.001, "kJ/mol")
-                tunneling.E0_TS = (reaction.transitionState.conformer.E0.value_si * 0.001, "kJ/mol")
+                tunneling.E0_TS = (reaction.transition_state.conformer.E0.value_si * 0.001, "kJ/mol")
                 tunneling.E0_prod = (sum([product.conformer.E0.value_si
                                           for product in reaction.products]) * 0.001, "kJ/mol")
             elif tunneling is not None:
@@ -662,8 +662,8 @@ class PressureDependenceJob(object):
         for i, rxn in enumerate(self.network.pathReactions):
             if not rxn.label:
                 rxn.label = 'reaction{0:d}'.format(i + 1)
-            if not rxn.transitionState.label:
-                rxn.transitionState.label = 'TS{0:d}'.format(i + 1)
+            if not rxn.transition_state.label:
+                rxn.transition_state.label = 'TS{0:d}'.format(i + 1)
         if not self.network.label:
             self.network.label = 'network'
 
@@ -696,7 +696,7 @@ class PressureDependenceJob(object):
 
             # Write transition states
             for rxn in self.network.pathReactions:
-                ts = rxn.transitionState
+                ts = rxn.transition_state
                 f.write('transitionState(\n')
                 f.write('    label = {0!r},\n'.format(ts.label))
                 if ts.conformer is not None:
@@ -715,12 +715,12 @@ class PressureDependenceJob(object):
 
             # Write reactions
             for rxn in self.network.pathReactions:
-                ts = rxn.transitionState
+                ts = rxn.transition_state
                 f.write('reaction(\n')
                 f.write('    label = {0!r},\n'.format(rxn.label))
                 f.write('    reactants = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.reactants])))
                 f.write('    products = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.products])))
-                f.write('    transitionState = {0!r},\n'.format(rxn.transitionState.label))
+                f.write('    transitionState = {0!r},\n'.format(rxn.transition_state.label))
                 if rxn.kinetics is not None:
                     if isinstance(rxn, LibraryReaction) and 'Reaction library:' not in rxn.kinetics.comment:
                         rxn.kinetics.comment += 'Reaction library: {0!r}'.format(rxn.library)

@@ -57,7 +57,7 @@ class DiffusionLimited(object):
         del diffusionLimiter.solventData
 
     def getSolventViscosity(self, T):
-        return self.solventData.getSolventViscosity(T)
+        return self.solventData.get_solvent_viscosity(T)
 
     def getEffectiveRate(self, reaction, T):
         """
@@ -121,10 +121,10 @@ class DiffusionLimited(object):
         radii = 0.0
         diffusivities = []
         for spec in reacting:
-            soluteData = self.database.getSoluteData(spec)
+            soluteData = self.database.get_solute_data(spec)
             # calculate radius with the McGowan volume and assuming sphere
             radius = ((75 * soluteData.V / constants.pi / constants.Na) ** (1. / 3)) / 100  # m
-            diff = soluteData.getStokesDiffusivity(T, self.getSolventViscosity(T))
+            diff = soluteData.get_stokes_diffusivity(T, self.getSolventViscosity(T))
             radii += radius  # m
             diffusivities.append(diff)  # m^2/s
 

@@ -57,7 +57,7 @@ class TestFamily(unittest.TestCase):
         """
         # Set up a dummy database
         cls.database = KineticsDatabase()
-        cls.database.loadFamilies(
+        cls.database.load_families(
             path=os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families'),
             families=[
                 'intra_H_migration',
@@ -76,25 +76,25 @@ class TestFamily(unittest.TestCase):
 
     def testGetBackboneRoots(self):
         """
-        Test the getBackboneRoots() function
+        Test the get_backbone_roots() function
         """
-        backbones = self.family.getBackboneRoots()
+        backbones = self.family.get_backbone_roots()
         self.assertEquals(backbones[0].label, "RnH")
 
     def testGetEndRoots(self):
         """
-        Test the getEndRoots() function
+        Test the get_end_roots() function
         """
-        ends = self.family.getEndRoots()
+        ends = self.family.get_end_roots()
         self.assertEquals(len(ends), 2)
         self.assertIn(self.family.groups.entries["Y_rad_out"], ends)
         self.assertIn(self.family.groups.entries["XH_out"], ends)
 
     def testGetTopLevelGroups(self):
         """
-        Test the getTopLevelGroups() function
+        Test the get_top_level_groups() function
         """
-        top_groups = self.family.getTopLevelGroups(self.family.groups.entries["RnH"])
+        top_groups = self.family.get_top_level_groups(self.family.groups.entries["RnH"])
         self.assertEquals(len(top_groups), 4)
         self.assertIn(self.family.groups.entries["R5Hall"], top_groups)
         self.assertIn(self.family.groups.entries["R6Hall"], top_groups)
@@ -137,7 +137,7 @@ multiplicity 2
 12 H u0 p0 c0 {6,S}
 13 H u0 p0 c0 {1,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_product.isIsomorphic(products[0]))
@@ -202,7 +202,7 @@ multiplicity 2
 24    H u0 p0 c0 {10,S}
 25    H u0 p0 c0 {14,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_product.isIsomorphic(products[0]))
@@ -261,7 +261,7 @@ multiplicity 2
 20    H u0 p0 c0 {9,S}
 21    H u0 p0 c0 {7,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
@@ -303,7 +303,7 @@ multiplicity 2
 8    H u0 p0 c0 {3,S}
 9    H u0 p0 c0 {3,S}
         """)]
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 2)
 
@@ -363,7 +363,7 @@ multiplicity 2
 16    H u0 p0 c0 {9,S}
 17    H u0 p0 c0 {8,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
@@ -407,7 +407,7 @@ multiplicity 2
 11    H u0 p0 c0 {4,S}
 12    H u0 p0 c0 {4,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
@@ -461,7 +461,7 @@ multiplicity 2
 15    H u0 p0 c0 {7,S}
 16    H u0 p0 c0 {7,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
@@ -521,7 +521,7 @@ multiplicity 2
 18    H u0 p0 c0 {8,S}
 19    H u0 p0 c0 {10,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
@@ -565,7 +565,7 @@ multiplicity 2
 10    H u0 p0 c0 {3,S}
 11    H u0 p0 c0 {4,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
@@ -619,7 +619,7 @@ multiplicity 2
 """),
                              ]
 
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_products[0].isIsomorphic(products[0]))
@@ -653,7 +653,7 @@ multiplicity 2
         """
         family = self.database.families['R_Recombination']
         spc = Molecule().fromSMILES("[CH2]CC[CH2]")
-        out = family._KineticsFamily__generateReactions(reactants=[spc], forward=True)
+        out = family._generate_reactions(reactants=[spc], forward=True)
         self.assertEqual(out, [])
 
 
@@ -673,22 +673,22 @@ class TestTreeGeneration(unittest.TestCase):
             solvation=False,
             testing=True,
         )
-        cls.database.loadForbiddenStructures()
+        cls.database.load_forbidden_structures()
 
         cls.thermoDatabase = ThermoDatabase()  # the real full Thermo Database
         cls.thermoDatabase.load(path=os.path.join(settings['database.directory'], 'thermo'),
                                 libraries=['primaryThermoLibrary'])
 
         cls.kineticsDatabase = KineticsDatabase()
-        cls.kineticsDatabase.loadFamilies(
+        cls.kineticsDatabase.load_families(
             path=os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families'),
             families=[
                 'Singlet_Carbene_Intra_Disproportionation',
             ],
         )
         cls.family = cls.kineticsDatabase.families['Singlet_Carbene_Intra_Disproportionation']
-        cls.treerxns = cls.family.getTrainingSet(thermoDatabase=cls.thermoDatabase, removeDegeneracy=True,
-                                                 estimateThermo=True, fixLabels=True, getReverse=True)
+        cls.treerxns = cls.family.get_training_set(thermo_database=cls.thermoDatabase, remove_degeneracy=True,
+                                                   estimate_thermo=True, fix_labels=True, get_reverse=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -700,7 +700,7 @@ class TestTreeGeneration(unittest.TestCase):
         """
         Test that the tree was properly cleared before generation
         """
-        self.family.cleanTree(self.thermoDatabase)
+        self.family.clean_tree()
         ents = [ent for ent in self.family.groups.entries.values() if ent.index != -1]
         self.assertEquals(len(ents), 1,
                           'more than one relevant group left in groups after preparing tree for generation')
@@ -718,13 +718,13 @@ class TestTreeGeneration(unittest.TestCase):
         def objective(k1s, k2s):
             return len(k1s) * np.std(k1s) + len(k2s) * np.std(k2s)
 
-        self.family.generateTree(thermoDatabase=self.thermoDatabase, rxns=self.treerxns,
-                                 obj=objective)  # test input objective function
+        self.family.generate_tree(thermo_database=self.thermoDatabase, rxns=self.treerxns,
+                                  obj=objective)  # test input objective function
 
-        self.family.cleanTree(self.thermoDatabase)  # reclear
+        self.family.clean_tree()  # reclear
 
-        self.family.generateTree(thermoDatabase=self.thermoDatabase,
-                                 rxns=self.treerxns)  # test that default objective works
+        self.family.generate_tree(thermo_database=self.thermoDatabase,
+                                  rxns=self.treerxns)  # test that default objective works
 
     def test_CParentChild(self):
         """
@@ -742,8 +742,8 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that there are six rules and each is under a different group
         """
-        template_rxn_map = self.family.getReactionMatches(thermoDatabase=self.thermoDatabase, removeDegeneracy=True)
-        self.family.makeBMRulesFromTemplateRxnMap(template_rxn_map)
+        template_rxn_map = self.family.get_reaction_matches(thermo_database=self.thermoDatabase, remove_degeneracy=True)
+        self.family.make_bm_rules_from_template_rxn_map(template_rxn_map)
 
         c = 0
         for rs in self.family.rules.entries.values():
@@ -757,7 +757,7 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that appropriate regularization dimensions have been identified
         """
-        template_rxn_map = self.family.getReactionMatches(thermoDatabase=self.database.thermo, estimateThermo=False)
+        template_rxn_map = self.family.get_reaction_matches(thermo_database=self.database.thermo, estimate_thermo=False)
 
         for entry in self.family.groups.entries.values():
             if entry.children == []:
@@ -770,7 +770,7 @@ class TestTreeGeneration(unittest.TestCase):
                 if typ == 'intNewBondExt' or typ == 'extNewBondExt':
                     continue
                 else:
-                    val, boo = self.family.evalExt(entry, grp, name, template_rxn_map)
+                    val, boo = self.family.eval_ext(entry, grp, name, template_rxn_map)
                     if val != np.inf:
                         continue
                     atms = grp.atoms
@@ -811,11 +811,11 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that the tree is structured properly after regularization
         """
-        self.family.cleanTree()
-        self.family.generateTree(thermoDatabase=self.thermoDatabase, rxns=self.treerxns)
-        self.family.checkTree()
-        self.family.regularize(thermoDatabase=self.thermoDatabase, rxns=self.treerxns)
-        self.family.checkTree()
+        self.family.clean_tree()
+        self.family.generate_tree(thermo_database=self.thermoDatabase, rxns=self.treerxns)
+        self.family.check_tree()
+        self.family.regularize(thermo_database=self.thermoDatabase, rxns=self.treerxns)
+        self.family.check_tree()
 
 
 class TestGenerateReactions(unittest.TestCase):
@@ -836,7 +836,7 @@ class TestGenerateReactions(unittest.TestCase):
             solvation=False,
             testing=True,
         )
-        cls.database.loadForbiddenStructures()
+        cls.database.load_forbidden_structures()
 
     @classmethod
     def tearDownClass(cls):
@@ -852,7 +852,7 @@ class TestGenerateReactions(unittest.TestCase):
 
         reaction = TemplateReaction(reactants=reactants, products=products)
 
-        successful = self.database.kinetics.families['H_Abstraction'].addReverseAttribute(reaction)
+        successful = self.database.kinetics.families['H_Abstraction'].add_reverse_attribute(reaction)
 
         self.assertFalse(successful)
 
@@ -873,7 +873,7 @@ class TestGenerateReactions(unittest.TestCase):
 
         reaction = TemplateReaction(reactants=reactants, products=products)
 
-        self.database.kinetics.families['R_Addition_MultipleBond'].addAtomLabelsForReaction(reaction)
+        self.database.kinetics.families['R_Addition_MultipleBond'].add_atom_labels_for_reaction(reaction)
 
         expected_reactants = [
             Molecule().fromAdjacencyList("""
@@ -921,20 +921,20 @@ multiplicity 2
         """Test that the Singlet_Val6_to_triplet and 1,2-Birad_to_alkene families generate irreversible reactions."""
 
         reactant = [Molecule(SMILES='O=O')]
-        reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactant)
+        reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generate_reactions(reactant)
         self.assertFalse(reaction_list[0].reversible)
 
     def test_net_charge_of_products(self):
-        """Test that __generateProductStructures() does not generate charged products"""
+        """Test that _generate_product_structures() does not generate charged products"""
 
         reactant = [Molecule(SMILES='[NH-][NH2+]')]
-        reaction_list = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
+        reaction_list = self.database.kinetics.families['R_Recombination'].generate_reactions(reactant)
         for rxn in reaction_list:
             for product in rxn.products:
                 self.assertEquals(product.getNetCharge(), 0)
 
         reactant = [Molecule(SMILES='[O-][N+]#N')]
-        reaction_list = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
+        reaction_list = self.database.kinetics.families['R_Recombination'].generate_reactions(reactant)
         self.assertEquals(len(reaction_list), 0)
 
     def test_reactant_num_mismatch(self):
@@ -942,11 +942,11 @@ multiplicity 2
 
         This happens often because we test every combo of molecules against all families."""
         reactants = [Molecule(SMILES='C'), Molecule(SMILES='[OH]')]
-        reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactants)
+        reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generate_reactions(reactants)
         self.assertEquals(len(reaction_list), 0)
-        reaction_list = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generateReactions(reactants)
+        reaction_list = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generate_reactions(reactants)
         self.assertEquals(len(reaction_list), 0)
-        reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
+        reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generate_reactions(reactants)
         self.assertEquals(len(reaction_list), 0)
 
     def test_reactant_num_mismatch_2(self):
@@ -958,7 +958,7 @@ multiplicity 2
             Molecule().fromAdjacencyList('1 X u0'),
             Molecule().fromAdjacencyList('1 X u0'),
         ]
-        # reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
+        # reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generate_reactions(reactants)
         # self.assertEquals(len(reaction_list), 14)
-        reaction_list = self.database.kinetics.families['Surface_Dissociation_vdW'].generateReactions(reactants)
+        reaction_list = self.database.kinetics.families['Surface_Dissociation_vdW'].generate_reactions(reactants)
         self.assertEquals(len(reaction_list), 0)

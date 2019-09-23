@@ -119,7 +119,7 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource()
+            family = rxn.get_source()
         if family in familyCount:
             familyCount[family] += 1
         else:
@@ -476,25 +476,25 @@ $(document).ready(function() {
 </thead>
 {% for rxn in reactions %}
 <tbody class="reaction">
-<tr class="{{ rxn.getSource()|csssafe }} rxnStart">
+<tr class="{{ rxn.get_source()|csssafe }} rxnStart">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
     <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}" {% if reactant.containsSurfaceSite() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
     <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}" {% if product.containsSurfaceSite() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-    <td class="family">{{ rxn.getSource() }}</td>
+    <td class="family">{{ rxn.get_source() }}</td>
 </tr>
-<tr class="kinetics {{ rxn.getSource()|csssafe }} hide_kinetics">
+<tr class="kinetics {{ rxn.get_source()|csssafe }} hide_kinetics">
     <td></td>
     <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
 </tr>
-<tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
+<tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
     <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
     <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
     <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
     <td></td>
 </tr>
-<tr class="chemkin {{ rxn.getSource()|csssafe }} hide_chemkin">
+<tr class="chemkin {{ rxn.get_source()|csssafe }} hide_chemkin">
     <td></td>
     <td colspan="4">{{ rxn.toChemkin(species) }}</td>
 </tr>
@@ -638,7 +638,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         if isinstance(rxn1, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn1.getSource()
+            family = rxn1.get_source()
         if family in family_count1:
             family_count1[family] += 1
             family_count2[family] += 1
@@ -650,7 +650,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource()
+            family = rxn.get_source()
         if family in family_count1:
             family_count1[family] += 1
         else:
@@ -660,7 +660,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource()
+            family = rxn.get_source()
         if family in family_count2:
             family_count2[family] += 1
         else:
@@ -1128,7 +1128,7 @@ $(document).ready(function() {
     {% for rxn1, rxn2 in commonReactions %}
 
 
-<tr class="reaction  {{ rxn1.getSource()|csssafe }}">
+<tr class="reaction  {{ rxn1.get_source()|csssafe }}">
 
 <td width=100% colspan="4" align="center">
 
@@ -1169,10 +1169,10 @@ $(document).ready(function() {
 
 <tr width=100%>
      <td class="index" width=10%><a href="{{ rxn1.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn1.index }}.</a></td>
-     <td class="family" width=40%>{{ rxn1.getSource() }}</td>
+     <td class="family" width=40%>{{ rxn1.get_source() }}</td>
 
      <td class="index" width=10%><a href="{{ rxn2.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn2.index }}.</a></td>
-     <td class="family" width=40%>{{ rxn2.getSource() }}</td>
+     <td class="family" width=40%>{{ rxn2.get_source() }}</td>
  </tr>
 
 <tr "width=100%" class="kinetics">{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
@@ -1236,18 +1236,18 @@ $(document).ready(function() {
 <table class="reactionList" hide_kinetics hide_chemkin >
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions1 %}
-    <tr class="reaction {{ rxn.getSource()|csssafe }}">
+    <tr class="reaction {{ rxn.get_source()|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species1/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family">{{ rxn.getSource() }}</td>
+        <td class="family">{{ rxn.get_source() }}</td>
     </tr>
-    <tr class="kinetics {{ rxn.getSource()|csssafe }}">
+    <tr class="kinetics {{ rxn.get_source()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
-    <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
+    <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
     <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
     <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
@@ -1255,7 +1255,7 @@ $(document).ready(function() {
     <td></td>
 </tr>
 
-    <tr class="chemkin {{ rxn.getSource()|csssafe }}">
+    <tr class="chemkin {{ rxn.get_source()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
     </tr>
@@ -1270,25 +1270,25 @@ $(document).ready(function() {
 <table class="reactionList" hide_kinetics hide_chemkin>
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions2 %}
-    <tr class="reaction {{ rxn.getSource()|csssafe }}">
+    <tr class="reaction {{ rxn.get_source()|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species2/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species2/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family">{{ rxn.getSource() }}</td>
+        <td class="family">{{ rxn.get_source() }}</td>
     </tr>
-    <tr class="kinetics {{ rxn.getSource()|csssafe }}">
+    <tr class="kinetics {{ rxn.get_source()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
-    <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
+    <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
     <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
     <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
     <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
     <td></td>
 </tr>
-    <tr class="chemkin {{ rxn.getSource()|csssafe }}">
+    <tr class="chemkin {{ rxn.get_source()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
     </tr>

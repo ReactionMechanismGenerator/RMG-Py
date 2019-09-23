@@ -153,7 +153,7 @@ class TestTransportDatabase(unittest.TestCase):
         # values calculate from joback's estimations
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species().fromSMILES(smiles)
-            transport_data, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
+            transport_data, blank, blank2 = self.database.get_transport_properties_via_group_estimates(species)
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
             if comment:
@@ -180,14 +180,14 @@ class TestTransportDatabase(unittest.TestCase):
                                               11 H u0 p0 {5,S}
                                               12 H u0 p0 {6,S}
                                               """)
-        transport_data, blank, blank2 = self.database.getTransportPropertiesViaGroupEstimates(species)
+        transport_data, blank, blank2 = self.database.get_transport_properties_via_group_estimates(species)
         self.assertIsNotNone(transport_data)
 
     def testGetTransportProperties(self):
         """Test that we can retrieve best transport properties for a species."""
 
         for species in self.speciesList:
-            transport = self.database.getTransportProperties(species)
+            transport = self.database.get_transport_properties(species)
             self.assertIsNotNone(transport)
             self.assertTrue(isinstance(transport, tuple))
             self.assertTrue(isinstance(transport[0], TransportData))
@@ -198,7 +198,7 @@ class TestTransportDatabase(unittest.TestCase):
         Used for transport search on website."""
 
         for species in self.speciesList:
-            transport = self.database.getAllTransportProperties(species)
+            transport = self.database.get_all_transport_properties(species)
             self.assertIsNotNone(transport)
             for result in transport:
                 self.assertTrue(isinstance(result, tuple))

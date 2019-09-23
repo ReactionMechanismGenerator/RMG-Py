@@ -353,7 +353,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
             specific_collider = speciesDict[collider.strip()[2:-1]]
 
     # Create a new Reaction object for this reaction
-    reaction = Reaction(reactants=[], products=[], specificCollider=specific_collider, reversible=reversible)
+    reaction = Reaction(reactants=[], products=[], specific_collider=specific_collider, reversible=reversible)
 
     # Convert the reactants and products to Species objects using the speciesDict
     for reactant in reactants.split('+'):
@@ -601,7 +601,7 @@ def readReactionComments(reaction, comments, read=True):
             index=reaction.index,
             reactants=reaction.reactants,
             products=reaction.products,
-            specificCollider=reaction.specificCollider,
+            specific_collider=reaction.specific_collider,
             kinetics=reaction.kinetics,
             reversible=reaction.reversible,
             duplicate=reaction.duplicate,
@@ -628,7 +628,7 @@ def readReactionComments(reaction, comments, read=True):
                 index=reaction.index,
                 reactants=reaction.reactants,
                 products=reaction.products,
-                specificCollider=reaction.specificCollider,
+                specific_collider=reaction.specific_collider,
                 kinetics=reaction.kinetics,
                 reversible=reaction.reversible,
                 duplicate=reaction.duplicate,
@@ -641,7 +641,7 @@ def readReactionComments(reaction, comments, read=True):
                 index=reaction.index,
                 reactants=reaction.reactants,
                 products=reaction.products,
-                specificCollider=reaction.specificCollider,
+                specific_collider=reaction.specific_collider,
                 kinetics=reaction.kinetics,
                 reversible=reaction.reversible,
                 duplicate=reaction.duplicate,
@@ -654,7 +654,7 @@ def readReactionComments(reaction, comments, read=True):
                 index=reaction.index,
                 reactants=reaction.reactants,
                 products=reaction.products,
-                specificCollider=reaction.specificCollider,
+                specific_collider=reaction.specific_collider,
                 kinetics=reaction.kinetics,
                 reversible=reaction.reversible,
                 duplicate=reaction.duplicate,
@@ -718,7 +718,7 @@ def readReactionComments(reaction, comments, read=True):
                 index=reaction.index,
                 reactants=reaction.reactants,
                 products=reaction.products,
-                specificCollider=reaction.specificCollider,
+                specific_collider=reaction.specific_collider,
                 kinetics=reaction.kinetics,
                 reversible=reaction.reversible,
                 duplicate=reaction.duplicate,
@@ -732,7 +732,7 @@ def readReactionComments(reaction, comments, read=True):
                 index=reaction.index,
                 reactants=reaction.reactants,
                 products=reaction.products,
-                specificCollider=reaction.specificCollider,
+                specific_collider=reaction.specific_collider,
                 kinetics=reaction.kinetics,
                 reversible=reaction.reversible,
                 duplicate=reaction.duplicate,
@@ -749,7 +749,7 @@ def readReactionComments(reaction, comments, read=True):
                 index=reaction.index,
                 reactants=reaction.reactants,
                 products=reaction.products,
-                specificCollider=reaction.specificCollider,
+                specific_collider=reaction.specific_collider,
                 kinetics=reaction.kinetics,
                 reversible=reaction.reversible,
                 duplicate=reaction.duplicate,
@@ -765,7 +765,7 @@ def readReactionComments(reaction, comments, read=True):
             index=reaction.index,
             reactants=reaction.reactants,
             products=reaction.products,
-            specificCollider=reaction.specificCollider,
+            specific_collider=reaction.specific_collider,
             kinetics=reaction.kinetics,
             reversible=reaction.reversible,
             duplicate=reaction.duplicate,
@@ -987,7 +987,7 @@ cpdef _process_duplicate_reactions(list reactionList):
             reaction2 = reactionList[index2]
             if (reaction1.reactants == reaction2.reactants
                     and reaction1.products == reaction2.products
-                    and reaction1.specificCollider == reaction2.specificCollider):
+                    and reaction1.specific_collider == reaction2.specific_collider):
                 if reaction1.duplicate and reaction2.duplicate:
 
                     if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
@@ -1012,7 +1012,7 @@ cpdef _process_duplicate_reactions(list reactionList):
                                 index=reaction1.index,
                                 reactants=reaction1.reactants,
                                 products=reaction1.products,
-                                specificCollider=reaction1.specificCollider,
+                                specific_collider=reaction1.specific_collider,
                                 kinetics=kinetics,
                                 library=reaction1.library,
                                 duplicate=False,
@@ -1577,7 +1577,7 @@ def writeReactionString(reaction, javaLibrary = False):
         reaction_string += ' + '.join([getSpeciesIdentifier(product) for product in reaction.products])
         return reaction_string
 
-    if reaction.specificCollider is not None and not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
+    if reaction.specific_collider is not None and not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         raise ChemkinError('A third body collider `(+species)` is only allowed in either the Troe or Lindemann formats '
                            'that support different reaction orders for the Low and High pressures limits. '
                            'You should revise reaction {0}'.format(reaction.label))
@@ -1596,7 +1596,7 @@ def writeReactionString(reaction, javaLibrary = False):
                 third_body = ''
             else:
                 third_body = ' (+{0})'.format(
-                    getSpeciesIdentifier(reaction.specificCollider)) if reaction.specificCollider else ' (+M)'
+                    getSpeciesIdentifier(reaction.specific_collider)) if reaction.specific_collider else ' (+M)'
 
         reaction_string = ' + '.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
         reaction_string += third_body
@@ -1614,7 +1614,7 @@ def writeReactionString(reaction, javaLibrary = False):
                 third_body = ''
             else:
                 third_body = '(+{0})'.format(
-                    getSpeciesIdentifier(reaction.specificCollider)) if reaction.specificCollider else '(+M)'
+                    getSpeciesIdentifier(reaction.specific_collider)) if reaction.specific_collider else '(+M)'
 
         reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
         reaction_string += third_body
@@ -1649,7 +1649,7 @@ def writeKineticsEntry(reaction, speciesList, verbose=True, javaLibrary=False, c
                 new_reaction = LibraryReaction(index=reaction.index,
                                                reactants=reaction.reactants,
                                                products=reaction.products,
-                                               specificCollider=reaction.specificCollider,
+                                               specific_collider=reaction.specific_collider,
                                                reversible=reaction.reversible,
                                                kinetics=kinetics,
                                                library=reaction.library
@@ -1658,7 +1658,7 @@ def writeKineticsEntry(reaction, speciesList, verbose=True, javaLibrary=False, c
                 new_reaction = Reaction(index=reaction.index,
                                         reactants=reaction.reactants,
                                         products=reaction.products,
-                                        specificCollider=reaction.specificCollider,
+                                        specific_collider=reaction.specific_collider,
                                         reversible=reaction.reversible,
                                         kinetics=kinetics)
             string += writeKineticsEntry(new_reaction, speciesList, verbose, javaLibrary, commented)
@@ -1694,8 +1694,8 @@ def writeKineticsEntry(reaction, speciesList, verbose=True, javaLibrary=False, c
                     else:
                         string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family)
 
-        if reaction.specificCollider is not None:
-            string += "! Specific third body collider: {0}\n".format(reaction.specificCollider.label)
+        if reaction.specific_collider is not None:
+            string += "! Specific third body collider: {0}\n".format(reaction.specific_collider.label)
         # Next line of comment contains information about the pairs of reaction
         pairs = []
         if reaction.pairs:
@@ -1886,7 +1886,7 @@ def markDuplicateReaction(test_reaction, reaction_list):
             continue
         same_dir_match = (reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products)
         opposite_dir_match = (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products)
-        if (same_dir_match or opposite_dir_match) and (reaction1.specificCollider == reaction2.specificCollider):
+        if (same_dir_match or opposite_dir_match) and (reaction1.specific_collider == reaction2.specific_collider):
             if reaction1.duplicate and reaction2.duplicate:
                 if reaction1.kinetics.isPressureDependent() != reaction2.kinetics.isPressureDependent():
                     # Reactions with mixed pressure dependence do not need to be marked duplicate in Chemkin

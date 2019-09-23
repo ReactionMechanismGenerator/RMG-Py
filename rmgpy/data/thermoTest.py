@@ -39,10 +39,10 @@ import rmgpy.constants as constants
 from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.data.thermo import ThermoDatabase, ThermoData, ThermoCentralDatabaseInterface, convertRingToSubMolecule, \
-                              bicyclicDecompositionForPolyring, combineCycles, combineTwoRingsIntoSubMolecule, \
-                              findAromaticBondsFromSubMolecule, getCopyForOneRing, isAromaticRing, isBicyclic, \
-                              isRingPartialMatched, saturate_ring_bonds, splitBicyclicIntoSingleRings
+from rmgpy.data.thermo import ThermoDatabase, ThermoData, ThermoCentralDatabaseInterface, convert_ring_to_sub_molecule, \
+                              bicyclic_decomposition_for_polyring, combine_cycles, combine_two_rings_into_sub_molecule, \
+                              find_aromatic_bonds_from_sub_molecule, get_copy_for_one_ring, is_aromatic_ring, is_bicyclic, \
+                              is_ring_partial_matched, saturate_ring_bonds, split_bicyclic_into_single_rings
 from rmgpy.exceptions import DatabaseError
 from rmgpy.ml.estimator import MLEstimator
 from rmgpy.molecule.molecule import Molecule
@@ -56,7 +56,7 @@ def setUpModule():
     """A function that is run ONCE before all unit tests in this module."""
     global database
     database = RMGDatabase()
-    database.loadThermo(os.path.join(settings['database.directory'], 'thermo'))
+    database.load_thermo(os.path.join(settings['database.directory'], 'thermo'))
 
 
 def tearDownModule():
@@ -104,7 +104,7 @@ class TestThermoDatabase(unittest.TestCase):
         import pickle
         thermodb0 = pickle.loads(pickle.dumps(self.database))
 
-        self.assertEqual(thermodb0.libraryOrder, self.database.libraryOrder)
+        self.assertEqual(thermodb0.library_order, self.database.library_order)
         self.assertEqual(sorted(thermodb0.depository.keys()),
                          sorted(self.database.depository.keys()))
 
@@ -130,14 +130,14 @@ class TestThermoDatabase(unittest.TestCase):
 
     def testSymmetryAddedByGetThermoData(self):
         """
-        Test that `getThermoData` properly accounts for symmetry in thermo
-        by comping with the method `estimateThermoViaGroupAdditivity`
+        Test that `get_thermo_data` properly accounts for symmetry in thermo
+        by comping with the method `estimate_thermo_via_group_additivity`
         """
 
         spc = Species(molecule=[Molecule().fromSMILES('C[CH]C=CC')])
 
-        thermo_with_sym = self.databaseWithoutLibraries.getThermoData(spc)
-        thermo_without_sym = self.databaseWithoutLibraries.estimateThermoViaGroupAdditivity(spc.molecule[0])
+        thermo_with_sym = self.databaseWithoutLibraries.get_thermo_data(spc)
+        thermo_without_sym = self.databaseWithoutLibraries.estimate_thermo_via_group_additivity(spc.molecule[0])
 
         symmetry_number = spc.getSymmetryNumber()
         self.assertNotEqual(symmetry_number, spc.molecule[0].getSymmetryNumber(),
@@ -157,20 +157,20 @@ class TestThermoDatabase(unittest.TestCase):
         Test that the symmetry contribution is correctly added for radicals
         estimated via the HBI method.
         
-        This is done by testing thermoData from a database and from group 
+        This is done by testing thermo_data from a database and from group
         additivity and ensuring they give the correct value. 
         """
         spc = Species(molecule=[Molecule().fromSMILES('[CH3]')])
 
-        thermo_data_lib = self.database.getThermoData(spc)
+        thermo_data_lib = self.database.get_thermo_data(spc)
 
-        thermo_data_ga = self.databaseWithoutLibraries.getThermoData(spc)
+        thermo_data_ga = self.databaseWithoutLibraries.get_thermo_data(spc)
 
         self.assertAlmostEqual(thermo_data_lib.getEntropy(298.), thermo_data_ga.getEntropy(298.), 0)
 
     def testParseThermoComments(self):
         """
-        Test that the ThermoDatabase.extractSourceFromComments function works properly
+        Test that the ThermoDatabase.extract_source_from_comments function works properly
         on various thermo comments.
         """
         from rmgpy.thermo import NASA, NASAPolynomial
@@ -197,7 +197,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
             molecule=[Molecule(SMILES="c1c(O)c(O)c(CC(C)CC)cc1")]
         )
 
-        source = self.database.extractSourceFromComments(gav_species)
+        source = self.database.extract_source_from_comments(gav_species)
         self.assertTrue('GAV' in source, 'Should have found that the thermo source is GAV.')
         self.assertEqual(len(source['GAV']['group']), 8)
         self.assertEqual(len(source['GAV']['longDistanceInteraction_noncyclic']), 1)
@@ -221,7 +221,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
             molecule=[Molecule(SMILES="CC(C)C(=O)C(C)C")]
         )
 
-        source = self.database.extractSourceFromComments(dipk)
+        source = self.database.extract_source_from_comments(dipk)
         self.assertTrue('Library' in source)
 
         # Mixed library and HBI thermo
@@ -241,7 +241,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
             molecule=[Molecule(SMILES="C[C](C)C(=O)C(C)C"), Molecule(SMILES="CC(C)=C([O])C(C)C")]
         )
 
-        source = self.database.extractSourceFromComments(dipk_rad)
+        source = self.database.extract_source_from_comments(dipk_rad)
         self.assertTrue('Library' in source)
         self.assertTrue('GAV' in source)
         self.assertEqual(len(source['GAV']['radical']), 1)
@@ -263,7 +263,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
             molecule=[Molecule(SMILES="CC12CCC(CC1)C(C)(C)O2")]
         )
 
-        source = self.database.extractSourceFromComments(cineole)
+        source = self.database.extract_source_from_comments(cineole)
         self.assertTrue('QM' in source)
 
         # Mixed QM and HBI thermo
@@ -282,7 +282,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
             molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")]
         )
 
-        source = self.database.extractSourceFromComments(cineole_rad)
+        source = self.database.extract_source_from_comments(cineole_rad)
         self.assertTrue('QM' in source)
         self.assertTrue('GAV' in source)
         self.assertEqual(len(source['GAV']['radical']), 1)
@@ -304,7 +304,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
 
         # Function should complain if there's no thermo comments
         with self.assertRaises(ValueError):
-            self.database.extractSourceFromComments(other)
+            self.database.extract_source_from_comments(other)
 
         # Check a dummy species that has plus and minus thermo group contributions
         polycyclic = Species(
@@ -322,7 +322,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
             molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")]
         )
 
-        source = self.database.extractSourceFromComments(polycyclic)
+        source = self.database.extract_source_from_comments(polycyclic)
         self.assertTrue('GAV' in source)
         self.assertEqual(source['GAV']['ring'][0][1], -1)  # the weight of benzene contribution should be -1
         self.assertEqual(source['GAV']['group'][0][1], 2)  # weight of the group(Cs-CsCsHH) conbtribution should be 2
@@ -334,7 +334,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         spec = Species().fromSMILES('C[CH]c1ccccc1')
         spec.generate_resonance_structures()
         initial = list(spec.molecule)  # Make a copy of the list
-        thermo = self.database.getThermoData(spec)
+        thermo = self.database.get_thermo_data(spec)
 
         self.assertEqual(len(initial), len(spec.molecule))
         self.assertEqual(set(initial), set(spec.molecule))
@@ -347,7 +347,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         spec = Species().fromSMILES('C[CH]c1ccccc1')
         spec.generate_resonance_structures()
         initial = list(spec.molecule)  # Make a copy of the list
-        thermo = self.databaseWithoutLibraries.getThermoData(spec)
+        thermo = self.databaseWithoutLibraries.get_thermo_data(spec)
 
         self.assertEqual(len(initial), len(spec.molecule))
         self.assertEqual(set(initial), set(spec.molecule))
@@ -389,7 +389,7 @@ multiplicity 2
         spec.molecule.append(spec.molecule.pop(0))
 
         initial = list(spec.molecule)  # Make a copy of the list
-        thermo = self.database.getThermoData(spec)
+        thermo = self.database.get_thermo_data(spec)
 
         self.assertEqual(len(initial), len(spec.molecule))
         self.assertEqual(set(initial), set(spec.molecule))
@@ -529,8 +529,8 @@ multiplicity 2
         spec = Species().fromSMILES(smiles)
         spec.generate_resonance_structures()
 
-        thermo_gav = self.database.getThermoDataFromGroups(spec)
-        polycyclic_groups = self.database.getRingGroupsFromComments(thermo_gav)[1]
+        thermo_gav = self.database.get_thermo_data_from_groups(spec)
+        polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_gav)[1]
 
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
 
@@ -541,15 +541,15 @@ multiplicity 2
         self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
 
     def test_getAllThermoData_fails_quietly(self):
-        """Test that getAllThermoData doesn't break when GAV fails."""
+        """Test that get_all_thermo_data doesn't break when GAV fails."""
         spec = Species().fromSMILES('[Ne]')
 
         # Check that GAV fails
         with self.assertRaises(DatabaseError):
-            self.database.getThermoDataFromGroups(spec)
+            self.database.get_thermo_data_from_groups(spec)
 
-        # Check that getAllThermoData doesn't break
-        thermo = self.database.getAllThermoData(spec)
+        # Check that get_all_thermo_data doesn't break
+        thermo = self.database.get_all_thermo_data(spec)
         self.assertEqual(len(thermo), 1)
 
     def test_lowest_h298_for_resonance_structures(self):
@@ -558,9 +558,9 @@ multiplicity 2
         smiles = '[C]#C[O]'
         # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
         spec = Species().fromSMILES(smiles)
-        thermo_gav1 = self.database.getThermoDataFromGroups(spec)
+        thermo_gav1 = self.database.get_thermo_data_from_groups(spec)
         spec.generate_resonance_structures()
-        thermo_gav2 = self.database.getThermoDataFromGroups(spec)
+        thermo_gav2 = self.database.get_thermo_data_from_groups(spec)
         self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
                         msg="Did not select the molecule with the lowest H298 "
                             "as a the thermo entry for [C]#C[O] / [C]=C=O")
@@ -568,9 +568,9 @@ multiplicity 2
         smiles = 'C=C[CH][O]'
         # has H298 ~= 209 kJ/mol; has (a reactive) resonance structure `C=CC=O` with H298 ~= -67 kJ/mol
         spec = Species().fromSMILES(smiles)
-        thermo_gav1 = self.database.getThermoDataFromGroups(spec)
+        thermo_gav1 = self.database.get_thermo_data_from_groups(spec)
         spec.generate_resonance_structures()
-        thermo_gav2 = self.database.getThermoDataFromGroups(spec)
+        thermo_gav2 = self.database.get_thermo_data_from_groups(spec)
         self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
                         msg="Did not select the molecule with the lowest H298 "
                             "as a the thermo entry for C=C[CH][O] / C=CC=O")
@@ -580,10 +580,10 @@ multiplicity 2
 
         smiles = '[C]=C=O'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
         spec = Species().fromSMILES(smiles)
-        thermo_gav1 = self.database.getThermoDataFromGroups(spec)  # thermo of the stable molecule
+        thermo_gav1 = self.database.get_thermo_data_from_groups(spec)  # thermo of the stable molecule
         spec.generate_resonance_structures()
         spec.molecule[0].reactive = False  # set the more stable molecule to nonreactive for this check
-        thermo_gav2 = self.database.getThermoDataFromGroups(spec)  # thermo of the speciesless stable molecule
+        thermo_gav2 = self.database.get_thermo_data_from_groups(spec)  # thermo of the speciesless stable molecule
         self.assertTrue(thermo_gav2.getEnthalpy(298) > thermo_gav1.getEnthalpy(298),
                         msg="Did not select the reactive molecule for thermo")
 
@@ -638,11 +638,11 @@ class TestThermoAccuracy(unittest.TestCase):
             cp_list = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
             species = Species().fromSMILES(smiles)
             species.generate_resonance_structures()
-            thermo_data = self.database.getThermoDataFromGroups(species)
+            thermo_data = self.database.get_thermo_data_from_groups(species)
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
-                thermo_data0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
+                thermo_data0 = self.database.get_all_thermo_data(Species(molecule=[mol]))[0][0]
+                for data in self.database.get_all_thermo_data(Species(molecule=[mol]))[1:]:
                     if data[0].getEnthalpy(298) < thermo_data0.getEnthalpy(298):
                         thermo_data0 = data[0]
                 if thermo_data0.getEnthalpy(298) < thermo_data.getEnthalpy(298):
@@ -699,7 +699,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         """
         spec = Species().fromSMILES('c(O)1c(O)c(C=O)c(C=O)c(O)c(C=O)1')
         spec.generate_resonance_structures()
-        thermo = self.database.getThermoDataFromGroups(spec)
+        thermo = self.database.get_thermo_data_from_groups(spec)
 
         self.assertIn('o_OH_OH', thermo.comment)
         self.assertIn('o_OH_CHO', thermo.comment)
@@ -715,7 +715,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         """
         spec = Species().fromSMILES('c([O])1c(C=O)c(C=O)c(OC)cc1')
         spec.generate_resonance_structures()
-        thermo = self.database.getThermoDataFromGroups(spec)
+        thermo = self.database.get_thermo_data_from_groups(spec)
 
         self.assertNotIn('o_OH_CHO', thermo.comment)
         self.assertNotIn('p_OH_MeO', thermo.comment)
@@ -731,7 +731,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         """
         spec = Species().fromSMILES('c([O])1c([C]=O)cc(C=O)cc1')
         spec.generate_resonance_structures()
-        thermo = self.database.getThermoDataFromGroups(spec)
+        thermo = self.database.get_thermo_data_from_groups(spec)
 
         self.assertNotIn('o_OH_CHO', thermo.comment)
         self.assertNotIn('m_CHO_CHO', thermo.comment)
@@ -759,9 +759,9 @@ class TestCyclicThermo(unittest.TestCase):
         """
         spec = Species().fromSMILES('CCCCCCCCCCCC(CC=C1C=CC=CC1)c1ccccc1')
         spec.generate_resonance_structures()
-        thermo = self.database.getThermoDataFromGroups(spec)
+        thermo = self.database.get_thermo_data_from_groups(spec)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo)
         self.assertEqual(len(ring_groups), 2)
         self.assertEqual(len(polycyclic_groups), 0)
 
@@ -777,8 +777,8 @@ class TestCyclicThermo(unittest.TestCase):
         """
         spec = Species().fromSMILES('C(CCC1C2CCC1CC2)CC1CCC1')
         spec.generate_resonance_structures()
-        thermo = self.database.getThermoDataFromGroups(spec)
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo)
+        thermo = self.database.get_thermo_data_from_groups(spec)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo)
         self.assertEqual(len(ring_groups), 1)
         self.assertEqual(len(polycyclic_groups), 1)
 
@@ -795,7 +795,7 @@ class TestCyclicThermo(unittest.TestCase):
 
     def testGetRingGroupsFromComments(self):
         """
-        Test that getRingGroupsFromComments method works for fused polycyclics.
+        Test that get_ring_groups_from_comments method works for fused polycyclics.
         """
         from rmgpy.thermo.thermoengine import generateThermoData
 
@@ -804,7 +804,7 @@ class TestCyclicThermo(unittest.TestCase):
 
         spc.thermo = generateThermoData(spc)
 
-        self.database.getRingGroupsFromComments(spc.thermo)
+        self.database.get_ring_groups_from_comments(spc.thermo)
 
     def testRemoveGroup(self):
         """
@@ -825,7 +825,7 @@ class TestCyclicThermo(unittest.TestCase):
         children = group_to_remove.children
 
         # remove the group
-        rad_group.removeGroup(group_to_remove)
+        rad_group.remove_group(group_to_remove)
 
         # afterwards group_to_remove should not be in the database or root's children
         self.assertNotIn(group_to_remove, list(rad_group.entries.values()))
@@ -847,7 +847,7 @@ class TestCyclicThermo(unittest.TestCase):
 
         # Remove an entry with a ThermoData object
         group_to_remove2 = rad_group.entries['CsJ']
-        rad_group.removeGroup(group_to_remove2)
+        rad_group.remove_group(group_to_remove2)
         # If group_to_remove was a data object, we point toward parent instead
         self.assertEqual(rad_group.entries['RJ2_triplet'].data, group_to_remove2.parent.label)
         # If the parent pointed toward group_to_remove, we need should have copied data object
@@ -869,7 +869,7 @@ class TestCyclicThermo(unittest.TestCase):
         matched_group = self.database.groups['polycyclic'].entries['PolycyclicRing'].item
 
         # test
-        self.assertTrue(isRingPartialMatched(polyring, matched_group))
+        self.assertTrue(is_ring_partial_matched(polyring, matched_group))
 
     def testAddRingCorrectionThermoDataFromTreeForExistingTricyclic(self):
 
@@ -881,7 +881,7 @@ class TestCyclicThermo(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         poly_groups = self.database.groups['polycyclic']
-        _, matched_entry, _ = self.database._ThermoDatabase__addRingCorrectionThermoDataFromTree(
+        _, matched_entry, _ = self.database._add_ring_correction_thermo_data_from_tree(
             None, poly_groups, mol, polyring)
 
         self.assertEqual(matched_entry.label, 's2-3_5_5_5_ane')
@@ -904,7 +904,7 @@ class TestCyclicThermo(unittest.TestCase):
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
-                if isAromaticRing(sr0mol):
+                if is_aromatic_ring(sr0mol):
                     aromatic_ring_num += 1
             if aromatic_ring_num == 2:
                 mols.append(mol)
@@ -921,10 +921,10 @@ class TestCyclicThermo(unittest.TestCase):
                 S298=(0.0, "J/(mol*K)"),
             )
 
-            self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            self.database._add_poly_ring_correction_thermo_data_from_heuristic(
                 thermo_data, polyring)
 
-            ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+            ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
             ring_group_labels += [ringGroup.label for ringGroup in ring_groups]
             polycyclic_group_labels += [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -950,7 +950,7 @@ class TestCyclicThermo(unittest.TestCase):
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
-                if isAromaticRing(sr0mol):
+                if is_aromatic_ring(sr0mol):
                     aromatic_ring_num += 1
             if aromatic_ring_num == 2:
                 break
@@ -965,10 +965,10 @@ class TestCyclicThermo(unittest.TestCase):
             S298=(0.0, "J/(mol*K)"),
         )
 
-        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+        self.database._add_poly_ring_correction_thermo_data_from_heuristic(
             thermo_data, polyring)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
         ring_group_labels = [ringGroup.label for ringGroup in ring_groups]
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -994,10 +994,10 @@ class TestCyclicThermo(unittest.TestCase):
             S298=(0.0, "J/(mol*K)"),
         )
 
-        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+        self.database._add_poly_ring_correction_thermo_data_from_heuristic(
             thermo_data, polyring)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
         ring_group_labels = [ringGroup.label for ringGroup in ring_groups]
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -1030,10 +1030,10 @@ class TestCyclicThermo(unittest.TestCase):
             S298=(0.0, "J/(mol*K)"),
         )
 
-        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+        self.database._add_poly_ring_correction_thermo_data_from_heuristic(
             thermo_data, polyring)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
         ring_group_labels = [ringGroup.label for ringGroup in ring_groups]
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -1068,10 +1068,10 @@ class TestCyclicThermo(unittest.TestCase):
             S298=(0.0, "J/(mol*K)"),
         )
 
-        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+        self.database._add_poly_ring_correction_thermo_data_from_heuristic(
             thermo_data, polyring)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
         ring_group_labels = [ringGroup.label for ringGroup in ring_groups]
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -1096,9 +1096,9 @@ class TestCyclicThermo(unittest.TestCase):
         # extract polyring from the molecule
         polyring = mol.getDisparateRings()[1][0]
 
-        thermo_data = self.database.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+        thermo_data = self.database.get_bicyclic_correction_thermo_data_from_heuristic(polyring)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
         ring_group_labels = [ringGroup.label for ringGroup in ring_groups]
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -1121,9 +1121,9 @@ class TestCyclicThermo(unittest.TestCase):
         # extract polyring from the molecule
         polyring = mol.getDisparateRings()[1][0]
 
-        thermo_data = self.database.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+        thermo_data = self.database.get_bicyclic_correction_thermo_data_from_heuristic(polyring)
 
-        ring_groups, polycyclic_groups = self.database.getRingGroupsFromComments(thermo_data)
+        ring_groups, polycyclic_groups = self.database.get_ring_groups_from_comments(thermo_data)
 
         ring_group_labels = [ringGroup.label for ringGroup in ring_groups]
         polycyclic_group_labels = [polycyclicGroup.label for polycyclicGroup in polycyclic_groups]
@@ -1156,9 +1156,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         ring3 = [atom for atom in mol3.atoms if atom.isNonHydrogen()]
 
         # convert to submolecules
-        submol1, _ = convertRingToSubMolecule(ring1)
-        submol2, _ = convertRingToSubMolecule(ring2)
-        submol3, _ = convertRingToSubMolecule(ring3)
+        submol1, _ = convert_ring_to_sub_molecule(ring1)
+        submol2, _ = convert_ring_to_sub_molecule(ring2)
+        submol3, _ = convert_ring_to_sub_molecule(ring3)
 
         # test against expected submolecules
         self.assertEqual(len(submol1.atoms), 6)
@@ -1189,12 +1189,12 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
     def testGetCopyForOneRing(self):
         """
-        This method tests the getCopyForOneRing method, which returns
+        This method tests the get_copy_for_one_ring method, which returns
         an atom object list that contains deep copies of the atoms
         """
 
         test_atom_list = Molecule(SMILES='C1CCCCC1').atoms
-        copied_atom_list = getCopyForOneRing(test_atom_list)
+        copied_atom_list = get_copy_for_one_ring(test_atom_list)
 
         test_molecule = Molecule(atoms=test_atom_list)
         copied_molecule = Molecule(atoms=copied_atom_list)
@@ -1216,7 +1216,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         ring1 = [atom for atom in mol1.atoms if atom.isNonHydrogen()]
         ring2 = [atom for atom in mol2.atoms if atom.isNonHydrogen()]
         with self.assertRaises(AssertionError):
-            combineTwoRingsIntoSubMolecule(ring1, ring2)
+            combine_two_rings_into_sub_molecule(ring1, ring2)
 
     def testCombineTwoRingsIntoSubMolecule(self):
 
@@ -1230,7 +1230,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         ring2 = sssr[1]
 
         # combine two rings into submolecule
-        submol, _ = combineTwoRingsIntoSubMolecule(ring1, ring2)
+        submol, _ = combine_two_rings_into_sub_molecule(ring1, ring2)
 
         self.assertEqual(len(submol.atoms), 10)
 
@@ -1268,33 +1268,33 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         ring3mol = Molecule(atoms=[atom for atom in mol3.atoms if atom.isNonHydrogen()])
 
         # check with expected results
-        self.assertEqual(isAromaticRing(ring1mol), False)
-        self.assertEqual(isAromaticRing(ring2mol), False)
-        self.assertEqual(isAromaticRing(ring3mol), True)
+        self.assertEqual(is_aromatic_ring(ring1mol), False)
+        self.assertEqual(is_aromatic_ring(ring2mol), False)
+        self.assertEqual(is_aromatic_ring(ring3mol), True)
 
     def testIsBicyclic1(self):
         """
-        Test isBicyclic identifies bicyclic correctly
-        The test molecule is bicyclic, we expect isBicyclic()
+        Test is_bicyclic identifies bicyclic correctly
+        The test molecule is bicyclic, we expect is_bicyclic()
         returns True.
         """
         smiles = 'C1=CCC2C1=C2'
         mol = Molecule().fromSMILES(smiles)
         polyring = mol.getDisparateRings()[1][0]
 
-        self.assertTrue(isBicyclic(polyring))
+        self.assertTrue(is_bicyclic(polyring))
 
     def testIsBicyclic2(self):
         """
-        Test isBicyclic identifies bicyclic correctly
+        Test is_bicyclic identifies bicyclic correctly
         The test molecule is tetracyclic, we expect 
-        isBicyclic() returns False
+        is_bicyclic() returns False
         """
         smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
         mol = Molecule().fromSMILES(smiles)
         polyring = mol.getDisparateRings()[1][0]
 
-        self.assertFalse(isBicyclic(polyring))
+        self.assertFalse(is_bicyclic(polyring))
 
     def testFindAromaticBondsFromSubMolecule(self):
 
@@ -1313,8 +1313,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         submol2 = Molecule(atoms=ring2)
 
         # check with expected results
-        self.assertEqual(len(findAromaticBondsFromSubMolecule(submol1)), 6)
-        self.assertEqual(len(findAromaticBondsFromSubMolecule(submol2)), 6)
+        self.assertEqual(len(find_aromatic_bonds_from_sub_molecule(submol1)), 6)
+        self.assertEqual(len(find_aromatic_bonds_from_sub_molecule(submol2)), 6)
 
     def testBicyclicDecompositionForPolyringUsingPyrene(self):
 
@@ -1333,7 +1333,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
-                if isAromaticRing(sr0mol):
+                if is_aromatic_ring(sr0mol):
                     aromatic_ring_num += 1
             if aromatic_ring_num == 2:
                 break
@@ -1341,7 +1341,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # extract polyring from the molecule
         polyring = mol.getDisparateRings()[1][0]
 
-        bicyclic_list, ring_occurrences_dict = bicyclicDecompositionForPolyring(polyring)
+        bicyclic_list, ring_occurrences_dict = bicyclic_decomposition_for_polyring(polyring)
         for bicyclic in bicyclic_list:
             bicyclic.deleteHydrogens()
 
@@ -1361,7 +1361,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # 4th test: bond info for members of each core
         aromatic_bond_num_in_bicyclics = []
         for bicyclic in bicyclic_list:
-            aromatic_bond_num = len(findAromaticBondsFromSubMolecule(bicyclic))
+            aromatic_bond_num = len(find_aromatic_bonds_from_sub_molecule(bicyclic))
             aromatic_bond_num_in_bicyclics.append(aromatic_bond_num)
         aromatic_bond_num_in_bicyclics = sorted(aromatic_bond_num_in_bicyclics)
         expected_aromatic_bond_num_in_bicyclics = [0, 6, 6, 6, 6]
@@ -1383,7 +1383,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
-                if isAromaticRing(sr0mol):
+                if is_aromatic_ring(sr0mol):
                     aromatic_ring_num += 1
             if aromatic_ring_num == 2:
                 break
@@ -1391,7 +1391,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # extract polyring from the molecule
         polyring = mol.getDisparateRings()[1][0]
 
-        bicyclic_list, ring_occurrences_dict = bicyclicDecompositionForPolyring(polyring)
+        bicyclic_list, ring_occurrences_dict = bicyclic_decomposition_for_polyring(polyring)
         for bicyclic in bicyclic_list:
             bicyclic.deleteHydrogens()
 
@@ -1411,7 +1411,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # 4th test: bond info for members of each core
         aromatic_bond_num_in_bicyclics = []
         for bicyclic in bicyclic_list:
-            aromatic_bond_num = len(findAromaticBondsFromSubMolecule(bicyclic))
+            aromatic_bond_num = len(find_aromatic_bonds_from_sub_molecule(bicyclic))
             aromatic_bond_num_in_bicyclics.append(aromatic_bond_num)
         aromatic_bond_num_in_bicyclics = sorted(aromatic_bond_num_in_bicyclics)
         expected_aromatic_bond_num_in_bicyclics = [6, 6, 11]
@@ -1426,7 +1426,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # extract polyring from the molecule
         polyring = mol.getDisparateRings()[1][0]
 
-        bicyclic_list, ring_occurrences_dict = bicyclicDecompositionForPolyring(polyring)
+        bicyclic_list, ring_occurrences_dict = bicyclic_decomposition_for_polyring(polyring)
         for bicyclic in bicyclic_list:
             bicyclic.deleteHydrogens()
 
@@ -1446,7 +1446,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # 4th test: bond info for members of each core
         aromatic_bond_num_in_bicyclics = []
         for bicyclic in bicyclic_list:
-            aromatic_bond_num = len(findAromaticBondsFromSubMolecule(bicyclic))
+            aromatic_bond_num = len(find_aromatic_bonds_from_sub_molecule(bicyclic))
             aromatic_bond_num_in_bicyclics.append(aromatic_bond_num)
         aromatic_bond_num_in_bicyclics = sorted(aromatic_bond_num_in_bicyclics)
         expected_aromatic_bond_num_in_bicyclics = [0, 0, 0]
@@ -1454,13 +1454,13 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
     def testCombineCycles(self):
         """
-        This method tests the combineCycles method, which simply joins two lists
+        This method tests the combine_cycles method, which simply joins two lists
         together without duplication.
         """
         main_cycle = Molecule(SMILES='C1CCC2CCCCC2C1').atoms
         test_cycle1 = main_cycle[0:8]
         test_cycle2 = main_cycle[6:]
-        joined_cycle = combineCycles(test_cycle1, test_cycle2)
+        joined_cycle = combine_cycles(test_cycle1, test_cycle2)
         self.assertEqual(set(main_cycle), set(joined_cycle))
 
     def testSplitBicyclicIntoSingleRings1(self):
@@ -1472,8 +1472,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = Molecule().fromSMILES(smiles)
         bicyclic = mol.getDisparateRings()[1][0]
 
-        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
-        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+        bicyclic_submol = convert_ring_to_sub_molecule(bicyclic)[0]
+        single_ring_submols = split_bicyclic_into_single_rings(bicyclic_submol)
         self.assertEqual(len(single_ring_submols), 2)
 
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
@@ -1501,8 +1501,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = Molecule().fromSMILES(smiles)
         bicyclic = mol.getDisparateRings()[1][0]
 
-        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
-        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+        bicyclic_submol = convert_ring_to_sub_molecule(bicyclic)[0]
+        single_ring_submols = split_bicyclic_into_single_rings(bicyclic_submol)
         self.assertEqual(len(single_ring_submols), 2)
 
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
@@ -1526,7 +1526,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         """
         smiles = 'C1=CCC2=C1C2'
         mol = Molecule().fromSMILES(smiles)
-        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+        ring_submol = convert_ring_to_sub_molecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, already_saturated = saturate_ring_bonds(ring_submol)
 
@@ -1547,7 +1547,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
         mol = spe.molecule[0]
-        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+        ring_submol = convert_ring_to_sub_molecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, already_saturated = saturate_ring_bonds(ring_submol)
 
@@ -1570,7 +1570,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
         mol = spe.molecule[0]
-        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+        ring_submol = convert_ring_to_sub_molecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, already_saturated = saturate_ring_bonds(ring_submol)
 
@@ -1658,9 +1658,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         species = Species().fromSMILES('C[CH2]')
 
-        thermo_data = self.database.getThermoDataFromGroups(species)
+        thermo_data = self.database.get_thermo_data_from_groups(species)
 
-        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermo_data, self.database))
+        self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
     def testSatisfyRegistrationRequirements2(self):
         """
@@ -1671,9 +1671,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         species = Species().fromSMILES('CC')
 
-        thermo_data = self.database.getThermoDataFromGroups(species)
+        thermo_data = self.database.get_thermo_data_from_groups(species)
 
-        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermo_data, self.database))
+        self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
     def testSatisfyRegistrationRequirements3(self):
         """
@@ -1684,9 +1684,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         species = Species().fromSMILES('C1CC1')
 
-        thermo_data = self.database.getThermoDataFromGroups(species)
+        thermo_data = self.database.get_thermo_data_from_groups(species)
 
-        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermo_data, self.database))
+        self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
     def testSatisfyRegistrationRequirements4(self):
         """
@@ -1697,9 +1697,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         species = Species().fromSMILES('[H][H]')
 
-        thermo_data = self.database.getThermoDataFromLibraries(species)
+        thermo_data = self.database.get_thermo_data_from_libraries(species)
 
-        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermo_data, self.database))
+        self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
     def testSatisfyRegistrationRequirements5(self):
         """
@@ -1713,9 +1713,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         species = Species().fromSMILES('C1C=CC2C=CC2=C1')
 
-        thermo_data = self.database.getThermoDataFromGroups(species)
+        thermo_data = self.database.get_thermo_data_from_groups(species)
 
-        self.assertTrue(tcdi.satisfyRegistrationRequirements(species, thermo_data, self.database))
+        self.assertTrue(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
     def testSatisfyRegistrationRequirements6(self):
         """
@@ -1729,9 +1729,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
 
-        thermo_data = self.database.getThermoDataFromGroups(species)
+        thermo_data = self.database.get_thermo_data_from_groups(species)
 
-        self.assertTrue(tcdi.satisfyRegistrationRequirements(species, thermo_data, self.database))
+        self.assertTrue(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
     def testRegisterInCentralThermoDB1(self):
         """
@@ -1755,7 +1755,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         registration_table.delete_many({"aug_inchi": expected_aug_inchi})
         results_table.delete_many({"aug_inchi": expected_aug_inchi})
 
-        tcdi.registerInCentralThermoDB(species)
+        tcdi.register_in_central_thermo_db(species)
         registered_species_entries = list(registration_table.find({"aug_inchi": expected_aug_inchi}))
 
         # should expect only one registered such species
@@ -1796,7 +1796,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         registration_table.insert_one({"aug_inchi": expected_aug_inchi})
         results_table.delete_many({"aug_inchi": expected_aug_inchi})
 
-        tcdi.registerInCentralThermoDB(species)
+        tcdi.register_in_central_thermo_db(species)
         registered_species_entries = list(registration_table.find({"aug_inchi": expected_aug_inchi}))
 
         # should expect only one registered such species
@@ -1835,7 +1835,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         results_table.delete_many({"aug_inchi": expected_aug_inchi})
         results_table.insert_one({"aug_inchi": expected_aug_inchi})
 
-        tcdi.registerInCentralThermoDB(species)
+        tcdi.register_in_central_thermo_db(species)
         registered_species_entries = list(registration_table.find({"aug_inchi": expected_aug_inchi}))
 
         # should expect only one registered such species

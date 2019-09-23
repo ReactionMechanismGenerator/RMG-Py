@@ -256,7 +256,7 @@ def printThermo(spec):
 
 
 def printReaction(rxn):
-    logger.error('rxn: {}\t\torigin: {}'.format(rxn, rxn.getSource()))
+    logger.error('rxn: {}\t\torigin: {}'.format(rxn, rxn.get_source()))
 
 
 def printReactionComments(rxn):

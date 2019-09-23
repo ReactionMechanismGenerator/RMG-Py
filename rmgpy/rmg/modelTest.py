@@ -67,11 +67,11 @@ class TestSpecies(unittest.TestCase):
         path = os.path.join(settings['database.directory'])
 
         # forbidden structure loading
-        cls.rmg.database.loadThermo(os.path.join(path, 'thermo'))
+        cls.rmg.database.load_thermo(os.path.join(path, 'thermo'))
 
     def testGetThermoData(self):
         """
-        Test that getThermoData method of Species works.
+        Test that get_thermo_data method of Species works.
         """
         spc = Species().fromSMILES('CCC')
 
@@ -116,10 +116,10 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         path = os.path.join(settings['test_data.directory'], 'testing_database')
 
         # kinetics family loading
-        rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
-                                  kineticsFamilies=[test_family],
-                                  reactionLibraries=[]
-                                  )
+        rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
+                                   kineticsFamilies=[test_family],
+                                   reactionLibraries=[]
+                                   )
         # load empty forbidden structures to avoid any dependence on forbidden structures
         # for these tests
         for family in rmg.database.kinetics.families.values():

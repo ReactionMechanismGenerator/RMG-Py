@@ -312,7 +312,7 @@ class ChemkinTest(unittest.TestCase):
         E_units = 'kcal/mol'
         reaction = readKineticsEntry(entry, species_dict, A_units, E_units)
 
-        self.assertEqual(reaction.specificCollider.label, 'N2(5)')
+        self.assertEqual(reaction.specific_collider.label, 'N2(5)')
 
     def test_process_duplicate_reactions(self):
         """

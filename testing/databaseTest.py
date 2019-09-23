@@ -297,7 +297,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
         """
         family = self.database.kinetics.families[family_name]
-        expected_number_nodes = len(family.getRootTemplate())
+        expected_number_nodes = len(family.get_root_template())
         tst = []
         for label, entries in family.rules.entries.items():
             for entry in entries:
@@ -323,12 +323,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
         # List of the each top node's descendants (including the top node)
         top_descendants = []
-        for topNode in family.getRootTemplate():
+        for topNode in family.get_root_template():
             nodes = [topNode]
             nodes.extend(family.groups.descendants(topNode))
             top_descendants.append(nodes)
 
-        top_group_order = ';'.join(topNode.label for topNode in family.getRootTemplate())
+        top_group_order = ';'.join(topNode.label for topNode in family.get_root_template())
         tst1 = []
         tst2 = []
         for label, entries in family.rules.entries.items():
@@ -415,7 +415,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         for nodeName, nodeGroup in family.entries.items():
             del entries_copy[nodeName]
             for nodeNameOther, nodeGroupOther in entries_copy.items():
-                tst.append((family.matchNodeToNode(nodeGroup, nodeGroupOther),
+                tst.append((family.match_node_to_node(nodeGroup, nodeGroupOther),
                             "Group {group} in {family} family was found to be identical to group {groupOther}".format(
                                 group=nodeName, family=family_name, groupOther=nodeNameOther)))
 
@@ -452,17 +452,17 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 continue
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
-            tst.append((family.matchNodeToChild(parent_node, childNode),
+            tst.append((family.match_node_to_child(parent_node, childNode),
                         "In {family} family, group {parent} is not a proper parent of its child "
                         "{child}.".format(family=family_name, parent=parent_node, child=nodeName)))
             # check that parentNodes which are LogicOr do not have an ancestor that is a Group
-            # If it does, then the childNode must also be a child of the ancestor
+            # If it does, then the child_node must also be a child of the ancestor
             if isinstance(parent_node.item, LogicOr):
                 ancestor_node = parent_node
                 while ancestor_node not in original_family.groups.top and isinstance(ancestor_node.item, LogicOr):
                     ancestor_node = ancestor_node.parent
                 if isinstance(ancestor_node.item, Group):
-                    tst.append((family.matchNodeToChild(ancestor_node, childNode),
+                    tst.append((family.match_node_to_child(ancestor_node, childNode),
                                 "In {family} family, group {ancestor} is not a proper ancestor of its child "
                                 "{child}.".format(family=family_name, ancestor=ancestor_node, child=nodeName)))
 
@@ -495,7 +495,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 continue
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index + 1:]:
-                    tst.append((family.matchNodeToChild(child1, child2),
+                    tst.append((family.match_node_to_child(child1, child2),
                                 "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(
                                     family_name, child1, child2)))
         boo = False
@@ -877,9 +877,9 @@ The following adjList may have atoms in a different ordering than the input file
         #################################################################################
         family = self.database.kinetics.families[family_name]
 
-        backbone = family.getBackboneRoots()[0]
+        backbone = family.get_backbone_roots()[0]
 
-        end_groups = family.getEndRoots()
+        end_groups = family.get_end_roots()
 
         end_labels = {}
         for end_group in end_groups:
@@ -1013,10 +1013,10 @@ The following adjList may have atoms in a different ordering than the input file
         # If family is backbone archetype, then we need to merge groups before descending
         roots = family.groups.top
         if len(roots) > len(family.forwardTemplate.reactants):
-            backbone_roots = family.getBackboneRoots()
+            backbone_roots = family.get_backbone_roots()
             all_backbone_groups = []
             for backboneRoot in backbone_roots:
-                all_backbone_groups.extend(family.getTopLevelGroups(backboneRoot))
+                all_backbone_groups.extend(family.get_top_level_groups(backboneRoot))
             # list of numbered of labelled atoms for all_backbone_groups
             backbone_sizes = [len(backbone.item.getLabeledAtoms()) for backbone in all_backbone_groups]
 
@@ -1050,7 +1050,7 @@ The following adjList may have atoms in a different ordering than the input file
 
                     # test accessibility here
                     atoms = sample_molecule.getLabeledAtoms()
-                    match = family.groups.descendTree(sample_molecule, atoms, strict=True, root=root)
+                    match = family.groups.descend_tree(sample_molecule, atoms, strict=True, root=root)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, root.label)))
                     if tst1[-1][0] is not None:
                         if merges_necessary and root not in backbone_roots:
@@ -1159,8 +1159,8 @@ Origin Group AdjList:
         for node_name, node_group in group.entries.items():
             del entries_copy[node_name]
             for nodeNameOther, nodeGroupOther in entries_copy.items():
-                group.matchNodeToNode(node_group, nodeGroupOther)
-                tst.append((group.matchNodeToNode(node_group, nodeGroupOther),
+                group.match_node_to_node(node_group, nodeGroupOther)
+                tst.append((group.match_node_to_node(node_group, nodeGroupOther),
                             "Node {node} in {group} group was found to be identical to node {nodeOther}".format(
                                 node=node_name, group=group_name, nodeOther=nodeNameOther)))
 
@@ -1186,7 +1186,7 @@ Origin Group AdjList:
             parent_node = child_node.parent
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
-            tst1.append((group.matchNodeToChild(parent_node, child_node),
+            tst1.append((group.match_node_to_child(parent_node, child_node),
                          "In {group} group, node {parent} is not a proper parent of its child {child}.".format(
                              group=group_name, parent=parent_node, child=node_name)))
 
@@ -1197,7 +1197,7 @@ Origin Group AdjList:
                 while ancestor_node not in group.top and isinstance(ancestor_node.item, LogicOr):
                     ancestor_node = ancestor_node.parent
                 if isinstance(ancestor_node.item, Group) and tst1[-1][0]:
-                    tst2.append((group.matchNodeToChild(ancestor_node, child_node),
+                    tst2.append((group.match_node_to_child(ancestor_node, child_node),
                                  "In {group} group, node {ancestor} is not a proper ancestor of its child {child}."
                                  "".format(group=group_name, ancestor=ancestor_node, child=node_name)))
 
@@ -1236,7 +1236,7 @@ Origin Group AdjList:
         for nodeName, node in group.entries.items():
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index + 1:]:
-                    tst.append((group.matchNodeToChild(child1, child2),
+                    tst.append((group.match_node_to_child(child1, child2),
                                 "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(
                                     group_name, child1, child2)))
 
@@ -1328,7 +1328,7 @@ The following adjList may have atoms in a different ordering than the input file
                         continue
 
                     atoms = sample_molecule.getLabeledAtoms()
-                    match = group.descendTree(sample_molecule, atoms, strict=True)
+                    match = group.descend_tree(sample_molecule, atoms, strict=True)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, group.top[0])))
                     tst2.append((entry, [match] + group.ancestors(match), """
 In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.

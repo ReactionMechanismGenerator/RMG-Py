@@ -30,8 +30,8 @@
 
 """
 This script cleans and generates new trees for the specified family running in parallel on the specified number of processors
-`python generateTree.py familyName nprocs`
-ex:  `python generateTree.py intra_H_migration 6`
+`python generate_tree.py familyName nprocs`
+ex:  `python generate_tree.py intra_H_migration 6`
 Note that 6 is the maximum number of processors used currently by this script
 """
 
@@ -81,14 +81,14 @@ def main():
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )
     family = database.kinetics.families[family_name]
-    family.cleanTree(database.thermo)
-    family.generateTree(thermoDatabase=database.thermo, nprocs=min(4, nprocs))
-    family.checkTree()
+    family.clean_tree()
+    family.generate_tree(thermo_database=database.thermo, nprocs=min(4, nprocs))
+    family.check_tree()
     family.regularize()
-    template_rxn_map = family.getReactionMatches(thermoDatabase=database.thermo, removeDegeneracy=True, getReverse=True,
-                                                 fixLabels=True)
-    family.makeBMRulesFromTemplateRxnMap(template_rxn_map, nprocs=min(6, nprocs))
-    family.checkTree()
+    template_rxn_map = family.get_reaction_matches(thermoDatabase=database.thermo, remove_degeneracy=True, get_reverse=True,
+                                                   fix_labels=True)
+    family.make_bm_rules_from_template_rxn_map(template_rxn_map, nprocs=min(6, nprocs))
+    family.check_tree()
     family.save(os.path.join(dbdir, 'kinetics', 'families', family_name))
 
 

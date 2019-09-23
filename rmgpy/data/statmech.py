@@ -36,8 +36,8 @@ import os.path
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.data.base import Database, Entry, LogicOr, makeLogicNode
-from rmgpy.data.statmechfit import fitStatmechToHeatCapacity
+from rmgpy.data.base import Database, Entry, LogicOr, make_logic_node
+from rmgpy.data.statmechfit import fit_statmech_to_heat_capacity
 from rmgpy.molecule import Molecule, Group
 from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, \
                            IdealGasTranslation
@@ -45,7 +45,7 @@ from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, Nonlinear
 
 ################################################################################
 
-def saveEntry(f, entry):
+def save_entry(f, entry):
     """
     Write a Pythonic string representation of the given `entry` in the thermo
     database to the file object `f`.
@@ -88,7 +88,7 @@ def saveEntry(f, entry):
     f.write(')\n\n')
 
 
-def generateOldLibraryEntry(data):
+def generate_old_library_entry(data):
     """
     Return a list of values used to save entries to the old-style RMG
     thermo database based on the thermodynamics object `data`.
@@ -99,7 +99,7 @@ def generateOldLibraryEntry(data):
     return items
 
 
-def processOldLibraryEntry(data, format):
+def process_old_library_entry(data, format):
     """
     Process a list of parameters `data` as read from an old-style RMG
     thermo database, returning the corresponding thermodynamics object.
@@ -126,16 +126,16 @@ class StatmechDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self,
-                  index,
-                  label,
-                  molecule,
-                  statmech,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  ):
+    def load_entry(self,
+                   index,
+                   label,
+                   molecule,
+                   statmech,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   ):
         item = Molecule().fromAdjacencyList(molecule)
 
         self.entries[label] = Entry(
@@ -149,11 +149,11 @@ class StatmechDepository(Database):
             longDesc=longDesc.strip(),
         )
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the thermo database to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)
 
 
 ################################################################################
@@ -166,16 +166,16 @@ class StatmechLibrary(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self,
-                  index,
-                  label,
-                  molecule,
-                  statmech,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  ):
+    def load_entry(self,
+                   index,
+                   label,
+                   molecule,
+                   statmech,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   ):
         self.entries[label] = Entry(
             index=index,
             label=label,
@@ -187,25 +187,25 @@ class StatmechLibrary(Database):
             longDesc=longDesc.strip(),
         )
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the thermo database to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)
 
-    def generateOldLibraryEntry(self, data):
+    def generate_old_library_entry(self, data):
         """
         Return a list of values used to save entries to the old-style RMG
         thermo database based on the thermodynamics object `data`.
         """
-        return generateOldLibraryEntry(data)
+        return generate_old_library_entry(data)
 
-    def processOldLibraryEntry(self, data):
+    def process_old_library_entry(self, data):
         """
         Process a list of parameters `data` as read from an old-style RMG
         thermo database, returning the corresponding thermodynamics object.
         """
-        return processOldLibraryEntry(data, "library")
+        return process_old_library_entry(data, "library")
 
 
 ################################################################################
@@ -219,22 +219,22 @@ class StatmechGroups(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self,
-                  index,
-                  label,
-                  group,
-                  statmech,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  ):
+    def load_entry(self,
+                   index,
+                   label,
+                   group,
+                   statmech,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   ):
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
                 group[0:7].upper() == 'NOT OR{' or
                 group[0:8].upper() == 'NOT AND{'
         ):
-            item = makeLogicNode(group)
+            item = make_logic_node(group)
         else:
             item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
@@ -248,27 +248,27 @@ class StatmechGroups(Database):
             longDesc=longDesc.strip(),
         )
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the thermo database to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)
 
-    def generateOldLibraryEntry(self, data):
+    def generate_old_library_entry(self, data):
         """
         Return a list of values used to save entries to the old-style RMG
         thermo database based on the thermodynamics object `data`.
         """
-        return generateOldLibraryEntry(data)
+        return generate_old_library_entry(data)
 
-    def processOldLibraryEntry(self, data):
+    def process_old_library_entry(self, data):
         """
         Process a list of parameters `data` as read from an old-style RMG
         statmech database, returning the corresponding thermodynamics object.
         """
-        return processOldLibraryEntry(data, "groups")
+        return process_old_library_entry(data, "groups")
 
-    def __countMatchesToNode(self, molecule, node):
+    def _count_matches_to_node(self, molecule, node):
         """
         Count the number of matches in the given :class:`Molecule` object
         `molecule` for the given `node` in the group database.
@@ -279,17 +279,17 @@ class StatmechGroups(Database):
             count = len(mappings) if ismatch else 0
         elif isinstance(self.dictionary[node], LogicOr):
             for child in self.dictionary[node].components:
-                count += self.__countMatchesToNode(molecule, child)
+                count += self._count_matches_to_node(molecule, child)
         return count
 
-    def __getNode(self, molecule, atom):
+    def _get_node(self, molecule, atom):
         """
         For a given :class:`Molecule` object `molecule` with central `atom`,
         determine the most specific functional group that describes that atom
         center and has characteristic frequencies associated with it.
         """
 
-        node0 = self.descendTree(molecule, atom, None)
+        node0 = self.descend_tree(molecule, atom, None)
 
         if node0 is None:
             raise KeyError('Node not found in database.')
@@ -306,10 +306,10 @@ class StatmechGroups(Database):
             raise KeyError('Statmech node {0!r} and all its parents have data = None'.format(node0.label))
         return node
 
-    def getFrequencyGroups(self, molecule):
+    def get_frequency_groups(self, molecule):
         """
         Return the set of characteristic group frequencies corresponding to the
-        speficied `molecule`. This is done by searching the molecule for
+        specified `molecule`. This is done by searching the molecule for
         certain functional groups for which characteristic frequencies are
         known, and using those frequencies.
         """
@@ -343,7 +343,7 @@ class StatmechGroups(Database):
                                 group_count[ring_ch] = 1
             else:
                 # Atom is not in cycle, so find a group for it
-                node = self.__getNode(molecule, {'*': atom})
+                node = self._get_node(molecule, {'*': atom})
                 if node is not None:
                     try:
                         group_count[node] += 1
@@ -352,11 +352,11 @@ class StatmechGroups(Database):
 
         return group_count
 
-    def getStatmechData(self, molecule, thermoModel):
+    def get_statmech_data(self, molecule, thermo_model):
         """
         Use the previously-loaded frequency database to generate a set of
         characteristic group frequencies corresponding to the speficied
-        `molecule`. The provided thermo data in `thermoModel` is used to fit
+        `molecule`. The provided thermo data in `thermo_model` is used to fit
         some frequencies and all hindered rotors to heat capacity data.
         """
         conformer = Conformer()
@@ -376,12 +376,12 @@ class StatmechGroups(Database):
         num_vibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - num_rotors
 
         # Get characteristic frequency groups and the associated frequencies
-        group_count = self.getFrequencyGroups(molecule)
+        group_count = self.get_frequency_groups(molecule)
         logging.debug('Found frequencies from groups {}'.format(group_count))
         frequencies = []
         for entry, count in group_count.items():
             if count != 0 and entry.data is not None:
-                frequencies.extend(entry.data.generateFrequencies(count))
+                frequencies.extend(entry.data.generate_frequencies(count))
 
         # Check that we have the right number of degrees of freedom specified
         if len(frequencies) > num_vibrations:
@@ -422,7 +422,7 @@ class StatmechGroups(Database):
 
         # Subtract out contributions to heat capacity from the group frequencies
         Tlist = np.arange(300.0, 1501.0, 100.0, np.float64)
-        Cv = np.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], np.float64)
+        Cv = np.array([thermo_model.getHeatCapacity(T) / constants.R for T in Tlist], np.float64)
         logging.debug('Fitting statmech with heat capacities {0}'.format(Cv))
         ho = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
         for i in range(Tlist.shape[0]):
@@ -436,7 +436,7 @@ class StatmechGroups(Database):
         Cv -= 1.0
         logging.debug('After removing translation, rotation, and Cp->Cv, the heat capacities are {0}'.format(Cv))
         # Fit remaining frequencies and hindered rotors to the heat capacity data
-        modes = fitStatmechToHeatCapacity(Tlist, Cv, num_vibrations - len(frequencies), num_rotors, molecule)
+        modes = fit_statmech_to_heat_capacity(Tlist, Cv, num_vibrations - len(frequencies), num_rotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
                 uncertainties = [0 for f in frequencies]  # probably shouldn't be zero
@@ -483,7 +483,7 @@ class StatmechDatabase(object):
             'depository': self.depository,
             'libraries': self.libraries,
             'groups': self.groups,
-            'libraryOrder': self.libraryOrder,
+            'library_order': self.libraryOrder,
         }
         return StatmechDatabase, (), d
 
@@ -494,7 +494,7 @@ class StatmechDatabase(object):
         self.depository = d['depository']
         self.libraries = d['libraries']
         self.groups = d['groups']
-        self.libraryOrder = d['libraryOrder']
+        self.libraryOrder = d['library_order']
 
     def load(self, path, libraries=None, depository=True):
         """
@@ -502,13 +502,13 @@ class StatmechDatabase(object):
         points to the top-level folder of the thermo database.
         """
         if depository:
-            self.loadDepository(os.path.join(path, 'depository'))
+            self.load_depository(os.path.join(path, 'depository'))
         else:
             self.depository = {}
-        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
-        self.loadGroups(os.path.join(path, 'groups'))
+        self.load_libraries(os.path.join(path, 'libraries'), libraries)
+        self.load_groups(os.path.join(path, 'groups'))
 
-    def loadDepository(self, path):
+    def load_depository(self, path):
         """
         Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
@@ -516,7 +516,7 @@ class StatmechDatabase(object):
         self.depository = {'depository': StatmechDepository().load(os.path.join(path, 'depository.py'),
                                                                    self.local_context, self.global_context)}
 
-    def loadLibraries(self, path, libraries=None):
+    def load_libraries(self, path, libraries=None):
         """
         Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
@@ -536,7 +536,7 @@ class StatmechDatabase(object):
         if libraries is not None:
             self.libraryOrder = libraries
 
-    def loadGroups(self, path):
+    def load_groups(self, path):
         """
         Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
@@ -553,11 +553,11 @@ class StatmechDatabase(object):
         path = os.path.abspath(path)
         if not os.path.exists(path):
             os.mkdir(path)
-        self.saveDepository(os.path.join(path, 'depository'))
-        self.saveLibraries(os.path.join(path, 'libraries'))
-        self.saveGroups(os.path.join(path, 'groups'))
+        self.save_depository(os.path.join(path, 'depository'))
+        self.save_libraries(os.path.join(path, 'libraries'))
+        self.save_groups(os.path.join(path, 'groups'))
 
-    def saveDepository(self, path):
+    def save_depository(self, path):
         """
         Save the statmech depository to the given `path` on disk, where `path`
         points to the top-level folder of the statmech depository.
@@ -567,7 +567,7 @@ class StatmechDatabase(object):
         for name, depository in self.depository.items():
             depository.save(os.path.join(path, name + '.py'))
 
-    def saveLibraries(self, path):
+    def save_libraries(self, path):
         """
         Save the statmech libraries to the given `path` on disk, where `path`
         points to the top-level folder of the statmech libraries.
@@ -577,7 +577,7 @@ class StatmechDatabase(object):
         for library in self.libraries.values():
             library.save(os.path.join(path, '{0}.py'.format(library.label)))
 
-    def saveGroups(self, path):
+    def save_groups(self, path):
         """
         Save the statmech groups to the given `path` on disk, where `path`
         points to the top-level folder of the statmech groups.
@@ -587,7 +587,7 @@ class StatmechDatabase(object):
         for name, groups in self.groups.items():
             groups.save(os.path.join(path, name + '.py'))
 
-    def loadOld(self, path):
+    def load_old(self, path):
         """
         Load the old RMG thermo database from the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
@@ -599,27 +599,27 @@ class StatmechDatabase(object):
             if (os.path.exists(os.path.join(root, 'Dictionary.txt')) and
                     os.path.exists(os.path.join(root, 'Library.txt'))):
                 library = StatmechLibrary(label=os.path.basename(root), name=os.path.basename(root))
-                library.loadOld(
+                library.load_old(
                     dictstr=os.path.join(root, 'Dictionary.txt'),
                     treestr='',
                     libstr=os.path.join(root, 'Library.txt'),
-                    numParameters=-1,
-                    numLabels=1,
+                    num_parameters=-1,
+                    num_labels=1,
                     pattern=False,
                 )
                 library.label = os.path.basename(root)
                 self.libraries[library.label] = library
 
-        self.groups['groups'] = StatmechGroups(label='group', name='Functional Group Values').loadOld(
+        self.groups['groups'] = StatmechGroups(label='group', name='Functional Group Values').load_old(
             dictstr=os.path.join(path, 'frequencies_groups', 'Dictionary.txt'),
             treestr=os.path.join(path, 'frequencies_groups', 'Tree.txt'),
             libstr=os.path.join(path, 'frequencies_groups', 'Library.txt'),
-            numParameters=-1,
-            numLabels=1,
+            num_parameters=-1,
+            num_labels=1,
             pattern=True,
         )
 
-    def saveOld(self, path):
+    def save_old(self, path):
         """
         Save the old RMG thermo database to the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
@@ -634,7 +634,7 @@ class StatmechDatabase(object):
             library_path = os.path.join(libraries_path, library.label)
             if not os.path.exists(library_path):
                 os.mkdir(library_path)
-            library.saveOld(
+            library.save_old(
                 dictstr=os.path.join(library_path, 'Dictionary.txt'),
                 treestr='',
                 libstr=os.path.join(library_path, 'Library.txt'),
@@ -643,13 +643,13 @@ class StatmechDatabase(object):
         groups_path = os.path.join(path, 'frequencies_groups')
         if not os.path.exists(groups_path):
             os.mkdir(groups_path)
-        self.groups.saveOld(
+        self.groups.save_old(
             dictstr=os.path.join(groups_path, 'Dictionary.txt'),
             treestr=os.path.join(groups_path, 'Tree.txt'),
             libstr=os.path.join(groups_path, 'Library.txt'),
         )
 
-    def getStatmechData(self, molecule, thermoModel=None):
+    def get_statmech_data(self, molecule, thermo_model=None):
         """
         Return the thermodynamic parameters for a given :class:`Molecule`
         object `molecule`. This function first searches the loaded libraries
@@ -660,15 +660,15 @@ class StatmechDatabase(object):
         statmech_model = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
-            statmech_model = self.getStatmechDataFromLibrary(molecule, self.libraries[label])
+            statmech_model = self.get_statmech_data_from_library(molecule, self.libraries[label])
             if statmech_model:
                 break
         else:
             # Thermo not found in any loaded libraries, so estimate
-            statmech_model = self.getStatmechDataFromGroups(molecule, thermoModel)
+            statmech_model = self.get_statmech_data_from_groups(molecule, thermo_model)
         return statmech_model[0]
 
-    def getStatmechDataFromDepository(self, molecule):
+    def get_statmech_data_from_depository(self, molecule):
         """
         Return statmech data for the given :class:`Molecule` object `molecule`
         by searching the entries in the depository.
@@ -681,7 +681,7 @@ class StatmechDatabase(object):
                     items.append((entry.data, self.depository[name], entry))
         return items
 
-    def getStatmechDataFromLibrary(self, molecule, library):
+    def get_statmech_data_from_library(self, molecule, library):
         """
         Return statmech data for the given :class:`Molecule` object `molecule`
         by searching the entries in the specified :class:`StatmechLibrary` object
@@ -692,14 +692,14 @@ class StatmechDatabase(object):
                 return entry.data, library, entry
         return None
 
-    def getStatmechDataFromGroups(self, molecule, thermoModel):
+    def get_statmech_data_from_groups(self, molecule, thermo_model):
         """
         Return statmech data for the given :class:`Molecule` object `molecule`
         by estimating using characteristic group frequencies and fitting the
         remaining internal modes to heat capacity data from the given thermo
-        model `thermoModel`. This always returns valid degrees of freedom data.
+        model `thermo_model`. This always returns valid degrees of freedom data.
         """
-        return self.groups['groups'].getStatmechData(molecule, thermoModel)
+        return self.groups['groups'].get_statmech_data(molecule, thermo_model)
 
 
 ################################################################################
@@ -716,7 +716,7 @@ class GroupFrequencies(object):
         self.frequencies = frequencies or []
         self.symmetry = symmetry
 
-    def generateFrequencies(self, count=1):
+    def generate_frequencies(self, count=1):
         """
         Generate a set of frequencies. For each characteristic frequency group,
         the number of frequencies returned is degeneracy * count, and these are

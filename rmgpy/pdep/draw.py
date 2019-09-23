@@ -116,7 +116,7 @@ class NetworkDrawer:
             if e0 > e0_max:
                 e0_max = e0
         for rxn in self.network.pathReactions:
-            e0 = rxn.transitionState.conformer.E0.value_si
+            e0 = rxn.transition_state.conformer.E0.value_si
             if e0 < e0_min:
                 e0_min = e0
             if e0 > e0_max:
@@ -425,7 +425,7 @@ class NetworkDrawer:
                 raise Exception
             e0_reac = wells[reac].E0 * 0.001 - e0_offset
             e0_prod = wells[prod].E0 * 0.001 - e0_offset
-            e0_ts = rxn.transitionState.conformer.E0.value_si * 0.001 - e0_offset
+            e0_ts = rxn.transition_state.conformer.E0.value_si * 0.001 - e0_offset
             if reac < prod:
                 x1, y1 = coordinates[reac, :]
                 x2, y2 = coordinates[prod, :]

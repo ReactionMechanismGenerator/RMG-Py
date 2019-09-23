@@ -63,12 +63,12 @@ def setUpModule():
         depository=False,
         solvation=False,
     )
-    database.loadForbiddenStructures()
+    database.load_forbidden_structures()
 
     # Prepare the database by loading training reactions and averaging the rate rules
     for family in database.kinetics.families.values():
-        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
-        family.fillKineticsRulesByAveragingUp(verbose=True)
+        family.add_rules_from_training(thermo_database=database.thermo)
+        family.fill_rules_by_averaging_up(verbose=True)
 
 
 def tearDownModule():
@@ -410,9 +410,9 @@ multiplicity 2
         r = Molecule().fromSMILES("[CH2]CCC")
         p = Molecule().fromSMILES("C[CH]CC")
         rxn = TemplateReaction(reactants=[r], products=[p])
-        family.addAtomLabelsForReaction(reaction=rxn)
-        rxn.template = family.getReactionTemplateLabels(reaction=rxn)
-        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        family.add_atom_labels_for_reaction(reaction=rxn)
+        rxn.template = family.get_reaction_template_labels(reaction=rxn)
+        rxn.degeneracy = family.calculate_degeneracy(rxn)
         rxn.family = 'intra_H_migration'
         rxn.kinetics = Arrhenius(A=(1, 's^-1'))
         ri = Molecule().fromAdjacencyList("""
@@ -448,8 +448,8 @@ multiplicity 2
 13 H u0 p0 c0 {5,S}
 """)
         rxni = TemplateReaction(reactants=[pi], products=[ri], pairs=[[pi, ri]])
-        family.addAtomLabelsForReaction(reaction=rxni)
-        rxni.template = family.getReactionTemplateLabels(reaction=rxni)
+        family.add_atom_labels_for_reaction(reaction=rxni)
+        rxni.template = family.get_reaction_template_labels(reaction=rxni)
         rxn_cluster = [rxn, rxni]
         ensure_reaction_direction(rxn_cluster)
 

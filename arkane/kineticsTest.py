@@ -51,7 +51,7 @@ class KineticsTest(unittest.TestCase):
         """
         Ensures that the proper temperature ranges are set when Tlist is specified
         """
-        rxn = Reaction(transitionState=TransitionState())
+        rxn = Reaction(transition_state=TransitionState())
         t_list = [50.7, 100, 300, 800, 1255]
         kjob = KineticsJob(rxn, Tlist=(t_list, 'K'))
         self.assertEqual(min(t_list), kjob.Tmin.value_si)
@@ -62,7 +62,7 @@ class KineticsTest(unittest.TestCase):
         """
         Ensures that Tlist is set when a range of temperatures is specified
         """
-        rxn = Reaction(transitionState=TransitionState())
+        rxn = Reaction(transition_state=TransitionState())
         kjob = KineticsJob(rxn, Tmin=(50, 'K'), Tmax=(4000, 'K'), Tcount=5)
         self.assertEqual(5, len(kjob.Tlist.value_si))
         self.assertEqual(50, min(kjob.Tlist.value_si))
@@ -78,7 +78,7 @@ class KineticsTest(unittest.TestCase):
         """
         Ensures that Tlist is set when no range is specified
         """
-        rxn = Reaction(transitionState=TransitionState())
+        rxn = Reaction(transition_state=TransitionState())
         kjob = KineticsJob(rxn)
         self.assertAlmostEqual(298, kjob.Tmin.value_si)
         self.assertAlmostEqual(2500, kjob.Tmax.value_si)

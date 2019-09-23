@@ -204,9 +204,9 @@ class InputTest(unittest.TestCase):
         self.assertAlmostEqual(rxn.reactants[0].conformer.E0.value_si, 0)
         self.assertAlmostEqual(rxn.reactants[1].conformer.E0.value_si, 120038.96)
         self.assertAlmostEqual(rxn.products[0].conformer.E0.value_si, 39496.96)
-        self.assertAlmostEqual(rxn.transitionState.conformer.E0.value_si, 142674.4)
-        self.assertAlmostEqual(rxn.transitionState.frequency.value_si, -967.0)
-        self.assertIsInstance(rxn.transitionState.tunneling, Eckart)
+        self.assertAlmostEqual(rxn.transition_state.conformer.E0.value_si, 142674.4)
+        self.assertAlmostEqual(rxn.transition_state.frequency.value_si, -967.0)
+        self.assertIsInstance(rxn.transition_state.tunneling, Eckart)
 
     def test_load_input_file(self):
         """Test loading an Arkane input file"""

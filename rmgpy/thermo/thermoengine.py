@@ -36,7 +36,7 @@ import math
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.data.rmg import getDB
+from rmgpy.data.rmg import get_db
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
@@ -58,16 +58,16 @@ def processThermoData(spc, thermo0, thermoClass=NASA, solventName=''):
         wilhoit = thermo0.toWilhoit()
 
     # Add on solvation correction
-    solvation_database = getDB('solvation')
+    solvation_database = get_db('solvation')
     if not solventName or solvation_database is None:
         logging.debug('Solvent database or solventName not found. Solvent effect was not utilized')
         solvent_data = None
     else:
-        solvent_data = solvation_database.getSolventData(solventName)
+        solvent_data = solvation_database.get_solvent_data(solventName)
     if solvent_data and not "Liquid thermo library" in thermo0.comment:
-        solvation_database = getDB('solvation')
-        soluteData = solvation_database.getSoluteData(spc)
-        solvation_correction = solvation_database.getSolvationCorrection(soluteData, solvent_data)
+        solvation_database = get_db('solvation')
+        soluteData = solvation_database.get_solute_data(spc)
+        solvation_correction = solvation_database.get_solvation_correction(soluteData, solvent_data)
         # correction is added to the entropy and enthalpy
         wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
         wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
@@ -127,13 +127,13 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     """
 
     try:
-        thermodb = getDB('thermo')
+        thermodb = get_db('thermo')
         if not thermodb: raise Exception
     except Exception:
         logging.debug('Could not obtain the thermo database. Not generating thermo...')
         return None
 
-    thermo0 = thermodb.getThermoData(spc)
+    thermo0 = thermodb.get_thermo_data(spc)
 
     # 1. maybe only submit cyclic core
     # 2. to help radical prediction, HBI should also

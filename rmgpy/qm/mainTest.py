@@ -206,7 +206,7 @@ class TestQMCalculator(unittest.TestCase):
 
     def testGetThermoData(self):
         """
-        Test that getThermoData() fails when expected.
+        Test that get_thermo_data() fails when expected.
         """
         output_directory = os.path.join(self.mop4.settings.fileStore, '..', '..')
         self.mop4.setDefaultOutputDirectory(output_directory)
@@ -224,7 +224,7 @@ class TestQMCalculator(unittest.TestCase):
     @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def testGetThermoDataMopac(self):
         """
-        Test that Mocpac getThermoData() works correctly.
+        Test that Mocpac get_thermo_data() works correctly.
         """
         output_directory = os.path.join(self.mop1.settings.fileStore, '..', '..')
         self.mop1.setDefaultOutputDirectory(output_directory)
@@ -260,7 +260,7 @@ class TestQMCalculator(unittest.TestCase):
     @unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
     def testGetThermoDataGaussian(self):
         """
-        Test that Gaussian getThermoData() works correctly.
+        Test that Gaussian get_thermo_data() works correctly.
         """
         output_directory = os.path.join(self.mop1.settings.fileStore, '..', '..')
         self.gauss1.setDefaultOutputDirectory(output_directory)

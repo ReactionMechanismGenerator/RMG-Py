@@ -765,7 +765,7 @@ def _convert_3_atom_2_bond_path(start, mol):
             at.label = str(i)
         # we have found the atom we are looking for
         recipe = ReactionRecipe()
-        recipe.addAction(['GAIN_RADICAL', start.label, 1])
+        recipe.add_action(['GAIN_RADICAL', start.label, 1])
 
         end = path[-1]
         end_original_charge = end.charge
@@ -773,12 +773,12 @@ def _convert_3_atom_2_bond_path(start, mol):
         # filter bonds from path and convert bond orders:
         bonds = path[1::2]  # odd elements
         for bond in bonds[::2]:  # even
-            recipe.addAction(['CHANGE_BOND', bond.atom1.label, -1, bond.atom2.label])
+            recipe.add_action(['CHANGE_BOND', bond.atom1.label, -1, bond.atom2.label])
         for bond in bonds[1::2]:  # odd
-            recipe.addAction(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
+            recipe.add_action(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
 
         end.charge += 1 if end.charge < 0 else -1
-        recipe.applyForward(mol)
+        recipe.apply_forward(mol)
 
         if is_valid(mol):
             # unlabel atoms so that they never cause trouble downstream
@@ -786,7 +786,7 @@ def _convert_3_atom_2_bond_path(start, mol):
                 at.label = ''
             return True
         else:
-            recipe.applyReverse(mol)
+            recipe.apply_reverse(mol)
             end.charge = end_original_charge
 
             # unlabel atoms so that they never cause trouble downstream

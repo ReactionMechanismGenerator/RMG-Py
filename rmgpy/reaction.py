@@ -81,11 +81,11 @@ class Reaction:
     `label`             ``str``                     A descriptive string label
     `reactants`         :class:`list`               The reactant species (as :class:`Species` objects)
     `products`          :class:`list`               The product species (as :class:`Species` objects)
-    'specificCollider'  :class:`Species`            The collider species (as a :class:`Species` object)
+    'specific_collider'  :class:`Species`            The collider species (as a :class:`Species` object)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
     `network_kinetics`  :class:`Arrhenius`          The kinetics model to use for PDep network exploration if the `kinetics` attribute is :class:PDepKineticsModel:
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
-    `transitionState`   :class:`TransitionState`    The transition state
+    `transition_state`   :class:`TransitionState`    The transition state
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
@@ -105,11 +105,11 @@ class Reaction:
                  label='',
                  reactants=None,
                  products=None,
-                 specificCollider=None,
+                 specific_collider=None,
                  kinetics=None,
                  network_kinetics=None,
                  reversible=True,
-                 transitionState=None,
+                 transition_state=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
@@ -124,12 +124,12 @@ class Reaction:
         self.label = label
         self.reactants = reactants
         self.products = products
-        self.specificCollider = specificCollider
+        self.specific_collider = specific_collider
         self._degeneracy = degeneracy
         self.kinetics = kinetics
         self.network_kinetics = network_kinetics
         self.reversible = reversible
-        self.transitionState = transitionState
+        self.transition_state = transition_state
         self.duplicate = duplicate
         self.pairs = pairs
         self.allow_pdep_route = allow_pdep_route
@@ -150,11 +150,11 @@ class Reaction:
         if self.label != '': string += 'label={0!r}, '.format(self.label)
         if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
-        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
+        if self.specific_collider is not None: string += 'specific_collider={0!r}, '.format(self.specific_collider)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
         if self.network_kinetics is not None: string += 'network_kinetics={0!r}, '.format(self.network_kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
-        if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.transition_state is not None: string += 'transition_state={0!r}, '.format(self.transition_state)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
@@ -168,7 +168,7 @@ class Reaction:
     def __str__(self):
         """
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
-        If a specificCollider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
+        If a specific_collider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
         """
         return self.toLabeledStr(use_index=True)
 
@@ -180,7 +180,7 @@ class Reaction:
         arrow = ' <=> ' if self.reversible else ' => '
         reactants = ' + '.join([str(s) if use_index else s.label for s in self.reactants])
         products = ' + '.join([str(s) if use_index else s.label for s in self.products])
-        collider = ' (+{0!s})'.format(self.specificCollider) if self.specificCollider else ''
+        collider = ' (+{0!s})'.format(self.specific_collider) if self.specific_collider else ''
 
         return reactants + collider + arrow + products + collider
 
@@ -192,11 +192,11 @@ class Reaction:
                            self.label,
                            self.reactants,
                            self.products,
-                           self.specificCollider,
+                           self.specific_collider,
                            self.kinetics,
                            self.network_kinetics,
                            self.reversible,
-                           self.transitionState,
+                           self.transition_state,
                            self.duplicate,
                            self.degeneracy,
                            self.pairs,
@@ -286,8 +286,8 @@ class Reaction:
                 ct_products[product_name] += 1
             else:
                 ct_products[product_name] = 1
-        if self.specificCollider:  # add a specific collider if exists
-            ct_collider[self.specificCollider.toChemkin() if useChemkinIdentifier else self.specificCollider.label] = 1
+        if self.specific_collider:  # add a specific collider if exists
+            ct_collider[self.specific_collider.toChemkin() if useChemkinIdentifier else self.specific_collider.label] = 1
 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
@@ -481,8 +481,8 @@ class Reaction:
                                                     generate_initial_map=generateInitialMap,
                                                     strict=strict)
 
-        # Compare specificCollider to specificCollider
-        collider_match = (self.specificCollider == other.specificCollider)
+        # Compare specific_collider to specific_collider
+        collider_match = (self.specific_collider == other.specific_collider)
 
         # Return now, if we can
         if forward_reactants_match and forward_products_match and collider_match:
@@ -929,13 +929,13 @@ class Reaction:
             logging.debug('    Calculating Partition function for ' + spec.label)
             Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
             E0 -= spec.conformer.E0.value_si
-        logging.debug('    Calculating Partition function for ' + self.transitionState.label)
-        Qts = self.transitionState.getPartitionFunction(T) / (constants.R * T / 101325.)
-        E0 += self.transitionState.conformer.E0.value_si
+        logging.debug('    Calculating Partition function for ' + self.transition_state.label)
+        Qts = self.transition_state.getPartitionFunction(T) / (constants.R * T / 101325.)
+        E0 += self.transition_state.conformer.E0.value_si
         k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
 
         # Apply tunneling correction
-        k *= self.transitionState.calculateTunnelingFactor(T)
+        k *= self.transition_state.calculateTunnelingFactor(T)
 
         return k
 
@@ -946,7 +946,7 @@ class Reaction:
         theory -- to compute the rate coefficient for this reaction, or
         ``False`` otherwise.
         """
-        return len(self.transitionState.conformer.modes) > 0
+        return len(self.transition_state.conformer.modes) > 0
 
     def calculateMicrocanonicalRateCoefficient(self, Elist, Jlist, reacDensStates, prodDensStates=None, T=0.0):
         """
@@ -1163,11 +1163,11 @@ class Reaction:
         for product in self.products:
             other.products.append(product.copy(deep=True))
         other.degeneracy = self.degeneracy
-        other.specificCollider = self.specificCollider
+        other.specific_collider = self.specific_collider
         other.kinetics = deepcopy(self.kinetics)
         other.network_kinetics = deepcopy(self.network_kinetics)
         other.reversible = self.reversible
-        other.transitionState = deepcopy(self.transitionState)
+        other.transition_state = deepcopy(self.transition_state)
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
         other.allow_pdep_route = self.allow_pdep_route

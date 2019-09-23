@@ -82,7 +82,7 @@ def simulate(rmg, diffusionLimited=True):
         if isinstance(reactionSystem, LiquidReactor):
             if diffusionLimited:
                 rmg.loadDatabase()
-                solvent_data = rmg.database.solvation.getSolventData(rmg.solvent)
+                solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
                 diffusionLimiter.enable(solvent_data, rmg.database.solvation)
 
             # Store constant species indices

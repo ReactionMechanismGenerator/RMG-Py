@@ -217,7 +217,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the whether or not tunneling has been included in a specific kinetics job.
         """
-        self.assertEqual(self.kineticsjob.reaction.transitionState.tunneling, None)
+        self.assertEqual(self.kineticsjob.reaction.transition_state.tunneling, None)
 
 
 class TestArkaneInput(unittest.TestCase):

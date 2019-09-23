@@ -208,6 +208,6 @@ class RMSWriter(object):
     def update(self, rmg):
         solventData = None
         if rmg.solvent:
-            solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+            solventData = rmg.database.solvation.get_solvent_data(rmg.solvent)
         writeyml(rmg.reactionModel.core.species, rmg.reactionModel.core.reactions, solvent=rmg.solvent, solventData=solventData,
                  path=os.path.join(self.outputDirectory, 'rms', 'chem{}.rms').format(len(rmg.reactionModel.core.species)))

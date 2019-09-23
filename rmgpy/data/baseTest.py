@@ -82,16 +82,16 @@ class TestBaseDatabase(unittest.TestCase):
                 """)
         )
         # The group should match to itself
-        self.assertTrue(self.database.matchNodeToStructure(entry1, entry1.item, atoms=entry1.item.getLabeledAtoms()))
+        self.assertTrue(self.database.match_node_to_structure(entry1, entry1.item, atoms=entry1.item.getLabeledAtoms()))
 
         # These groups should not match each other
-        self.assertFalse(self.database.matchNodeToStructure(entry1, entry2.item, atoms=entry2.item.getLabeledAtoms()))
+        self.assertFalse(self.database.match_node_to_structure(entry1, entry2.item, atoms=entry2.item.getLabeledAtoms()))
 
         # entry1 contains more labels than entry3, therefore cannot be matched by entry3
-        self.assertFalse(self.database.matchNodeToStructure(entry3, entry1.item, atoms=entry1.item.getLabeledAtoms()))
+        self.assertFalse(self.database.match_node_to_structure(entry3, entry1.item, atoms=entry1.item.getLabeledAtoms()))
 
         # entry3 contains fewer labels than entry1, therefore it can be matched
-        self.assertTrue(self.database.matchNodeToStructure(entry1, entry3.item, atoms=entry3.item.getLabeledAtoms()))
+        self.assertTrue(self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.getLabeledAtoms()))
 
     def testMatchNodeToNode(self):
         """
@@ -110,8 +110,8 @@ class TestBaseDatabase(unittest.TestCase):
                 1 *1 Cb u1
                 """)
         )
-        self.assertTrue(self.database.matchNodeToNode(entry1, entry1))
-        self.assertFalse(self.database.matchNodeToNode(entry1, entry2))
+        self.assertTrue(self.database.match_node_to_node(entry1, entry1))
+        self.assertFalse(self.database.match_node_to_node(entry1, entry2))
 
 
 class TestForbiddenStructures(unittest.TestCase):
@@ -125,7 +125,7 @@ class TestForbiddenStructures(unittest.TestCase):
 1 C u2 p0 {2,D}
 2 C u0 {1,D}
 """
-        self.database.loadEntry(
+        self.database.load_entry(
             label='test',
             group=test,
         )
@@ -138,14 +138,14 @@ multiplicity 3
 4 H u0 p0 c0 {2,S}
 """)
 
-        self.assertTrue(self.database.isMoleculeForbidden(molecule))
+        self.assertTrue(self.database.is_molecule_forbidden(molecule))
 
     def test_forbidden_molecule(self):
         """Test that we can load and check a forbidden molecule."""
         test = """
 1 C u4 p0 c0
 """
-        self.database.loadEntry(
+        self.database.load_entry(
             label='test',
             molecule=test,
         )
@@ -154,7 +154,7 @@ multiplicity 3
 1 C u4 p0 c0
 """)
 
-        self.assertTrue(self.database.isMoleculeForbidden(molecule))
+        self.assertTrue(self.database.is_molecule_forbidden(molecule))
 
     def test_forbidden_species(self):
         """Test that we can load and check a forbidden species.
@@ -174,7 +174,7 @@ multiplicity 3
 11 H u0 p0 c0 {5,S}
 12 H u0 p0 c0 {6,S}
 """
-        self.database.loadEntry(
+        self.database.load_entry(
             label='test',
             species=test,
         )
@@ -208,8 +208,8 @@ multiplicity 3
 12 H u0 p0 c0 {6,S}
 """)
 
-        self.assertTrue(self.database.isMoleculeForbidden(molecule1))
-        self.assertTrue(self.database.isMoleculeForbidden(molecule2))
+        self.assertTrue(self.database.is_molecule_forbidden(molecule1))
+        self.assertTrue(self.database.is_molecule_forbidden(molecule2))
 
 
 ################################################################################

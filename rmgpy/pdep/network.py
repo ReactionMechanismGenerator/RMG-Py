@@ -245,7 +245,7 @@ class Network(object):
         n_prod = len(self.products)
 
         for rxn in self.pathReactions:
-            if len(rxn.transitionState.conformer.modes) > 0:
+            if len(rxn.transition_state.conformer.modes) > 0:
                 logging.debug('Using RRKM theory to compute k(E) for path reaction {0}.'.format(rxn))
             elif rxn.kinetics is not None:
                 logging.debug('Using ILT method to compute k(E) for path reaction {0}.'.format(rxn))
@@ -465,7 +465,7 @@ class Network(object):
         # Use the highest energy on the PES as the initial guess for Emax0
         e_max = np.max(self.E0)
         for rxn in self.pathReactions:
-            E0 = float(rxn.transitionState.conformer.E0.value_si)
+            E0 = float(rxn.transition_state.conformer.E0.value_si)
             if E0 > e_max: e_max = E0
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
@@ -1082,7 +1082,7 @@ class Network(object):
         logging.log(level, 'Path reactions:')
         for rxn in self.pathReactions:
             logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(
-                rxn, float(rxn.transitionState.conformer.E0.value_si * 0.001)))
+                rxn, float(rxn.transition_state.conformer.E0.value_si * 0.001)))
         logging.log(level, 'Net reactions:')
         for rxn in self.netReactions:
             logging.log(level, '    {0!s:<48}'.format(rxn))
