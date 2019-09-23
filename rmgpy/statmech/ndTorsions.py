@@ -697,6 +697,12 @@ class HinderedRotorClassicalND(Mode):
         self.read_scan()
         self.fit()
 
+    def get_density_of_states(self, e_list, dens_states_0=None):
+        pass
+
+    def get_sum_of_states(self, e_list, sum_states_0=None):
+        pass
+
 
 def fill360s(vec):
     """
