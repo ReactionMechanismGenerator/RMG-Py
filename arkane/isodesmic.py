@@ -303,7 +303,7 @@ class SpeciesConstraints(object):
         self.target = target
         self.reference_species = reference_list
 
-        all_constraint_classes = ['class_0', 'class_1', 'class_2', 'class_3', 'class_4', 'class_5']
+        all_constraint_classes = ['class_0', 'class_1', 'class_2', 'class_3', 'class_4', 'class_5', 'class_6']
 
         if constraint_classes:
             if isinstance(constraint_classes,str):
