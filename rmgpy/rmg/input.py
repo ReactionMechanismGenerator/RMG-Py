@@ -45,6 +45,7 @@ from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.util import as_list
 
 ################################################################################
 
@@ -65,34 +66,18 @@ def database(
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
-    if isinstance(thermoLibraries, str):
-        thermoLibraries = [thermoLibraries]
-    if isinstance(transportLibraries, str):
-        transportLibraries = [transportLibraries]
-    if isinstance(reactionLibraries, str):
-        reactionLibraries = [reactionLibraries]
-    if isinstance(seedMechanisms, str):
-        seedMechanisms = [seedMechanisms]
-    if isinstance(frequenciesLibraries, str):
-        frequenciesLibraries = [frequenciesLibraries]
     rmg.database_directory = settings['database.directory']
-    rmg.thermo_libraries = thermoLibraries or []
-    rmg.transport_libraries = transportLibraries
-    # Modify reactionLibraries if the user didn't specify tuple input
-    if reactionLibraries:
-        index = 0
-        while index < len(reactionLibraries):
-            if isinstance(reactionLibraries[index], tuple):
-                pass
-            elif isinstance(reactionLibraries[index], str):
-                reactionLibraries[index] = (reactionLibraries[index], False)
-            else:
-                raise TypeError('reaction libraries must be input as tuples or strings')
-            index += 1
-    rmg.reaction_libraries = reactionLibraries or []
-    rmg.seed_mechanisms = seedMechanisms or []
-    rmg.statmech_libraries = frequenciesLibraries or []
+    rmg.thermo_libraries = as_list(thermoLibraries, default=[])
+    rmg.transport_libraries = as_list(transportLibraries, default=None)
+
+    # Modify reaction library list such that all entries are tuples
+    reaction_libraries = as_list(reactionLibraries, default=[])
+    rmg.reaction_libraries = [(name, False) if not isinstance(name, tuple) else name for name in reaction_libraries]
+
+    rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+    rmg.statmech_libraries = as_list(frequenciesLibraries, default=[])
     rmg.kinetics_estimator = kineticsEstimator
+
     if kineticsDepositories == 'default':
         rmg.kinetics_depositories = ['training']
     elif kineticsDepositories == 'all':
