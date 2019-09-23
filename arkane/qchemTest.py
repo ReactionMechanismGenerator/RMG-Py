@@ -48,7 +48,7 @@ class QChemTest(unittest.TestCase):
     and writing QChem files.
     """
 
-    def testNumberOfAtomsFromQChemLog(self):
+    def test_number_of_atoms_from_qchem_log(self):
         """
         Uses a QChem log files to test that
         number of atoms can be properly read.
@@ -58,7 +58,7 @@ class QChemTest(unittest.TestCase):
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'co.out'))
         self.assertEqual(log.getNumberOfAtoms(), 2)
 
-    def testEnergyFromQChemLog(self):
+    def test_energy_from_qchem_log(self):
         """
         Uses a QChem log files to test that
         molecular energies can be properly read.
@@ -70,7 +70,7 @@ class QChemTest(unittest.TestCase):
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'CH4_sp_qchem.out'))
         self.assertAlmostEqual(log.loadEnergy(), -106356735.53661588, delta=1e-5)
 
-    def testLoadVibrationsFromQChemLog(self):
+    def test_load_vibrations_from_qchem_log(self):
         """
         Uses a QChem log files to test that
         molecular energies can be properly read.
@@ -84,7 +84,7 @@ class QChemTest(unittest.TestCase):
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 1)
         self.assertEqual(conformer.modes[2]._frequencies.getValue(), 2253.16)
 
-    def testLoadNpropylModesFromQChemLog(self):
+    def test_load_npropyl_modes_from_qchem_log(self):
         """
         Uses a QChem log file for npropyl to test that its
         molecular modes can be properly read.
@@ -97,7 +97,7 @@ class QChemTest(unittest.TestCase):
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
 
-    def testSpinMultiplicityFromQChemLog(self):
+    def test_spin_multiplicity_from_qchem_log(self):
         """
         Uses a QChem log file for npropyl to test that its
         molecular degrees of freedom can be properly read.
@@ -109,7 +109,7 @@ class QChemTest(unittest.TestCase):
         conformer, unscaled_frequencies = log.loadConformer()
         self.assertEqual(conformer.spin_multiplicity, 1)
 
-    def testLoadCOModesFromQChemLog(self):
+    def test_load_co_modes_from_qchem_log(self):
         """
         Uses a QChem log file for CO to test that its
         molecular degrees of freedom can be properly read.

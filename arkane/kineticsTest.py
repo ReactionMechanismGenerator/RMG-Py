@@ -58,7 +58,7 @@ class KineticsTest(unittest.TestCase):
         self.assertEqual(max(t_list), kjob.Tmax.value_si)
         self.assertEqual(len(t_list), kjob.Tcount)
 
-    def test_give_Trange_for_kineticsjob(self):
+    def test_give_temperature_range_for_kineticsjob(self):
         """
         Ensures that Tlist is set when a range of temperatures is specified
         """

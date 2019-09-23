@@ -52,7 +52,7 @@ class MolproTest(unittest.TestCase):
     and writing Molpro files.
     """
 
-    def testLoadDzFromMolproLog_F12(self):
+    def test_load_dz_from_molpro_log_f12(self):
         """
         Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
         energy can be properly read.
@@ -63,7 +63,7 @@ class MolproTest(unittest.TestCase):
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.474353559604, 5)
 
-    def testLoadQzFromMolproLog_F12(self):
+    def test_load_qz_from_molpro_log_f12(self):
         """
         Uses a Molpro log file for ethylene_qz (C2H4) to test that F12b
         energy can be properly read.
@@ -74,7 +74,7 @@ class MolproTest(unittest.TestCase):
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.472682755635, 5)
 
-    def testLoadRadFromMolproLog_F12(self):
+    def test_load_rad_from_molpro_log_f12(self):
         """
         Uses a Molpro log file for OH (C2H4) to test that radical
         energy can be properly read.
@@ -85,7 +85,7 @@ class MolproTest(unittest.TestCase):
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -75.663696424380, 5)
 
-    def testLoadHOSIFromMolpro_log(self):
+    def test_load_hosi_from_molpro_log(self):
         """
         Uses a molpro log file for HOSI to test that its
         molecular degrees of freedom can be properly read.
@@ -140,7 +140,7 @@ class MolproTest(unittest.TestCase):
         imaginary_freq = freq_log.loadNegativeFrequency()
         self.assertEqual(imaginary_freq, -1997.98)
 
-    def test_get_D1_diagnostic(self):
+    def test_get_d1_diagnostic(self):
         """
         Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
         """
@@ -148,7 +148,7 @@ class MolproTest(unittest.TestCase):
         d1_diagnostic = log.get_D1_diagnostic()
         self.assertAlmostEqual(d1_diagnostic, 0.03369031)
 
-    def test_get_T1_diagnostic(self):
+    def test_get_t1_diagnostic(self):
         """
         Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
         """

@@ -54,7 +54,7 @@ class GaussianTest(unittest.TestCase):
     """
 
     @work_in_progress
-    def testLoadEthyleneFromGaussianLog_CBSQB3(self):
+    def test_load_ethylene_from_gaussian_log_cbsqb3(self):
         """
         Uses a Gaussian03 log file for ethylene (C2H4) to test that its
         molecular degrees of freedom can be properly read.
@@ -81,7 +81,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(conformer.spin_multiplicity, 1)
         self.assertEqual(conformer.optical_isomers, 1)
 
-    def testLoadOxygenFromGaussianLog(self):
+    def test_load_oxygen_from_gaussian_log(self):
         """
         Uses a Gaussian03 log file for oxygen (O2) to test that its
         molecular degrees of freedom can be properly read.
@@ -109,7 +109,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(conformer.optical_isomers, 1)
 
     @work_in_progress
-    def testLoadEthyleneFromGaussianLog_G3(self):
+    def test_load_ethylene_from_gaussian_log_g3(self):
         """
         Uses a Gaussian03 log file for ethylene (C2H4) to test that its
         molecular degrees of freedom can be properly read.
@@ -137,7 +137,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(conformer.spin_multiplicity, 1)
         self.assertEqual(conformer.optical_isomers, 1)
 
-    def testLoadSymmetryAndOptics(self):
+    def test_load_symmetry_and_optics(self):
         """
         Uses a Gaussian03 log file for oxygen (O2) to test that its
         molecular degrees of freedom can be properly read.
@@ -157,7 +157,7 @@ class GaussianTest(unittest.TestCase):
                 found_rotor = True
         self.assertTrue(found_rotor)
 
-    def testDetermineQMSoftware(self):
+    def test_determine_qm_software(self):
         """
         Ensures that determine_qm_software returns a GaussianLog object
         """

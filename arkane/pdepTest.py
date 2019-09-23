@@ -70,7 +70,7 @@ class ArkaneTest(unittest.TestCase):
             if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))
 
-    def testPDepJob(self):
+    def test_pdep_job(self):
         """
         A general test for a PDep job in Arkane
         """

@@ -82,7 +82,7 @@ class InputTest(unittest.TestCase):
         self.assertIsInstance(spc0.transportData, TransportData)
         self.assertIsInstance(spc0.energyTransferModel, SingleExponentialDown)
 
-    def test_species_atomic_NASA_polynomial(self):
+    def test_species_atomic_nasa_polynomial(self):
         """
         Test loading a atom with NASA polynomials
         """
@@ -99,7 +99,7 @@ class InputTest(unittest.TestCase):
         self.assertTrue(spc0.has_statmech())
         self.assertEqual(spc0.thermo, kwargs['thermo'])
 
-    def test_species_polyatomic_NASA_polynomial(self):
+    def test_species_polyatomic_nasa_polynomial(self):
         """
         Test loading a species with NASA polynomials
         """
@@ -119,7 +119,7 @@ class InputTest(unittest.TestCase):
         self.assertTrue(spc0.has_statmech())
         self.assertEqual(spc0.thermo, kwargs['thermo'])
 
-    def test_transitionState(self):
+    def test_transition_state(self):
         """
         Test loading a transition state from input file-like kew word arguments
         """
