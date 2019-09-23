@@ -239,7 +239,7 @@ class TestDipoleMoment(unittest.TestCase):
 
     def test_debye(self):
         """
-        Test the creation of a dipole moment quantity with units of J/mol.
+        Test the creation of a dipole moment quantity with units of Debye.
         """
         q = quantity.DipoleMoment(1.0, "De")
         self.assertAlmostEqual(q.value, 1.0, 6)
