@@ -39,10 +39,10 @@ def fails_species_constraints(species):
     the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
     """
 
-    from rmgpy.rmg.input import getInput
+    from rmgpy.rmg.input import get_input
 
     try:
-        species_constraints = getInput('speciesConstraints')
+        species_constraints = get_input('species_constraints')
     except Exception:
         logging.debug('Species constraints could not be found.')
         species_constraints = {}

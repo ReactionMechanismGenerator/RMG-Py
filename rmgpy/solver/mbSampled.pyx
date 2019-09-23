@@ -137,7 +137,7 @@ cdef class MBSampledReactor(ReactionSystem):
         return (self.__class__,
                 (self.T, self.P, self.initial_mole_fractions, self.termination))
 
-    def convertInitialKeysToSpeciesObjects(self, species_dict):
+    def convert_initial_keys_to_species_objects(self, species_dict):
         """
         Convert the initial_mole_fractions dictionary from species names into species objects,
         using the given dictionary of species.

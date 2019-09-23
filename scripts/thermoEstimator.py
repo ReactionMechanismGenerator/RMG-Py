@@ -54,7 +54,7 @@ def runThermoEstimator(inputFile, library_flag):
     """
 
     rmg = RMG()
-    rmg.loadThermoInput(inputFile)
+    rmg.load_thermo_input(inputFile)
 
     rmg.database = RMGDatabase()
     path = os.path.join(settings['database.directory'])

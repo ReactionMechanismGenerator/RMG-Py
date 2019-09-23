@@ -961,12 +961,12 @@ class SolvationDatabase(object):
         If the solvent library does not have SMILES / adjacency list, then it uses the solvent's string name
         to determine whether the species is the solvent or not
         """
-        for spec in rmg.initialSpecies:
+        for spec in rmg.initial_species:
             if solvent_structure is not None:
                 spec.isSolvent = spec.is_isomorphic(solvent_structure)
             else:
                 spec.isSolvent = rmg.solvent == spec.label
-        if not any([spec.isSolvent for spec in rmg.initialSpecies]):
+        if not any([spec.isSolvent for spec in rmg.initial_species]):
             if solvent_structure is not None:
                 logging.info('One of the initial species must be the solvent')
                 raise ValueError('One of the initial species must be the solvent')

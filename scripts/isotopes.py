@@ -41,7 +41,7 @@ import os
 import os.path
 
 from rmgpy.exceptions import InputError
-from rmgpy.rmg.main import initializeLog
+from rmgpy.rmg.main import initialize_log
 from rmgpy.tools.isotopes import run
 
 
@@ -84,7 +84,7 @@ def main():
     supported_kie_methods = ['simple']
     if kie not in supported_kie_methods and kie is not None:
         raise InputError('The kie input, {0}, is not one of the currently supported methods, {1}'.format(kie, supported_kie_methods))
-    initializeLog(logging.INFO, os.path.join(os.getcwd(), 'RMG.log'))
+    initialize_log(logging.INFO, os.path.join(os.getcwd(), 'RMG.log'))
     run(input_file, outputdir, original=original,
         maximumIsotopicAtoms=maximum_isotopic_atoms,
         useOriginalReactions=use_original_reactions,

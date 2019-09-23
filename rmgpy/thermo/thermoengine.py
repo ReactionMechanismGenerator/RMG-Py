@@ -139,10 +139,10 @@ def generate_thermo_data(spc, thermo_class=NASA, solvent_name=''):
     # 2. to help radical prediction, HBI should also
     #    look up centrailThermoDB for its saturated version
     #    currently it only looks up libraries or estimates via GAV 
-    from rmgpy.rmg.input import getInput
+    from rmgpy.rmg.input import get_input
 
     try:
-        thermo_central_database = getInput('thermoCentralDatabase')
+        thermo_central_database = get_input('thermo_central_database')
     except Exception:
         logging.debug('thermoCentralDatabase could not be found.')
         thermo_central_database = None

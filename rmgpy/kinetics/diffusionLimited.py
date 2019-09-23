@@ -44,17 +44,17 @@ class DiffusionLimited(object):
         self.enabled = False
 
     def enable(self, solvent_data, solvation_database, comment=''):
-        # diffusionLimiter is enabled if a solvent has been added to the RMG object.
+        # diffusion_limiter is enabled if a solvent has been added to the RMG object.
         logging.info("Enabling diffusion-limited kinetics...")
-        diffusionLimiter.enabled = True
-        diffusionLimiter.database = solvation_database
-        diffusionLimiter.solvent_data = solvent_data
+        diffusion_limiter.enabled = True
+        diffusion_limiter.database = solvation_database
+        diffusion_limiter.solvent_data = solvent_data
 
     def disable(self):
         "Turn it off. Mostly useful for unit testing teardown"
-        diffusionLimiter.enabled = False
-        del diffusionLimiter.database
-        del diffusionLimiter.solvent_data
+        diffusion_limiter.enabled = False
+        del diffusion_limiter.database
+        del diffusion_limiter.solvent_data
 
     def get_solvent_viscosity(self, T):
         return self.solvent_data.get_solvent_viscosity(T)
@@ -155,4 +155,4 @@ class DiffusionLimited(object):
 
 
 # module level variable. There should only ever be one. It starts off disabled
-diffusionLimiter = DiffusionLimited()
+diffusion_limiter = DiffusionLimited()

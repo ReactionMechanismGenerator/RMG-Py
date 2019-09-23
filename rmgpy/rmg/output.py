@@ -45,7 +45,7 @@ from rmgpy.util import make_output_subdirectory
 
 ################################################################################
 
-def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
+def save_output_html(path, reaction_model, part_core_edge='core'):
     """
     Save the current set of  species and reactions of `reactionModel` to
     an HTML file `path` on disk. As part of this process, drawings of all 
@@ -71,10 +71,10 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     # Prepare parameters to pass to jinja template
     title = 'RMG Output'
 
-    if partCoreEdge == 'core':
-        species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
-    elif partCoreEdge == 'edge':
-        species = reactionModel.edge.species[:] + reactionModel.outputSpeciesList
+    if part_core_edge == 'core':
+        species = reaction_model.core.species[:] + reaction_model.output_species_list
+    elif part_core_edge == 'edge':
+        species = reaction_model.edge.species[:] + reaction_model.output_species_list
 
     if not os.path.isdir(os.path.join(dirname, 'species')):
         os.makedirs(os.path.join(dirname, 'species'))
@@ -104,34 +104,34 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     # Rather than ordered by index
     #    species.sort(key=lambda x: x.index)
 
-    if partCoreEdge == 'core':
-        reactions = [rxn for rxn in reactionModel.core.reactions] + reactionModel.outputReactionList
-    elif partCoreEdge == 'edge':
-        reactions = [rxn for rxn in reactionModel.edge.reactions] + reactionModel.outputReactionList
+    if part_core_edge == 'core':
+        reactions = [rxn for rxn in reaction_model.core.reactions] + reaction_model.output_reaction_list
+    elif part_core_edge == 'edge':
+        reactions = [rxn for rxn in reaction_model.edge.reactions] + reaction_model.output_reaction_list
 
     # We want to keep reactions sorted in original order in which they were added to core
     # rather than ordered by index
     # reactions.sort(key=lambda x: x.index)
 
-    familyCount = {}
+    family_count = {}
     for rxn in reactions:
 
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
             family = rxn.get_source()
-        if family in familyCount:
-            familyCount[family] += 1
+        if family in family_count:
+            family_count[family] += 1
         else:
-            familyCount[family] = 1
-    families = list(familyCount.keys())
+            family_count[family] = 1
+    families = list(family_count.keys())
     families.sort()
 
     ## jinja2 filters etc.
-    to_remove_from_css_names = re.compile('[/.\-+,]')
+    to_remove_from_css_names = re.compile(r'[/.\-+,]')
 
     def csssafe(input):
-        "Replace unsafe CSS class name characters with an underscore."
+        """Replace unsafe CSS class name characters with an underscore."""
         return to_remove_from_css_names.sub('_', input)
 
     environment = jinja2.Environment()
@@ -443,7 +443,7 @@ $(document).ready(function() {
 
 <form id='familySelector' action="">
 <h4>Reaction families:</h4>
-{% for family in families %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount[family] }} rxn{{ 's' if familyCount[family] != 1 }})</label><br>
+{% for family in families %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ family_count[family] }} rxn{{ 's' if family_count[family] != 1 }})</label><br>
 {% endfor %}
 <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
 
@@ -510,12 +510,13 @@ $(document).ready(function() {
 
     f = open(path, 'w')
     f.write(template.render(title=title, species=species, reactions=reactions, families=families,
-                            familyCount=familyCount, get_species_identifier=get_species_identifier, textwrap=textwrap))
+                            family_count=family_count, get_species_identifier=get_species_identifier,
+                            textwrap=textwrap))
     f.close()
 
 
-def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReactions, uniqueReactions1,
-                 uniqueReactions2):
+def save_diff_html(path, common_species_list, species_list1, species_list2, common_reactions, unique_reactions1,
+                   unique_reactions2):
     """
     This function outputs the species and reactions on an HTML page
     for the comparison of two RMG models.
@@ -536,8 +537,8 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     # Prepare parameters to pass to jinja template
     title = 'RMG Model Comparison'
 
-    speciesList = [spec1 for spec1, spec2 in commonSpeciesList] + [spec2 for spec1, spec2 in
-                                                                   commonSpeciesList] + speciesList1 + speciesList2
+    species_list = [spec1 for spec1, spec2 in common_species_list] + \
+                   [spec2 for spec1, spec2 in common_species_list] + species_list1 + species_list2
     re_index = re.compile(r'\((\d+)\)$')
 
     if not os.path.isdir(os.path.join(dirname, 'species1')):
@@ -546,7 +547,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     if not os.path.isdir(os.path.join(dirname, 'species2')):
         os.makedirs(os.path.join(dirname, 'species2'))
 
-    for spec1, spec2 in commonSpeciesList:
+    for spec1, spec2 in common_species_list:
         # if the species dictionary came from an RMG-Java job, make them prettier
         # We use the presence of a trailing index on the label to discern this
         # (A single open parenthesis is not enough (e.g. when using SMILES strings as labels!)
@@ -578,7 +579,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                     '{0} species could not be drawn because it did not contain a molecular structure. Please recheck '
                     'your files.'.format(get_species_identifier(spec2)))
 
-    for spec in speciesList1:
+    for spec in species_list1:
         match = re_index.search(spec.label)
         if match:
             spec.index = int(match.group(0)[1:-1])
@@ -592,7 +593,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                 raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
                                   'Please recheck your files.'.format(get_species_identifier(spec)))
 
-    for spec in speciesList2:
+    for spec in species_list2:
         match = re_index.search(spec.label)
         if match:
             spec.index = int(match.group(0)[1:-1])
@@ -607,7 +608,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                                   'Please recheck your files.'.format(get_species_identifier(spec)))
 
     # Add pictures for species that may not have different thermo but are in reactions with different kinetics
-    all_rxns = [rxnTuple[0] for rxnTuple in commonReactions] + uniqueReactions1 + uniqueReactions2
+    all_rxns = [rxnTuple[0] for rxnTuple in common_reactions] + unique_reactions1 + unique_reactions2
     all_species = []
     for rxn in all_rxns:
         for prod in rxn.products:
@@ -632,7 +633,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
     family_count1 = {}
     family_count2 = {}
-    for rxn1, rxn2 in commonReactions:
+    for rxn1, rxn2 in common_reactions:
         if isinstance(rxn2.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
             rxn2.duplicate = True
         if isinstance(rxn1, PDepReaction):
@@ -646,7 +647,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             family_count1[family] = 1
             family_count2[family] = 1
 
-    for rxn in uniqueReactions1:
+    for rxn in unique_reactions1:
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
@@ -656,7 +657,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         else:
             family_count1[family] = 1
 
-    for rxn in uniqueReactions2:
+    for rxn in unique_reactions2:
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
@@ -672,10 +673,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     families2.sort()
 
     # jinja2 filters etc.
-    to_remove_from_css_names = re.compile('[/.\-+,]')
+    to_remove_from_css_names = re.compile(r'[/.\-+,]')
 
     def csssafe(input):
-        "Replace unsafe CSS class name characters with an underscore."
+        """Replace unsafe CSS class name characters with an underscore."""
         return to_remove_from_css_names.sub('_', input)
 
     environment = jinja2.Environment()
@@ -868,12 +869,12 @@ $(document).ready(function() {
 <input type="checkbox" id="thermoComment" name="detail" value="thermoComment" onclick="updateThermoDetails(this);" checked="false"><label for="thermoComment"><b>Show Thermo Details</b></label><br>
 </form></div>
 
-<h2 align="center">Common Species ({{ commonSpecies|length }})</h2>
+<h2 align="center">Common Species ({{ common_species|length }})</h2>
 
 <table class="speciesList" align="center" hide_thermoComment>
     <tr><td align="center"><h3>Model 1</h3></td><td align="center"><h3>Model 2</h3></td></tr>
     
-    {% for spec1, spec2 in commonSpecies %}
+    {% for spec1, spec2 in common_species %}
     <tr class="commonSpecies">
         <td width="100%" colspan="2">
             <table align="center">
@@ -985,10 +986,10 @@ $(document).ready(function() {
 <tr colspan="2">
 <td width=50% valign="top">
 
-<h2>Model 1: Unique Species ({{ speciesList1|length }})</h2>
+<h2>Model 1: Unique Species ({{ species_list1|length }})</h2>
 <table class="speciesList" width="80%" hide_thermoComment>
     <tr><th>Index</th><th>Structure</th><th>Label</th><th>SMILES</th><th>MW (g/mol)</th></tr>
-    {% for spec in speciesList1 %}
+    {% for spec in species_list1 %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
@@ -1034,10 +1035,10 @@ $(document).ready(function() {
 </table>
 </td>
 <td width=50% valign="top">
-<h2>Model 2: Unique Species ({{ speciesList2|length }})</h2>
+<h2>Model 2: Unique Species ({{ species_list2|length }})</h2>
 <table class="speciesList" width="80%" hide_thermoComment>
     <tr><th>Index</th><th>Structure</th><th>Label</th><th>SMILES</th><th>MW (g/mol)</th></tr>
-    {% for spec in speciesList2 %}
+    {% for spec in species_list2 %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
@@ -1107,17 +1108,17 @@ $(document).ready(function() {
 
 <tr colspan="2">
 <td width=50% valign="top">
-<h2>Model 1 Reactions ({{ commonReactions|length + uniqueReactions1|length}})</h2>
+<h2>Model 1 Reactions ({{ common_reactions|length + unique_reactions1|length}})</h2>
 </td>
 
 <td width=50% valign="top">
-<h2>Model 2 Reactions ({{ commonReactions|length +uniqueReactions2|length}})</h2>
+<h2>Model 2 Reactions ({{ common_reactions|length + unique_reactions2|length}})</h2>
 </td>
 </tr>
 
 
 <tr colspan="2"><td width=100% align="center" colspan="2">
-<h2>Common Reactions ({{ commonReactions|length}})</h2></td></tr>
+<h2>Common Reactions ({{ common_reactions|length}})</h2></td></tr>
 
 
 <tr colspan="2"><td width=100% colspan="2">
@@ -1125,7 +1126,7 @@ $(document).ready(function() {
 <table class="reactionList" hide_kinetics hide_chemkin cellpadding="10" align="center">
     <tr colspan="4" width=100%><th>Index.</th><th>Family</th><th>Index.</th><th>Family</th></tr>
 
-    {% for rxn1, rxn2 in commonReactions %}
+    {% for rxn1, rxn2 in common_reactions %}
 
 
 <tr class="reaction  {{ rxn1.get_source()|csssafe }}">
@@ -1217,8 +1218,8 @@ $(document).ready(function() {
 </tr>
 
 <tr width=100% class="chemkin">
-    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.to_chemkin(speciesList) }}</font></td>
-    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.to_chemkin(speciesList) }}</font></td>
+    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.to_chemkin(species_list) }}</font></td>
+    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.to_chemkin(species_list) }}</font></td>
 </tr>
 
 
@@ -1231,11 +1232,11 @@ $(document).ready(function() {
 
 <tr>
 <td width=50% valign="top">
-<h2>Model 1: Unique Reactions ({{ uniqueReactions1|length}})</h2>
+<h2>Model 1: Unique Reactions ({{ unique_reactions1|length}})</h2>
 <br>
 <table class="reactionList" hide_kinetics hide_chemkin >
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
-    {% for rxn in uniqueReactions1 %}
+    {% for rxn in unique_reactions1 %}
     <tr class="reaction {{ rxn.get_source()|csssafe }}">
         <td class="index"><a href="{{ rxn.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
@@ -1265,11 +1266,11 @@ $(document).ready(function() {
 </td>
 
 <td width=50% valign="top">
-<h2>Model 2: Unique Reactions ({{ uniqueReactions2|length}})</h2>
+<h2>Model 2: Unique Reactions ({{ unique_reactions2|length}})</h2>
 <br>
 <table class="reactionList" hide_kinetics hide_chemkin>
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
-    {% for rxn in uniqueReactions2 %}
+    {% for rxn in unique_reactions2 %}
     <tr class="reaction {{ rxn.get_source()|csssafe }}">
         <td class="index"><a href="{{ rxn.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species2/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
@@ -1306,27 +1307,27 @@ $(document).ready(function() {
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1,
-                            speciesList2=speciesList2,
-                            commonReactions=commonReactions, uniqueReactions1=uniqueReactions1,
-                            uniqueReactions2=uniqueReactions2,
-                            families1=families1, families2=families2, familyCount1=family_count1,
-                            familyCount2=family_count2, families_union=set(families1 + families2),
-                            speciesList=speciesList,
+    f.write(template.render(title=title, common_species=common_species_list, species_list1=species_list1,
+                            species_list2=species_list2,
+                            common_reactions=common_reactions, unique_reactions1=unique_reactions1,
+                            unique_reactions2=unique_reactions2,
+                            families1=families1, families2=families2, family_count1=family_count1,
+                            family_count2=family_count2, families_union=set(families1 + families2),
+                            species_list=species_list,
                             get_species_identifier=get_species_identifier, textwrap=textwrap))
     f.close()
 
 
-def saveOutput(rmg):
+def save_output(rmg):
     """
     Save the current reaction model to a pretty HTML file.
     """
     logging.info('Saving current model core to HTML file...')
-    saveOutputHTML(os.path.join(rmg.outputDirectory, 'output.html'), rmg.reactionModel, 'core')
+    save_output_html(os.path.join(rmg.output_directory, 'output.html'), rmg.reaction_model, 'core')
 
-    if rmg.saveEdgeSpecies == True:
+    if rmg.save_edge_species:
         logging.info('Saving current model edge to HTML file...')
-        saveOutputHTML(os.path.join(rmg.outputDirectory, 'output_edge.html'), rmg.reactionModel, 'edge')
+        save_output_html(os.path.join(rmg.output_directory, 'output_edge.html'), rmg.reaction_model, 'edge')
 
 
 class OutputHTMLWriter(object):
@@ -1338,7 +1339,7 @@ class OutputHTMLWriter(object):
     A new instance of the class can be appended to a subject as follows:
     
     rmg = ...
-    listener = OutputHTMLWriter(outputDirectory)
+    listener = OutputHTMLWriter(output_directory)
     rmg.attach(listener)
 
     Whenever the subject calls the .notify() method, the
@@ -1351,9 +1352,9 @@ class OutputHTMLWriter(object):
 
     """
 
-    def __init__(self, outputDirectory=''):
+    def __init__(self, output_directory=''):
         super(OutputHTMLWriter, self).__init__()
-        make_output_subdirectory(outputDirectory, 'species')
+        make_output_subdirectory(output_directory, 'species')
 
     def update(self, rmg):
-        saveOutput(rmg)
+        save_output(rmg)

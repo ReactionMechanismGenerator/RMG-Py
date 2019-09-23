@@ -1167,7 +1167,7 @@ class TestKinetics(unittest.TestCase):
         self.assertTrue(reactant1_copy.is_isomorphic(reactant2_out))
 
         # Now, we only care whether the original reactants have deviated from the copies
-        # The output reactants will be replaced by the original reactants in CERM.checkForExistingSpecies
+        # The output reactants will be replaced by the original reactants in CERM.check_for_existing_species
         self.assertEqual(reactant1.index, reactant1_copy.index)
         self.assertEqual(reactant1.label, reactant1_copy.label)
         self.assertEqual(reactant1.props, reactant1_copy.props)
@@ -1214,7 +1214,7 @@ class TestKinetics(unittest.TestCase):
         self.assertTrue(reactant2_copy.is_isomorphic(reactant2_out))
 
         # Now, we only care whether the original reactants have deviated from the copies
-        # The output reactants will be replaced by the original reactants in CERM.checkForExistingSpecies
+        # The output reactants will be replaced by the original reactants in CERM.check_for_existing_species
         self.assertEqual(reactant1.index, reactant1_copy.index)
         self.assertEqual(reactant2.index, reactant2_copy.index)
         self.assertEqual(reactant1.label, reactant1_copy.label)

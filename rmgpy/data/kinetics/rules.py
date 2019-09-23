@@ -706,7 +706,7 @@ class KineticsRules(Database):
             kinetics = self._get_average_kinetics([k for k, t in kinetics_list])
             # Unlike in the case of a single rule, the verbose comments for averaging are lost unless they are 
             # appended in the following lines.  Verbose comments are filtered out in 
-            # rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics
+            # rmgpy.rmg.model.CoreEdgeReactionModel.generate_kinetics
             kinetics.comment = 'Average of [{0}]'.format(
                 ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kinetics_list))
             kinetics.comment += '\n'

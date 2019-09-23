@@ -43,7 +43,7 @@ import warnings
 import numpy as np
 import pydot
 
-from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.rmg.settings import SimulatorSettings
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.liquid import LiquidReactor
@@ -406,7 +406,7 @@ def simulate(reactionModel, reactionSystem, settings=None):
     # Enable constant species for LiquidReactor
     if isinstance(reactionSystem, LiquidReactor):
         if reactionSystem.constSPCNames is not None:
-            reactionSystem.get_constSPCIndices(core_species)
+            reactionSystem.get_const_spc_indices(core_species)
 
     reactionSystem.initializeModel(core_species, core_reactions, edge_species, edge_reactions,
                                    atol=simulator_settings.atol, rtol=simulator_settings.rtol,
@@ -605,9 +605,9 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
             else:
                 # Enable diffusion-limited rates
                 if diffusionLimited and isinstance(reactionSystem, LiquidReactor):
-                    rmg.loadDatabase()
+                    rmg.load_database()
                     solventData = rmg.database.solvation.get_solvent_data(rmg.solvent)
-                    diffusionLimiter.enable(solventData, rmg.database.solvation)
+                    diffusion_limiter.enable(solventData, rmg.database.solvation)
 
                 print('Conducting simulation of reaction system {0:d}...'.format(index + 1))
                 time, core_species_concentrations, core_reaction_rates = simulate(rmg.reactionModel, reactionSystem,

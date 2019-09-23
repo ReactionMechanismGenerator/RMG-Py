@@ -215,16 +215,16 @@ cdef class ReactionSystem(DASx):
                 self.P = Quantity(conditions['P'], 'Pa')
             for k in keys:
                 if is_conc:
-                    if k in self.initialConcentrations.keys():
-                        self.initialConcentrations[k] = conditions[k]  #already in SI units
+                    if k in self.initial_concentrations.keys():
+                        self.initial_concentrations[k] = conditions[k]  #already in SI units
                 elif is_surf:
-                    if k in self.initialGasMoleFractions.keys():
-                        self.initialGasMoleFractions[k] = conditions[k]  #already in SI units
-                    if k in self.initialSurfaceCoverages.keys():
-                        self.initialSurfaceCoverages[k] = conditions[k]  #already in SI units
+                    if k in self.initial_gas_mole_fractions.keys():
+                        self.initial_gas_mole_fractions[k] = conditions[k]  #already in SI units
+                    if k in self.initial_surface_coverages.keys():
+                        self.initial_surface_coverages[k] = conditions[k]  #already in SI units
                 else:
-                    if k in self.initialMoleFractions.keys():
-                        self.initialMoleFractions[k] = conditions[k]
+                    if k in self.initial_mole_fractions.keys():
+                        self.initial_mole_fractions[k] = conditions[k]
 
         self.num_core_species = len(core_species)
         self.num_core_reactions = len(core_reactions)
@@ -492,7 +492,7 @@ cdef class ReactionSystem(DASx):
         self.network_leak_coefficients = np.zeros((self.num_pdep_networks), np.float64)
 
         for j, network in enumerate(pdep_networks):
-            self.network_leak_coefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
+            self.network_leak_coefficients[j] = network.get_leak_coefficient(self.T.value_si, self.P.value_si)
             for l, spec in enumerate(network.source):
                 try:
                     i = self.get_species_index(spec)
@@ -630,34 +630,34 @@ cdef class ReactionSystem(DASx):
         assert set(core_reactions) >= set(surface_reactions), 'given surface reactions are not a subset of core reactions'
         assert set(core_species) >= set(surface_species), 'given surface species are not a subset of core species'
 
-        tol_keep_in_edge = model_settings.fluxToleranceKeepInEdge if prune else 0
-        tol_move_to_core = model_settings.fluxToleranceMoveToCore
-        tol_move_edge_reaction_to_core = model_settings.toleranceMoveEdgeReactionToCore
-        tol_interrupt_simulation = model_settings.fluxToleranceInterrupt
-        tol_move_edge_reaction_to_core_interrupt = model_settings.toleranceMoveEdgeReactionToCore
-        tol_move_edge_reaction_to_surface = model_settings.toleranceMoveEdgeReactionToSurface
-        tol_move_surface_species_to_core = model_settings.toleranceMoveSurfaceSpeciesToCore
-        tol_move_surface_reaction_to_core = model_settings.toleranceMoveSurfaceReactionToCore
-        tol_move_edge_reaction_to_surface_interrupt = model_settings.toleranceMoveEdgeReactionToSurfaceInterrupt
-        ignore_overall_flux_criterion = model_settings.ignoreOverallFluxCriterion
+        tol_keep_in_edge = model_settings.tol_keep_in_edge if prune else 0
+        tol_move_to_core = model_settings.tol_move_to_core
+        tol_move_edge_reaction_to_core = model_settings.tol_move_edge_rxn_to_core
+        tol_interrupt_simulation = model_settings.tol_interrupt_simulation
+        tol_move_edge_reaction_to_core_interrupt = model_settings.tol_move_edge_rxn_to_core
+        tol_move_edge_reaction_to_surface = model_settings.tol_move_edge_rxn_to_surface
+        tol_move_surface_species_to_core = model_settings.tol_move_surface_spc_to_core
+        tol_move_surface_reaction_to_core = model_settings.tol_move_surface_rxn_to_core
+        tol_move_edge_reaction_to_surface_interrupt = model_settings.tol_move_edge_rxn_to_surface_interrupt
+        ignore_overall_flux_criterion = model_settings.ignore_overall_flux_criterion
         atol = simulator_settings.atol
         rtol = simulator_settings.rtol
         sens_atol = simulator_settings.sens_atol
         sens_rtol = simulator_settings.sens_rtol
         filter_reactions = model_settings.filter_reactions
-        max_num_objs_per_iter = model_settings.maxNumObjsPerIter
+        max_num_objs_per_iter = model_settings.max_num_objects_per_iter
 
-        if model_settings.toleranceBranchReactionToCore != 0.0:
-            branch_factor = 1.0 / model_settings.toleranceBranchReactionToCore
-            br_max = model_settings.branchingRatioMax
-            branching_index = model_settings.branchingIndex
+        if model_settings.tol_branch_rxn_to_core != 0.0:
+            branch_factor = 1.0 / model_settings.tol_branch_rxn_to_core
+            br_max = model_settings.branching_ratio_max
+            branching_index = model_settings.branching_index
         else:
             branch_factor = 0.0
 
         #if not pruning always terminate at max objects, otherwise only do so if terminate_at_max_objects=True
-        terminate_at_max_objects = True if not prune else model_settings.terminateAtMaxObjects
+        terminate_at_max_objects = True if not prune else model_settings.terminate_at_max_objects
 
-        dynamics_time_scale = model_settings.dynamicsTimeScale
+        dynamics_time_scale = model_settings.dynamics_time_scale
 
         use_dynamics = not (tol_move_edge_reaction_to_core == np.inf and tol_move_edge_reaction_to_surface == np.inf)
 
@@ -787,7 +787,7 @@ cdef class ReactionSystem(DASx):
                 volume = self.V
 
                 dVdk = np.zeros(num_core_reactions + num_core_species, np.float64)
-                if not self.constantVolume:
+                if not self.constant_volume:
                     for j in range(num_core_reactions + num_core_species):
                         dVdk[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) * RTP  # Contains [ dV_dk and dV_dG ]
                 for i in range(len(self.sensitive_species)):

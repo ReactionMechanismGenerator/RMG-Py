@@ -42,7 +42,7 @@ import os.path
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.main import initializeLog
+from rmgpy.rmg.main import initialize_log
 
 
 ################################################################################
@@ -63,7 +63,7 @@ def parse_arguments():
 
 
 def main():
-    initializeLog(logging.INFO, 'treegen.log')
+    initialize_log(logging.INFO, 'treegen.log')
     dbdir = settings['database.directory']
     family_name, nprocs = parse_arguments()
     database = RMGDatabase()

@@ -107,7 +107,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol = Molecule(smiles='CCCC')
         self.assertTrue(fails_species_constraints(mol))
 
-        self.rmg.speciesConstraints['explicitlyAllowedMolecules'] = [Molecule(smiles='CCCC')]
+        self.rmg.species_constraints['explicitlyAllowedMolecules'] = [Molecule(smiles='CCCC')]
         self.assertFalse(fails_species_constraints(mol))
 
     def testCarbonConstraint(self):

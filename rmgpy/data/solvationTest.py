@@ -229,9 +229,9 @@ class TestSoluteDatabase(TestCase):
 
         # Case 1-1: the solvent water is not in the initialSpecies list, so it raises Exception
         rmg = RMG()
-        rmg.initialSpecies = []
+        rmg.initial_species = []
         solute = Species(label='n-octane', molecule=[Molecule().from_smiles('C(CCCCC)CC')])
-        rmg.initialSpecies.append(solute)
+        rmg.initial_species.append(solute)
         rmg.solvent = 'water'
         solvent_structure = Species().from_smiles('O')
         self.assertRaises(Exception, self.database.check_solvent_in_initial_species, rmg, solvent_structure)
@@ -242,7 +242,7 @@ class TestSoluteDatabase(TestCase):
         rmg.solvent = 'octane'
         solvent_structure = Species().from_smiles('CCCCCCCC')
         self.database.check_solvent_in_initial_species(rmg, solvent_structure)
-        self.assertTrue(rmg.initialSpecies[0].isSolvent)
+        self.assertTrue(rmg.initial_species[0].isSolvent)
 
         # Case 2: the solvent SMILES is not provided. In this case, it can identify the species as the
         # solvent by looking at the string name.
@@ -252,9 +252,9 @@ class TestSoluteDatabase(TestCase):
         self.assertRaises(Exception, self.database.check_solvent_in_initial_species, rmg, solvent_structure)
 
         # Case 2-2: The label 'n-ocatne' is corrected to 'octane', so it is identified as the solvent
-        rmg.initialSpecies[0].label = 'octane'
+        rmg.initial_species[0].label = 'octane'
         self.database.check_solvent_in_initial_species(rmg, solvent_structure)
-        self.assertTrue(rmg.initialSpecies[0].isSolvent)
+        self.assertTrue(rmg.initial_species[0].isSolvent)
 
     def testSolventMolecule(self):
         """Test that we can assign a proper solvent molecular structure when different formats are given"""

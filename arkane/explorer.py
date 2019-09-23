@@ -140,17 +140,17 @@ class ExplorerJob(object):
         form = mmol.getFormula()
 
         for spec in list(self.bathGas.keys()) + self.source:
-            nspec, is_new = reaction_model.makeNewSpecies(spec, reactive=False)
+            nspec, is_new = reaction_model.make_new_species(spec, reactive=False)
             flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec, reactEdge=False, unimolecularReact=flags,
                                    bimolecularReact=np.zeros((len(reaction_model.core.species),
                                                               len(reaction_model.core.species))))
 
-        reaction_model.addSeedMechanismToCore('kineticsjobs')
+        reaction_model.add_seed_mechanism_to_core('kineticsjobs')
 
         for lib in kinetics_database.libraryOrder:
             if lib[0] != 'kineticsjobs':
-                reaction_model.addReactionLibraryToEdge(lib[0])
+                reaction_model.add_reaction_library_to_edge(lib[0])
 
         for spc in reaction_model.core.species:
             for i, item in enumerate(self.source):
@@ -219,8 +219,8 @@ class ExplorerJob(object):
                             if spc in checked_species:
                                 continue
                             if forbidden_structures.is_molecule_forbidden(spc.molecule[0]):
-                                reaction_model.removeSpeciesFromEdge(reaction_model.reactionSystems, spc)
-                                reaction_model.removeEmptyPdepNetworks()
+                                reaction_model.remove_species_from_edge(reaction_model.reactionSystems, spc)
+                                reaction_model.remove_empty_pdep_networks()
                             else:
                                 checked_species.append(spc)
 
@@ -234,9 +234,9 @@ class ExplorerJob(object):
                                 kchar += rxn.generate_reverse_rate_coefficient(network_kinetics=True).get_rate_coefficient(
                                     T=temperature, P=pressure)
 
-                        if network.getLeakCoefficient(T=temperature, P=pressure) > self.explore_tol * kchar:
+                        if network.get_leak_coefficient(T=temperature, P=pressure) > self.explore_tol * kchar:
                             incomplete = True
-                            spc = network.getMaximumLeakSpecies(T=temperature, P=pressure)
+                            spc = network.get_maximum_leak_species(T=temperature, P=pressure)
                             logging.info('adding new isomer {0} to network'.format(spc))
                             flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,

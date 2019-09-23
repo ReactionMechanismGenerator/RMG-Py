@@ -338,7 +338,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
             model = CoreEdgeReactionModel()
             model.verboseComments = True
             for r in rxn:
-                model.applyKineticsToReaction(r)
+                model.apply_kinetics_to_reaction(r)
 
     if isinstance(rxn, Reaction):
         reactionDict[label] = rxn

@@ -41,7 +41,7 @@ import os.path
 
 from rmg import parse_command_line_arguments
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.rmg.main import initializeLog, RMG
+from rmgpy.rmg.main import initialize_log, RMG
 from rmgpy.rmg.output import OutputHTMLWriter
 
 
@@ -68,7 +68,7 @@ def main():
         'kineticsdatastore': args.kineticsdatastore
     }
 
-    initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
+    initialize_log(level, os.path.join(args.output_directory, 'RMG.log'))
 
     rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
 
@@ -100,7 +100,7 @@ def execute(rmg, **kwargs):
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
 
-    rmg.saveEverything()
+    rmg.save_everything()
 
     rmg.finish()
 

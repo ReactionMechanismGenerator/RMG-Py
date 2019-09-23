@@ -235,7 +235,7 @@ class SimpleReactorCheck(unittest.TestCase):
 
         integration_time = 1e-8
         rxn_system0.termination.append(TerminationTime((integration_time, 's')))
-        model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
+        model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
         simulator_settings = SimulatorSettings()
         rxn_system0.simulate(core_species, core_reactions, [], [], [], [], model_settings=model_settings,
                              simulator_settings=simulator_settings)
@@ -257,7 +257,7 @@ class SimpleReactorCheck(unittest.TestCase):
             dfdk[:, i] = (dfdt - dfdt0) / dk
 
             rxn_system.termination.append(TerminationTime((integration_time, 's')))
-            model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
+            model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
             simulator_settings = SimulatorSettings()
 
             rxn_system.simulate(core_species, core_reactions, [], [], [], [], model_settings=model_settings,

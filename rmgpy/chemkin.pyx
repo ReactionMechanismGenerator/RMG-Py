@@ -1385,7 +1385,7 @@ def save_html_file(path, read_comments=True):
     warnings.warn("RMG-Java loading is no longer supported and may be"
                   " removed in version 2.3.", DeprecationWarning)
     from rmgpy.rmg.model import CoreEdgeReactionModel
-    from rmgpy.rmg.output import saveOutputHTML
+    from rmgpy.rmg.output import save_output_html
     chemkin_path = os.path.join(path, 'chemkin', 'chem.inp')
     dictionary_path = os.path.join(path, 'RMG_Dictionary.txt')
     model = CoreEdgeReactionModel()
@@ -1395,7 +1395,7 @@ def save_html_file(path, read_comments=True):
     species_path = os.path.join(path, 'species')
     if not os.path.isdir(species_path):
         os.makedirs(species_path)
-    saveOutputHTML(output_path, model)
+    save_output_html(output_path, model)
 
 ################################################################################
 

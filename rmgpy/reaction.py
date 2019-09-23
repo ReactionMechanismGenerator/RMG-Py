@@ -61,7 +61,7 @@ from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Li
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
     StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
-from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
@@ -634,15 +634,15 @@ class Reaction:
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
         
-        If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+        If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
         """
-        if diffusionLimiter.enabled:
+        if diffusion_limiter.enabled:
             try:
                 k = self.k_effective_cache[T]
             except KeyError:
-                k = diffusionLimiter.get_effective_rate(self, T)
+                k = diffusion_limiter.get_effective_rate(self, T)
                 self.k_effective_cache[T] = k
             return k
         else:
@@ -657,7 +657,7 @@ class Reaction:
         cython.declare(rateCoefficient=cython.double,
                        molecularWeight_kg=cython.double, )
 
-        if diffusionLimiter.enabled:
+        if diffusion_limiter.enabled:
             raise NotImplementedError()
         if not self.is_surface_reaction():
             raise ReactionError("This is not a surface reaction!")
@@ -696,13 +696,13 @@ class Reaction:
         Decrease the pre-exponential factor (A) by the diffusion factor
         to account for the diffusion limit at the specified temperature.
         """
-        if not diffusionLimiter.enabled:
+        if not diffusion_limiter.enabled:
             return
         # Obtain effective rate
         try:
             k = self.k_effective_cache[T]
         except KeyError:
-            k = diffusionLimiter.get_effective_rate(self, T)
+            k = diffusion_limiter.get_effective_rate(self, T)
             self.k_effective_cache[T] = k
 
         # calculate diffusion factor
@@ -1086,7 +1086,7 @@ class Reaction:
     def generate_3d_ts(self, reactants, products):
         """
         Generate the 3D structure of the transition state. Called from 
-        model.generateKinetics().
+        model.generate_kinetics().
         
         self.reactants is a list of reactants
         self.products is a list of products

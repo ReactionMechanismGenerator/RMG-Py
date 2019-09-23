@@ -39,7 +39,7 @@ from rmgpy import settings
 from rmgpy.data.solvation import SolvationDatabase
 from rmgpy.data.thermo import ThermoData
 from rmgpy.kinetics import Arrhenius
-from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -175,7 +175,7 @@ class TestDiffusionLimited(unittest.TestCase):
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.solvent = 'octane'
-        diffusionLimiter.enable(self.database.get_solvent_data(self.solvent), self.database)
+        diffusion_limiter.enable(self.database.get_solvent_data(self.solvent), self.database)
         self.T = 298
         self.uni_reaction = Reaction(reactants=[octyl_pri], products=[octyl_sec])
         self.uni_reaction.kinetics = Arrhenius(A=(2.0, '1/s'), n=0, Ea=(0, 'kJ/mol'))
@@ -191,14 +191,14 @@ class TestDiffusionLimited(unittest.TestCase):
         }
 
     def tearDown(self):
-        diffusionLimiter.disable()
+        diffusion_limiter.disable()
 
     def testGetEffectiveRateUnimolecular(self):
         """
         Tests that the effective rate is the same as the intrinsic rate for
         unimiolecular reactions.
         """
-        effective_rate = diffusionLimiter.get_effective_rate(self.uni_reaction, self.T)
+        effective_rate = diffusion_limiter.get_effective_rate(self.uni_reaction, self.T)
         self.assertEqual(effective_rate, self.intrinsic_rates[self.uni_reaction])
 
     def testGetEffectiveRate2to1(self):
@@ -206,7 +206,7 @@ class TestDiffusionLimited(unittest.TestCase):
         Tests that the effective rate is limited in the forward direction for
         a 2 -> 1 reaction
         """
-        effective_rate = diffusionLimiter.get_effective_rate(self.bi_uni_reaction, self.T)
+        effective_rate = diffusion_limiter.get_effective_rate(self.bi_uni_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.bi_uni_reaction])
 
@@ -214,7 +214,7 @@ class TestDiffusionLimited(unittest.TestCase):
         """
         Tests that the effective rate is limited for a 3 -> 2 reaction
         """
-        effective_rate = diffusionLimiter.get_effective_rate(self.tri_bi_reaction, self.T)
+        effective_rate = diffusion_limiter.get_effective_rate(self.tri_bi_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.tri_bi_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.tri_bi_reaction])
 

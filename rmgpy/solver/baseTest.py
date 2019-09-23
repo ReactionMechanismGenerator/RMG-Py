@@ -64,7 +64,7 @@ class ReactionSystemTest(unittest.TestCase):
         they are no longer consistent with the surface (due to other species/reactions moving to the 
         bulk core)
         """
-        reaction_system = self.rmg.reactionSystems[0]
+        reaction_system = self.rmg.reaction_systems[0]
         reaction_system.attach(self.listener)
         reaction_model = self.rmg.reaction_model
 
@@ -85,7 +85,7 @@ class ReactionSystemTest(unittest.TestCase):
         test that the correct maximum under the surface layering constraint is being
         found
         """
-        reaction_system = self.rmg.reactionSystems[0]
+        reaction_system = self.rmg.reaction_systems[0]
         reaction_system.attach(self.listener)
         reaction_model = self.rmg.reaction_model
         core_species = reaction_model.core.species
@@ -115,7 +115,7 @@ class ReactionSystemTest(unittest.TestCase):
         """
         Test that add_reactions_to_surface gives the correct surface_species and surface_reactions lists after being called
         """
-        reaction_system = self.rmg.reactionSystems[0]
+        reaction_system = self.rmg.reaction_systems[0]
         reaction_system.attach(self.listener)
         reaction_model = self.rmg.reaction_model
         species = reaction_model.core.species
@@ -146,7 +146,7 @@ class ReactionSystemTest(unittest.TestCase):
         """
         # create observable
 
-        reaction_system = self.rmg.reactionSystems[0]
+        reaction_system = self.rmg.reaction_systems[0]
         reaction_system.attach(self.listener)
         self.assertNotEqual(reaction_system._observers, [])
 
@@ -158,14 +158,14 @@ class ReactionSystemTest(unittest.TestCase):
         Test that data can be retrieved from an attached ReactionSystem listener.
         """
         # create observable
-        reaction_system = self.rmg.reactionSystems[0]
+        reaction_system = self.rmg.reaction_systems[0]
         reaction_system.attach(self.listener)
 
         reaction_model = self.rmg.reaction_model
 
         self.assertEqual(self.listener.data, [])
 
-        model_settings = ModelSettings(toleranceMoveToCore=1, toleranceKeepInEdge=0, toleranceInterruptSimulation=1)
+        model_settings = ModelSettings(tol_move_to_core=1, tol_keep_in_edge=0, tol_interrupt_simulation=1)
         simulator_settings = SimulatorSettings()
 
         # run simulation:
@@ -186,7 +186,7 @@ class ReactionSystemTest(unittest.TestCase):
         """
         Test that a ReactionSystem object can be un/pickled.
         """
-        rxn_sys1 = self.rmg.reactionSystems[0]
+        rxn_sys1 = self.rmg.reaction_systems[0]
         rxn_sys = pickle.loads(pickle.dumps(rxn_sys1))
 
         self.assertIsNotNone(rxn_sys)

@@ -342,7 +342,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         integration_time = 1e-8
 
-        model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
+        model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
         simulator_settings = SimulatorSettings()
 
         rxn_system0.termination.append(TerminationTime((integration_time, 's')))
@@ -368,7 +368,7 @@ class LiquidReactorCheck(unittest.TestCase):
             dfdk[:, i] = (dfdt - dfdt0) / dk
 
             rxn_system.termination.append(TerminationTime((integration_time, 's')))
-            model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
+            model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
             simulator_settings = SimulatorSettings()
             rxn_system.simulate(core_species, core_reactions, [], [], [], [],
                                 model_settings=model_settings, simulator_settings=simulator_settings)
@@ -417,14 +417,14 @@ class LiquidReactorCheck(unittest.TestCase):
         From input file reading to information storage in liquid reactor object.
         """
         rmg = RMG()
-        rmg.inputFile = os.path.join(os.path.dirname(rmgpy.__file__),
-                                     'solver',
-                                     'files',
-                                     'liquid_phase_constSPC',
-                                     'input.py')
+        rmg.input_file = os.path.join(os.path.dirname(rmgpy.__file__),
+                                      'solver',
+                                      'files',
+                                      'liquid_phase_constSPC',
+                                      'input.py')
         rmg.initialize()
 
-        for index, reactionSystem in enumerate(rmg.reactionSystems):
+        for index, reactionSystem in enumerate(rmg.reaction_systems):
             self.assertIsNotNone(reactionSystem.const_spc_names,
                                  'Reactor should contain constant species name and indices after few steps')
             self.assertIsNotNone(reactionSystem.const_spc_indices,

@@ -38,7 +38,7 @@ import argparse
 import logging
 
 import rmgpy
-from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
+from rmgpy.rmg.main import RMG, initialize_log, process_profile_stats, make_profile_graph
 
 
 ################################################################################
@@ -140,7 +140,7 @@ def main():
             level = logging.DEBUG
         elif args.quiet:
             level = logging.WARNING
-        initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
+        initialize_log(level, os.path.join(args.output_directory, 'RMG.log'))
 
     logging.info(rmgpy.settings.report())
 
@@ -161,7 +161,7 @@ def main():
             'RMG': RMG
         }
 
-        command = """rmg = RMG(inputFile=inputFile, outputDirectory=output_dir); rmg.execute(**kwargs)"""
+        command = """rmg = RMG(input_file=inputFile, output_directory=output_dir); rmg.execute(**kwargs)"""
 
         stats_file = os.path.join(args.output_directory, 'RMG.profile')
         print("Running under cProfile")
@@ -170,12 +170,12 @@ def main():
             cProfile.runctx(command, global_vars, local_vars, stats_file)
         # postprocess the stats
         log_file = os.path.join(args.output_directory, 'RMG.log')
-        processProfileStats(stats_file, log_file)
-        makeProfileGraph(stats_file)
+        process_profile_stats(stats_file, log_file)
+        make_profile_graph(stats_file)
 
     else:
 
-        rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
+        rmg = RMG(input_file=args.file, output_directory=args.output_directory)
         rmg.execute(**kwargs)
 
 

@@ -33,7 +33,7 @@ import shutil
 import unittest
 
 from rmgpy.rmg.model import CoreEdgeReactionModel, ReactionModel
-from rmgpy.rmg.output import saveOutputHTML
+from rmgpy.rmg.output import save_output_html
 from rmgpy.chemkin import load_chemkin_file
 
 
@@ -59,7 +59,7 @@ class TestOutput(unittest.TestCase):
         cerm = CoreEdgeReactionModel(core)
 
         out = os.path.join(folder, 'output.html')
-        saveOutputHTML(out, cerm)
+        save_output_html(out, cerm)
 
         self.assertTrue(os.path.isfile(out))
         os.remove(out)

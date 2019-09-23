@@ -64,7 +64,7 @@ import matplotlib.pyplot as plt
 
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.rmg.model import ReactionModel
-from rmgpy.rmg.output import saveDiffHTML
+from rmgpy.rmg.output import save_diff_html
 
 
 ################################################################################
@@ -226,8 +226,8 @@ def saveCompareHTML(outputDir, chemkinPath1, speciesDictPath1, chemkinPath2, spe
     common_species, unique_species1, unique_species2 = compareModelSpecies(model1, model2)
 
     output_path = outputDir + 'diff.html'
-    saveDiffHTML(output_path, common_species, unique_species1, unique_species2, common_reactions, unique_reactions1,
-                 unique_reactions2)
+    save_diff_html(output_path, common_species, unique_species1, unique_species2, common_reactions, unique_reactions1,
+                   unique_reactions2)
 
 
 def enthalpyDiff(species):
@@ -429,8 +429,8 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
         wd = os.getcwd()
 
     output_path = os.path.join(wd, 'diff.html')
-    saveDiffHTML(output_path, common_species, unique_species1, unique_species2,
-                 common_reactions, unique_reactions1, unique_reactions2)
+    save_diff_html(output_path, common_species, unique_species1, unique_species2,
+                   common_reactions, unique_reactions1, unique_reactions2)
     logging.info("Finished!")
 
     return common_species, unique_species1, unique_species2, common_reactions, unique_reactions1, unique_reactions2

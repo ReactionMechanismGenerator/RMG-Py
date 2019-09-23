@@ -1176,7 +1176,7 @@ class ThermoDatabase(object):
         
         Returns: ThermoData
         """
-        from rmgpy.rmg.input import getInput
+        from rmgpy.rmg.input import get_input
 
         thermo0 = self.get_thermo_data_from_libraries(species)
 
@@ -1196,13 +1196,13 @@ class ThermoDatabase(object):
             return thermo0
 
         try:
-            quantum_mechanics = getInput('quantumMechanics')
+            quantum_mechanics = get_input('quantum_mechanics')
         except Exception:
             logging.debug('Quantum Mechanics DB could not be found.')
             quantum_mechanics = None
 
         try:
-            ml_estimator, ml_settings = getInput('MLEstimator')
+            ml_estimator, ml_settings = get_input('ml_estimator')
         except Exception:
             logging.debug('ML estimator could not be found.')
             ml_estimator, ml_settings = None, None

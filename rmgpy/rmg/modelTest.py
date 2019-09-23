@@ -156,7 +156,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         rxns += list(itertools.chain.from_iterable(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum)))
 
         for rxn in rxns:
-            cerm.makeNewReaction(rxn)
+            cerm.make_new_reaction(rxn)
 
         cerm.core.species = [spcA] + spcs
 
@@ -182,18 +182,18 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         new_surface_species = []
         obj = new_surface_reactions
 
-        cerm.addNewSurfaceObjects(obj, new_surface_species, new_surface_reactions, rsys)
+        cerm.add_new_surface_objects(obj, new_surface_species, new_surface_reactions, rsys)
 
         empty = set()
 
-        self.assertEqual(cerm.newSurfaceSpcsAdd, empty)
-        self.assertEqual(cerm.newSurfaceSpcsLoss, empty)
-        self.assertEqual(cerm.newSurfaceRxnsLoss, empty)
-        self.assertEqual(cerm.newSurfaceRxnsAdd, set([cerm.edge.reactions[0]]))
+        self.assertEqual(cerm.new_surface_spcs_add, empty)
+        self.assertEqual(cerm.new_surface_spcs_loss, empty)
+        self.assertEqual(cerm.new_surface_rxns_loss, empty)
+        self.assertEqual(cerm.new_surface_rxns_add, set([cerm.edge.reactions[0]]))
 
     def testMakeNewSpecies(self):
         """
-        Test that CoreEdgeReactionModel.makeNewSpecies method correctly stores the unique species.
+        Test that CoreEdgeReactionModel.make_new_species method correctly stores the unique species.
         """
 
         # adding 3 unique species:
@@ -204,10 +204,10 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                 Species().from_smiles('[CH3]')]
 
         for spc in spcs:
-            cerm.makeNewSpecies(spc)
+            cerm.make_new_species(spc)
 
-        self.assertEquals(len(cerm.speciesDict), len(spcs))
-        self.assertEquals(len(cerm.indexSpeciesDict), len(spcs))
+        self.assertEquals(len(cerm.species_dict), len(spcs))
+        self.assertEquals(len(cerm.index_species_dict), len(spcs))
 
         # adding 3 unique, and 1 already existing species:
         cerm = CoreEdgeReactionModel()
@@ -218,14 +218,14 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                 Species().from_smiles('CC')]  # duplicate species
 
         for spc in spcs:
-            cerm.makeNewSpecies(spc)
+            cerm.make_new_species(spc)
 
-        self.assertEquals(len(cerm.speciesDict), len(spcs) - 1)
-        self.assertEquals(len(cerm.indexSpeciesDict), len(spcs) - 1)
+        self.assertEquals(len(cerm.species_dict), len(spcs) - 1)
+        self.assertEquals(len(cerm.index_species_dict), len(spcs) - 1)
 
     def test_append_unreactive_structure(self):
         """
-        Test that CERM.makeNewSpecies correctly recognizes a non-representative resonance structure
+        Test that CERM.make_new_species correctly recognizes a non-representative resonance structure
         """
 
         cerm = CoreEdgeReactionModel()
@@ -237,18 +237,18 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                 ]
 
         for spc in spcs:
-            cerm.makeNewSpecies(spc)
+            cerm.make_new_species(spc)
 
-        self.assertEquals(len(cerm.speciesDict), 2)
-        self.assertEquals(len(cerm.indexSpeciesDict), 2)
-        self.assertEquals(len(cerm.indexSpeciesDict[1].molecule), 1)
-        self.assertTrue(cerm.indexSpeciesDict[1].molecule[0].reactive)
-        self.assertEquals(len(cerm.indexSpeciesDict[2].molecule), 1)
-        self.assertTrue(cerm.indexSpeciesDict[2].molecule[0].reactive)
+        self.assertEquals(len(cerm.species_dict), 2)
+        self.assertEquals(len(cerm.index_species_dict), 2)
+        self.assertEquals(len(cerm.index_species_dict[1].molecule), 1)
+        self.assertTrue(cerm.index_species_dict[1].molecule[0].reactive)
+        self.assertEquals(len(cerm.index_species_dict[2].molecule), 1)
+        self.assertTrue(cerm.index_species_dict[2].molecule[0].reactive)
 
     def testMakeNewReaction(self):
         """
-        Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
+        Test that CoreEdgeReactionModel.make_new_reaction method correctly works.
         """
 
         procnum = 2
@@ -261,7 +261,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         cerm = CoreEdgeReactionModel()
 
         for rxn in rxns:
-            cerm.makeNewReaction(rxn)
+            cerm.make_new_reaction(rxn)
 
         """
         3 expected H-abstraction reactions:
@@ -272,7 +272,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         # count no. of entries in reactionDict:
         counter = 0
-        for fam, v1 in cerm.reactionDict.items():
+        for fam, v1 in cerm.reaction_dict.items():
             for key2, v2 in v1.items():
                 for key3, rxnList in v2.items():
                     counter += len(rxnList)
@@ -281,7 +281,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
     def testThermoFilterSpecies(self):
         """
-        test that thermoFilterSpecies leaves species alone if if toleranceThermoKeepInEdge
+        test that thermo_filter_species leaves species alone if if toleranceThermoKeepInEdge
         is high and removes them if if toleranceThermoKeepInEdge is low
         """
 
@@ -294,7 +294,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                 Species().from_smiles('O')]
 
         for spc in spcs:
-            cerm.makeNewSpecies(spc, label=spc.molecule[0].to_smiles())
+            cerm.make_new_species(spc, label=spc.molecule[0].to_smiles())
             spc.label = spc.molecule[0].to_smiles()
 
         thermo_dict = {'[OH]': NASA(polynomials=[NASAPolynomial(
@@ -335,7 +335,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                        }
 
         for spc in spcs[:3]:
-            cerm.addSpeciesToCore(spc)
+            cerm.add_species_to_core(spc)
 
         reaction = TemplateReaction(
             reactants=[spcs[0], spcs[2]],
@@ -345,18 +345,18 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
             family='H_Abstraction',
         )
 
-        cerm.processNewReactions(newReactions=[reaction], newSpecies=[])  # adds CH2 and O to edge
+        cerm.process_new_reactions(new_reactions=[reaction], new_species=[])  # adds CH2 and O to edge
 
         for spc in cerm.core.species + cerm.edge.species:
             spc.thermo = thermo_dict[spc.molecule[0].to_smiles()]  # assign thermo
 
-        cerm.setThermodynamicFilteringParameters(Tmax=300.0,
-                                                 toleranceThermoKeepSpeciesInEdge=1000.0,
-                                                 minCoreSizeForPrune=0,
-                                                 maximumEdgeSpecies=1,
-                                                 reactionSystems=[])
+        cerm.set_thermodynamic_filtering_parameters(Tmax=300.0,
+                                                    thermo_tol_keep_spc_in_edge=1000.0,
+                                                    min_core_size_for_prune=0,
+                                                    maximum_edge_species=1,
+                                                    reaction_systems=[])
 
-        cerm.thermoFilterSpecies(
+        cerm.thermo_filter_species(
             cerm.edge.species)  # should not do anythinb because toleranceThermoKeepSpeciesInEdge is high
 
         difset = set([x.molecule[0].to_smiles() for x in cerm.edge.species]) - set(
@@ -364,13 +364,13 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertEquals(len(difset), 2)  # no change in edge
 
-        cerm.setThermodynamicFilteringParameters(Tmax=300.0,
-                                                 toleranceThermoKeepSpeciesInEdge=0.0,
-                                                 minCoreSizeForPrune=0,
-                                                 maximumEdgeSpecies=1,
-                                                 reactionSystems=[])
+        cerm.set_thermodynamic_filtering_parameters(Tmax=300.0,
+                                                    thermo_tol_keep_spc_in_edge=0.0,
+                                                    min_core_size_for_prune=0,
+                                                    maximum_edge_species=1,
+                                                    reaction_systems=[])
 
-        cerm.thermoFilterSpecies(cerm.edge.species)  # should remove stuff since CH2 and O have high thermo
+        cerm.thermo_filter_species(cerm.edge.species)  # should remove stuff since CH2 and O have high thermo
 
         difset = set([x.molecule[0].to_smiles() for x in cerm.edge.species]) - set(
             [x.molecule[0].to_smiles() for x in cerm.core.species])
@@ -379,7 +379,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
     def testThermoFilterDown(self):
         """
-        test that thermoFilterDown with maximumEdgeSpecies = 1 reduces
+        test that thermo_filter_down with maximum_edge_species = 1 reduces
         the edge to one species
         """
         cerm = CoreEdgeReactionModel()
@@ -391,7 +391,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                 Species().from_smiles('O')]
 
         for spc in spcs:
-            cerm.makeNewSpecies(spc, label=spc.molecule[0].to_smiles())
+            cerm.make_new_species(spc, label=spc.molecule[0].to_smiles())
             spc.label = spc.molecule[0].to_smiles()
 
         thermo_dict = {'[OH]': NASA(polynomials=[NASAPolynomial(
@@ -432,7 +432,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                        }
 
         for spc in spcs[:3]:
-            cerm.addSpeciesToCore(spc)
+            cerm.add_species_to_core(spc)
 
         reaction = TemplateReaction(reactants=[spcs[0], spcs[2]],
                                     products=[spcs[-1], spcs[-2]],
@@ -440,23 +440,23 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                                     reversible=True,
                                     family='H_Abstraction')
 
-        cerm.processNewReactions(newReactions=[reaction], newSpecies=[])  # add CH2 and O to edge
+        cerm.process_new_reactions(new_reactions=[reaction], new_species=[])  # add CH2 and O to edge
 
         for spc in cerm.core.species + cerm.edge.species:
             spc.thermo = thermo_dict[spc.molecule[0].to_smiles()]  # assign thermo
 
-        cerm.setThermodynamicFilteringParameters(Tmax=300.0,
-                                                 toleranceThermoKeepSpeciesInEdge=1000.0,
-                                                 minCoreSizeForPrune=0,
-                                                 maximumEdgeSpecies=1,
-                                                 reactionSystems=[])
+        cerm.set_thermodynamic_filtering_parameters(Tmax=300.0,
+                                                    thermo_tol_keep_spc_in_edge=1000.0,
+                                                    min_core_size_for_prune=0,
+                                                    maximum_edge_species=1,
+                                                    reaction_systems=[])
 
         difset = set([x.molecule[0].to_smiles() for x in cerm.edge.species]) - set(
             [x.molecule[0].to_smiles() for x in cerm.core.species])
 
         self.assertEquals(len(difset), 2)  # no change because toleranceThermoKeepSpeciesInEdge is high
 
-        cerm.thermoFilterDown(maximumEdgeSpecies=1)
+        cerm.thermo_filter_down(maximum_edge_species=1)
 
         difset = set([x.molecule[0].to_smiles() for x in cerm.edge.species]) - set(
             [x.molecule[0].to_smiles() for x in cerm.core.species])
@@ -465,7 +465,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
     def test_checkForExistingReaction_eliminates_identical_reactions(self):
         """
-        Test that checkForExistingReaction catches identical reactions.
+        Test that check_for_existing_reaction catches identical reactions.
         """
         cerm = CoreEdgeReactionModel()
 
@@ -480,10 +480,10 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcD.label = '[H][H]'
         spcB.generate_resonance_structures()
 
-        cerm.addSpeciesToCore(spcA)
-        cerm.addSpeciesToCore(spcB)
-        cerm.addSpeciesToCore(spcC)
-        cerm.addSpeciesToCore(spcD)
+        cerm.add_species_to_core(spcA)
+        cerm.add_species_to_core(spcB)
+        cerm.add_species_to_core(spcC)
+        cerm.add_species_to_core(spcD)
 
         reaction_in_model = TemplateReaction(reactants=[spcA, spcB],
                                              products=[spcC, spcD],
@@ -496,16 +496,16 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                                            products=[spcC, spcD],
                                            family='H_Abstraction',
                                            template=['Csd', 'H'])
-        cerm.addReactionToCore(reaction_in_model)
-        cerm.registerReaction(reaction_in_model)
+        cerm.add_reaction_to_core(reaction_in_model)
+        cerm.register_reaction(reaction_in_model)
 
-        found, rxn = cerm.checkForExistingReaction(reaction_to_add)
+        found, rxn = cerm.check_for_existing_reaction(reaction_to_add)
 
-        self.assertTrue(found, 'checkForExistingReaction failed to identify existing reaction')
+        self.assertTrue(found, 'check_for_existing_reaction failed to identify existing reaction')
 
     def test_checkForExistingReaction_keeps_identical_reactions_with_duplicate_flag(self):
         """
-        Test that checkForExistingReaction keeps reactions with different templates and duplicate=True.
+        Test that check_for_existing_reaction keeps reactions with different templates and duplicate=True.
         """
         cerm = CoreEdgeReactionModel()
 
@@ -520,10 +520,10 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcD.label = '[H][H]'
         spcB.generate_resonance_structures()
 
-        cerm.addSpeciesToCore(spcA)
-        cerm.addSpeciesToCore(spcB)
-        cerm.addSpeciesToCore(spcC)
-        cerm.addSpeciesToCore(spcD)
+        cerm.add_species_to_core(spcA)
+        cerm.add_species_to_core(spcB)
+        cerm.add_species_to_core(spcC)
+        cerm.add_species_to_core(spcD)
 
         reaction_in_model = TemplateReaction(reactants=[spcA, spcB],
                                              products=[spcC, spcD],
@@ -538,16 +538,16 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                                            family='H_Abstraction',
                                            template=['Cs12345', 'H'],
                                            duplicate=True)
-        cerm.addReactionToCore(reaction_in_model)
-        cerm.registerReaction(reaction_in_model)
+        cerm.add_reaction_to_core(reaction_in_model)
+        cerm.register_reaction(reaction_in_model)
 
-        found, rxn = cerm.checkForExistingReaction(reaction_to_add)
+        found, rxn = cerm.check_for_existing_reaction(reaction_to_add)
 
-        self.assertFalse(found, 'checkForExistingReaction failed to identify duplicate template reactions')
+        self.assertFalse(found, 'check_for_existing_reaction failed to identify duplicate template reactions')
 
     def test_checkForExistingReaction_eliminates_identical_reactions_without_duplicate_flag(self):
         """
-        Test that checkForExistingReaction eliminates reactions with different templates and duplicate=false
+        Test that check_for_existing_reaction eliminates reactions with different templates and duplicate=false
         """
         cerm = CoreEdgeReactionModel()
 
@@ -562,10 +562,10 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcD.label = '[H][H]'
         spcB.generate_resonance_structures()
 
-        cerm.addSpeciesToCore(spcA)
-        cerm.addSpeciesToCore(spcB)
-        cerm.addSpeciesToCore(spcC)
-        cerm.addSpeciesToCore(spcD)
+        cerm.add_species_to_core(spcA)
+        cerm.add_species_to_core(spcB)
+        cerm.add_species_to_core(spcC)
+        cerm.add_species_to_core(spcD)
 
         reaction_in_model = TemplateReaction(reactants=[spcA, spcB],
                                              products=[spcC, spcD],
@@ -580,16 +580,16 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                                            family='H_Abstraction',
                                            template=['Cs12345', 'H'],
                                            duplicate=False)
-        cerm.addReactionToCore(reaction_in_model)
-        cerm.registerReaction(reaction_in_model)
+        cerm.add_reaction_to_core(reaction_in_model)
+        cerm.register_reaction(reaction_in_model)
 
-        found, rxn = cerm.checkForExistingReaction(reaction_to_add)
+        found, rxn = cerm.check_for_existing_reaction(reaction_to_add)
 
-        self.assertTrue(found, 'checkForExistingReaction failed to eliminate reactions without duplicate tag')
+        self.assertTrue(found, 'check_for_existing_reaction failed to eliminate reactions without duplicate tag')
 
     def test_checkForExistingReaction_removes_duplicates_in_opposite_directions(self):
         """
-        Test that checkForExistingReaction removes duplicate reverse reactions
+        Test that check_for_existing_reaction removes duplicate reverse reactions
         """
         cerm = CoreEdgeReactionModel()
 
@@ -630,15 +630,15 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         rxn_f.reactants.sort()
         rxn_f.products.sort()
 
-        cerm.addReactionToCore(rxn_f)
-        cerm.registerReaction(rxn_f)
+        cerm.add_reaction_to_core(rxn_f)
+        cerm.register_reaction(rxn_f)
 
-        reactions = cerm.searchRetrieveReactions(rxn_r)
-        self.assertEqual(1, len(reactions), 'cerm.searchRetrieveReactions could not identify reverse reaction')
+        reactions = cerm.search_retrieve_reactions(rxn_r)
+        self.assertEqual(1, len(reactions), 'cerm.search_retrieve_reactions could not identify reverse reaction')
 
-        found, rxn = cerm.checkForExistingReaction(rxn_r)
+        found, rxn = cerm.check_for_existing_reaction(rxn_r)
 
-        self.assertTrue(found, 'checkForExistingReaction failed to identify existing reaction in the reverse direction')
+        self.assertTrue(found, 'check_for_existing_reaction failed to identify existing reaction in the reverse direction')
         self.assertEqual(rxn, rxn_f)
 
     @classmethod
@@ -668,8 +668,8 @@ class TestEnlarge(unittest.TestCase):
 
         cls.rmg = RMG()
 
-        from rmgpy.rmg.input import setGlobalRMG, pressureDependence
-        setGlobalRMG(cls.rmg)
+        from rmgpy.rmg.input import set_global_rmg, pressureDependence
+        set_global_rmg(cls.rmg)
 
         pressureDependence(
             method='modified strong collision',
@@ -681,7 +681,7 @@ class TestEnlarge(unittest.TestCase):
             maximumAtoms=10,
         )
 
-        cls.rmg.outputDirectory = cls.rmg.pressureDependence.outputFile = cls.dirname
+        cls.rmg.output_directory = cls.rmg.pressure_dependence.outputFile = cls.dirname
 
         cls.rmg.database = RMGDatabase()
         cls.rmg.database.load(
@@ -691,66 +691,66 @@ class TestEnlarge(unittest.TestCase):
             reactionLibraries=[],
         )
 
-        cls.rmg.reactionModel = CoreEdgeReactionModel()
-        cls.rmg.reactionModel.pressureDependence = cls.rmg.pressureDependence
+        cls.rmg.reaction_model = CoreEdgeReactionModel()
+        cls.rmg.reaction_model.pressure_dependence = cls.rmg.pressure_dependence
 
     def test_enlarge_1_add_nonreactive_species(self):
         """Test that we can add a nonreactive species to CERM"""
         m0 = Molecule(smiles='[He]')
-        spc0 = self.rmg.reactionModel.makeNewSpecies(m0, label='He', reactive=False)[0]
-        self.rmg.reactionModel.enlarge(spc0)
+        spc0 = self.rmg.reaction_model.make_new_species(m0, label='He', reactive=False)[0]
+        self.rmg.reaction_model.enlarge(spc0)
 
-        self.assertEqual(len(self.rmg.reactionModel.core.species), 1)
-        self.assertFalse(self.rmg.reactionModel.core.species[0].reactive)
+        self.assertEqual(len(self.rmg.reaction_model.core.species), 1)
+        self.assertFalse(self.rmg.reaction_model.core.species[0].reactive)
 
     def test_enlarge_2_add_reactive_species(self):
         """Test that we can add reactive species to CERM"""
         m1 = Molecule(smiles='CC')
-        spc1 = self.rmg.reactionModel.makeNewSpecies(m1, label='C2H4')[0]
-        self.rmg.reactionModel.enlarge(spc1)
+        spc1 = self.rmg.reaction_model.make_new_species(m1, label='C2H4')[0]
+        self.rmg.reaction_model.enlarge(spc1)
 
-        self.assertEqual(len(self.rmg.reactionModel.core.species), 2)
-        self.assertTrue(self.rmg.reactionModel.core.species[1].reactive)
+        self.assertEqual(len(self.rmg.reaction_model.core.species), 2)
+        self.assertTrue(self.rmg.reaction_model.core.species[1].reactive)
 
         m2 = Molecule(smiles='[CH3]')
-        spc2 = self.rmg.reactionModel.makeNewSpecies(m2, label='CH3')[0]
-        self.rmg.reactionModel.enlarge(spc2)
+        spc2 = self.rmg.reaction_model.make_new_species(m2, label='CH3')[0]
+        self.rmg.reaction_model.enlarge(spc2)
 
-        self.assertEqual(len(self.rmg.reactionModel.core.species), 3)
-        self.assertTrue(self.rmg.reactionModel.core.species[2].reactive)
+        self.assertEqual(len(self.rmg.reaction_model.core.species), 3)
+        self.assertTrue(self.rmg.reaction_model.core.species[2].reactive)
 
     def test_enlarge_3_react_edge(self):
         """Test that enlarge properly generated reactions"""
-        self.rmg.reactionModel.enlarge(
-            reactEdge=True,
-            unimolecularReact=np.array([0, 1, 0], bool),
-            bimolecularReact=np.zeros((3, 3), bool),
+        self.rmg.reaction_model.enlarge(
+            react_edge=True,
+            unimolecular_react=np.array([0, 1, 0], bool),
+            bimolecular_react=np.zeros((3, 3), bool),
         )
 
-        self.assertEqual(len(self.rmg.reactionModel.edge.species), 2)
-        smiles = set([spc.smiles for spc in self.rmg.reactionModel.edge.species])
+        self.assertEqual(len(self.rmg.reaction_model.edge.species), 2)
+        smiles = set([spc.smiles for spc in self.rmg.reaction_model.edge.species])
         self.assertEqual(smiles, {'[H]', 'C[CH2]'})
 
         # We expect either C-C bond scission to be in the core and C-H bond scission to be in the edge
-        self.assertEqual(len(self.rmg.reactionModel.core.reactions), 1)
-        rxn = self.rmg.reactionModel.core.reactions[0]
+        self.assertEqual(len(self.rmg.reaction_model.core.reactions), 1)
+        rxn = self.rmg.reaction_model.core.reactions[0]
         smiles = set([spc.smiles for spc in rxn.reactants + rxn.products])
         self.assertEqual(smiles, {'CC', '[CH3]'})
 
-        self.assertEqual(len(self.rmg.reactionModel.edge.reactions), 1)
-        rxn = self.rmg.reactionModel.edge.reactions[0]
+        self.assertEqual(len(self.rmg.reaction_model.edge.reactions), 1)
+        rxn = self.rmg.reaction_model.edge.reactions[0]
         smiles = set([spc.smiles for spc in rxn.reactants + rxn.products])
         self.assertEqual(smiles, {'CC', 'C[CH2]', '[H]'})
 
     def test_enlarge_4_create_pdep_network(self):
         """Test that enlarge properly creates a pdep network"""
-        self.assertEqual(len(self.rmg.reactionModel.networkList), 1)
-        self.assertEqual(len(self.rmg.reactionModel.networkList[0].source), 1)
-        self.assertEqual(self.rmg.reactionModel.networkList[0].source[0].label, 'C2H4')
+        self.assertEqual(len(self.rmg.reaction_model.network_list), 1)
+        self.assertEqual(len(self.rmg.reaction_model.network_list[0].source), 1)
+        self.assertEqual(self.rmg.reaction_model.network_list[0].source[0].label, 'C2H4')
 
-        self.assertEqual(len(self.rmg.reactionModel.networkDict), 1)
-        self.assertEqual(len(list(self.rmg.reactionModel.networkDict.keys())[0]), 1)
-        self.assertEqual(list(self.rmg.reactionModel.networkDict.keys())[0][0].label, 'C2H4')
+        self.assertEqual(len(self.rmg.reaction_model.network_dict), 1)
+        self.assertEqual(len(list(self.rmg.reaction_model.network_dict.keys())[0]), 1)
+        self.assertEqual(list(self.rmg.reaction_model.network_dict.keys())[0][0].label, 'C2H4')
 
     @classmethod
     def tearDownClass(cls):
