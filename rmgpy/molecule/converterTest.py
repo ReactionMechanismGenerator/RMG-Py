@@ -34,7 +34,6 @@ This module contains unit test for the converter module.
 
 import unittest
 
-from rmgpy.exceptions import AtomTypeError
 from rmgpy.molecule.converter import debug_rdkit_mol, to_rdkit_mol, from_rdkit_mol, to_ob_mol, from_ob_mol
 from rmgpy.molecule.molecule import Molecule
 
@@ -64,12 +63,8 @@ class RDKitTest(unittest.TestCase):
 """)
         rdmol = to_rdkit_mol(mol)
 
-        try:
-            mol2 = from_rdkit_mol(Molecule(), rdmol)
-        except AtomTypeError as e:
-            self.fail('Could not convert from RDKitMol: ' + e.message)
-        else:
-            self.assertTrue(mol.is_isomorphic(mol2))
+        mol2 = from_rdkit_mol(Molecule(), rdmol)
+        self.assertTrue(mol.is_isomorphic(mol2))
 
     def test_atom_mapping_1(self):
         """Test that to_rdkit_mol returns correct indices and atom mappings."""
