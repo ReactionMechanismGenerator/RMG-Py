@@ -53,9 +53,6 @@ class TestSoluteDatabase(TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def runTest(self):
-        pass
-
     def testSoluteLibrary(self):
         """Test we can obtain solute parameters from a library"""
         species = Species(molecule=[Molecule(smiles='COC=O')])  # methyl formate - we know this is in the solute library
