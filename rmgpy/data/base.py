@@ -67,11 +67,11 @@ class Entry(object):
     `children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
     `data`              The data to associate with the item
     `reference`         A :class:`Reference` object containing bibliographic reference information to the source of the data
-    `referenceType`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
-    `shortDesc`         A brief (one-line) description of the data
-    `longDesc`          A long, verbose description of the data
+    `reference_type`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
+    `short_desc`         A brief (one-line) description of the data
+    `long_desc`          A long, verbose description of the data
     `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
-    `nodalDistance`     A float representing the distance of a given entry from it's parent entry
+    `nodal_distance`     A float representing the distance of a given entry from it's parent entry
     =================== ========================================================
 
     """
@@ -84,11 +84,11 @@ class Entry(object):
                  children=None,
                  data=None,
                  reference=None,
-                 referenceType='',
-                 shortDesc='',
-                 longDesc='',
+                 reference_type='',
+                 short_desc='',
+                 long_desc='',
                  rank=None,
-                 nodalDistance=None,
+                 nodal_distance=None,
                  ):
         self.index = index
         self.label = label
@@ -97,11 +97,11 @@ class Entry(object):
         self.children = children or []
         self.data = data
         self.reference = reference
-        self.referenceType = referenceType
-        self.shortDesc = shortDesc
-        self.longDesc = longDesc
+        self.reference_type = reference_type
+        self.short_desc = short_desc
+        self.long_desc = long_desc
         self.rank = rank
-        self.nodalDistance = nodalDistance
+        self.nodal_distance = nodal_distance
 
     def __str__(self):
         return self.label
@@ -166,16 +166,16 @@ class Database(object):
                  label='',
                  name='',
                  solvent=None,
-                 shortDesc='',
-                 longDesc='',
+                 short_desc='',
+                 long_desc='',
                  ):
         self.entries = OrderedDict(entries or {})
         self.top = top or []
         self.label = label
         self.name = name
         self.solvent = solvent
-        self.shortDesc = shortDesc
-        self.longDesc = longDesc
+        self.short_desc = short_desc
+        self.long_desc = long_desc
 
     def load(self, path, local_context=None, global_context=None):
         """
@@ -202,8 +202,8 @@ class Database(object):
         local_context['tree'] = self._load_tree
         local_context['name'] = self.name
         local_context['solvent'] = self.solvent
-        local_context['shortDesc'] = self.shortDesc
-        local_context['longDesc'] = self.longDesc
+        local_context['shortDesc'] = self.short_desc
+        local_context['longDesc'] = self.long_desc
         local_context['RateUncertainty'] = RateUncertainty
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.items():
@@ -221,8 +221,8 @@ class Database(object):
         # Extract the database metadata
         self.name = local_context['name']
         self.solvent = local_context['solvent']
-        self.shortDesc = local_context['shortDesc']
-        self.longDesc = local_context['longDesc'].strip()
+        self.short_desc = local_context['shortDesc']
+        self.long_desc = local_context['longDesc'].strip()
 
         # Return the loaded database (to allow for Database().load() syntax)
         return self
@@ -337,9 +337,9 @@ class Database(object):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
-        f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
+        f.write('shortDesc = "{0}"\n'.format(self.short_desc))
         f.write('longDesc = """\n')
-        f.write(self.longDesc.strip() + '\n')
+        f.write(self.long_desc.strip() + '\n')
         f.write('"""\n')
 
         for entry in entries:
@@ -553,7 +553,7 @@ class Database(object):
                 # The entry is not a duplicate
                 self.entries[label].index = index
                 self.entries[label].data = parameters
-                self.entries[label].shortDesc = comment
+                self.entries[label].short_desc = comment
         if skipped_count > 0:
             logging.warning("Skipped {0:d} duplicate entries in {1} library.".format(skipped_count, self.label))
 
@@ -803,7 +803,7 @@ class Database(object):
                     data = entry.data
                     if not isinstance(data, str):
                         data = self.generate_old_library_entry(data)
-                    records.append((entry.index, [entry.label], data, entry.shortDesc))
+                    records.append((entry.index, [entry.label], data, entry.short_desc))
 
             records.sort()
 
@@ -1363,8 +1363,8 @@ class ForbiddenStructures(Database):
         self.entries[label] = Entry(
             label=label,
             item=item,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry, name='entry'):
@@ -1389,7 +1389,7 @@ class ForbiddenStructures(Database):
         else:
             f.write('    group = "{0}",\n'.format(entry.item))
 
-        f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-        f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+        f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+        f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
         f.write(')\n\n')

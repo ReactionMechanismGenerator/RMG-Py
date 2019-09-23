@@ -80,10 +80,10 @@ def save_entry(f, entry):
 
     if entry.reference is not None:
         f.write('    reference = {0!r},\n'.format(entry.reference))
-    if entry.referenceType != "":
-        f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+    if entry.reference_type != "":
+        f.write('    referenceType = "{0}",\n'.format(entry.reference_type))
+    f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -123,8 +123,8 @@ class StatmechDepository(Database):
     depository.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -136,6 +136,10 @@ class StatmechDepository(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         item = Molecule().from_adjacency_list(molecule)
 
         self.entries[label] = Entry(
@@ -144,9 +148,9 @@ class StatmechDepository(Database):
             item=item,
             data=statmech,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry):
@@ -163,8 +167,8 @@ class StatmechLibrary(Database):
     A class for working with a RMG statistical mechanics (frequencies) library.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -176,15 +180,19 @@ class StatmechLibrary(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         self.entries[label] = Entry(
             index=index,
             label=label,
             item=Molecule().from_adjacency_list(molecule),
             data=statmech,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry):
@@ -216,8 +224,8 @@ class StatmechGroups(Database):
     database.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -229,6 +237,10 @@ class StatmechGroups(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
                 group[0:7].upper() == 'NOT OR{' or
@@ -243,9 +255,9 @@ class StatmechGroups(Database):
             item=item,
             data=statmech,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry):

@@ -125,15 +125,15 @@ def save_entry(f, entry):
             f.write('    {0}\n'.format(line))
         f.write('    ),\n'.format(lines[0]))
 
-    if entry.referenceType != "":
-        f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+    if entry.reference_type != "":
+        f.write('    referenceType = "{0}",\n'.format(entry.reference_type))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
 
-    if entry.shortDesc.strip() != '':
-        f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-    if entry.longDesc.strip() != '':
-        f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+    if entry.short_desc.strip() != '':
+        f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    if entry.long_desc.strip() != '':
+        f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -331,7 +331,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
             except AttributeError:
                 from rmgpy.data.rmg import get_db
                 family = get_db('kinetics').families[rxn.family]
-            if not family.ownReverse:
+            if not family.own_reverse:
                 rxn.degeneracy = family.calculate_degeneracy(rxn)
 
     return rxn_list

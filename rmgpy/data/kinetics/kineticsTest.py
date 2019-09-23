@@ -54,9 +54,9 @@ def setUpModule():
     database = RMGDatabase()
     database.load(
         path=os.path.join(settings['test_data.directory'], 'testing_database'),
-        thermoLibraries=['primaryThermoLibrary'],
-        reactionLibraries=['GRI-Mech3.0'],
-        kineticsFamilies=[
+        thermo_libraries=['primaryThermoLibrary'],
+        reaction_libraries=['GRI-Mech3.0'],
+        kinetics_families=[
             'R_Recombination',
             'Disproportionation',
             'R_Addition_MultipleBond',
@@ -71,7 +71,7 @@ def setUpModule():
     # for these tests
     for family in database.kinetics.families.values():
         family.forbidden = ForbiddenStructures()
-    database.forbiddenStructures = ForbiddenStructures()
+    database.forbidden_structures = ForbiddenStructures()
 
     # Prepare the database by loading training reactions and averaging the rate rules
     for family in database.kinetics.families.values():
@@ -785,7 +785,7 @@ class TestKinetics(unittest.TestCase):
         wdir = wd + '/' + fname
 
         rxn = reactions[0]
-        entry = Entry(index=1, label=str(rxn), item=rxn, shortDesc='sdes', longDesc='lsdes', data='stuff', rank=0)
+        entry = Entry(index=1, label=str(rxn), item=rxn, short_desc='sdes', long_desc='lsdes', data='stuff', rank=0)
         save_entry(fid, entry)
 
         fid.close()

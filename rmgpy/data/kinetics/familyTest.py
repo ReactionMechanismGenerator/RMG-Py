@@ -666,9 +666,9 @@ class TestTreeGeneration(unittest.TestCase):
         cls.database = RMGDatabase()
         cls.database.load(
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
-            thermoLibraries=[],
-            reactionLibraries=[],
-            kineticsFamilies=[],
+            thermo_libraries=[],
+            reaction_libraries=[],
+            kinetics_families=[],
             depository=False,
             solvation=False,
             testing=True,
@@ -707,7 +707,7 @@ class TestTreeGeneration(unittest.TestCase):
         self.assertEquals(len(self.family.rules.entries), 1,
                           'more than one group in rules.entries after preparing tree for generation')
         root = self.family.groups.entries[list(self.family.rules.entries.keys())[0]]
-        self.assertEquals([root], self.family.forwardTemplate.reactants)
+        self.assertEquals([root], self.family.forward_template.reactants)
         self.assertEquals([root], self.family.groups.top)
 
     def test_b_generate_tree(self):
@@ -827,9 +827,9 @@ class TestGenerateReactions(unittest.TestCase):
         cls.database = RMGDatabase()
         cls.database.load(
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
-            thermoLibraries=[],
-            reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
+            thermo_libraries=[],
+            reaction_libraries=[],
+            kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
                               'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative',
                               'Surface_Dissociation_vdW'],
             depository=False,

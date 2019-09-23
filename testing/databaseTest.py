@@ -34,7 +34,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         """
         database_directory = settings['database.directory']
         cls.database = RMGDatabase()
-        cls.database.load(database_directory, kineticsFamilies='all')
+        cls.database.load(database_directory, kinetics_families='all')
 
     # These are generators, that call the methods below.
     def test_kinetics(self):
@@ -92,7 +92,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
             generated_trees = ["R_Recombination"]
 
-            if len(family.forwardTemplate.reactants) < len(family.groups.top) and family_name not in difficult_families:
+            if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
                 test = lambda x: self.kinetics_check_unimolecular_groups(family_name)
                 test_name = "Kinetics family {0} check that unimolecular group is formatted correctly?".format(
                     family_name)
@@ -370,7 +370,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             ascend_parent = nodeGroup
 
             # Check whether the node has proper parents unless it is the top reactant or product node
-            while ascend_parent not in family.groups.top and ascend_parent not in family.forwardTemplate.products:
+            while ascend_parent not in family.groups.top and ascend_parent not in family.forward_template.products:
                 child = ascend_parent
                 ascend_parent = ascend_parent.parent
                 tst1.append((ascend_parent is not None,
@@ -439,7 +439,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst = []
         for nodeName, childNode in family.entries.items():
             # top nodes and product nodes don't have parents by definition, so they get an automatic pass:
-            if childNode in original_family.groups.top or childNode in original_family.forwardTemplate.products:
+            if childNode in original_family.groups.top or childNode in original_family.forward_template.products:
                 continue
             parent_node = childNode.parent
 
@@ -447,7 +447,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 # This is a mistake in the database, but it should be caught by kinetics_checkGroupsFoundInTree
                 # so rather than report it twice or crash, we'll just silently carry on to the next node.
                 continue
-            elif parent_node in original_family.forwardTemplate.products:
+            elif parent_node in original_family.forward_template.products:
                 # This is a product node made by training reactions which we do not need to heck
                 continue
             # Check whether the node has proper parents unless it is the top reactant or product node
@@ -491,7 +491,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             # Some families also construct a 2-level trees for the products
             # (root with all entries down one level) We don't care about this
             # tree as it is not used in searching, so we ignore products
-            if node in original_family.forwardTemplate.products:
+            if node in original_family.forward_template.products:
                 continue
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index + 1:]:
@@ -738,12 +738,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         otherwise overwriting may occur.
         """
         family = self.database.kinetics.families[family_name]
-        if family.ownReverse:
-            nose.tools.assert_equal(family.forwardTemplate.reactants, family.forwardTemplate.products)
+        if family.own_reverse:
+            nose.tools.assert_equal(family.forward_template.reactants, family.forward_template.products)
         else:
             tst = []
-            reactant_labels = [reactant.label for reactant in family.forwardTemplate.reactants]
-            product_labels = [product.label for product in family.forwardTemplate.products]
+            reactant_labels = [reactant.label for reactant in family.forward_template.reactants]
+            product_labels = [product.label for product in family.forward_template.products]
             for reactant_label in reactant_labels:
                 for product_label in product_labels:
                     tst.append((reactant_label == product_label,
@@ -770,8 +770,8 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
         # ignore product entries that get created from training reactions
         ignore = []
-        if not family.ownReverse:
-            for product in family.forwardTemplate.products:
+        if not family.own_reverse:
+            for product in family.forward_template.products:
                 ignore.append(product)
                 ignore.extend(product.children)
         else:
@@ -890,7 +890,7 @@ The following adjList may have atoms in a different ordering than the input file
             end_labels[end_group] = set(labels)
 
         # get boundary atoms to test that backbones have labels between end groups
-        nose.tools.assert_is_not_none(family.boundaryAtoms)
+        nose.tools.assert_is_not_none(family.boundary_atoms)
 
         # set of all end_labels should be backbone label
         backbone_label = set([])
@@ -916,7 +916,7 @@ The following adjList may have atoms in a different ordering than the input file
                         if not labels.issubset(present_labels):
                             c.append([end_group, entry])
                     # check D
-                    mid_atoms = [group.get_labeled_atoms(x)[0] for x in family.boundaryAtoms]
+                    mid_atoms = [group.get_labeled_atoms(x)[0] for x in family.boundary_atoms]
                     path_atoms = find_shortest_path(mid_atoms[0], mid_atoms[1])
                     for atom in path_atoms:
                         if not atom.label:
@@ -1003,8 +1003,8 @@ The following adjList may have atoms in a different ordering than the input file
         tst3 = []
         # ignore any products
         ignore = []
-        if not family.ownReverse:
-            for product in family.forwardTemplate.products:
+        if not family.own_reverse:
+            for product in family.forward_template.products:
                 ignore.append(product)
                 ignore.extend(product.children)
         else:
@@ -1012,7 +1012,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         # If family is backbone archetype, then we need to merge groups before descending
         roots = family.groups.top
-        if len(roots) > len(family.forwardTemplate.reactants):
+        if len(roots) > len(family.forward_template.reactants):
             backbone_roots = family.get_backbone_roots()
             all_backbone_groups = []
             for backboneRoot in backbone_roots:
@@ -1158,11 +1158,11 @@ Origin Group AdjList:
         tst = []
         for node_name, node_group in group.entries.items():
             del entries_copy[node_name]
-            for nodeNameOther, nodeGroupOther in entries_copy.items():
-                group.match_node_to_node(node_group, nodeGroupOther)
-                tst.append((group.match_node_to_node(node_group, nodeGroupOther),
-                            "Node {node} in {group} group was found to be identical to node {nodeOther}".format(
-                                node=node_name, group=group_name, nodeOther=nodeNameOther)))
+            for node_name_other, node_group_other in entries_copy.items():
+                group.match_node_to_node(node_group, node_group_other)
+                tst.append((group.match_node_to_node(node_group, node_group_other),
+                            "Node {node} in {group} group was found to be identical to node {node_other}".format(
+                                node=node_name, group=group_name, node_other=node_name_other)))
 
         boo = False
         for i in range(len(tst)):

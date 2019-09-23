@@ -130,10 +130,10 @@ def save_entry(f, entry):
 
     if entry.reference is not None:
         f.write('    reference = {0!r},\n'.format(entry.reference))
-    if entry.referenceType != "":
-        f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+    if entry.reference_type != "":
+        f.write('    referenceType = "{0}",\n'.format(entry.reference_type))
+    f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
 
@@ -590,20 +590,24 @@ class ThermoDepository(Database):
     A class for working with the RMG thermodynamics depository.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='',
                    rank=None):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         entry = Entry(
             index=index,
             label=label,
             item=Molecule().from_adjacency_list(molecule),
             data=thermo,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
             rank=rank,
         )
         self.entries[label] = entry
@@ -623,8 +627,8 @@ class ThermoLibrary(Database):
     A class for working with a RMG thermodynamics library.
     """
 
-    def __init__(self, label='', name='', solvent=None, shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', solvent=None, short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -637,6 +641,10 @@ class ThermoLibrary(Database):
                    longDesc='',
                    rank=None,
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
 
         molecule = Molecule().from_adjacency_list(molecule)
 
@@ -658,9 +666,9 @@ class ThermoLibrary(Database):
             item=molecule,
             data=thermo,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
             rank=rank,
         )
 
@@ -692,8 +700,8 @@ class ThermoGroups(Database):
     A class for working with an RMG thermodynamics group additivity database.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -706,6 +714,10 @@ class ThermoGroups(Database):
                    longDesc='',
                    rank=None,
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
 
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
@@ -720,9 +732,9 @@ class ThermoGroups(Database):
             item=item,
             data=thermo,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
             rank=rank,
         )
 
@@ -758,10 +770,10 @@ class ThermoGroups(Database):
         """
         destination.data = source.data
         destination.reference = source.reference
-        destination.shortDesc = source.shortDesc
-        destination.longDesc = source.longDesc
+        destination.short_desc = source.short_desc
+        destination.long_desc = source.long_desc
         destination.rank = source.rank
-        destination.referenceType = source.referenceType
+        destination.reference_type = source.reference_type
 
     def remove_group(self, group_to_remove):
         """

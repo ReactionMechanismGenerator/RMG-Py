@@ -64,16 +64,16 @@ class KineticsGroups(Database):
                  top=None,
                  label='',
                  name='',
-                 shortDesc='',
-                 longDesc='',
+                 short_desc='',
+                 long_desc='',
                  forwardTemplate=None,
                  forwardRecipe=None,
                  reverseTemplate=None,
                  reverseRecipe=None,
                  forbidden=None
                  ):
-        Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
-        self.reactantNum = 0
+        Database.__init__(self, entries, top, label, name, short_desc, long_desc)
+        self.reactant_num = 0
 
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
@@ -81,7 +81,10 @@ class KineticsGroups(Database):
     def load_entry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',
                    nodalDistance=None):
         """
-        nodalDistance is the distance between a given entry and its parent specified by a float
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+
+        nodal_distance is the distance between a given entry and its parent specified by a float
         """
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
@@ -100,10 +103,10 @@ class KineticsGroups(Database):
             item=item,
             data=kinetics,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
-            nodalDistance=nodalDistance
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
+            nodal_distance=nodalDistance
         )
 
     def get_reaction_template(self, reaction):
@@ -238,7 +241,7 @@ class KineticsGroups(Database):
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
                 kinetics = self._multiply_kinetics_data(kinetics, entry.data)
-                comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
+                comment_line += "{0} ({1})".format(entry.label, entry.long_desc.split('\n')[0])
             elif entry in self.top:
                 comment_line += "{0} (Top node)".format(entry.label)
             kinetics.comment += comment_line + '\n'
@@ -485,9 +488,9 @@ class KineticsGroups(Database):
                     if not any(np.isnan(np.array(group_uncertainties[entry]))):
                         entry.data.kdata.uncertainties = np.array(group_uncertainties[entry])
                         entry.data.kdata.uncertainty_type = '*|/'
-                    entry.shortDesc = "Group additive kinetics."
-                    entry.longDesc = "Fitted to {0} rates.\n".format(group_counts[entry])
-                    entry.longDesc += "\n".join(group_comments[entry])
+                    entry.short_desc = "Group additive kinetics."
+                    entry.long_desc = "Fitted to {0} rates.\n".format(group_counts[entry])
+                    entry.long_desc += "\n".join(group_comments[entry])
                 else:
                     entry.data = None
 

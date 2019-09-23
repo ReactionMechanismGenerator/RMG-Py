@@ -400,14 +400,14 @@ class KineticsFamily(Database):
     =================== =============================== ========================
     `reverse`           ``string``                      The name of the reverse reaction family
     `reversible`        `Boolean`                       Is family reversible? (True by default)
-    `forwardTemplate`   :class:`Reaction`               The forward reaction template
-    `forwardRecipe`     :class:`ReactionRecipe`         The steps to take when applying the forward reaction to a set of reactants
-    `reverseTemplate`   :class:`Reaction`               The reverse reaction template
-    `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
+    `forward_template`  :class:`Reaction`               The forward reaction template
+    `forward_recipe`    :class:`ReactionRecipe`         The steps to take when applying the forward reaction to a set of reactants
+    `reverse_template`  :class:`Reaction`               The reverse reaction template
+    `reverse_recipe`    :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
-    `ownReverse`        `Boolean`                       It's its own reverse?
-    'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
-    `treeDistances`     dict                            The default distance from parent along each tree, if not set default is 1 for every tree
+    `own_reverse`       `Boolean`                       It's its own reverse?
+    'boundary_atoms'    list                            Labels which define the boundaries of end groups in backbone/end families
+    `tree_distances`    dict                            The default distance from parent along each tree, if not set default is 1 for every tree
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -426,27 +426,27 @@ class KineticsFamily(Database):
                  name='',
                  reverse='',
                  reversible=True,
-                 shortDesc='',
-                 longDesc='',
-                 forwardTemplate=None,
-                 forwardRecipe=None,
-                 reverseTemplate=None,
-                 reverseRecipe=None,
+                 short_desc='',
+                 long_desc='',
+                 forward_template=None,
+                 forward_recipe=None,
+                 reverse_template=None,
+                 reverse_recipe=None,
                  forbidden=None,
-                 boundaryAtoms=None,
-                 treeDistances=None
+                 boundary_atoms=None,
+                 tree_distances=None
                  ):
-        Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
+        Database.__init__(self, entries, top, label, name, short_desc, long_desc)
         self.reverse = reverse
         self.reversible = reversible
-        self.forwardTemplate = forwardTemplate
-        self.forwardRecipe = forwardRecipe
-        self.reverseTemplate = reverseTemplate
-        self.reverseRecipe = reverseRecipe
+        self.forward_template = forward_template
+        self.forward_recipe = forward_recipe
+        self.reverse_template = reverse_template
+        self.reverse_recipe = reverse_recipe
         self.forbidden = forbidden
-        self.ownReverse = forwardTemplate is not None and reverseTemplate is None
-        self.boundaryAtoms = boundaryAtoms
-        self.treeDistances = treeDistances
+        self.own_reverse = forward_template is not None and reverse_template is None
+        self.boundary_atoms = boundary_atoms
+        self.tree_distances = tree_distances
 
         # Kinetics depositories of training and test data
         self.groups = None
@@ -489,16 +489,16 @@ class KineticsFamily(Database):
             logging.error('Error while reading old kinetics family template/recipe from {0!r}.'.format(path))
             raise
         # Construct the forward and reverse templates
-        reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
-        if self.ownReverse:
-            self.forwardTemplate = Reaction(reactants=reactants, products=reactants)
-            self.reverseTemplate = None
+        reactants = [self.groups.entries[label] for label in self.forward_template.reactants]
+        if self.own_reverse:
+            self.forward_template = Reaction(reactants=reactants, products=reactants)
+            self.reverse_template = None
         else:
             products = self.generate_product_template(reactants)
-            self.forwardTemplate = Reaction(reactants=reactants, products=products)
-            self.reverseTemplate = Reaction(reactants=reactants, products=products)
+            self.forward_template = Reaction(reactants=reactants, products=products)
+            self.reverse_template = Reaction(reactants=reactants, products=products)
 
-        self.groups.reactantNum = len(self.forwardTemplate.reactants)
+        self.groups.reactant_num = len(self.forward_template.reactants)
 
         # Load forbidden structures if present
         try:
@@ -518,7 +518,7 @@ class KineticsFamily(Database):
         self.rules.name = self.rules.label
         try:
             self.rules.load_old(path, self.groups,
-                                num_labels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
+                                num_labels=max(len(self.forward_template.reactants), len(self.groups.top)))
         except Exception:
             logging.error('Error while reading old kinetics family rules from {0!r}.'.format(path))
             raise
@@ -532,9 +532,9 @@ class KineticsFamily(Database):
         """
         warnings.warn("The old kinetics databases are no longer supported and"
                       " may be removed in version 2.3.", DeprecationWarning)
-        self.forwardTemplate = Reaction(reactants=[], products=[])
-        self.forwardRecipe = ReactionRecipe()
-        self.ownReverse = False
+        self.forward_template = Reaction(reactants=[], products=[])
+        self.forward_recipe = ReactionRecipe()
+        self.own_reverse = False
 
         ftemp = None
         # Process the template file
@@ -547,9 +547,9 @@ class KineticsFamily(Database):
                     tokens = line.split()
                     action = [tokens[1]]
                     action.extend(tokens[2][1:-1].split(','))
-                    self.forwardRecipe.add_action(action)
+                    self.forward_recipe.add_action(action)
                 elif 'thermo_consistence' in line:
-                    self.ownReverse = True
+                    self.own_reverse = True
                 elif 'reverse' in line:
                     self.reverse = line.split(':')[1].strip()
                 elif '->' in line:
@@ -560,9 +560,9 @@ class KineticsFamily(Database):
                         if token == '->':
                             at_arrow = True
                         elif token != '+' and not at_arrow:
-                            self.forwardTemplate.reactants.append(token)
+                            self.forward_template.reactants.append(token)
                         elif token != '+' and at_arrow:
-                            self.forwardTemplate.products.append(token)
+                            self.forward_template.products.append(token)
         except IOError as e:
             logging.exception('Database template file "' + e.filename + '" not found.')
             raise
@@ -598,13 +598,13 @@ class KineticsFamily(Database):
 
         # Write the template
         f_temp.write('{0} -> {1}\n'.format(
-            ' + '.join([entry.label for entry in self.forwardTemplate.reactants]),
-            ' + '.join([entry.label for entry in self.forwardTemplate.products]),
+            ' + '.join([entry.label for entry in self.forward_template.reactants]),
+            ' + '.join([entry.label for entry in self.forward_template.products]),
         ))
         f_temp.write('\n')
 
         # Write the reaction type and reverse name
-        if self.ownReverse:
+        if self.own_reverse:
             f_temp.write('thermo_consistence\n')
         else:
             f_temp.write('forward\n')
@@ -613,7 +613,7 @@ class KineticsFamily(Database):
 
         # Write the reaction recipe
         f_temp.write('Actions 1\n')
-        for index, action in enumerate(self.forwardRecipe.actions):
+        for index, action in enumerate(self.forward_recipe.actions):
             f_temp.write('({0}) {1:<15} {{{2}}}\n'.format(index + 1, action[0], ','.join(action[1:])))
         f_temp.write('\n')
 
@@ -621,11 +621,11 @@ class KineticsFamily(Database):
 
     def distribute_tree_distances(self):
         """
-        fills in nodalDistance (the distance between an entry and its parent)
+        fills in nodal_distance (the distance between an entry and its parent)
         if not already entered with the value from tree_distances associated
         with the tree the entry comes from
         """
-        tree_distances = self.treeDistances
+        tree_distances = self.tree_distances
         top_labels = [i.label for i in self.groups.top]
 
         if len(top_labels) != len(tree_distances):
@@ -637,8 +637,8 @@ class KineticsFamily(Database):
             while not (top_entry.parent is None):  # get the top for the tree entry is in
                 top_entry = top_entry.parent
             if top_entry.label in top_labels:  # filtering out product nodes
-                if entry.nodalDistance is None:
-                    entry.nodalDistance = tree_distances[top_entry.label]
+                if entry.nodal_distance is None:
+                    entry.nodal_distance = tree_distances[top_entry.label]
 
     def load(self, path, local_context=None, global_context=None, depository_labels=None):
         """
@@ -668,34 +668,34 @@ class KineticsFamily(Database):
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
-        self.boundaryAtoms = local_context.get('boundaryAtoms', None)
-        self.treeDistances = local_context.get('treeDistances', None)
-        self.reverseMap = local_context.get('reverseMap', None)
+        self.boundary_atoms = local_context.get('boundaryAtoms', None)
+        self.tree_distances = local_context.get('treeDistances', None)
+        self.reverse_map = local_context.get('reverseMap', None)
 
-        self.reactantNum = local_context.get('reactantNum', None)
-        self.productNum = local_context.get('productNum', None)
+        self.reactant_num = local_context.get('reactantNum', None)
+        self.product_num = local_context.get('productNum', None)
 
-        self.autoGenerated = local_context.get('autoGenerated', False)
+        self.auto_generated = local_context.get('autoGenerated', False)
 
-        if self.reactantNum:
-            self.groups.reactantNum = self.reactantNum
+        if self.reactant_num:
+            self.groups.reactant_num = self.reactant_num
         else:
-            self.groups.reactantNum = len(self.forwardTemplate.reactants)
+            self.groups.reactant_num = len(self.forward_template.reactants)
 
         # Generate the reverse template if necessary
-        self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
-        if self.ownReverse:
-            self.forwardTemplate.products = self.forwardTemplate.reactants[:]
-            self.reverseTemplate = None
-            self.reverseRecipe = self.forwardRecipe.get_reverse()
+        self.forward_template.reactants = [self.groups.entries[label] for label in self.forward_template.reactants]
+        if self.own_reverse:
+            self.forward_template.products = self.forward_template.reactants[:]
+            self.reverse_template = None
+            self.reverse_recipe = self.forward_recipe.get_reverse()
         else:
             self.reverse = local_context.get('reverse', None)
             self.reversible = True if local_context.get('reversible', None) is None else local_context.get('reversible', None)
-            self.forwardTemplate.products = self.generate_product_template(self.forwardTemplate.reactants)
+            self.forward_template.products = self.generate_product_template(self.forward_template.reactants)
             if self.reversible:
-                self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products,
-                                                products=self.forwardTemplate.reactants)
-                self.reverseRecipe = self.forwardRecipe.get_reverse()
+                self.reverse_template = Reaction(reactants=self.forward_template.products,
+                                                 products=self.forward_template.reactants)
+                self.reverse_recipe = self.forward_recipe.get_reverse()
                 if self.reverse is None:
                     self.reverse = '{0}_reverse'.format(self.label)
 
@@ -713,8 +713,8 @@ class KineticsFamily(Database):
         self.depositories = []
 
         top_labels = [i.label for i in self.groups.top]
-        if self.treeDistances is None:
-            self.treeDistances = {top_entry: 1 for top_entry in top_labels}
+        if self.tree_distances is None:
+            self.tree_distances = {top_entry: 1 for top_entry in top_labels}
 
         self.distribute_tree_distances()
 
@@ -764,16 +764,18 @@ class KineticsFamily(Database):
     def load_template(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
+        Note that argument names are retained for backward compatibility
+        with loading database files.
         """
-        self.forwardTemplate = Reaction(reactants=reactants, products=products)
-        self.ownReverse = ownReverse
+        self.forward_template = Reaction(reactants=reactants, products=products)
+        self.own_reverse = ownReverse
 
     def load_recipe(self, actions):
         """
         Load information about the reaction recipe.
         """
         # Remaining lines are reaction recipe for forward reaction
-        self.forwardRecipe = ReactionRecipe()
+        self.forward_recipe = ReactionRecipe()
         for action in actions:
             action[0] = action[0].upper()
             valid_actions = [
@@ -782,11 +784,13 @@ class KineticsFamily(Database):
             if action[0] not in valid_actions:
                 raise InvalidActionError('Action {0} is not a recognized action. '
                                          'Should be one of {1}'.format(actions[0], valid_actions))
-            self.forwardRecipe.add_action(action)
+            self.forward_recipe.add_action(action)
 
     def load_forbidden(self, label, group, shortDesc='', longDesc=''):
         """
         Load information about a forbidden structure.
+        Note that argument names are retained for backward compatibility
+        with loading database files.
         """
         if not self.forbidden:
             self.forbidden = ForbiddenStructures()
@@ -798,7 +802,8 @@ class KineticsFamily(Database):
         """
         return save_entry(f, entry)
 
-    def save_training_reactions(self, reactions, reference=None, referenceType='', shortDesc='', longDesc='', rank=3):
+    def save_training_reactions(self, reactions, reference=None, reference_type='', short_desc='', long_desc='',
+                                rank=3):
         """
         This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
         duplicate reactions.  
@@ -811,12 +816,12 @@ class KineticsFamily(Database):
 
         if not isinstance(reference, list):
             reference = [reference] * len(reactions)
-        if not isinstance(referenceType, list):
-            referenceType = [referenceType] * len(reactions)
-        if not isinstance(shortDesc, list):
-            shortDesc = [shortDesc] * len(reactions)
-        if not isinstance(longDesc, list):
-            longDesc = [longDesc] * len(reactions)
+        if not isinstance(reference_type, list):
+            reference_type = [reference_type] * len(reactions)
+        if not isinstance(short_desc, list):
+            short_desc = [short_desc] * len(reactions)
+        if not isinstance(long_desc, list):
+            long_desc = [long_desc] * len(reactions)
         if not isinstance(rank, list):
             rank = [rank] * len(reactions)
 
@@ -883,9 +888,9 @@ class KineticsFamily(Database):
                 item=reaction,
                 data=reaction.kinetics,
                 reference=reference[i],
-                referenceType=referenceType[i],
-                shortDesc=str(shortDesc[i]),
-                longDesc=str(longDesc[i]),
+                reference_type=reference_type[i],
+                short_desc=str(short_desc[i]),
+                long_desc=str(long_desc[i]),
                 rank=rank[i],
             )
 
@@ -930,19 +935,19 @@ class KineticsFamily(Database):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}/groups"\n'.format(self.name))
-        f.write('shortDesc = "{0}"\n'.format(self.groups.shortDesc))
+        f.write('shortDesc = "{0}"\n'.format(self.groups.short_desc))
         f.write('longDesc = """\n')
-        f.write(self.groups.longDesc)
+        f.write(self.groups.long_desc)
         f.write('\n"""\n\n')
 
         # Write the template
         f.write('template(reactants=[{0}], products=[{1}], ownReverse={2})\n\n'.format(
-            ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.reactants]),
-            ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.products]),
-            self.ownReverse))
+            ', '.join(['"{0}"'.format(entry.label) for entry in self.forward_template.reactants]),
+            ', '.join(['"{0}"'.format(entry.label) for entry in self.forward_template.products]),
+            self.own_reverse))
 
         # Write reverse name
-        if not self.ownReverse:
+        if not self.own_reverse:
             if self.reverse is not None:
                 f.write('reverse = "{0}"\n'.format(self.reverse))
             else:
@@ -950,22 +955,22 @@ class KineticsFamily(Database):
 
         f.write('reversible = {0}\n\n'.format(self.reversible))
 
-        if self.reverseMap is not None:
-            f.write('reverseMap = {0}\n\n'.format(self.reverseMap))
+        if self.reverse_map is not None:
+            f.write('reverseMap = {0}\n\n'.format(self.reverse_map))
 
-        if self.reactantNum is not None:
-            f.write('reactantNum = {0}\n\n'.format(self.reactantNum))
-        if self.productNum is not None:
-            f.write('productNum = {0}\n\n'.format(self.productNum))
+        if self.reactant_num is not None:
+            f.write('reactantNum = {0}\n\n'.format(self.reactant_num))
+        if self.product_num is not None:
+            f.write('productNum = {0}\n\n'.format(self.product_num))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
-        for action in self.forwardRecipe.actions:
+        for action in self.forward_recipe.actions:
             f.write('    {0!r},\n'.format(action))
         f.write('])\n\n')
 
-        if self.boundaryAtoms:
-            f.write('boundaryAtoms = ["{0}", "{1}"]'.format(self.boundaryAtoms[0], self.boundaryAtoms[1]))
+        if self.boundary_atoms:
+            f.write('boundaryAtoms = ["{0}", "{1}"]'.format(self.boundary_atoms[0], self.boundary_atoms[1]))
             f.write('\n\n')
 
         # Save the entries
@@ -1052,7 +1057,7 @@ class KineticsFamily(Database):
         # Fifth, associate structures with product template
         product_set = []
         for index, products in enumerate(product_structure_list):
-            label = self.forwardTemplate.products[index]
+            label = self.forward_template.products[index]
             if len(products) == 1:
                 entry = Entry(
                     label=label,
@@ -1182,8 +1187,8 @@ class KineticsFamily(Database):
                 data=data,
                 rank=entry.rank,
                 reference=entry.reference,
-                shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
-                longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
+                short_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.short_desc,
+                long_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.long_desc,
             )
             new_entry.data.comment = "From training reaction {1} used for {0}".format(
                 ';'.join([g.label for g in template]), entry.index)
@@ -1247,8 +1252,8 @@ class KineticsFamily(Database):
                 data=data.to_arrhenius_ep(),
                 rank=entry.rank,
                 reference=entry.reference,
-                shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
-                longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
+                short_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.short_desc,
+                long_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.long_desc,
             )
             new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
@@ -1266,8 +1271,8 @@ class KineticsFamily(Database):
         :class:`KineticsGroups` object), but there are a few exceptions (e.g.
         R_Recombination).
         """
-        if len(self.forwardTemplate.reactants) > len(self.groups.top):
-            return self.forwardTemplate.reactants
+        if len(self.forward_template.reactants) > len(self.groups.top):
+            return self.forward_template.reactants
         else:
             return self.groups.top
 
@@ -1362,9 +1367,9 @@ class KineticsFamily(Database):
                     raise KineticsError(msg)
 
             # Generate the product structure by applying the recipe
-            self.forwardRecipe.apply_forward(reactant_structure, unique)
+            self.forward_recipe.apply_forward(reactant_structure, unique)
         else:
-            self.reverseRecipe.apply_forward(reactant_structure, unique)
+            self.reverse_recipe.apply_forward(reactant_structure, unique)
 
         # Now that we have applied the recipe, let's start calling
         # this thing the product_structure (although it's the same object in memory)
@@ -1406,7 +1411,7 @@ class KineticsFamily(Database):
         #  structures which are labeled as reactants.
         # Unfortunately, this means that reaction family info is
         #  hardcoded, so this must be updated if the database changes.
-        if not self.reverseTemplate:
+        if not self.reverse_template:
             # Get atom labels for products
             atom_labels = {}
             for atom in product_structure.atoms:
@@ -1465,11 +1470,11 @@ class KineticsFamily(Database):
                 atom_labels['*3'].label = '*2'
 
         if not forward:
-            template = self.reverseTemplate
-            product_num = self.reactantNum or len(template.products)
+            template = self.reverse_template
+            product_num = self.reactant_num or len(template.products)
         else:
-            template = self.forwardTemplate
-            product_num = self.productNum or len(template.products)
+            template = self.forward_template
+            product_num = self.product_num or len(template.products)
 
         # Split product structure into multiple species if necessary
         product_structures = product_structure.split()
@@ -1697,7 +1702,7 @@ class KineticsFamily(Database):
         reaction_list.extend(
             self._generate_reactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
 
-        if not self.ownReverse and self.reversible:
+        if not self.own_reverse and self.reversible:
             # Reverse direction (the direction in which kinetics is not defined)
             reaction_list.extend(
                 self._generate_reactions(reactants, products=products, forward=False, prod_resonance=prod_resonance))
@@ -1712,7 +1717,7 @@ class KineticsFamily(Database):
         Returns `True` if successful and `False` if the reverse reaction is forbidden.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
-        if self.ownReverse and all([spc.has_reactive_molecule() for spc in rxn.products]):
+        if self.own_reverse and all([spc.has_reactive_molecule() for spc in rxn.products]):
             # Check if the reactants are the same
             same_reactants = 0
             if len(rxn.products) == 2 and rxn.products[0].is_isomorphic(rxn.products[1]):
@@ -1902,15 +1907,15 @@ class KineticsFamily(Database):
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
         if forward:
-            template = self.forwardTemplate
-            reactant_num = self.reactantNum
-        elif self.reverseTemplate is None:
+            template = self.forward_template
+            reactant_num = self.reactant_num
+        elif self.reverse_template is None:
             return []
         else:
-            template = self.reverseTemplate
-            reactant_num = self.productNum
+            template = self.reverse_template
+            reactant_num = self.product_num
 
-        if self.autoGenerated and reactant_num != len(reactants):
+        if self.auto_generated and reactant_num != len(reactants):
             return []
 
         if len(reactants) > len(template.reactants):
@@ -2625,7 +2630,7 @@ class KineticsFamily(Database):
         new entities in memory so input molecules `reactants` and `products` won't be affected.
         If RMG cannot find appropriate labels, (None, None) will be returned.
         """
-        template = self.forwardTemplate
+        template = self.forward_template
         reactants0 = [reactant.copy(deep=True) for reactant in reactants]
 
         if len(reactants0) == 1:
@@ -2767,7 +2772,7 @@ class KineticsFamily(Database):
             else:
                 mol = m.copy(deep=True)
 
-        recipe = self.forwardRecipe.actions
+        recipe = self.forward_recipe.actions
 
         wb = 0.0
         wf = 0.0
@@ -3410,7 +3415,7 @@ class KineticsFamily(Database):
         entries = list(self.groups.entries.values())
         rxnlists = [(template_rxn_map[entry.label], entry.label)
                     if entry.label in template_rxn_map.keys() else [] for entry in entries]
-        inputs = np.array([(self.forwardRecipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
+        inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
                            for rxns, label in rxnlists])
 
         inds = np.arange(len(inputs))
@@ -3432,12 +3437,12 @@ class KineticsFamily(Database):
                 new_entry = Entry(
                     index=index,
                     label=entry.label,
-                    item=self.forwardTemplate,
+                    item=self.forward_template,
                     data=kinetics,
                     rank=11,
                     reference=None,
-                    shortDesc=st,
-                    longDesc=st,
+                    short_desc=st,
+                    long_desc=st,
                 )
                 new_entry.data.comment = st
 
@@ -3506,7 +3511,7 @@ class KineticsFamily(Database):
                 L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
                 if L != []:
-                    kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forwardRecipe.actions)
+                    kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
                     kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
                     k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
@@ -3773,7 +3778,7 @@ class KineticsFamily(Database):
         self.add_entry(None, grp, 'Root')
         self.groups.entries['Root'].index = 1
         self.groups.top = [self.groups.entries['Root']]
-        self.forwardTemplate.reactants = [self.groups.entries['Root']]
+        self.forward_template.reactants = [self.groups.entries['Root']]
 
         return
 
@@ -3813,10 +3818,10 @@ class KineticsFamily(Database):
                 if atm.label not in root_labels:
                     atm.label = ''
 
-        if self.ownReverse and get_reverse:
+        if self.own_reverse and get_reverse:
             rev_rxns = []
-            rkeys = list(self.reverseMap.keys())
-            reverse_map = self.reverseMap
+            rkeys = list(self.reverse_map.keys())
+            reverse_map = self.reverse_map
 
         if estimate_thermo:
             if thermo_database is None:
@@ -3881,7 +3886,7 @@ class KineticsFamily(Database):
                     (not fix_labels and
                      get_label_fixed_mol(mol, root_labels).is_subgraph_isomorphic(root, generate_initial_map=True))):
                 rxns[i].is_forward = True
-                if self.ownReverse and get_reverse:
+                if self.own_reverse and get_reverse:
                     mol = None
                     for react in rxns[i].products:
                         if mol:
@@ -3934,7 +3939,7 @@ class KineticsFamily(Database):
 
                 continue
             else:
-                if self.ownReverse:
+                if self.own_reverse:
                     logging.error("rxn")
                     logging.error(str(rxns[i]))
                     logging.error("root")
@@ -3970,7 +3975,7 @@ class KineticsFamily(Database):
                             r.thermo = tdb.get_thermo_data(deepcopy(r))
                 rxns[i] = rrev
 
-        if self.ownReverse and get_reverse:
+        if self.own_reverse and get_reverse:
             return rxns + rev_rxns
         else:
             return rxns
@@ -4271,7 +4276,7 @@ class KineticsFamily(Database):
         Returns: the top level backbone node in a unimolecular family.
         """
 
-        backbone_roots = [entry for entry in self.groups.top if entry in self.forwardTemplate.reactants]
+        backbone_roots = [entry for entry in self.groups.top if entry in self.forward_template.reactants]
         return backbone_roots
 
     def get_end_roots(self):
@@ -4279,7 +4284,7 @@ class KineticsFamily(Database):
         Returns: A list of top level end nodes in a unimolecular family
         """
 
-        end_roots = [entry for entry in self.groups.top if entry not in self.forwardTemplate.reactants]
+        end_roots = [entry for entry in self.groups.top if entry not in self.forward_template.reactants]
         return end_roots
 
     def get_top_level_groups(self, root):

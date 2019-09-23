@@ -310,10 +310,10 @@ class Uncertainty(object):
         self.database = RMGDatabase()
         self.database.load(
             settings['database.directory'],
-            kineticsFamilies=kinetics_families,
-            kineticsDepositories=kinetics_depositories,
-            thermoLibraries=thermo_libraries,
-            reactionLibraries=reaction_libraries,
+            kinetics_families=kinetics_families,
+            kinetics_depositories=kinetics_depositories,
+            thermo_libraries=thermo_libraries,
+            reaction_libraries=reaction_libraries,
         )
 
         # Prepare the database by loading training reactions but not averaging the rate rules

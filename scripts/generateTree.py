@@ -69,14 +69,14 @@ def main():
     database = RMGDatabase()
     database.load(
         path=dbdir,
-        thermoLibraries=['Klippenstein_Glarborg2016', 'BurkeH2O2', 'thermo_DFT_CCSDTF12_BAC', 'DFT_QCI_thermo',
+        thermo_libraries=['Klippenstein_Glarborg2016', 'BurkeH2O2', 'thermo_DFT_CCSDTF12_BAC', 'DFT_QCI_thermo',
                          'primaryThermoLibrary', 'primaryNS', 'NitrogenCurran', 'NOx2018', 'FFCM1(-)',
                          'SulfurLibrary', 'SulfurGlarborgH2S'],
-        transportLibraries=[],
-        reactionLibraries=[],
-        seedMechanisms=[],
-        kineticsFamilies=[family_name],
-        kineticsDepositories=['training'],
+        transport_libraries=[],
+        reaction_libraries=[],
+        seed_mechanisms=[],
+        kinetics_families=[family_name],
+        kinetics_depositories=['training'],
         # frequenciesLibraries = self.statmechLibraries,
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )

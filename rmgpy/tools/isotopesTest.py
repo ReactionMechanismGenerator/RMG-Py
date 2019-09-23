@@ -56,7 +56,7 @@ def setUpModule():
     database = RMGDatabase()
     database.load(
         path=os.path.join(settings['test_data.directory'], 'testing_database'),
-        kineticsFamilies=[
+        kinetics_families=[
             'H_Abstraction', 'intra_H_migration'
         ],
         testing=True,

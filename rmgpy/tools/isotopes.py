@@ -437,7 +437,7 @@ def ensure_reaction_direction(isotopomer_rxns):
     # find isotopeless reaction as standard
     reference = isotopomer_rxns[0]
     family = get_db('kinetics').families[reference.family]
-    if family.ownReverse:
+    if family.own_reverse:
         for rxn in isotopomer_rxns:
             if not compare_isotopomers(rxn, reference, either_direction=False):
                 # the reaction is in the oposite direction

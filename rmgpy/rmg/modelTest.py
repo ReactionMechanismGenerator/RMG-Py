@@ -117,14 +117,14 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         # kinetics family loading
         rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
-                                   kineticsFamilies=[test_family],
-                                   reactionLibraries=[]
+                                   kinetics_families=[test_family],
+                                   reaction_libraries=[]
                                    )
         # load empty forbidden structures to avoid any dependence on forbidden structures
         # for these tests
         for family in rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
-        rmg.database.forbiddenStructures = ForbiddenStructures()
+        rmg.database.forbidden_structures = ForbiddenStructures()
 
     def test_add_new_surface_objects(self):
         """
@@ -686,9 +686,9 @@ class TestEnlarge(unittest.TestCase):
         cls.rmg.database = RMGDatabase()
         cls.rmg.database.load(
             path=settings['database.directory'],
-            thermoLibraries=['primaryThermoLibrary'],
-            kineticsFamilies=[test_family],
-            reactionLibraries=[],
+            thermo_libraries=['primaryThermoLibrary'],
+            kinetics_families=[test_family],
+            reaction_libraries=[],
         )
 
         cls.rmg.reaction_model = CoreEdgeReactionModel()

@@ -116,8 +116,8 @@ class KineticsDepository(Database):
     real reactant and product species (as in a kinetics library).
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def __str__(self):
         return 'Kinetics Depository {0}'.format(self.label)
@@ -212,6 +212,10 @@ class KineticsDepository(Database):
                    longDesc='',
                    rank=None,
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
 
         reaction = Reaction(reactants=[], products=[], specific_collider=specificCollider,
                             degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
@@ -222,9 +226,9 @@ class KineticsDepository(Database):
             item=reaction,
             data=kinetics,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
             rank=rank,
         )
         assert index not in self.entries

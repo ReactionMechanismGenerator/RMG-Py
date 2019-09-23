@@ -62,13 +62,13 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # kinetics family Disproportionation loading
         self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
-                                        kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
-                                        reactionLibraries=[])
+                                        kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond'],
+                                        reaction_libraries=[])
 
         # load empty forbidden structures
         for family in self.rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
-        self.rmg.database.forbiddenStructures = ForbiddenStructures()
+        self.rmg.database.forbidden_structures = ForbiddenStructures()
 
     @classmethod
     def tearDownClass(self):

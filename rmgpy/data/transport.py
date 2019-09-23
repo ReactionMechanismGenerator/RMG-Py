@@ -88,8 +88,8 @@ def save_entry(f, entry):
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
 
-    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+    f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -115,8 +115,8 @@ class TransportLibrary(Database):
     A class for working with a RMG transport library.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -128,6 +128,10 @@ class TransportLibrary(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         item = Molecule().from_adjacency_list(molecule)
 
         self.entries[label] = Entry(
@@ -136,9 +140,9 @@ class TransportLibrary(Database):
             item=item,
             data=transport,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry):
@@ -167,8 +171,8 @@ class TransportGroups(Database):
     A class for working with an RMG transport group additivity database.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -180,6 +184,10 @@ class TransportGroups(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
                 group[0:7].upper() == 'NOT OR{' or
@@ -193,9 +201,9 @@ class TransportGroups(Database):
             item=item,
             data=transportGroup,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry):
@@ -619,6 +627,10 @@ class CriticalPointGroupContribution(object):
     """Joback group contribution to estimate critical properties"""
 
     def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, structureIndex=None):
+        """
+        Note that argument names are retained for backward compatibility
+        with loading database files.
+        """
         self.Tc = Tc
         self.Pc = Pc
         self.Vc = Vc

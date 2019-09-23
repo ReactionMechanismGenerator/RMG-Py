@@ -59,7 +59,7 @@ class RMGDatabase(object):
     def __init__(self):
         self.thermo = None
         self.transport = None
-        self.forbiddenStructures = None
+        self.forbidden_structures = None
         self.kinetics = None
         self.statmech = None
         self.solvation = None
@@ -72,13 +72,13 @@ class RMGDatabase(object):
 
     def load(self,
              path,
-             thermoLibraries=None,
-             transportLibraries=None,
-             reactionLibraries=None,
-             seedMechanisms=None,
-             kineticsFamilies=None,
-             kineticsDepositories=None,
-             statmechLibraries=None,
+             thermo_libraries=None,
+             transport_libraries=None,
+             reaction_libraries=None,
+             seed_mechanisms=None,
+             kinetics_families=None,
+             kinetics_depositories=None,
+             statmech_libraries=None,
              depository=True,
              solvation=True,
              testing=False):
@@ -91,37 +91,37 @@ class RMGDatabase(object):
 
         Argument testing will load a lighter version of the database used for unit-tests
         """
-        self.load_thermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
+        self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository)
         if not testing:
-            self.load_transport(os.path.join(path, 'transport'), transportLibraries)
+            self.load_transport(os.path.join(path, 'transport'), transport_libraries)
             self.load_forbidden_structures(os.path.join(path, 'forbiddenStructures.py'))
         self.load_kinetics(os.path.join(path, 'kinetics'),
-                           reactionLibraries,
-                           seedMechanisms,
-                           kineticsFamilies,
-                           kineticsDepositories
+                           reaction_libraries,
+                           seed_mechanisms,
+                           kinetics_families,
+                           kinetics_depositories
                            )
         if not testing:
-            self.load_statmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
+            self.load_statmech(os.path.join(path, 'statmech'), statmech_libraries, depository)
 
         if solvation:
             self.load_solvation(os.path.join(path, 'solvation'))
 
-    def load_thermo(self, path, thermoLibraries=None, depository=True):
+    def load_thermo(self, path, thermo_libraries=None, depository=True):
         """
         Load the RMG thermo database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG thermo database.
         """
         self.thermo = ThermoDatabase()
-        self.thermo.load(path, thermoLibraries, depository)
+        self.thermo.load(path, thermo_libraries, depository)
 
-    def load_transport(self, path, transportLibraries=None):
+    def load_transport(self, path, transport_libraries=None):
         """
         Load the RMG transport database from the given 'path' on disk, where 
         'path' points to the top-level folder of the RMG transport database.
         """
         self.transport = TransportDatabase()
-        self.transport.load(path, transportLibraries)
+        self.transport.load(path, transport_libraries)
 
     def load_forbidden_structures(self, path=None):
         """
@@ -130,16 +130,16 @@ class RMGDatabase(object):
 
         If no path is given, a blank forbidden structures object is created.
         """
-        self.forbiddenStructures = ForbiddenStructures()
+        self.forbidden_structures = ForbiddenStructures()
         if path is not None:
-            self.forbiddenStructures.load(path)
+            self.forbidden_structures.load(path)
 
     def load_kinetics(self,
                       path,
-                      reactionLibraries=None,
-                      seedMechanisms=None,
-                      kineticsFamilies=None,
-                      kineticsDepositories=None
+                      reaction_libraries=None,
+                      seed_mechanisms=None,
+                      kinetics_families=None,
+                      kinetics_depositories=None
                       ):
         """
         Load the RMG kinetics database from the given `path` on disk, where
@@ -147,23 +147,23 @@ class RMGDatabase(object):
         """
         kinetics_libraries = []
         library_order = []
-        if seedMechanisms is None and reactionLibraries is None:
+        if seed_mechanisms is None and reaction_libraries is None:
             kinetics_libraries = None
-        if seedMechanisms is not None:
-            for library in seedMechanisms:
+        if seed_mechanisms is not None:
+            for library in seed_mechanisms:
                 kinetics_libraries.append(library)
                 library_order.append((library, 'Seed'))
-        if reactionLibraries is not None:
-            for library in reactionLibraries:
+        if reaction_libraries is not None:
+            for library in reaction_libraries:
                 kinetics_libraries.append(library)
                 library_order.append((library, 'Reaction Library'))
 
         self.kinetics = KineticsDatabase()
         self.kinetics.library_order = library_order
         self.kinetics.load(path,
-                           families=kineticsFamilies,
+                           families=kinetics_families,
                            libraries=kinetics_libraries,
-                           depositories=kineticsDepositories
+                           depositories=kinetics_depositories
                            )
 
     def load_solvation(self, path):
@@ -174,13 +174,13 @@ class RMGDatabase(object):
         self.solvation = SolvationDatabase()
         self.solvation.load(path)
 
-    def load_statmech(self, path, statmechLibraries=None, depository=True):
+    def load_statmech(self, path, statmech_libraries=None, depository=True):
         """
         Load the RMG statmech database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG statmech database.
         """
         self.statmech = StatmechDatabase()
-        self.statmech.load(path, statmechLibraries, depository)
+        self.statmech.load(path, statmech_libraries, depository)
 
     def load_old(self, path):
         """
@@ -191,8 +191,8 @@ class RMGDatabase(object):
         self.thermo.load_old(path)
         self.transport = TransportDatabase()
         # self.transport.load_old(path)   #  Currently no load_old import function available for transport groups
-        self.forbiddenStructures = ForbiddenStructures()
-        self.forbiddenStructures.load_old(os.path.join(path, 'ForbiddenStructures.txt'))
+        self.forbidden_structures = ForbiddenStructures()
+        self.forbidden_structures.load_old(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics = KineticsDatabase()
         self.kinetics.load_old(path)
         self.statmech = StatmechDatabase()
@@ -207,7 +207,7 @@ class RMGDatabase(object):
         """
         if not os.path.exists(path):
             os.makedirs(path)
-        self.forbiddenStructures.save(os.path.join(path, 'forbiddenStructures.py'))
+        self.forbidden_structures.save(os.path.join(path, 'forbiddenStructures.py'))
         self.thermo.save(os.path.join(path, 'thermo'))
         # self.transport.save(os.path.join(path, 'transport')) #Currently no function for saving transport groups
         self.kinetics.save(os.path.join(path, 'kinetics'))
@@ -223,7 +223,7 @@ class RMGDatabase(object):
             os.makedirs(path)
         self.thermo.save_old(path)
         self.transport.save_old(path)
-        self.forbiddenStructures.save_old(os.path.join(path, 'ForbiddenStructures.txt'))
+        self.forbidden_structures.save_old(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics.save_old(path)
         self.statmech.save_old(path)
 
@@ -252,7 +252,7 @@ def get_db(name=''):
         elif name == 'statmech':
             return database.statmech
         elif name == 'forbidden':
-            return database.forbiddenStructures
+            return database.forbidden_structures
         else:
             raise ValueError('Unrecognized database keyword: {}'.format(name))
 

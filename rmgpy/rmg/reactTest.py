@@ -63,8 +63,8 @@ class TestReact(unittest.TestCase):
         self.rmg.database.load_forbidden_structures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family loading
         self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
-                                        kineticsFamilies=TESTFAMILIES,
-                                        reactionLibraries=[]
+                                        kinetics_families=TESTFAMILIES,
+                                        reaction_libraries=[]
                                         )
 
     def test_react(self):

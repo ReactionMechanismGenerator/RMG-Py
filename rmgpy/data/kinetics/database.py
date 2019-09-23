@@ -542,7 +542,7 @@ and immediately used in input files without any additional changes.
         to_delete = []
         for i, rxn in enumerate(reaction_list):
             family = self.families[rxn.family]
-            if family.ownReverse:
+            if family.own_reverse:
                 successful = family.add_reverse_attribute(rxn)
                 if not successful:
                     to_delete.append(i)

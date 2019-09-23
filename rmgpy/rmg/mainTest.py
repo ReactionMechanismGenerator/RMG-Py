@@ -128,11 +128,11 @@ class TestMain(unittest.TestCase):
         # Load the seed libraries into the database
         self.rmg.database.load(
             path=self.databaseDirectory,
-            thermoLibraries=[],
-            reactionLibraries=['testSeed', 'testSeed_edge'],
-            seedMechanisms=['testSeed', 'testSeed_edge'],
-            kineticsFamilies='default',
-            kineticsDepositories=[],
+            thermo_libraries=[],
+            reaction_libraries=['testSeed', 'testSeed_edge'],
+            seed_mechanisms=['testSeed', 'testSeed_edge'],
+            kinetics_families='default',
+            kinetics_depositories=[],
             depository=False
         )
 

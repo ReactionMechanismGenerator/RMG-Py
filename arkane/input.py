@@ -90,7 +90,7 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     else:
         if not isinstance(kineticsDepositories, list):
             raise InputError(
-                "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
+                "kinetics_depositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
         kinetics_depositories = kineticsDepositories
 
     if kineticsFamilies in ('default', 'all', 'none'):
@@ -106,12 +106,12 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
 
     rmg_database.load(
         path=database_directory,
-        thermoLibraries=thermo_libraries,
-        transportLibraries=transport_libraries,
-        reactionLibraries=reaction_libraries,
-        seedMechanisms=[],
-        kineticsFamilies=kinetics_families,
-        kineticsDepositories=kinetics_depositories,
+        thermo_libraries=thermo_libraries,
+        transport_libraries=transport_libraries,
+        reaction_libraries=reaction_libraries,
+        seed_mechanisms=[],
+        kinetics_families=kinetics_families,
+        kinetics_depositories=kinetics_depositories,
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )
 

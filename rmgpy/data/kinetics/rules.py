@@ -57,8 +57,8 @@ class KineticsRules(Database):
     A class for working with a set of "rate rules" for a RMG kinetics family. 
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def __repr__(self):
         return '<KineticsRules "{0}">'.format(self.label)
@@ -78,6 +78,10 @@ class KineticsRules(Database):
                    nodalDistance=None,
                    treeDistances=None
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
 
         if isinstance(kinetics, Arrhenius):
             kinetics = kinetics.to_arrhenius_ep()
@@ -87,11 +91,11 @@ class KineticsRules(Database):
             # item = reaction,
             data=kinetics,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
             rank=rank,
-            nodalDistance=nodalDistance,
+            nodal_distance=nodalDistance,
         )
         try:
             self.entries[label].append(entry)
@@ -243,7 +247,7 @@ class KineticsRules(Database):
                 item=item,
                 data=kinetics,
                 rank=rank,
-                shortDesc=shortDesc
+                short_desc=shortDesc
             )
             try:
                 self.entries[label].append(entry)
@@ -283,7 +287,7 @@ class KineticsRules(Database):
             comments[index] += line
         f.close()
 
-        # Transfer the comments to the longDesc attribute of the associated entry
+        # Transfer the comments to the long_desc attribute of the associated entry
         entries = self.get_entries()
         unused = []
         for index, longDesc in comments.items():
@@ -295,17 +299,17 @@ class KineticsRules(Database):
             if isinstance(index, int):
                 for entry in entries:
                     if entry.index == index:
-                        entry.longDesc = longDesc
+                        entry.long_desc = longDesc
                         break
                 # else:
                 #    unused.append(str(index))
 
-        # Any unused comments are placed in the longDesc attribute of the depository
-        self.longDesc = comments['General'] + '\n'
+        # Any unused comments are placed in the long_desc attribute of the depository
+        self.long_desc = comments['General'] + '\n'
         unused.remove('General')
         for index in unused:
             try:
-                self.longDesc += comments[index] + '\n'
+                self.long_desc += comments[index] + '\n'
             except KeyError:
                 import pdb
                 pdb.set_trace()
@@ -318,7 +322,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        reaction_order = groups.groups.reactantNum
+        reaction_order = groups.groups.reactant_num
         if reaction_order == 2:
             factor = 1.0e6
         elif reaction_order == 1:
@@ -337,7 +341,7 @@ class KineticsRules(Database):
         fcom.write('-------\n')
         fcom.write('General\n')
         fcom.write('-------\n')
-        fcom.write(self.longDesc.strip() + '\n\n')
+        fcom.write(self.long_desc.strip() + '\n\n')
 
         for entry in entries:
             flib.write('{0:<5d} '.format(entry.index))
@@ -378,12 +382,12 @@ class KineticsRules(Database):
 
             if not entry.rank:
                 entry.rank = 0
-            flib.write(u'    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
+            flib.write(u'    {0:<4d}     {1}\n'.format(entry.rank, entry.short_desc))
 
             fcom.write('------\n')
             fcom.write('{0}\n'.format(entry.index))
             fcom.write('------\n')
-            fcom.write(entry.longDesc.strip() + '\n\n')
+            fcom.write(entry.long_desc.strip() + '\n\n')
 
         flib.close()
         fcom.close()
@@ -477,7 +481,7 @@ class KineticsRules(Database):
                 children_set = [[group] for group in root_template]
                 children_set[i] = parent.children
                 children_list.extend(get_all_combinations(children_set))
-                distance_list.extend([k.nodalDistance for k in parent.children])
+                distance_list.extend([k.nodal_distance for k in parent.children])
 
         if distance_list != []:  # average the minimum distance neighbors
             min_dist = min(distance_list)
@@ -669,7 +673,7 @@ class KineticsRules(Database):
                         continue
                     dist = deepcopy(distance_list0[i])
                     t = template0[:]
-                    dist[index] += t[index].nodalDistance
+                    dist[index] += t[index].nodal_distance
                     t[index] = t[index].parent
 
                     if t not in template_list:

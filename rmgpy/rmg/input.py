@@ -84,7 +84,7 @@ def database(
         rmg.kinetics_depositories = None
     else:
         if not isinstance(kineticsDepositories, list):
-            raise InputError("kineticsDepositories should be either 'default', 'all', or a list of names eg. "
+            raise InputError("kinetics_depositories should be either 'default', 'all', or a list of names eg. "
                              "['training','PrIMe'].")
         rmg.kinetics_depositories = kineticsDepositories
 
@@ -1003,7 +1003,7 @@ def save_input_file(path, rmg):
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermo_libraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reaction_libraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seed_mechanisms))
-    f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kinetics_depositories))
+    f.write('    kinetics_depositories = {0!r},\n'.format(rmg.kinetics_depositories))
     f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kinetics_families))
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')

@@ -109,8 +109,8 @@ def save_entry(f, entry):
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
 
-    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+    f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -266,19 +266,23 @@ class SolventLibrary(Database):
     A class for working with a RMG solvent library.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
-                  index,
-                  label,
-                  solvent,
-                  molecule=None,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  ):
+                   index,
+                   label,
+                   solvent,
+                   molecule=None,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         if molecule is not None:
             if not isinstance(molecule, list):
                 molecule = [molecule]
@@ -296,9 +300,9 @@ class SolventLibrary(Database):
             item=spc_list,
             data=solvent,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def load(self, path):
@@ -331,8 +335,8 @@ class SoluteLibrary(Database):
     A class for working with a RMG solute library. Not currently used.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -344,6 +348,10 @@ class SoluteLibrary(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         try:
             spc = Species().from_smiles(molecule)
         except:
@@ -360,9 +368,9 @@ class SoluteLibrary(Database):
             item=spc,
             data=solute,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def load(self, path):
@@ -399,8 +407,8 @@ class SoluteGroups(Database):
     A class for working with an RMG solute group additivity database.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def load_entry(self,
                    index,
@@ -412,6 +420,10 @@ class SoluteGroups(Database):
                    shortDesc='',
                    longDesc='',
                    ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
                 group[0:7].upper() == 'NOT OR{' or
@@ -425,9 +437,9 @@ class SoluteGroups(Database):
             item=item,
             data=solute,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save_entry(self, f, entry):
