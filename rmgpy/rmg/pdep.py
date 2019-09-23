@@ -733,7 +733,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         maximum_grain_size = job.maximum_grain_size.value_si if job.maximum_grain_size is not None else 0.0
         minimum_grain_count = job.minimum_grain_count
         method = job.method
-        interpolation_model = job.interpolationModel
+        interpolation_model = job.interpolation_model
         active_j_rotor = job.active_j_rotor
         active_k_rotor = job.active_k_rotor
         rmgmode = job.rmgmode
@@ -801,7 +801,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 rxn.kinetics = Arrhenius().fit_to_data(Tlist=rxn.kinetics.Tdata.value_si,
                                                        klist=rxn.kinetics.kdata.value_si, kunits=kunits)
             elif isinstance(rxn.kinetics, MultiArrhenius):
-                logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(rxn=rxn))
+                logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(
+                    rxn=rxn))
                 rxn.kinetics = rxn.kinetics.to_arrhenius(Tmin=Tmin, Tmax=Tmax)
             elif not isinstance(rxn.kinetics, Arrhenius) and rxn.network_kinetics is None:
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics '

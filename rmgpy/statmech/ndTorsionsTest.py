@@ -99,20 +99,18 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         freqpath = os.path.join(RMG_PATH, 'arkane', 'data', 'TolueneFreq.log')
         rotpath = os.path.join(RMG_PATH, 'arkane', 'data', 'TolueneRot1.log')
-        lg = determine_qm_software(freqpath)
+        log = determine_qm_software(freqpath)
 
-        conf, unscaled_freqs = lg.loadConformer(symmetry=1, spinMultiplicity=1,
-                                                opticalIsomers=1,
-                                                label='Toulene')
-        coordinates, number, mass = lg.loadGeometry()
+        conf, unscaled_freqs = log.load_conformer(symmetry=1, spin_multiplicity=1, optical_isomers=1, label='Toulene')
+        coordinates, number, mass = log.load_geometry()
         conf.coordinates = (coordinates, "angstroms")
         conf.number = number
         conf.mass = (mass, "amu")
 
-        F = lg.loadForceConstantMatrix()
+        hessian = log.load_force_constant_matrix()
 
         cls.hdnd = HinderedRotorClassicalND(pivots=[[3, 12]], tops=[[12, 13, 14, 15]], sigmas=[6.0],
-                                            calc_path=rotpath, conformer=conf, F=F, semiclassical=True)
+                                            calc_path=rotpath, conformer=conf, F=hessian, semiclassical=True)
 
     def test_hindered_rotor_nd(self):
         self.hdnd.read_scan()

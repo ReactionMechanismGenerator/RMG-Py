@@ -702,28 +702,28 @@ def pressureDependence(
         interpolation = (interpolation,)
     if interpolation[0].lower() not in ("chebyshev", "pdeparrhenius"):
         raise InputError("Interpolation model must be set to either 'Chebyshev' or 'PDepArrhenius'.")
-    rmg.pressure_dependence.interpolationModel = interpolation
+    rmg.pressure_dependence.interpolation_model = interpolation
 
     # Process temperatures
     Tmin, Tmax, Tunits, Tcount = temperatures
     rmg.pressure_dependence.Tmin = Quantity(Tmin, Tunits)
     rmg.pressure_dependence.Tmax = Quantity(Tmax, Tunits)
     rmg.pressure_dependence.Tcount = Tcount
-    rmg.pressure_dependence.generateTemperatureList()
+    rmg.pressure_dependence.generate_T_list()
 
     # Process pressures
     Pmin, Pmax, Punits, Pcount = pressures
     rmg.pressure_dependence.Pmin = Quantity(Pmin, Punits)
     rmg.pressure_dependence.Pmax = Quantity(Pmax, Punits)
     rmg.pressure_dependence.Pcount = Pcount
-    rmg.pressure_dependence.generatePressureList()
+    rmg.pressure_dependence.generate_P_list()
 
     # Process grain size and count
     rmg.pressure_dependence.maximum_grain_size = Quantity(maximumGrainSize)
     rmg.pressure_dependence.minimum_grain_count = minimumNumberOfGrains
 
     # Process maximum atoms
-    rmg.pressure_dependence.maximumAtoms = maximumAtoms
+    rmg.pressure_dependence.maximum_atoms = maximumAtoms
 
     rmg.pressure_dependence.active_j_rotor = True
     rmg.pressure_dependence.active_k_rotor = True
@@ -1126,8 +1126,8 @@ def save_input_file(path, rmg):
             rmg.pressure_dependence.Pmax.units,
             rmg.pressure_dependence.Pcount,
         ))
-        f.write('    interpolation = {0},\n'.format(rmg.pressure_dependence.interpolationModel))
-        f.write('    maximumAtoms = {0}, \n'.format(rmg.pressure_dependence.maximumAtoms))
+        f.write('    interpolation = {0},\n'.format(rmg.pressure_dependence.interpolation_model))
+        f.write('    maximumAtoms = {0}, \n'.format(rmg.pressure_dependence.maximum_atoms))
         f.write(')\n\n')
 
     # Quantum Mechanics

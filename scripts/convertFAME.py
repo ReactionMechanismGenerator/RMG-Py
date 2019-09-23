@@ -131,9 +131,9 @@ def loadFAMEInput(path, moleculeDict=None):
     # Read interpolation model
     model = readMeaningfulLine(f).split()
     if model[0].lower() == 'chebyshev':
-        job.interpolationModel = ('chebyshev', int(model[1]), int(model[2]))
+        job.interpolation_model = ('chebyshev', int(model[1]), int(model[2]))
     elif model[0].lower() == 'pdeparrhenius':
-        job.interpolationModel = ('pdeparrhenius',)
+        job.interpolation_model = ('pdeparrhenius',)
 
     # Read grain size or number of grains
     job.minimum_grain_count = 0

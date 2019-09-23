@@ -175,8 +175,8 @@ D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Compu
             fpath = os.path.join(self.calc_path, f)
             lg = determine_qm_software(fpath)
 
-            Es.append(lg.loadEnergy())
-            xyz, atnums, _ = lg.loadGeometry()
+            Es.append(lg.load_energy())
+            xyz, atnums, _ = lg.load_geometry()
             xyzs.append(xyz)
 
         self.xyzs = xyzs
@@ -451,7 +451,7 @@ class HinderedRotorClassicalND(Mode):
         self.tops = tops
         self.sigmas = np.array(sigmas)
         self.conformer = conformer
-        self.F = F
+        self.hessian = F
         self.semiclassical = semiclassical
         self.is_linear = is_linear
         self.is_ts = is_ts
@@ -486,12 +486,12 @@ class HinderedRotorClassicalND(Mode):
 
                 fpath = os.path.join(self.calc_path, f)
                 lg = determine_qm_software(fpath)
-                E = lg.loadEnergy()
-                xyz, atnum, _ = lg.loadGeometry()
+                E = lg.load_energy()
+                xyz, atnum, _ = lg.load_geometry()
 
                 for phival in phivals:
                     phis.append(np.array(phival))
-                    Es.append(lg.loadEnergy())
+                    Es.append(lg.load_energy())
                     xyzs.append(xyz)
                     if not self.atnums:
                         atnums.append(atnum)
@@ -548,7 +548,7 @@ class HinderedRotorClassicalND(Mode):
         elif os.path.isfile(self.calc_path):  # reading a 1-D scan file, assume internal reduced moment of inertia is constant
             N = len(self.pivots)
             lg = determine_qm_software(self.calc_path)
-            self.Es, self.phis = lg.loadScanEnergies()
+            self.Es, self.phis = lg.load_scan_energies()
             self.atnums = self.conformer.number
             rootD = self.conformer.get_internal_reduced_moment_of_inertia(self.pivots[0], self.tops[0]) ** 0.5
             self.rootDs = [rootD for i in range(len(self.Es))]
