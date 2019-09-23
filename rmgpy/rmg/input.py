@@ -933,7 +933,7 @@ def readInputFile(path, rmg0):
 
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
-        reactionSystem.convertInitialKeysToSpeciesObjects(speciesDict)
+        reactionSystem.convert_initial_keys_to_species_objects(speciesDict)
 
     if rmg.quantumMechanics:
         rmg.quantumMechanics.set_default_output_directory(rmg.outputDirectory)

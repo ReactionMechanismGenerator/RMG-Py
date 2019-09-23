@@ -87,17 +87,17 @@ class SurfaceReactorCheck(unittest.TestCase):
         edge_reactions = []
 
         T = 1000
-        initialP = 1.0e5
+        P_initial = 1.0e5
         rxn_system = SurfaceReactor(
-            T, initialP,
-            nSims=1,
-            initialGasMoleFractions={h2: 1.0},
-            initialSurfaceCoverages={x: 1.0},
-            surfaceVolumeRatio=(1e1, 'm^-1'),
-            surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+            T, P_initial,
+            n_sims=1,
+            initial_gas_mole_fractions={h2: 1.0},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1e1, 'm^-1'),
+            surface_site_density=(2.72e-9, 'mol/cm^2'),
             termination=[])
 
-        rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -112,15 +112,15 @@ class SurfaceReactorCheck(unittest.TestCase):
             # You must make a copy of y because it is overwritten by DASSL at
             # each call to advance()
             y.append(rxn_system.y.copy())
-            reaction_rates.append(rxn_system.coreReactionRates.copy())
-            species_rates.append(rxn_system.coreSpeciesRates.copy())
+            reaction_rates.append(rxn_system.core_reaction_rates.copy())
+            species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.initialP.value_si
+        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
@@ -217,25 +217,25 @@ class SurfaceReactorCheck(unittest.TestCase):
         edge_reactions = []
 
         T = 800.
-        initialP = 1.0e5
+        P_initial = 1.0e5
         rxn_system = SurfaceReactor(
-            T, initialP,
-            nSims=1,
-            initialGasMoleFractions={ch3: 1.0},
-            initialSurfaceCoverages={x: 1.0},
-            surfaceVolumeRatio=(1., 'm^-1'),
-            surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+            T, P_initial,
+            n_sims=1,
+            initial_gas_mole_fractions={ch3: 1.0},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1., 'm^-1'),
+            surface_site_density=(2.72e-9, 'mol/cm^2'),
             termination=[])
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
-        rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
-        print("Surface site density:", rxn_system.surfaceSiteDensity.value_si)
+        print("Surface site density:", rxn_system.surface_site_density.value_si)
 
         print("rxn1 rate coefficient",
-              rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surfaceSiteDensity.value_si))
+              rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surface_site_density.value_si))
 
         # Integrate to get the solution at each time point
         t = []
@@ -246,8 +246,8 @@ class SurfaceReactorCheck(unittest.TestCase):
         # You must make a copy of y because it is overwritten by DASSL at
         # each call to advance()
         y.append(rxn_system.y.copy())
-        reaction_rates.append(rxn_system.coreReactionRates.copy())
-        species_rates.append(rxn_system.coreSpeciesRates.copy())
+        reaction_rates.append(rxn_system.core_reaction_rates.copy())
+        species_rates.append(rxn_system.core_species_rates.copy())
         print("time: ", t)
         print("moles:", y)
         print("reaction rates:", reaction_rates)
@@ -258,15 +258,15 @@ class SurfaceReactorCheck(unittest.TestCase):
             # You must make a copy of y because it is overwritten by DASSL at
             # each call to advance()
             y.append(rxn_system.y.copy())
-            reaction_rates.append(rxn_system.coreReactionRates.copy())
-            species_rates.append(rxn_system.coreSpeciesRates.copy())
+            reaction_rates.append(rxn_system.core_reaction_rates.copy())
+            species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.initialP.value_si
+        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):

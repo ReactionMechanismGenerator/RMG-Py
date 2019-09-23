@@ -64,7 +64,7 @@ cdef class ReactionSystem(DASx):
     A base class for all RMG reaction systems.
     """
 
-    def __init__(self, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3):
+    def __init__(self, termination=None, sensitive_species=None, sensitivity_threshold=1e-3):
         DASx.__init__(self)
 
         # reactor state variables:
@@ -73,11 +73,11 @@ cdef class ReactionSystem(DASx):
         self.dydt0 = None
 
         #  variables that determine the dimensions of arrays and matrices:
-        self.numCoreSpecies = -1
-        self.numCoreReactions = -1
-        self.numEdgeSpecies = -1
-        self.numEdgeReactions = -1
-        self.numPdepNetworks = -1
+        self.num_core_species = -1
+        self.num_core_reactions = -1
+        self.num_edge_species = -1
+        self.num_edge_reactions = -1
+        self.num_pdep_networks = -1
 
         """
         The number of differential equations that will 
@@ -88,18 +88,18 @@ cdef class ReactionSystem(DASx):
 
         # variables that store stoichiometry data
         """
-        speciesIndex is a dictionary with species as keys, and 
+        species_index is a dictionary with species as keys, and 
         values equal to the index integer that is generated
         when enumerating the core and edge species .
         """
-        self.speciesIndex = {}
+        self.species_index = {}
 
         """
-        reactionIndex is a dictionary with reactions as keys, and 
+        reaction_index is a dictionary with reactions as keys, and 
         values equal to the index integer that is generated
         when enumerating the core and edge reactions .
         """
-        self.reactionIndex = {}
+        self.reaction_index = {}
 
         """
         A matrix for the reactants and products.
@@ -112,52 +112,52 @@ cdef class ReactionSystem(DASx):
         The matrix element (j,l), with
         - j the index of the reaction and 
         - l the index of the lth reactant/product in the reaction contains the index
-            of the molecule in the speciesIndex dictionary.
+            of the molecule in the species_index dictionary.
         """
-        self.reactantIndices = None
-        self.productIndices = None
+        self.reactant_indices = None
+        self.product_indices = None
 
-        self.networkIndices = None
+        self.network_indices = None
 
         # matrices that cache kinetic and rate data
         self.kf = None  # forward rate coefficients
         self.kb = None  # reverse rate coefficients
         self.Keq = None  # equilibrium constants
-        self.networkLeakCoefficients = None
-        self.jacobianMatrix = None
+        self.network_leak_coefficients = None
+        self.jacobian_matrix = None
 
-        self.coreSpeciesConcentrations = None
+        self.core_species_concentrations = None
 
         # The reaction and species rates at the current time (in mol/m^3*s)
-        self.coreSpeciesRates = None
-        self.coreReactionRates = None
-        self.coreSpeciesProductionRates = None
-        self.coreSpeciesConsumptionRates = None
-        self.edgeSpeciesRates = None
-        self.edgeReactionRates = None
+        self.core_species_rates = None
+        self.core_reaction_rates = None
+        self.core_species_production_rates = None
+        self.core_species_consumption_rates = None
+        self.edge_species_rates = None
+        self.edge_reaction_rates = None
 
-        self.networkLeakRates = None
+        self.network_leak_rates = None
 
         #surface indices
-        self.surfaceSpeciesIndices = None
-        self.surfaceReactionIndices = None
-        self.validLayeringIndices = None
+        self.surface_species_indices = None
+        self.surface_reaction_indices = None
+        self.valid_layering_indices = None
 
         # variables that cache maximum rate (ratio) data
-        self.maxEdgeSpeciesRateRatios = None
-        self.maxNetworkLeakRateRatios = None
+        self.max_edge_species_rate_ratios = None
+        self.max_network_leak_rate_ratios = None
 
         #for managing prunable edge species
-        self.prunableSpecies = []
-        self.prunableNetworks = []
-        self.prunableSpeciesIndices = None
-        self.prunableNetworkIndices = None
+        self.prunable_species = []
+        self.prunable_networks = []
+        self.prunable_species_indices = None
+        self.prunable_network_indices = None
 
         # sensitivity variables
         self.sensmethod = 2  # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
-        self.sensitivityCoefficients = None
-        self.sensitiveSpecies = sensitiveSpecies
-        self.sensitivityThreshold = sensitivityThreshold
+        self.sensitivity_coefficients = None
+        self.sensitive_species = sensitive_species
+        self.sensitivity_threshold = sensitivity_threshold
         self.senpar = None
 
         # tolerance settings
@@ -175,13 +175,13 @@ cdef class ReactionSystem(DASx):
         # Flag to indicate whether or not reactions with 3 reactants are present 
         self.trimolecular = False
 
-        # reaction filtration, unimolecularThreshold is a vector with length of number of core species
-        # bimolecularThreshold is a square matrix with length of number of core species
-        # trimolecularThreshold is a rank-3 tensor with length of number of core species
+        # reaction filtration, unimolecular_threshold is a vector with length of number of core species
+        # bimolecular_threshold is a square matrix with length of number of core species
+        # trimolecular_threshold is a rank-3 tensor with length of number of core species
         # A value of 1 in the matrix indicates the species is above the threshold to react or participate in those reactions
-        self.unimolecularThreshold = None
-        self.bimolecularThreshold = None
-        self.trimolecularThreshold = None
+        self.unimolecular_threshold = None
+        self.bimolecular_threshold = None
+        self.trimolecular_threshold = None
 
     def __reduce__(self):
         """
@@ -189,20 +189,20 @@ cdef class ReactionSystem(DASx):
         """
         return (self.__class__, (self.termination,))
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-                          list surfaceSpecies=None, list surfaceReactions=None, list pdepNetworks=None,
-                          atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                          filterReactions=False, dict conditions=None):
+    cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
+                           list surface_species=None, list surface_reactions=None, list pdep_networks=None,
+                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
+                           filter_reactions=False, dict conditions=None):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
         method in the derived class; don't forget to also call the base class
         version, too.
         """
-        if surfaceSpecies is None:
-            surfaceSpecies = []
-        if surfaceReactions is None:
-            surfaceReactions = []
+        if surface_species is None:
+            surface_species = []
+        if surface_reactions is None:
+            surface_reactions = []
 
         if conditions:
             is_conc = hasattr(self, 'initialConcentrations')
@@ -226,81 +226,81 @@ cdef class ReactionSystem(DASx):
                     if k in self.initialMoleFractions.keys():
                         self.initialMoleFractions[k] = conditions[k]
 
-        self.numCoreSpecies = len(coreSpecies)
-        self.numCoreReactions = len(coreReactions)
-        self.numEdgeSpecies = len(edgeSpecies)
-        self.numEdgeReactions = len(edgeReactions)
+        self.num_core_species = len(core_species)
+        self.num_core_reactions = len(core_reactions)
+        self.num_edge_species = len(edge_species)
+        self.num_edge_reactions = len(edge_reactions)
 
         self.initiate_tolerances(atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        pdepNetworks = pdepNetworks or []
-        self.numPdepNetworks = len(pdepNetworks)
+        pdep_networks = pdep_networks or []
+        self.num_pdep_networks = len(pdep_networks)
 
-        self.kf = np.zeros((self.numCoreReactions + self.numEdgeReactions), np.float64)
+        self.kf = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.float64)
         self.kb = np.zeros_like(self.kf)
         self.Keq = np.zeros_like(self.kf)
 
-        self.generate_species_indices(coreSpecies, edgeSpecies)
-        self.generate_reaction_indices(coreReactions, edgeReactions)
-        self.generate_reactant_product_indices(coreReactions, edgeReactions)
+        self.generate_species_indices(core_species, edge_species)
+        self.generate_reaction_indices(core_reactions, edge_reactions)
+        self.generate_reactant_product_indices(core_reactions, edge_reactions)
 
-        self.coreSpeciesConcentrations = np.zeros((self.numCoreSpecies), np.float64)
-        self.coreSpeciesProductionRates = np.zeros((self.numCoreSpecies), np.float64)
-        self.coreSpeciesConsumptionRates = np.zeros((self.numCoreSpecies), np.float64)
-        self.coreReactionRates = np.zeros((self.numCoreReactions), np.float64)
-        self.edgeReactionRates = np.zeros((self.numEdgeReactions), np.float64)
-        self.coreSpeciesRates = np.zeros((self.numCoreSpecies), np.float64)
-        self.edgeSpeciesRates = np.zeros((self.numEdgeSpecies), np.float64)
-        self.networkLeakRates = np.zeros((self.numPdepNetworks), np.float64)
-        self.maxNetworkLeakRateRatios = np.zeros((len(self.prunableNetworks)), np.float64)
-        self.sensitivityCoefficients = np.zeros((self.numCoreSpecies, self.numCoreReactions), np.float64)
-        self.unimolecularThreshold = np.zeros((self.numCoreSpecies), bool)
-        self.bimolecularThreshold = np.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
+        self.core_species_concentrations = np.zeros((self.num_core_species), np.float64)
+        self.core_species_production_rates = np.zeros((self.num_core_species), np.float64)
+        self.core_species_consumption_rates = np.zeros((self.num_core_species), np.float64)
+        self.core_reaction_rates = np.zeros((self.num_core_reactions), np.float64)
+        self.edge_reaction_rates = np.zeros((self.num_edge_reactions), np.float64)
+        self.core_species_rates = np.zeros((self.num_core_species), np.float64)
+        self.edge_species_rates = np.zeros((self.num_edge_species), np.float64)
+        self.network_leak_rates = np.zeros((self.num_pdep_networks), np.float64)
+        self.max_network_leak_rate_ratios = np.zeros((len(self.prunable_networks)), np.float64)
+        self.sensitivity_coefficients = np.zeros((self.num_core_species, self.num_core_reactions), np.float64)
+        self.unimolecular_threshold = np.zeros((self.num_core_species), bool)
+        self.bimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species), bool)
         if self.trimolecular:
-            self.trimolecularThreshold = np.zeros((self.numCoreSpecies, self.numCoreSpecies, self.numCoreSpecies),
+            self.trimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species, self.num_core_species),
                                                      bool)
 
-        surfaceSpecies, surfaceReactions = self.initialize_surface(coreSpecies, coreReactions, surfaceSpecies,
-                                                                   surfaceReactions)
+        surface_species, surface_reactions = self.initialize_surface(core_species, core_reactions, surface_species,
+                                                                   surface_reactions)
 
-        self.set_prunable_indices(edgeSpecies, pdepNetworks)
+        self.set_prunable_indices(edge_species, pdep_networks)
 
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
 
     def reset_max_edge_species_rate_ratios(self):
         """
-        This function sets maxEdgeSpeciesRateRatios back to zero
+        This function sets max_edge_species_rate_ratios back to zero
         for pruning of ranged reactors it is important to avoid doing this
         every initialization
         """
-        self.maxEdgeSpeciesRateRatios = np.zeros((len(self.prunableSpecies)), np.float64)
+        self.max_edge_species_rate_ratios = np.zeros((len(self.prunable_species)), np.float64)
 
-    def set_prunable_indices(self, edgeSpecies, pdepNetworks):
+    def set_prunable_indices(self, edge_species, pdep_networks):
         cdef object spc
         cdef list temp
         temp = []
-        for i, spc in enumerate(self.prunableSpecies):
+        for i, spc in enumerate(self.prunable_species):
             try:
-                temp.append(edgeSpecies.index(spc))
+                temp.append(edge_species.index(spc))
             except ValueError:
-                self.maxEdgeSpeciesRateRatios[i] = np.inf  #avoid pruning of species that have been moved to core
+                self.max_edge_species_rate_ratios[i] = np.inf  #avoid pruning of species that have been moved to core
 
-        self.prunableSpeciesIndices = np.array(temp)
+        self.prunable_species_indices = np.array(temp)
 
         temp = []
-        for i, spc in enumerate(self.prunableNetworks):
+        for i, spc in enumerate(self.prunable_networks):
             try:
-                temp.append(pdepNetworks.index(spc))
+                temp.append(pdep_networks.index(spc))
             except:
-                self.maxNetworkLeakRateRatios[i] = np.inf  #avoid pruning of lost networks
+                self.max_network_leak_rate_ratios[i] = np.inf  #avoid pruning of lost networks
 
-        self.prunableNetworkIndices = np.array(temp)
+        self.prunable_network_indices = np.array(temp)
 
     @cython.boundscheck(False)
-    cpdef initialize_surface(self, list coreSpecies, list coreReactions, list surfaceSpecies, list surfaceReactions):
+    cpdef initialize_surface(self, list core_species, list core_reactions, list surface_species, list surface_reactions):
         """
-        removes surfaceSpecies and surfaceReactions from  until they are self consistent: 
+        removes surface_species and surface_reactions from  until they are self consistent: 
             1) every reaction has one species in the surface
             2) every species participates in a surface reaction
         """
@@ -313,19 +313,19 @@ cdef class ReactionSystem(DASx):
 
         logging.debug('Initializing surface...')
 
-        product_indices = self.productIndices
-        reactant_indices = self.reactantIndices
+        product_indices = self.product_indices
+        reactant_indices = self.reactant_indices
 
         surface_species_indices = []
         surface_reaction_indices = []
         possible_species_indices = set()
         remove_inds = []
 
-        for obj in surfaceSpecies:
-            surface_species_indices.append(coreSpecies.index(obj))
+        for obj in surface_species:
+            surface_species_indices.append(core_species.index(obj))
 
-        for obj in surfaceReactions:
-            surface_reaction_indices.append(coreReactions.index(obj))
+        for obj in surface_reactions:
+            surface_reaction_indices.append(core_reactions.index(obj))
 
         for i in surface_reaction_indices:  #remove surface reactions whose species have been moved to the bulk core
             not_in_surface = True
@@ -338,32 +338,32 @@ cdef class ReactionSystem(DASx):
                 if j in surface_species_indices:
                     not_in_surface = False
             if not_in_surface:
-                logging.info('removing disconnected reaction from surface: {0}'.format(str(coreReactions[i])))
-                surfaceReactions.remove(coreReactions[i])
+                logging.info('removing disconnected reaction from surface: {0}'.format(str(core_reactions[i])))
+                surface_reactions.remove(core_reactions[i])
                 surface_reaction_indices.remove(i)
 
         possible_species_indices -= {-1}  #remove the -1 indexes that indicate there is no third/second reactant/product
 
         for i in surface_species_indices:  #remove species without reactions in the surface
             if not (i in possible_species_indices):
-                logging.info('removing disconnected species from surface: {0}'.format(coreSpecies[i].label))
+                logging.info('removing disconnected species from surface: {0}'.format(core_species[i].label))
                 remove_inds.append(i)
 
         for i in remove_inds:
-            surfaceSpecies.remove(coreSpecies[i])
+            surface_species.remove(core_species[i])
             surface_species_indices.remove(i)
 
-        self.surfaceSpeciesIndices = np.array(surface_species_indices, dtype=np.int)
-        self.surfaceReactionIndices = np.array(surface_reaction_indices, dtype=np.int)
+        self.surface_species_indices = np.array(surface_species_indices, dtype=np.int)
+        self.surface_reaction_indices = np.array(surface_reaction_indices, dtype=np.int)
 
-        self.validLayeringIndices = self.getLayeringIndices()
+        self.valid_layering_indices = self.get_layering_indices()
 
-        surfaceSpecies = [coreSpecies[i] for i in surface_species_indices]
-        surfaceReactions = [coreReactions[i] for i in surface_reaction_indices]
+        surface_species = [core_species[i] for i in surface_species_indices]
+        surface_reactions = [core_reactions[i] for i in surface_reaction_indices]
 
         logging.debug('Surface initialization complete')
 
-        return surfaceSpecies, surfaceReactions
+        return surface_species, surface_reactions
 
     def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
@@ -374,65 +374,65 @@ cdef class ReactionSystem(DASx):
             # Set DASPK sensitivity analysis to ON
             self.sensitivity = True
             # Compute number of variables
-            self.neq = self.numCoreSpecies * (self.numCoreReactions + self.numCoreSpecies + 1)
+            self.neq = self.num_core_species * (self.num_core_reactions + self.num_core_species + 1)
 
             self.atol_array = np.ones(self.neq, np.float64) * sens_atol
-            self.atol_array[:self.numCoreSpecies] = atol
+            self.atol_array[:self.num_core_species] = atol
 
             self.rtol_array = np.ones(self.neq, np.float64) * sens_rtol
-            self.rtol_array[:self.numCoreSpecies] = rtol
+            self.rtol_array[:self.num_core_species] = rtol
 
-            self.senpar = np.zeros(self.numCoreReactions + self.numCoreSpecies, np.float64)
+            self.senpar = np.zeros(self.num_core_reactions + self.num_core_species, np.float64)
 
         else:
-            self.neq = self.numCoreSpecies
+            self.neq = self.num_core_species
 
             self.atol_array = np.ones(self.neq, np.float64) * atol
             self.rtol_array = np.ones(self.neq, np.float64) * rtol
 
-            self.senpar = np.zeros(self.numCoreReactions, np.float64)
+            self.senpar = np.zeros(self.num_core_reactions, np.float64)
 
     def get_species_index(self, spc):
         """
         Retrieves the index that is associated with the parameter species
         from the species index dictionary.
         """
-        return self.speciesIndex[spc]
+        return self.species_index[spc]
 
-    def generate_reactant_product_indices(self, coreReactions, edgeReactions):
+    def generate_reactant_product_indices(self, core_reactions, edge_reactions):
         """
         Creates a matrix for the reactants and products.
         """
 
-        self.reactantIndices = -np.ones((self.numCoreReactions + self.numEdgeReactions, 3), np.int)
-        self.productIndices = -np.ones_like(self.reactantIndices)
+        self.reactant_indices = -np.ones((self.num_core_reactions + self.num_edge_reactions, 3), np.int)
+        self.product_indices = -np.ones_like(self.reactant_indices)
 
-        for rxn in itertools.chain(coreReactions, edgeReactions):
-            j = self.reactionIndex[rxn]
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            j = self.reaction_index[rxn]
             for l, spec in enumerate(rxn.reactants):
                 i = self.get_species_index(spec)
-                self.reactantIndices[j, l] = i
+                self.reactant_indices[j, l] = i
             for l, spec in enumerate(rxn.products):
                 i = self.get_species_index(spec)
-                self.productIndices[j, l] = i
+                self.product_indices[j, l] = i
 
-    def generate_species_indices(self, coreSpecies, edgeSpecies):
+    def generate_species_indices(self, core_species, edge_species):
         """
         Assign an index to each species (core first, then edge) and 
         store the (species, index) pair in a dictionary.
         """
 
-        for index, spec in enumerate(itertools.chain(coreSpecies, edgeSpecies)):
-            self.speciesIndex[spec] = index
+        for index, spec in enumerate(itertools.chain(core_species, edge_species)):
+            self.species_index[spec] = index
 
-    def generate_reaction_indices(self, coreReactions, edgeReactions):
+    def generate_reaction_indices(self, core_reactions, edge_reactions):
         """
         Assign an index to each reaction (core first, then edge) and 
         store the (reaction, index) pair in a dictionary.
         """
 
-        for index, rxn in enumerate(itertools.chain(coreReactions, edgeReactions)):
-            self.reactionIndex[rxn] = index
+        for index, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
+            self.reaction_index[rxn] = index
 
     def set_initial_conditions(self):
         """
@@ -450,22 +450,22 @@ cdef class ReactionSystem(DASx):
     def set_initial_reaction_thresholds(self):
 
         # Set unimolecular and bimolecular thresholds as true for any concentrations greater than 0
-        num_core_species = len(self.coreSpeciesConcentrations)
+        num_core_species = len(self.core_species_concentrations)
         for i in range(num_core_species):
-            if self.coreSpeciesConcentrations[i] > 0:
-                self.unimolecularThreshold[i] = True
+            if self.core_species_concentrations[i] > 0:
+                self.unimolecular_threshold[i] = True
         for i in range(num_core_species):
             for j in range(i, num_core_species):
-                if self.coreSpeciesConcentrations[i] > 0 and self.coreSpeciesConcentrations[j] > 0:
-                    self.bimolecularThreshold[i, j] = True
+                if self.core_species_concentrations[i] > 0 and self.core_species_concentrations[j] > 0:
+                    self.bimolecular_threshold[i, j] = True
         if self.trimolecular:
             for i in range(num_core_species):
                 for j in range(i, num_core_species):
                     for k in range(j, num_core_species):
-                        if (self.coreSpeciesConcentrations[i] > 0
-                                and self.coreSpeciesConcentrations[j] > 0
-                                and self.coreSpeciesConcentrations[k] > 0):
-                            self.trimolecularThreshold[i, j, k] = True
+                        if (self.core_species_concentrations[i] > 0
+                                and self.core_species_concentrations[j] > 0
+                                and self.core_species_concentrations[k] > 0):
+                            self.trimolecular_threshold[i, j, k] = True
 
     def set_initial_derivative(self):
         """
@@ -474,7 +474,7 @@ cdef class ReactionSystem(DASx):
         """
         self.dydt0 = - self.residual(self.t0, self.y0, np.zeros(self.neq, np.float64), self.senpar)[0]
 
-    def compute_network_variables(self, pdepNetworks=None):
+    def compute_network_variables(self, pdep_networks=None):
         """
         Initialize the arrays containing network information:
 
@@ -486,25 +486,25 @@ cdef class ReactionSystem(DASx):
             product side of a reaction. 
         """
 
-        pdepNetworks = pdepNetworks or []
+        pdep_networks = pdep_networks or []
 
-        self.networkIndices = -np.ones((self.numPdepNetworks, 3), np.int)
-        self.networkLeakCoefficients = np.zeros((self.numPdepNetworks), np.float64)
+        self.network_indices = -np.ones((self.num_pdep_networks, 3), np.int)
+        self.network_leak_coefficients = np.zeros((self.num_pdep_networks), np.float64)
 
-        for j, network in enumerate(pdepNetworks):
-            self.networkLeakCoefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
+        for j, network in enumerate(pdep_networks):
+            self.network_leak_coefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
             for l, spec in enumerate(network.source):
                 try:
                     i = self.get_species_index(spec)
                 except KeyError:
-                    # spec is probably in the edge, hence is not a key in the speciesIndex dictionary.
-                    # Sicne networkIndices is only used to identify the number of reactants, set the
+                    # spec is probably in the edge, hence is not a key in the species_index dictionary.
+                    # Sicne network_indices is only used to identify the number of reactants, set the
                     # corresponding value to be different than `-1`.
                     i = -2
-                self.networkIndices[j, l] = i
+                self.network_indices[j, l] = i
 
     @cython.boundscheck(False)
-    cpdef getLayeringIndices(self):
+    cpdef get_layering_indices(self):
         """
         determines the edge reaction indices that indicate reactions that are valid for movement from
         edge to surface based on the layering constraint
@@ -514,12 +514,12 @@ cdef class ReactionSystem(DASx):
         cdef int i, j, k, index, num_core_species, num_core_reactions, num_edge_reactions
         cdef list valid_indices
 
-        surf_species_indices = self.surfaceSpeciesIndices
-        num_core_species = self.numCoreSpecies
-        num_core_reactions = self.numCoreReactions
-        num_edge_reactions = self.numEdgeReactions
-        product_indices = self.productIndices
-        reactant_indices = self.reactantIndices
+        surf_species_indices = self.surface_species_indices
+        num_core_species = self.num_core_species
+        num_core_reactions = self.num_core_reactions
+        num_edge_reactions = self.num_edge_reactions
+        product_indices = self.product_indices
+        reactant_indices = self.reactant_indices
 
         valid_indices = []
 
@@ -538,8 +538,8 @@ cdef class ReactionSystem(DASx):
 
         return np.array(valid_indices)
 
-    cpdef addReactionsToSurface(self, list newSurfaceReactions, list newSurfaceReactionInds, list surfaceSpecies,
-                                list surfaceReactions, list edgeSpecies):
+    cpdef add_reactions_to_surface(self, list new_surface_reactions, list new_surface_reaction_inds, list surface_species,
+                                   list surface_reactions, list edge_species):
         """
         moves new surface reactions to the surface
         done after the while loop before the simulate call ends
@@ -548,30 +548,30 @@ cdef class ReactionSystem(DASx):
         cdef int k, sind, num_core_species, i, num_core_reactions
         cdef np.ndarray[np.int_t, ndim=2] product_indices, reactant_indices
 
-        product_indices = self.productIndices
-        reactant_indices = self.reactantIndices
-        num_core_species = self.numCoreSpecies
-        num_core_reactions = self.numCoreReactions
+        product_indices = self.product_indices
+        reactant_indices = self.reactant_indices
+        num_core_species = self.num_core_species
+        num_core_reactions = self.num_core_reactions
 
-        for k in range(len(newSurfaceReactions)):
-            srxn = newSurfaceReactions[k]
-            sind = newSurfaceReactionInds[k]
-            surfaceReactions.append(srxn)  #add to surface trackers
+        for k in range(len(new_surface_reactions)):
+            srxn = new_surface_reactions[k]
+            sind = new_surface_reaction_inds[k]
+            surface_reactions.append(srxn)  #add to surface trackers
 
             for i in product_indices[sind + num_core_reactions]:
                 if i >= num_core_species:
-                    surfaceSpecies.append(edgeSpecies[i - num_core_species])
+                    surface_species.append(edge_species[i - num_core_species])
             for i in reactant_indices[sind + num_core_reactions]:
                 if i >= num_core_species:
-                    surfaceSpecies.append(edgeSpecies[i - num_core_species])
+                    surface_species.append(edge_species[i - num_core_species])
 
-        return surfaceSpecies, surfaceReactions
+        return surface_species, surface_reactions
 
     @cython.boundscheck(False)
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies,
-                   list edgeReactions, list surfaceSpecies, list surfaceReactions,
-                   list pdepNetworks=None, bool prune=False, bool sensitivity=False, list sensWorksheet=None,
-                   object modelSettings=None, object simulatorSettings=None, dict conditions=None):
+    cpdef simulate(self, list core_species, list core_reactions, list edge_species,
+                   list edge_reactions, list surface_species, list surface_reactions,
+                   list pdep_networks=None, bool prune=False, bool sensitivity=False, list sens_worksheet=None,
+                   object model_settings=None, object simulator_settings=None, dict conditions=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -618,63 +618,65 @@ cdef class ReactionSystem(DASx):
 
         zero_production = False
         zero_consumption = False
-        pdepNetworks = pdepNetworks or []
+        pdep_networks = pdep_networks or []
 
         schanged = False
 
-        num_core_species = len(coreSpecies)
-        num_edge_species = len(edgeSpecies)
-        num_pdep_networks = len(pdepNetworks)
-        num_core_reactions = len(coreReactions)
+        num_core_species = len(core_species)
+        num_edge_species = len(edge_species)
+        num_pdep_networks = len(pdep_networks)
+        num_core_reactions = len(core_reactions)
 
-        assert set(coreReactions) >= set(surfaceReactions), 'given surface reactions are not a subset of core reactions'
-        assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species'
+        assert set(core_reactions) >= set(surface_reactions), 'given surface reactions are not a subset of core reactions'
+        assert set(core_species) >= set(surface_species), 'given surface species are not a subset of core species'
 
-        tol_keep_in_edge = modelSettings.fluxToleranceKeepInEdge if prune else 0
-        tol_move_to_core = modelSettings.fluxToleranceMoveToCore
-        tol_move_edge_reaction_to_core = modelSettings.toleranceMoveEdgeReactionToCore
-        tol_interrupt_simulation = modelSettings.fluxToleranceInterrupt
-        tol_move_edge_reaction_to_core_interrupt = modelSettings.toleranceMoveEdgeReactionToCore
-        tol_move_edge_reaction_to_surface = modelSettings.toleranceMoveEdgeReactionToSurface
-        tol_move_surface_species_to_core = modelSettings.toleranceMoveSurfaceSpeciesToCore
-        tol_move_surface_reaction_to_core = modelSettings.toleranceMoveSurfaceReactionToCore
-        tol_move_edge_reaction_to_surface_interrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
-        ignore_overall_flux_criterion = modelSettings.ignoreOverallFluxCriterion
-        atol = simulatorSettings.atol
-        rtol = simulatorSettings.rtol
-        sens_atol = simulatorSettings.sens_atol
-        sens_rtol = simulatorSettings.sens_rtol
-        filter_reactions = modelSettings.filterReactions
-        max_num_objs_per_iter = modelSettings.maxNumObjsPerIter
+        tol_keep_in_edge = model_settings.fluxToleranceKeepInEdge if prune else 0
+        tol_move_to_core = model_settings.fluxToleranceMoveToCore
+        tol_move_edge_reaction_to_core = model_settings.toleranceMoveEdgeReactionToCore
+        tol_interrupt_simulation = model_settings.fluxToleranceInterrupt
+        tol_move_edge_reaction_to_core_interrupt = model_settings.toleranceMoveEdgeReactionToCore
+        tol_move_edge_reaction_to_surface = model_settings.toleranceMoveEdgeReactionToSurface
+        tol_move_surface_species_to_core = model_settings.toleranceMoveSurfaceSpeciesToCore
+        tol_move_surface_reaction_to_core = model_settings.toleranceMoveSurfaceReactionToCore
+        tol_move_edge_reaction_to_surface_interrupt = model_settings.toleranceMoveEdgeReactionToSurfaceInterrupt
+        ignore_overall_flux_criterion = model_settings.ignoreOverallFluxCriterion
+        atol = simulator_settings.atol
+        rtol = simulator_settings.rtol
+        sens_atol = simulator_settings.sens_atol
+        sens_rtol = simulator_settings.sens_rtol
+        filter_reactions = model_settings.filter_reactions
+        max_num_objs_per_iter = model_settings.maxNumObjsPerIter
 
-        if modelSettings.toleranceBranchReactionToCore != 0.0:
-            branch_factor = 1.0 / modelSettings.toleranceBranchReactionToCore
-            br_max = modelSettings.branchingRatioMax
-            branching_index = modelSettings.branchingIndex
+        if model_settings.toleranceBranchReactionToCore != 0.0:
+            branch_factor = 1.0 / model_settings.toleranceBranchReactionToCore
+            br_max = model_settings.branchingRatioMax
+            branching_index = model_settings.branchingIndex
         else:
             branch_factor = 0.0
 
         #if not pruning always terminate at max objects, otherwise only do so if terminate_at_max_objects=True
-        terminate_at_max_objects = True if not prune else modelSettings.terminateAtMaxObjects
+        terminate_at_max_objects = True if not prune else model_settings.terminateAtMaxObjects
 
-        dynamics_time_scale = modelSettings.dynamicsTimeScale
+        dynamics_time_scale = model_settings.dynamicsTimeScale
 
         use_dynamics = not (tol_move_edge_reaction_to_core == np.inf and tol_move_edge_reaction_to_surface == np.inf)
 
         species_index = {}
-        for index, spec in enumerate(coreSpecies):
+        for index, spec in enumerate(core_species):
             species_index[spec] = index
 
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions,
-                             pdepNetworks, atol, rtol, sensitivity,
-                             sens_atol, sens_rtol,
-                             filter_reactions, conditions)
+        self.initialize_model(core_species, core_reactions,
+                              edge_species, edge_reactions,
+                              surface_species, surface_reactions,
+                              pdep_networks, atol, rtol, sensitivity,
+                              sens_atol, sens_rtol,
+                              filter_reactions, conditions)
 
-        prunable_species_indices = self.prunableSpeciesIndices
-        prunable_network_indices = self.prunableNetworkIndices
+        prunable_species_indices = self.prunable_species_indices
+        prunable_network_indices = self.prunable_network_indices
 
-        surface_species_indices = self.surfaceSpeciesIndices
-        surface_reaction_indices = self.surfaceReactionIndices
+        surface_species_indices = self.surface_species_indices
+        surface_reaction_indices = self.surface_reaction_indices
 
         # the product of the ratios between accumulation numbers
         # with and without a given reaction for products and reactants
@@ -695,12 +697,12 @@ cdef class ReactionSystem(DASx):
         conversion = 0.0
         max_char_rate = 0.0
 
-        max_edge_species_rate_ratios = self.maxEdgeSpeciesRateRatios
-        max_network_leak_rate_ratios = self.maxNetworkLeakRateRatios
+        max_edge_species_rate_ratios = self.max_edge_species_rate_ratios
+        max_network_leak_rate_ratios = self.max_network_leak_rate_ratios
         forward_rate_coefficients = self.kf
-        unimolecular_threshold = self.unimolecularThreshold
-        bimolecular_threshold = self.bimolecularThreshold
-        trimolecular_threshold = self.trimolecularThreshold
+        unimolecular_threshold = self.unimolecular_threshold
+        bimolecular_threshold = self.bimolecular_threshold
+        trimolecular_threshold = self.trimolecular_threshold
 
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
@@ -710,11 +712,11 @@ cdef class ReactionSystem(DASx):
 
         if sensitivity:
             time_array = []
-            norm_sens_array = [[] for spec in self.sensitiveSpecies]
+            norm_sens_array = [[] for spec in self.sensitive_species]
             RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
-            sens_species_indices = np.array([species_index[spec] for spec in self.sensitiveSpecies],
-                                               np.int)  # index within coreSpecies list of the sensitive species
+            sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
+                                               np.int)  # index within core_species list of the sensitive species
 
         step_time = 1e-12
         prev_time = self.t
@@ -745,36 +747,36 @@ cdef class ReactionSystem(DASx):
                         #species flux criterion
                         if len(edge_species_rate_ratios) > 0:
                             ind = np.argmax(edge_species_rate_ratios)
-                            obj = edgeSpecies[ind]
+                            obj = edge_species[ind]
                             logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
                                          'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
                             invalid_objects.append(obj)
 
                         if total_div_accum_nums and len(total_div_accum_nums) > 0:  #if dynamics data available
                             ind = np.argmax(total_div_accum_nums)
-                            obj = edgeReactions[ind]
+                            obj = edge_reactions[ind]
                             logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
                                          'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
                             invalid_objects.append(obj)
 
-                        if pdepNetworks != [] and network_leak_rate_ratios != []:
+                        if pdep_networks != [] and network_leak_rate_ratios != []:
                             ind = np.argmax(network_leak_rate_ratios)
-                            obj = pdepNetworks[ind]
+                            obj = pdep_networks[ind]
                             logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} '
                                          'was sent for exploring during model resurrection process'
                                          ''.format(self.t, obj.index, network_leak_rate_ratios[ind]))
                             invalid_objects.append(obj)
 
                     if invalid_objects != []:
-                        return False, True, invalid_objects, surfaceSpecies, surfaceReactions, self.t, conversion
+                        return False, True, invalid_objects, surface_species, surface_reactions, self.t, conversion
                     else:
                         logging.error('Model Resurrection has failed')
-                        logging.error("Core species names: {!r}".format([get_species_identifier(s) for s in coreSpecies]))
+                        logging.error("Core species names: {!r}".format([get_species_identifier(s) for s in core_species]))
                         logging.error("Core species moles: {!r}".format(self.y[:num_core_species]))
                         logging.error("Volume: {!r}".format(self.V))
-                        logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
-                        logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
-                        logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
+                        logging.error("Core species net rates: {!r}".format(self.core_species_rates))
+                        logging.error("Edge species net rates: {!r}".format(self.edge_species_rates))
+                        logging.error("Network leak rates: {!r}".format(self.network_leak_rates))
                         raise ValueError('invalid_objects could not be filled during resurrection process')
 
             y_core_species = self.y[:num_core_species]
@@ -788,9 +790,9 @@ cdef class ReactionSystem(DASx):
                 if not self.constantVolume:
                     for j in range(num_core_reactions + num_core_species):
                         dVdk[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) * RTP  # Contains [ dV_dk and dV_dG ]
-                for i in range(len(self.sensitiveSpecies)):
+                for i in range(len(self.sensitive_species)):
                     norm_sens = np.zeros(num_core_reactions + num_core_species, np.float64)
-                    c = self.coreSpeciesConcentrations[sens_species_indices[i]]
+                    c = self.core_species_concentrations[sens_species_indices[i]]
                     if c != 0:
                         for j in range(num_core_reactions):
                             norm_sens[j] = 1/volume * (mole_sens[j*num_core_species+sens_species_indices[i]]-c*dVdk[j]) * forward_rate_coefficients[j]/c
@@ -804,25 +806,25 @@ cdef class ReactionSystem(DASx):
             self.snapshots.append(snapshot)
 
             # Get the characteristic flux
-            char_rate = sqrt(np.sum(self.coreSpeciesRates * self.coreSpeciesRates))
+            char_rate = sqrt(np.sum(self.core_species_rates * self.core_species_rates))
 
             if char_rate > max_char_rate:
                 max_char_rate = char_rate
 
-            core_species_rates = np.abs(self.coreSpeciesRates)
-            edge_reaction_rates = self.edgeReactionRates
-            core_species_consumption_rates = self.coreSpeciesConsumptionRates
-            core_species_production_rates = self.coreSpeciesProductionRates
-            edge_species_rates = np.abs(self.edgeSpeciesRates)
-            network_leak_rates = np.abs(self.networkLeakRates)
-            core_species_rate_ratios = np.abs(self.coreSpeciesRates / char_rate)
-            edge_species_rate_ratios = np.abs(self.edgeSpeciesRates / char_rate)
-            network_leak_rate_ratios = np.abs(self.networkLeakRates / char_rate)
-            num_edge_reactions = self.numEdgeReactions
-            core_reaction_rates = self.coreReactionRates
-            product_indices = self.productIndices
-            reactant_indices = self.reactantIndices
-            core_species_concentrations = self.coreSpeciesConcentrations
+            core_species_rates = np.abs(self.core_species_rates)
+            edge_reaction_rates = self.edge_reaction_rates
+            core_species_consumption_rates = self.core_species_consumption_rates
+            core_species_production_rates = self.core_species_production_rates
+            edge_species_rates = np.abs(self.edge_species_rates)
+            network_leak_rates = np.abs(self.network_leak_rates)
+            core_species_rate_ratios = np.abs(self.core_species_rates / char_rate)
+            edge_species_rate_ratios = np.abs(self.edge_species_rates / char_rate)
+            network_leak_rate_ratios = np.abs(self.network_leak_rates / char_rate)
+            num_edge_reactions = self.num_edge_reactions
+            core_reaction_rates = self.core_reaction_rates
+            product_indices = self.product_indices
+            reactant_indices = self.reactant_indices
+            core_species_concentrations = self.core_species_concentrations
 
             # Update the maximum species rate and maximum network leak rate arrays
             for i, index in enumerate(prunable_species_indices):
@@ -834,7 +836,7 @@ cdef class ReactionSystem(DASx):
 
             if char_rate == 0 and len(edge_species_rates) > 0:  # this deals with the case when there is no flux in the system
                 max_species_index = np.argmax(edge_species_rates)
-                max_species = edgeSpecies[max_species_index]
+                max_species = edge_species[max_species_index]
                 max_species_rate = edge_species_rates[max_species_index]
                 logging.info('At time {0:10.4e} s, species {1} was added to model core to avoid '
                              'singularity'.format(self.t, max_species))
@@ -850,27 +852,27 @@ cdef class ReactionSystem(DASx):
                     reaction_rate = edge_reaction_rates[index]
 
                     if reaction_rate > 0:
-                        reactant_side = self.reactantIndices[index + num_core_reactions, :]
-                        product_side = self.productIndices[index + num_core_reactions, :]
+                        reactant_side = self.reactant_indices[index + num_core_reactions, :]
+                        product_side = self.product_indices[index + num_core_reactions, :]
                     else:
-                        reactant_side = self.productIndices[index + num_core_reactions, :]
-                        product_side = self.reactantIndices[index + num_core_reactions, :]
+                        reactant_side = self.product_indices[index + num_core_reactions, :]
+                        product_side = self.reactant_indices[index + num_core_reactions, :]
 
                     mults = []
                     for i in product_side:
                         if i == -1:
                             continue
                         elif i < num_core_species:
-                            mults.append(coreSpecies[i].molecule[0].multiplicity)
+                            mults.append(core_species[i].molecule[0].multiplicity)
                         else:
-                            mults.append(edgeSpecies[i - num_core_species].molecule[0].multiplicity)
+                            mults.append(edge_species[i - num_core_species].molecule[0].multiplicity)
 
                     if max(mults) > 2:
                         continue
 
                     for spc_index in reactant_side:
                         if spc_index != -1 and spc_index < num_core_species:
-                            if coreSpecies[spc_index].molecule[0].multiplicity != 2:
+                            if core_species[spc_index].molecule[0].multiplicity != 2:
                                 continue
                             consumption = core_species_consumption_rates[spc_index]
                             if consumption != 0:  #if consumption = 0 ignore species
@@ -890,13 +892,13 @@ cdef class ReactionSystem(DASx):
                 total_div_accum_nums = np.ones(num_edge_reactions)
                 for index in range(num_edge_reactions):
                     reaction_rate = edge_reaction_rates[index]
-                    for spc_index in self.reactantIndices[index + num_core_reactions, :]:
+                    for spc_index in self.reactant_indices[index + num_core_reactions, :]:
                         if spc_index != -1 and spc_index < num_core_species:
                             consumption = core_species_consumption_rates[spc_index]
                             if consumption != 0:  #if consumption = 0 ignore species
                                 total_div_accum_nums[index] *= (reaction_rate + consumption) / consumption
 
-                    for spc_index in self.productIndices[index + num_core_reactions, :]:
+                    for spc_index in self.product_indices[index + num_core_reactions, :]:
                         if spc_index != -1 and spc_index < num_core_species:
                             production = core_species_production_rates[spc_index]
                             if production != 0:  #if production = 0 ignore species
@@ -904,8 +906,8 @@ cdef class ReactionSystem(DASx):
 
                 total_div_ln_accum_nums = np.log(total_div_accum_nums)
 
-                surface_species_indices = self.surfaceSpeciesIndices
-                surface_reaction_indices = self.surfaceReactionIndices
+                surface_species_indices = self.surface_species_indices
+                surface_reaction_indices = self.surface_reaction_indices
 
                 ##########################################################
                 # Calculation of dynamics criterion for surface reactions#
@@ -953,7 +955,7 @@ cdef class ReactionSystem(DASx):
                     if stdan > tol_move_surface_reaction_to_core:
                         sind = surface_reaction_indices[ind]
                         surface_object_indices.append(sind)
-                        surface_objects.append(coreReactions[sind])
+                        surface_objects.append(core_reactions[sind])
 
                 #Determination of species moving from surface to core on-the-fly
 
@@ -968,7 +970,7 @@ cdef class ReactionSystem(DASx):
                     if rr > tol_move_surface_species_to_core:
                         sind = surface_species_indices[i]
                         surface_object_indices.append(sind)
-                        surface_objects.append(coreSpecies[sind])
+                        surface_objects.append(core_species[sind])
 
                 #process objects to be moved from surface to core
 
@@ -977,22 +979,22 @@ cdef class ReactionSystem(DASx):
                     for ind, obj in enumerate(surface_objects):
                         if isinstance(obj, Reaction):
                             logging.info('Moving reaction {0} from surface to core'.format(obj))
-                            surfaceReactions.remove(obj)
+                            surface_reactions.remove(obj)
                         elif isinstance(obj, Species):
                             logging.info('Moving species {0} from surface to core'.format(obj))
-                            surfaceSpecies.remove(obj)
+                            surface_species.remove(obj)
                         else:
                             raise ValueError
-                    surfaceSpecies, surfaceReactions = self.initialize_surface(coreSpecies, coreReactions,
-                                                                               surfaceSpecies, surfaceReactions)
+                    surface_species, surface_reactions = self.initialize_surface(core_species, core_reactions,
+                                                                               surface_species, surface_reactions)
                     logging.info('Surface now has {0} Species and {1} Reactions'
-                                 ''.format(len(self.surfaceSpeciesIndices), len(self.surfaceReactionIndices)))
+                                 ''.format(len(self.surface_species_indices), len(self.surface_reaction_indices)))
 
             if filter_reactions:
                 # Calculate thresholds for reactions
                 (unimolecular_threshold_rate_constant,
                  bimolecular_threshold_rate_constant,
-                 trimolecular_threshold_rate_constant) = self.get_threshold_rate_constants(modelSettings)
+                 trimolecular_threshold_rate_constant) = self.get_threshold_rate_constants(model_settings)
                 unimolecular_threshold_val = tol_move_to_core * char_rate / unimolecular_threshold_rate_constant
                 bimolecular_threshold_val = tol_move_to_core * char_rate / bimolecular_threshold_rate_constant
                 trimolecular_threshold_val = tol_move_to_core * char_rate / trimolecular_threshold_rate_constant
@@ -1037,11 +1039,11 @@ cdef class ReactionSystem(DASx):
             #movement of species to core based on rate ratios
 
             if not ignore_overall_flux_criterion:
-                for ind, obj in enumerate(edgeSpecies):
+                for ind, obj in enumerate(edge_species):
                     rr = edge_species_rate_ratios[ind]
                     if rr > tol_move_to_core:
                         if not (obj in new_objects or obj in invalid_objects):
-                            temp_new_objects.append(edgeSpecies[ind])
+                            temp_new_objects.append(edge_species[ind])
                             temp_new_object_inds.append(ind)
                             temp_new_object_vals.append(rr)
                             temp_new_object_type.append('rr')
@@ -1064,11 +1066,11 @@ cdef class ReactionSystem(DASx):
 
             if branch_factor != 0.0 and not first_time:
                 #movement of reactions to core based on branching number
-                for ind, obj in enumerate(edgeReactions):
+                for ind, obj in enumerate(edge_reactions):
                     b_num = branching_nums[ind]
                     if b_num > 1:
                         if not (obj in new_objects or obj in invalid_objects):
-                            temp_new_objects.append(edgeReactions[ind])
+                            temp_new_objects.append(edge_reactions[ind])
                             temp_new_object_inds.append(ind)
                             temp_new_object_vals.append(b_num)
                             temp_new_object_type.append('branching')
@@ -1087,23 +1089,23 @@ cdef class ReactionSystem(DASx):
 
             if use_dynamics and not first_time and self.t >= dynamics_time_scale:
                 #movement of reactions to core/surface based on dynamics number  
-                valid_layering_indices = self.validLayeringIndices
+                valid_layering_indices = self.valid_layering_indices
                 temp_surface_objects = []
 
-                for ind, obj in enumerate(edgeReactions):
+                for ind, obj in enumerate(edge_reactions):
                     dlnaccum = total_div_ln_accum_nums[ind]
                     if dlnaccum > tol_move_edge_reaction_to_core:
                         if not (obj in new_objects or obj in invalid_objects):
-                            temp_new_objects.append(edgeReactions[ind])
+                            temp_new_objects.append(edge_reactions[ind])
                             temp_new_object_inds.append(ind)
                             temp_new_object_vals.append(dlnaccum)
                             temp_new_object_type.append('dyn')
                     elif dlnaccum > tol_move_edge_reaction_to_surface and ind in valid_layering_indices:
                         if not (obj in new_objects or obj in invalid_objects):
-                            temp_new_objects.append(edgeReactions[ind])
+                            temp_new_objects.append(edge_reactions[ind])
                             temp_new_object_inds.append(ind)
                             temp_new_object_vals.append(dlnaccum)
-                            temp_surface_objects.append(edgeReactions[ind])
+                            temp_surface_objects.append(edge_reactions[ind])
                             temp_new_object_type.append('dyn')
                     if dlnaccum > tol_move_edge_reaction_to_core_interrupt:
                         logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in '
@@ -1125,14 +1127,14 @@ cdef class ReactionSystem(DASx):
                 temp_new_object_vals = []
                 temp_new_object_type = []
 
-            #Determination of pdepNetworks in need of exploring
+            #Determination of pdep_networks in need of exploring
 
-            if pdepNetworks:
-                for ind, obj in enumerate(pdepNetworks):
+            if pdep_networks:
+                for ind, obj in enumerate(pdep_networks):
                     lr = network_leak_rate_ratios[ind]
                     if lr > tol_move_to_core:
                         if not (obj in new_objects or obj in invalid_objects):
-                            temp_new_objects.append(pdepNetworks[ind])
+                            temp_new_objects.append(pdep_networks[ind])
                             temp_new_object_inds.append(ind)
                             temp_new_object_vals.append(lr)
                             temp_new_object_type.append('pdep')
@@ -1200,8 +1202,8 @@ cdef class ReactionSystem(DASx):
                 invalid_objects += new_objects
 
             if schanged:  # reinitialize surface
-                surfaceSpecies, surfaceReactions = self.initialize_surface(coreSpecies, coreReactions, surfaceSpecies,
-                                                                           surfaceReactions)
+                surface_species, surface_reactions = self.initialize_surface(core_species, core_reactions,
+                                                                             surface_species, surface_reactions)
                 schanged = False
 
             if first_time:  # turn off first_time
@@ -1217,7 +1219,7 @@ cdef class ReactionSystem(DASx):
                     if self.t > term.time.value_si:
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination time.'.format(term.time.value_si))
-                        self.logConversions(species_index, y0)
+                        self.log_conversions(species_index, y0)
                         break
                 elif isinstance(term, TerminationConversion):
                     index = species_index[term.species]
@@ -1226,40 +1228,43 @@ cdef class ReactionSystem(DASx):
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of '
                                      '{2}'.format(self.t,term.conversion,term.species))
-                        self.logConversions(species_index, y0)
+                        self.log_conversions(species_index, y0)
                         break
                 elif isinstance(term, TerminationRateRatio):
                     if max_char_rate != 0.0 and char_rate / max_char_rate < term.ratio:
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination RateRatio: '
                                      '{1}'.format(self.t,char_rate/max_char_rate))
-                        self.logConversions(species_index, y0)
+                        self.log_conversions(species_index, y0)
 
             # Increment destination step time if necessary
             if self.t >= 0.9999 * step_time:
                 step_time *= 10.0
 
         # Change surface species and reactions based on what will be added to the surface
-        surfaceSpecies, surfaceReactions = self.addReactionsToSurface(new_surface_reactions, new_surface_reaction_inds,
-                                                                      surfaceSpecies, surfaceReactions, edgeSpecies)
+        surface_species, surface_reactions = self.add_reactions_to_surface(new_surface_reactions,
+                                                                           new_surface_reaction_inds,
+                                                                           surface_species,
+                                                                           surface_reactions,
+                                                                           edge_species)
 
         # notify reaction system listeners
         self.notify()
 
         if sensitivity:
-            for i in range(len(self.sensitiveSpecies)):
-                with open(sensWorksheet[i], 'w') as outfile:
+            for i in range(len(self.sensitive_species)):
+                with open(sens_worksheet[i], 'w') as outfile:
                     worksheet = csv.writer(outfile)
                     reactions_above_threshold = []
                     for j in range(num_core_reactions + num_core_species):
                         for k in range(len(time_array)):
-                            if abs(norm_sens_array[i][k][j]) > self.sensitivityThreshold:
+                            if abs(norm_sens_array[i][k][j]) > self.sensitivity_threshold:
                                 reactions_above_threshold.append(j)
                                 break
-                    species_name = get_species_identifier(self.sensitiveSpecies[i])
+                    species_name = get_species_identifier(self.sensitive_species[i])
                     headers = ['Time (s)']
-                    headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j + 1, coreReactions[j].to_chemkin(kinetics=False)) if j < num_core_reactions
-                                    else 'dln[{0}]/dG[{1}]'.format(species_name, get_species_identifier(coreSpecies[j - num_core_reactions])) for j in reactions_above_threshold])
+                    headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j + 1, core_reactions[j].to_chemkin(kinetics=False)) if j < num_core_reactions
+                                    else 'dln[{0}]/dG[{1}]'.format(species_name, get_species_identifier(core_species[j - num_core_reactions])) for j in reactions_above_threshold])
                     worksheet.writerow(headers)
 
                     for k in range(len(time_array)):
@@ -1267,47 +1272,47 @@ cdef class ReactionSystem(DASx):
                         row.extend([norm_sens_array[i][k][j] for j in reactions_above_threshold])
                         worksheet.writerow(row)
 
-        self.maxEdgeSpeciesRateRatios = max_edge_species_rate_ratios
-        self.maxNetworkLeakRateRatios = max_network_leak_rate_ratios
+        self.max_edge_species_rate_ratios = max_edge_species_rate_ratios
+        self.max_network_leak_rate_ratios = max_network_leak_rate_ratios
 
-        self.unimolecularThreshold = unimolecular_threshold
-        self.bimolecularThreshold = bimolecular_threshold
-        self.trimolecularThreshold = trimolecular_threshold
+        self.unimolecular_threshold = unimolecular_threshold
+        self.bimolecular_threshold = bimolecular_threshold
+        self.trimolecular_threshold = trimolecular_threshold
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, False, invalid_objects, surfaceSpecies, surfaceReactions, self.t, conversion
+        return terminated, False, invalid_objects, surface_species, surface_reactions, self.t, conversion
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network,
-                   double networkRate):
+    cpdef log_rates(self, double char_rate, object species, double species_rate, double max_dif_ln_accum_num, object network,
+                    double network_rate):
         """
         Log information about the current maximum species and network rates.
         """
-        logging.info('    Characteristic rate: {0:10.4e} mol/m^3*s'.format(charRate))
-        logging.info('    Dynamics number:  {0:10.4e}'.format(maxDifLnAccumNum))
-        if charRate == 0.0:
-            logging.info('    {0} rate: {1:10.4e} mol/m^3*s'.format(species, speciesRate))
+        logging.info('    Characteristic rate: {0:10.4e} mol/m^3*s'.format(char_rate))
+        logging.info('    Dynamics number:  {0:10.4e}'.format(max_dif_ln_accum_num))
+        if char_rate == 0.0:
+            logging.info('    {0} rate: {1:10.4e} mol/m^3*s'.format(species, species_rate))
             if network is not None:
-                logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s'.format(network.index, networkRate))
+                logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s'.format(network.index, network_rate))
         else:
             logging.info('    {0} rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(
-                species, speciesRate, speciesRate / charRate))
+                species, species_rate, species_rate / char_rate))
             if network is not None:
                 logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(
-                    network.index, networkRate, networkRate / charRate))
+                    network.index, network_rate, network_rate / char_rate))
 
-    cpdef logConversions(self, speciesIndex, y0):
+    cpdef log_conversions(self, species_index, y0):
         """
         Log information about the current conversion values.
         """
         for term in self.termination:
             if isinstance(term, TerminationConversion):
-                index = speciesIndex[term.species]
+                index = species_index[term.species]
                 X = 1 - (self.y[index] / y0[index])
                 logging.info('    {0} conversion: {1:<10.4g}'.format(term.species, X))
 
     @cython.boundscheck(False)
-    def computeRateDerivative(self):
+    def compute_rate_derivative(self):
         """
         Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
         k_j is the rate parameter for the jth core reaction.
@@ -1320,20 +1325,20 @@ cdef class ReactionSystem(DASx):
 
         cdef double RT_inverse, gderiv
 
-        ir = self.reactantIndices
-        ip = self.productIndices
+        ir = self.reactant_indices
+        ip = self.product_indices
 
         kf = self.kf
         kr = self.kb
 
-        num_core_reactions = len(self.coreReactionRates)
-        num_core_species = len(self.coreSpeciesConcentrations)
+        num_core_reactions = len(self.core_reaction_rates)
+        num_core_species = len(self.core_species_concentrations)
 
         # Use stored volume, since this function is only called from residual function. 
         RT_inverse = 1 / (constants.R * self.T.value_si)
         V = self.V
 
-        C = self.coreSpeciesConcentrations
+        C = self.core_species_concentrations
 
         rate_deriv = np.zeros((num_core_species, num_core_reactions + num_core_species), np.float64)
 

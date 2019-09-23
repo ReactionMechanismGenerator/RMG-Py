@@ -127,7 +127,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
 
-        rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -139,8 +139,8 @@ class LiquidReactorCheck(unittest.TestCase):
             # You must make a copy of y because it is overwritten by DASSL at
             # each call to advance()
             y.append(rxn_system.y.copy())
-            reaction_rates.append(rxn_system.coreReactionRates.copy())
-            species_rates.append(rxn_system.coreSpeciesRates.copy())
+            reaction_rates.append(rxn_system.core_reaction_rates.copy())
+            species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
@@ -265,7 +265,7 @@ class LiquidReactorCheck(unittest.TestCase):
             core_reactions = [rxn]
 
             rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
-            rxn_system0.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
             dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
 
             dN = .000001 * sum(rxn_system0.y)
@@ -334,9 +334,9 @@ class LiquidReactorCheck(unittest.TestCase):
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
         rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
-        rxn_system0.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
-        solver_dfdk = rxn_system0.computeRateDerivative()
+        solver_dfdk = rxn_system0.compute_rate_derivative()
         # print 'Solver d(dy/dt)/dk'
         # print solver_dfdk
 
@@ -348,7 +348,7 @@ class LiquidReactorCheck(unittest.TestCase):
         rxn_system0.termination.append(TerminationTime((integration_time, 's')))
 
         rxn_system0.simulate(core_species, core_reactions, [], [], [], [],
-                             modelSettings=model_settings, simulatorSettings=simulator_settings)
+                             model_settings=model_settings, simulator_settings=simulator_settings)
 
         y0 = rxn_system0.y
 
@@ -362,7 +362,7 @@ class LiquidReactorCheck(unittest.TestCase):
             dk = rxn_list[i].get_rate_coefficient(self.T) - k0
 
             rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
-            rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
             dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
             dfdk[:, i] = (dfdt - dfdt0) / dk
@@ -371,7 +371,7 @@ class LiquidReactorCheck(unittest.TestCase):
             model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
             simulator_settings = SimulatorSettings()
             rxn_system.simulate(core_species, core_reactions, [], [], [], [],
-                                modelSettings=model_settings, simulatorSettings=simulator_settings)
+                                model_settings=model_settings, simulator_settings=simulator_settings)
 
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
 
@@ -403,11 +403,11 @@ class LiquidReactorCheck(unittest.TestCase):
         rxn_system2 = LiquidReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
         for reactor in [rxn_system1, rxn_system2]:
-            self.assertIsNotNone(reactor.constSPCNames)
+            self.assertIsNotNone(reactor.const_spc_names)
 
         # check if Constant species are different in each liquid system
-        for spc in rxn_system1.constSPCNames:
-            for spc2 in rxn_system2.constSPCNames:
+        for spc in rxn_system1.const_spc_names:
+            for spc2 in rxn_system2.const_spc_names:
                 self.assertIsNot(spc, spc2, 'Constant species declared in two different reactors seem mixed. '
                                             'Species "{0}" appears in both systems and should be.'.format(spc))
 
@@ -425,12 +425,12 @@ class LiquidReactorCheck(unittest.TestCase):
         rmg.initialize()
 
         for index, reactionSystem in enumerate(rmg.reactionSystems):
-            self.assertIsNotNone(reactionSystem.constSPCNames,
+            self.assertIsNotNone(reactionSystem.const_spc_names,
                                  'Reactor should contain constant species name and indices after few steps')
-            self.assertIsNotNone(reactionSystem.constSPCIndices,
+            self.assertIsNotNone(reactionSystem.const_spc_indices,
                                  'Reactor should contain constant species indices in the core species array')
-            self.assertIs(reactionSystem.constSPCNames[0],
-                          rmg.reactionModel.core.species[reactionSystem.constSPCIndices[0]].label,
+            self.assertIs(reactionSystem.const_spc_names[0],
+                          rmg.reaction_model.core.species[reactionSystem.const_spc_indices[0]].label,
                           'The constant species name from the reaction model and constantSPCnames should be equal')
 
     def test_corespeciesRate(self):
@@ -456,11 +456,11 @@ class LiquidReactorCheck(unittest.TestCase):
         sens_conds = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4, 'T': self.T}
 
         rxn_system = LiquidReactor(self.T, c0, 1, termination_conversion, sensitivity, sensitivity_threshold,
-                                   constSPCNames=const_species, sensConditions=sens_conds)
+                                   const_spc_names=const_species, sens_conditions=sens_conds)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
-        rxn_system.constSPCIndices = [0]
+        rxn_system.const_spc_indices = [0]
 
-        rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -469,17 +469,17 @@ class LiquidReactorCheck(unittest.TestCase):
         for t1 in tlist:
             rxn_system.advance(t1)
             t.append(rxn_system.t)
-            self.assertEqual(rxn_system.coreSpeciesRates[0], 0,
+            self.assertEqual(rxn_system.core_species_rates[0], 0,
                              "Core species rate has to be equal to 0 for species hold constant. "
-                             "Here it is equal to {0}".format(rxn_system.coreSpeciesRates[0]))
+                             "Here it is equal to {0}".format(rxn_system.core_species_rates[0]))
 
     def tearDown(self):
         """
         Reset the database & liquid parameters for solution
         """
-        global diffusionLimiter
-        from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-        diffusionLimiter.enabled = False
+        global diffusion_limiter
+        from rmgpy.kinetics.diffusionLimited import diffusion_limiter
+        diffusion_limiter.enabled = False
 
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None

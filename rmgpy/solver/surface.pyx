@@ -51,86 +51,86 @@ cdef class SurfaceReactor(ReactionSystem):
     """
 
     cdef public ScalarQuantity T
-    cdef public ScalarQuantity initialP
+    cdef public ScalarQuantity P_initial
     cdef public double V
-    cdef public bint constantVolume
+    cdef public bint constant_volume
 
-    cdef public list Trange
-    cdef public list Prange
-    cdef public int nSims
-    cdef public dict sensConditions
+    cdef public list T_range
+    cdef public list P_range
+    cdef public int n_sims
+    cdef public dict sens_conditions
 
-    cdef public dict initialGasMoleFractions
-    cdef public dict initialSurfaceCoverages
-    cdef public ScalarQuantity surfaceVolumeRatio
-    cdef public ScalarQuantity surfaceSiteDensity
-    cdef public np.ndarray reactionsOnSurface  # (catalyst surface, not core/edge surface)
-    cdef public np.ndarray speciesOnSurface  # (catalyst surface, not core/edge surface)
+    cdef public dict initial_gas_mole_fractions
+    cdef public dict initial_surface_coverages
+    cdef public ScalarQuantity surface_volume_ratio
+    cdef public ScalarQuantity surface_site_density
+    cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
+    cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
 
     def __init__(self,
                  T,
-                 initialP,
-                 initialGasMoleFractions,
-                 initialSurfaceCoverages,
-                 surfaceVolumeRatio,
-                 surfaceSiteDensity,
-                 nSims=None,
+                 P_initial,
+                 initial_gas_mole_fractions,
+                 initial_surface_coverages,
+                 surface_volume_ratio,
+                 surface_site_density,
+                 n_sims=None,
                  termination=None,
-                 sensitiveSpecies=None,
-                 sensitivityThreshold=1e-3,
-                 sensConditions=None,
+                 sensitive_species=None,
+                 sensitivity_threshold=1e-3,
+                 sens_conditions=None,
                  ):
         ReactionSystem.__init__(self,
                                 termination,
-                                sensitiveSpecies,
-                                sensitivityThreshold)
+                                sensitive_species,
+                                sensitivity_threshold)
 
         if isinstance(T, list):
-            self.Trange = [Quantity(t) for t in T]
+            self.T_range = [Quantity(t) for t in T]
         else:
             self.T = Quantity(T)
-        if isinstance(initialP, list):
+        if isinstance(P_initial, list):
             raise NotImplementedError("Can't do ranges of initial pressures for surface reactors yet")
         else:
-            self.initialP = Quantity(initialP)
-        self.initialGasMoleFractions = initialGasMoleFractions
-        self.initialSurfaceCoverages = initialSurfaceCoverages
-        self.surfaceVolumeRatio = Quantity(surfaceVolumeRatio)
-        self.surfaceSiteDensity = Quantity(surfaceSiteDensity)
-        self.V = 0  # will be set from ideal gas law in initializeModel
-        self.constantVolume = True
-        self.sensConditions = sensConditions
-        self.nSims = nSims
+            self.P_initial = Quantity(P_initial)
+        self.initial_gas_mole_fractions = initial_gas_mole_fractions
+        self.initial_surface_coverages = initial_surface_coverages
+        self.surface_volume_ratio = Quantity(surface_volume_ratio)
+        self.surface_site_density = Quantity(surface_site_density)
+        self.V = 0  # will be set from ideal gas law in initialize_model
+        self.constant_volume = True
+        self.sens_conditions = sens_conditions
+        self.n_sims = n_sims
 
-    def convertInitialKeysToSpeciesObjects(self, speciesDict):
+    def convert_initial_keys_to_species_objects(self, species_dict):
         """
         Convert the initial_gas_mole_fractions and initial_surface_coverages dictionaries
         from species names into species objects,
         using the given dictionary of species.
         """
         initial_gas_mole_fractions = {}
-        for label, moleFrac in self.initialGasMoleFractions.items():
-            initial_gas_mole_fractions[speciesDict[label]] = moleFrac
-        self.initialGasMoleFractions = initial_gas_mole_fractions
+        for label, moleFrac in self.initial_gas_mole_fractions.items():
+            initial_gas_mole_fractions[species_dict[label]] = moleFrac
+        self.initial_gas_mole_fractions = initial_gas_mole_fractions
         initial_surface_coverages = {}
-        for label, surfaceCoverage in self.initialSurfaceCoverages.items():
-            initial_surface_coverages[speciesDict[label]] = surfaceCoverage
-        self.initialSurfaceCoverages = initial_surface_coverages
+        for label, surfaceCoverage in self.initial_surface_coverages.items():
+            initial_surface_coverages[species_dict[label]] = surfaceCoverage
+        self.initial_surface_coverages = initial_surface_coverages
 
-    cpdef initializeModel(self,
-                          list coreSpecies,
-                          list coreReactions,
-                          list edgeSpecies,
-                          list edgeReactions,
-                          list surfaceSpecies=[],
-                          list surfaceReactions=[],
-                          list pdepNetworks=None,
+    cpdef initialize_model(self,
+                          list core_species,
+                          list core_reactions,
+                          list edge_species,
+                          list edge_reactions,
+                          list surface_species=[],
+                          list surface_reactions=[],
+                          list pdep_networks=None,
                           atol=1e-16,
                           rtol=1e-8,
                           sensitivity=False,
                           sens_atol=1e-6,
                           sens_rtol=1e-4,
-                          filterReactions=False,
+                          filter_reactions=False,
                           dict conditions=None,
                           ):
         """
@@ -140,56 +140,56 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self,
-                                       coreSpecies=coreSpecies,
-                                       coreReactions=coreReactions,
-                                       edgeSpecies=edgeSpecies,
-                                       edgeReactions=edgeReactions,
-                                       surfaceSpecies=surfaceSpecies,
-                                       surfaceReactions=surfaceReactions,
-                                       pdepNetworks=pdepNetworks,
+        ReactionSystem.initialize_model(self,
+                                       core_species=core_species,
+                                       core_reactions=core_reactions,
+                                       edge_species=edge_species,
+                                       edge_reactions=edge_reactions,
+                                       surface_species=surface_species,
+                                       surface_reactions=surface_reactions,
+                                       pdep_networks=pdep_networks,
                                        atol=atol,
                                        rtol=rtol,
                                        sensitivity=sensitivity,
                                        sens_atol=sens_atol,
                                        sens_rtol=sens_rtol,
-                                       filterReactions=filterReactions,
+                                       filter_reactions=filter_reactions,
                                        conditions=conditions,
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef int index
         #: 1 if it's on a surface, 0 if it's in the gas phase
-        reactions_on_surface = np.zeros((self.numCoreReactions + self.numEdgeReactions), np.int)
-        species_on_surface = np.zeros((self.numCoreSpecies), np.int)
-        for spec, index in self.speciesIndex.items():
-            if index >= self.numCoreSpecies:
+        reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.int)
+        species_on_surface = np.zeros((self.num_core_species), np.int)
+        for spec, index in self.species_index.items():
+            if index >= self.num_core_species:
                 continue
             if spec.contains_surface_site():
                 species_on_surface[index] = 1
-        for rxn, index in self.reactionIndex.items():
+        for rxn, index in self.reaction_index.items():
             if rxn.is_surface_reaction():
                 reactions_on_surface[index] = 1
-        self.speciesOnSurface = species_on_surface
-        self.reactionsOnSurface = reactions_on_surface
+        self.species_on_surface = species_on_surface
+        self.reactions_on_surface = reactions_on_surface
 
         # Set initial conditions
         self.set_initial_conditions()
 
         # Compute reaction thresholds if reaction filtering is turned on
-        if filterReactions:
+        if filter_reactions:
             ReactionSystem.set_initial_reaction_thresholds(self)
 
         # Generate forward and reverse rate coefficients k(T,P)
-        self.generate_rate_coefficients(coreReactions, edgeReactions)
+        self.generate_rate_coefficients(core_reactions, edge_reactions)
 
-        ReactionSystem.compute_network_variables(self, pdepNetworks)
+        ReactionSystem.compute_network_variables(self, pdep_networks)
 
         ReactionSystem.set_initial_derivative(self)
 
         # Initialize the model
         ReactionSystem.initialize_solver(self)
 
-    def generate_rate_coefficients(self, coreReactions, edgeReactions):
+    def generate_rate_coefficients(self, core_reactions, edge_reactions):
         """
         Populates the kf, kb and equilibriumConstants
         arrays with the values computed at the temperature and (effective) pressure of the 
@@ -198,13 +198,13 @@ cdef class SurfaceReactor(ReactionSystem):
 
         cdef double P, surface_volume_ratio_si
 
-        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si
+        surface_volume_ratio_si = self.surface_volume_ratio.value_si
         # ToDo: Pressure should come from ideal gas law?
-        P = self.initialP.value_si
+        P = self.P_initial.value_si
 
         warned = False
-        for rxn in itertools.chain(coreReactions, edgeReactions):
-            j = self.reactionIndex[rxn]
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            j = self.reaction_index[rxn]
 
             # ToDo: get_rate_coefficient should also depend on surface coverages vector
 
@@ -217,7 +217,7 @@ cdef class SurfaceReactor(ReactionSystem):
                 """
                 self.kf[j] = (surface_volume_ratio_si *
                               rxn.get_surface_rate_coefficient(self.T.value_si,
-                                                               self.surfaceSiteDensity.value_si
+                                                               self.surface_site_density.value_si
                                                                ))
             else:
                 if not warned and rxn.kinetics.is_pressure_dependent():
@@ -238,21 +238,21 @@ cdef class SurfaceReactor(ReactionSystem):
         logging.info("\nSurface reaction system {}".format(number if number is not None else ""))
         logging.info("Gas phase mole fractions:")
         total_gas_moles = 0
-        for spec, moleFrac in self.initialGasMoleFractions.items():
+        for spec, moleFrac in self.initial_gas_mole_fractions.items():
             logging.info("  {0:20s} {1:.5g}".format(spec, moleFrac))
             total_gas_moles += moleFrac
         logging.info("Total gas phase:          {:.3g} moles".format(total_gas_moles))
-        logging.info("Pressure:                 {:.3g} Pa".format(self.initialP.value_si))
+        logging.info("Pressure:                 {:.3g} Pa".format(self.P_initial.value_si))
         logging.info("Temperature:              {} K".format(self.T.value_si))
-        V = constants.R * self.T.value_si * total_gas_moles / self.initialP.value_si
+        V = constants.R * self.T.value_si * total_gas_moles / self.P_initial.value_si
         logging.info("Reactor volume:           {:.3g} m3".format(V))
-        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si  # 1/m
+        surface_volume_ratio_si = self.surface_volume_ratio.value_si  # 1/m
         logging.info("Surface/volume ratio:     {:.3g} m2/m3".format(surface_volume_ratio_si))
-        logging.info("Surface site density:     {:.3g} mol/m2".format(self.surfaceSiteDensity.value_si))
-        total_surface_sites = V * surface_volume_ratio_si * self.surfaceSiteDensity.value_si  # total surface sites in reactor
+        logging.info("Surface site density:     {:.3g} mol/m2".format(self.surface_site_density.value_si))
+        total_surface_sites = V * surface_volume_ratio_si * self.surface_site_density.value_si  # total surface sites in reactor
         logging.info("Surface sites in reactor: {:.3g} moles".format(total_surface_sites))
         logging.info("Initial surface coverages (and amounts):")
-        for spec, coverage in self.initialSurfaceCoverages.items():
+        for spec, coverage in self.initial_surface_coverages.items():
             logging.info("  {:18s} {:.5g} = {:.5g} moles".format(spec, coverage, total_surface_sites * coverage))
 
     def set_initial_conditions(self):
@@ -263,11 +263,11 @@ cdef class SurfaceReactor(ReactionSystem):
         The volume is set to the value in m3 required to contain 
         one mole total of gas phase core species at start.
 
-        The total surface sites are calculated from surfaceVolumeRatio and surfaceSiteDensity
-        allowing initialSurfaceCoverages to determine the number of moles of surface species.
-        The number of moles of gas phase species is taken from initialGasMoleFractions.
+        The total surface sites are calculated from surface_volume_ratio and surface_site_density
+        allowing initial_surface_coverages to determine the number of moles of surface species.
+        The number of moles of gas phase species is taken from initial_gas_mole_fractions.
         
-        The coreSpeciesConcentrations array is then determined, in mol/m3 for gas phase
+        The core_species_concentrations array is then determined, in mol/m3 for gas phase
         and mol/m2 for surface species.
 
         The initial number of moles of a species j in the reactor is computed and stored in the
@@ -286,46 +286,46 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # add only the gas phase species first
         self.y0 *= 0.
-        for spec, moleFrac in self.initialGasMoleFractions.items():
+        for spec, moleFrac in self.initial_gas_mole_fractions.items():
             i = self.get_species_index(spec)
             self.y0[i] = moleFrac  # moles in reactor
 
         # Use ideal gas law to compute reactor volume
-        V = constants.R * self.T.value_si * np.sum(self.y0[:self.numCoreSpecies]) / self.initialP.value_si
+        V = constants.R * self.T.value_si * np.sum(self.y0[:self.num_core_species]) / self.P_initial.value_si
         self.V = V  # volume in m^3  (assume reactor volume is gas phase volume, i.e catalyst takes no space)
 
-        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si  # 1/m
-        total_surface_sites = V * surface_volume_ratio_si * self.surfaceSiteDensity.value_si  # total surface sites in reactor
+        surface_volume_ratio_si = self.surface_volume_ratio.value_si  # 1/m
+        total_surface_sites = V * surface_volume_ratio_si * self.surface_site_density.value_si  # total surface sites in reactor
 
-        for spec, coverage in self.initialSurfaceCoverages.items():
+        for spec, coverage in self.initial_surface_coverages.items():
             i = self.get_species_index(spec)
             self.y0[i] = total_surface_sites * coverage  # moles in reactor
 
-        for j, isSurfaceSpecies in enumerate(self.speciesOnSurface):  # should only go up to core species
+        for j, isSurfaceSpecies in enumerate(self.species_on_surface):  # should only go up to core species
             if isSurfaceSpecies:
-                self.coreSpeciesConcentrations[j] = self.y0[j] / V / surface_volume_ratio_si  # moles per m2 of surface
+                self.core_species_concentrations[j] = self.y0[j] / V / surface_volume_ratio_si  # moles per m2 of surface
             else:
-                self.coreSpeciesConcentrations[j] = self.y0[j] / V  # moles per m3 of gas
+                self.core_species_concentrations[j] = self.y0[j] / V  # moles per m3 of gas
 
-    def compute_network_variables(self, pdepNetworks=None):
+    def compute_network_variables(self, pdep_networks=None):
         # ToDo: this should allow pressure to vary?
         # for now, just call the base class version.
-        ReactionSystem.compute_network_variables(self, pdepNetworks)
+        ReactionSystem.compute_network_variables(self, pdep_networks)
 
-    def get_threshold_rate_constants(self, modelSettings):
+    def get_threshold_rate_constants(self, model_settings):
         """
         Get the threshold rate constants for reaction filtering.
         """
-        raise NotImplementedError("filterReactions=True for SurfaceReactor")
+        raise NotImplementedError("filter_reactions=True for SurfaceReactor")
         # Set the maximum unimolecular rate to be kB*T/h
         unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
         # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
-        bimolecular_threshold_rate_constant = modelSettings.filterThreshold
+        bimolecular_threshold_rate_constant = model_settings.filterThreshold
         # Maximum trimolecular rate constants are approximately three
         # orders of magnitude smaller (accounting for the unit
         # conversion from m^3/mol/s to m^6/mol^2/s) based on
         # extending the Smoluchowski equation to three molecules
-        trimolecular_threshold_rate_constant = modelSettings.filterThreshold / 1e3
+        trimolecular_threshold_rate_constant = model_settings.filterThreshold / 1e3
         return (unimolecular_threshold_rate_constant,
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
@@ -353,36 +353,36 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=1] C
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
 
-        ir = self.reactantIndices
-        ip = self.productIndices
+        ir = self.reactant_indices
+        ip = self.product_indices
         equilibrium_constants = self.Keq
 
         kf = self.kf  # are already 'per m3 of reactor' even for surface reactions
         kr = self.kb  # are already 'per m3 of reactor' even for surface reactions
 
-        inet = self.networkIndices
-        knet = self.networkLeakCoefficients
+        inet = self.network_indices
+        knet = self.network_leak_coefficients
 
-        num_core_species = len(self.coreSpeciesRates)
-        num_core_reactions = len(self.coreReactionRates)
-        num_edge_species = len(self.edgeSpeciesRates)
-        num_edge_reactions = len(self.edgeReactionRates)
-        num_pdep_networks = len(self.networkLeakRates)
+        num_core_species = len(self.core_species_rates)
+        num_core_reactions = len(self.core_reaction_rates)
+        num_edge_species = len(self.edge_species_rates)
+        num_edge_reactions = len(self.edge_reaction_rates)
+        num_pdep_networks = len(self.network_leak_rates)
 
         res = np.zeros(num_core_species, np.float64)
 
-        core_species_concentrations = np.zeros_like(self.coreSpeciesConcentrations)
-        core_species_rates = np.zeros_like(self.coreSpeciesRates)
-        core_reaction_rates = np.zeros_like(self.coreReactionRates)
-        edge_species_rates = np.zeros_like(self.edgeSpeciesRates)
-        edge_reaction_rates = np.zeros_like(self.edgeReactionRates)
-        network_leak_rates = np.zeros_like(self.networkLeakRates)
+        core_species_concentrations = np.zeros_like(self.core_species_concentrations)
+        core_species_rates = np.zeros_like(self.core_species_rates)
+        core_reaction_rates = np.zeros_like(self.core_reaction_rates)
+        edge_species_rates = np.zeros_like(self.edge_species_rates)
+        edge_reaction_rates = np.zeros_like(self.edge_reaction_rates)
+        network_leak_rates = np.zeros_like(self.network_leak_rates)
 
-        reactions_on_surface = self.reactionsOnSurface
-        species_on_surface = self.speciesOnSurface
-        surface_volume_ratio_si = self.surfaceVolumeRatio.value_si
+        reactions_on_surface = self.reactions_on_surface
+        species_on_surface = self.species_on_surface
+        surface_volume_ratio_si = self.surface_volume_ratio.value_si
 
-        C = np.zeros_like(self.coreSpeciesConcentrations)
+        C = np.zeros_like(self.core_species_concentrations)
         V = self.V  # constant volume reactor
 
         for j in range(num_core_species):
@@ -474,12 +474,12 @@ cdef class SurfaceReactor(ReactionSystem):
                 reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
             network_leak_rates[j] = reaction_rate
 
-        self.coreSpeciesConcentrations = core_species_concentrations
-        self.coreSpeciesRates = core_species_rates
-        self.coreReactionRates = core_reaction_rates
-        self.edgeSpeciesRates = edge_species_rates
-        self.edgeReactionRates = edge_reaction_rates
-        self.networkLeakRates = network_leak_rates
+        self.core_species_concentrations = core_species_concentrations
+        self.core_species_rates = core_species_rates
+        self.core_reaction_rates = core_reaction_rates
+        self.edge_species_rates = edge_species_rates
+        self.edge_reaction_rates = edge_reaction_rates
+        self.network_leak_rates = network_leak_rates
 
         res = core_species_rates * V
         # mol/s
@@ -487,11 +487,11 @@ cdef class SurfaceReactor(ReactionSystem):
         if self.sensitivity and False:
             delta = np.zeros(len(N), np.float64)
             delta[:num_core_species] = res
-            if self.jacobianMatrix is None:
+            if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, N, dNdt, 0, senpar)
             else:
-                jacobian = self.jacobianMatrix
-            dgdk = ReactionSystem.computeRateDerivative(self)
+                jacobian = self.jacobian_matrix
+            dgdk = ReactionSystem.compute_rate_derivative(self)
             for j in range(num_core_reactions + num_core_species):
                 for i in range(num_core_species):
                     for z in range(num_core_species):

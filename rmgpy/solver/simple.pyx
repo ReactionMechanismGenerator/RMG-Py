@@ -54,64 +54,64 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P
     cdef public double V
-    cdef public bint constantVolume
-    cdef public dict initialMoleFractions
+    cdef public bint constant_volume
+    cdef public dict initial_mole_fractions
 
     # collider variables
 
     """
-    pdepColliderKinetics:
+    pdep_collider_kinetics:
     an array that contains a reference to the kinetics object of the reaction
     that has pressure dependent kinetics.
     """
-    cdef public list pdepColliderKinetics
+    cdef public list pdep_collider_kinetics
 
     """
-    colliderEfficiencies:
+    collider_efficiencies:
     an array consisting of array elements, each element corresponding to a reaction.
     Each element is an array with each position in the array corresponding to the collider efficiency
     of the core species. The collider efficiency is set to 1 if the species was not found in the list
     of colliders.
     """
-    cdef public np.ndarray colliderEfficiencies
+    cdef public np.ndarray collider_efficiencies
 
     """
-    pdepColliderReactionIndices: 
+    pdep_collision_reaction_indices: 
     array that contains the indices of those reactions that 
     have pressure dependent kinetics. E.g. [4, 10, 2, 123]
     """
-    cdef public np.ndarray pdepColliderReactionIndices
+    cdef public np.ndarray pdep_collision_reaction_indices
 
     """
-    pdepSpecificColliderKinetics:
+    pdep_specific_collider_kinetics:
     an array that contains a reference to the kinetics object of the reaction
     that has pressure dependent kinetics with a specific species as a third body collider.
     """
-    cdef public list pdepSpecificColliderKinetics
+    cdef public list pdep_specific_collider_kinetics
 
     """
-    specificColliderSpecies:
+    specific_collider_species:
     a list that contains object references to species which are specific third body colliders
-    in the respective reactions in pdepSpecificColliderReactionIndices.
+    in the respective reactions in pdep_specific_collider_reaction_indices.
     """
-    cdef public list specificColliderSpecies
+    cdef public list specific_collider_species
 
     """
-    pdepSpecificColliderReactionIndices:
+    pdep_specific_collider_reaction_indices:
     an array that contains the indices of reactions that have
     a specifcCollider attribyte. E.g. [16, 155, 90]
     """
-    cdef public np.ndarray pdepSpecificColliderReactionIndices
+    cdef public np.ndarray pdep_specific_collider_reaction_indices
 
-    cdef public dict sensConditions
+    cdef public dict sens_conditions
 
     cdef public list Trange
     cdef public list Prange
-    cdef public int nSims
+    cdef public int n_sims
 
-    def __init__(self, T, P, initialMoleFractions, nSims=1, termination=None, sensitiveSpecies=None,
-                 sensitivityThreshold=1e-3, sensConditions=None):
-        ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
+    def __init__(self, T, P, initial_mole_fractions, n_sims=1, termination=None, sensitive_species=None,
+                 sensitivity_threshold=1e-3, sens_conditions=None):
+        ReactionSystem.__init__(self, termination, sensitive_species, sensitivity_threshold)
 
         if type(T) != list:
             self.T = Quantity(T)
@@ -123,82 +123,82 @@ cdef class SimpleReactor(ReactionSystem):
         else:
             self.Prange = [Quantity(p) for p in P]
 
-        self.initialMoleFractions = initialMoleFractions
+        self.initial_mole_fractions = initial_mole_fractions
 
-        self.V = 0  # will be set in initializeModel
-        self.constantVolume = False
+        self.V = 0  # will be set in initialize_model
+        self.constant_volume = False
 
-        self.pdepColliderReactionIndices = None
-        self.pdepColliderKinetics = None
-        self.colliderEfficiencies = None
-        self.pdepSpecificColliderReactionIndices = None
-        self.pdepSpecificColliderKinetics = None
-        self.specificColliderSpecies = None
-        self.sensConditions = sensConditions
-        self.nSims = nSims
+        self.pdep_collision_reaction_indices = None
+        self.pdep_collider_kinetics = None
+        self.collider_efficiencies = None
+        self.pdep_specific_collider_reaction_indices = None
+        self.pdep_specific_collider_kinetics = None
+        self.specific_collider_species = None
+        self.sens_conditions = sens_conditions
+        self.n_sims = n_sims
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
         return (self.__class__,
-                (self.T, self.P, self.initialMoleFractions, self.nSims, self.termination))
+                (self.T, self.P, self.initial_mole_fractions, self.n_sims, self.termination))
 
-    def convertInitialKeysToSpeciesObjects(self, speciesDict):
+    def convert_initial_keys_to_species_objects(self, species_dict):
         """
         Convert the initial_mole_fractions dictionary from species names into species objects,
         using the given dictionary of species.
         """
         initial_mole_fractions = {}
-        for label, moleFrac in self.initialMoleFractions.items():
-            initial_mole_fractions[speciesDict[label]] = moleFrac
-        self.initialMoleFractions = initial_mole_fractions
+        for label, moleFrac in self.initial_mole_fractions.items():
+            initial_mole_fractions[species_dict[label]] = moleFrac
+        self.initial_mole_fractions = initial_mole_fractions
 
         conditions = {}
-        if self.sensConditions is not None:
-            for label, value in self.sensConditions.items():
+        if self.sens_conditions is not None:
+            for label, value in self.sens_conditions.items():
                 if label == 'T' or label == 'P':
                     conditions[label] = value
                 else:
-                    conditions[speciesDict[label]] = value
-        self.sensConditions = conditions
+                    conditions[species_dict[label]] = value
+        self.sens_conditions = conditions
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-                          list surfaceSpecies=None, list surfaceReactions=None, list pdepNetworks=None,
+    cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
+                          list surface_species=None, list surface_reactions=None, list pdep_networks=None,
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                          filterReactions=False, dict conditions=None):
+                          filter_reactions=False, dict conditions=None):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
         """
 
-        if surfaceSpecies is None:
-            surfaceSpecies = []
-        if surfaceReactions is None:
-            surfaceReactions = []
+        if surface_species is None:
+            surface_species = []
+        if surface_reactions is None:
+            surface_reactions = []
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies=coreSpecies, coreReactions=coreReactions,
-                                       edgeSpecies=edgeSpecies, edgeReactions=edgeReactions,
-                                       surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
-                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol, sensitivity=sensitivity,
-                                       sens_atol=sens_atol, sens_rtol=sens_rtol, filterReactions=filterReactions,
+        ReactionSystem.initialize_model(self, core_species=core_species, core_reactions=core_reactions,
+                                       edge_species=edge_species, edge_reactions=edge_reactions,
+                                       surface_species=surface_species, surface_reactions=surface_reactions,
+                                       pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
+                                       sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
                                        conditions=conditions)
 
         # Set initial conditions
         self.set_initial_conditions()
 
         # Compute reaction thresholds if reaction filtering is turned on
-        if filterReactions:
+        if filter_reactions:
             ReactionSystem.set_initial_reaction_thresholds(self)
 
-        self.set_colliders(coreReactions, edgeReactions, coreSpecies)
+        self.set_colliders(core_reactions, edge_reactions, core_species)
 
-        ReactionSystem.compute_network_variables(self, pdepNetworks)
+        ReactionSystem.compute_network_variables(self, pdep_networks)
 
         # Generate forward and reverse rate coefficients k(T,P)
-        self.generate_rate_coefficients(coreReactions, edgeReactions)
+        self.generate_rate_coefficients(core_reactions, edge_reactions)
 
         ReactionSystem.set_initial_derivative(self)
         # Initialize the model
@@ -221,30 +221,30 @@ cdef class SimpleReactor(ReactionSystem):
         if a specific_collider is mentioned.
         """
 
-        y0_core_species = self.y0[:self.numCoreSpecies]
+        y0_core_species = self.y0[:self.num_core_species]
         sum_core_species = np.sum(y0_core_species)
 
-        j = self.reactionIndex[rxn]
-        for i in range(self.pdepColliderReactionIndices.shape[0]):
-            if j == self.pdepColliderReactionIndices[i]:
+        j = self.reaction_index[rxn]
+        for i in range(self.pdep_collision_reaction_indices.shape[0]):
+            if j == self.pdep_collision_reaction_indices[i]:
                 # Calculate effective pressure
                 if rxn.specific_collider is None:
-                    Peff = self.P.value_si * np.sum(self.colliderEfficiencies[i] * y0_core_species / sum_core_species)
+                    Peff = self.P.value_si * np.sum(self.collider_efficiencies[i] * y0_core_species / sum_core_species)
                 else:
                     logging.debug("Calculating Peff using {0} as a specific_collider".format(rxn.specific_collider))
-                    Peff = self.P.value_si * self.y0[self.speciesIndex[rxn.specific_collider]] / sum_core_species
+                    Peff = self.P.value_si * self.y0[self.species_index[rxn.specific_collider]] / sum_core_species
                 return Peff
         return self.P.value_si
 
-    def generate_rate_coefficients(self, coreReactions, edgeReactions):
+    def generate_rate_coefficients(self, core_reactions, edge_reactions):
         """
         Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
         and equilibrium constants (Keq) arrays with the values computed at the temperature
         and (effective) pressure of the reaction system.
         """
 
-        for rxn in itertools.chain(coreReactions, edgeReactions):
-            j = self.reactionIndex[rxn]
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            j = self.reaction_index[rxn]
             Peff = self.calculate_effective_pressure(rxn)
             self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, Peff)
 
@@ -252,50 +252,50 @@ cdef class SimpleReactor(ReactionSystem):
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
-    def get_threshold_rate_constants(self, modelSettings):
+    def get_threshold_rate_constants(self, model_settings):
         """
         Get the threshold rate constants for reaction filtering.
         """
         # Set the maximum unimolecular rate to be kB*T/h
         unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
         # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
-        bimolecular_threshold_rate_constant = modelSettings.filterThreshold
+        bimolecular_threshold_rate_constant = model_settings.filterThreshold
         # Maximum trimolecular rate constants are approximately three
         # orders of magnitude smaller (accounting for the unit
         # conversion from m^3/mol/s to m^6/mol^2/s) based on
         # extending the Smoluchowski equation to three molecules
-        trimolecular_threshold_rate_constant = modelSettings.filterThreshold / 1e3
+        trimolecular_threshold_rate_constant = model_settings.filterThreshold / 1e3
         return (unimolecular_threshold_rate_constant,
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
 
-    def set_colliders(self, coreReactions, edgeReactions, coreSpecies):
+    def set_colliders(self, core_reactions, edge_reactions, core_species):
         """
         Store collider efficiencies and reaction indices for pdep reactions that have collider efficiencies,
         and store specific collider indices
         """
         pdep_collider_reaction_indices = []
-        self.pdepColliderKinetics = []
+        self.pdep_collider_kinetics = []
         collider_efficiencies = []
         pdep_specific_collider_reaction_indices = []
-        self.pdepSpecificColliderKinetics = []
-        self.specificColliderSpecies = []
+        self.pdep_specific_collider_kinetics = []
+        self.specific_collider_species = []
 
-        for rxn in itertools.chain(coreReactions, edgeReactions):
+        for rxn in itertools.chain(core_reactions, edge_reactions):
             if rxn.kinetics.is_pressure_dependent():
                 if rxn.kinetics.efficiencies:
-                    j = self.reactionIndex[rxn]
+                    j = self.reaction_index[rxn]
                     pdep_collider_reaction_indices.append(j)
-                    self.pdepColliderKinetics.append(rxn.kinetics)
-                    collider_efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(coreSpecies))
+                    self.pdep_collider_kinetics.append(rxn.kinetics)
+                    collider_efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(core_species))
                 if rxn.specific_collider:
-                    pdep_specific_collider_reaction_indices.append(self.reactionIndex[rxn])
-                    self.pdepSpecificColliderKinetics.append(rxn.kinetics)
-                    self.specificColliderSpecies.append(rxn.specific_collider)
+                    pdep_specific_collider_reaction_indices.append(self.reaction_index[rxn])
+                    self.pdep_specific_collider_kinetics.append(rxn.kinetics)
+                    self.specific_collider_species.append(rxn.specific_collider)
 
-        self.pdepColliderReactionIndices = np.array(pdep_collider_reaction_indices, np.int)
-        self.colliderEfficiencies = np.array(collider_efficiencies, np.float64)
-        self.pdepSpecificColliderReactionIndices = np.array(pdep_specific_collider_reaction_indices, np.int)
+        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, np.int)
+        self.collider_efficiencies = np.array(collider_efficiencies, np.float64)
+        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, np.int)
 
     def set_initial_conditions(self):
         """
@@ -309,20 +309,20 @@ cdef class SimpleReactor(ReactionSystem):
         initial mole fractions dictionary.
 
         The initial species concentration is computed and stored in the
-        coreSpeciesConcentrations array.
+        core_species_concentrations array.
 
         """
 
         ReactionSystem.set_initial_conditions(self)
 
-        for spec, moleFrac in self.initialMoleFractions.items():
+        for spec, moleFrac in self.initial_mole_fractions.items():
             i = self.get_species_index(spec)
             self.y0[i] = moleFrac
 
         # Use ideal gas law to compute volume
-        self.V = constants.R * self.T.value_si * np.sum(self.y0[:self.numCoreSpecies]) / self.P.value_si  # volume in m^3
-        for j in range(self.numCoreSpecies):
-            self.coreSpeciesConcentrations[j] = self.y0[j] / self.V
+        self.V = constants.R * self.T.value_si * np.sum(self.y0[:self.num_core_species]) / self.P.value_si  # volume in m^3
+        for j in range(self.num_core_species):
+            self.core_species_concentrations[j] = self.y0[j] / self.V
 
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
@@ -345,62 +345,62 @@ cdef class SimpleReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=1] pdep_collider_reaction_indices, pdep_specific_collider_reaction_indices
         cdef list pdep_collider_kinetics, pdep_specific_collider_kinetics
 
-        ir = self.reactantIndices
-        ip = self.productIndices
+        ir = self.reactant_indices
+        ip = self.product_indices
 
-        num_core_species = len(self.coreSpeciesRates)
-        num_core_reactions = len(self.coreReactionRates)
-        num_edge_species = len(self.edgeSpeciesRates)
-        num_edge_reactions = len(self.edgeReactionRates)
-        num_pdep_networks = len(self.networkLeakRates)
+        num_core_species = len(self.core_species_rates)
+        num_core_reactions = len(self.core_reaction_rates)
+        num_edge_species = len(self.edge_species_rates)
+        num_edge_reactions = len(self.edge_reaction_rates)
+        num_pdep_networks = len(self.network_leak_rates)
         kf = self.kf
         kr = self.kb
 
         y_core_species = y[:num_core_species]
 
         # Recalculate any forward and reverse rate coefficients that involve pdep collision efficiencies
-        if self.pdepColliderReactionIndices.shape[0] != 0:
+        if self.pdep_collision_reaction_indices.shape[0] != 0:
             T = self.T.value_si
             P = self.P.value_si
             equilibrium_constants = self.Keq
-            pdep_collider_reaction_indices = self.pdepColliderReactionIndices
-            pdep_collider_kinetics = self.pdepColliderKinetics
-            collider_efficiencies = self.colliderEfficiencies
+            pdep_collider_reaction_indices = self.pdep_collision_reaction_indices
+            pdep_collider_kinetics = self.pdep_collider_kinetics
+            collider_efficiencies = self.collider_efficiencies
             for i in range(pdep_collider_reaction_indices.shape[0]):
                 # Calculate effective pressure
                 Peff = P * np.sum(collider_efficiencies[i] * y_core_species / np.sum(y_core_species))
                 j = pdep_collider_reaction_indices[i]
                 kf[j] = pdep_collider_kinetics[i].get_rate_coefficient(T, Peff)
                 kr[j] = kf[j] / equilibrium_constants[j]
-        if self.pdepSpecificColliderReactionIndices.shape[0] != 0:
+        if self.pdep_specific_collider_reaction_indices.shape[0] != 0:
             T = self.T.value_si
             P = self.P.value_si
             equilibrium_constants = self.Keq
-            pdep_specific_collider_reaction_indices = self.pdepSpecificColliderReactionIndices
-            pdep_specific_collider_kinetics = self.pdepSpecificColliderKinetics
-            specific_collider_species = self.specificColliderSpecies
+            pdep_specific_collider_reaction_indices = self.pdep_specific_collider_reaction_indices
+            pdep_specific_collider_kinetics = self.pdep_specific_collider_kinetics
+            specific_collider_species = self.specific_collider_species
             for i in range(pdep_specific_collider_reaction_indices.shape[0]):
                 # Calculate effective pressure
-                Peff = P * y[self.speciesIndex[specific_collider_species[i]]] / np.sum(y_core_species)
+                Peff = P * y[self.species_index[specific_collider_species[i]]] / np.sum(y_core_species)
                 j = pdep_specific_collider_reaction_indices[i]
                 kf[j] = pdep_specific_collider_kinetics[i].get_rate_coefficient(T, Peff)
                 kr[j] = kf[j] / equilibrium_constants[j]
 
-        inet = self.networkIndices
-        knet = self.networkLeakCoefficients
+        inet = self.network_indices
+        knet = self.network_leak_coefficients
 
         res = np.zeros(num_core_species, np.float64)
 
-        core_species_concentrations = np.zeros_like(self.coreSpeciesConcentrations)
-        core_species_rates = np.zeros_like(self.coreSpeciesRates)
-        core_reaction_rates = np.zeros_like(self.coreReactionRates)
-        core_species_consumption_rates = np.zeros_like(self.coreSpeciesConsumptionRates)
-        core_species_production_rates = np.zeros_like(self.coreSpeciesProductionRates)
-        edge_species_rates = np.zeros_like(self.edgeSpeciesRates)
-        edge_reaction_rates = np.zeros_like(self.edgeReactionRates)
-        network_leak_rates = np.zeros_like(self.networkLeakRates)
+        core_species_concentrations = np.zeros_like(self.core_species_concentrations)
+        core_species_rates = np.zeros_like(self.core_species_rates)
+        core_reaction_rates = np.zeros_like(self.core_reaction_rates)
+        core_species_consumption_rates = np.zeros_like(self.core_species_consumption_rates)
+        core_species_production_rates = np.zeros_like(self.core_species_production_rates)
+        edge_species_rates = np.zeros_like(self.edge_species_rates)
+        edge_reaction_rates = np.zeros_like(self.edge_reaction_rates)
+        network_leak_rates = np.zeros_like(self.network_leak_rates)
 
-        C = np.zeros_like(self.coreSpeciesConcentrations)
+        C = np.zeros_like(self.core_species_concentrations)
 
         # Use ideal gas law to compute volume
         V = constants.R * self.T.value_si * np.sum(y_core_species) / self.P.value_si
@@ -504,25 +504,25 @@ cdef class SimpleReactor(ReactionSystem):
                 reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
             network_leak_rates[j] = reaction_rate
 
-        self.coreSpeciesConcentrations = core_species_concentrations
-        self.coreSpeciesRates = core_species_rates
-        self.coreSpeciesProductionRates = core_species_production_rates
-        self.coreSpeciesConsumptionRates = core_species_consumption_rates
-        self.coreReactionRates = core_reaction_rates
-        self.edgeSpeciesRates = edge_species_rates
-        self.edgeReactionRates = edge_reaction_rates
-        self.networkLeakRates = network_leak_rates
+        self.core_species_concentrations = core_species_concentrations
+        self.core_species_rates = core_species_rates
+        self.core_species_production_rates = core_species_production_rates
+        self.core_species_consumption_rates = core_species_consumption_rates
+        self.core_reaction_rates = core_reaction_rates
+        self.edge_species_rates = edge_species_rates
+        self.edge_reaction_rates = edge_reaction_rates
+        self.network_leak_rates = network_leak_rates
 
         res = core_species_rates * V
 
         if self.sensitivity:
             delta = np.zeros(len(y), np.float64)
             delta[:num_core_species] = res
-            if self.jacobianMatrix is None:
+            if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, y, dydt, 0, senpar)
             else:
-                jacobian = self.jacobianMatrix
-            dgdk = ReactionSystem.computeRateDerivative(self)
+                jacobian = self.jacobian_matrix
+            dgdk = ReactionSystem.compute_rate_derivative(self)
             for j in range(num_core_reactions + num_core_species):
                 for i in range(num_core_species):
                     for z in range(num_core_species):
@@ -548,13 +548,13 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int num_core_reactions, num_core_species, i, j
         cdef double k, V, Ctot, deriv, corr
 
-        ir = self.reactantIndices
-        ip = self.productIndices
+        ir = self.reactant_indices
+        ip = self.product_indices
 
         kf = self.kf
         kr = self.kb
-        num_core_reactions = len(self.coreReactionRates)
-        num_core_species = len(self.coreSpeciesConcentrations)
+        num_core_reactions = len(self.core_reaction_rates)
+        num_core_species = len(self.core_species_concentrations)
 
         pd = -cj * np.identity(num_core_species, np.float64)
 
@@ -562,7 +562,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         Ctot = self.P.value_si / (constants.R * self.T.value_si)
 
-        C = np.zeros_like(self.coreSpeciesConcentrations)
+        C = np.zeros_like(self.core_species_concentrations)
         for j in range(num_core_species):
             C[j] = y[j] / V
 
@@ -1022,5 +1022,5 @@ cdef class SimpleReactor(ReactionSystem):
                             for i in range(num_core_species):
                                 pd[ir[j, 2], i] += corr
 
-        self.jacobianMatrix = pd + cj * np.identity(num_core_species, np.float64)
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
         return pd

@@ -93,10 +93,10 @@ class SimpleReactorCheck(unittest.TestCase):
 
         T = 1000
         P = 1.0e5
-        rxn_system = SimpleReactor(T, P, initialMoleFractions={c2h5: 0.1, ch3: 0.1, ch4: 0.4, c2h6: 0.4}, nSims=1,
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions={c2h5: 0.1, ch3: 0.1, ch4: 0.4, c2h6: 0.4}, n_sims=1,
                                    termination=[])
 
-        rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -111,8 +111,8 @@ class SimpleReactorCheck(unittest.TestCase):
             # You must make a copy of y because it is overwritten by DASSL at
             # each call to advance()
             y.append(rxn_system.y.copy())
-            reaction_rates.append(rxn_system.coreReactionRates.copy())
-            species_rates.append(rxn_system.coreSpeciesRates.copy())
+            reaction_rates.append(rxn_system.core_reaction_rates.copy())
+            species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
@@ -180,9 +180,9 @@ class SimpleReactorCheck(unittest.TestCase):
             core_reactions = [rxn]
 
             rxn_system0 = SimpleReactor(T, P,
-                                        initialMoleFractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
-                                        nSims=1, termination=[])
-            rxn_system0.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+                                        initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
+                                        n_sims=1, termination=[])
+            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
             dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
             num_core_species = len(core_species)
             dN = .000001 * sum(rxn_system0.y)
@@ -225,11 +225,11 @@ class SimpleReactorCheck(unittest.TestCase):
         edge_species = []
         core_reactions = rxn_list
 
-        rxn_system0 = SimpleReactor(T, P, initialMoleFractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
-                                    nSims=1, termination=[])
-        rxn_system0.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system0 = SimpleReactor(T, P, initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
+                                    n_sims=1, termination=[])
+        rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
-        solver_dfdk = rxn_system0.computeRateDerivative()
+        solver_dfdk = rxn_system0.compute_rate_derivative()
         # print 'Solver d(dy/dt)/dk'
         # print solver_dfdk
 
@@ -237,8 +237,8 @@ class SimpleReactorCheck(unittest.TestCase):
         rxn_system0.termination.append(TerminationTime((integration_time, 's')))
         model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
         simulator_settings = SimulatorSettings()
-        rxn_system0.simulate(core_species, core_reactions, [], [], [], [], modelSettings=model_settings,
-                             simulatorSettings=simulator_settings)
+        rxn_system0.simulate(core_species, core_reactions, [], [], [], [], model_settings=model_settings,
+                             simulator_settings=simulator_settings)
 
         y0 = rxn_system0.y
 
@@ -249,9 +249,9 @@ class SimpleReactorCheck(unittest.TestCase):
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
             dk = rxn_list[i].get_rate_coefficient(T, P) - k0
 
-            rxn_system = SimpleReactor(T, P, initialMoleFractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
-                                       nSims=1, termination=[])
-            rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+            rxn_system = SimpleReactor(T, P, initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
+                                       n_sims=1, termination=[])
+            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
             dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
             dfdk[:, i] = (dfdt - dfdt0) / dk
@@ -260,8 +260,8 @@ class SimpleReactorCheck(unittest.TestCase):
             model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
             simulator_settings = SimulatorSettings()
 
-            rxn_system.simulate(core_species, core_reactions, [], [], [], [], modelSettings=model_settings,
-                                simulatorSettings=simulator_settings)
+            rxn_system.simulate(core_species, core_reactions, [], [], [], [], model_settings=model_settings,
+                                simulator_settings=simulator_settings)
 
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
 
@@ -313,8 +313,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['Ar']: 4.0}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 0.1 s
         rxn_system.advance(0.1)
@@ -344,8 +344,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['CH3']: 1}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 5 s
         rxn_system.advance(5)
@@ -385,8 +385,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['CH4']: 0.001}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 0.1 s
         rxn_system.advance(0.1)
@@ -416,8 +416,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['CH4']: 0.5}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 5 s
         rxn_system.advance(5)

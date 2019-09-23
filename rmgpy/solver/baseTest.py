@@ -43,7 +43,7 @@ class ConcentrationPrinter(object):
         self.data = []
 
     def update(self, subject):
-        self.data.append((subject.t, subject.coreSpeciesConcentrations))
+        self.data.append((subject.t, subject.core_species_concentrations))
 
 
 class ReactionSystemTest(unittest.TestCase):
@@ -66,16 +66,16 @@ class ReactionSystemTest(unittest.TestCase):
         """
         reaction_system = self.rmg.reactionSystems[0]
         reaction_system.attach(self.listener)
-        reaction_model = self.rmg.reactionModel
+        reaction_model = self.rmg.reaction_model
 
         core_species = reaction_model.core.species
         core_reactions = reaction_model.core.reactions
         surface_species = [core_species[7], core_species[6]]
         surface_reactions = [core_reactions[0], core_reactions[2], core_reactions[3]]
 
-        reaction_system.initializeModel(core_species, core_reactions,
-                                        reaction_model.edge.species, reaction_model.edge.reactions, surface_species,
-                                        surface_reactions)
+        reaction_system.initialize_model(core_species, core_reactions,
+                                         reaction_model.edge.species, reaction_model.edge.reactions, surface_species,
+                                         surface_reactions)
 
         self.assertEquals(len(surface_species), 1)  # only H should be left
         self.assertEquals(len(surface_reactions), 2)  # all the reactions with H should stay
@@ -87,7 +87,7 @@ class ReactionSystemTest(unittest.TestCase):
         """
         reaction_system = self.rmg.reactionSystems[0]
         reaction_system.attach(self.listener)
-        reaction_model = self.rmg.reactionModel
+        reaction_model = self.rmg.reaction_model
         core_species = reaction_model.core.species
         core_reactions = reaction_model.core.reactions
 
@@ -97,27 +97,27 @@ class ReactionSystemTest(unittest.TestCase):
         surface_reactions = [core_reactions[0]]
         core_species = core_species[0:6] + [core_species[8]]
         core_reactions = surface_reactions[:]
-        reaction_system.numCoreReactions = 1
-        reaction_system.numCoreSpecies = 7
+        reaction_system.num_core_reactions = 1
+        reaction_system.num_core_species = 7
 
-        reaction_system.initializeModel(core_species, core_reactions,
-                                        edge_species, edge_reactions, surface_species, surface_reactions)
+        reaction_system.initialize_model(core_species, core_reactions,
+                                         edge_species, edge_reactions, surface_species, surface_reactions)
 
-        self.assertEquals(len(reaction_system.surfaceSpeciesIndices), 1)  # surfaceSpeciesIndices calculated correctly
-        self.assertEquals(reaction_system.surfaceSpeciesIndices[0], 5)  # surfaceSpeciesIndices calculated correctly
+        self.assertEquals(len(reaction_system.surface_species_indices), 1)  # surface_species_indices calculated correctly
+        self.assertEquals(reaction_system.surface_species_indices[0], 5)  # surface_species_indices calculated correctly
 
-        inds = reaction_system.getLayeringIndices()
+        inds = reaction_system.get_layering_indices()
 
         self.assertEquals(inds[0], 1)  # worked correctly
         self.assertEquals(inds[1], 2)
 
     def testAddReactionsToSurface(self):
         """
-        Test that addReactionsToSurface gives the correct surface_species and surface_reactions lists after being called
+        Test that add_reactions_to_surface gives the correct surface_species and surface_reactions lists after being called
         """
         reaction_system = self.rmg.reactionSystems[0]
         reaction_system.attach(self.listener)
-        reaction_model = self.rmg.reactionModel
+        reaction_model = self.rmg.reaction_model
         species = reaction_model.core.species
         reactions = reaction_model.core.reactions
 
@@ -128,13 +128,13 @@ class ReactionSystemTest(unittest.TestCase):
         edge_species = species[6:]
         edge_reactions = reactions[1:]
 
-        reaction_system.initializeModel(core_species, core_reactions,
-                                        edge_species, edge_reactions, surface_species, surface_reactions)
+        reaction_system.initialize_model(core_species, core_reactions,
+                                         edge_species, edge_reactions, surface_species, surface_reactions)
 
         new_surface_reactions = edge_reactions
         new_surface_reaction_inds = [edge_reactions.index(i) for i in new_surface_reactions]
 
-        surface_species, surface_reactions = reaction_system.addReactionsToSurface(
+        surface_species, surface_reactions = reaction_system.add_reactions_to_surface(
             new_surface_reactions, new_surface_reaction_inds, surface_species, surface_reactions, edge_species)
 
         self.assertEqual(set(surface_species), set(edge_species))  # all edge species should now be in the surface
@@ -161,7 +161,7 @@ class ReactionSystemTest(unittest.TestCase):
         reaction_system = self.rmg.reactionSystems[0]
         reaction_system.attach(self.listener)
 
-        reaction_model = self.rmg.reactionModel
+        reaction_model = self.rmg.reaction_model
 
         self.assertEqual(self.listener.data, [])
 
@@ -170,14 +170,14 @@ class ReactionSystemTest(unittest.TestCase):
 
         # run simulation:
         terminated, resurrected, obj, sspcs, srxns, t, conv = reaction_system.simulate(
-            coreSpecies=reaction_model.core.species,
-            coreReactions=reaction_model.core.reactions,
-            edgeSpecies=reaction_model.edge.species,
-            edgeReactions=reaction_model.edge.reactions,
-            surfaceSpecies=[],
-            surfaceReactions=[],
-            modelSettings=model_settings,
-            simulatorSettings=simulator_settings,
+            core_species=reaction_model.core.species,
+            core_reactions=reaction_model.core.reactions,
+            edge_species=reaction_model.edge.species,
+            edge_reactions=reaction_model.edge.reactions,
+            surface_species=[],
+            surface_reactions=[],
+            model_settings=model_settings,
+            simulator_settings=simulator_settings,
         )
 
         self.assertNotEqual(self.listener.data, [])
