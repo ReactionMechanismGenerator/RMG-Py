@@ -33,15 +33,15 @@ import shutil
 import unittest
 
 from rmgpy.rmg.model import CoreEdgeReactionModel, ReactionModel
-from rmgpy.rmg.output import saveOutputHTML
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.rmg.output import save_output_html
+from rmgpy.chemkin import load_chemkin_file
 
 
 ###################################################
 
 class TestOutput(unittest.TestCase):
 
-    def testSaveOutputHTML(self):
+    def test_save_output_html(self):
         """
         This example is to test if an HTML file can be generated
         for the provided chemkin model.
@@ -51,15 +51,15 @@ class TestOutput(unittest.TestCase):
         chemkin_path = os.path.join(folder, 'eg6', 'chem_annotated.inp')
         dictionary_path = os.path.join(folder, 'eg6', 'species_dictionary.txt')
 
-        # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path)
+        # load_chemkin_file
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
         # convert it into a reaction model:
         core = ReactionModel(species, reactions)
         cerm = CoreEdgeReactionModel(core)
 
         out = os.path.join(folder, 'output.html')
-        saveOutputHTML(out, cerm)
+        save_output_html(out, cerm)
 
         self.assertTrue(os.path.isfile(out))
         os.remove(out)

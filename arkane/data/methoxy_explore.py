@@ -231,7 +231,7 @@ pressureDependence(
     maximumGrainSize=(0.5, 'kcal/mol'),
     minimumGrainCount=500,
     method='modified strong collision',
-    interpolationModel=('pdeparrhenius'),
+    interpolationModel='pdeparrhenius',
     activeKRotor=True,
     rmgmode=False,
 )

@@ -38,4 +38,4 @@ cdef class SingleExponentialDown(RMGObject):
     cdef public ScalarQuantity _alpha0, _t0
     cdef public double n
     
-    cpdef double getAlpha(self, double T) except -1000000000
+    cpdef double get_alpha(self, double T) except -1000000000

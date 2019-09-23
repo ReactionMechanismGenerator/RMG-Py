@@ -66,7 +66,7 @@ class TestKineticsData(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_Tdata(self):
+    def test_temperature_data(self):
         """
         Test that the KineticsData Tdata property was properly set.
         """
@@ -83,13 +83,13 @@ class TestKineticsData(unittest.TestCase):
             k0 *= constants.Na * 1e-6
             self.assertAlmostEqual(k, k0, delta=1e-6 * k0)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the KineticsData Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the KineticsData Tmax property was properly set.
         """
@@ -101,26 +101,26 @@ class TestKineticsData(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the KineticsData.isTemperatureValid() method.
+        Test the KineticsData.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
         for T, valid in zip(Tdata, validdata):
-            valid0 = self.kinetics.isTemperatureValid(T)
+            valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the KineticsData.getRateCoefficient() method.
+        Test the KineticsData.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
             [2.84847e-01, 2.36670e+01, 2.77019e+03, 3.78191e+04, 1.99333e+05, 5.24644e+05, 1.38086e+06, 2.95680e+06,
              5.15086e+06, 8.97299e+06])
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.kinetics.getRateCoefficient(T)
+            kact = self.kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
     def test_pickle(self):
@@ -202,7 +202,7 @@ class TestPDepKineticsData(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_Tdata(self):
+    def test_temperature_data(self):
         """
         Test that the PDepKineticsData Tdata property was properly set.
         """
@@ -210,7 +210,7 @@ class TestPDepKineticsData(unittest.TestCase):
         for T, T0 in zip(self.kinetics.Tdata.value_si, self.Tdata):
             self.assertAlmostEqual(T, T0, 4)
 
-    def test_Pdata(self):
+    def test_pressure_data(self):
         """
         Test that the PDepKineticsData Pdata property was properly set.
         """
@@ -229,25 +229,25 @@ class TestPDepKineticsData(unittest.TestCase):
                 k = self.kinetics.kdata.value_si[i, j]
                 self.assertAlmostEqual(k, k0, delta=1e-6 * k0)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the PDepKineticsData Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the PDepKineticsData Tmax property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the PDepKineticsData Pmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the PDepKineticsData Pmax property was properly set.
         """
@@ -259,29 +259,29 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the PDepKineticsData.isTemperatureValid() method.
+        Test the PDepKineticsData.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
         for T, valid in zip(Tdata, validdata):
-            valid0 = self.kinetics.isTemperatureValid(T)
+            valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_isPressureValid(self):
+    def test_is_pressure_valid(self):
         """
-        Test the PDepKineticsData.isPressureValid() method.
+        Test the PDepKineticsData.is_pressure_valid() method.
         """
         Pdata = np.array([1e3, 1e4, 1e5, 1e6, 1e7])
         validdata = np.array([False, True, True, True, False], np.bool)
         for P, valid in zip(Pdata, validdata):
-            valid0 = self.kinetics.isPressureValid(P)
+            valid0 = self.kinetics.is_pressure_valid(P)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the PDepKineticsData.getRateCoefficient() method.
+        Test the PDepKineticsData.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -296,7 +296,7 @@ class TestPDepKineticsData(unittest.TestCase):
         for i in range(Tlist.shape[0]):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
-                kact = self.kinetics.getRateCoefficient(Tlist[i], Plist[j])
+                kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
                 self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
     def test_pickle(self):

@@ -93,161 +93,161 @@ class TestConverter(unittest.TestCase):
             comment='C2H6',
         )
 
-    def test_convert_Wilhoit_to_NASA(self):
+    def test_convert_wilhoit_to_nasa(self):
         """
         Test the conversion of a Wilhoit model to a NASA model.
         """
         wilhoit = self.wilhoit
-        nasa = wilhoit.toNASA(Tmin=10, Tmax=3000, Tint=1000)
+        nasa = wilhoit.to_nasa(Tmin=10, Tmax=3000, Tint=1000)
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
-            cp_wilhoit = wilhoit.getHeatCapacity(T)
-            cp_nasa = nasa.getHeatCapacity(T)
+            cp_wilhoit = wilhoit.get_heat_capacity(T)
+            cp_nasa = nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_nasa, cp_wilhoit, delta=1e0)
-            h_wilhoit = wilhoit.getEnthalpy(T)
-            h_nasa = nasa.getEnthalpy(T)
+            h_wilhoit = wilhoit.get_enthalpy(T)
+            h_nasa = nasa.get_enthalpy(T)
             self.assertAlmostEqual(h_nasa, h_wilhoit, delta=2e1)
-            s_wilhoit = wilhoit.getEntropy(T)
-            s_nasa = nasa.getEntropy(T)
+            s_wilhoit = wilhoit.get_entropy(T)
+            s_nasa = nasa.get_entropy(T)
             self.assertAlmostEqual(s_nasa, s_wilhoit, delta=1e0)
         self.assertAlmostEqual(wilhoit.E0.value_si, nasa.E0.value_si, delta=1e1)
 
-    def test_convert_Wilhoit_to_ThermoData(self):
+    def test_convert_wilhoit_to_thermo_data(self):
         """
         Test the conversion of a Wilhoit model to a ThermoData model.
         """
         wilhoit = self.wilhoit
-        thermodata = wilhoit.toThermoData()
+        thermodata = wilhoit.to_thermo_data()
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
-            cp_wilhoit = wilhoit.getHeatCapacity(T)
-            cp_thermodata = thermodata.getHeatCapacity(T)
+            cp_wilhoit = wilhoit.get_heat_capacity(T)
+            cp_thermodata = thermodata.get_heat_capacity(T)
             self.assertAlmostEqual(cp_thermodata, cp_wilhoit, 4)
         T = 298
-        h_wilhoit = wilhoit.getEnthalpy(T)
-        h_thermodata = thermodata.getEnthalpy(T)
+        h_wilhoit = wilhoit.get_enthalpy(T)
+        h_thermodata = thermodata.get_enthalpy(T)
         self.assertAlmostEqual(h_thermodata, h_wilhoit, 4)
-        s_wilhoit = wilhoit.getEntropy(T)
-        s_thermodata = thermodata.getEntropy(T)
+        s_wilhoit = wilhoit.get_entropy(T)
+        s_thermodata = thermodata.get_entropy(T)
         self.assertAlmostEqual(s_thermodata, s_wilhoit, 4)
         self.assertAlmostEqual(wilhoit.E0.value_si, thermodata.E0.value_si, delta=1e1)
 
-    def test_convert_NASA_to_Wilhoit(self):
+    def test_convert_nasa_to_wilhoit(self):
         """
         Test the conversion of a NASA model to a Wilhoit model.
         """
         nasa = self.nasa
-        wilhoit = nasa.toWilhoit()
+        wilhoit = nasa.to_wilhoit()
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
-            cp_wilhoit = wilhoit.getHeatCapacity(T)
-            cp_nasa = nasa.getHeatCapacity(T)
+            cp_wilhoit = wilhoit.get_heat_capacity(T)
+            cp_nasa = nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_nasa, cp_wilhoit, delta=1e0)
-            h_wilhoit = wilhoit.getEnthalpy(T)
-            h_nasa = nasa.getEnthalpy(T)
+            h_wilhoit = wilhoit.get_enthalpy(T)
+            h_nasa = nasa.get_enthalpy(T)
             self.assertAlmostEqual(h_nasa, h_wilhoit, delta=2e1)
-            s_wilhoit = wilhoit.getEntropy(T)
-            s_nasa = nasa.getEntropy(T)
+            s_wilhoit = wilhoit.get_entropy(T)
+            s_nasa = nasa.get_entropy(T)
             self.assertAlmostEqual(s_nasa, s_wilhoit, delta=1e0)
         self.assertAlmostEqual(nasa.E0.value_si, wilhoit.E0.value_si, delta=2e1)
 
-    def test_convert_NASA_to_ThermoData(self):
+    def test_convert_nasa_to_thermo_data(self):
         """
         Test the conversion of a NASA model to a ThermoData model.
         """
         nasa = self.nasa
-        thermodata = nasa.toThermoData()
+        thermodata = nasa.to_thermo_data()
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
-            cp_thermodata = thermodata.getHeatCapacity(T)
-            cp_nasa = nasa.getHeatCapacity(T)
+            cp_thermodata = thermodata.get_heat_capacity(T)
+            cp_nasa = nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_nasa, cp_thermodata, 4)
         T = 298
-        h_thermodata = thermodata.getEnthalpy(T)
-        h_nasa = nasa.getEnthalpy(T)
+        h_thermodata = thermodata.get_enthalpy(T)
+        h_nasa = nasa.get_enthalpy(T)
         self.assertAlmostEqual(h_nasa, h_thermodata, 4)
-        s_thermodata = thermodata.getEntropy(T)
-        s_nasa = nasa.getEntropy(T)
+        s_thermodata = thermodata.get_entropy(T)
+        s_nasa = nasa.get_entropy(T)
         self.assertAlmostEqual(s_nasa, s_thermodata, 4)
         self.assertAlmostEqual(nasa.E0.value_si, thermodata.E0.value_si, delta=1e1)
 
-    def test_convert_ThermoData_to_Wilhoit(self):
+    def test_convert_thermo_data_to_wilhoit(self):
         """
         Test the conversion of a ThermoData model to a Wilhoit model.
         """
         thermodata = self.thermodata
-        wilhoit = thermodata.toWilhoit()
+        wilhoit = thermodata.to_wilhoit()
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
-            cp_wilhoit = wilhoit.getHeatCapacity(T)
-            cp_thermodata = thermodata.getHeatCapacity(T)
+            cp_wilhoit = wilhoit.get_heat_capacity(T)
+            cp_thermodata = thermodata.get_heat_capacity(T)
             self.assertAlmostEqual(cp_thermodata, cp_wilhoit, 3)
         T = 298
-        h_wilhoit = wilhoit.getEnthalpy(T)
-        h_thermodata = thermodata.getEnthalpy(T)
+        h_wilhoit = wilhoit.get_enthalpy(T)
+        h_thermodata = thermodata.get_enthalpy(T)
         self.assertAlmostEqual(h_thermodata, h_wilhoit, 3)
-        s_wilhoit = wilhoit.getEntropy(T)
-        s_thermodata = thermodata.getEntropy(T)
+        s_wilhoit = wilhoit.get_entropy(T)
+        s_thermodata = thermodata.get_entropy(T)
         self.assertAlmostEqual(s_thermodata, s_wilhoit, 3)
         self.assertAlmostEqual(thermodata.E0.value_si, wilhoit.E0.value_si, delta=1e1)
 
-    def test_convert_ThermoData_to_NASA(self):
+    def test_convert_thermo_data_to_nasa(self):
         """
         Test the conversion of a ThermoData model to a NASA model.
         """
         thermodata = self.thermodata
-        nasa = thermodata.toNASA(Tmin=10, Tmax=3000, Tint=1000)
+        nasa = thermodata.to_nasa(Tmin=10, Tmax=3000, Tint=1000)
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
-            cp_thermodata = thermodata.getHeatCapacity(T)
-            cp_nasa = nasa.getHeatCapacity(T)
+            cp_thermodata = thermodata.get_heat_capacity(T)
+            cp_nasa = nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_nasa, cp_thermodata, delta=1e0)
         T = 298
-        h_thermodata = thermodata.getEnthalpy(T)
-        h_nasa = nasa.getEnthalpy(T)
+        h_thermodata = thermodata.get_enthalpy(T)
+        h_nasa = nasa.get_enthalpy(T)
         self.assertAlmostEqual(h_nasa, h_thermodata, delta=1e0)
-        s_thermodata = thermodata.getEntropy(T)
-        s_nasa = nasa.getEntropy(T)
+        s_thermodata = thermodata.get_entropy(T)
+        s_nasa = nasa.get_entropy(T)
         self.assertAlmostEqual(s_nasa, s_thermodata, delta=1e0)
         self.assertAlmostEqual(thermodata.E0.value_si, nasa.E0.value_si, delta=1e1)
 
-    def test_Wilhoit_NASA_Wilhoit(self):
+    def test_wilhoit_nasa_wilhoit(self):
         """
         Test round-trip conversion from Wilhoit to NASA and back
         """
         wilhoit1 = self.wilhoit
-        nasa = wilhoit1.toNASA(Tmin=10, Tmax=3000, Tint=1000)
-        wilhoit2 = nasa.toWilhoit()
+        nasa = wilhoit1.to_nasa(Tmin=10, Tmax=3000, Tint=1000)
+        wilhoit2 = nasa.to_wilhoit()
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
-            cp_1 = wilhoit1.getHeatCapacity(T)
-            cp_2 = wilhoit2.getHeatCapacity(T)
+            cp_1 = wilhoit1.get_heat_capacity(T)
+            cp_2 = wilhoit2.get_heat_capacity(T)
             self.assertAlmostEqual(cp_1, cp_2, delta=1e0)
-            h_1 = wilhoit1.getEnthalpy(T)
-            h_2 = wilhoit2.getEnthalpy(T)
+            h_1 = wilhoit1.get_enthalpy(T)
+            h_2 = wilhoit2.get_enthalpy(T)
             self.assertAlmostEqual(h_1, h_2, delta=2e1)
-            s_1 = wilhoit1.getEntropy(T)
-            s_2 = wilhoit2.getEntropy(T)
+            s_1 = wilhoit1.get_entropy(T)
+            s_2 = wilhoit2.get_entropy(T)
             self.assertAlmostEqual(s_1, s_2, delta=1e0)
         self.assertAlmostEqual(wilhoit1.E0.value_si, wilhoit2.E0.value_si, delta=1e1)
 
-    def test_Wilhoit_ThermoData_Wilhoit(self):
+    def test_wilhoit_thermo_data_wilhoit(self):
         """
         Test round-trip conversion from Wilhoit to ThermoData and back
         """
         wilhoit1 = self.wilhoit
-        thermodata = wilhoit1.toThermoData()
-        wilhoit2 = thermodata.toWilhoit()
+        thermodata = wilhoit1.to_thermo_data()
+        wilhoit2 = thermodata.to_wilhoit()
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
-            cp_1 = wilhoit1.getHeatCapacity(T)
-            cp_2 = wilhoit2.getHeatCapacity(T)
+            cp_1 = wilhoit1.get_heat_capacity(T)
+            cp_2 = wilhoit2.get_heat_capacity(T)
             self.assertAlmostEqual(cp_1, cp_2, delta=1e0)
-            h_1 = wilhoit1.getEnthalpy(T)
-            h_2 = wilhoit2.getEnthalpy(T)
+            h_1 = wilhoit1.get_enthalpy(T)
+            h_2 = wilhoit2.get_enthalpy(T)
             self.assertAlmostEqual(h_1, h_2, delta=2e1)
-            s_1 = wilhoit1.getEntropy(T)
-            s_2 = wilhoit2.getEntropy(T)
+            s_1 = wilhoit1.get_entropy(T)
+            s_2 = wilhoit2.get_entropy(T)
             self.assertAlmostEqual(s_1, s_2, delta=1e0)
         self.assertAlmostEqual(wilhoit1.E0.value_si, wilhoit2.E0.value_si, delta=1e1)
 

@@ -39,12 +39,12 @@ import os.path
 from copy import deepcopy
 
 import rmgpy.constants as constants
-from rmgpy.data.base import Database, Entry, makeLogicNode, DatabaseError
+from rmgpy.data.base import Database, Entry, make_logic_node, DatabaseError
 from rmgpy.molecule import Molecule, Group
 from rmgpy.transport import TransportData
 
 
-def saveEntry(f, entry):
+def save_entry(f, entry):
     """
     Write a Pythonic string representation of the given `entry` in the transport
     database to the file object `f`.
@@ -56,12 +56,12 @@ def saveEntry(f, entry):
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write(entry.item.to_adjacency_list(remove_h=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList())
+        f.write(entry.item.to_adjacency_list())
         f.write('""",\n')
     else:
         f.write('    group = "{0}",\n'.format(entry.item))
@@ -88,13 +88,13 @@ def saveEntry(f, entry):
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
 
-    f.write(f'    shortDesc = """{entry.shortDesc.strip()}""",\n')
-    f.write(f'    longDesc = \n"""\n{entry.longDesc.strip()}\n""",\n')
+    f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
 
-def generateOldLibraryEntry(data):
+def generate_old_library_entry(data):
     """
     Return a list of values used to save entries to the old-style RMG
     transport database based on the transport object `data`.
@@ -102,7 +102,7 @@ def generateOldLibraryEntry(data):
     raise NotImplementedError
 
 
-def processOldLibraryEntry(data):
+def process_old_library_entry(data):
     """
     Process a list of parameters `data` as read from an old-style RMG
     transport database, returning the corresponding transport object.
@@ -115,20 +115,24 @@ class TransportLibrary(Database):
     A class for working with a RMG transport library.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
-    def loadEntry(self,
-                  index,
-                  label,
-                  molecule,
-                  transport,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  ):
-        item = Molecule().fromAdjacencyList(molecule)
+    def load_entry(self,
+                   index,
+                   label,
+                   molecule,
+                   transport,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
+        item = Molecule().from_adjacency_list(molecule)
 
         self.entries[label] = Entry(
             index=index,
@@ -136,30 +140,30 @@ class TransportLibrary(Database):
             item=item,
             data=transport,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the transport database to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)
 
-    def generateOldLibraryEntry(self, data):
+    def generate_old_library_entry(self, data):
         """
         Return a list of values used to save entries to the old-style RMG
         transport database based on the transport object `data`.
         """
-        return generateOldLibraryEntry(data)
+        return generate_old_library_entry(data)
 
-    def processOldLibraryEntry(self, data):
+    def process_old_library_entry(self, data):
         """
         Process a list of parameters `data` as read from an old-style RMG
         transport database, returning the corresponding transport object.
         """
-        return processOldLibraryEntry(data)
+        return process_old_library_entry(data)
 
 
 class TransportGroups(Database):
@@ -167,56 +171,60 @@ class TransportGroups(Database):
     A class for working with an RMG transport group additivity database.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
-    def loadEntry(self,
-                  index,
-                  label,
-                  group,
-                  transportGroup,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  ):
+    def load_entry(self,
+                   index,
+                   label,
+                   group,
+                   transportGroup,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or
                 group[0:7].upper() == 'NOT OR{' or
                 group[0:8].upper() == 'NOT AND{'):
-            item = makeLogicNode(group)
+            item = make_logic_node(group)
         else:
-            item = Group().fromAdjacencyList(group)
+            item = Group().from_adjacency_list(group)
         self.entries[label] = Entry(
             index=index,
             label=label,
             item=item,
             data=transportGroup,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the transport database to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)
 
-    def generateOldLibraryEntry(self, data):
+    def generate_old_library_entry(self, data):
         """
         Return a list of values used to save entries to the old-style RMG
         transport database based on the transport object `data`.
         """
-        return generateOldLibraryEntry(data)
+        return generate_old_library_entry(data)
 
-    def processOldLibraryEntry(self, data):
+    def process_old_library_entry(self, data):
         """
         Process a list of parameters `data` as read from an old-style RMG
         transport database, returning the corresponding transport object.
         """
-        return processOldLibraryEntry(data)
+        return process_old_library_entry(data)
 
 
 class TransportDatabase(object):
@@ -227,7 +235,7 @@ class TransportDatabase(object):
     def __init__(self):
         self.libraries = {}
         self.groups = {}
-        self.libraryOrder = []
+        self.library_order = []
         self.local_context = {
             'CriticalPointGroupContribution': CriticalPointGroupContribution,
             'TransportData': TransportData,
@@ -241,7 +249,7 @@ class TransportDatabase(object):
         d = {
             'libraries': self.libraries,
             'groups': self.groups,
-            'libraryOrder': self.libraryOrder,
+            'library_order': self.library_order,
         }
         return (TransportDatabase, (), d)
 
@@ -251,23 +259,23 @@ class TransportDatabase(object):
         """
         self.libraries = d['libraries']
         self.groups = d['groups']
-        self.libraryOrder = d['libraryOrder']
+        self.library_order = d['library_order']
 
     def load(self, path, libraries=None):
         """
         Load the transport database from the given `path` on disk, where `path`
         points to the top-level folder of the transport database.
         """
-        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
-        self.loadGroups(os.path.join(path, 'groups'))
+        self.load_libraries(os.path.join(path, 'libraries'), libraries)
+        self.load_groups(os.path.join(path, 'groups'))
 
-    def loadLibraries(self, path, libraries=None):
+    def load_libraries(self, path, libraries=None):
         """
         Load the transport libraries from the given `path` on disk, where `path`
         points to the libraries folder of the transport database.
         """
         self.libraries = {}
-        self.libraryOrder = []
+        self.library_order = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 name, ext = os.path.splitext(f)
@@ -277,11 +285,11 @@ class TransportDatabase(object):
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
-                    self.libraryOrder.append(library.label)
+                    self.library_order.append(library.label)
         if libraries is not None:
-            self.libraryOrder = libraries
+            self.library_order = libraries
 
-    def loadGroups(self, path):
+    def load_groups(self, path):
         """
         Load the transport groups from the given `path` on disk, where `path`
         points to the groups folder of the transport database.
@@ -299,10 +307,10 @@ class TransportDatabase(object):
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
-        self.saveLibraries(os.path.join(path, 'libraries'))
-        self.saveGroups(os.path.join(path, 'groups'))
+        self.save_libraries(os.path.join(path, 'libraries'))
+        self.save_groups(os.path.join(path, 'groups'))
 
-    def saveLibraries(self, path):
+    def save_libraries(self, path):
         """
         Save the trasnport libraries to the given `path` on disk, where `path`
         points to the top-level folder of the transport libraries.
@@ -311,7 +319,7 @@ class TransportDatabase(object):
         for library in self.libraries.values():
             library.save(os.path.join(path, '{0}.py'.format(library.label)))
 
-    def saveGroups(self, path):
+    def save_groups(self, path):
         """
         Save the transport groups to the given `path` on disk, where `path`
         points to the top-level folder of the transport groups.
@@ -320,7 +328,7 @@ class TransportDatabase(object):
         for group in self.groups.keys():
             self.groups[group].save(os.path.join(path, group + '.py'))
 
-    def getTransportProperties(self, species):
+    def get_transport_properties(self, species):
         """
         Return the transport properties for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -329,24 +337,24 @@ class TransportDatabase(object):
         """
         transport = (None, None, None)
 
-        if species.containsSurfaceSite():
+        if species.contains_surface_site():
             return transport
 
-        for label in self.libraryOrder:
-            transport = self.getTransportPropertiesFromLibrary(species, self.libraries[label])
+        for label in self.library_order:
+            transport = self.get_transport_properties_from_library(species, self.libraries[label])
             if transport is not None:
                 transport[0].comment = label
                 break
         else:
             try:
                 # Transport not found in any loaded libraries, so estimate
-                transport = self.getTransportPropertiesViaGroupEstimates(species)
+                transport = self.get_transport_properties_via_group_estimates(species)
             except (KeyError, AssertionError):
-                transport = self.getTransportPropertiesViaLennardJonesParameters(species)
+                transport = self.get_transport_properties_via_lennard_jones_parameters(species)
 
         return transport
 
-    def getAllTransportProperties(self, species):
+    def get_all_transport_properties(self, species):
         """
         Return all possible sets of transport parameters for a given
         :class:`Species` object `species`. The hits from the libraries (in order) come first, and then the group additivity
@@ -355,21 +363,21 @@ class TransportDatabase(object):
         transport = []
 
         # Data from libraries comes first
-        for label in self.libraryOrder:
-            data = self.getTransportPropertiesFromLibrary(species, self.libraries[label])
+        for label in self.library_order:
+            data = self.get_transport_properties_from_library(species, self.libraries[label])
             if data:
                 data[0].comment = label
                 transport.append(data)
         # Last entry is always the estimate from group additivity
         try:
-            transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+            transport.append(self.get_transport_properties_via_group_estimates(species))
         except (KeyError, AssertionError):
-            transport.append(self.getTransportPropertiesViaLennardJonesParameters(species))
+            transport.append(self.get_transport_properties_via_lennard_jones_parameters(species))
 
         # Return all of the resulting transport parameters
         return transport
 
-    def getTransportPropertiesFromLibrary(self, species, library):
+    def get_transport_properties_from_library(self, species, library):
         """
         Return the set of transport properties corresponding to a given
         :class:`Species` object `species` from the specified transport
@@ -379,11 +387,11 @@ class TransportDatabase(object):
         :class:`DatabaseError` is raised.
         """
         for entry in library.entries.values():
-            if species.isIsomorphic(entry.item) and entry.data is not None:
+            if species.is_isomorphic(entry.item) and entry.data is not None:
                 return deepcopy(entry.data), library, entry
         return None
 
-    def getTransportPropertiesViaGroupEstimates(self, species):
+    def get_transport_properties_via_group_estimates(self, species):
         """
         Return the set of transport parameters corresponding to a given
         :class:`Species` object `species` by estimation using the group
@@ -394,20 +402,20 @@ class TransportDatabase(object):
         # assume that the stablest resonance isomer has already been put as the first
         # and that we want the transport properties of this isomer
         molecule = species.molecule[0]
-        molecule.clearLabeledAtoms()
-        molecule.updateAtomTypes()
-        critical_point = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
+        molecule.clear_labeled_atoms()
+        molecule.update_atomtypes()
+        critical_point = self.estimate_critical_properties_via_group_additivity(molecule)
         Tc = critical_point.Tc
         Pc = critical_point.Pc
         Vc = critical_point.Vc
         Tb = critical_point.Tb
-        if critical_point.linear != molecule.isLinear():
-            logging.warning("Group-based structure index and isLinear() function disagree about "
+        if critical_point.linear != molecule.is_linear():
+            logging.warning("Group-based structure index and is_linear() function disagree about "
                             "linearity of {mol!r}".format(mol=molecule))
 
         if len(molecule.atoms) == 1:
             shape_index = 0
-        elif molecule.isLinear():
+        elif molecule.is_linear():
             shape_index = 1
         else:
             shape_index = 2
@@ -427,7 +435,7 @@ class TransportDatabase(object):
         return transport, None, None
         # Things calling this expect a tuple with the library and entry that it came from.
 
-    def estimateCriticalPropertiesViaGroupAdditivity(self, molecule):
+    def estimate_critical_properties_via_group_additivity(self, molecule):
         """
         Return the set of transport parameters corresponding to a given
         :class:`Molecule` object `molecule` by estimation using Joback's group
@@ -441,7 +449,7 @@ class TransportDatabase(object):
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the transport wrong
 
-        if molecule.isRadical():  # radical species
+        if molecule.is_radical():  # radical species
             # Make a copy of the structure so we don't change the original
             saturated_struct = molecule.copy(deep=True)
 
@@ -450,7 +458,7 @@ class TransportDatabase(object):
             saturated_struct.saturate_radicals()
 
             # Get critical point contribution estimates for saturated form of structure
-            critical_point = self.estimateCriticalPropertiesViaGroupAdditivity(saturated_struct)
+            critical_point = self.estimate_critical_properties_via_group_additivity(saturated_struct)
             if critical_point is None:
                 raise ValueError('Critical point estimate of saturated {0} of molecule {1} '
                                  'is None!'.format(saturated_struct, molecule))
@@ -462,10 +470,10 @@ class TransportDatabase(object):
             # for atom in added:
             #    # Remove the added hydrogen atoms and bond and restore the radical
             #    for H, bond in added[atom]:
-            #        saturated_struct.removeBond(bond)
-            #        saturated_struct.removeAtom(H)
-            #        atom.incrementRadical()
-            #    saturated_struct.updateConnectivityValues()
+            #        saturated_struct.remove_bond(bond)
+            #        saturated_struct.remove_atom(H)
+            #        atom.increment_radical()
+            #    saturated_struct.update_connectivity_values()
             return critical_point
 
         # non-radical species
@@ -482,12 +490,12 @@ class TransportDatabase(object):
         for atom in molecule.atoms:
             num_atoms += 1
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.isNonHydrogen():
+            if atom.is_non_hydrogen():
                 try:
-                    if molecule.isVertexInCycle(atom):
-                        self.__addCriticalPointContribution(group_data, self.groups['ring'], molecule, {'*': atom})
+                    if molecule.is_vertex_in_cycle(atom):
+                        self._add_critical_point_contribution(group_data, self.groups['ring'], molecule, {'*': atom})
                     else:
-                        self.__addCriticalPointContribution(group_data, self.groups['nonring'], molecule, {'*': atom})
+                        self._add_critical_point_contribution(group_data, self.groups['nonring'], molecule, {'*': atom})
                 except KeyError:
                     raise
 
@@ -506,14 +514,14 @@ class TransportDatabase(object):
         )
         return critical_point
 
-    def __addCriticalPointContribution(self, groupData, database, molecule, atom):
+    def _add_critical_point_contribution(self, group_data, database, molecule, atom):
         """
         Determine the critical point contribution values for the atom `atom`
         in the structure `structure`, and add it to the existing criticalPointContribution
         `criticalPointContribution`.
         """
 
-        node0 = database.descendTree(molecule, atom, None)
+        node0 = database.descend_tree(molecule, atom, None)
 
         if node0 is None:
             raise KeyError('Node not found in database.')
@@ -537,21 +545,21 @@ class TransportDatabase(object):
                     break
         comment = '{0}({1})'.format(database.label, comment)
 
-        groupData.Tc += data.Tc
-        groupData.Pc += data.Pc
-        groupData.Vc += data.Vc
-        groupData.Tb += data.Tb
-        groupData.structureIndex += data.structureIndex
+        group_data.Tc += data.Tc
+        group_data.Pc += data.Pc
+        group_data.Vc += data.Vc
+        group_data.Tb += data.Tb
+        group_data.structureIndex += data.structureIndex
 
-        return groupData
+        return group_data
 
-    def getTransportPropertiesViaLennardJonesParameters(self, species):
+    def get_transport_properties_via_lennard_jones_parameters(self, species):
         """
         Serves as last resort if every other method to estimate Transport Properties fails.
         
         Generate the Lennard-Jones parameters for the species.
         """
-        count = sum([1 for atom in species.molecule[0].vertices if atom.isNonHydrogen()])
+        count = sum([1 for atom in species.molecule[0].vertices if atom.is_non_hydrogen()])
 
         if count == 1:
             sigma = (3.758e-10, "m")
@@ -574,7 +582,7 @@ class TransportDatabase(object):
 
         if len(species.molecule[0].atoms) == 1:
             shape_index = 0
-        elif species.molecule[0].isLinear():
+        elif species.molecule[0].is_linear():
             shape_index = 1
         else:
             shape_index = 2
@@ -619,6 +627,10 @@ class CriticalPointGroupContribution(object):
     """Joback group contribution to estimate critical properties"""
 
     def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, structureIndex=None):
+        """
+        Note that argument names are retained for backward compatibility
+        with loading database files.
+        """
         self.Tc = Tc
         self.Pc = Pc
         self.Vc = Vc

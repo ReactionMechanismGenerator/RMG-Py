@@ -36,14 +36,14 @@ from nose.plugins.attrib import attr
 
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.main import RMG_Memory
-from rmgpy import getPath
+from rmgpy import get_path
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.model import CoreEdgeReactionModel
 
 ###################################################
 
-originalPath = getPath()
+originalPath = get_path()
 
 
 @attr('functional')
@@ -61,8 +61,8 @@ class TestMain(unittest.TestCase):
 
         os.mkdir(os.path.join(cls.testDir, cls.outputDir))
 
-        cls.rmg = RMG(inputFile=os.path.join(cls.testDir, 'input.py'),
-                      outputDirectory=os.path.join(cls.testDir, cls.outputDir))
+        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'input.py'),
+                      output_directory=os.path.join(cls.testDir, cls.outputDir))
 
         cls.rmg.execute()
 
@@ -80,19 +80,19 @@ class TestMain(unittest.TestCase):
         shutil.rmtree(cls.seedKinetics)
         shutil.rmtree(cls.seedKineticsEdge)
 
-    def testRMGExecute(self):
+    def test_rmg_execute(self):
         """Test that RMG.execute completed successfully."""
         self.assertIsInstance(self.rmg.database, RMGDatabase)
         self.assertTrue(self.rmg.done)
 
-    def testRMGIncreasesReactions(self):
+    def test_rmg_increases_reactions(self):
         """Test that RMG.execute increases reactions and species."""
-        self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
-        self.assertTrue(len(self.rmg.reactionModel.core.species) > 1)
-        self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
-        self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.core.species) > 1)
+        self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
 
-    def testRMGSeedMechanismCreation(self):
+    def test_rmg_seed_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
@@ -102,7 +102,7 @@ class TestMain(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'dictionary.txt')))  # dictionary file made
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'reactions.py')))  # reactions file made
 
-    def testRMGSeedEdgeMechanismCreation(self):
+    def test_rmg_seed_edge_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
@@ -112,15 +112,15 @@ class TestMain(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'dictionary.txt')))  # dictionary file made
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'reactions.py')))  # reactions file made
 
-    def testRMGSeedLibraryCreation(self):
+    def test_rmg_seed_library_creation(self):
         """Test that seed mechanisms are created in the correct database locations."""
         self.assertTrue(os.path.exists(self.seedKinetics))
 
-    def testRMGSeedEdgeLibraryCreation(self):
+    def test_rmg_seed_edge_library_creation(self):
         """Test that edge seed mechanisms are created in the correct database locations."""
         self.assertTrue(os.path.exists(self.seedKinetics))
 
-    def testRMGSeedWorks(self):
+    def test_rmg_seed_works(self):
         """Test that the created seed libraries work.
 
         Note: Since this test modifies the class level RMG instance,
@@ -128,39 +128,39 @@ class TestMain(unittest.TestCase):
         # Load the seed libraries into the database
         self.rmg.database.load(
             path=self.databaseDirectory,
-            thermoLibraries=[],
-            reactionLibraries=['testSeed', 'testSeed_edge'],
-            seedMechanisms=['testSeed', 'testSeed_edge'],
-            kineticsFamilies='default',
-            kineticsDepositories=[],
+            thermo_libraries=[],
+            reaction_libraries=['testSeed', 'testSeed_edge'],
+            seed_mechanisms=['testSeed', 'testSeed_edge'],
+            kinetics_families='default',
+            kinetics_depositories=[],
             depository=False
         )
 
-        self.rmg.reactionModel = CoreEdgeReactionModel()
-        self.rmg.reactionModel.addReactionLibraryToEdge('testSeed')  # try adding seed as library
-        self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
-        self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
+        self.rmg.reaction_model = CoreEdgeReactionModel()
+        self.rmg.reaction_model.add_reaction_library_to_edge('testSeed')  # try adding seed as library
+        self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
 
-        self.rmg.reactionModel = CoreEdgeReactionModel()
-        self.rmg.reactionModel.addSeedMechanismToCore('testSeed')  # try adding seed as seed mech
-        self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
-        self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
+        self.rmg.reaction_model = CoreEdgeReactionModel()
+        self.rmg.reaction_model.add_seed_mechanism_to_core('testSeed')  # try adding seed as seed mech
+        self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
 
-        self.rmg.reactionModel = CoreEdgeReactionModel()
-        self.rmg.reactionModel.addReactionLibraryToEdge('testSeed_edge')  # try adding seed as library
-        self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
-        self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
+        self.rmg.reaction_model = CoreEdgeReactionModel()
+        self.rmg.reaction_model.add_reaction_library_to_edge('testSeed_edge')  # try adding seed as library
+        self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
 
-        self.rmg.reactionModel = CoreEdgeReactionModel()
-        self.rmg.reactionModel.addSeedMechanismToCore('testSeed_edge')  # try adding seed as seed mech
-        self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
-        self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
+        self.rmg.reaction_model = CoreEdgeReactionModel()
+        self.rmg.reaction_model.add_seed_mechanism_to_core('testSeed_edge')  # try adding seed as seed mech
+        self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
+        self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
 
-    def testRMGMemory(self):
+    def test_rmg_memory(self):
         """
         test that RMG Memory objects function properly
         """
-        for rxnsys in self.rmg.reactionSystems:
+        for rxnsys in self.rmg.reaction_systems:
             Rmem = RMG_Memory(rxnsys, None)
             Rmem.generate_cond()
             Rmem.get_cond()
@@ -168,13 +168,13 @@ class TestMain(unittest.TestCase):
             Rmem.generate_cond()
             Rmem.get_cond()
 
-    def testMakeCanteraInputFile(self):
+    def test_make_cantera_input_file(self):
         """
         This tests to ensure that a usable Cantera input file is created.
         """
         import cantera as ct
 
-        outName = os.path.join(self.rmg.outputDirectory, 'cantera')
+        outName = os.path.join(self.rmg.output_directory, 'cantera')
         files = os.listdir(outName)
         for f in files:
             if '.cti' in f:
@@ -299,7 +299,7 @@ END
         }
         self.rmg = RMG()
         self.dir_name = 'temp_dir_for_testing'
-        self.rmg.outputDirectory = os.path.join(originalPath, self.dir_name)
+        self.rmg.output_directory = os.path.join(originalPath, self.dir_name)
 
         self.tran_dat = '''
 ! Species         Shape    LJ-depth  LJ-diam   DiplMom   Polzblty  RotRelaxNum Data     
@@ -319,7 +319,7 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
         # go back to the main RMG-Py directory
         os.chdir('..')
 
-    def testChemkinToCanteraConversion(self):
+    def test_chemkin_to_cantera_conversion(self):
         """
         Tests that good and bad chemkin files raise proper exceptions
         """
@@ -340,10 +340,10 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             f.close()
 
             if works:
-                self.rmg.generateCanteraFiles(os.path.join(os.getcwd(), 'chem001.inp'))
+                self.rmg.generate_cantera_files(os.path.join(os.getcwd(), 'chem001.inp'))
             else:
                 with self.assertRaises(InputParseError):
-                    self.rmg.generateCanteraFiles(os.path.join(os.getcwd(), 'chem001.inp'))
+                    self.rmg.generate_cantera_files(os.path.join(os.getcwd(), 'chem001.inp'))
 
             # clean up
             os.chdir(originalPath)

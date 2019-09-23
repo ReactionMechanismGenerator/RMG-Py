@@ -81,7 +81,7 @@ class TestNASA(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def test_polyLow(self):
+    def test_poly_low(self):
         """
         Test that the NASA low-temperature polynomial was properly set.
         """
@@ -91,7 +91,7 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.poly1.Tmin.value_si, self.Tmin)
         self.assertEqual(self.nasa.poly1.Tmax.value_si, self.Tint)
 
-    def test_polyHigh(self):
+    def test_poly_high(self):
         """
         Test that the NASA high-temperature polynomial was properly set.
         """
@@ -101,84 +101,84 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.poly2.Tmin.value_si, self.Tint)
         self.assertEqual(self.nasa.poly2.Tmax.value_si, self.Tmax)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the NASA Tmin property was properly set.
         """
         self.assertAlmostEqual(self.nasa.Tmin.value_si / self.Tmin, 1.0, 6,
                                '{0} != {1} within 6 places'.format(self.nasa.Tmin, self.Tmin))
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the NASA Tmax property was properly set.
         """
         self.assertAlmostEqual(self.nasa.Tmax.value_si / self.Tmax, 1.0, 6,
                                '{0} != {1} within 6 places'.format(self.nasa.Tmax, self.Tmax))
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the NASA E0 property was properly set.
         """
         self.assertAlmostEqual(self.nasa.E0.value_si / self.E0, 1.0, 6,
                                '{0} != {1} within 6 places'.format(self.nasa.Tmax, self.Tmax))
 
-    def test_Comment(self):
+    def test_comment(self):
         """
         Test that the NASA comment property was properly set.
         """
         self.assertEqual(self.nasa.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the NASA.isTemperatureValid() method.
+        Test the NASA.is_temperature_valid() method.
         """
         Tdata = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
         valid_data = [False, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
-            valid0 = self.nasa.isTemperatureValid(T)
+            valid0 = self.nasa.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getHeatCapacity(self):
+    def test_get_heat_capacity(self):
         """
-        Test the NASA.getHeatCapacity() method.
+        Test the NASA.get_heat_capacity() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         cp_exp_list = np.array([7.80157, 10.5653, 12.8213, 14.5817, 15.9420,
                                 16.9861, 17.78645, 18.4041, 18.8883]) * constants.R
         for T, cp_exp in zip(Tlist, cp_exp_list):
-            cp_act = self.nasa.getHeatCapacity(T)
+            cp_act = self.nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp / cp_act, 1.0, 4, '{0} != {1}'.format(cp_exp, cp_act))
 
-    def test_getEnthalpy(self):
+    def test_get_enthalpy(self):
         """
-        Test the NASA.getEnthalpy() method.
+        Test the NASA.get_enthalpy() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         h_exp_list = np.array([-22.7613, -12.1027, -6.14236, -2.16615, 0.743456,
                                2.99256, 4.79397, 6.27334, 7.51156]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
-            h_act = self.nasa.getEnthalpy(T)
+            h_act = self.nasa.get_enthalpy(T)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 3, '{0} != {1}'.format(h_exp, h_act))
 
-    def test_getEntropy(self):
+    def test_get_entropy(self):
         """
-        Test the NASA.getEntropy() method.
+        Test the NASA.get_entropy() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         s_exp_list = np.array([29.6534, 33.3516, 36.7131, 39.7715, 42.5557,
                                45.0952, 47.4179, 49.5501, 51.5152]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
-            s_act = self.nasa.getEntropy(T)
+            s_act = self.nasa.get_entropy(T)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4, '{0} != {1}'.format(s_exp, s_act))
 
-    def test_getFreeEnergy(self):
+    def test_get_free_energy(self):
         """
-        Test the NASA.getFreeEnergy() method.
+        Test the NASA.get_free_energy() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         for T in Tlist:
-            g_exp = self.nasa.getEnthalpy(T) - T * self.nasa.getEntropy(T)
-            g_act = self.nasa.getFreeEnergy(T)
+            g_exp = self.nasa.get_enthalpy(T) - T * self.nasa.get_entropy(T)
+            g_act = self.nasa.get_free_energy(T)
             self.assertAlmostEqual(g_exp / g_act, 1.0, 4, '{0} != {1}'.format(g_exp, g_act))
 
     def test_pickle(self):
@@ -245,16 +245,16 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.E0.units, nasa.E0.units)
         self.assertEqual(self.nasa.comment, nasa.comment)
 
-    def test_toCantera(self):
+    def test_to_cantera(self):
         """
         Test that conversion to a Cantera NasaPoly2 object works
         """
-        nasapoly2 = self.nasa.toCantera()
+        nasapoly2 = self.nasa.to_cantera()
         # NasaPoly2 units use J/kmol rather than J/mol
-        self.assertAlmostEqual(self.nasa.getEnthalpy(900), nasapoly2.h(900) / 1000, 1)
-        self.assertAlmostEqual(self.nasa.getEntropy(700), nasapoly2.s(700) / 1000, 1)
+        self.assertAlmostEqual(self.nasa.get_enthalpy(900), nasapoly2.h(900) / 1000, 1)
+        self.assertAlmostEqual(self.nasa.get_entropy(700), nasapoly2.s(700) / 1000, 1)
 
-    def testToNASA(self):
+    def test_to_nasa(self):
         """
         Test if the entropy computed from other thermo implementations is close to what NASA computes.
         """
@@ -265,35 +265,35 @@ class TestNASA(unittest.TestCase):
 
         # Load databases
         database = RMGDatabase()
-        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
-        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+        database.load_thermo(os.path.join(settings['database.directory'], 'thermo'), thermo_libraries=['Narayanaswamy'])
+        database.load_solvation(os.path.join(settings['database.directory'], 'solvation'))
 
-        spc = Species().fromSMILES('CC')
-        spc.getThermoData()
+        spc = Species().from_smiles('CC')
+        spc.get_thermo_data()
 
         T = 1350.  # not 298K!
 
         # nasa to thermodata
         nasa = spc.thermo
-        s_nasa = nasa.getEntropy(T)
+        s_nasa = nasa.get_entropy(T)
 
-        td = nasa.toThermoData()
-        s_td = td.getEntropy(T)
+        td = nasa.to_thermo_data()
+        s_td = td.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(td.comment, nasa.comment)
 
         # thermodata to nasa
-        nasa = td.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        s_nasa = nasa.getEntropy(T)
+        nasa = td.to_nasa(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        s_nasa = nasa.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(td.comment, nasa.comment)
 
         # wilhoit to nasa
-        wilhoit = nasa.toWilhoit()
-        nasa = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        s_nasa = nasa.getEntropy(T)
+        wilhoit = nasa.to_wilhoit()
+        nasa = wilhoit.to_nasa(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        s_nasa = nasa.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(wilhoit.comment, nasa.comment)

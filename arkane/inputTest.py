@@ -45,7 +45,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.transport import TransportData
 
-from arkane.input import species, transitionState, reaction, SMILES, loadInputFile, process_model_chemistry
+from arkane.input import species, transitionState, reaction, SMILES, load_input_file, process_model_chemistry
 
 ################################################################################
 
@@ -74,15 +74,15 @@ class InputTest(unittest.TestCase):
 
         spc0 = species(label0, **kwargs)
         self.assertEqual(spc0.label, 'CH2O')
-        self.assertEqual(spc0.SMILES, 'C=O')
+        self.assertEqual(spc0.smiles, 'C=O')
         self.assertAlmostEqual(spc0.conformer.E0.value_si, 120038.96)
-        self.assertEqual(spc0.conformer.spinMultiplicity, 1)
-        self.assertEqual(spc0.conformer.opticalIsomers, 1)
+        self.assertEqual(spc0.conformer.spin_multiplicity, 1)
+        self.assertEqual(spc0.conformer.optical_isomers, 1)
         self.assertEqual(len(spc0.conformer.modes), 3)
-        self.assertIsInstance(spc0.transportData, TransportData)
-        self.assertIsInstance(spc0.energyTransferModel, SingleExponentialDown)
+        self.assertIsInstance(spc0.transport_data, TransportData)
+        self.assertIsInstance(spc0.energy_transfer_model, SingleExponentialDown)
 
-    def test_species_atomic_NASA_polynomial(self):
+    def test_species_atomic_nasa_polynomial(self):
         """
         Test loading a atom with NASA polynomials
         """
@@ -95,11 +95,11 @@ class InputTest(unittest.TestCase):
                   "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, 'kJ/mol'), T0=(300, 'K'), n=0.85)}
         spc0 = species(label0, **kwargs)
         self.assertEqual(spc0.label, label0)
-        self.assertEqual(spc0.SMILES, '[H]')
-        self.assertTrue(spc0.hasStatMech())
+        self.assertEqual(spc0.smiles, '[H]')
+        self.assertTrue(spc0.has_statmech())
         self.assertEqual(spc0.thermo, kwargs['thermo'])
 
-    def test_species_polyatomic_NASA_polynomial(self):
+    def test_species_polyatomic_nasa_polynomial(self):
         """
         Test loading a species with NASA polynomials
         """
@@ -116,10 +116,10 @@ class InputTest(unittest.TestCase):
                   "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, 'kJ/mol'), T0=(300, 'K'), n=0.85)}
         spc0 = species(label0, **kwargs)
         self.assertEqual(spc0.label, label0)
-        self.assertTrue(spc0.hasStatMech())
+        self.assertTrue(spc0.has_statmech())
         self.assertEqual(spc0.thermo, kwargs['thermo'])
 
-    def test_transitionState(self):
+    def test_transition_state(self):
         """
         Test loading a transition state from input file-like kew word arguments
         """
@@ -136,8 +136,8 @@ class InputTest(unittest.TestCase):
         ts0 = transitionState(label0, **kwargs)
         self.assertEqual(ts0.label, 'TS1')
         self.assertAlmostEqual(ts0.conformer.E0.value_si, 167150.8)
-        self.assertEqual(ts0.conformer.spinMultiplicity, 2)
-        self.assertEqual(ts0.conformer.opticalIsomers, 1)
+        self.assertEqual(ts0.conformer.spin_multiplicity, 2)
+        self.assertEqual(ts0.conformer.optical_isomers, 1)
         self.assertEqual(ts0.frequency.value_si, -1934.0)
         self.assertEqual(len(ts0.conformer.modes), 3)
 
@@ -204,15 +204,15 @@ class InputTest(unittest.TestCase):
         self.assertAlmostEqual(rxn.reactants[0].conformer.E0.value_si, 0)
         self.assertAlmostEqual(rxn.reactants[1].conformer.E0.value_si, 120038.96)
         self.assertAlmostEqual(rxn.products[0].conformer.E0.value_si, 39496.96)
-        self.assertAlmostEqual(rxn.transitionState.conformer.E0.value_si, 142674.4)
-        self.assertAlmostEqual(rxn.transitionState.frequency.value_si, -967.0)
-        self.assertIsInstance(rxn.transitionState.tunneling, Eckart)
+        self.assertAlmostEqual(rxn.transition_state.conformer.E0.value_si, 142674.4)
+        self.assertAlmostEqual(rxn.transition_state.frequency.value_si, -967.0)
+        self.assertIsInstance(rxn.transition_state.tunneling, Eckart)
 
     def test_load_input_file(self):
         """Test loading an Arkane input file"""
         path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane', 'networks',
                             'acetyl+O2', 'input.py')
-        job_list, reaction_dict, species_dict, transition_state_dict, network_dict = loadInputFile(path)
+        job_list, reaction_dict, species_dict, transition_state_dict, network_dict = load_input_file(path)
 
         self.assertEqual(len(job_list), 1)
 

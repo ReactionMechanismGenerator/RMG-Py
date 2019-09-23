@@ -37,4 +37,4 @@ cdef class RateUncertainty(object):
     cdef public int N
     cdef public str correlation
 
-    cpdef double getExpectedLogUncertainty(self)
+    cpdef double get_expected_log_uncertainty(self)

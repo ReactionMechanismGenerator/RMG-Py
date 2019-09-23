@@ -36,7 +36,7 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
@@ -51,32 +51,32 @@ from rmgpy.thermo import ThermoData
 
 class SimpleReactorCheck(unittest.TestCase):
 
-    def testSolve(self):
+    def test_solve(self):
         """
         Test the simple batch reactor with a simple kinetic model. Here we
         choose a kinetic model consisting of the hydrogen abstraction reaction
         CH4 + C2H5 <=> CH3 + C2H6.
         """
         ch4 = Species(
-            molecule=[Molecule().fromSMILES("C")],
+            molecule=[Molecule().from_smiles("C")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([8.615, 9.687, 10.963, 12.301, 14.841, 16.976, 20.528], "cal/(mol*K)"),
                               H298=(-17.714, "kcal/mol"), S298=(44.472, "cal/(mol*K)"))
         )
         ch3 = Species(
-            molecule=[Molecule().fromSMILES("[CH3]")],
+            molecule=[Molecule().from_smiles("[CH3]")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([9.397, 10.123, 10.856, 11.571, 12.899, 14.055, 16.195], "cal/(mol*K)"),
                               H298=(9.357, "kcal/mol"), S298=(45.174, "cal/(mol*K)"))
         )
         c2h6 = Species(
-            molecule=[Molecule().fromSMILES("CC")],
+            molecule=[Molecule().from_smiles("CC")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([12.684, 15.506, 18.326, 20.971, 25.500, 29.016, 34.595], "cal/(mol*K)"),
                               H298=(-19.521, "kcal/mol"), S298=(54.799, "cal/(mol*K)"))
         )
         c2h5 = Species(
-            molecule=[Molecule().fromSMILES("C[CH2]")],
+            molecule=[Molecule().from_smiles("C[CH2]")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([11.635, 13.744, 16.085, 18.246, 21.885, 24.676, 29.107], "cal/(mol*K)"),
                               H298=(29.496, "kcal/mol"), S298=(56.687, "cal/(mol*K)"))
@@ -93,10 +93,10 @@ class SimpleReactorCheck(unittest.TestCase):
 
         T = 1000
         P = 1.0e5
-        rxn_system = SimpleReactor(T, P, initialMoleFractions={c2h5: 0.1, ch3: 0.1, ch4: 0.4, c2h6: 0.4}, nSims=1,
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions={c2h5: 0.1, ch3: 0.1, ch4: 0.4, c2h6: 0.4}, n_sims=1,
                                    termination=[])
 
-        rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -111,8 +111,8 @@ class SimpleReactorCheck(unittest.TestCase):
             # You must make a copy of y because it is overwritten by DASSL at
             # each call to advance()
             y.append(rxn_system.y.copy())
-            reaction_rates.append(rxn_system.coreReactionRates.copy())
-            species_rates.append(rxn_system.coreSpeciesRates.copy())
+            reaction_rates.append(rxn_system.core_reaction_rates.copy())
+            species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
@@ -135,7 +135,7 @@ class SimpleReactorCheck(unittest.TestCase):
         # Solve a reaction system and check if the analytical jacobian matches the finite difference jacobian
 
         h2 = Species(
-            molecule=[Molecule().fromSMILES("[H][H]")],
+            molecule=[Molecule().from_smiles("[H][H]")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([6.89, 6.97, 6.99, 7.01, 7.08, 7.22, 7.72], "cal/(mol*K)"), H298=(0, "kcal/mol"),
                               S298=(31.23, "cal/(mol*K)"))
@@ -180,9 +180,9 @@ class SimpleReactorCheck(unittest.TestCase):
             core_reactions = [rxn]
 
             rxn_system0 = SimpleReactor(T, P,
-                                        initialMoleFractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
-                                        nSims=1, termination=[])
-            rxn_system0.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+                                        initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
+                                        n_sims=1, termination=[])
+            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
             dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
             num_core_species = len(core_species)
             dN = .000001 * sum(rxn_system0.y)
@@ -225,43 +225,43 @@ class SimpleReactorCheck(unittest.TestCase):
         edge_species = []
         core_reactions = rxn_list
 
-        rxn_system0 = SimpleReactor(T, P, initialMoleFractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
-                                    nSims=1, termination=[])
-        rxn_system0.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system0 = SimpleReactor(T, P, initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
+                                    n_sims=1, termination=[])
+        rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
-        solver_dfdk = rxn_system0.computeRateDerivative()
+        solver_dfdk = rxn_system0.compute_rate_derivative()
         # print 'Solver d(dy/dt)/dk'
         # print solver_dfdk
 
         integration_time = 1e-8
         rxn_system0.termination.append(TerminationTime((integration_time, 's')))
-        model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
+        model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
         simulator_settings = SimulatorSettings()
-        rxn_system0.simulate(core_species, core_reactions, [], [], [], [], modelSettings=model_settings,
-                             simulatorSettings=simulator_settings)
+        rxn_system0.simulate(core_species, core_reactions, [], [], [], [], model_settings=model_settings,
+                             simulator_settings=simulator_settings)
 
         y0 = rxn_system0.y
 
         dfdk = np.zeros((num_core_species, len(rxn_list)))  # d(dy/dt)/dk
 
         for i in range(len(rxn_list)):
-            k0 = rxn_list[i].getRateCoefficient(T, P)
+            k0 = rxn_list[i].get_rate_coefficient(T, P)
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
-            dk = rxn_list[i].getRateCoefficient(T, P) - k0
+            dk = rxn_list[i].get_rate_coefficient(T, P) - k0
 
-            rxn_system = SimpleReactor(T, P, initialMoleFractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
-                                       nSims=1, termination=[])
-            rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)
+            rxn_system = SimpleReactor(T, P, initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
+                                       n_sims=1, termination=[])
+            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
             dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
             dfdk[:, i] = (dfdt - dfdt0) / dk
 
             rxn_system.termination.append(TerminationTime((integration_time, 's')))
-            model_settings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=0)
+            model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
             simulator_settings = SimulatorSettings()
 
-            rxn_system.simulate(core_species, core_reactions, [], [], [], [], modelSettings=model_settings,
-                                simulatorSettings=simulator_settings)
+            rxn_system.simulate(core_species, core_reactions, [], [], [], [], model_settings=model_settings,
+                                simulator_settings=simulator_settings)
 
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
 
@@ -287,21 +287,21 @@ class SimpleReactorCheck(unittest.TestCase):
         # fig.subplots_adjust(left=0.12, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
         # pylab.show()
 
-    def testColliderModel(self):
+    def test_collider_model(self):
         """
         Test the solver's ability to simulate a model with collision efficiencies.
         """
         chem_file = os.path.join(os.path.dirname(__file__), 'files', 'collider_model', 'chem.inp')
         dictionary_file = os.path.join(os.path.dirname(__file__), 'files', 'collider_model', 'species_dictionary.txt')
-        species_list, reaction_list = loadChemkinFile(chem_file, dictionary_file)
+        species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
 
         smiles_dict = {'H': '[H]', 'HO2': '[O]O', 'O2': '[O][O]', 'Ar': '[Ar]', 'N2': 'N#N', 'CO2': 'O=C=O',
                        'CH3': '[CH3]', 'CH4': 'C'}
         species_dict = {}
         for name, smiles in smiles_dict.items():
-            mol = Molecule(SMILES=smiles)
+            mol = Molecule(smiles=smiles)
             for species in species_list:
-                if species.isIsomorphic(mol):
+                if species.is_isomorphic(mol):
                     species_dict[name] = species
                     break
 
@@ -313,8 +313,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['Ar']: 4.0}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 0.1 s
         rxn_system.advance(0.1)
@@ -344,8 +344,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['CH3']: 1}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 5 s
         rxn_system.advance(5)
@@ -357,21 +357,21 @@ class SimpleReactorCheck(unittest.TestCase):
         for i in range(len(simulated_mole_fracs)):
             self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i])
 
-    def testSpecificColliderModel(self):
+    def test_specific_collider_model(self):
         """
         Test the solver's ability to simulate a model with specific third body species collision efficiencies.
         """
         chem_file = os.path.join(os.path.dirname(__file__), 'files', 'specific_collider_model', 'chem.inp')
         dictionary_file = os.path.join(os.path.dirname(__file__), 'files', 'specific_collider_model',
                                        'species_dictionary.txt')
-        species_list, reaction_list = loadChemkinFile(chem_file, dictionary_file)
+        species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
 
         smiles_dict = {'Ar': '[Ar]', 'N2(1)': 'N#N', 'O2': '[O][O]', 'H': '[H]', 'CH3': '[CH3]', 'CH4': 'C'}
         species_dict = {}
         for name, smiles in smiles_dict.items():
-            mol = Molecule(SMILES=smiles)
+            mol = Molecule(smiles=smiles)
             for species in species_list:
-                if species.isIsomorphic(mol):
+                if species.is_isomorphic(mol):
                     species_dict[name] = species
                     break
 
@@ -385,8 +385,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['CH4']: 0.001}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 0.1 s
         rxn_system.advance(0.1)
@@ -416,8 +416,8 @@ class SimpleReactorCheck(unittest.TestCase):
                                   species_dict['CH4']: 0.5}
 
         # Initialize the model
-        rxn_system = SimpleReactor(T, P, initialMoleFractions=initial_mole_fractions, nSims=1, termination=None)
-        rxn_system.initializeModel(species_list, reaction_list, [], [])
+        rxn_system = SimpleReactor(T, P, initial_mole_fractions=initial_mole_fractions, n_sims=1, termination=None)
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
 
         # Advance to time = 5 s
         rxn_system.advance(5)

@@ -34,9 +34,9 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 cdef class Wigner(TunnelingModel):
 
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000
 
-    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist)
 
 ################################################################################
 
@@ -46,6 +46,6 @@ cdef class Eckart(TunnelingModel):
     cdef public ScalarQuantity _E0_TS
     cdef public ScalarQuantity _E0_prod
 
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000
 
-    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist)

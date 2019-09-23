@@ -60,23 +60,23 @@ class TestHinderedRotor2D(unittest.TestCase):
             with zipfile.ZipFile(zippath, 'r') as zip_ref:
                 zip_ref.extractall(os.path.dirname(cls.path))
 
-        cls.hd2d = HinderedRotor2D(calcPath=cls.path, name="r0", torsigma1=1,
+        cls.hd2d = HinderedRotor2D(calc_path=cls.path, name="r0", torsigma1=1,
                                    torsigma2=1, symmetry='b', pivots1=[6, 7], pivots2=[1, 6], top1=[7, 8],
                                    top2=[6, 7, 8])
 
     @unittest.skipIf(not os.path.isfile(Q2DTOR_PATH), "Q2DTor not installed")
     def test_q2dtor_setup(self):
-        self.hd2d.readScan()
+        self.hd2d.read_scan()
         self.assertAlmostEquals(self.hd2d.Es[0] / 10 ** 9, -594373977.268 / 10 ** 9, 3)
-        self.hd2d.getTorsions()
+        self.hd2d.get_torsions()
         self.assertEqual(self.hd2d.torsion1, [2, 1, 6, 7])
-        self.hd2d.writeInp()
-        self.hd2d.writePes()
-        self.hd2d.getIcsFile()
+        self.hd2d.write_inp()
+        self.hd2d.write_pes()
+        self.hd2d.get_ics_file()
 
     def test_partition_function_calc(self):
-        self.hd2d.readEigvals()
-        self.assertAlmostEqual(self.hd2d.getPartitionFunction(300.0), 3.29752, 4)
+        self.hd2d.read_eigvals()
+        self.assertAlmostEqual(self.hd2d.get_partition_function(300.0), 3.29752, 4)
 
     @classmethod
     def tearDownClass(cls):
@@ -99,26 +99,24 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         freqpath = os.path.join(RMG_PATH, 'arkane', 'data', 'TolueneFreq.log')
         rotpath = os.path.join(RMG_PATH, 'arkane', 'data', 'TolueneRot1.log')
-        lg = determine_qm_software(freqpath)
+        log = determine_qm_software(freqpath)
 
-        conf, unscaled_freqs = lg.loadConformer(symmetry=1, spinMultiplicity=1,
-                                                opticalIsomers=1,
-                                                label='Toulene')
-        coordinates, number, mass = lg.loadGeometry()
+        conf, unscaled_freqs = log.load_conformer(symmetry=1, spin_multiplicity=1, optical_isomers=1, label='Toulene')
+        coordinates, number, mass = log.load_geometry()
         conf.coordinates = (coordinates, "angstroms")
         conf.number = number
         conf.mass = (mass, "amu")
 
-        F = lg.loadForceConstantMatrix()
+        hessian = log.load_force_constant_matrix()
 
         cls.hdnd = HinderedRotorClassicalND(pivots=[[3, 12]], tops=[[12, 13, 14, 15]], sigmas=[6.0],
-                                            calcPath=rotpath, conformer=conf, F=F, semiclassical=True)
+                                            calc_path=rotpath, conformer=conf, F=hessian, semiclassical=True)
 
-    def test_hindered_rotor_ND(self):
-        self.hdnd.readScan()
+    def test_hindered_rotor_nd(self):
+        self.hdnd.read_scan()
         self.assertAlmostEqual(self.hdnd.Es[0], 20.048316823666962, 4)
         self.hdnd.fit()
-        self.assertAlmostEqual(self.hdnd.calcPartitionFunction(300.0), 2.85254214434672, 5)
+        self.assertAlmostEqual(self.hdnd.calc_partition_function(300.0), 2.85254214434672, 5)
 
 
 if __name__ == '__main__':

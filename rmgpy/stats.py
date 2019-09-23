@@ -40,7 +40,7 @@ except ImportError:
     logging.warning('Optional package dependency "xlwt" not loaded. Some output features will not work.')
     xlwt = None
 
-from rmgpy.util import makeOutputSubdirectory
+from rmgpy.util import make_output_subdirectory
 
 
 class ExecutionStatsWriter(object):
@@ -73,7 +73,7 @@ class ExecutionStatsWriter(object):
 
     def __init__(self, outputDirectory):
         super(ExecutionStatsWriter, self).__init__()
-        makeOutputSubdirectory(outputDirectory, 'plot')
+        make_output_subdirectory(outputDirectory, 'plot')
 
         # RMG execution statistics
         self.coreSpeciesCount = []
@@ -89,12 +89,12 @@ class ExecutionStatsWriter(object):
 
         # Update RMG execution statistics
         logging.info('Updating RMG execution statistics...')
-        core_spec, core_reac, edge_spec, edge_reac = rmg.reactionModel.getModelSize()
+        core_spec, core_reac, edge_spec, edge_reac = rmg.reaction_model.get_model_size()
         self.coreSpeciesCount.append(core_spec)
         self.coreReactionCount.append(core_reac)
         self.edgeSpeciesCount.append(edge_spec)
         self.edgeReactionCount.append(edge_reac)
-        elapsed = rmg.execTime[-1]
+        elapsed = rmg.exec_time[-1]
         seconds = elapsed % 60
         minutes = (elapsed - seconds) % 3600 / 60
         hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
@@ -111,13 +111,13 @@ class ExecutionStatsWriter(object):
             logging.info('    Memory used: memory usage was unable to be logged')
             self.memoryUse.append(0.0)
 
-        self.saveExecutionStatistics(rmg)
-        if rmg.generatePlots:
-            self.generateExecutionPlots(rmg)
+        self.save_execution_statistics(rmg)
+        if rmg.generate_plots:
+            self.generate_execution_plots(rmg)
 
         logging.info('')
 
-    def saveExecutionStatistics(self, rmg):
+    def save_execution_statistics(self, rmg):
         """
         Save the statistics of the RMG job to an Excel spreadsheet for easy viewing
         after the run is complete. The statistics are saved to the file
@@ -137,7 +137,7 @@ class ExecutionStatsWriter(object):
 
         # First column is execution time
         sheet.write(0, 0, 'Execution time (s)')
-        for i, etime in enumerate(rmg.execTime):
+        for i, etime in enumerate(rmg.exec_time):
             sheet.write(i + 1, 0, etime)
 
         # Second column is number of core species
@@ -166,10 +166,10 @@ class ExecutionStatsWriter(object):
             sheet.write(i + 1, 5, memory)
 
         # Save workbook to file
-        fstr = os.path.join(rmg.outputDirectory, 'statistics.xls')
+        fstr = os.path.join(rmg.output_directory, 'statistics.xls')
         workbook.save(fstr)
 
-    def generateExecutionPlots(self, rmg):
+    def generate_execution_plots(self, rmg):
         """
         Generate a number of plots describing the statistics of the RMG job,
         including the reaction model core and edge size and memory use versus
@@ -181,37 +181,37 @@ class ExecutionStatsWriter(object):
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        ax1.semilogx(rmg.execTime, self.coreSpeciesCount, 'o-b')
+        ax1.semilogx(rmg.exec_time, self.coreSpeciesCount, 'o-b')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Number of core species')
         ax2 = ax1.twinx()
-        ax2.semilogx(rmg.execTime, self.coreReactionCount, 'o-r')
+        ax2.semilogx(rmg.exec_time, self.coreReactionCount, 'o-r')
         ax2.set_ylabel('Number of core reactions')
-        plt.savefig(os.path.join(rmg.outputDirectory, 'plot/coreSize.svg'))
+        plt.savefig(os.path.join(rmg.output_directory, 'plot/coreSize.svg'))
         plt.close()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         if any(self.edgeSpeciesCount):
-            ax1.loglog(rmg.execTime, self.edgeSpeciesCount, 'o-b')
+            ax1.loglog(rmg.exec_time, self.edgeSpeciesCount, 'o-b')
         else:
-            ax1.semilogx(rmg.execTime, self.edgeSpeciesCount, 'o-b')
+            ax1.semilogx(rmg.exec_time, self.edgeSpeciesCount, 'o-b')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Number of edge species')
         ax2 = ax1.twinx()
         if any(self.edgeReactionCount):
-            ax2.loglog(rmg.execTime, self.edgeReactionCount, 'o-r')
+            ax2.loglog(rmg.exec_time, self.edgeReactionCount, 'o-r')
         else:
-            ax2.semilogx(rmg.execTime, self.edgeReactionCount, 'o-r')
+            ax2.semilogx(rmg.exec_time, self.edgeReactionCount, 'o-r')
         ax2.set_ylabel('Number of edge reactions')
-        plt.savefig(os.path.join(rmg.outputDirectory, 'plot/edgeSize.svg'))
+        plt.savefig(os.path.join(rmg.output_directory, 'plot/edgeSize.svg'))
         plt.close()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        ax1.semilogx(rmg.execTime, self.memoryUse, 'o-k')
+        ax1.semilogx(rmg.exec_time, self.memoryUse, 'o-k')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Memory (MB)')
         ax1.legend(['RAM'], loc=2)
-        plt.savefig(os.path.join(rmg.outputDirectory, 'plot/memoryUse.svg'))
+        plt.savefig(os.path.join(rmg.output_directory, 'plot/memoryUse.svg'))
         plt.close()

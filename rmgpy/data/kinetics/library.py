@@ -42,7 +42,7 @@ from collections import OrderedDict
 import numpy as np
 
 from rmgpy.data.base import DatabaseError, Database, Entry
-from rmgpy.data.kinetics.common import saveEntry
+from rmgpy.data.kinetics.common import save_entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev
@@ -64,11 +64,11 @@ class LibraryReaction(Reaction):
                  index=-1,
                  reactants=None,
                  products=None,
-                 specificCollider=None,
+                 specific_collider=None,
                  kinetics=None,
                  network_kinetics=None,
                  reversible=True,
-                 transitionState=None,
+                 transition_state=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
@@ -82,11 +82,11 @@ class LibraryReaction(Reaction):
                           index=index,
                           reactants=reactants,
                           products=products,
-                          specificCollider=specificCollider,
+                          specific_collider=specific_collider,
                           kinetics=kinetics,
                           network_kinetics=network_kinetics,
                           reversible=reversible,
-                          transitionState=transitionState,
+                          transition_state=transition_state,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
                           pairs=pairs,
@@ -105,11 +105,11 @@ class LibraryReaction(Reaction):
         return (LibraryReaction, (self.index,
                                   self.reactants,
                                   self.products,
-                                  self.specificCollider,
+                                  self.specific_collider,
                                   self.kinetics,
                                   self.network_kinetics,
                                   self.reversible,
-                                  self.transitionState,
+                                  self.transition_state,
                                   self.duplicate,
                                   self.degeneracy,
                                   self.pairs,
@@ -129,10 +129,10 @@ class LibraryReaction(Reaction):
         if self.index != -1: string += 'index={0:d}, '.format(self.index)
         if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
-        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
+        if self.specific_collider is not None: string += 'specific_collider={0!r}, '.format(self.specific_collider)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
-        if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.transition_state is not None: string += 'transition_state={0!r}, '.format(self.transition_state)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
@@ -142,7 +142,7 @@ class LibraryReaction(Reaction):
         string = string[:-2] + ')'
         return string
 
-    def getSource(self):
+    def get_source(self):
         """
         Return the database that was the source of this reaction. For a
         LibraryReaction this should be a KineticsLibrary object.
@@ -162,7 +162,7 @@ class LibraryReaction(Reaction):
         If this method successfully generated the high pressure limit kinetics, return ``True``, otherwise ``False``.
         """
         logging.debug("Generating high pressure limit kinetics for {0}...".format(self))
-        if not self.isUnimolecular():
+        if not self.is_unimolecular():
             return False
         if isinstance(self.kinetics, Arrhenius):
             return self.elementary_high_p
@@ -199,9 +199,9 @@ class LibraryReaction(Reaction):
                         t_list = np.insert(t_list, -1, [int(self.kinetics.Tmax.value_si)])
                     k_list = []
                     for t in t_list:
-                        k_list.append(self.kinetics.getRateCoefficient(t, self.kinetics.Pmax.value_si))
+                        k_list.append(self.kinetics.get_rate_coefficient(t, self.kinetics.Pmax.value_si))
                     k_list = np.array(k_list)
-                    self.network_kinetics = Arrhenius().fitToData(Tlist=t_list, klist=k_list, kunits=kunits)
+                    self.network_kinetics = Arrhenius().fit_to_data(Tlist=t_list, klist=k_list, kunits=kunits)
                     return True
             logging.info("NOT processing reaction {0} in a pressure-dependent reaction network.\n"
                          "Although it is marked with the `elementary_high_p=True` flag,"
@@ -218,9 +218,9 @@ class KineticsLibrary(Database):
     A class for working with an RMG kinetics library.
     """
 
-    def __init__(self, label='', name='', solvent=None, shortDesc='', longDesc='', autoGenerated=False):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
-        self.autoGenerated = autoGenerated
+    def __init__(self, label='', name='', solvent=None, short_desc='', long_desc='', auto_generated=False):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+        self.auto_generated = auto_generated
 
     def __str__(self):
         return 'Kinetics Library {0}'.format(self.label)
@@ -228,29 +228,29 @@ class KineticsLibrary(Database):
     def __repr__(self):
         return '<KineticsLibrary "{0}">'.format(self.label)
 
-    def getLibraryReactions(self):
+    def get_library_reactions(self):
         """
         makes library and template reactions as appropriate from the library comments
         and returns at list of all of these LibraryReaction and TemplateReaction objects
         """
         rxns = []
         for entry in self.entries.values():
-            if self.autoGenerated and entry.longDesc and 'Originally from reaction library: ' in entry.longDesc:
-                lib = [line for line in entry.longDesc.split('\n') if 'Originally from reaction library: ' in line]
+            if self.auto_generated and entry.long_desc and 'Originally from reaction library: ' in entry.long_desc:
+                lib = [line for line in entry.long_desc.split('\n') if 'Originally from reaction library: ' in line]
                 lib = lib[0].replace('Originally from reaction library: ', '')
                 lib = lib.replace('\n', '')
                 # Clean up any leading indents in kinetics comment
                 entry.data.comment = '\n'.join([line.strip() for line in entry.data.comment.split('\n')])
                 rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
-                                      library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data,
+                                      library=lib, specific_collider=entry.item.specific_collider, kinetics=entry.data,
                                       duplicate=entry.item.duplicate, reversible=entry.item.reversible,
                                       allow_pdep_route=entry.item.allow_pdep_route,
                                       elementary_high_p=entry.item.elementary_high_p)
                 rxn.family = self.label  # the library the reaction was loaded from (opposed to originally from)
-            elif self.autoGenerated and entry.longDesc and 'rate rule' in entry.longDesc:  # template reaction
+            elif self.auto_generated and entry.long_desc and 'rate rule' in entry.long_desc:  # template reaction
                 family = ''
                 template = ''
-                for line in entry.longDesc.split('\n'):
+                for line in entry.long_desc.split('\n'):
                     line = line.strip()
                     if 'rate rule' in line:
                         rule_part = line.split('rate rule')[1].strip()
@@ -260,12 +260,12 @@ class KineticsLibrary(Database):
                 # Clean up any leading indents in kinetics comment
                 entry.data.comment = '\n'.join([line.strip() for line in entry.data.comment.split('\n')])
                 rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
-                                       specificCollider=entry.item.specificCollider, kinetics=entry.data,
+                                       specific_collider=entry.item.specific_collider, kinetics=entry.data,
                                        duplicate=entry.item.duplicate, reversible=entry.item.reversible,
                                        family=family, template=template, degeneracy=entry.item.degeneracy)
             else:  # pdep or standard library reaction
                 rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
-                                      library=self.label, specificCollider=entry.item.specificCollider,
+                                      library=self.label, specific_collider=entry.item.specific_collider,
                                       kinetics=entry.data, duplicate=entry.item.duplicate,
                                       reversible=entry.item.reversible, allow_pdep_route=entry.item.allow_pdep_route,
                                       elementary_high_p=entry.item.elementary_high_p)
@@ -273,7 +273,7 @@ class KineticsLibrary(Database):
 
         return rxns
 
-    def markValidDuplicates(self, reactions1, reactions2):
+    def mark_valid_duplicates(self, reactions1, reactions2):
         """
         Check for reactions that appear in both lists,
         and mark them as (valid) duplicates.
@@ -282,17 +282,17 @@ class KineticsLibrary(Database):
             for r2 in reactions2:
                 if (r1.reactants == r2.reactants and
                         r1.products == r2.products and
-                        r1.specificCollider == r2.specificCollider and
+                        r1.specific_collider == r2.specific_collider and
                         r1.reversible == r2.reversible):
                     r1.duplicate = True
                     r2.duplicate = True
 
-    def checkForDuplicates(self, markDuplicates=False):
+    def check_for_duplicates(self, mark_duplicates=False):
         """
         Check that all duplicate reactions in the kinetics library are
         properly marked (i.e. with their ``duplicate`` attribute set to 
         ``True``).
-        If ``markDuplicates`` is set to ``True``, then ignore and
+        If ``mark_duplicates`` is set to ``True``, then ignore and
         mark all duplicate reactions as duplicate.
         """
         for entry0 in self.entries.values():
@@ -302,10 +302,10 @@ class KineticsLibrary(Database):
                 # This means that if we find any duplicate reactions, it is an error
                 for entry in self.entries.values():
                     reaction = entry.item
-                    if reaction0 is not reaction and reaction0.isIsomorphic(reaction):
+                    if reaction0 is not reaction and reaction0.is_isomorphic(reaction):
                         # We found a duplicate reaction that wasn't marked!
                         # RMG requires all duplicate reactions to be marked, unlike CHEMKIN
-                        if markDuplicates:
+                        if mark_duplicates:
                             reaction0.duplicate = reaction.duplicate = True
                             logging.warning('Reaction indices {0} and {1} were marked as '
                                             'duplicate.'.format(entry0.index, entry.index))
@@ -315,7 +315,7 @@ class KineticsLibrary(Database):
                                             'Reaction index {2} matches index {3}.'
                                             .format(reaction0, self.label, entry.index, entry0.index))
 
-    def convertDuplicatesToMulti(self):
+    def convert_duplicates_to_multi(self):
         """
         Merge all marked duplicate reactions in the kinetics library
         into single reactions with multiple kinetics.
@@ -334,7 +334,7 @@ class KineticsLibrary(Database):
                 reaction = entry.item
                 if reaction0 is reaction:
                     continue
-                if reaction0.isIsomorphic(reaction, eitherDirection=False):
+                if reaction0.is_isomorphic(reaction, either_direction=False):
                     if reaction0.reversible != reaction.reversible:
                         logging.debug("Reactions isomorphic but with different reversibilities.")
                         continue
@@ -349,13 +349,13 @@ class KineticsLibrary(Database):
                 kinetics_list.append(kinetics)
                 Tmin = kinetics.Tmin
                 Tmax = kinetics.Tmax
-                if kinetics.isPressureDependent():
+                if kinetics.is_pressure_dependent():
                     Pmin = kinetics.Pmin
                     Pmax = kinetics.Pmax
                 else:
                     Pmin = None
                     Pmax = None
-                long_desc += entry.longDesc + '\n'
+                long_desc += entry.long_desc + '\n'
 
             if (len(kinetics_list) == 2 and
                     isinstance(kinetics_list[0], ThirdBody) and
@@ -373,7 +373,7 @@ class KineticsLibrary(Database):
             else:
                 logging.warning('Only Arrhenius and PDepArrhenius kinetics supported for duplicate reactions.')
                 continue
-            entry0.longDesc = long_desc
+            entry0.long_desc = long_desc
             entries_to_remove.extend(duplicates[1:])
         for entry in entries_to_remove:
             logging.debug("Removing duplicate reaction with index {0}.".format(entry.index))
@@ -394,12 +394,12 @@ class KineticsLibrary(Database):
         if local_context is None:
             local_context = {}
         local_context['__builtins__'] = None
-        local_context['entry'] = self.loadEntry
-        # local_context['tree'] = self.__loadTree
+        local_context['entry'] = self.load_entry
+        # local_context['tree'] = self._load_tree
         local_context['name'] = self.name
         local_context['solvent'] = self.solvent
-        local_context['shortDesc'] = self.shortDesc
-        local_context['longDesc'] = self.longDesc
+        local_context['shortDesc'] = self.short_desc
+        local_context['longDesc'] = self.long_desc
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.items():
             local_context[key] = value
@@ -416,14 +416,14 @@ class KineticsLibrary(Database):
         # Extract the database metadata
         self.name = local_context['name']
         self.solvent = local_context['solvent']
-        self.shortDesc = local_context['shortDesc']
-        self.longDesc = local_context['longDesc'].strip()
+        self.short_desc = local_context['shortDesc']
+        self.long_desc = local_context['longDesc'].strip()
 
         if 'autoGenerated' in local_context.keys():
-            self.autoGenerated = local_context['autoGenerated']
+            self.auto_generated = local_context['autoGenerated']
 
         # Load a unique set of the species in the kinetics library
-        species_dict = self.getSpecies(os.path.join(os.path.dirname(path), 'dictionary.txt'))
+        species_dict = self.get_species(os.path.join(os.path.dirname(path), 'dictionary.txt'))
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
         for entry in entries:
@@ -460,13 +460,13 @@ class KineticsLibrary(Database):
                     if collider.strip()[2:-1] not in species_dict:  # stripping spaces, '(+' and ')'
                         raise DatabaseError('Collider species {0} in kinetics library {1} is missing from its '
                                             'dictionary.'.format(collider.strip()[2:-1], self.label))
-                    rxn.specificCollider = species_dict[collider.strip()[2:-1]]
-            # verify there's no more than one specificCollider:
+                    rxn.specific_collider = species_dict[collider.strip()[2:-1]]
+            # verify there's no more than one specific_collider:
             collider = re.search(r'\(\+[^\)]+\)', reactants)
             if collider is not None:
                 raise DatabaseError("Found TWO specific third body colliders, {0} and {1}, in reaction {2} in "
                                     "kinetics library {3), expecting no more than one!"
-                                    .format(rxn.specificCollider, collider.group(0), rxn_string, self.label))
+                                    .format(rxn.specific_collider, collider.group(0), rxn_string, self.label))
 
             for reactant in reactants.split('+'):
                 reactant = reactant.strip()
@@ -481,7 +481,7 @@ class KineticsLibrary(Database):
                                         'dictionary.'.format(product, self.label))
                 rxn.products.append(species_dict[product])
 
-            if not rxn.isBalanced():
+            if not rxn.is_balanced():
                 raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! '
                                     'Please reformulate.'.format(rxn, self.label))
 
@@ -494,41 +494,45 @@ class KineticsLibrary(Database):
                                     'Reaction {0} in kinetics library {1} has {2} reactants.'
                                     .format(rxn, self.label, len(rxn.products)))
 
-        if self.autoGenerated:
-            self.checkForDuplicates(markDuplicates=True)
+        if self.auto_generated:
+            self.check_for_duplicates(mark_duplicates=True)
         else:
-            self.checkForDuplicates()
-            self.convertDuplicatesToMulti()
+            self.check_for_duplicates()
+            self.convert_duplicates_to_multi()
 
-    def loadEntry(self,
-                  index,
-                  label,
-                  kinetics,
-                  degeneracy=1,
-                  duplicate=False,
-                  reversible=True,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  allow_pdep_route=False,
-                  elementary_high_p=False,
-                  allow_max_rate_violation=False,
-                  ):
+    def load_entry(self,
+                   index,
+                   label,
+                   kinetics,
+                   degeneracy=1,
+                   duplicate=False,
+                   reversible=True,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   allow_pdep_route=False,
+                   elementary_high_p=False,
+                   allow_max_rate_violation=False,
+                   ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
 
-        # reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
-        # if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
-        # if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
+        # reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant1)])]
+        # if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant2)]))
+        # if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant3)]))
         #
-        # products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
-        # if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
-        # if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
+        # products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product1)])]
+        # if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product2)]))
+        # if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product3)]))
 
         # Make a blank reaction
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
                        allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p,
                        allow_max_rate_violation=allow_max_rate_violation)
-        # if not rxn.isBalanced():
+        # if not rxn.is_balanced():
         #    raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))
         # label = str(rxn)
         assert index not in self.entries, "Index of reaction {0} is not unique!".format(label)
@@ -538,9 +542,9 @@ class KineticsLibrary(Database):
             item=rxn,
             data=kinetics,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
         )
 
     def save(self, path):
@@ -551,53 +555,53 @@ class KineticsLibrary(Database):
             os.makedirs(os.path.dirname(path))
         except OSError:
             pass
-        entries = self.getEntriesToSave()
+        entries = self.get_entries_to_save()
 
         f = codecs.open(path, 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
-        f.write('shortDesc = "{0}"\n'.format(self.shortDesc))
+        f.write('shortDesc = "{0}"\n'.format(self.short_desc))
         f.write('longDesc = """\n')
-        f.write(self.longDesc.strip() + '\n')
+        f.write(self.long_desc.strip() + '\n')
         f.write('"""\n')
-        f.write('autoGenerated={0}\n'.format(self.autoGenerated))
+        f.write('autoGenerated={0}\n'.format(self.auto_generated))
 
         for entry in entries:
-            self.saveEntry(f, entry)
+            self.save_entry(f, entry)
 
         f.close()
 
-        self.saveDictionary(os.path.join(os.path.split(path)[0], 'dictionary.txt'))
+        self.save_dictionary(os.path.join(os.path.split(path)[0], 'dictionary.txt'))
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the kinetics library to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)
 
-    def loadOld(self, path):
+    def load_old(self, path):
         """
         Load an old-style RMG kinetics library from the location `path`.
         """
         path = os.path.abspath(path)
 
-        self.loadOldDictionary(os.path.join(path, 'species.txt'), pattern=False)
+        self.load_old_dictionary(os.path.join(path, 'species.txt'), pattern=False)
         species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.items()])
 
         # Add common bath gases (Ar, Ne, He, N2) if not already present
         for label, smiles in [('Ar', '[Ar]'), ('He', '[He]'), ('Ne', '[Ne]'), ('N2', 'N#N')]:
             if label not in species:
-                molecule = Molecule().fromSMILES(smiles)
+                molecule = Molecule().from_smiles(smiles)
                 spec = Species(label=label, molecule=[molecule])
                 species[label] = spec
 
         reactions = []
-        reactions.extend(self.__loadOldReactions(os.path.join(path, 'reactions.txt'), species))
+        reactions.extend(self._load_old_reactions(os.path.join(path, 'reactions.txt'), species))
         if os.path.exists(os.path.join(path, 'pdepreactions.txt')):
-            pdep_reactions = self.__loadOldReactions(os.path.join(path, 'pdepreactions.txt'), species)
+            pdep_reactions = self._load_old_reactions(os.path.join(path, 'pdepreactions.txt'), species)
             # RMG-Py likes otherwise equivalent PDep and non-pdep reactions to be marked as duplicates
-            self.markValidDuplicates(reactions, pdep_reactions)
+            self.mark_valid_duplicates(reactions, pdep_reactions)
             reactions.extend(pdep_reactions)
 
         self.entries = {}
@@ -608,15 +612,15 @@ class KineticsLibrary(Database):
                 data=reaction.kinetics,
                 label=str(reaction)
             )
-            entry.longDesc = reaction.kinetics.comment
+            entry.long_desc = reaction.kinetics.comment
             reaction.kinetics.comment = ''
             self.entries[index + 1] = entry
             reaction.kinetics = None
 
-        self.checkForDuplicates()
-        self.convertDuplicatesToMulti()
+        self.check_for_duplicates()
+        self.convert_duplicates_to_multi()
 
-    def __loadOldReactions(self, path, species):
+    def _load_old_reactions(self, path, species):
         """
         Load an old-style reaction library from `path`. This algorithm can
         handle both the pressure-independent and pressure-dependent reaction
@@ -624,13 +628,13 @@ class KineticsLibrary(Database):
         dependent kinetics information is ignored unless the kinetics database
         is a seed mechanism.
         """
-        from rmgpy.chemkin import readReactionsBlock
+        from rmgpy.chemkin import read_reactions_block
         f = open(path, 'r')
-        reactionList = readReactionsBlock(f, speciesDict=species)
+        reaction_list = read_reactions_block(f, species_dict=species)
         f.close()
-        return reactionList
+        return reaction_list
 
-    def saveOld(self, path):
+    def save_old(self, path):
         """
         Save an old-style reaction library to `path`. This creates files named
         ``species.txt``, ``reactions.txt``, and ``pdepreactions.txt`` in the
@@ -643,31 +647,31 @@ class KineticsLibrary(Database):
         except OSError:
             pass
 
-        def writeArrhenius(f, arrhenius):
+        def write_arrhenius(f, arrhenius):
             f.write(' {0:<12.3E} {1:>7.3f} {2:>11.2f}    {3}{4:g} {5:g} {6:g}\n'.format(
                 arrhenius.A.value_si,
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4.184,
-                '*' if arrhenius.A.isUncertaintyMultiplicative() else '',
+                '*' if arrhenius.A.is_uncertainty_multiplicative() else '',
                 arrhenius.A.uncertainty,
                 arrhenius.n.uncertainty,
                 arrhenius.Ea.uncertainty / 4.184,
             ))
 
         # Gather all of the species used in this kinetics library
-        species_dict = self.getSpecies()
+        species_dict = self.get_species()
         # Also include colliders in the above
         for entry in self.entries.values():
             if isinstance(entry.data, ThirdBody):
                 for molecule in entry.data.efficiencies:
-                    formula = molecule.getFormula()
+                    formula = molecule.get_formula()
                     if formula in ['He', 'Ar', 'N2', 'Ne']:
                         pass
                     else:
                         found = False
                         for species in species_dict.values():
                             for mol in species.molecule:
-                                if mol.isIsomorphic(molecule):
+                                if mol.is_isomorphic(molecule):
                                     found = True
                                     break
                         if not found:
@@ -681,7 +685,7 @@ class KineticsLibrary(Database):
         species_list.sort(key=lambda x: x.label)
         f = open(os.path.join(path, 'species.txt'), 'w')
         for species in species_list:
-            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=False) + "\n")
+            f.write(species.molecule[0].to_adjacency_list(label=species.label, remove_h=False) + "\n")
         f.close()
 
         # Save the high-pressure limit reactions
@@ -698,14 +702,14 @@ class KineticsLibrary(Database):
                 entry.item.duplicate = True
                 rate_list = kinetics.arrhenius[:]
             else:
-                if not kinetics.isPressureDependent():
+                if not kinetics.is_pressure_dependent():
                     rate_list.append(kinetics)
             for rate in rate_list:
                 # Write reaction equation
                 f.write('{0:<59}'.format(entry.item))
                 # Write kinetics
                 if isinstance(rate, Arrhenius):
-                    writeArrhenius(f, rate)
+                    write_arrhenius(f, rate)
                 else:
                     raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library '
                                         '(reactions.txt).'.format(rate.__class__))
@@ -723,7 +727,7 @@ class KineticsLibrary(Database):
         f.write('Reactions:\n')
         for entry in entries:
             kinetics = entry.data
-            if not kinetics.isPressureDependent():
+            if not kinetics.is_pressure_dependent():
                 continue
             rate_list = []
             if isinstance(kinetics, MultiPDepArrhenius):
@@ -749,10 +753,10 @@ class KineticsLibrary(Database):
                 if isinstance(rate, (ThirdBody, Lindemann, Troe)):
                     if isinstance(rate, Lindemann):
                         # Lindemann (and Troe) fall-off have the High-P as default, and Low-P labeled LOW
-                        writeArrhenius(f, rate.arrheniusHigh)
+                        write_arrhenius(f, rate.arrheniusHigh)
                     else:
                         # Non-falloff ThirdBody reactions are always in the Low-P limit
-                        writeArrhenius(f, rate.arrheniusLow)
+                        write_arrhenius(f, rate.arrheniusLow)
                     if len(rate.efficiencies) > 0:
                         eff_line = ''
                         for molecule, efficiency in rate.efficiencies.items():
@@ -761,7 +765,7 @@ class KineticsLibrary(Database):
                                     mol_label = spec.label
                                     break
                             else:
-                                mol_label = molecule.getFormula().upper()
+                                mol_label = molecule.get_formula().upper()
                             eff_line += '{0}/{1:g}/  '.format(mol_label, efficiency)
                         f.write(eff_line.strip() + '\n')
                     if isinstance(rate, Lindemann):
@@ -786,7 +790,7 @@ class KineticsLibrary(Database):
                             ))
 
                 elif isinstance(rate, PDepArrhenius):
-                    writeArrhenius(f, rate.arrhenius[-1])
+                    write_arrhenius(f, rate.arrhenius[-1])
                     for pressure, arrhenius in zip(rate.pressures.value_si, rate.arrhenius):
                         f.write('     PLOG /  {0:10g} {1:10.3e} {2:9.3f} {3:10.2f} /\n'.format(
                             pressure / 1e5,

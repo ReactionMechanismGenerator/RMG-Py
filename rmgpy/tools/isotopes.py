@@ -47,16 +47,16 @@ import rmgpy.constants as constants
 import rmgpy.molecule.element
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.data.rmg import getDB
-from rmgpy.data.thermo import findCp0andCpInf
+from rmgpy.data.rmg import get_db
+from rmgpy.data.thermo import find_cp0_and_cpinf
 from rmgpy.kinetics.arrhenius import MultiArrhenius
 from rmgpy.molecule import Molecule
-from rmgpy.molecule.element import getElement
+from rmgpy.molecule.element import get_element
 from rmgpy.reaction import Reaction, same_species_lists
-from rmgpy.rmg.main import RMG, initializeLog
+from rmgpy.rmg.main import RMG, initialize_log
 from rmgpy.species import Species
-from rmgpy.thermo.thermoengine import processThermoData
-from rmgpy.tools.loader import loadRMGJob
+from rmgpy.thermo.thermoengine import process_thermo_data
+from rmgpy.tools.loader import load_rmg_job
 
 
 def initialize_isotope_model(rmg, isotopes):
@@ -65,37 +65,37 @@ def initialize_isotope_model(rmg, isotopes):
     as initial species instead of the species from the RMG input file.
     """
     # Read input file
-    rmg.loadInput(rmg.inputFile)
+    rmg.load_input(rmg.input_file)
 
     # Check input file
-    rmg.checkInput()
+    rmg.check_input()
 
     # Load databases
-    rmg.loadDatabase()
+    rmg.load_database()
 
     logging.info("isotope: Adding the isotopomers into the RMG model")
     for isotopomers in isotopes:
         for spc in isotopomers:
-            spec, isNew = rmg.reactionModel.makeNewSpecies(spc)
+            spec, is_new = rmg.reaction_model.make_new_species(spc)
             spec.thermo = spc.thermo
-            if isNew:
-                rmg.reactionModel.addSpeciesToEdge(spec)
-                rmg.initialSpecies.append(spec)
+            if is_new:
+                rmg.reaction_model.add_species_to_edge(spec)
+                rmg.initial_species.append(spec)
     logging.info("isotope: Adding standard species into the model")
-    for spec in rmg.initialSpecies:
-        spec.thermo = processThermoData(spec, spec.thermo)
+    for spec in rmg.initial_species:
+        spec.thermo = process_thermo_data(spec, spec.thermo)
         if not spec.reactive:
-            rmg.reactionModel.enlarge(spec)
-    for spec in rmg.initialSpecies:
+            rmg.reaction_model.enlarge(spec)
+    for spec in rmg.initial_species:
         if spec.reactive:
-            rmg.reactionModel.enlarge(spec)
+            rmg.reaction_model.enlarge(spec)
     logging.info("isotope: Finalizing the species additions")
-    rmg.initializeReactionThresholdAndReactFlags()
-    rmg.reactionModel.initializeIndexSpeciesDict()
+    rmg.initialize_reaction_threshold_and_react_flags()
+    rmg.reaction_model.initialize_index_species_dict()
 
 
-def generate_isotope_model(outputDirectory, rmg0, isotopes, useOriginalReactions=False,
-                           kineticIsotopeEffect=None):
+def generate_isotope_model(output_directory, rmg0, isotopes, use_original_reactions=False,
+                           kinetic_isotope_effect=None):
     """
     Replace the core species of the rmg model with the parameter list
     of species.
@@ -105,32 +105,32 @@ def generate_isotope_model(outputDirectory, rmg0, isotopes, useOriginalReactions
     Returns created RMG object.
     """
     logging.debug("isotope: called generateIsotopeModel")
-    rmg = RMG(inputFile=rmg0.inputFile, outputDirectory=outputDirectory)
-    rmg.attach(ChemkinWriter(outputDirectory))
+    rmg = RMG(input_file=rmg0.input_file, output_directory=output_directory)
+    rmg.attach(ChemkinWriter(output_directory))
 
     logging.info("isotope: making the isotope model for with all species")
     initialize_isotope_model(rmg, isotopes)
 
-    if useOriginalReactions:
+    if use_original_reactions:
         logging.info("isotope: finding reactions from the original reactions")
-        rxns = generate_isotope_reactions(rmg0.reactionModel.core.reactions, isotopes)
-        rmg.reactionModel.processNewReactions(rxns, newSpecies=[])
+        rxns = generate_isotope_reactions(rmg0.reaction_model.core.reactions, isotopes)
+        rmg.reaction_model.process_new_reactions(rxns, new_species=[])
 
     else:
         logging.info("isotope: enlarging the isotope model")
-        rmg.reactionModel.enlarge(reactEdge=True,
-                                  unimolecularReact=rmg.unimolecularReact,
-                                  bimolecularReact=rmg.bimolecularReact)
+        rmg.reaction_model.enlarge(react_edge=True,
+                                   unimolecular_react=rmg.unimolecular_react,
+                                   bimolecular_react=rmg.bimolecular_react)
 
     logging.info("isotope: clustering reactions")
-    clusters = cluster(rmg.reactionModel.core.reactions)
+    clusters = cluster(rmg.reaction_model.core.reactions)
     logging.info('isotope: fixing the directions of every reaction to a standard')
     for isotopomerRxnList in clusters:
         ensure_reaction_direction(isotopomerRxnList)
 
     consistent = True
     logging.info("isotope: checking symmetry is consistent among isotopomers")
-    for species_list in cluster(rmg.reactionModel.core.species):
+    for species_list in cluster(rmg.reaction_model.core.species):
         if not ensure_correct_symmetry(species_list):
             logging.info("isotopomers of {} with index {} may have wrong "
                          "symmetry".format(species_list[0], species_list[0].index))
@@ -145,10 +145,10 @@ def generate_isotope_model(outputDirectory, rmg0, isotopes, useOriginalReactions
         logging.warning("isotope: non-consistent degeneracy and/or symmetry was detected. This may lead to "
                         "unrealistic deviations in enrichment. check log for more details")
 
-    if kineticIsotopeEffect:
+    if kinetic_isotope_effect:
         logging.info('isotope: modifying reaction rates using kinetic isotope effect '
-                     'method "{0}"'.format(kineticIsotopeEffect))
-        if kineticIsotopeEffect == 'simple':
+                     'method "{0}"'.format(kinetic_isotope_effect))
+        if kinetic_isotope_effect == 'simple':
             apply_kinetic_isotope_effect_simple(clusters, rmg.database.kinetics)
         else:
             logging.warning('isotope: kinetic isotope effect {0} is not supported. '
@@ -156,7 +156,7 @@ def generate_isotope_model(outputDirectory, rmg0, isotopes, useOriginalReactions
     else:
         logging.info('isotope: not adding kinetic isotope effects since no method was supplied.')
     logging.info("isotope: saving files")
-    rmg.saveEverything()
+    rmg.save_everything()
 
     rmg.finish()
 
@@ -229,21 +229,21 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
         for pair in reactant_pairs:
             # copy species so they don't get modified
             species_tuple = tuple([spc.copy(deep=True) for spc in pair])
-            unfiltered_rxns = getDB('kinetics').generate_reactions_from_families(species_tuple,
-                                                                                 only_families=[rxn.family])
+            unfiltered_rxns = get_db('kinetics').generate_reactions_from_families(species_tuple,
+                                                                                  only_families=[rxn.family])
             # remove reactions whose products don't match the original reactions
             rxn_index5 = 0
             while rxn_index5 < len(unfiltered_rxns):
                 for isotopeless_reaction in rxns_w_same_reactants:
                     isotopeless_kinetics = isotopeless_reaction.kinetics
                     isotopeless_degeneracy = isotopeless_reaction.degeneracy
-                    if compare_isotopomers(isotopeless_reaction, unfiltered_rxns[rxn_index5], eitherDirection=False) \
+                    if compare_isotopomers(isotopeless_reaction, unfiltered_rxns[rxn_index5], either_direction=False) \
                             and isotopeless_reaction.family == unfiltered_rxns[rxn_index5].family \
                             and frozenset(isotopeless_reaction.template) == \
                             frozenset(unfiltered_rxns[rxn_index5].template):
                         # apply kinetics to new reaction & modify for degeneracy
                         unfiltered_rxns[rxn_index5].kinetics = deepcopy(isotopeless_kinetics)
-                        unfiltered_rxns[rxn_index5].kinetics.changeRate(
+                        unfiltered_rxns[rxn_index5].kinetics.change_rate(
                             unfiltered_rxns[rxn_index5].degeneracy / isotopeless_degeneracy)
                         rxn_index5 += 1
                         break
@@ -261,14 +261,14 @@ def generate_isotopomers(spc, N=1):
     """
 
     mol = spc.molecule[0]
-    isotope = getElement(6, 13)
+    isotope = get_element(6, 13)
 
     mols = []
     add_isotope(0, N, mol, mols, isotope)
 
     spcs = []
     for isomol in mols:
-        isotopomer = Species(molecule=[isomol], thermo=deepcopy(spc.thermo), transportData=spc.transportData,
+        isotopomer = Species(molecule=[isomol], thermo=deepcopy(spc.thermo), transport_data=spc.transport_data,
                              reactive=spc.reactive)
         isotopomer.generate_resonance_structures(keep_isomorphic=True)
         spcs.append(isotopomer)
@@ -279,10 +279,11 @@ def generate_isotopomers(spc, N=1):
         candidate = spcs.pop()
         unique = True
         for isotopomer in filtered:
-            if isotopomer.isIsomorphic(candidate):
+            if isotopomer.is_isomorphic(candidate):
                 unique = False
                 break
-        if unique: filtered.append(candidate)
+        if unique:
+            filtered.append(candidate)
 
     if spc.thermo:
         for isotopomer in filtered:
@@ -314,7 +315,7 @@ def add_isotope(i, N, mol, mols, element):
                 add_isotope(i + 1, N, isotopomer, mols, element)
 
 
-def cluster(objList):
+def cluster(obj_list):
     """
     Creates subcollections of isotopomers/reactions that
     only differ in their isotopic labeling.
@@ -324,7 +325,7 @@ def cluster(objList):
     It is O(n^2) efficient
     """
 
-    unclustered = copy(objList)
+    unclustered = copy(obj_list)
 
     # [[list of Species objs]]
     clusters = []
@@ -341,7 +342,7 @@ def cluster(objList):
     return clusters
 
 
-def remove_isotope(labeledObj, inplace=False):
+def remove_isotope(labeled_obj, inplace=False):
     """
     Create a deep copy of the first molecule of the species object and replace
     non-normal Element objects (of special isotopes) by the
@@ -355,21 +356,21 @@ def remove_isotope(labeledObj, inplace=False):
     If successful, the non-inplace parts should be removed
     """
 
-    if isinstance(labeledObj, Species):
+    if isinstance(labeled_obj, Species):
         if inplace:
             modified_atoms = []
-            for mol in labeledObj.molecule:
+            for mol in labeled_obj.molecule:
                 for atom in mol.atoms:
                     if atom.element.isotope != -1:
                         modified_atoms.append((atom, atom.element))
-                        atom.element = getElement(atom.element.symbol)
+                        atom.element = get_element(atom.element.symbol)
             return modified_atoms
         else:
-            stripped = labeledObj.copy(deep=True)
+            stripped = labeled_obj.copy(deep=True)
 
             for atom in stripped.molecule[0].atoms:
                 if atom.element.isotope != -1:
-                    atom.element = getElement(atom.element.symbol)
+                    atom.element = get_element(atom.element.symbol)
 
             # only do it for the first molecule, generate the other resonance isomers.
             stripped.molecule = [stripped.molecule[0]]
@@ -377,23 +378,23 @@ def remove_isotope(labeledObj, inplace=False):
 
         return stripped
 
-    elif isinstance(labeledObj, Reaction):
+    elif isinstance(labeled_obj, Reaction):
 
         if inplace:
 
             atom_list = []
-            for reactant in labeledObj.reactants:
+            for reactant in labeled_obj.reactants:
                 removed = remove_isotope(reactant, inplace)
                 if removed:
                     atom_list += removed
-            for product in labeledObj.products:
+            for product in labeled_obj.products:
                 removed = remove_isotope(product, inplace)
                 if removed:
                     atom_list += removed
 
             return atom_list
         else:
-            stripped_rxn = labeledObj.copy()
+            stripped_rxn = labeled_obj.copy()
 
             stripped_reactants = []
             for reactant in stripped_rxn.reactants:
@@ -406,27 +407,27 @@ def remove_isotope(labeledObj, inplace=False):
             stripped_rxn.products = stripped_products
 
             return stripped_rxn
-    elif isinstance(labeledObj, Molecule):
+    elif isinstance(labeled_obj, Molecule):
         if inplace:
             modified_atoms = []
-            for atom in labeledObj.atoms:
+            for atom in labeled_obj.atoms:
                 if atom.element.isotope != -1:
                     modified_atoms.append((atom, atom.element))
-                    atom.element = getElement(atom.element.symbol)
+                    atom.element = get_element(atom.element.symbol)
             return modified_atoms
         else:
-            stripped = labeledObj.copy(deep=True)
+            stripped = labeled_obj.copy(deep=True)
 
             for atom in stripped.atoms:
                 if atom.element.isotope != -1:
-                    atom.element = getElement(atom.element.symbol)
+                    atom.element = get_element(atom.element.symbol)
 
             return stripped
     else:
         raise TypeError('Only Reaction, Species, and Molecule objects are supported')
 
 
-def ensure_reaction_direction(isotopomerRxns):
+def ensure_reaction_direction(isotopomer_rxns):
     """
     given a list of reactions with varying isotope labels but identical structure,
     obtained from the `cluster` method, this method remakes the kinetics so that
@@ -434,16 +435,16 @@ def ensure_reaction_direction(isotopomerRxns):
     """
 
     # find isotopeless reaction as standard
-    reference = isotopomerRxns[0]
-    family = getDB('kinetics').families[reference.family]
-    if family.ownReverse:
-        for rxn in isotopomerRxns:
-            if not compare_isotopomers(rxn, reference, eitherDirection=False):
+    reference = isotopomer_rxns[0]
+    family = get_db('kinetics').families[reference.family]
+    if family.own_reverse:
+        for rxn in isotopomer_rxns:
+            if not compare_isotopomers(rxn, reference, either_direction=False):
                 # the reaction is in the oposite direction
                 logging.info('isotope: identified flipped reaction direction in reaction number {} of reaction {}. '
-                             'Altering the direction.'.format( rxn.index, str(rxn)))
+                             'Altering the direction.'.format(rxn.index, str(rxn)))
                 # obtain reverse attribute with template and degeneracy
-                family.addReverseAttribute(rxn)
+                family.add_reverse_attribute(rxn)
                 if frozenset(rxn.reverse.template) != frozenset(reference.template):
                     logging.warning("Reaction {} did not find proper reverse template, might cause "
                                     "degeneracy error.".format(str(rxn)))
@@ -462,16 +463,16 @@ def ensure_reaction_direction(isotopomerRxns):
                 rxn.reverse = None
 
 
-def redo_isotope(atomList):
+def redo_isotope(atom_list):
     """
     This takes a list of zipped atoms with their isotopes removed, from
     and elements.
     """
-    for atom, element in atomList:
+    for atom, element in atom_list:
         atom.element = element
 
 
-def compare_isotopomers(obj1, obj2, eitherDirection=True):
+def compare_isotopomers(obj1, obj2, either_direction=True):
     """
     This method takes two species or reaction objects and returns true if
     they only differ in isotopic labeling, and false if they have other
@@ -488,31 +489,31 @@ def compare_isotopomers(obj1, obj2, eitherDirection=True):
     atomlist = remove_isotope(obj1, inplace=True) + remove_isotope(obj2, inplace=True)
     if isinstance(obj1, Reaction):
         # make sure isotomorphic
-        comparison_bool = obj1.isIsomorphic(obj2, eitherDirection)
+        comparison_bool = obj1.is_isomorphic(obj2, either_direction)
         if comparison_bool and isinstance(obj1, TemplateReaction):
             # ensure families are the same
             comparison_bool = obj1.family == obj2.family
-            if comparison_bool and not eitherDirection:
+            if comparison_bool and not either_direction:
                 # make sure templates are identical if in the same direction
                 comparison_bool = frozenset(obj1.template) == frozenset(obj2.template)
     elif isinstance(obj1, Species):
-        comparison_bool = obj1.isIsomorphic(obj2)
+        comparison_bool = obj1.is_isomorphic(obj2)
     else:
         raise TypeError('Only Reaction and Speicies Objects are supported in compareIsotopomers')
     redo_isotope(atomlist)
     return comparison_bool
 
 
-def generate_RMG_model(inputFile, outputDirectory):
+def generate_rmg_model(input_file, output_directory):
     """
     Generate the RMG-Py model NOT containing any non-normal isotopomers.
 
     Returns created RMG object.
     """
-    initializeLog(logging.INFO, os.path.join(outputDirectory, 'RMG.log'))
+    initialize_log(logging.INFO, os.path.join(output_directory, 'RMG.log'))
     # generate mechanism:
-    rmg = RMG(inputFile=os.path.abspath(inputFile),
-              outputDirectory=os.path.abspath(outputDirectory))
+    rmg = RMG(input_file=os.path.abspath(input_file),
+              output_directory=os.path.abspath(output_directory))
     rmg.execute()
 
     return rmg
@@ -528,15 +529,15 @@ def correct_entropy(isotopomer, isotopeless):
     """
 
     # calculate -R ln (sigma) in SI units (J/K/mol)
-    s_isotopeless = - constants.R * math.log(isotopeless.getSymmetryNumber())
-    s_isotopomer = - constants.R * math.log(isotopomer.getSymmetryNumber())
+    s_isotopeless = - constants.R * math.log(isotopeless.get_symmetry_number())
+    s_isotopomer = - constants.R * math.log(isotopomer.get_symmetry_number())
 
     # convert species thermo to ThermoData object:
     nasa = isotopomer.thermo
 
     # apply correction to entropy at 298K
     delta_s = s_isotopomer - s_isotopeless
-    nasa = nasa.changeBaseEntropy(delta_s)
+    nasa = nasa.change_base_entropy(delta_s)
 
     # put the corrected thermo back as a species attribute:
     isotopomer.thermo = nasa
@@ -596,7 +597,7 @@ def apply_kinetic_isotope_effect_simple(rxn_clusters, kinetics_database):
         for reaction in cluster[:-1]:
             labeled_reactants = get_labeled_reactants(reaction, family)
             reduced_mass = get_reduced_mass(labeled_reactants, labels, three_member_ts)
-            reaction.kinetics.changeRate(math.sqrt(base_reduced_mass / reduced_mass))
+            reaction.kinetics.change_rate(math.sqrt(base_reduced_mass / reduced_mass))
 
 
 def get_labeled_reactants(reaction, family):
@@ -613,7 +614,7 @@ def get_labeled_reactants(reaction, family):
     reactants = list(reaction.reactants)
     products = list(reaction.products)
 
-    family.addAtomLabelsForReaction(reaction, output_with_resonance=True)
+    family.add_atom_labels_for_reaction(reaction, output_with_resonance=True)
     labeled_reactants = [species.molecule[0] for species in reaction.reactants]
 
     # replace the original reactants and products
@@ -651,7 +652,7 @@ def get_reduced_mass(labeled_molecules, labels, three_member_ts):
     if reduced_mass == 0. and combined_mass == 0:
         from rmgpy.exceptions import KineticsError
         raise KineticsError(
-            "Did not find a labeled atom in molecules {}".format([mol.toAdjacencyList() for mol in labeled_molecules]))
+            "Did not find a labeled atom in molecules {}".format([mol.to_adjacency_list() for mol in labeled_molecules]))
     if three_member_ts:  # actually convert to reduced mass using the mass of hydrogen
         reduced_mass = 1 / rmgpy.molecule.element.H.mass + 1 / combined_mass
     return 1. / reduced_mass
@@ -664,7 +665,7 @@ def is_enriched(obj):
 
     if isinstance(obj, Species):
         for atom in obj.molecule[0].atoms:
-            if atom.element.isotope != -1 and not np.allclose(atom.element.mass, getElement(atom.element.symbol).mass):
+            if atom.element.isotope != -1 and not np.allclose(atom.element.mass, get_element(atom.element.symbol).mass):
                 return True
         return False
     elif isinstance(obj, Reaction):
@@ -693,11 +694,11 @@ def ensure_correct_symmetry(isotopmoper_list, isotopic_element='C'):
         if atom.element.symbol == isotopic_element:
             number_elements += 1
 
-    minimum_entropy = min([spec.getEntropy(298) for spec in isotopmoper_list])
+    minimum_entropy = min([spec.get_entropy(298) for spec in isotopmoper_list])
 
     count = 0.
     for spec in isotopmoper_list:
-        entropy_diff = spec.getEntropy(298) - minimum_entropy
+        entropy_diff = spec.get_entropy(298) - minimum_entropy
         count += math.exp(entropy_diff / constants.R)
     return abs(count - 2 ** number_elements) < 0.01
 
@@ -751,11 +752,11 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
             spec = product_list.at[index, 'product']
             # if species already listed, add to its flux
             if product_list.at[index, 'product_struc_index'] == structure_index \
-                    and spec.isIsomorphic(species):
+                    and spec.is_isomorphic(species):
                 product_list.at[index, 'flux'] += flux
                 return product_list
         # add product to list
-        symmetry_ratio = product_structures[structure_index].getSymmetryNumber() / float(species.getSymmetryNumber())
+        symmetry_ratio = product_structures[structure_index].get_symmetry_number() / float(species.get_symmetry_number())
         return product_list.append({'product': species,
                                     'flux': flux,
                                     'product_struc_index': structure_index,
@@ -777,8 +778,8 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
             remove_isotope(mol, inplace=True)
         for mol in unlabeled_rxn.products:
             remove_isotope(mol, inplace=True)
-    unlabeled_symmetry_reactants = np.prod([mol.getSymmetryNumber() for mol in unlabeled_rxn.reactants])
-    unlabeled_symmetry_products = np.prod([mol.getSymmetryNumber() for mol in unlabeled_rxn.products])
+    unlabeled_symmetry_reactants = np.prod([mol.get_symmetry_number() for mol in unlabeled_rxn.reactants])
+    unlabeled_symmetry_products = np.prod([mol.get_symmetry_number() for mol in unlabeled_rxn.products])
 
     # prepare index of structures (product_structures)
     for struc in unlabeled_rxn.reactants + unlabeled_rxn.products:
@@ -789,7 +790,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
     for rxn in reaction_isotopomer_list:
         # find characteristic flux for the forward direction
         reactant_conc = 1.
-        reactant_conc /= np.prod([mol.getSymmetryNumber() for mol in rxn.reactants])
+        reactant_conc /= np.prod([mol.get_symmetry_number() for mol in rxn.reactants])
         reactant_conc *= unlabeled_symmetry_reactants
         if isinstance(rxn.kinetics, MultiArrhenius):
             rate = sum([arr.A.value_si for arr in rxn.kinetics.arrhenius])
@@ -807,13 +808,13 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
         if isinstance(rxn.kinetics, MultiArrhenius):
             reverse_A_factor = 0
             for arr in rxn.kinetics.arrhenius:
-                reverse_A_factor += arr.A.value_si / rxn.getEquilibriumConstant(298)
+                reverse_A_factor += arr.A.value_si / rxn.get_equilibrium_constant(298)
         else:
-            reverse_A_factor = rxn.kinetics.A.value_si / rxn.getEquilibriumConstant(298)
+            reverse_A_factor = rxn.kinetics.A.value_si / rxn.get_equilibrium_constant(298)
 
         # get reverse flux using product symmetries
         product_conc = 1.
-        product_conc /= np.prod([mol.getSymmetryNumber() for mol in rxn.products])
+        product_conc /= np.prod([mol.get_symmetry_number() for mol in rxn.products])
         product_conc *= unlabeled_symmetry_products
         reactant_flux = product_conc * reverse_A_factor
 
@@ -839,9 +840,8 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
     return all(pass_species)
 
 
-def run(inputFile, outputDir, original=None, maximumIsotopicAtoms=1,
-        useOriginalReactions=False,
-        kineticIsotopeEffect=None):
+def run(input_file, output_directory, original=None, maximum_isotopic_atoms=1,
+        use_original_reactions=False, kinetic_isotope_effect=None):
     """
     Accepts one input file with the RMG-Py model to generate.
 
@@ -854,32 +854,32 @@ def run(inputFile, outputDir, original=None, maximumIsotopicAtoms=1,
         logging.info("isotope: original model not found, generating new one in directory `rmg`")
         logging.info("isotope: check `rmg/RMG.log` for the rest of the logging info.")
 
-        outputdir_rmg = os.path.join(outputDir, 'rmg')
+        outputdir_rmg = os.path.join(output_directory, 'rmg')
         os.mkdir(outputdir_rmg)
 
-        rmg = generate_RMG_model(inputFile, outputdir_rmg)
+        rmg = generate_rmg_model(input_file, outputdir_rmg)
     else:
         logging.info("isotope: original model being copied from previous RMG job in folder {}".format(original))
         outputdir_rmg = original
         chemkin_file = os.path.join(outputdir_rmg, 'chemkin', 'chem_annotated.inp')
         dict_file = os.path.join(outputdir_rmg, 'chemkin', 'species_dictionary.txt')
-        rmg = loadRMGJob(inputFile, chemkin_file, dict_file, generateImages=False, useChemkinNames=True)
+        rmg = load_rmg_job(input_file, chemkin_file, dict_file, generate_images=False, use_chemkin_names=True)
 
     logging.info("isotope: generating isotope model")
     logging.info('Generating isotopomers for the core species in {}'.format(outputdir_rmg))
     isotopes = []
 
     logging.info("isotope: adding all the new and old isotopomers")
-    for spc in rmg.reactionModel.core.species:
-        findCp0andCpInf(spc, spc.thermo)
-        isotopes.append([spc] + generate_isotopomers(spc, maximumIsotopicAtoms))
+    for spc in rmg.reaction_model.core.species:
+        find_cp0_and_cpinf(spc, spc.thermo)
+        isotopes.append([spc] + generate_isotopomers(spc, maximum_isotopic_atoms))
 
     logging.info('isotope: number of isotopomers: {}'.format(
         sum([len(isotopomer) for isotopomer in isotopes if isotopomer])))
 
-    outputdir_iso = os.path.join(outputDir, 'iso')
+    outputdir_iso = os.path.join(output_directory, 'iso')
     os.mkdir(outputdir_iso)
 
     logging.info('isotope: Generating RMG isotope model in {}'.format(outputdir_iso))
-    generate_isotope_model(outputdir_iso, rmg, isotopes, useOriginalReactions=useOriginalReactions,
-                           kineticIsotopeEffect=kineticIsotopeEffect)
+    generate_isotope_model(outputdir_iso, rmg, isotopes, use_original_reactions=use_original_reactions,
+                           kinetic_isotope_effect=kinetic_isotope_effect)

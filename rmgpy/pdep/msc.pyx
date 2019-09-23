@@ -41,10 +41,10 @@ from rmgpy.exceptions import ModifiedStrongCollisionError
 
 ################################################################################
 
-cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default'):
+cpdef apply_modified_strong_collision_method(network, str efficiency_model='default'):
     """A method for applying the Modified Strong Collision approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
-    cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, e0, e_reac
+    cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, E0, e_reac
     cdef np.ndarray[np.float64_t,ndim=2] a_mat, b, k, x
     cdef np.ndarray[np.float64_t,ndim=3] dens_states
     cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
@@ -53,19 +53,19 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
     cdef int i, j, n, r, s, start, src
 
     temperature = network.T
-    e_list = network.Elist
-    j_list = network.Jlist
-    dens_states = network.densStates
-    coll_freq = network.collFreq
+    e_list = network.e_list
+    j_list = network.j_list
+    dens_states = network.dens_states
+    coll_freq = network.coll_freq
     k_ij = network.Kij
     f_im = network.Fim
     g_nj = network.Gnj
-    e0 = network.E0
-    n_isom = network.Nisom
-    n_reac = network.Nreac
-    n_prod = network.Nprod
-    n_grains = network.Ngrains
-    n_j = network.NJ
+    E0 = network.E0
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = network.n_grains
+    n_j = network.n_j
     
     if np.isnan(dens_states.sum()):
         raise AttributeError('Network {0} has NaN in the density of states. '
@@ -90,18 +90,18 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
     
     d_e_down = np.zeros(n_isom)
     for i in range(n_isom):
-        d_e_down[i] = network.isomers[i].species[0].energyTransferModel.getAlpha(temperature)
+        d_e_down[i] = network.isomers[i].species[0].energy_transfer_model.get_alpha(temperature)
     
     # Compute collision efficiencies
     coll_eff = np.ones(n_isom)
-    if efficiencyModel == 'default':
+    if efficiency_model == 'default':
         for i in range(n_isom):
-            coll_eff[i] = network.isomers[i].species[0].energyTransferModel.calculateCollisionEfficiency(
-                temperature, e_list, j_list, dens_states[i, :, :], e0[i], e_reac[i])
-    elif efficiencyModel == 'none':
+            coll_eff[i] = network.isomers[i].species[0].energy_transfer_model.calculate_collision_efficiency(
+                temperature, e_list, j_list, dens_states[i, :, :], E0[i], e_reac[i])
+    elif efficiency_model == 'none':
         pass
     else:
-        raise ValueError('Unknown efficiency model "{0}".'.format(efficiencyModel))
+        raise ValueError('Unknown efficiency model "{0}".'.format(efficiency_model))
     
     # Zero LHS matrix and RHS vectors
     a_mat = np.zeros((n_isom, n_isom), np.float64)

@@ -42,8 +42,8 @@ import yaml
 
 import rmgpy.constants as constants
 from rmgpy import __version__
-from rmgpy.molecule.element import elementList, getElement
-from rmgpy.molecule.translator import toInChI, toInChIKey
+from rmgpy.molecule.element import get_element
+from rmgpy.molecule.translator import to_inchi, to_inchi_key
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.rmgobject import RMGObject
@@ -57,8 +57,6 @@ from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
 from rmgpy.transport import TransportData
 
 from arkane.pdep import PressureDependenceJob
-
-################################################################################
 
 
 # Add a custom string representer to use block literals for multiline strings
@@ -155,14 +153,14 @@ class ArkaneSpecies(RMGObject):
                 self.conformer = species.conformer
                 self.xyz = self.update_xyz_string()
         elif species.molecule is not None and len(species.molecule) > 0:
-            self.smiles = species.molecule[0].toSMILES()
-            self.adjacency_list = species.molecule[0].toAdjacencyList()
+            self.smiles = species.molecule[0].to_smiles()
+            self.adjacency_list = species.molecule[0].to_adjacency_list()
             try:
-                inchi = toInChI(species.molecule[0], backend='try-all', aug_level=0)
+                inchi = to_inchi(species.molecule[0], backend='try-all', aug_level=0)
             except ValueError:
                 inchi = ''
             try:
-                inchi_key = toInChIKey(species.molecule[0], backend='try-all', aug_level=0)
+                inchi_key = to_inchi_key(species.molecule[0], backend='try-all', aug_level=0)
             except ValueError:
                 inchi_key = ''
             self.inchi = inchi
@@ -170,22 +168,22 @@ class ArkaneSpecies(RMGObject):
             if species.conformer is not None:
                 self.conformer = species.conformer
                 self.xyz = self.update_xyz_string()
-            self.molecular_weight = species.molecularWeight
-            if species.symmetryNumber != -1:
-                self.symmetry_number = species.symmetryNumber
-            if species.transportData is not None:
-                self.transport_data = species.transportData  # called `collisionModel` in Arkane
-            if species.energyTransferModel is not None:
-                self.energy_transfer_model = species.energyTransferModel
+            self.molecular_weight = species.molecular_weight
+            if species.symmetry_number != -1:
+                self.symmetry_number = species.symmetry_number
+            if species.transport_data is not None:
+                self.transport_data = species.transport_data  # called `collisionModel` in Arkane
+            if species.energy_transfer_model is not None:
+                self.energy_transfer_model = species.energy_transfer_model
             if species.thermo is not None:
                 self.thermo = species.thermo.as_dict()
-                data = species.getThermoData()
-                h298 = data.getEnthalpy(298) / 4184.
-                s298 = data.getEntropy(298) / 4.184
+                data = species.get_thermo_data()
+                h298 = data.get_enthalpy(298) / 4184.
+                s298 = data.get_entropy(298) / 4.184
                 temperatures = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
                 cp = []
                 for t in temperatures:
-                    cp.append(data.getHeatCapacity(t) / 4.184)
+                    cp.append(data.get_heat_capacity(t) / 4.184)
 
                 self.thermo_data = ThermoData(H298=(h298, 'kcal/mol'),
                                               S298=(s298, 'cal/(mol*K)'),
@@ -206,7 +204,7 @@ class ArkaneSpecies(RMGObject):
             xyz_list.append(str(len(self.conformer.number.value_si)))
             xyz_list.append(self.label)
             for number, coordinate in zip(self.conformer.number.value_si, self.conformer.coordinates.value_si):
-                element_symbol = getElement(int(number)).symbol
+                element_symbol = get_element(int(number)).symbol
                 row = '{0:4}'.format(element_symbol)
                 row += '{0:14.8f}{1:14.8f}{2:14.8f}'.format(*(coordinate * 1e10).tolist())  # convert m to Angstrom
                 xyz_list.append(row)
@@ -229,7 +227,7 @@ class ArkaneSpecies(RMGObject):
     def load_yaml(self, path, label=None, pdep=False):
         """
         Load the all statMech data from the .yml file in `path` into `species`
-        `pdep` is a boolean specifying whether or not jobList includes a pressureDependentJob.
+        `pdep` is a boolean specifying whether or not job_list includes a pressureDependentJob.
         """
         yml_file = os.path.basename(path)
         if label:
@@ -237,7 +235,9 @@ class ArkaneSpecies(RMGObject):
         else:
             logging.info('Loading statistical mechanics parameters from {0} file...'.format(yml_file))
         with open(path, 'r') as f:
-            data = yaml.safe_load(stream=f)
+            content = f.read()
+        content = replace_yaml_syntax(content, label)
+        data = yaml.safe_load(stream=content)
         if label:
             # First, warn the user if the label doesn't match
             try:
@@ -282,11 +282,11 @@ class ArkaneSpecies(RMGObject):
             del data['imaginary_frequency']
         if not data['is_ts']:
             if 'smiles' in data:
-                data['species'] = Species(SMILES=data['smiles'])
+                data['species'] = Species(smiles=data['smiles'])
             elif 'adjacency_list' in data:
-                data['species'] = Species().fromAdjacencyList(data['adjacency_list'])
+                data['species'] = Species().from_adjacency_list(data['adjacency_list'])
             elif 'inchi' in data:
-                data['species'] = Species(InChI=data['inchi'])
+                data['species'] = Species(inchi=data['inchi'])
             else:
                 raise ValueError('Cannot load ArkaneSpecies from YAML file {0}. Either `smiles`, `adjacency_list`, or '
                                  'InChI must be specified'.format(path))
@@ -309,29 +309,57 @@ class ArkaneSpecies(RMGObject):
         logging.debug("Parsed all YAML objects")
 
 
-################################################################################
+def replace_yaml_syntax(content, label=None):
+    """
+    PEP8 compliant changes to RMG objects could be backward incompatible with Arkane's YAML files.
+    Search for knows phrases which were replace, and fix the format on the fly.
+
+    Args:
+        content (str): The content of an Arkane YAML file.
+
+    Returns:
+        str: The modified content to be processed via yaml.safe_load().
+    """
+    syntax_correction_dict = {'spinMultiplicity': 'spin_multiplicity',
+                              'opticalIsomers': 'optical_isomers',
+                              }
+    replaced_keys = list()
+    for key, value in syntax_correction_dict.items():
+        if key in content:
+            content = content.replace(key, value)
+            replaced_keys.append(key)
+    label = ' for species {0}'.format(label) if label is not None else ''
+    if replaced_keys:
+        logging.info('\nThe loaded YAML file{0} seems to be from an older version of RMG/Arkane.\n'
+                     'Some keywords will be automatically replaced before loading objects from this file.'.format(label))
+    for key in replaced_keys:
+        logging.info('Replacing keyword "{key}" with "{value}" in the Arkane YAML file.'.format(
+            key=key, value=syntax_correction_dict[key]))
+    if replaced_keys:
+        logging.info('\n')
+    return content
 
 
-def is_pdep(jobList):
+def is_pdep(job_list):
     """A helper function to determine whether a job is PressureDependenceJob or not"""
-    for job in jobList:
+    for job in job_list:
         if isinstance(job, PressureDependenceJob):
             return True
     return False
 
 
-def check_conformer_energy(Vlist, path):
+def check_conformer_energy(energies, path):
     """
     Check to see that the starting energy of the species in the potential energy scan calculation
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 
     log a warning message.  
     """
-    v_list = np.array(Vlist, np.float64)
-    v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
-    if v_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
+    energies = np.array(energies, np.float64)
+    e_diff = (energies[0] - np.min(energies)) * constants.E_h * constants.Na / 1000
+    if e_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
                         'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
-                        .format(path=os.path.basename(path), diff=v_diff))
+                        .format(path=os.path.basename(path), diff=e_diff))
 
 
 def get_element_mass(input_element, isotope=None):

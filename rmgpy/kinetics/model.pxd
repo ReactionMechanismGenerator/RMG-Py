@@ -32,9 +32,9 @@ from rmgpy.kinetics.uncertainties cimport RateUncertainty
 
 ################################################################################
 
-cpdef str getRateCoefficientUnitsFromReactionOrder(order)
+cpdef str get_rate_coefficient_units_from_reaction_order(order)
 
-cpdef int getReactionOrderFromRateCoefficientUnits(kunits) except -1
+cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1
 
 ################################################################################
 
@@ -46,19 +46,19 @@ cdef class KineticsModel:
 
     cdef public str comment
     
-    cpdef bint isPressureDependent(self) except -2
+    cpdef bint is_pressure_dependent(self) except -2
     
-    cpdef bint isTemperatureValid(self, double T) except -2
+    cpdef bint is_temperature_valid(self, double T) except -2
 
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
     
-    cpdef toHTML(self)
+    cpdef to_html(self)
 
-    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef double discrepancy(self, KineticsModel otherKinetics) except -2
+    cpdef double discrepancy(self, KineticsModel other_kinetics) except -2
     
 
 cdef class PDepKineticsModel(KineticsModel):
@@ -66,21 +66,21 @@ cdef class PDepKineticsModel(KineticsModel):
     cdef public dict efficiencies
     cdef public KineticsModel highPlimit
     
-    cpdef bint isPressureDependent(self) except -2
+    cpdef bint is_pressure_dependent(self) except -2
     
-    cpdef bint isPressureValid(self, double P) except -2
+    cpdef bint is_pressure_valid(self, double P) except -2
 
-    cpdef double getEffectivePressure(self, double P, list species, np.ndarray fractions) except -1
+    cpdef double get_effective_pressure(self, double P, list species, np.ndarray fractions) except -1
     
-    cpdef np.ndarray getEffectiveColliderEfficiencies(self, list species)
+    cpdef np.ndarray get_effective_collider_efficiencies(self, list species)
 
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef toHTML(self)
+    cpdef to_html(self)
 
-    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
 
 ################################################################################
 
@@ -88,6 +88,6 @@ cdef class TunnelingModel:
 
     cdef public ScalarQuantity _frequency
 
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000
 
-    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist)

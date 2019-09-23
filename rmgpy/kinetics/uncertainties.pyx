@@ -66,7 +66,7 @@ cdef class RateUncertainty(object):
         s += ")"
         return s
 
-    cpdef double getExpectedLogUncertainty(self):
+    cpdef double get_expected_log_uncertainty(self):
         """
         The expected uncertainty in Log(k) at Tref
         """

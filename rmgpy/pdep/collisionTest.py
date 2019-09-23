@@ -62,7 +62,7 @@ class TestSingleExponentialDown(unittest.TestCase):
         """
         self.assertAlmostEqual(self.singleExponentialDown.alpha0.value_si * 0.001, self.alpha0, 4)
 
-    def test_T0(self):
+    def test_temperature_0(self):
         """
         Test the SingleExponentialDown.T0 attribute.
         """
@@ -74,13 +74,13 @@ class TestSingleExponentialDown(unittest.TestCase):
         """
         self.assertAlmostEqual(self.singleExponentialDown.n, self.n, 4)
 
-    def test_getAlpha(self):
+    def test_get_alpha(self):
         """
-        Test the SingleExponentialDown.getAlpha() method.
+        Test the SingleExponentialDown.get_alpha() method.
         """
         for T in [300, 400, 500, 600, 800, 1000, 1500, 2000]:
             dEdown0 = 1000. * self.alpha0 * (T / self.T0) ** self.n
-            dEdown = self.singleExponentialDown.getAlpha(T)
+            dEdown = self.singleExponentialDown.get_alpha(T)
             self.assertAlmostEqual(dEdown0, dEdown, 6)
 
     def test_pickle(self):

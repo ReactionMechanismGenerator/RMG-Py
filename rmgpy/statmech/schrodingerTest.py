@@ -40,8 +40,8 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech.schrodinger import getDensityOfStates, getEnthalpy, getEntropy, \
-    getHeatCapacity, getPartitionFunction
+from rmgpy.statmech.schrodinger import get_density_of_states, get_enthalpy, get_entropy, \
+    get_heat_capacity, get_partition_function
 
 ################################################################################
 
@@ -64,64 +64,64 @@ class TestSchrodinger(unittest.TestCase):
 
     def test_get_partition_function(self):
         """
-        Test the getPartitionFunction() method.
+        Test the get_partition_function() method.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         q_exp_list = np.array([208.8907, 347.9285, 695.5234, 1043.118, 1390.713])
         for temperature, q_exp in zip(t_list, q_exp_list):
-            q_act = getPartitionFunction(temperature, self.energy, self.degeneracy, self.n0)
+            q_act = get_partition_function(temperature, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(q_exp / q_act, 1.0, 4)
 
     def test_get_heat_capacity(self):
         """
-        Test the getHeatCapacity() method.
+        Test the get_heat_capacity() method.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         cv_exp_list = np.array([1, 1, 1, 1, 1])
         for temperature, cv_exp in zip(t_list, cv_exp_list):
-            cv_act = getHeatCapacity(temperature, self.energy, self.degeneracy, self.n0)
+            cv_act = get_heat_capacity(temperature, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(cv_exp / cv_act, 1.0, 4)
 
     def test_get_enthalpy(self):
         """
-        Test the getEnthalpy() method.
+        Test the get_enthalpy() method.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         h_exp_list = np.array([0.9984012, 0.9990409, 0.9995205, 0.9996803, 0.9997603])
         for temperature, h_exp in zip(t_list, h_exp_list):
-            h_act = getEnthalpy(temperature, self.energy, self.degeneracy, self.n0)
+            h_act = get_enthalpy(temperature, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 4)
 
     def test_get_entropy(self):
         """
-        Test the getEntropy() method.
+        Test the get_entropy() method.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         s_exp_list = np.array([6.340212, 6.851038, 7.544185, 7.949650, 8.237332])
         for temperature, s_exp in zip(t_list, s_exp_list):
-            s_act = getEntropy(temperature, self.energy, self.degeneracy, self.n0)
+            s_act = get_entropy(temperature, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4)
 
 #    def test_get_sum_of_states(self):
 #        """
-#        Test the getSumOfStates() method.
+#        Test the get_sum_of_states() method.
 #        """
 #        e_list = np.arange(0, 10., 0.01)
-#        dens_states = getDensityOfStates(e_list, self.energy, self.degeneracy, self.n0)
-#        sum_states = getSumOfStates(e_list, self.energy, self.degeneracy, self.n0)
+#        dens_states = get_density_of_states(e_list, self.energy, self.degeneracy, self.n0)
+#        sum_states = get_sum_of_states(e_list, self.energy, self.degeneracy, self.n0)
 #        for n in range(1, len(e_list)):
 #            self.assertAlmostEqual(np.sum(dens_states[0:n + 1]) / sum_states[n], 1.0, 3)
 
     def test_get_density_of_states(self):
         """
-        Test the getDensityOfStates() method.
+        Test the get_density_of_states() method.
         """
         t_list = np.array([300, 400, 500, 600])
         e_list = np.arange(0, 40000., 20.)
         for temperature in t_list:
-            dens_states = getDensityOfStates(e_list, self.energy, self.degeneracy, self.n0)
+            dens_states = get_density_of_states(e_list, self.energy, self.degeneracy, self.n0)
             q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
-            q_exp = getPartitionFunction(temperature, self.energy, self.degeneracy, self.n0)
+            q_exp = get_partition_function(temperature, self.energy, self.degeneracy, self.n0)
             self.assertAlmostEqual(q_exp / q_act, 1.0, 2)
 
 ################################################################################

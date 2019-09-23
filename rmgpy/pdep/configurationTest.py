@@ -79,12 +79,12 @@ class TestConfiguration(unittest.TestCase):
                          [-0.982845, 1.76637, -1.57619, 0.474364, -0.000681718]], "kJ/mol")),
                     HinderedRotor(inertia=(2.81525, "amu*angstrom^2"), symmetry=3, barrier=(2.96807, "kcal/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
-            molecularWeight=(74.07, "g/mol"),
-            transportData=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
-            energyTransferModel=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
+            molecular_weight=(74.07, "g/mol"),
+            transport_data=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
         self.nC4H8 = Species(
@@ -106,8 +106,8 @@ class TestConfiguration(unittest.TestCase):
                         [[0.0400372, 0.0301986, -6.4787, -0.0248675, -0.0324753],
                          [0.0312541, 0.0538, -0.493785, 0.0965968, 0.125292]], "kJ/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
@@ -120,8 +120,8 @@ class TestConfiguration(unittest.TestCase):
                     NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),
                     HarmonicOscillator(frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
@@ -156,8 +156,8 @@ class TestConfiguration(unittest.TestCase):
 
         # ensure this extra fluff is not in Network string
         attributes = ['Species', 'Conformer', 'Molecule', 'NonlinearRotor',
-                      'HarmonicOscillator', 'frequencies', 'spinMultiplicity', 'TransportData',
-                      'molecularWeight', 'SingleExponentialDown']
+                      'HarmonicOscillator', 'frequencies', 'spin_multiplicity', 'TransportData',
+                      'molecular_weight', 'SingleExponentialDown']
         for label in attributes:
             self.assertNotIn(label, output)
 

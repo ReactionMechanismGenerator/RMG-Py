@@ -75,31 +75,31 @@ class TestThirdBody(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_arrheniusLow(self):
+    def test_arrhenius_low(self):
         """
         Test that the ThirdBody arrhenius property was properly set.
         """
         self.assertTrue(self.thirdBody.arrheniusLow is self.arrheniusLow)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the ThirdBody Tmin property was properly set.
         """
         self.assertAlmostEqual(self.thirdBody.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the ThirdBody Tmax property was properly set.
         """
         self.assertAlmostEqual(self.thirdBody.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the ThirdBody Pmin property was properly set.
         """
         self.assertAlmostEqual(self.thirdBody.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the ThirdBody Pmax property was properly set.
         """
@@ -111,15 +111,15 @@ class TestThirdBody(unittest.TestCase):
         """
         self.assertEqual(self.thirdBody.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
-        Test the ThirdBody.isPressureDependent() method.
+        Test the ThirdBody.is_pressure_dependent() method.
         """
-        self.assertTrue(self.thirdBody.isPressureDependent())
+        self.assertTrue(self.thirdBody.is_pressure_dependent())
 
-    def test_getEffectivePressure(self):
+    def test_get_effective_pressure(self):
         """
-        Test the ThirdBody.getEffectivePressure() method.
+        Test the ThirdBody.get_effective_pressure() method.
         """
         P = 1.0
         # Test that each pure bath gas gives the correct effective pressure
@@ -127,12 +127,12 @@ class TestThirdBody(unittest.TestCase):
         species = [Species(molecule=[mol]) for mol in self.thirdBody.efficiencies.keys()]
         for mol, eff in self.thirdBody.efficiencies.items():
             for spec in species:
-                if spec.isIsomorphic(mol):
+                if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     break
             fractions = np.zeros(len(species))
             fractions[i] = 1.0
-            Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+            Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
             self.assertAlmostEqual(P * eff, Peff)
         # Also test a mixture of bath gases
         fractions = np.zeros(len(species))
@@ -140,64 +140,64 @@ class TestThirdBody(unittest.TestCase):
         fractions[1] = 0.5
         eff = 0
         for mol in self.thirdBody.efficiencies.keys():
-            if species[0].isIsomorphic(mol):
+            if species[0].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
-            if species[1].isIsomorphic(mol):
+            if species[1].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
-        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
         # Test the same thing, only with a list of species that are Molecule objects
         species = [mol.copy(deep=True) for mol in self.thirdBody.efficiencies.keys()]
         for mol, eff in self.thirdBody.efficiencies.items():
             for spec in species:
-                if spec.isIsomorphic(mol):
+                if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     break
             fractions = np.zeros(len(species))
             fractions[i] = 1.0
-            Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+            Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
             self.assertAlmostEqual(P * eff, Peff)
         # Also test a mixture of bath gases
         eff = 0
         for mol in self.thirdBody.efficiencies.keys():
-            if species[0].isIsomorphic(mol):
+            if species[0].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
-            if species[1].isIsomorphic(mol):
+            if species[1].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
 
         fractions = np.zeros(len(species))
         fractions[0] = 0.5
         fractions[1] = 0.5
-        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
         # Here, test a non-normalized set of fractions (they are still 50% of each)
         fractions = np.zeros(len(species))
         fractions[0] = 0.7
         fractions[1] = 0.7
-        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
-    def test_getEffectiveColliderEfficiencies(self):
+    def test_get_effective_collider_efficiencies(self):
         """
-        Test the getEffectiveColliderEfficiencies() method
+        Test the get_effective_collider_efficiencies() method
         """
         # Create list of molecules
-        molecules = [Molecule(SMILES=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
-        method_efficiencies = self.thirdBody.getEffectiveColliderEfficiencies(molecules)
+        molecules = [Molecule(smiles=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
+        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
         efficiencies = np.array([3, 2, 3, 6, 0.7, 1.5, 2])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
         # Use a smaller list of molecules
-        molecules = [Molecule(SMILES=smiles) for smiles in ["C", "CC", "[Ar]"]]
-        method_efficiencies = self.thirdBody.getEffectiveColliderEfficiencies(molecules)
+        molecules = [Molecule(smiles=smiles) for smiles in ["C", "CC", "[Ar]"]]
+        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
         efficiencies = np.array([3, 3, 0.7])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the ThirdBody.getRateCoefficient() method.
+        Test the ThirdBody.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -209,7 +209,7 @@ class TestThirdBody(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.thirdBody.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.thirdBody.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact, Kexp[t, p], delta=1e-4 * Kexp[t, p])
 
     def test_pickle(self):
@@ -237,10 +237,10 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         efficiencies = {}
         for mol, eff in self.thirdBody.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in thirdBody.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
 
@@ -271,22 +271,22 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         efficiencies = {}
         for mol, eff in self.thirdBody.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in thirdBody.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the ThirdBody.changeRate() method.
+        Test the ThirdBody.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.thirdBody.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.thirdBody.changeRate(2)
+        k0list = np.array([self.thirdBody.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.thirdBody.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.thirdBody.getRateCoefficient(T, 1e5)
+            kact = self.thirdBody.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -330,37 +330,37 @@ class TestLindemann(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_arrheniusHigh(self):
+    def test_arrhenius_high(self):
         """
         Test that the Lindemann arrheniusHigh property was properly set.
         """
         self.assertTrue(self.lindemann.arrheniusHigh is self.arrheniusHigh)
 
-    def test_arrheniusLow(self):
+    def test_arrhenius_low(self):
         """
         Test that the Lindemann arrheniusLow property was properly set.
         """
         self.assertTrue(self.lindemann.arrheniusLow is self.arrheniusLow)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Lindemann Tmin property was properly set.
         """
         self.assertAlmostEqual(self.lindemann.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Lindemann Tmax property was properly set.
         """
         self.assertAlmostEqual(self.lindemann.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the Lindemann Pmin property was properly set.
         """
         self.assertAlmostEqual(self.lindemann.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the Lindemann Pmax property was properly set.
         """
@@ -372,15 +372,15 @@ class TestLindemann(unittest.TestCase):
         """
         self.assertEqual(self.lindemann.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
-        Test the Lindemann.isPressureDependent() method.
+        Test the Lindemann.is_pressure_dependent() method.
         """
-        self.assertTrue(self.lindemann.isPressureDependent())
+        self.assertTrue(self.lindemann.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the Lindemann.getRateCoefficient() method.
+        Test the Lindemann.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -392,7 +392,7 @@ class TestLindemann(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.lindemann.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.lindemann.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact, Kexp[t, p], delta=1e-4 * Kexp[t, p])
 
     def test_pickle(self):
@@ -428,10 +428,10 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         efficiencies = {}
         for mol, eff in self.lindemann.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in lindemann.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
 
@@ -470,22 +470,22 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         efficiencies = {}
         for mol, eff in self.lindemann.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in lindemann.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the Lindemann.changeRate() method.
+        Test the Lindemann.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.lindemann.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.lindemann.changeRate(2)
+        k0list = np.array([self.lindemann.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.lindemann.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.lindemann.getRateCoefficient(T, 1e5)
+            kact = self.lindemann.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -537,13 +537,13 @@ class TestTroe(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_arrheniusHigh(self):
+    def test_arrhenius_high(self):
         """
         Test that the Troe arrheniusHigh property was properly set.
         """
         self.assertTrue(self.troe.arrheniusHigh is self.arrheniusHigh)
 
-    def test_arrheniusLow(self):
+    def test_arrhenius_low(self):
         """
         Test that the Troe arrheniusLow property was properly set.
         """
@@ -555,43 +555,43 @@ class TestTroe(unittest.TestCase):
         """
         self.assertEqual(self.troe.alpha, self.alpha)
 
-    def test_T3(self):
+    def test_t3(self):
         """
         Test that the Troe T3 property was properly set.
         """
         self.assertAlmostEqual(self.troe.T3.value_si, self.T3, 6)
 
-    def test_T1(self):
+    def test_t1(self):
         """
         Test that the Troe T1 property was properly set.
         """
         self.assertAlmostEqual(self.troe.T1.value_si, self.T1, 6)
 
-    def test_T2(self):
+    def test_t2(self):
         """
         Test that the Troe T2 property was properly set.
         """
         self.assertAlmostEqual(self.troe.T2.value_si, self.T2, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Troe Tmin property was properly set.
         """
         self.assertAlmostEqual(self.troe.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Troe Tmax property was properly set.
         """
         self.assertAlmostEqual(self.troe.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the Troe Pmin property was properly set.
         """
         self.assertAlmostEqual(self.troe.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the Troe Pmax property was properly set.
         """
@@ -603,15 +603,15 @@ class TestTroe(unittest.TestCase):
         """
         self.assertEqual(self.troe.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
-        Test the Troe.isPressureDependent() method.
+        Test the Troe.is_pressure_dependent() method.
         """
-        self.assertTrue(self.troe.isPressureDependent())
+        self.assertTrue(self.troe.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the Troe.getRateCoefficient() method.
+        Test the Troe.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -623,7 +623,7 @@ class TestTroe(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.troe.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.troe.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact, Kexp[t, p], delta=1e-4 * Kexp[t, p])
 
     def test_pickle(self):
@@ -666,10 +666,10 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
         efficiencies = {}
         for mol, eff in self.troe.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in troe.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
 
@@ -715,22 +715,22 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
         efficiencies = {}
         for mol, eff in self.troe.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in troe.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the Troe.changeRate() method.
+        Test the Troe.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.troe.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.troe.changeRate(2)
+        k0list = np.array([self.troe.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.troe.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.troe.getRateCoefficient(T, 1e5)
+            kact = self.troe.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 

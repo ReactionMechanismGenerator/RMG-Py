@@ -52,7 +52,7 @@ class QMVerifier(object):
         self.outputExtension = '.out'
         self.inputExtension = '.mop'
 
-    def checkForInChiKeyCollision(self, logFileInChI):
+    def check_for_inchi_key_collision(self, log_file_inchi):
         """
         This method is designed in the case a MOPAC output file was found but the InChI found in the file did not
         correspond to the InChI of the given molecule.
@@ -74,10 +74,10 @@ class QMVerifier(object):
             lineI = input_file.readline()
             for line in input_file:
                 if line.startswith("InChI="):
-                    inputFileInChI = lineI.rstrip()
+                    input_file_inchi = lineI.rstrip()
                     break
 
-            if inputFileInChI == self.molfile.InChIAug:
+            if input_file_inchi == self.molfile.InChIAug:
                 logging.info('An InChI match could be found in the input file, but not in the output file. Anywho, a\
                 pre-existing successful MOPAC result exists.')
                 return True
@@ -85,13 +85,13 @@ class QMVerifier(object):
             else:
                 logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " +
                              self.molfile.name + " RMG Augmented InChI = " + self.molfile.InChIAug +
-                             " Log file Augmented InChI = " + logFileInChI +
+                             " Log file Augmented InChI = " + log_file_inchi +
                              " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
                 return False
 
         # returns True if an MM4 output file for the given name and directory (.mm4out suffix) exists and indicates successful completion (same criteria as used after calculation runs) terminates if the InChI doesn't match the InChI in the file or if there is no InChI in the file returns False otherwise
 
-    def succesfulJobExists(self):
+    def succesful_job_exists(self):
         """
         checks whether one of the flags is true.
         If so, it returns true.

@@ -41,7 +41,7 @@ from rmgpy.exceptions import ReservoirStateError
 ################################################################################
 
 
-cpdef applyReservoirStateMethod(network):
+cpdef apply_reservoir_state_method(network):
     """A method for applying the Reservoir State approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=2] n_res, n_act
@@ -57,18 +57,18 @@ cpdef applyReservoirStateMethod(network):
     cdef int i, j, n, r, s, u, v, row, iter
 
     temperature = network.T
-    e_list = network.Elist
-    j_list = network.Jlist
-    dens_states = network.densStates
+    e_list = network.e_list
+    j_list = network.j_list
+    dens_states = network.dens_states
     m_coll = network.Mcoll
     k_ij = network.Kij
     f_im = network.Fim
     g_nj = network.Gnj
-    n_isom = network.Nisom
-    n_reac = network.Nreac
-    n_prod = network.Nprod
-    n_grains = network.Ngrains
-    n_j = network.NJ
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = network.n_grains
+    n_j = network.n_j
 
     beta = 1. / (constants.R * temperature)  # [=] mol/kJ
 

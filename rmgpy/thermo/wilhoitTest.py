@@ -89,13 +89,13 @@ class TestWilhoit(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def test_Cp0(self):
+    def test_cp0(self):
         """
         Test that the Wilhoit Cp0 property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Cp0.value_si / constants.R, self.Cp0, 6)
 
-    def test_CpInf(self):
+    def test_cp_inf(self):
         """
         Test that the Wilhoit CpInf property was properly set.
         """
@@ -125,41 +125,41 @@ class TestWilhoit(unittest.TestCase):
         """
         self.assertAlmostEqual(self.wilhoit.a3, self.a3, 6)
 
-    def test_B(self):
+    def test_b(self):
         """
         Test that the Wilhoit B property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.B.value_si, self.B, 6)
 
-    def test_H0(self):
+    def test_h0(self):
         """
         Test that the Wilhoit H0 property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.H0.value_si / constants.R, self.H0, 6)
 
-    def test_S0(self):
+    def test_s0(self):
         """
         Test that the Wilhoit S0 property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.S0.value_si / constants.R, self.S0, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Wilhoit Tmin property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Wilhoit Tmax property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Tmax.value_si, self.Tmax, 6)
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K
         """
-        self.assertAlmostEqual(self.wilhoit.E0.value_si, self.wilhoit.getEnthalpy(0.001), 1)
+        self.assertAlmostEqual(self.wilhoit.E0.value_si, self.wilhoit.get_enthalpy(0.001), 1)
 
     def test_comment(self):
         """
@@ -167,57 +167,57 @@ class TestWilhoit(unittest.TestCase):
         """
         self.assertEqual(self.wilhoit.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the Wilhoit.isTemperatureValid() method.
+        Test the Wilhoit.is_temperature_valid() method.
         """
         Tdata = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
         valid_data = [False, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
-            valid0 = self.wilhoit.isTemperatureValid(T)
+            valid0 = self.wilhoit.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getHeatCapacity(self):
+    def test_get_heat_capacity(self):
         """
-        Test the Wilhoit.getHeatCapacity() method.
+        Test the Wilhoit.get_heat_capacity() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         cp_exp_list = np.array([5.12003, 7.80327, 10.5528, 12.8323, 14.6013,
                                 15.9511, 16.9842, 17.7837, 18.4114, 18.9117]) * constants.R
         for T, cp_exp in zip(Tlist, cp_exp_list):
-            cp_act = self.wilhoit.getHeatCapacity(T)
+            cp_act = self.wilhoit.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp / cp_act, 1.0, 3, '{0} != {1} within 3 places'.format(cp_exp, cp_act))
 
-    def test_getEnthalpy(self):
+    def test_get_enthalpy(self):
         """
-        Test the Wilhoit.getEnthalpy() method.
+        Test the Wilhoit.get_enthalpy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         h_exp_list = np.array([-51.9303, -22.7609, -12.1050, -6.14444, -2.16433,
                                0.747500, 2.99646, 4.79698, 6.27618, 7.51564]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
-            h_act = self.wilhoit.getEnthalpy(T)
+            h_act = self.wilhoit.get_enthalpy(T)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 3, '{0} != {1}'.format(h_exp, h_act))
 
-    def test_getEntropy(self):
+    def test_get_entropy(self):
         """
-        Test the Wilhoit.getEntropy() method.
+        Test the Wilhoit.get_entropy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         s_exp_list = np.array([25.3095, 29.6445, 33.3398, 36.7006, 39.7629,
                                42.5499, 45.0898, 47.4122, 49.5445, 51.5112]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
-            s_act = self.wilhoit.getEntropy(T)
+            s_act = self.wilhoit.get_entropy(T)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4, '{0} != {1}'.format(s_exp, s_act))
 
-    def test_getFreeEnergy(self):
+    def test_get_free_energy(self):
         """
-        Test the Wilhoit.getFreeEnergy() method.
+        Test the Wilhoit.get_free_energy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         for T in Tlist:
-            g_exp = self.wilhoit.getEnthalpy(T) - T * self.wilhoit.getEntropy(T)
-            g_act = self.wilhoit.getFreeEnergy(T)
+            g_exp = self.wilhoit.get_enthalpy(T) - T * self.wilhoit.get_entropy(T)
+            g_act = self.wilhoit.get_free_energy(T)
             self.assertAlmostEqual(g_exp / g_act, 1.0, 4, '{0} != {1}'.format(g_exp, g_act))
 
     def test_pickle(self):
@@ -280,32 +280,32 @@ class TestWilhoit(unittest.TestCase):
         self.assertEqual(self.wilhoit.E0.units, wilhoit.E0.units)
         self.assertEqual(self.wilhoit.comment, wilhoit.comment)
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
-        Test the Wilhoit.fitToData() method.
+        Test the Wilhoit.fit_to_data() method.
         """
-        h298 = self.wilhoit.getEnthalpy(298)
-        s298 = self.wilhoit.getEntropy(298)
+        h298 = self.wilhoit.get_enthalpy(298)
+        s298 = self.wilhoit.get_entropy(298)
         Tdata = np.array([300., 400., 500., 600., 800., 1000., 1500.])
         cp_data = np.zeros_like(Tdata)
         for i in range(Tdata.shape[0]):
-            cp_data[i] = self.wilhoit.getHeatCapacity(Tdata[i])
+            cp_data[i] = self.wilhoit.get_heat_capacity(Tdata[i])
         cp_0 = self.Cp0 * constants.R
         cp_inf = self.CpInf * constants.R
 
         # Fit the Wilhoit polynomial to the data
-        wilhoit = Wilhoit().fitToData(Tdata, cp_data, cp_0, cp_inf, h298, s298)
+        wilhoit = Wilhoit().fit_to_data(Tdata, cp_data, cp_0, cp_inf, h298, s298)
 
         # Check that the fit reproduces the input data
         for T in Tdata:
-            cp_exp = self.wilhoit.getHeatCapacity(T)
-            cp_act = wilhoit.getHeatCapacity(T)
+            cp_exp = self.wilhoit.get_heat_capacity(T)
+            cp_act = wilhoit.get_heat_capacity(T)
             self.assertAlmostEqual(cp_act, cp_exp, 4)
-            h_exp = self.wilhoit.getEnthalpy(T)
-            h_act = wilhoit.getEnthalpy(T)
+            h_exp = self.wilhoit.get_enthalpy(T)
+            h_act = wilhoit.get_enthalpy(T)
             self.assertAlmostEqual(h_act, h_exp, 3)
-            s_exp = self.wilhoit.getEntropy(T)
-            s_act = wilhoit.getEntropy(T)
+            s_exp = self.wilhoit.get_entropy(T)
+            s_act = wilhoit.get_entropy(T)
             self.assertAlmostEqual(s_act, s_exp, 4)
 
         # Check that the fit reproduces the input parameters 
@@ -322,7 +322,7 @@ class TestWilhoit(unittest.TestCase):
         self.assertAlmostEqual(wilhoit.H0.value_si, self.wilhoit.H0.value_si, 0)
         self.assertAlmostEqual(wilhoit.S0.value_si, self.wilhoit.S0.value_si, 2)
 
-    def testToWilhoit(self):
+    def test_to_wilhoit(self):
         """
         Test if the entropy computed from other thermo implementations is close to what Wilhoit computes.
         """
@@ -333,20 +333,20 @@ class TestWilhoit(unittest.TestCase):
 
         # Load databases
         database = RMGDatabase()
-        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
-        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+        database.load_thermo(os.path.join(settings['database.directory'], 'thermo'), thermo_libraries=['Narayanaswamy'])
+        database.load_solvation(os.path.join(settings['database.directory'], 'solvation'))
 
-        spc = Species().fromSMILES('CC')
-        spc.getThermoData()
+        spc = Species().from_smiles('CC')
+        spc.get_thermo_data()
 
         T = 1350.  # not 298K!
 
         # nasa to wilhoit
         nasa = spc.thermo
-        s_nasa = nasa.getEntropy(T)
+        s_nasa = nasa.get_entropy(T)
 
-        nasa_to_wh = nasa.toWilhoit()
-        s_nasa_to_wh = nasa_to_wh.getEntropy(T)
+        nasa_to_wh = nasa.to_wilhoit()
+        s_nasa_to_wh = nasa_to_wh.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_nasa_to_wh, -1)
         self.assertEqual(nasa.comment, nasa_to_wh.comment)
@@ -354,23 +354,23 @@ class TestWilhoit(unittest.TestCase):
         # wilhoit to nasa conversion done in nasaTest.py
 
         # thermo data to wilhoit:
-        td = nasa.toThermoData()
-        s_td = td.getEntropy(T)
+        td = nasa.to_thermo_data()
+        s_td = td.get_entropy(T)
 
-        wilhoit = td.toWilhoit(B=1000.)
-        s_wh = wilhoit.getEntropy(T)
+        wilhoit = td.to_wilhoit(B=1000.)
+        s_wh = wilhoit.get_entropy(T)
 
         self.assertAlmostEqual(s_td, s_wh, -1)
         self.assertEqual(td.comment, wilhoit.comment)
 
         # wilhoit back to thermodata
-        td = wilhoit.toThermoData()
-        s_td = td.getEntropy(T)
+        td = wilhoit.to_thermo_data()
+        s_td = td.get_entropy(T)
 
         self.assertAlmostEqual(s_td, s_wh, -1)
         self.assertEqual(td.comment, wilhoit.comment)
 
-    def testWilhoitAsDict(self):
+    def test_wilhoit_as_dict(self):
         """
         Test that a Wilhoit object can be converted to a dictionary representation properly
         """
@@ -391,7 +391,7 @@ class TestWilhoit(unittest.TestCase):
                                         'class': 'Wilhoit'}
                          )
 
-    def testMakeWilhoit(self):
+    def test_make_wilhoit(self):
         """
         Test that a Wilhoit object can be created from a dictionary representation
         """

@@ -50,19 +50,19 @@ import rmgpy.molecule.molecule as mm
 from rmgpy.exceptions import DependencyError
 
 
-def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
+def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
-    Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.
+    Perceives aromaticity and, unless remove_h==False, removes Hydrogen atoms.
 
-    If returnMapping==True then it also returns a dictionary mapping the
+    If return_mapping==True then it also returns a dictionary mapping the
     atoms to RDKit's atom indices.
     """
 
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
-    mol.sortAtoms()
+    mol.sort_atoms()
     atoms = mol.vertices
     rd_atom_indices = {}  # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
@@ -73,12 +73,12 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
             rd_atom.SetIsotope(atom.element.isotope)
-        rd_atom.SetNumRadicalElectrons(atom.radicalElectrons)
+        rd_atom.SetNumRadicalElectrons(atom.radical_electrons)
         rd_atom.SetFormalCharge(atom.charge)
-        if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rd_atom.SetNumRadicalElectrons(
+        if atom.element.symbol == 'C' and atom.lone_pairs == 1 and mol.multiplicity == 1: rd_atom.SetNumRadicalElectrons(
             2)
         rdkitmol.AddAtom(rd_atom)
-        if removeHs and atom.symbol == 'H':
+        if remove_h and atom.symbol == 'H':
             pass
         else:
             rd_atom_indices[atom] = index
@@ -89,12 +89,12 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
-            if bond.isHydrogenBond():
+            if bond.is_hydrogen_bond():
                 continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
-                order_string = bond.getOrderStr()
+                order_string = bond.get_order_str()
                 order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
 
@@ -102,23 +102,23 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     rdkitmol = rdkitmol.GetMol()
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
-    if removeHs:
+    if remove_h:
         rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
-    if returnMapping:
+    if return_mapping:
         return rdkitmol, rd_atom_indices
     return rdkitmol
 
 
-def fromRDKitMol(mol, rdkitmol):
+def from_rdkit_mol(mol, rdkitmol):
     """
     Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
     cython.declare(i=cython.int,
-                   radicalElectrons=cython.int,
+                   radical_electrons=cython.int,
                    charge=cython.int,
-                   lonePairs=cython.int,
+                   lone_pairs=cython.int,
                    number=cython.int,
                    order=cython.float,
                    atom=mm.Atom,
@@ -140,7 +140,7 @@ def fromRDKitMol(mol, rdkitmol):
         # Use atomic number as key for element
         number = rdkitatom.GetAtomicNum()
         isotope = rdkitatom.GetIsotope()
-        element = elements.getElement(number, isotope or -1)
+        element = elements.get_element(number, isotope or -1)
 
         # Process charge
         charge = rdkitatom.GetFormalCharge()
@@ -169,23 +169,23 @@ def fromRDKitMol(mol, rdkitmol):
                     order = 1.5
 
                 bond = mm.Bond(mol.vertices[i], mol.vertices[j], order)
-                mol.addBond(bond)
+                mol.add_bond(bond)
 
     # We need to update lone pairs first because the charge was set by RDKit
-    mol.updateLonePairs()
+    mol.update_lone_pairs()
     # Set atom types and connectivity values
     mol.update()
 
     # Assume this is always true
     # There are cases where 2 radical_electrons is a singlet, but
     # the triplet is often more stable,
-    mol.multiplicity = mol.getRadicalCount() + 1
-    # mol.updateAtomTypes()
+    mol.multiplicity = mol.get_radical_count() + 1
+    # mol.update_atomtypes()
 
     return mol
 
 
-def debugRDKitMol(rdmol, level=logging.INFO):
+def debug_rdkit_mol(rdmol, level=logging.INFO):
     """
     Takes an rdkit molecule object and logs some debugging information
     equivalent to calling rdmol.Debug() but uses our logging framework.
@@ -212,7 +212,7 @@ def debugRDKitMol(rdmol, level=logging.INFO):
     return message
 
 
-def toOBMol(mol, returnMapping=False):
+def to_ob_mol(mol, return_mapping=False):
     """
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -221,7 +221,7 @@ def toOBMol(mol, returnMapping=False):
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     # Sort the atoms to ensure consistent output
-    mol.sortAtoms()
+    mol.sort_atoms()
     atoms = mol.vertices
 
     ob_atom_ids = {}  # dictionary of OB atom IDs
@@ -236,7 +236,7 @@ def toOBMol(mol, returnMapping=False):
     orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
-            if bond.isHydrogenBond():
+            if bond.is_hydrogen_bond():
                 continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
@@ -246,20 +246,20 @@ def toOBMol(mol, returnMapping=False):
 
     obmol.AssignSpinMultiplicity(True)
 
-    if returnMapping:
+    if return_mapping:
         return obmol, ob_atom_ids
 
     return obmol
 
 
-def fromOBMol(mol, obmol):
+def from_ob_mol(mol, obmol):
     """
     Convert a OpenBabel Mol object `obmol` to a molecular structure. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
     # Below are the declared variables for cythonizing the module
     # cython.declare(i=cython.int)
-    # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
+    # cython.declare(radical_electrons=cython.int, charge=cython.int, lone_pairs=cython.int)
     # cython.declare(atom=mm.Atom, atom1=mm.Atom, atom2=mm.Atom, bond=mm.Bond)
     if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
@@ -275,13 +275,13 @@ def fromOBMol(mol, obmol):
         # Use atomic number as key for element
         number = obatom.GetAtomicNum()
         isotope = obatom.GetIsotope()
-        element = elements.getElement(number, isotope or -1)
+        element = elements.get_element(number, isotope or -1)
         # Process charge
         charge = obatom.GetFormalCharge()
         obatom_multiplicity = obatom.GetSpinMultiplicity()
-        radicalElectrons = obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
+        radical_electrons = obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
 
-        atom = mm.Atom(element, radicalElectrons, charge, '', 0)
+        atom = mm.Atom(element, radical_electrons, charge, '', 0)
         mol.vertices.append(atom)
 
     # iterate through bonds in obmol
@@ -294,17 +294,17 @@ def fromOBMol(mol, obmol):
         bond = mm.Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1],
                        mol.vertices[obbond.GetEndAtomIdx() - 1],
                        oborder)  # python array indices start at 0
-        mol.addBond(bond)
+        mol.add_bond(bond)
 
     # Set atom types and connectivity values
-    mol.updateConnectivityValues()
-    mol.updateAtomTypes()
-    mol.updateMultiplicity()
-    mol.identifyRingMembership()
+    mol.update_connectivity_values()
+    mol.update_atomtypes()
+    mol.update_multiplicity()
+    mol.identify_ring_membership()
 
     # Assume this is always true
-    # There are cases where 2 radicalElectrons is a singlet, but
+    # There are cases where 2 radical_electrons is a singlet, but
     # the triplet is often more stable,
-    mol.multiplicity = mol.getRadicalCount() + 1
+    mol.multiplicity = mol.get_radical_count() + 1
 
     return mol

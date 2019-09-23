@@ -42,7 +42,7 @@ import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, InputError
 from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.kinetics.tunneling import Wigner, Eckart
-from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
+from rmgpy.molecule.draw import MoleculeDrawer, create_new_surface
 
 from arkane.common import ArkaneSpecies
 from arkane.output import prettify
@@ -75,14 +75,14 @@ class KineticsJob(object):
             self.Tlist = (1 / np.linspace(1 / self.Tmax.value_si, 1 / self.Tmin.value_si, self.Tcount), 'K')
 
         self.reaction = reaction
-        self.kunits = None
+        self.k_units = None
 
         if sensitivity_conditions is not None:
             self.sensitivity_conditions = [quantity.Quantity(condition) for condition in sensitivity_conditions]
         else:
             self.sensitivity_conditions = None
 
-        self.arkane_species = ArkaneSpecies(species=self.reaction.transitionState)
+        self.arkane_species = ArkaneSpecies(species=self.reaction.transition_state)
 
     @property
     def Tmin(self):
@@ -119,7 +119,7 @@ class KineticsJob(object):
         If `plot` is True, then plots of the raw and fitted values for the kinetics
         will be saved.
         """
-        self.generateKinetics()
+        self.generate_kinetics()
         if output_directory is not None:
             try:
                 self.write_output(output_directory)
@@ -147,7 +147,7 @@ class KineticsJob(object):
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
 
-    def generateKinetics(self):
+    def generate_kinetics(self):
         """
         Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.
         """
@@ -157,14 +157,14 @@ class KineticsJob(object):
         self.usedTST = True
         kinetics_class = 'Arrhenius'
 
-        tunneling = self.reaction.transitionState.tunneling
+        tunneling = self.reaction.transition_state.tunneling
         if isinstance(tunneling, Wigner) and tunneling.frequency is None:
-            tunneling.frequency = (self.reaction.transitionState.frequency.value_si, "cm^-1")
+            tunneling.frequency = (self.reaction.transition_state.frequency.value_si, "cm^-1")
         elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
-            tunneling.frequency = (self.reaction.transitionState.frequency.value_si, "cm^-1")
+            tunneling.frequency = (self.reaction.transition_state.frequency.value_si, "cm^-1")
             tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
                                       for reactant in self.reaction.reactants]) * 0.001, "kJ/mol")
-            tunneling.E0_TS = (self.reaction.transitionState.conformer.E0.value_si * 0.001, "kJ/mol")
+            tunneling.E0_TS = (self.reaction.transition_state.conformer.E0.value_si * 0.001, "kJ/mol")
             tunneling.E0_prod = (sum([product.conformer.E0.value_si
                                       for product in self.reaction.products]) * 0.001, "kJ/mol")
         elif tunneling is not None:
@@ -176,14 +176,14 @@ class KineticsJob(object):
         logging.debug('Generating {0} kinetics model for {1}...'.format(kinetics_class, self.reaction))
         klist = np.zeros_like(self.Tlist.value_si)
         for i, t in enumerate(self.Tlist.value_si):
-            klist[i] = self.reaction.calculateTSTRateCoefficient(t)
+            klist[i] = self.reaction.calculate_tst_rate_coefficient(t)
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order - 1)
-        self.kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-        self.Kequnits = {2: 'mol^2/cm^6', 1: 'mol/cm^3', 0: '       ', -1: 'cm^3/mol', -2: 'cm^6/mol^2'}[
+        self.k_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
+        self.K_eq_units = {2: 'mol^2/cm^6', 1: 'mol/cm^3', 0: '       ', -1: 'cm^3/mol', -2: 'cm^6/mol^2'}[
             len(self.reaction.products) - len(self.reaction.reactants)]
-        self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
-        self.reaction.kinetics = Arrhenius().fitToData(self.Tlist.value_si, klist, kunits=self.kunits)
+        self.k_r_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
+        self.reaction.kinetics = Arrhenius().fit_to_data(self.Tlist.value_si, klist, kunits=self.k_units)
         self.reaction.elementary_high_p = True
 
     def write_output(self, output_directory):
@@ -193,10 +193,7 @@ class KineticsJob(object):
         """
         reaction = self.reaction
 
-        ks = []
-        k0s = []
-        k0revs = []
-        krevs = []
+        ks, k0s, k0_revs, k_revs = [], [], [], []
 
         logging.info('Saving kinetics for {0}...'.format(reaction))
 
@@ -218,58 +215,58 @@ class KineticsJob(object):
                 t_list = self.Tlist.value_si
 
             for T in t_list:
-                tunneling = reaction.transitionState.tunneling
-                reaction.transitionState.tunneling = None
+                tunneling = reaction.transition_state.tunneling
+                reaction.transition_state.tunneling = None
                 try:
-                    k0 = reaction.calculateTSTRateCoefficient(T) * factor
+                    k0 = reaction.calculate_tst_rate_coefficient(T) * factor
                 except SpeciesError:
                     k0 = 0
-                reaction.transitionState.tunneling = tunneling
+                reaction.transition_state.tunneling = tunneling
                 try:
-                    k = reaction.calculateTSTRateCoefficient(T) * factor
+                    k = reaction.calculate_tst_rate_coefficient(T) * factor
                     kappa = k / k0
                 except (SpeciesError, ZeroDivisionError):
-                    k = reaction.getRateCoefficient(T)
+                    k = reaction.get_rate_coefficient(T)
                     kappa = 0
                     logging.info("The species in reaction {0} do not have adequate information for TST, "
                                  "using default kinetics values.".format(reaction))
-                tunneling = reaction.transitionState.tunneling
+                tunneling = reaction.transition_state.tunneling
                 ks.append(k)
                 k0s.append(k0)
 
-                f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.kunits))
+                f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.k_units))
             f.write('#   ======= =========== =========== =========== ===============\n')
             f.write('\n\n')
 
             f.write('#   ======= ============ =========== ============ ============= =========\n')
-            f.write('#   Temp.    Kc (eq)        Units     krev (TST)   krev (TST+T)   Units\n')
+            f.write('#   Temp.    Kc (eq)        Units     k_rev (TST) k_rev (TST+T)   Units\n')
             f.write('#   ======= ============ =========== ============ ============= =========\n')
 
             # Initialize Object for Converting Units
-            if self.Kequnits != '       ':
-                keq_unit_converter = quantity.Units(self.Kequnits).getConversionFactorFromSI()
+            if self.K_eq_units != '       ':
+                keq_unit_converter = quantity.Units(self.K_eq_units).get_conversion_factor_from_si()
             else:
                 keq_unit_converter = 1
 
             for n, T in enumerate(t_list):
                 k = ks[n]
                 k0 = k0s[n]
-                Keq = keq_unit_converter * reaction.getEquilibriumConstant(T)  # getEquilibriumConstant returns SI units
-                k0rev = k0 / Keq
-                krev = k / Keq
-                k0revs.append(k0rev)
-                krevs.append(krev)
+                K_eq = keq_unit_converter * reaction.get_equilibrium_constant(T)  # returns SI units
+                k0_rev = k0 / K_eq
+                k_rev = k / K_eq
+                k0_revs.append(k0_rev)
+                k_revs.append(k_rev)
                 f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(
-                    T, Keq, self.Kequnits, k0rev, krev, self.krunits))
+                    T, K_eq, self.K_eq_units, k0_rev, k_rev, self.k_r_units))
 
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
-            kinetics0rev = Arrhenius().fitToData(t_list, np.array(k0revs), kunits=self.krunits)
-            kineticsrev = Arrhenius().fitToData(t_list, np.array(krevs), kunits=self.krunits)
+            kinetics_0_rev = Arrhenius().fit_to_data(t_list, np.array(k0_revs), kunits=self.k_r_units)
+            kinetics_rev = Arrhenius().fit_to_data(t_list, np.array(k_revs), kunits=self.k_r_units)
 
-            f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
-            f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
+            f.write('# k_rev (TST) = {0} \n'.format(kinetics_0_rev))
+            f.write('# k_rev (TST+T) = {0} \n\n'.format(kinetics_rev))
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         rxn_str = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(rxn_str)))
@@ -307,11 +304,11 @@ class KineticsJob(object):
         """
         if all([spc.molecule is not None and len(spc.molecule)
                 for spc in self.reaction.reactants + self.reaction.products]):
-            self.arkane_species.update_species_attributes(self.reaction.transitionState)
+            self.arkane_species.update_species_attributes(self.reaction.transition_state)
             self.arkane_species.reaction_label = self.reaction.label
-            self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
+            self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].to_adjacency_list()}
                                              for spc in self.reaction.reactants]
-            self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
+            self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].to_adjacency_list()}
                                             for spc in self.reaction.products]
             self.arkane_species.save_yaml(path=output_directory)
 
@@ -332,8 +329,8 @@ class KineticsJob(object):
         klist = np.zeros_like(t_list)
         klist2 = np.zeros_like(t_list)
         for i in range(len(t_list)):
-            klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
-            klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
+            klist[i] = self.reaction.calculate_tst_rate_coefficient(t_list[i])
+            klist2[i] = self.reaction.kinetics.get_rate_coefficient(t_list[i])
 
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order - 1)
@@ -347,7 +344,7 @@ class KineticsJob(object):
             '<=>', ' + '.join([product.label for product in self.reaction.products]))
         plt.title(reaction_str)
         plt.xlabel('1000 / Temperature (K^-1)')
-        plt.ylabel('Rate coefficient ({0})'.format(self.kunits))
+        plt.ylabel('Rate coefficient ({0})'.format(self.k_units))
 
         plot_path = os.path.join(output_directory, 'plots')
 
@@ -358,7 +355,7 @@ class KineticsJob(object):
         plt.savefig(os.path.join(plot_path, filename))
         plt.close()
 
-    def draw(self, output_directory, format='pdf'):
+    def draw(self, output_directory, file_format='pdf'):
         """
         Generate a PDF drawing of the reaction.
         This requires that Cairo and its Python wrapper be available; if not,
@@ -379,7 +376,7 @@ class KineticsJob(object):
         filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
         path = os.path.join(drawing_path, filename)
 
-        KineticsDrawer().draw(self.reaction, format=format, path=path)
+        KineticsDrawer().draw(self.reaction, file_format=file_format, path=path)
 
 
 class KineticsDrawer(object):
@@ -388,7 +385,7 @@ class KineticsDrawer(object):
     for a high pressure limit reaction using the Cairo 2D graphics engine.
     The most common use case is simply::
 
-        KineticsDrawer().draw(reaction, format='png', path='network.png')
+        KineticsDrawer().draw(reaction, file_format='png', path='network.png')
 
     where ``reaction`` is the :class:`Reaction` object to draw. You can also
     pass a dict of options to the constructor to affect how the reaction is drawn.
@@ -422,22 +419,22 @@ class KineticsDrawer(object):
         self.surface = None
         self.cr = None
 
-    def __getEnergyRange(self):
+    def _get_energy_range(self):
         """
         Return the minimum and maximum energy in J/mol on the potential energy surface.
         """
-        e0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
-        e0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        e0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transition_state.conformer.E0.value_si)
+        e0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transition_state.conformer.E0.value_si)
         if e0_max - e0_min > 5e5:
             # the energy barrier in one of the reaction directions is larger than 500 kJ/mol, warn the user
             logging.warning('The energy differences between the stationary points of reaction {0} '
                             'seems too large.'.format(self.reaction))
             logging.warning('Got the following energies:\nWell 1: {0} kJ/mol\nTS: {1} kJ/mol\nWell 2: {2}'
                             ' kJ/mol'.format(self.wells[0].E0 / 1000., self.wells[1].E0 / 1000.,
-                                             self.reaction.transitionState.conformer.E0.value_si / 1000.))
+                                             self.reaction.transition_state.conformer.E0.value_si / 1000.))
         return e0_min, e0_max
 
-    def __useStructureForLabel(self, configuration):
+    def _use_structure_for_label(self, configuration):
         """
         Return ``True`` if the configuration should use molecular structures
         for its labels or ``False`` otherwise.
@@ -455,14 +452,14 @@ class KineticsDrawer(object):
 
         return use_structures
 
-    def __getTextSize(self, text, padding=2, format='pdf'):
+    def _get_text_size(self, text, padding=2, file_format='pdf'):
         try:
             import cairocffi as cairo
         except ImportError:
             import cairo
 
         # Use dummy surface to determine text extents
-        surface = createNewSurface(format)
+        surface = create_new_surface(file_format)
         cr = cairo.Context(surface)
         cr.set_font_size(self.options['fontSizeNormal'])
         extents = cr.text_extents(text)
@@ -470,7 +467,7 @@ class KineticsDrawer(object):
         height = extents[3] + 2 * padding
         return [0, 0, width, height]
 
-    def __drawText(self, text, cr, x0, y0, padding=2):
+    def _draw_text(self, text, cr, x0, y0, padding=2):
         cr.save()
         cr.set_font_size(self.options['fontSizeNormal'])
         extents = cr.text_extents(text)
@@ -482,19 +479,19 @@ class KineticsDrawer(object):
         height = extents[3] + 2 * padding
         return [0, 0, width, height]
 
-    def __getLabelSize(self, configuration, format='pdf'):
+    def _get_label_size(self, configuration, file_format='pdf'):
         width = 0
         height = 0
         bounding_rects = []
-        if self.__useStructureForLabel(configuration):
+        if self._use_structure_for_label(configuration):
             for spec in configuration.species_list:
-                rect = MoleculeDrawer().draw(spec.molecule[0], format=format)[2]
+                rect = MoleculeDrawer().draw(spec.molecule[0], file_format=file_format)[2]
                 bounding_rects.append(list(rect))
         else:
             for spec in configuration.species_list:
-                bounding_rects.append(self.__getTextSize(spec.label, format=format))
+                bounding_rects.append(self._get_text_size(spec.label, file_format=file_format))
 
-        plus_rect = self.__getTextSize('+', format=format)
+        plus_rect = self._get_text_size('+', file_format=file_format)
 
         for rect in bounding_rects:
             if width < rect[2]:
@@ -504,24 +501,24 @@ class KineticsDrawer(object):
 
         return [0, 0, width, height]
 
-    def __drawLabel(self, configuration, cr, x0, y0, format='pdf'):
+    def _draw_label(self, configuration, cr, x0, y0, file_format='pdf'):
 
-        bounding_rect = self.__getLabelSize(configuration, format=format)
+        bounding_rect = self._get_label_size(configuration, file_format=file_format)
         padding = 2
 
-        use_structures = self.__useStructureForLabel(configuration)
+        use_structures = self._use_structure_for_label(configuration)
         y = y0
         for i, spec in enumerate(configuration.species_list):
             if i > 0:
-                rect = self.__getTextSize('+', padding=padding, format=format)
+                rect = self._get_text_size('+', padding=padding, file_format=file_format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
-                self.__drawText('+', cr, x, y)
+                self._draw_text('+', cr, x, y)
                 y += rect[3]
 
             if use_structures:
                 molecule_drawer = MoleculeDrawer()
                 cr.save()
-                rect = molecule_drawer.draw(spec.molecule[0], format=format)[2]
+                rect = molecule_drawer.draw(spec.molecule[0], file_format=file_format)[2]
                 cr.restore()
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2])
                 cr.save()
@@ -529,17 +526,17 @@ class KineticsDrawer(object):
                 cr.restore()
                 y += rect[3]
             else:
-                rect = self.__getTextSize(spec.label, padding=padding, format=format)
+                rect = self._get_text_size(spec.label, padding=padding, file_format=file_format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
-                self.__drawText(spec.label, cr, x, y)
+                self._draw_text(spec.label, cr, x, y)
                 y += rect[3]
 
         return bounding_rect
 
-    def draw(self, reaction, format, path=None):
+    def draw(self, reaction, file_format, path=None):
         """
         Draw the potential energy surface for the given `network` as a Cairo
-        surface of the given `format`. If `path` is given, the surface is
+        surface of the given `file_format`. If `path` is given, the surface is
         saved to that location on disk.
         """
         try:
@@ -557,10 +554,10 @@ class KineticsDrawer(object):
         # Generate the bounding rectangles for each configuration label
         label_rects = []
         for well in self.wells:
-            label_rects.append(self.__getLabelSize(well, format=format))
+            label_rects.append(self._get_label_size(well, file_format=file_format))
 
         # Get energy range (use kJ/mol internally)
-        e0_min, e0_max = self.__getEnergyRange()
+        e0_min, e0_max = self._get_energy_range()
         e0_min *= 0.001
         e0_max *= 0.001
 
@@ -582,9 +579,9 @@ class KineticsDrawer(object):
             raise InputError('Invalid value "{0}" for Eunits parameter.'.format(e_units))
 
         # Determine height required for drawing
-        Eheight = self.__getTextSize('0.0', format=format)[3] + 6
-        y_e0 = (e0_max - 0.0) * e_slope + padding + Eheight
-        height = (e0_max - e0_min) * e_slope + 2 * padding + Eheight + 6
+        e_height = self._get_text_size('0.0', file_format=file_format)[3] + 6
+        y_e0 = (e0_max - 0.0) * e_slope + padding + e_height
+        height = (e0_max - e0_min) * e_slope + 2 * padding + e_height + 6
         for i in range(len(self.wells)):
             if 0.001 * self.wells[i].E0 == e0_min:
                 height += label_rects[i][3]
@@ -611,15 +608,15 @@ class KineticsDrawer(object):
             x, y = coordinates[i, :]
             if w < well_width:
                 w = well_width
-            t -= 6 + Eheight
-            h += 6 + Eheight
+            t -= 6 + e_height
+            h += 6 + e_height
             well_rects.append([l + x - 0.5 * w, t + y + 6, w, h])
 
         # Squish columns together from the left where possible until an isomer is encountered
-        oldLeft = np.min(coordinates[:, 0])
-        Nleft = - 1
+        old_left = np.min(coordinates[:, 0])
+        n_left = - 1
         columns = []
-        for i in range(Nleft, -1, -1):
+        for i in range(n_left, -1, -1):
             top = well_rects[i][1]
             bottom = top + well_rects[i][3]
             for column in columns:
@@ -644,7 +641,7 @@ class KineticsDrawer(object):
                 well_rects[c][0] += delta
                 coordinates[c, 0] += delta
         new_left = np.min(coordinates[:, 0])
-        coordinates[:, 0] -= new_left - oldLeft
+        coordinates[:, 0] -= new_left - old_left
 
         # Squish columns together from the right where possible until an isomer is encountered
         n_right = 3
@@ -677,7 +674,7 @@ class KineticsDrawer(object):
         width = max([rect[2] + rect[0] for rect in well_rects]) - min([rect[0] for rect in well_rects]) + 2 * padding
 
         # Draw to the final surface
-        surface = createNewSurface(format=format, target=path, width=width, height=height)
+        surface = create_new_surface(file_format=file_format, target=path, width=width, height=height)
         cr = cairo.Context(surface)
 
         # Some global settings
@@ -687,12 +684,12 @@ class KineticsDrawer(object):
         # Fill the background with white
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.paint()
-        self.__drawText('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
+        self._draw_text('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
 
         # Draw reactions
         e0_reac = self.wells[0].E0 * 0.001 - e0_offset
         e0_prod = self.wells[1].E0 * 0.001 - e0_offset
-        e0_ts = self.reaction.transitionState.conformer.E0.value_si * 0.001 - e0_offset
+        e0_ts = self.reaction.transition_state.conformer.E0.value_si * 0.001 - e0_offset
         x1, y1 = coordinates[0, :]
         x2, y2 = coordinates[1, :]
         x1 += well_spacing / 2.0
@@ -774,10 +771,10 @@ class KineticsDrawer(object):
             cr.rectangle(x, y, label_rects[i][2], label_rects[i][3])
             cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
             cr.fill()
-            self.__drawLabel(well, cr, x, y, format=format)
+            self._draw_label(well, cr, x, y, file_format=file_format)
 
         # Finish Cairo drawing
-        if format == 'png':
+        if file_format == 'png':
             surface.write_to_png(path)
         else:
             surface.finish()

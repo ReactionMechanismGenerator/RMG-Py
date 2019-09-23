@@ -34,7 +34,7 @@ import unittest
 
 import numpy as np
 
-from rmgpy import getPath
+from rmgpy import get_path
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.gaussian import Gaussian, GaussianMolPM3, GaussianMolPM6
 from rmgpy.qm.main import QMCalculator
@@ -42,7 +42,7 @@ from rmgpy.qm.main import QMCalculator
 executablePath = Gaussian.executablePath
 NO_GAUSSIAN = not os.path.exists(executablePath)
 
-mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
 
 class TestGaussianMolPM3(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestGaussianMolPM3(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='gaussian',
                           method='pm3',
@@ -68,16 +68,16 @@ class TestGaussianMolPM3(unittest.TestCase):
 
         self.qmmol1 = GaussianMolPM3(mol1, qm.settings)
 
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
-        Test that generateThermoData() works correctly on gaussian PM3.
+        Test that generate_thermo_data() works correctly on gaussian PM3.
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -85,15 +85,15 @@ class TestGaussianMolPM3(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
-        Test that generateThermoData() can load thermo from the previous gaussian PM3 run.
+        Test that generate_thermo_data() can load thermo from the previous gaussian PM3 run.
 
         Check that it loaded, and the values are the same as above.
         """
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -112,7 +112,7 @@ class TestGaussianMolPM6(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='gaussian',
                           method='pm6',
@@ -126,16 +126,16 @@ class TestGaussianMolPM6(unittest.TestCase):
         self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
     @unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
-        Test that generateThermoData() works correctly for gaussian PM6.
+        Test that generate_thermo_data() works correctly for gaussian PM6.
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -144,15 +144,15 @@ class TestGaussianMolPM6(unittest.TestCase):
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
     @unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
-        Test that generateThermoData() can load thermo from the previous gaussian PM6 run.
+        Test that generate_thermo_data() can load thermo from the previous gaussian PM6 run.
 
         Check that it loaded, and the values are the same as above.
         """
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)

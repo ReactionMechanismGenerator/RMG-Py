@@ -48,7 +48,7 @@ from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass
-from arkane.input import jobList
+from arkane.input import job_list
 from arkane.statmech import InputError, StatMechJob
 
 ################################################################################
@@ -81,17 +81,17 @@ class TestArkaneJob(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                     'data', 'methoxy.py'))
+        job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                       'data', 'methoxy.py'))
         pdepjob = job_list[-1]
         cls.kineticsjob = job_list[0]
-        pdepjob.activeJRotor = True
+        pdepjob.active_j_rotor = True
         network = pdepjob.network
         cls.Nisom = len(network.isomers)
         cls.Nreac = len(network.reactants)
         cls.Nprod = len(network.products)
-        cls.Npath = len(network.pathReactions)
-        cls.PathReaction2 = network.pathReactions[2]
+        cls.Npath = len(network.path_reactions)
+        cls.PathReaction2 = network.path_reactions[2]
         cls.TminValue = pdepjob.Tmin.value
         cls.Tmaxvalue = pdepjob.Tmax.value
         cls.TmaxUnits = pdepjob.Tmax.units
@@ -99,125 +99,125 @@ class TestArkaneJob(unittest.TestCase):
         cls.PminValue = pdepjob.Pmin.value
         cls.Pcount = pdepjob.Pcount
         cls.Tcount = pdepjob.Tcount
-        cls.GenTlist = pdepjob.generateTemperatureList()
+        cls.GenTlist = pdepjob.generate_T_list()
         cls.PlistValue = pdepjob.Plist.value
-        cls.maximumGrainSizeValue = pdepjob.maximumGrainSize.value
+        cls.maximum_grain_size_value = pdepjob.maximum_grain_size.value
         cls.method = pdepjob.method
         cls.rmgmode = pdepjob.rmgmode
 
     # test Arkane's interactions with the network module
-    def testNisom(self):
+    def test_num_isom(self):
         """
         Test the number of isomers identified.
         """
         self.assertEqual(self.Nisom, 2)
 
-    def testNreac(self):
+    def test_num_reac(self):
         """
         Test the number of reactants identified.
         """
         self.assertEqual(self.Nreac, 1)
 
-    def testNprod(self):
+    def test_num_prod(self):
         """
         Test the number of products identified.
         """
         self.assertEqual(self.Nprod, 1)
 
-    def testNpathReactions(self):
+    def test_n_path_reactions(self):
         """
         Test the whether or not RMG mode is turned on.
         """
         self.assertEqual(self.Npath, 3)
 
-    def testPathReactions(self):
+    def test_path_reactions(self):
         """
         Test a path reaction label
         """
         self.assertEqual(str(self.PathReaction2), 'CH2OH <=> methoxy')
 
     # test Arkane's interactions with the pdep module
-    def testTemperaturesUnits(self):
+    def test_temperatures_units(self):
         """
         Test the Temperature Units.
         """
         self.assertEqual(str(self.TmaxUnits), 'K')
 
-    def testTemperaturesValue(self):
+    def test_temperatures_value(self):
         """
         Test the temperature value.
         """
         self.assertEqual(self.TminValue, 450.0)
 
-    def testTemperaturesList(self):
+    def test_temperatures_list(self):
         """
         Test the temperature list.
         """
         self.assertTrue(np.array_equal(self.TlistValue, np.array([450, 500, 678, 700])))
 
-    def testPminValue(self):
+    def test_min_pressure_value(self):
         """
         Test the minimum pressure value.
         """
         self.assertEqual("%0.7f" % self.PminValue, str(0.0101325))
 
-    def testPcount(self):
+    def test_pressure_count(self):
         """
         Test the number pressures specified.
         """
         self.assertEqual(self.Pcount, 7)
 
-    def testTcount(self):
+    def test_temperature_count(self):
         """
         Test the number temperatures specified.
         """
         self.assertEqual(self.Tcount, 4)
 
-    def testPressureList(self):
+    def test_pressure_list(self):
         """
         Test the pressure list.
         """
         self.assertTrue(np.array_equal(self.PlistValue, np.array([0.01, 0.1, 1, 3, 10, 100, 1000])))
 
-    def testGenerateTemperatureList(self):
+    def test_generate_temperature_list(self):
         """
         Test the generated temperature list.
         """
         self.assertEqual(list(self.GenTlist), [450.0, 500.0, 678.0, 700.0])
 
-    def testmaximumGrainSizeValue(self):
+    def test_maximum_grain_size_value(self):
         """
         Test the max grain size value.
         """
-        self.assertEqual(self.maximumGrainSizeValue, 0.5)
+        self.assertEqual(self.maximum_grain_size_value, 0.5)
 
-    def testMethod(self):
+    def test_method(self):
         """
         Test the master equation solution method chosen.
         """
         self.assertEqual(self.method, 'modified strong collision')
 
-    def testRmgmode(self):
+    def test_rmg_mode(self):
         """
         Test the whether or not RMG mode is turned on.
         """
         self.assertEqual(self.rmgmode, False)
 
     # Test Arkane's interactions with the kinetics module
-    def testCalculateTSTRateCoefficient(self):
+    def test_calculate_tst_rate_coefficient(self):
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
         """
-        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.TminValue),
+        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.TminValue),
                          str(46608.5904933))
-        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.Tmaxvalue),
+        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.Tmaxvalue),
                          str(498796.64535))
 
-    def testTunneling(self):
+    def test_tunneling(self):
         """
         Test the whether or not tunneling has been included in a specific kinetics job.
         """
-        self.assertEqual(self.kineticsjob.reaction.transitionState.tunneling, None)
+        self.assertEqual(self.kineticsjob.reaction.transition_state.tunneling, None)
 
 
 class TestArkaneInput(unittest.TestCase):
@@ -234,15 +234,15 @@ class TestArkaneInput(unittest.TestCase):
         cls.useHinderedRotors = False
         cls.useBondCorrections = True
 
-    def testSpecies(self):
+    def test_species(self):
         """Test loading of species input file."""
         spec = input.species('C2H4', os.path.join(self.directory, 'species', 'C2H4', 'ethene.py'))
         self.assertTrue(isinstance(spec, Species))
         self.assertEqual(len(spec.molecule), 0)
 
-    def testSpeciesStatmech(self):
+    def test_species_statmech(self):
         """Test loading of statmech job from species input file."""
-        job = jobList[-1]
+        job = job_list[-1]
         self.assertTrue(isinstance(job, StatMechJob))
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
@@ -253,10 +253,10 @@ class TestArkaneInput(unittest.TestCase):
         self.assertEqual(job.species.props['element_counts']['C'], 2)
         self.assertEqual(job.species.props['element_counts']['H'], 4)
 
-    def testSpeciesThermo(self):
+    def test_species_thermo(self):
         """Test thermo job execution for species from separate input file."""
         input.thermo('C2H4', 'NASA')
-        job = jobList[-1]
+        job = job_list[-1]
         filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5')
         job.execute(output_directory=filepath)
         self.assertTrue(os.path.isfile(os.path.join(filepath, 'output.py')))
@@ -264,14 +264,14 @@ class TestArkaneInput(unittest.TestCase):
         os.remove(os.path.join(filepath, 'output.py'))
         os.remove(os.path.join(filepath, 'chem.inp'))
 
-    def testTransitionState(self):
+    def test_transition_state(self):
         """Test loading of transition state input file."""
         ts = input.transitionState('TS', os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'TS.py'))
         self.assertTrue(isinstance(ts, TransitionState))
 
-    def testTransitionStateStatmech(self):
+    def test_transition_state_statmech(self):
         """Test loading of statmech job from transition state input file."""
-        job = jobList[-1]
+        job = job_list[-1]
         self.assertTrue(isinstance(job, StatMechJob))
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
@@ -289,8 +289,8 @@ class TestStatmech(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                         'data', 'Benzyl', 'input.py'))
+        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                           'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
@@ -322,6 +322,8 @@ class TestArkaneSpecies(unittest.TestCase):
         cls.load_input_path = os.path.join(cls.load_path, 'input.py')
         cls.load_output_file = os.path.join(cls.load_path, 'output.py')
 
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'arkane', 'data')
+
         if os.path.exists(cls.dump_yaml_file):
             logging.debug('removing existing yaml file {0} before running tests'.format(cls.dump_yaml_file))
             os.remove(cls.dump_yaml_file)
@@ -330,7 +332,7 @@ class TestArkaneSpecies(unittest.TestCase):
         """
         Test properly dumping the ArkaneSpecies object and respective sub-objects
         """
-        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        job_list = self.arkane.load_input_file(self.dump_input_path)
         for job in job_list:
             job.execute(output_directory=self.dump_path)
         self.assertTrue(os.path.isfile(self.dump_output_file))
@@ -340,7 +342,7 @@ class TestArkaneSpecies(unittest.TestCase):
         Test properly loading the ArkaneSpecies object and respective sub-objects
         """
         # Create YAML file by running Arkane
-        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        job_list = self.arkane.load_input_file(self.dump_input_path)
         for job in job_list:
             job.execute(output_directory=self.dump_path)
 
@@ -404,6 +406,18 @@ H      -1.80315400   -1.20387400   -0.22872900"""
         self.assertTrue(arkane_spc.use_hindered_rotors)
         self.assertTrue('C 7.54e-14 1.193e-13 5.52e-14' in arkane_spc.xyz)
         self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)
+
+    def test_loading_different_versions_of_yaml(self):
+        """Test loading a YAML file generated by RMG v 2.4.1 and by a more recent version"""
+        arkane_spc_v_241 = ArkaneSpecies.__new__(ArkaneSpecies)
+        arkane_spc_v_241.load_yaml(path=os.path.join(self.data_path, 'vinoxy_v_2.4.1.yml'))
+        self.assertIsInstance(arkane_spc_v_241, ArkaneSpecies)  # checks make_object
+        self.assertEqual(arkane_spc_v_241.conformer.spin_multiplicity, 2)
+
+        arkane_current = ArkaneSpecies.__new__(ArkaneSpecies)
+        arkane_current.load_yaml(path=os.path.join(self.data_path, 'vinoxy_current.yml'))
+        self.assertIsInstance(arkane_current, ArkaneSpecies)  # checks make_object
+        self.assertEqual(arkane_current.conformer.spin_multiplicity, 2)
 
     @classmethod
     def tearDownClass(cls):

@@ -70,7 +70,7 @@ class TestArkaneExamples(unittest.TestCase):
             example_type_path = os.path.join(self.base_path, example_type)
             for example in sorted(os.listdir(example_type_path)):
                 path = os.path.join(example_type_path, example)
-                arkane = Arkane(inputFile=os.path.join(path, 'input.py'), outputDirectory=path)
+                arkane = Arkane(input_file=os.path.join(path, 'input.py'), output_directory=path)
                 arkane.plot = True
                 logging.info("running {}".format(example))
                 arkane.execute()

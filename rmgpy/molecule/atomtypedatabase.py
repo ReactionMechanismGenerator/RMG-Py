@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This creates atomTypes and assigns them with the correct bond/lonePairs/charge
+This creates atomTypes and assigns them with the correct bond/lone_pairs/charge
 Used in isomorphismTest.py to create group_atomtypes
 """
 

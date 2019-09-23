@@ -37,7 +37,7 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.molecule.adjlist import ConsistencyChecker
-from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.inchi import compose_aug_inchi, P_LAYER_PREFIX, P_LAYER_SEPARATOR, U_LAYER_PREFIX, U_LAYER_SEPARATOR
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.translator import *
@@ -50,22 +50,22 @@ class TranslatorTest(unittest.TestCase):
         """Test that we can safely return a blank identifier for an empty molecule."""
         mol = Molecule()
 
-        self.assertEqual(mol.toSMILES(), '')
-        self.assertEqual(mol.toInChI(), '')
+        self.assertEqual(mol.to_smiles(), '')
+        self.assertEqual(mol.to_inchi(), '')
 
 
 class InChIGenerationTest(unittest.TestCase):
     def compare(self, adjlist, aug_inchi):
-        spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
+        spc = Species(molecule=[Molecule().from_adjacency_list(adjlist)])
         spc.generate_resonance_structures()
 
         ignore_prefix = r"(InChI=1+)(S*)/"
 
         exp = re.split(ignore_prefix, aug_inchi)[-1]
-        comp = re.split(ignore_prefix, spc.getAugmentedInChI())[-1]
+        comp = re.split(ignore_prefix, spc.get_augmented_inchi())[-1]
         self.assertEquals(exp, comp)
 
-    def test_C5H5(self):
+    def test_c5h5(self):
         """
         Test that the unpaired electron of 1,3-cyclopentadienyl radical always
         ends up on the 1-carbon atom.
@@ -82,7 +82,7 @@ class InChIGenerationTest(unittest.TestCase):
         aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/u1'
         self.compare(adjlist, aug_inchi)
 
-    def test_C7H8(self):
+    def test_c7h8(self):
         """Looks a lot like toluene but with 1 double bond replaced by a biradical.
 
         unpaired electrons on tertiary carbon, and on carbon in para position."""
@@ -107,7 +107,7 @@ class InChIGenerationTest(unittest.TestCase):
         aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/u2,3'
         self.compare(adjlist, aug_inchi)
 
-    def test_C8H8(self):
+    def test_c8h8(self):
         """Looks a lot like cycloctene but with 1 double bond replaced by a biradical."""
 
         adjlist = """
@@ -148,7 +148,7 @@ class InChIGenerationTest(unittest.TestCase):
         aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
         self.compare(adjlist, aug_inchi)
 
-    def test_H(self):
+    def test_h(self):
         adjlist = """
 multiplicity 2
 1 H u1 p0 c0
@@ -156,7 +156,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/H/u1'
         self.compare(adjlist, aug_inchi)
 
-    def test_C6H8(self):
+    def test_c6h8(self):
         """
         Test that the 2 unpaired electrons of .CC(=C)C(C.)=C
         do not end up at the same side of the central C-C bond.
@@ -173,7 +173,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/u1,3'
         self.compare(adjlist, aug_inchi)
 
-    def test_C6H10_tetrarad(self):
+    def test_c6h10_tetrarad(self):
         adjlist = """
 1  C u1 p0 c0 {3,S} {7,S} {8,S}
 2  C u1 p0 c0 {4,S} {9,S} {10,S}
@@ -196,7 +196,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/u1,2,3,4'
         self.compare(adjlist, aug_inchi)
 
-    def test_Buta13diyl_triplet(self):
+    def test_buta13diyl_triplet(self):
         """
         C=CC.C.
         """
@@ -217,7 +217,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/u1,2'
         self.compare(adjlist, aug_inchi)
 
-    def test_CH2O2(self):
+    def test_ch2o2(self):
         adjlist = """
 1 C 1 {2,S} {3,S}
 2 O 0 {1,S}
@@ -227,7 +227,7 @@ multiplicity 2
         aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2'
         self.compare(adjlist, aug_inchi)
 
-    def test_C7H10(self):
+    def test_c7h10(self):
         adjlist = """
 
         1 C 1 {2,S}
@@ -242,7 +242,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/u1,2,3,6'
         self.compare(adjlist, aug_inchi)
 
-    def test_C5H6O(self):
+    def test_c5h6o(self):
         adjlist = """
 1 C 1 {2,S}
 2 C 0 {1,S} {3,D}
@@ -255,7 +255,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/u1,3'
         self.compare(adjlist, aug_inchi)
 
-    def test_C7H9(self):
+    def test_c7h9(self):
         adjlist = """
 1 C 0 {4,D} 
 2 C 0 {5,D}
@@ -269,7 +269,7 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,2,4'
         self.compare(adjlist, aug_inchi)
 
-    def test_C11H16(self):
+    def test_c11h16(self):
         adjlist = """
 1 C 0 {5,D}
 2 C 1 {6,S}
@@ -301,13 +301,13 @@ multiplicity 2
         3 H u0 p0 c0 {1,S}
         """
 
-        singlet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_singlet)])
-        triplet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_triplet)])
-        singlet_aug_inchi = singlet.getAugmentedInChI()
-        triplet_aug_inchi = triplet.getAugmentedInChI()
+        singlet = Species(molecule=[Molecule().from_adjacency_list(adjlist_singlet)])
+        triplet = Species(molecule=[Molecule().from_adjacency_list(adjlist_triplet)])
+        singlet_aug_inchi = singlet.get_augmented_inchi()
+        triplet_aug_inchi = triplet.get_augmented_inchi()
         self.assertTrue(singlet_aug_inchi != triplet_aug_inchi)
 
-    #     def test_C6H5(self):
+    #     def test_c6h5(self):
     #         """Test that the u-layer of phenyl shows atom 1."""
     #         adjlist = """
     # multiplicity 2
@@ -327,7 +327,7 @@ multiplicity 2
     #         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
     #         self.compare(adjlist, aug_inchi)
 
-    def test_C5H6_singlet(self):
+    def test_c5h6_singlet(self):
         """
         n-C5 chain with 1 lone pair at the central carbon atom
         """
@@ -353,7 +353,7 @@ multiplicity 2
 
     def test_aromatic_resonance_structures(self):
         """Test that different resonance structures give identical InChIs."""
-        mol = Molecule().fromAdjacencyList("""
+        mol = Molecule().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,D} {14,S} {18,S}
 2  C u0 p0 c0 {1,D} {3,S} {19,S}
@@ -384,7 +384,7 @@ multiplicity 2
 """)
         res = mol.generate_resonance_structures()
 
-        inchi_list = [struct.toInChI() for struct in res]
+        inchi_list = [struct.to_inchi() for struct in res]
 
         expected_inchi = 'InChI=1S/C15H11/c1-11-5-4-8-15-13(11)10-9-12-6-2-3-7-14(12)15/h2-10H,1H2'
 
@@ -393,35 +393,35 @@ multiplicity 2
 
     def test_disconnected_molecule(self):
         """Test that we can generate an InChI for a disconnected molecule."""
-        mol = Molecule().fromSMILES('CCCCO.C=O')
+        mol = Molecule().from_smiles('CCCCO.C=O')
 
         inchi = 'InChI=1S/C4H10O.CH2O/c1-2-3-4-5;1-2/h5H,2-4H2,1H3;1H2'
 
-        self.assertEqual(mol.toInChI(), inchi)
+        self.assertEqual(mol.to_inchi(), inchi)
 
     def test_isotopic_molecule_1(self):
         """Test that we can generate an InChI for an isotopic molecule."""
-        mol = Molecule().fromSMILES('[13CH4]')
+        mol = Molecule().from_smiles('[13CH4]')
 
         inchi = 'InChI=1S/CH4/h1H4/i1+1'
 
-        self.assertEqual(mol.toInChI(), inchi)
+        self.assertEqual(mol.to_inchi(), inchi)
 
     def test_isotopic_molecule_2(self):
         """Test that we can generate an InChI for an isotopic molecule."""
-        mol = Molecule().fromSMILES('[13CH3]C')
+        mol = Molecule().from_smiles('[13CH3]C')
 
         inchi = 'InChI=1S/C2H6/c1-2/h1-2H3/i1+1'
 
-        self.assertEqual(mol.toInChI(), inchi)
+        self.assertEqual(mol.to_inchi(), inchi)
 
 
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):
-        mol = Molecule().fromAdjacencyList(adjlist)
-        self.assertEquals(smiles, mol.toSMILES())
+        mol = Molecule().from_adjacency_list(adjlist)
+        self.assertEquals(smiles, mol.to_smiles())
 
-    def test_CH4(self):
+    def test_ch4(self):
         "Test the SMILES generation for methane"
 
         adjlist = """
@@ -434,7 +434,7 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = "C"
         self.compare(adjlist, smiles)
 
-    def test_C(self):
+    def test_c(self):
         "Test the SMILES generation for atomic carbon mult=(1,3,5)"
         adjlist = "1 C u0 p2 c0"
         smiles = "[C]"
@@ -679,7 +679,7 @@ class SMILESGenerationTest(unittest.TestCase):
 
     def test_aromatics(self):
         """Test that different aromatics representations returns different SMILES."""
-        mol1 = Molecule().fromAdjacencyList("""
+        mol1 = Molecule().from_adjacency_list("""
 1  O u0 p2 c0 {6,S} {9,S}
 2  C u0 p0 c0 {3,D} {5,S} {11,S}
 3  C u0 p0 c0 {2,D} {4,S} {12,S}
@@ -697,7 +697,7 @@ class SMILESGenerationTest(unittest.TestCase):
 15 H u0 p0 c0 {8,S}
 16 H u0 p0 c0 {8,S}
 """)
-        mol2 = Molecule().fromAdjacencyList("""
+        mol2 = Molecule().from_adjacency_list("""
 1  O u0 p2 c0 {6,S} {9,S}
 2  C u0 p0 c0 {3,S} {5,D} {11,S}
 3  C u0 p0 c0 {2,S} {4,D} {12,S}
@@ -715,7 +715,7 @@ class SMILESGenerationTest(unittest.TestCase):
 15 H u0 p0 c0 {8,S}
 16 H u0 p0 c0 {8,S}
 """)
-        mol3 = Molecule().fromAdjacencyList("""
+        mol3 = Molecule().from_adjacency_list("""
 1  O u0 p2 c0 {6,S} {9,S}
 2  C u0 p0 c0 {3,B} {5,B} {11,S}
 3  C u0 p0 c0 {2,B} {4,B} {12,S}
@@ -734,9 +734,9 @@ class SMILESGenerationTest(unittest.TestCase):
 16 H u0 p0 c0 {8,S}
 """)
 
-        smiles1 = mol1.toSMILES()
-        smiles2 = mol2.toSMILES()
-        smiles3 = mol3.toSMILES()
+        smiles1 = mol1.to_smiles()
+        smiles2 = mol2.to_smiles()
+        smiles3 = mol3.to_smiles()
 
         self.assertNotEqual(smiles1, smiles2)
         self.assertNotEqual(smiles2, smiles3)
@@ -745,14 +745,14 @@ class SMILESGenerationTest(unittest.TestCase):
 
 class ParsingTest(unittest.TestCase):
     def setUp(self):
-        self.methane = Molecule().fromAdjacencyList("""
+        self.methane = Molecule().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 """)
-        self.methylamine = Molecule().fromAdjacencyList("""
+        self.methylamine = Molecule().from_adjacency_list("""
 1 N u0 p1 c0 {2,S} {3,S} {4,S}
 2 C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
 3 H u0 p0 c0 {1,S}
@@ -762,16 +762,16 @@ class ParsingTest(unittest.TestCase):
 7 H u0 p0 c0 {2,S}
 """)
 
-    def test_fromAugmentedInChI(self):
+    def test_from_augmented_inchi(self):
         aug_inchi = 'InChI=1S/CH4/h1H4'
-        mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        self.assertTrue(not mol.InChI == '')
-        self.assertTrue(mol.isIsomorphic(self.methane))
+        mol = from_augmented_inchi(Molecule(), aug_inchi)
+        self.assertTrue(not mol.inchi == '')
+        self.assertTrue(mol.is_isomorphic(self.methane))
 
         aug_inchi = 'InChI=1/CH4/h1H4'
-        mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        self.assertTrue(not mol.InChI == '')
-        self.assertTrue(mol.isIsomorphic(self.methane))
+        mol = from_augmented_inchi(Molecule(), aug_inchi)
+        self.assertTrue(not mol.inchi == '')
+        self.assertTrue(mol.is_isomorphic(self.methane))
 
     def compare(self, adjlist, smiles):
         """
@@ -779,20 +779,20 @@ class ParsingTest(unittest.TestCase):
 
         The adjacency list is presumed correct and this is to test the SMILES parser.
         """
-        mol1 = Molecule().fromAdjacencyList(adjlist)
-        mol2 = Molecule(SMILES=smiles)
-        self.assertTrue(mol1.isIsomorphic(mol2),
-                        "Parsing SMILES={!r} gave unexpected molecule\n{}".format(smiles, mol2.toAdjacencyList()))
+        mol1 = Molecule().from_adjacency_list(adjlist)
+        mol2 = Molecule(smiles=smiles)
+        self.assertTrue(mol1.is_isomorphic(mol2),
+                        "Parsing SMILES={!r} gave unexpected molecule\n{}".format(smiles, mol2.to_adjacency_list()))
 
-    def test_fromSMILES(self):
+    def test_from_smiles(self):
         smiles = 'C'
-        mol = fromSMILES(Molecule(), smiles)
-        self.assertTrue(mol.isIsomorphic(self.methane))
+        mol = from_smiles(Molecule(), smiles)
+        self.assertTrue(mol.is_isomorphic(self.methane))
 
         # Test that atomtypes that rely on lone pairs for identity are typed correctly
         smiles = 'CN'
-        mol = fromSMILES(Molecule(), smiles)
-        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'])
+        mol = from_smiles(Molecule(), smiles)
+        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES['N3s'])
 
         # Test N2
         adjlist = '''
@@ -1028,32 +1028,32 @@ class ParsingTest(unittest.TestCase):
         smiles = '[O][O]'
         self.compare(adjlist, smiles)
 
-    def test_fromInChI(self):
+    def test_from_inchi(self):
         inchi = 'InChI=1S/CH4/h1H4'
-        mol = fromInChI(Molecule(), inchi)
-        self.assertTrue(mol.isIsomorphic(self.methane))
+        mol = from_inchi(Molecule(), inchi)
+        self.assertTrue(mol.is_isomorphic(self.methane))
         # Test that atomtypes that rely on lone pairs for identity are typed correctly
         inchi = "InChI=1S/CH5N/c1-2/h2H2,1H3"
-        mol = fromInChI(Molecule(), inchi)
-        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'])
+        mol = from_inchi(Molecule(), inchi)
+        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES['N3s'])
 
     # current implementation of SMARTS is broken
-    def test_fromSMARTS(self):
+    def test_from_smarts(self):
         smarts = '[CH4]'
-        mol = fromSMARTS(Molecule(), smarts)
-        self.assertTrue(mol.isIsomorphic(self.methane))
+        mol = from_smarts(Molecule(), smarts)
+        self.assertTrue(mol.is_isomorphic(self.methane))
 
     def test_incorrect_identifier_type(self):
         """Test that the appropriate error is raised for identifier/type mismatch."""
         with self.assertRaises(ValueError) as cm:
-            Molecule().fromSMILES('InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+            Molecule().from_smiles('InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
 
         self.assertTrue('Improper identifier type' in str(cm.exception))
 
     def test_read_inchikey_error(self):
         """Test that the correct error is raised when reading an InChIKey"""
         with self.assertRaises(ValueError) as cm:
-            Molecule().fromInChI('InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N')
+            Molecule().from_inchi('InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N')
 
         self.assertTrue('InChIKey is a write-only format' in str(cm.exception))
 
@@ -1065,8 +1065,8 @@ class InChIParsingTest(unittest.TestCase):
 
         aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
 
-        mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
+        mol = from_augmented_inchi(Molecule(), aug_inchi)
+        ConsistencyChecker.check_multiplicity(mol.get_radical_count(), mol.multiplicity)
 
         for at in mol.atoms:
             ConsistencyChecker.check_partial_charge(at)
@@ -1076,141 +1076,141 @@ class InChIParsingTest(unittest.TestCase):
 
         ignore_prefix = r"(InChI=1+)(S*)/"
         aug_inchi_expected = re.split(ignore_prefix, aug_inchi)[-1]
-        aug_inchi_computed = re.split(ignore_prefix, spc.getAugmentedInChI())[-1]
+        aug_inchi_computed = re.split(ignore_prefix, spc.get_augmented_inchi())[-1]
         self.assertEquals(aug_inchi_expected, aug_inchi_computed)
 
         return mol
 
-    def test_Ethane_parsing(self):
+    def test_ethane_parsing(self):
         inchi = 'C2H6/c1-2/h1-2H3'
         self.compare(inchi)
 
-    def test_Ethyl_parsing(self):
+    def test_ethyl_parsing(self):
         inchi = 'C2H5/c1-2/h1H2,2H3'
         u_indices = [1]
         self.compare(inchi, u_indices)
 
-    def test_CH3_parsing(self):
+    def test_ch3_parsing(self):
         inchi = 'CH3/h1H3'
         u_indices = [1]
         self.compare(inchi, u_indices)
 
-    def test_H2_parsing(self):
+    def test_h2_parsing(self):
         inchi = 'H2/h1H'
         self.compare(inchi)
 
-    def test_C2H4_biradical_parsing(self):
+    def test_c2h4_biradical_parsing(self):
         inchi = 'C2H4/c1-2/h1-2H2'
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
-    def test_C2H3_triradical_parsing(self):
+    def test_c2h3_triradical_parsing(self):
         inchi = 'C2H3/c1-2/h1H,2H2'
         u_indices = [1, 1, 2]
         self.compare(inchi, u_indices)
 
-    def test_C3H6_biradical_parsing(self):
+    def test_c3h6_biradical_parsing(self):
         inchi = 'C3H6/c1-3-2/h1-3H2'
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
-    def testC2H3O3(self):
+    def test_c2h3o3(self):
         inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
         u_indices = [1]
         self.compare(inchi, u_indices)
 
-    def testC2H2(self):
+    def test_c2h2(self):
         inchi = 'C2H2/c1-2/h1-2H'
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
-    def testO2(self):
+    def test_o2(self):
         inchi = 'O2/c1-2'
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
-    def testTriRadicalZwitterMult4(self):
+    def test_tri_radical_zwitter_mult4(self):
         inchi = 'C6H11/c1-3-5-6-4-2/h5H,1-4,6H2'
         u_indices = [1, 2, 5]
         self.compare(inchi, u_indices)
 
-    def testTriRadicalDoubleBondMult4(self):
+    def test_tri_radical_double_bond_mult4(self):
         inchi = 'C4H7/c1-3-4-2/h3H,1-2,4H2'
         u_indices = [1, 2, 3]
         self.compare(inchi, u_indices)
 
-    def testTriRadical2DoubleBondMult4(self):
+    def test_tri_radical2_double_bond_mult4(self):
         inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
         u_indices = [1, 2, 5]
         self.compare(inchi, u_indices)
 
-    def testQuadriRadicalDoubleBondZwitterMult5(self):
+    def test_quadri_radical_double_bond_zwitter_mult5(self):
         inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
         u_indices = [1, 2, 5, 6]
         self.compare(inchi, u_indices)
 
-    def testQuadri2DoubleBondMult5(self):
+    def test_quadri2_double_bond_mult5(self):
         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
         u_indices = [1, 2, 5, 6]
         self.compare(inchi, u_indices)
 
-    def testC5H6O(self):
+    def test_c5h6o(self):
         inchi = 'C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2'
         u_indices = [2, 6]
         self.compare(inchi, u_indices)
 
-    def testC5H6O_2(self):
+    def test_c5h6o2(self):
         inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
-    def testC5H6O_3(self):
+    def test_c5h6o3(self):
         inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
         u_indices = [1, 2, 3, 4]
         self.compare(inchi, u_indices)
 
     @work_in_progress
-    def testCO(self):
+    def test_co(self):
         inchi = 'CO/c1-2'
         p_indices = [1, 2]
         mol = self.compare(inchi, [], p_indices)
 
-        self.assertEqual(mol.atoms[1].lonePairs, 1)  # Oxygen
+        self.assertEqual(mol.atoms[1].lone_pairs, 1)  # Oxygen
 
         self.assertEqual(mol.atoms[0].charge, -1)
         self.assertEqual(mol.atoms[1].charge, 1)
 
-    def testTripletMethylene(self):
+    def test_triplet_methylene(self):
         inchi = 'CH2/h1H2'
 
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
-    def testSingletMethylene(self):
+    def test_singlet_methylene(self):
         inchi = 'CH2/h1H2'
 
         p_indices = [1]
         self.compare(inchi, u_indices=[], p_indices=p_indices)
 
-    def testC4H6O(self):
+    def test_c4h6o(self):
         inchi = 'C4H6O/c1-2-3-4-5/h2H,3H2,1H3'
         u_indices = [2, 4]
         mol = self.compare(inchi, u_indices)
         for at in mol.atoms:
-            if at.isOxygen():
-                self.assertTrue(at.lonePairs == 2)
+            if at.is_oxygen():
+                self.assertTrue(at.lone_pairs == 2)
 
-    def testC6H6(self):
+    def test_c6h6(self):
         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
-    def testC4H6O_2(self):
+    def test_c4h6o2(self):
         inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
         u_indices = [4, 5]
         self.compare(inchi, u_indices)
 
-    def test_CO_triplet(self):
+    def test_co_triplet(self):
 
         adjlist = """
         multiplicity 3
@@ -1218,12 +1218,12 @@ class InChIParsingTest(unittest.TestCase):
         2 O u0 p2 c0 {1,D}
 
         """
-        spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
-        aug_inchi = spc.getAugmentedInChI()
+        spc = Species(molecule=[Molecule().from_adjacency_list(adjlist)])
+        aug_inchi = spc.get_augmented_inchi()
 
-        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
+        self.assertEqual(Species(molecule=[Molecule().from_augmented_inchi(aug_inchi)]).is_isomorphic(spc), True)
 
-    def test_CCCO_triplet(self):
+    def test_ccco_triplet(self):
 
         adjlist = """
         multiplicity 3
@@ -1236,77 +1236,77 @@ class InChIParsingTest(unittest.TestCase):
 7 H u0 p0 c0 {2,S}
 8 H u0 p0 c0 {3,S}
         """
-        mol = Molecule().fromAdjacencyList(adjlist)
+        mol = Molecule().from_adjacency_list(adjlist)
 
         spc = Species(molecule=[mol])
         spc.generate_resonance_structures()
-        aug_inchi = spc.getAugmentedInChI()
+        aug_inchi = spc.get_augmented_inchi()
 
-        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
+        self.assertEqual(Species(molecule=[Molecule().from_augmented_inchi(aug_inchi)]).is_isomorphic(spc), True)
 
-    def testC3H4(self):
+    def test_c3h4(self):
         inchi = 'C3H4/c1-3-2/h1,3H,2H2'
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
-    def test_C6H8O2(self):
+    def test_c6h8o2(self):
         inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
         u_indices = [7, 8]
         self.compare(inchi, u_indices)
 
-    def test_C3H3O3(self):
+    def test_c3h3o3(self):
         inchi = 'C3H3O3/c1-2-5-3-6-4/h1-3H'
         u_indices = [1, 3, 4]
         self.compare(inchi, u_indices)
 
-    def test_CH2O2(self):
+    def test_ch2o2(self):
         inchi = 'CH2O2/c2-1-3/h1H,(H,2,3)'
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
-    def test_C2H2O3(self):
+    def test_c2h2o3(self):
         inchi = 'C2H2O3/c1-5-2(3)4/h1H2'
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
-    def test_C3H4O4(self):
+    def test_c3h4o4(self):
         inchi = 'C3H4O4/c4-3(5)1-2-7-6/h1-3,6H'
         u_indices = [4, 5]
         self.compare(inchi, u_indices)
 
-    def test_C6H6O4(self):
+    def test_c6h6o4(self):
         inchi = 'InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2'
         u_indices = [1, 3, 4, 8]
         self.compare(inchi, u_indices)
 
-    def test_C3H2O3(self):
+    def test_c3h2o3(self):
 
         inchi = 'InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2'
         u_indices = [2, 5]
 
         self.compare(inchi, u_indices)
 
-    def test_C6H6O6(self):
+    def test_c6h6o6(self):
         inchi = 'C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2'
         u_indices = [2, 3, 8, 9]
         self.compare(inchi, u_indices)
 
-    def test_C3H2(self):
+    def test_c3h2(self):
         inchi = 'C3H2/c1-3-2/h1-2H'
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
-    def test_C3H4(self):
+    def test_c3h4(self):
         inchi = 'InChI=1S/C3H4/c1-3-2/h1,3H,2H2'
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
-    def test_C6H8(self):
+    def test_c6h8(self):
         inchi = 'InChI=1S/C6H8/c1-3-5-6-4-2/h1,4H,2,5-6H2'
         u_indices = [1, 1, 3, 3]
         self.compare(inchi, u_indices)
 
-    def test_C6H10(self):
+    def test_c6h10(self):
         inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2'
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
@@ -1323,7 +1323,7 @@ class InChIParsingTest(unittest.TestCase):
         inchi = 'InChI=1S/H3N/h1H3/p+1'
         self.compare(inchi)
 
-    def test_H2S(self):
+    def test_h2s(self):
         inchi = 'InChI=1S/H2S/h1H2'
         self.compare(inchi)
 
@@ -1347,21 +1347,21 @@ class InChIParsingTest(unittest.TestCase):
         p_indices = [-1, 3, 3, 3]  # ???
         self.compare(inchi, [], p_indices)
 
-    def test_NO(self):
+    def test_no(self):
         inchi = 'InChI=1S/NO/c1-2'
         u_indices = [1]
         self.compare(inchi, u_indices)
 
     def test_isotopic_molecule_1(self):
         """Test that we can parse an InChI for an isotopic molecule."""
-        mol = Molecule().fromInChI('InChI=1S/CH4/h1H4/i1+1')
+        mol = Molecule().from_inchi('InChI=1S/CH4/h1H4/i1+1')
 
         self.assertTrue(len(mol.atoms), 4)
         self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)
 
     def test_isotopic_molecule_2(self):
         """Test that we can parse an InChI for an isotopic molecule."""
-        mol = Molecule().fromInChI('InChI=1S/C2H6/c1-2/h1-2H3/i1+1')
+        mol = Molecule().from_inchi('InChI=1S/C2H6/c1-2/h1-2H3/i1+1')
 
         self.assertTrue(len(mol.atoms), 6)
         self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)

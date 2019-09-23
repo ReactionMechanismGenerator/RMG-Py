@@ -73,54 +73,54 @@ cdef class Mode(RMGObject):
         """
         return (Mode, (self.quantum,))
 
-    cpdef double getPartitionFunction(self, double T) except -1:
+    cpdef double get_partition_function(self, double T) except -1:
         """
         Return the value of the partition function at the specified temperature
         `T` in K.
         """
-        raise NotImplementedError('Unexpected call to Mode.getPartitionFunction(); '
+        raise NotImplementedError('Unexpected call to Mode.get_partition_function(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef double getHeatCapacity(self, double T) except -100000000:
+    cpdef double get_heat_capacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
-        raise NotImplementedError('Unexpected call to Mode.getHeatCapacity(); '
+        raise NotImplementedError('Unexpected call to Mode.get_heat_capacity(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef double getEnthalpy(self, double T) except 100000000:
+    cpdef double get_enthalpy(self, double T) except 100000000:
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
         """
-        raise NotImplementedError('Unexpected call to Mode.getEnthalpy(); '
+        raise NotImplementedError('Unexpected call to Mode.get_enthalpy(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef double getEntropy(self, double T) except -100000000:
+    cpdef double get_entropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
-        raise NotImplementedError('Unexpected call to Mode.getEntropy(); '
+        raise NotImplementedError('Unexpected call to Mode.get_entropy(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. If an initial sum of states 
-        `sumStates0` is given, the rotor sum of states will be convoluted into
+        `sum_states_0` is given, the rotor sum of states will be convoluted into
         these states.
         """
-        raise NotImplementedError('Unexpected call to Mode.getSumOfStates(); '
+        raise NotImplementedError('Unexpected call to Mode.get_sum_of_states(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=None):
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state. If an initial density
-        of states `densStates0` is given, the rotor density of states will be
+        energies `e_list` in J/mol above the ground state. If an initial density
+        of states `dens_states_0` is given, the rotor density of states will be
         convoluted into these states.
         """
-        raise NotImplementedError('Unexpected call to Mode.getDensityOfStates(); '
+        raise NotImplementedError('Unexpected call to Mode.get_density_of_states(); '
                                   'you should be using a class derived from Mode.')

@@ -48,7 +48,7 @@ try:
 except ImportError:
     pass
 
-from rmgpy.chemkin import writeElementsSection
+from rmgpy.chemkin import write_elements_section
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
@@ -56,7 +56,7 @@ from rmgpy.exceptions import InputError
 
 from arkane.common import is_pdep
 from arkane.explorer import ExplorerJob
-from arkane.input import loadInputFile
+from arkane.input import load_input_file
 from arkane.kinetics import KineticsJob
 from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob
@@ -73,9 +73,9 @@ class Arkane(object):
     =================== ========================================================
     Attribute           Description
     =================== ========================================================
-    `jobList`           A list of the jobs to execute
-    `inputFile`         The path of the input file defining the jobs to execute
-    `outputDirectory`   The directory in which to write the output files
+    `job_list`          A list of the jobs to execute
+    `input_file`        The path of the input file defining the jobs to execute
+    `output_directory`  The directory in which to write the output files
     `verbose`           The level of detail in the generated logging messages
     =================== ========================================================
     
@@ -86,16 +86,16 @@ class Arkane(object):
     attributes using either the :meth:`__init__()` method or by directly
     accessing the attributes, and then invoke the :meth:`execute()` method.
     You can also populate the attributes from the command line using the
-    :meth:`parseCommandLineArguments()` method before running :meth:`execute()`.
+    :meth:`parse_command_line_arguments()` method before running :meth:`execute()`.
     """
 
-    def __init__(self, inputFile=None, outputDirectory=None, verbose=logging.INFO):
-        self.jobList = []
-        self.inputFile = inputFile
-        self.outputDirectory = outputDirectory
+    def __init__(self, input_file=None, output_directory=None, verbose=logging.INFO):
+        self.job_list = []
+        self.input_file = input_file
+        self.output_directory = output_directory
         self.verbose = verbose
 
-    def parseCommandLineArguments(self):
+    def parse_command_line_arguments(self):
         """
         Parse the command-line arguments being passed to Arkane. This uses the
         :mod:`argparse` module, which ensures that the command-line arguments are
@@ -131,7 +131,7 @@ class Arkane(object):
         args = parser.parse_args()
 
         # Extract the input file
-        self.inputFile = args.file[0]
+        self.input_file = args.file[0]
 
         # Extract the log verbosity
         self.verbose = args.verbose
@@ -143,56 +143,56 @@ class Arkane(object):
         # By default the directory containing the input file is used, unless an
         # alternate directory is specified using the -o flag
         if args.output_directory and os.path.isdir(args.output_directory[0]):
-            self.outputDirectory = os.path.abspath(args.output_directory[0])
+            self.output_directory = os.path.abspath(args.output_directory[0])
         else:
-            self.outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
+            self.output_directory = os.path.dirname(os.path.abspath(args.file[0]))
 
-    def loadInputFile(self, inputFile):
+    def load_input_file(self, input_file):
         """
-        Load a set of jobs from the given `inputFile` on disk. Returns the
+        Load a set of jobs from the given `input_file` on disk. Returns the
         loaded set of jobs as a list.
         """
-        self.inputFile = inputFile
-        self.jobList, self.reactionDict, self.speciesDict, self.transitionStateDict, self.networkDict = loadInputFile(
-            self.inputFile)
+        self.input_file = input_file
+        self.job_list, self.reaction_dict, self.species_dict, self.transition_state_dict, self.network_dict = \
+            load_input_file(self.input_file)
         logging.info('')
-        return self.jobList
+        return self.job_list
 
     def execute(self):
         """
         Execute, in order, the jobs found in input file specified by the
-        `inputFile` attribute.
+        `input_file` attribute.
         """
 
         # Initialize the logging system (both to the console and to a file in the
         # output directory)
-        initialize_log(self.verbose, os.path.join(self.outputDirectory, 'arkane.log'))
+        initialize_log(self.verbose, os.path.join(self.output_directory, 'arkane.log'))
 
         # Print some information to the beginning of the log
         log_header()
 
         # Load the input file for the job
-        self.jobList = self.loadInputFile(self.inputFile)
+        self.job_list = self.load_input_file(self.input_file)
         logging.info('')
 
         # Initialize (and clear!) the output files for the job
-        if self.outputDirectory is None:
-            self.outputDirectory = os.path.dirname(os.path.abspath(self.inputFile))
-        output_file = os.path.join(self.outputDirectory, 'output.py')
-        with open(output_file, 'w') as f:
+        if self.output_directory is None:
+            self.output_directory = os.path.dirname(os.path.abspath(self.input_file))
+        output_file = os.path.join(self.output_directory, 'output.py')
+        with open(output_file, 'w'):
             pass
-        chemkin_file = os.path.join(self.outputDirectory, 'chem.inp')
+        chemkin_file = os.path.join(self.output_directory, 'chem.inp')
 
         # write the chemkin files and run the thermo and then kinetics jobs
         with open(chemkin_file, 'w') as f:
-            writeElementsSection(f)
+            write_elements_section(f)
 
             f.write('SPECIES\n\n')
 
             # write each species in species block
-            for job in self.jobList:
+            for job in self.job_list:
                 if isinstance(job, ThermoJob):
-                    f.write(job.species.toChemkin())
+                    f.write(job.species.to_chemkin())
                     f.write('\n')
 
             f.write('\nEND\n\n\n\n')
@@ -202,11 +202,11 @@ class Arkane(object):
         # run thermo and statmech jobs (also writes thermo blocks to Chemkin file)
         supporting_info = []
         hindered_rotor_info = []
-        for job in self.jobList:
+        for job in self.job_list:
             if isinstance(job, ThermoJob):
-                job.execute(output_directory=self.outputDirectory, plot=self.plot)
+                job.execute(output_directory=self.output_directory, plot=self.plot)
             if isinstance(job, StatMechJob):
-                job.execute(output_directory=self.outputDirectory, plot=self.plot, pdep=is_pdep(self.jobList))
+                job.execute(output_directory=self.output_directory, plot=self.plot, pdep=is_pdep(self.job_list))
                 if hasattr(job, 'supporting_info'):
                     supporting_info.append(job.supporting_info)
                 if hasattr(job, 'raw_hindered_rotor_data'):
@@ -220,7 +220,7 @@ class Arkane(object):
 
         if supporting_info:
             # write supporting_info.csv for statmech jobs
-            supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
+            supporting_info_file = os.path.join(self.output_directory, 'supporting_information.csv')
             with open(supporting_info_file, 'w') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(['Label', 'Symmetry Number', 'Number of optical isomers', 'Symmetry Group',
@@ -248,7 +248,7 @@ class Arkane(object):
                     writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7], row[8], row[9], atoms, row[12],
                                      row[13]])
         if hindered_rotor_info:
-            hr_file = os.path.join(self.outputDirectory, 'hindered_rotor_scan_data.csv')
+            hr_file = os.path.join(self.output_directory, 'hindered_rotor_scan_data.csv')
             # find longest length to set column number for energies
             max_energy_length = max([len(hr[4]) for hr in hindered_rotor_info])
             with open(hr_file, 'w') as csvfile:
@@ -260,21 +260,21 @@ class Arkane(object):
                     writer.writerow([row[0], row[1], row[2], row[3][1] * 180 / np.pi,
                                      row[5], row[6]] + [a for a in row[4]])
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
-        for job in self.jobList:
+        for job in self.job_list:
             if isinstance(job, KineticsJob):
-                job.execute(output_directory=self.outputDirectory, plot=self.plot)
+                job.execute(output_directory=self.output_directory, plot=self.plot)
             elif isinstance(job, PressureDependenceJob) and not any([isinstance(job, ExplorerJob) for job in
-                                                                     self.jobList]):
+                                                                     self.job_list]):
                 # if there is an explorer job the pdep job will be run in the explorer job
                 if job.network is None:
                     raise InputError(
                         'No network matched the label of the pressureDependence block and there is no explorer block '
                         'to generate a network')
-                job.execute(outputFile=output_file, plot=self.plot)
+                job.execute(output_file=output_file, plot=self.plot)
             elif isinstance(job, ExplorerJob):
-                thermo_library, kinetics_library, species_list = self.getLibraries()
-                job.execute(outputFile=output_file, plot=self.plot, speciesList=species_list,
-                            thermoLibrary=thermo_library, kineticsLibrary=kinetics_library)
+                thermo_library, kinetics_library, species_list = self.get_libraries()
+                job.execute(output_file=output_file, plot=self.plot, species_list=species_list,
+                            thermo_library=thermo_library, kinetics_library=kinetics_library)
 
         with open(chemkin_file, 'a') as f:
             f.write('END\n\n')
@@ -282,29 +282,29 @@ class Arkane(object):
         # Print some information to the end of the log
         log_footer()
 
-    def getLibraries(self):
+    def get_libraries(self):
         """Get RMG kinetics and thermo libraries"""
         name = 'kineticsjobs'
 
-        species_list = list(self.speciesDict.values())
-        reaction_list = list(self.reactionDict.values())
+        species_list = list(self.species_dict.values())
+        reaction_list = list(self.reaction_dict.values())
 
         # remove duplicate species
         for rxn in reaction_list:
             for i, rspc in enumerate(rxn.reactants):
                 for spc in species_list:
-                    if spc.isIsomorphic(rspc):
+                    if spc.is_isomorphic(rspc):
                         rxn.reactants[i] = spc
                         break
             for i, rspc in enumerate(rxn.products):
                 for spc in species_list:
-                    if spc.isIsomorphic(rspc):
+                    if spc.is_isomorphic(rspc):
                         rxn.products[i] = spc
                         break
         del_inds = []
         for i, spc1 in enumerate(species_list):
             for j, spc2 in enumerate(species_list):
-                if j > i and spc1.isIsomorphic(spc2):
+                if j > i and spc1.is_isomorphic(spc2):
                     del_inds.append(j)
 
         for j in sorted(del_inds)[::-1]:
@@ -313,32 +313,32 @@ class Arkane(object):
         thermo_library = ThermoLibrary(name=name)
         for i, species in enumerate(species_list):
             if species.thermo:
-                thermo_library.loadEntry(index=i + 1,
-                                         label=species.label,
-                                         molecule=species.molecule[0].toAdjacencyList(),
-                                         thermo=species.thermo,
-                                         shortDesc=species.thermo.comment)
+                thermo_library.load_entry(index=i + 1,
+                                          label=species.label,
+                                          molecule=species.molecule[0].to_adjacency_list(),
+                                          thermo=species.thermo,
+                                          shortDesc=species.thermo.comment)
             else:
                 logging.warning(
                     'Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(
                         str(species)))
 
         # load kinetics library entries                    
-        kinetics_library = KineticsLibrary(name=name, autoGenerated=True)
+        kinetics_library = KineticsLibrary(name=name, auto_generated=True)
         kinetics_library.entries = {}
         for i, reaction in enumerate(reaction_list):
             entry = Entry(
                 index=i + 1,
-                label=reaction.toLabeledStr(),
+                label=reaction.to_labeled_str(),
                 item=reaction,
                 data=reaction.kinetics)
 
             if reaction.kinetics is not None:
                 if hasattr(reaction, 'library') and reaction.library:
-                    entry.longDesc = 'Originally from reaction library: ' + \
-                                     reaction.library + "\n" + reaction.kinetics.comment
+                    entry.long_desc = 'Originally from reaction library: ' + \
+                                      reaction.library + "\n" + reaction.kinetics.comment
                 else:
-                    entry.longDesc = reaction.kinetics.comment
+                    entry.long_desc = reaction.kinetics.comment
 
             kinetics_library.entries[i + 1] = entry
 

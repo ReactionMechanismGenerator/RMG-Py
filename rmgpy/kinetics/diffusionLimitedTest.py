@@ -39,7 +39,7 @@ from rmgpy import settings
 from rmgpy.data.solvation import SolvationDatabase
 from rmgpy.data.thermo import ThermoData
 from rmgpy.kinetics import Arrhenius
-from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -70,7 +70,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(298, 'K'), Tmax=(5000, 'K'), Cp0=(33.2579, 'J/(mol*K)'), CpInf=(577.856, 'J/(mol*K)'),
                 comment="""Thermo library: JetSurF0.2"""),
-            molecule=[Molecule(SMILES="[CH2]CCCCCCC")]
+            molecule=[Molecule(smiles="[CH2]CCCCCCC")]
         )
         octyl_sec = Species(
             label="",
@@ -85,7 +85,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(298, 'K'), Tmax=(5000, 'K'), Cp0=(33.2579, 'J/(mol*K)'), CpInf=(577.856, 'J/(mol*K)'),
                 comment="""Thermo library: JetSurF0.2"""),
-            molecule=[Molecule(SMILES="CC[CH]CCCCC")]
+            molecule=[Molecule(smiles="CC[CH]CCCCC")]
         )
         ethane = Species(
             label="",
@@ -95,7 +95,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 H298=(12.549, 'kcal/mol'),
                 S298=(52.379, 'cal/(mol*K)'),
                 Cp0=(33.2579, 'J/(mol*K)'), CpInf=(133.032, 'J/(mol*K)'), comment="""Thermo library: CH"""),
-            molecule=[Molecule(SMILES="C=C")]
+            molecule=[Molecule(smiles="C=C")]
         )
         decyl = Species(
             label="",
@@ -110,7 +110,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(298, 'K'), Tmax=(5000, 'K'), Cp0=(33.2579, 'J/(mol*K)'), CpInf=(719.202, 'J/(mol*K)'),
                 comment="""Thermo library: JetSurF0.2"""),
-            molecule=[Molecule(SMILES="[CH2]CCCCCCCCC")]
+            molecule=[Molecule(smiles="[CH2]CCCCCCCCC")]
         )
         acetone = Species(
             label="",
@@ -125,7 +125,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-232.025, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(232.805, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)C")]
+            molecule=[Molecule(smiles="CC(=O)C")]
         )
         peracetic_acid = Species(
             label="",
@@ -140,7 +140,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-349.698, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(199.547, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)OO")]
+            molecule=[Molecule(smiles="CC(=O)OO")]
         )
         acetic_acid = Species(
             label="",
@@ -155,7 +155,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-448.245, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(182.918, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)O")]
+            molecule=[Molecule(smiles="CC(=O)O")]
         )
         criegee = Species(
             label="",
@@ -170,12 +170,12 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-648.47, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(457.296, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)OOC(C)(O)C")]
+            molecule=[Molecule(smiles="CC(=O)OOC(C)(O)C")]
         )
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.solvent = 'octane'
-        diffusionLimiter.enable(self.database.getSolventData(self.solvent), self.database)
+        diffusion_limiter.enable(self.database.get_solvent_data(self.solvent), self.database)
         self.T = 298
         self.uni_reaction = Reaction(reactants=[octyl_pri], products=[octyl_sec])
         self.uni_reaction.kinetics = Arrhenius(A=(2.0, '1/s'), n=0, Ea=(0, 'kJ/mol'))
@@ -185,36 +185,36 @@ class TestDiffusionLimited(unittest.TestCase):
                                         products=[criegee, acetic_acid])
         self.tri_bi_reaction.kinetics = Arrhenius(A=(1.07543e-11, 'cm^6/(mol^2*s)'), n=5.47295, Ea=(-38.5379, 'kJ/mol'))
         self.intrinsic_rates = {
-            self.uni_reaction: self.uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
-            self.bi_uni_reaction: self.bi_uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
-            self.tri_bi_reaction: self.tri_bi_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
+            self.uni_reaction: self.uni_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
+            self.bi_uni_reaction: self.bi_uni_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
+            self.tri_bi_reaction: self.tri_bi_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
         }
 
     def tearDown(self):
-        diffusionLimiter.disable()
+        diffusion_limiter.disable()
 
-    def testGetEffectiveRateUnimolecular(self):
+    def test_get_effective_rate_unimolecular(self):
         """
         Tests that the effective rate is the same as the intrinsic rate for
         unimiolecular reactions.
         """
-        effective_rate = diffusionLimiter.getEffectiveRate(self.uni_reaction, self.T)
+        effective_rate = diffusion_limiter.get_effective_rate(self.uni_reaction, self.T)
         self.assertEqual(effective_rate, self.intrinsic_rates[self.uni_reaction])
 
-    def testGetEffectiveRate2to1(self):
+    def test_get_effective_rate_2_to_1(self):
         """
         Tests that the effective rate is limited in the forward direction for
         a 2 -> 1 reaction
         """
-        effective_rate = diffusionLimiter.getEffectiveRate(self.bi_uni_reaction, self.T)
+        effective_rate = diffusion_limiter.get_effective_rate(self.bi_uni_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.bi_uni_reaction])
 
-    def testGetEffectiveRate3to2(self):
+    def test_get_effective_rate_3_to_2(self):
         """
         Tests that the effective rate is limited for a 3 -> 2 reaction
         """
-        effective_rate = diffusionLimiter.getEffectiveRate(self.tri_bi_reaction, self.T)
+        effective_rate = diffusion_limiter.get_effective_rate(self.tri_bi_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.tri_bi_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.tri_bi_reaction])
 

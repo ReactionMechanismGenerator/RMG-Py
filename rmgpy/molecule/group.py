@@ -42,7 +42,7 @@ import cython
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.molecule as mol
 from rmgpy.exceptions import ActionError, ImplicitBenzeneError, UnexpectedChargeError
-from rmgpy.molecule.atomtype import atomTypes, allElements, nonSpecifics, getFeatures, AtomType
+from rmgpy.molecule.atomtype import ATOMTYPES, allElements, nonSpecifics, get_features, AtomType
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.graph import Vertex, Edge, Graph
 
@@ -55,38 +55,38 @@ class GroupAtom(Vertex):
     it uses :ref:`atom types <atom-types>` instead of elements, and all
     attributes are lists rather than individual values. The attributes are:
 
-    =================== =================== ====================================
-    Attribute           Type                Description
-    =================== =================== ====================================
-    `atomType`          ``list``            The allowed atom types (as :class:`AtomType` objects)
-    `radicalElectrons`  ``list``            The allowed numbers of radical electrons (as short integers)
-    `charge`            ``list``            The allowed formal charges (as short integers)
-    `label`             ``str``             A string label that can be used to tag individual atoms
-    `lonePairs`         ``list``            The number of lone electron pairs
-    'charge'            ''list''            The partial charge of the atom
-    `props`             ``dict``            Dictionary for storing additional atom properties
-    `reg_dim_atm`       ``list``            List of atom types that are free dimensions in tree optimization
-    `reg_dim_u`         ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
-    `reg_dim_r`         ``list``            List of inRing values that are free dimensions in tree optimization
-    =================== =================== ====================================
+    ==================== =================== ====================================
+    Attribute            Type                Description
+    ==================== =================== ====================================
+    `atomtype`           ``list``            The allowed atom types (as :class:`AtomType` objects)
+    `radical_electrons`  ``list``            The allowed numbers of radical electrons (as short integers)
+    `charge`             ``list``            The allowed formal charges (as short integers)
+    `label`              ``str``             A string label that can be used to tag individual atoms
+    `lone_pairs`         ``list``            The number of lone electron pairs
+    `charge`             ``list``            The partial charge of the atom
+    `props`              ``dict``            Dictionary for storing additional atom properties
+    `reg_dim_atm`        ``list``            List of atom types that are free dimensions in tree optimization
+    `reg_dim_u`          ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
+    `reg_dim_r`          ``list``            List of inRing values that are free dimensions in tree optimization
+    ==================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
     group if it matches *any* item in the list. However, the
-    `radicalElectrons`, and `charge` attributes are linked
+    `radical_electrons`, and `charge` attributes are linked
     such that an atom must match values from the same index in each of these in
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, props=None):
+    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, props=None):
         Vertex.__init__(self)
-        self.atomType = atomType or []
-        for index in range(len(self.atomType)):
-            if isinstance(self.atomType[index], str):
-                self.atomType[index] = atomTypes[self.atomType[index]]
-        self.radicalElectrons = radicalElectrons or []
+        self.atomtype = atomtype or []
+        for index in range(len(self.atomtype)):
+            if isinstance(self.atomtype[index], str):
+                self.atomtype[index] = ATOMTYPES[self.atomtype[index]]
+        self.radical_electrons = radical_electrons or []
         self.charge = charge or []
         self.label = label
-        self.lonePairs = lonePairs or []
+        self.lone_pairs = lone_pairs or []
 
         self.props = props or {}
 
@@ -103,12 +103,12 @@ class GroupAtom(Vertex):
             'connectivity1': self.connectivity1,
             'connectivity2': self.connectivity2,
             'connectivity3': self.connectivity3,
-            'sortingLabel': self.sortingLabel,
+            'sorting_label': self.sorting_label,
         }
-        atomType = self.atomType
-        if atomType is not None:
-            atomType = [a.label for a in atomType]
-        return (GroupAtom, (atomType, self.radicalElectrons, self.charge, self.label, self.lonePairs), d)
+        atomtype = self.atomtype
+        if atomtype is not None:
+            atomtype = [a.label for a in atomtype]
+        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs), d)
 
     def __setstate__(self, d):
         """
@@ -118,13 +118,13 @@ class GroupAtom(Vertex):
         self.connectivity1 = d['connectivity1']
         self.connectivity2 = d['connectivity2']
         self.connectivity3 = d['connectivity3']
-        self.sortingLabel = d['sortingLabel']
+        self.sorting_label = d['sorting_label']
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return '[{0} {1}]'.format(self.label, ','.join([repr(a.label) for a in self.atomType]))
+        return '[{0} {1}]'.format(self.label, ','.join([repr(a.label) for a in self.atomtype]))
 
     def __repr__(self):
         """
@@ -142,36 +142,36 @@ class GroupAtom(Vertex):
         attributes of the copy will not affect the original.
         """
         return GroupAtom(
-            self.atomType[:],
-            self.radicalElectrons[:],
+            self.atomtype[:],
+            self.radical_electrons[:],
             self.charge[:],
             self.label,
-            self.lonePairs[:],
+            self.lone_pairs[:],
             deepcopy(self.props),
         )
 
-    def __changeBond(self, order):
+    def _change_bond(self, order):
         """
         Update the atom group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
         in bond order, and should be 1 or -1.
         """
-        atomType = []
-        for atom in self.atomType:
+        atomtype = []
+        for atom in self.atomtype:
             if order == 1:
-                atomType.extend(atom.incrementBond)
+                atomtype.extend(atom.increment_bond)
             elif order == -1:
-                atomType.extend(atom.decrementBond)
+                atomtype.extend(atom.decrement_bond)
             else:
                 raise ActionError('Unable to update GroupAtom due to CHANGE_BOND action: '
                                   'Invalid order "{0}".'.format(order))
-        if len(atomType) == 0:
+        if len(atomtype) == 0:
             raise ActionError('Unable to update GroupAtom due to CHANGE_BOND action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
         # Set the new atom types, removing any duplicates
-        self.atomType = list(set(atomType))
+        self.atomtype = list(set(atomtype))
 
-    def __formBond(self, order):
+    def _form_bond(self, order):
         """
         Update the atom group as a result of applying a FORM_BOND action,
         where `order` specifies the order of the forming bond, and should be
@@ -182,16 +182,16 @@ class GroupAtom(Vertex):
             return
         if order != 1:
             raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Invalid order "{0}".'.format(order))
-        atomType = []
-        for atom in self.atomType:
-            atomType.extend(atom.formBond)
-        if len(atomType) == 0:
+        atomtype = []
+        for atom in self.atomtype:
+            atomtype.extend(atom.form_bond)
+        if len(atomtype) == 0:
             raise ActionError('Unable to update GroupAtom due to FORM_BOND action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
         # Set the new atom types, removing any duplicates
-        self.atomType = list(set(atomType))
+        self.atomtype = list(set(atomtype))
 
-    def __breakBond(self, order):
+    def _break_bond(self, order):
         """
         Update the atom group as a result of applying a BREAK_BOND action,
         where `order` specifies the order of the breaking bond, and should be
@@ -202,16 +202,16 @@ class GroupAtom(Vertex):
             return
         if order != 1:
             raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Invalid order "{0}".'.format(order))
-        atomType = []
-        for atom in self.atomType:
-            atomType.extend(atom.breakBond)
-        if len(atomType) == 0:
+        atomtype = []
+        for atom in self.atomtype:
+            atomtype.extend(atom.break_bond)
+        if len(atomtype) == 0:
             raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
         # Set the new atom types, removing any duplicates
-        self.atomType = list(set(atomType))
+        self.atomtype = list(set(atomtype))
 
-    def __gainRadical(self, radical):
+    def _gain_radical(self, radical):
         """
         Update the atom group as a result of applying a GAIN_RADICAL action,
         where `radical` specifies the number of radical electrons to add.
@@ -221,19 +221,19 @@ class GroupAtom(Vertex):
         function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
         or 4 radical electrons.
         """
-        radicalElectrons = []
-        if any([len(atomType.incrementRadical) == 0 for atomType in self.atomType]):
+        radical_electrons = []
+        if any([len(atomtype.increment_radical) == 0 for atomtype in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to GAIN_RADICAL action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
-        if not self.radicalElectrons:
-            radicalElectrons = [1, 2, 3, 4]
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+        if not self.radical_electrons:
+            radical_electrons = [1, 2, 3, 4]
         else:
-            for electron in self.radicalElectrons:
-                radicalElectrons.append(electron + radical)
+            for electron in self.radical_electrons:
+                radical_electrons.append(electron + radical)
         # Set the new radical electron counts
-        self.radicalElectrons = radicalElectrons
+        self.radical_electrons = radical_electrons
 
-    def __loseRadical(self, radical):
+    def _lose_radical(self, radical):
         """
         Update the atom group as a result of applying a LOSE_RADICAL action,
         where `radical` specifies the number of radical electrons to remove.
@@ -243,80 +243,80 @@ class GroupAtom(Vertex):
         function set the atom's 'radicalElectron' to a list allowing 0, 1, 2,
         or 3 radical electrons.
         """
-        radicalElectrons = []
-        if any([len(atomType.decrementRadical) == 0 for atomType in self.atomType]):
+        radical_electrons = []
+        if any([len(atomtype.decrement_radical) == 0 for atomtype in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
 
-        if not self.radicalElectrons:
-            radicalElectrons = [0, 1, 2, 3]
+        if not self.radical_electrons:
+            radical_electrons = [0, 1, 2, 3]
         else:
-            for electron in self.radicalElectrons:
+            for electron in self.radical_electrons:
                 electron = electron - radical
                 if electron < 0:
                     raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: '
-                                      'Invalid radical electron set "{0}".'.format(self.radicalElectrons))
-                radicalElectrons.append(electron)
+                                      'Invalid radical electron set "{0}".'.format(self.radical_electrons))
+                radical_electrons.append(electron)
 
         # Set the new radical electron counts
-        self.radicalElectrons = radicalElectrons
+        self.radical_electrons = radical_electrons
 
-    def __gainPair(self, pair):
+    def _gain_pair(self, pair):
         """
         Update the atom group as a result of applying a GAIN_PAIR action,
         where `pair` specifies the number of lone electron pairs to add.
         """
-        lonePairs = []
-        atomType = []
+        lone_pairs = []
+        atomtype = []
 
-        for atom in self.atomType:
-            atomType.extend(atom.incrementLonePair)
-        if any([len(atom.incrementLonePair) == 0 for atom in self.atomType]):
+        for atom in self.atomtype:
+            atomtype.extend(atom.increment_lone_pair)
+        if any([len(atom.increment_lone_pair) == 0 for atom in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to GAIN_PAIR action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
 
         # Add a lone pair to a group atom with none
-        if not self.lonePairs:
-            self.lonePairs = [1, 2, 3, 4]  # set to a wildcard of any number greater than 0
+        if not self.lone_pairs:
+            self.lone_pairs = [1, 2, 3, 4]  # set to a wildcard of any number greater than 0
         # Add a lone pair to a group atom that already has at least one lone pair
         else:
-            for x in self.lonePairs:
-                lonePairs.append(x + pair)
+            for x in self.lone_pairs:
+                lone_pairs.append(x + pair)
             # Set the new lone electron pair count
-            self.lonePairs = lonePairs
+            self.lone_pairs = lone_pairs
 
         # Set the new atom types, removing any duplicates
-        self.atomType = list(set(atomType))
+        self.atomtype = list(set(atomtype))
 
-    def __losePair(self, pair):
+    def _lose_pair(self, pair):
         """
         Update the atom group as a result of applying a LOSE_PAIR action,
         where `pair` specifies the number of lone electron pairs to remove.
         """
-        lonePairs = []
-        atomType = []
+        lone_pairs = []
+        atomtype = []
 
-        for atom in self.atomType:
-            atomType.extend(atom.decrementLonePair)
-        if any([len(atom.decrementLonePair) == 0 for atom in self.atomType]):
+        for atom in self.atomtype:
+            atomtype.extend(atom.decrement_lone_pair)
+        if any([len(atom.decrement_lone_pair) == 0 for atom in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomType))
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
 
-        if not self.lonePairs:
-            self.lonePairs = [0, 1, 2, 3]  # set to a wildcard of any number fewer than 4
+        if not self.lone_pairs:
+            self.lone_pairs = [0, 1, 2, 3]  # set to a wildcard of any number fewer than 4
         else:
-            for x in self.lonePairs:
+            for x in self.lone_pairs:
                 if x - pair < 0:
                     raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: '
-                                      'Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
-                lonePairs.append(x - pair)
+                                      'Invalid lone electron pairs set "{0}".'.format(self.lone_pairs))
+                lone_pairs.append(x - pair)
             # Set the new lone electron pair count
-            self.lonePairs = lonePairs
+            self.lone_pairs = lone_pairs
 
         # Set the new atom types, removing any duplicates
-        self.atomType = list(set(atomType))
+        self.atomtype = list(set(atomtype))
 
-    def applyAction(self, action):
+    def apply_action(self, action):
         """
         Update the atom group as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
@@ -325,19 +325,19 @@ class GroupAtom(Vertex):
         """
         act = action[0].upper()
         if act == 'CHANGE_BOND':
-            self.__changeBond(action[2])
+            self._change_bond(action[2])
         elif act == 'FORM_BOND':
-            self.__formBond(action[2])
+            self._form_bond(action[2])
         elif act == 'BREAK_BOND':
-            self.__breakBond(action[2])
+            self._break_bond(action[2])
         elif act == 'GAIN_RADICAL':
-            self.__gainRadical(action[2])
+            self._gain_radical(action[2])
         elif act == 'LOSE_RADICAL':
-            self.__loseRadical(action[2])
+            self._lose_radical(action[2])
         elif action[0].upper() == 'GAIN_PAIR':
-            self.__gainPair(action[2])
+            self._gain_pair(action[2])
         elif action[0].upper() == 'LOSE_PAIR':
-            self.__losePair(action[2])
+            self._lose_pair(action[2])
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 
@@ -363,32 +363,32 @@ class GroupAtom(Vertex):
                        lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
-        for atomType1 in self.atomType:
-            for atomType2 in group.atomType:
+        for atomType1 in self.atomtype:
+            for atomType2 in group.atomtype:
                 if atomType1.equivalent(atomType2): break
             else:
                 return False
-        for atomType1 in group.atomType:
-            for atomType2 in self.atomType:
+        for atomType1 in group.atomtype:
+            for atomType2 in self.atomtype:
                 if atomType1.equivalent(atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
-        for radical1 in self.radicalElectrons:
-            if group.radicalElectrons:  # Only check if the list is non-empty.  An empty list indicates a wildcard.
-                for radical2 in group.radicalElectrons:
+        for radical1 in self.radical_electrons:
+            if group.radical_electrons:  # Only check if the list is non-empty.  An empty list indicates a wildcard.
+                for radical2 in group.radical_electrons:
                     if radical1 == radical2: break
                 else:
                     return False
-        for radical1 in group.radicalElectrons:
-            if self.radicalElectrons:
-                for radical2 in self.radicalElectrons:
+        for radical1 in group.radical_electrons:
+            if self.radical_electrons:
+                for radical2 in self.radical_electrons:
                     if radical1 == radical2: break
                 else:
                     return False
-        for lp1 in self.lonePairs:
-            if group.lonePairs:
-                for lp2 in group.lonePairs:
+        for lp1 in self.lone_pairs:
+            if group.lone_pairs:
+                for lp2 in group.lone_pairs:
                     if lp1 == lp2: break
                 else:
                     return False
@@ -413,7 +413,7 @@ class GroupAtom(Vertex):
         # Otherwise the two atom groups are equivalent
         return True
 
-    def isSpecificCaseOf(self, other):
+    def is_specific_case_of(self, other):
         """
         Returns ``True`` if `self` is the same as `other` or is a more
         specific case of `other`. Returns ``False`` if some of `self` is not
@@ -421,40 +421,40 @@ class GroupAtom(Vertex):
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
-            # Let the isSpecificCaseOf method of other handle it
+            # Let the is_specific_case_of method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
-            return other.isSpecificCaseOf(self)
+            return other.is_specific_case_of(self)
         group = other
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
                        lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
-        for atomType1 in self.atomType:  # all these must match
-            for atomType2 in group.atomType:  # can match any of these
-                if atomType1.isSpecificCaseOf(atomType2): break
+        for atomType1 in self.atomtype:  # all these must match
+            for atomType2 in group.atomtype:  # can match any of these
+                if atomType1.is_specific_case_of(atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
-        if self.radicalElectrons:
-            for radical1 in self.radicalElectrons:
-                if group.radicalElectrons:
-                    for radical2 in group.radicalElectrons:
+        if self.radical_electrons:
+            for radical1 in self.radical_electrons:
+                if group.radical_electrons:
+                    for radical2 in group.radical_electrons:
                         if radical1 == radical2: break
                     else:
                         return False
         else:
-            if group.radicalElectrons: return False
-        if self.lonePairs:
-            for lp1 in self.lonePairs:
-                if group.lonePairs:
-                    for lp2 in group.lonePairs:
+            if group.radical_electrons: return False
+        if self.lone_pairs:
+            for lp1 in self.lone_pairs:
+                if group.lone_pairs:
+                    for lp2 in group.lone_pairs:
                         if lp1 == lp2: break
                     else:
                         return False
         else:
-            if group.lonePairs: return False
+            if group.lone_pairs: return False
         # Each charge in self must have an equivalent in other
         if self.charge:
             for charge1 in self.charge:
@@ -475,63 +475,63 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
-    def isSurfaceSite(self):
+    def is_surface_site(self):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
         """
-        site_type = atomTypes['X']
-        return all([s.isSpecificCaseOf(site_type) for s in self.atomType])
+        site_type = ATOMTYPES['X']
+        return all([s.is_specific_case_of(site_type) for s in self.atomtype])
 
-    def isOxygen(self):
+    def is_oxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if not.
         """
-        all_oxygens = [atomTypes['O']] + atomTypes['O'].specific
-        check_list = [x in all_oxygens for x in self.atomType]
+        all_oxygens = [ATOMTYPES['O']] + ATOMTYPES['O'].specific
+        check_list = [x in all_oxygens for x in self.atomtype]
         return all(check_list)
 
-    def isSulfur(self):
+    def is_sulfur(self):
         """
         Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
         """
-        all_sulfur = [atomTypes['S']] + atomTypes['S'].specific
-        check_list = [x in all_sulfur for x in self.atomType]
+        all_sulfur = [ATOMTYPES['S']] + ATOMTYPES['S'].specific
+        check_list = [x in all_sulfur for x in self.atomtype]
         return all(check_list)
 
-    def isNitrogen(self):
+    def is_nitrogen(self):
         """
         Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
         """
-        all_nitrogen = [atomTypes['N']] + atomTypes['N'].specific
-        check_list = [x in all_nitrogen for x in self.atomType]
+        all_nitrogen = [ATOMTYPES['N']] + ATOMTYPES['N'].specific
+        check_list = [x in all_nitrogen for x in self.atomtype]
         return all(check_list)
 
-    def isCarbon(self):
+    def is_carbon(self):
         """
         Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
         """
-        all_carbon = [atomTypes['C']] + atomTypes['C'].specific
-        check_list = [x in all_carbon for x in self.atomType]
+        all_carbon = [ATOMTYPES['C']] + ATOMTYPES['C'].specific
+        check_list = [x in all_carbon for x in self.atomtype]
         return all(check_list)
 
-    def hasWildcards(self):
+    def has_wildcards(self):
         """
         Return ``True`` if the atom has wildcards in any of the attributes:
         atomtype, radical electrons, lone pairs, charge, and bond order. Returns
         ''False'' if no attribute has wildcards.
         """
-        if len(self.atomType) > 1:
+        if len(self.atomtype) > 1:
             return True
-        elif len(self.radicalElectrons) > 1 or len(self.radicalElectrons) == 0:
+        elif len(self.radical_electrons) > 1 or len(self.radical_electrons) == 0:
             return True
-        elif len(self.lonePairs) > 1:
+        elif len(self.lone_pairs) > 1:
             return True
         for bond in self.bonds.values():
             if len(bond.order) > 1:
                 return True
         return False
 
-    def countBonds(self, wildcards=False):
+    def count_bonds(self, wildcards=False):
         """
         Returns: list of the number of bonds currently on the :class:GroupAtom
 
@@ -544,37 +544,37 @@ class GroupAtom(Vertex):
             if not wildcards and len(bond12.order) > 1:
                 continue
             # Count numbers of each higher-order bond type
-            if bond12.isSingle(wildcards=True):
+            if bond12.is_single(wildcards=True):
                 single += 1
-            if bond12.isDouble(wildcards=True):
-                if atom2.isOxygen():
+            if bond12.is_double(wildcards=True):
+                if atom2.is_oxygen():
                     o_double += 1
-                elif atom2.isSulfur():
+                elif atom2.is_sulfur():
                     s_double += 1
                 else:
                     # r_double is for double bonds NOT to oxygen or Sulfur
                     r_double += 1
-            if bond12.isTriple(wildcards=True): triple += 1
-            if bond12.isQuadruple(wildcards=True): quadruple += 1
-            if bond12.isBenzene(wildcards=True): benzene += 1
+            if bond12.is_triple(wildcards=True): triple += 1
+            if bond12.is_quadruple(wildcards=True): quadruple += 1
+            if bond12.is_benzene(wildcards=True): benzene += 1
 
         all_double = r_double + o_double + s_double
 
-        # Warning: some parts of code assume this matches precisely the list returned by getFeatures()
+        # Warning: some parts of code assume this matches precisely the list returned by get_features()
         return [single, all_double, r_double, o_double, s_double, triple, quadruple, benzene]
 
-    def makeSampleAtom(self):
+    def make_sample_atom(self):
         """
 
         Returns: a class :Atom: object analagous to the GroupAtom
 
         This makes a sample, so it takes the first element when there are multiple options inside of
-        self.atomtype, self.radicalElectrons, self.lonePairs, and self.charge
+        self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge
 
         """
 
         # Use the first atomtype to determine element, even if there is more than one atomtype
-        atomtype = self.atomType[0]
+        atomtype = self.atomtype[0]
         element = None
 
         default_lone_pairs = {'H': 0,
@@ -595,7 +595,7 @@ class GroupAtom(Vertex):
                               }
 
         for element_label in allElements:
-            if atomtype is atomTypes[element_label] or atomtype in atomTypes[element_label].specific:
+            if atomtype is ATOMTYPES[element_label] or atomtype in ATOMTYPES[element_label].specific:
                 element = element_label
                 break
         else:
@@ -608,7 +608,7 @@ class GroupAtom(Vertex):
         # dummy default_atom to get default values
         default_atom = mol.Atom()
 
-        # Three possible values for charge and lonePairs
+        # Three possible values for charge and lone_pairs
         if self.charge:
             new_charge = self.charge[0]
         elif atomtype.charge:
@@ -616,25 +616,25 @@ class GroupAtom(Vertex):
         else:
             new_charge = default_atom.charge
 
-        if self.lonePairs:
-            new_lone_pairs = self.lonePairs[0]
-        elif atomtype.lonePairs:
-            new_lone_pairs = atomtype.lonePairs[0]
+        if self.lone_pairs:
+            new_lone_pairs = self.lone_pairs[0]
+        elif atomtype.lone_pairs:
+            new_lone_pairs = atomtype.lone_pairs[0]
         else:
-            new_lone_pairs = default_atom.lonePairs
+            new_lone_pairs = default_atom.lone_pairs
 
         new_atom = mol.Atom(
             element=element,
-            radicalElectrons=self.radicalElectrons[0] if self.radicalElectrons else default_atom.radicalElectrons,
+            radical_electrons=self.radical_electrons[0] if self.radical_electrons else default_atom.radical_electrons,
             charge=new_charge,
-            lonePairs=new_lone_pairs,
+            lone_pairs=new_lone_pairs,
             label=self.label if self.label else default_atom.label
         )
 
         # For some reason the default when no lone pairs is set to -100,
         # Based on git history, it is probably because RDKit requires a number instead of None
-        if new_atom.lonePairs == -100:
-            new_atom.lonePairs = default_lone_pairs[new_atom.symbol]
+        if new_atom.lone_pairs == -100:
+            new_atom.lone_pairs = default_lone_pairs[new_atom.symbol]
 
         return new_atom
 
@@ -661,7 +661,7 @@ class GroupBond(Edge):
     def __init__(self, atom1, atom2, order=None):
         Edge.__init__(self, atom1, atom2)
         if order is not None and all([isinstance(oneOrder, str) for oneOrder in order]):
-            self.setOrderStr(order)
+            self.set_order_str(order)
         elif order is not None and any([isinstance(oneOrder, str) for oneOrder in order]):
             raise ActionError('order list given {} does not consist of only strings or only numbers'.format(order))
         else:
@@ -694,7 +694,7 @@ class GroupBond(Edge):
         """
         return GroupBond(self.vertex1, self.vertex2, self.order[:])
 
-    def getOrderStr(self):
+    def get_order_str(self):
         """
         returns a list of strings representing the bond order
         """
@@ -718,13 +718,13 @@ class GroupBond(Edge):
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
 
-    def setOrderStr(self, newOrder):
+    def set_order_str(self, new_order):
         """
         set the bond order using a valid bond-order character list
         """
 
         values = []
-        for value in newOrder:
+        for value in new_order:
             if value == 'S':
                 values.append(1)
             elif value == 'D':
@@ -747,19 +747,19 @@ class GroupBond(Edge):
                     raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
         self.order = values
 
-    def getOrderNum(self):
+    def get_order_num(self):
         """
         returns the bond order as a list of numbers
         """
         return self.order
 
-    def setOrderNum(self, newOrder):
+    def set_order_num(self, new_order):
         """
         change the bond order with a list of numbers
         """
-        self.order = newOrder
+        self.order = new_order
 
-    def isSingle(self, wildcards=False):
+    def is_single(self, wildcards=False):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -778,7 +778,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0] - 1) <= 1e-9 and len(self.order) == 1
 
-    def isDouble(self, wildcards=False):
+    def is_double(self, wildcards=False):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -794,7 +794,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0] - 2) <= 1e-9 and len(self.order) == 1
 
-    def isTriple(self, wildcards=False):
+    def is_triple(self, wildcards=False):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -810,7 +810,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0] - 3) <= 1e-9 and len(self.order) == 1
 
-    def isQuadruple(self, wildcards=False):
+    def is_quadruple(self, wildcards=False):
         """
         Return ``True`` if the bond represents a quadruple bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -826,7 +826,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0] - 4) <= 1e-9 and len(self.order) == 1
 
-    def isVanDerWaals(self, wildcards=False):
+    def is_van_der_waals(self, wildcards=False):
         """
         Return ``True`` if the bond represents a van der Waals bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -842,7 +842,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
 
-    def isBenzene(self, wildcards=False):
+    def is_benzene(self, wildcards=False):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -858,7 +858,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0] - 1.5) <= 1e-9 and len(self.order) == 1
 
-    def isHydrogenBond(self, wildcards=False):
+    def is_hydrogen_bond(self, wildcards=False):
         """
         Return ``True`` if the bond represents a hydrogen bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
@@ -874,7 +874,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
 
-    def __changeBond(self, order):
+    def _change_bond(self, order):
         """
         Update the bond group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
@@ -898,7 +898,7 @@ class GroupBond(Edge):
         # Set the new bond orders
         self.order = list(new_order)
 
-    def applyAction(self, action):
+    def apply_action(self, action):
         """
         Update the bond group as a result of applying `action`, a tuple
         containing the name of the reaction recipe action along with any
@@ -906,7 +906,7 @@ class GroupBond(Edge):
         :ref:`here <reaction-recipe-actions>`.
         """
         if action[0].upper() == 'CHANGE_BOND':
-            self.__changeBond(action[2])
+            self._change_bond(action[2])
         else:
             raise ActionError('Unable to update GroupBond: Invalid action {0}".'.format(action))
 
@@ -940,7 +940,7 @@ class GroupBond(Edge):
         # Otherwise the two bond groups are equivalent
         return True
 
-    def isSpecificCaseOf(self, other):
+    def is_specific_case_of(self, other):
         """
         Returns ``True`` if `other` is the same as `self` or is a more
         specific case of `self`. Returns ``False`` if some of `self` is not
@@ -948,10 +948,10 @@ class GroupBond(Edge):
         """
         cython.declare(gb=GroupBond)
         if not isinstance(other, GroupBond):
-            # Let the isSpecificCaseOf method of other handle it
+            # Let the is_specific_case_of method of other handle it
             # We expect self to be a Bond object, but can't test for it here
             # because that would create an import cycle
-            return other.isSpecificCaseOf(self)
+            return other.is_specific_case_of(self)
         gb = other
 
         cython.declare(order1=float, order2=float)
@@ -965,7 +965,7 @@ class GroupBond(Edge):
         # Otherwise self is in fact a specific case of other
         return True
 
-    def makeBond(self, molecule, atom1, atom2):
+    def make_bond(self, molecule, atom1, atom2):
         """
         Creates a :class: Bond between atom1 and atom2 analogous to self
 
@@ -976,7 +976,7 @@ class GroupBond(Edge):
 
         """
         new_bond = mol.Bond(atom1, atom2, order=self.order[0])
-        molecule.addBond(new_bond)
+        molecule.add_bond(new_bond)
 
 
 class Group(Graph):
@@ -1018,18 +1018,18 @@ class Group(Graph):
         """
         return self.draw('png')
 
-    def draw(self, format):
+    def draw(self, file_format):
         """
         Use pydot to draw a basic graph of the group.
 
-        Use format to specify the desired output format, eg. 'png', 'svg', 'ps', 'pdf', 'plain', etc.
+        Use format to specify the desired output file_format, eg. 'png', 'svg', 'ps', 'pdf', 'plain', etc.
         """
         import pydot
 
         graph = pydot.Dot(graph_type='graph', dpi="52")
         for index, atom in enumerate(self.atoms):
             atom_type = '{0!s} '.format(atom.label if atom.label != '' else '')
-            atom_type += ','.join([at.label for at in atom.atomType])
+            atom_type += ','.join([at.label for at in atom.atomtype])
             atom_type = '"' + atom_type + '"'
             graph.add_node(pydot.Node(name=str(index + 1), label=atom_type, fontname="Helvetica", fontsize="16"))
         for atom1 in self.atoms:
@@ -1037,12 +1037,12 @@ class Group(Graph):
                 index1 = self.atoms.index(atom1)
                 index2 = self.atoms.index(atom2)
                 if index1 < index2:
-                    bond_type = ','.join([order for order in bond.getOrderStr()])
+                    bond_type = ','.join([order for order in bond.get_order_str()])
                     bond_type = '"' + bond_type + '"'
                     graph.add_edge(pydot.Edge(src=str(index1 + 1), dst=str(index2 + 1),
                                               label=bond_type, fontname="Helvetica", fontsize="16"))
 
-        img = graph.create(prog='neato', format=format)
+        img = graph.create(prog='neato', format=file_format)
         return img
 
     @property
@@ -1058,115 +1058,115 @@ class Group(Graph):
     def atoms(self, atoms):
         self.vertices = atoms
 
-    def addAtom(self, atom):
+    def add_atom(self, atom):
         """
         Add an `atom` to the graph. The atom is initialized with no bonds.
         """
-        return self.addVertex(atom)
+        return self.add_vertex(atom)
 
-    def addBond(self, bond):
+    def add_bond(self, bond):
         """
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
-        return self.addEdge(bond)
+        return self.add_edge(bond)
 
-    def getBonds(self, atom):
+    def get_bonds(self, atom):
         """
         Return a list of the bonds involving the specified `atom`.
         """
-        return self.getEdges(atom)
+        return self.get_edges(atom)
 
-    def getBond(self, atom1, atom2):
+    def get_bond(self, atom1, atom2):
         """
         Returns the bond connecting atoms `atom1` and `atom2`.
         """
-        return self.getEdge(atom1, atom2)
+        return self.get_edge(atom1, atom2)
 
-    def hasAtom(self, atom):
+    def has_atom(self, atom):
         """
         Returns ``True`` if `atom` is an atom in the graph, or ``False`` if
         not.
         """
-        return self.hasVertex(atom)
+        return self.has_vertex(atom)
 
-    def hasBond(self, atom1, atom2):
+    def has_bond(self, atom1, atom2):
         """
         Returns ``True`` if atoms `atom1` and `atom2` are connected
         by an bond, or ``False`` if not.
         """
-        return self.hasEdge(atom1, atom2)
+        return self.has_edge(atom1, atom2)
 
-    def containsSurfaceSite(self):
+    def contains_surface_site(self):
         """
         Returns ``True`` iff the group contains an 'X' surface site.
         """
         cython.declare(atom=GroupAtom)
         for atom in self.atoms:
-            if atom.isSurfaceSite():
+            if atom.is_surface_site():
                 return True
         return False
 
-    def isSurfaceSite(self):
-        "Returns ``True`` iff the group is nothing but a surface site 'X'."
-        return len(self.atoms) == 1 and self.atoms[0].isSurfaceSite()
+    def is_surface_site(self):
+        """Returns ``True`` iff the group is nothing but a surface site 'X'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
 
-    def removeAtom(self, atom):
+    def remove_atom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does
         not remove atoms that no longer have any bonds as a result of this
         removal.
         """
-        return self.removeVertex(atom)
+        return self.remove_vertex(atom)
 
-    def removeBond(self, bond):
+    def remove_bond(self, bond):
         """
         Remove the bond between atoms `atom1` and `atom2` from the graph.
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
-        return self.removeEdge(bond)
+        return self.remove_edge(bond)
 
-    def removeVanDerWaalsBonds(self):
+    def remove_van_der_waals_bonds(self):
         """
         Remove all bonds that are definitely only van der Waals bonds.
         """
         cython.declare(atom=GroupAtom, bond=GroupBond)
-        for bond in self.getAllEdges():
-            if bond.isVanDerWaals(wildcards=False):
-                self.removeBond(bond)
+        for bond in self.get_all_edges():
+            if bond.is_van_der_waals(wildcards=False):
+                self.remove_bond(bond)
 
-    def sortAtoms(self):
+    def sort_atoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
-        return self.sortVertices()
+        return self.sort_vertices()
 
-    def sortByConnectivity(self, atomList):
+    def sort_by_connectivity(self, atom_list):
         """
         Args:
-            atomList: input list of atoms
+            atom_list: input list of atoms
 
         Returns: a sorted list of atoms where each atom is connected to a previous
         atom in the list if possible
         """
         # if no input given just return
-        if not atomList: return atomList
+        if not atom_list: return atom_list
 
         sorted_atom_list = []
-        sorted_atom_list.append(atomList.pop(0))
-        while atomList:
+        sorted_atom_list.append(atom_list.pop(0))
+        while atom_list:
             for atom1 in sorted_atom_list:
                 added = False
                 for atom2, bond12 in atom1.bonds.items():
-                    if bond12.isBenzene() and atom2 in atomList:
+                    if bond12.is_benzene() and atom2 in atom_list:
                         sorted_atom_list.append(atom2)
-                        atomList.remove(atom2)
+                        atom_list.remove(atom2)
                         added = True
                 if added: break
             else:
-                sorted_atom_list.append(atomList.pop(0))
+                sorted_atom_list.append(atom_list.pop(0))
 
         return sorted_atom_list
 
@@ -1184,8 +1184,8 @@ class Group(Graph):
 
     def update(self):
 
-        self.updateConnectivityValues()
-        self.updateFingerprint()
+        self.update_connectivity_values()
+        self.update_fingerprint()
 
     def update_charge(self):
         """
@@ -1193,25 +1193,25 @@ class Group(Graph):
         and radical electrons. This method is used for products of specific families with recipes that modify charges.
         """
         for atom in self.atoms:
-            if (len(atom.charge) == 1) and (len(atom.lonePairs) == 1) and (len(atom.radicalElectrons) == 1):
+            if (len(atom.charge) == 1) and (len(atom.lone_pairs) == 1) and (len(atom.radical_electrons) == 1):
                 # if the charge of the group is not labeled, then no charge update will be
                 # performed. If there multiple charges are assigned, no update either.
                 # Besides, this groupatom should have enough information to be updated
-                atom_type = atom.atomType[0]
+                atom_type = atom.atomtype[0]
                 for element in allElements:
-                    if atom_type is atomTypes[element] or atom_type in atomTypes[element].specific:
+                    if atom_type is ATOMTYPES[element] or atom_type in ATOMTYPES[element].specific:
                         bond_order = 0
                         valence_electron = elements.PeriodicSystem.valence_electrons[element]
                         for _, bond in atom.bonds.items():
                             bond_order += bond.order[0]
-                        lone_pairs = atom.lonePairs[0]
-                        radical_electrons = atom.radicalElectrons[0]
+                        lone_pairs = atom.lone_pairs[0]
+                        radical_electrons = atom.radical_electrons[0]
                         atom.charge[0] = valence_electron - bond_order - 2 * lone_pairs - radical_electrons
                     else:
                         # if the group is not specified to specific element, charge will not be updated
                         pass
 
-    def getNetCharge(self):
+    def get_net_charge(self):
         """
         Iterate through the atoms in the group and calculate the net charge
         """
@@ -1239,7 +1239,7 @@ class Group(Graph):
             molecules.append(molecule)
         return molecules
 
-    def clearRegDims(self):
+    def clear_reg_dims(self):
         """
         clear regularization dimensions
         """
@@ -1248,151 +1248,151 @@ class Group(Graph):
             atm.reg_dim_atm = [[], []]
             atm.reg_dim_u = [[], []]
             atm.reg_dim_r = [[], []]
-        for bd in self.getAllEdges():
+        for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 
-    def getExtensions(self, R=None, basename='', atmInd=None, atmInd2=None, Nsplits=None):
+    def get_extensions(self, r=None, basename='', atm_ind=None, atm_ind2=None, n_splits=None):
         """
         generate all allowed group extensions and their complements
-        note all atomtypes except for elements and R/R!H's must be removed
+        note all atomtypes except for elements and r/r!H's must be removed
         """
         cython.declare(atoms=list, atm=GroupAtom, atm2=GroupAtom, bd=GroupBond, i=int, j=int,
                        extents=list, RnH=list, typ=list)
 
         extents = []
 
-        if Nsplits is None:
-            Nsplits = len(self.split())
+        if n_splits is None:
+            n_splits = len(self.split())
 
-        # generate appropriate R and R!H
-        if R is None:
-            R = elements.BDE_elements  # set of possible R elements/atoms
-            R = [atomTypes[x] for x in R]
+        # generate appropriate r and r!H
+        if r is None:
+            r = elements.bde_elements  # set of possible r elements/atoms
+            r = [ATOMTYPES[x] for x in r]
 
-        Rbonds = [1, 2, 3, 1.5]
-        Run = [0, 1, 2, 3]
+        r_bonds = [1, 2, 3, 1.5]
+        r_un = [0, 1, 2, 3]
 
-        RnH = R[:]
-        RnH.remove(atomTypes['H'])
+        RnH = r[:]
+        RnH.remove(ATOMTYPES['H'])
 
         atoms = self.atoms
-        if atmInd is None:
+        if atm_ind is None:
             for i, atm in enumerate(atoms):
-                typ = atm.atomType
+                typ = atm.atomtype
                 if atm.reg_dim_atm[0] == []:
                     if len(typ) == 1:
                         if typ[0].label == 'R':
-                            extents.extend(self.specifyAtomExtensions(i, basename, R))  # specify types of atoms
+                            extents.extend(self.specify_atom_extensions(i, basename, r))  # specify types of atoms
                         elif typ[0].label == 'R!H':
-                            extents.extend(self.specifyAtomExtensions(i, basename, RnH))
+                            extents.extend(self.specify_atom_extensions(i, basename, RnH))
                     else:
-                        extents.extend(self.specifyAtomExtensions(i, basename, typ))
+                        extents.extend(self.specify_atom_extensions(i, basename, typ))
                 else:
                     if len(typ) == 1:
                         if typ[0].label == 'R':
                             extents.extend(
-                                self.specifyAtomExtensions(i, basename, atm.reg_dim_atm[0]))  # specify types of atoms
+                                self.specify_atom_extensions(i, basename, atm.reg_dim_atm[0]))  # specify types of atoms
                         elif typ[0].label == 'R!H':
                             extents.extend(
-                                self.specifyAtomExtensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(R))))
+                                self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(r))))
                     else:
                         extents.extend(
-                            self.specifyAtomExtensions(i, basename, list(set(typ) & set(atm.reg_dim_atm[0]))))
+                            self.specify_atom_extensions(i, basename, list(set(typ) & set(atm.reg_dim_atm[0]))))
                 if atm.reg_dim_u[0] == []:
-                    if len(atm.radicalElectrons) != 1:
-                        if len(atm.radicalElectrons) == 0:
-                            extents.extend(self.specifyUnpairedExtensions(i, basename, Run))
+                    if len(atm.radical_electrons) != 1:
+                        if len(atm.radical_electrons) == 0:
+                            extents.extend(self.specify_unpaired_extensions(i, basename, r_un))
                         else:
-                            extents.extend(self.specifyUnpairedExtensions(i, basename, atm.radicalElectrons))
+                            extents.extend(self.specify_unpaired_extensions(i, basename, atm.radical_electrons))
                 else:
-                    if len(atm.radicalElectrons) != 1 and len(atm.reg_dim_u[0]) != 1:
-                        if len(atm.radicalElectrons) == 0:
-                            extents.extend(self.specifyUnpairedExtensions(i, basename, atm.reg_dim_u[0]))
+                    if len(atm.radical_electrons) != 1 and len(atm.reg_dim_u[0]) != 1:
+                        if len(atm.radical_electrons) == 0:
+                            extents.extend(self.specify_unpaired_extensions(i, basename, atm.reg_dim_u[0]))
                         else:
-                            extents.extend(self.specifyUnpairedExtensions(i, basename, list(
-                                set(atm.radicalElectrons) & set(atm.reg_dim_u[0]))))
+                            extents.extend(self.specify_unpaired_extensions(i, basename, list(
+                                set(atm.radical_electrons) & set(atm.reg_dim_u[0]))))
                 if atm.reg_dim_r[0] == [] and 'inRing' not in atm.props:
-                    extents.extend(self.specifyRingExtensions(i, basename))
+                    extents.extend(self.specify_ring_extensions(i, basename))
 
-                extents.extend(self.specifyExternalNewBondExtensions(i, basename, Rbonds))
+                extents.extend(self.specify_external_new_bond_extensions(i, basename, r_bonds))
                 for j, atm2 in enumerate(atoms):
-                    if j < i and not self.hasBond(atm, atm2):
-                        extents.extend(self.specifyInternalNewBondExtensions(i, j, Nsplits, basename, Rbonds))
+                    if j < i and not self.has_bond(atm, atm2):
+                        extents.extend(self.specify_internal_new_bond_extensions(i, j, n_splits, basename, r_bonds))
                     elif j < i:
-                        bd = self.getBond(atm, atm2)
+                        bd = self.get_bond(atm, atm2)
                         if len(bd.order) > 1 and bd.reg_dim[0] == []:
-                            extents.extend(self.specifyBondExtensions(i, j, basename, bd.order))
+                            extents.extend(self.specify_bond_extensions(i, j, basename, bd.order))
                         elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
-                            extents.extend(self.specifyBondExtensions(i, j, basename, bd.reg_dim[0]))
+                            extents.extend(self.specify_bond_extensions(i, j, basename, bd.reg_dim[0]))
 
-        elif atmInd is not None and atmInd2 is not None:  # if both atmInd and atmInd2 are defined only look at the bonds between them
-            i = atmInd
-            j = atmInd2
+        elif atm_ind is not None and atm_ind2 is not None:  # if both atm_ind and atm_ind2 are defined only look at the bonds between them
+            i = atm_ind
+            j = atm_ind2
             atm = atoms[i]
             atm2 = atoms[j]
-            if j < i and not self.hasBond(atm, atm2):
-                extents.extend(self.specifyInternalNewBondExtensions(i, j, Nsplits, basename, Rbonds))
-            if self.hasBond(atm, atm2):
-                bd = self.getBond(atm, atm2)
+            if j < i and not self.has_bond(atm, atm2):
+                extents.extend(self.specify_internal_new_bond_extensions(i, j, n_splits, basename, r_bonds))
+            if self.has_bond(atm, atm2):
+                bd = self.get_bond(atm, atm2)
                 if len(bd.order) > 1 and bd.reg_dim[0] == []:
-                    extents.extend(self.specifyBondExtensions(i, j, basename, bd.order))
+                    extents.extend(self.specify_bond_extensions(i, j, basename, bd.order))
                 elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
-                    extents.extend(self.specifyBondExtensions(i, j, basename, bd.reg_dim[0]))
+                    extents.extend(self.specify_bond_extensions(i, j, basename, bd.reg_dim[0]))
 
-        elif atmInd is not None:  # look at the atom at atmInd
-            i = atmInd
+        elif atm_ind is not None:  # look at the atom at atm_ind
+            i = atm_ind
             atm = atoms[i]
-            typ = atm.atomType
+            typ = atm.atomtype
             if atm.reg_dim_atm[0] == []:
                 if len(typ) == 1:
                     if typ[0].label == 'R':
-                        extents.extend(self.specifyAtomExtensions(i, basename, R))  # specify types of atoms
+                        extents.extend(self.specify_atom_extensions(i, basename, r))  # specify types of atoms
                     elif typ[0].label == 'R!H':
-                        extents.extend(self.specifyAtomExtensions(i, basename, RnH))
+                        extents.extend(self.specify_atom_extensions(i, basename, RnH))
                 else:
-                    extents.extend(self.specifyAtomExtensions(i, basename, typ))
+                    extents.extend(self.specify_atom_extensions(i, basename, typ))
             else:
                 if len(typ) == 1:
                     if typ[0].label == 'R':
                         extents.extend(
-                            self.specifyAtomExtensions(i, basename, atm.reg_dim_atm[0]))  # specify types of atoms
+                            self.specify_atom_extensions(i, basename, atm.reg_dim_atm[0]))  # specify types of atoms
                     elif typ[0].label == 'R!H':
-                        extents.extend(self.specifyAtomExtensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(R))))
+                        extents.extend(self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(r))))
                 else:
-                    extents.extend(self.specifyAtomExtensions(i, basename, list(set(typ) & set(atm.reg_dim_atm[0]))))
+                    extents.extend(self.specify_atom_extensions(i, basename, list(set(typ) & set(atm.reg_dim_atm[0]))))
             if atm.reg_dim_u == []:
-                if len(atm.radicalElectrons) != 1:
-                    if len(atm.radicalElectrons) == 0:
-                        extents.extend(self.specifyUnpairedExtensions(i, basename, Run))
+                if len(atm.radical_electrons) != 1:
+                    if len(atm.radical_electrons) == 0:
+                        extents.extend(self.specify_unpaired_extensions(i, basename, r_un))
                     else:
-                        extents.extend(self.specifyUnpairedExtensions(i, basename, atm.radicalElectrons))
+                        extents.extend(self.specify_unpaired_extensions(i, basename, atm.radical_electrons))
             else:
-                if len(atm.radicalElectrons) != 1 and len(atm.reg_dim_u[0]) != 1:
-                    if len(atm.radicalElectrons) == 0:
-                        extents.extend(self.specifyUnpairedExtensions(i, basename, atm.reg_dim_u[0]))
+                if len(atm.radical_electrons) != 1 and len(atm.reg_dim_u[0]) != 1:
+                    if len(atm.radical_electrons) == 0:
+                        extents.extend(self.specify_unpaired_extensions(i, basename, atm.reg_dim_u[0]))
                     else:
-                        extents.extend(self.specifyUnpairedExtensions(i, basename, list(
-                            set(atm.radicalElectrons) & set(atm.reg_dim_u[0]))))
+                        extents.extend(self.specify_unpaired_extensions(i, basename, list(
+                            set(atm.radical_electrons) & set(atm.reg_dim_u[0]))))
             if atm.reg_dim_r[0] == [] and 'inRing' not in atm.props:
-                extents.extend(self.specifyRingExtensions(i, basename))
+                extents.extend(self.specify_ring_extensions(i, basename))
 
-            extents.extend(self.specifyExternalNewBondExtensions(i, basename, Rbonds))
+            extents.extend(self.specify_external_new_bond_extensions(i, basename, r_bonds))
             for j, atm2 in enumerate(atoms):
-                if j < i and not self.hasBond(atm, atm2):
-                    extents.extend(self.specifyInternalNewBondExtensions(i, j, Nsplits, basename, Rbonds))
+                if j < i and not self.has_bond(atm, atm2):
+                    extents.extend(self.specify_internal_new_bond_extensions(i, j, n_splits, basename, r_bonds))
                 elif j < i:
-                    bd = self.getBond(atm, atm2)
+                    bd = self.get_bond(atm, atm2)
                     if len(bd.order) > 1 and bd.reg_dim == []:
-                        extents.extend(self.specifyBondExtensions(i, j, basename, bd.order))
+                        extents.extend(self.specify_bond_extensions(i, j, basename, bd.order))
                     elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
-                        extents.extend(self.specifyBondExtensions(i, j, basename, bd.reg_dim[0]))
+                        extents.extend(self.specify_bond_extensions(i, j, basename, bd.reg_dim[0]))
 
         else:
-            raise ValueError('atmInd must be defined if atmInd2 is defined')
+            raise ValueError('atm_ind must be defined if atm_ind2 is defined')
 
         return extents
 
-    def specifyAtomExtensions(self, i, basename, R):
+    def specify_atom_extensions(self, i, basename, r):
         """
         generates extensions for specification of the type of atom defined by a given atomtype
         or set of atomtypes
@@ -1400,13 +1400,13 @@ class Group(Graph):
         cython.declare(grps=list, labelList=list, Rset=set, item=AtomType, grp=Group, grpc=Group, k=AtomType, p=str)
 
         grps = []
-        Rset = set(R)
-        for item in R:
+        Rset = set(r)
+        for item in r:
             grp = deepcopy(self)
             grpc = deepcopy(self)
-            old_atom_type = grp.atoms[i].atomType
-            grp.atoms[i].atomType = [item]
-            grpc.atoms[i].atomType = list(Rset - {item})
+            old_atom_type = grp.atoms[i].atomtype
+            grp.atoms[i].atomtype = [item]
+            grpc.atoms[i].atomtype = list(Rset - {item})
 
             if len(old_atom_type) > 1:
                 labelList = []
@@ -1423,7 +1423,7 @@ class Group(Graph):
 
         return grps
 
-    def specifyRingExtensions(self, i, basename):
+    def specify_ring_extensions(self, i, basename):
         """
         generates extensions for specifying if an atom is in a ring
         """
@@ -1438,7 +1438,7 @@ class Group(Graph):
         grp.atoms[i].props['inRing'] = True
         grpc.atoms[i].props['inRing'] = False
 
-        atom_type = grp.atoms[i].atomType
+        atom_type = grp.atoms[i].atomtype
 
         if len(atom_type) > 1:
             atom_type_str = ''
@@ -1453,7 +1453,7 @@ class Group(Graph):
 
         return grps
 
-    def specifyUnpairedExtensions(self, i, basename, Run):
+    def specify_unpaired_extensions(self, i, basename, r_un):
         """
         generates extensions for specification of the number of electrons on a given atom
         """
@@ -1461,14 +1461,14 @@ class Group(Graph):
         grps = []
         label_list = []
 
-        Rset = set(Run)
-        for item in Run:
+        Rset = set(r_un)
+        for item in r_un:
             grp = deepcopy(self)
             grpc = deepcopy(self)
-            grp.atoms[i].radicalElectrons = [item]
-            grpc.atoms[i].radicalElectrons = list(Rset - {item})
+            grp.atoms[i].radical_electrons = [item]
+            grpc.atoms[i].radical_electrons = list(Rset - {item})
 
-            atom_type = grp.atoms[i].atomType
+            atom_type = grp.atoms[i].atomtype
 
             if len(atom_type) > 1:
                 atom_type_str = ''
@@ -1483,7 +1483,7 @@ class Group(Graph):
 
         return grps
 
-    def specifyInternalNewBondExtensions(self, i, j, Nsplits, basename, Rbonds):
+    def specify_internal_new_bond_extensions(self, i, j, n_splits, basename, r_bonds):
         """
         generates extensions for creation of a bond (of undefined order)
         between two atoms indexed i,j that already exist in the group and are unbonded
@@ -1493,10 +1493,10 @@ class Group(Graph):
         label_list = []
 
         newgrp = deepcopy(self)
-        newgrp.addBond(GroupBond(newgrp.atoms[i], newgrp.atoms[j], Rbonds))
+        newgrp.add_bond(GroupBond(newgrp.atoms[i], newgrp.atoms[j], r_bonds))
 
-        atom_type_i = newgrp.atoms[i].atomType
-        atom_type_j = newgrp.atoms[j].atomType
+        atom_type_i = newgrp.atoms[i].atomtype
+        atom_type_j = newgrp.atoms[j].atomtype
 
         if len(atom_type_i) > 1:
             atom_type_i_str = ''
@@ -1515,14 +1515,14 @@ class Group(Graph):
         else:
             atom_type_j_str = atom_type_j[0].label
 
-        if len(newgrp.split()) < Nsplits:  # if this formed a bond between two seperate groups in the
+        if len(newgrp.split()) < n_splits:  # if this formed a bond between two seperate groups in the
             return []
         else:
             return [(newgrp, None,
                      basename + '_Int-' + str(i + 1) + atom_type_i_str + '-' + str(j + 1) + atom_type_j_str,
                      'intNewBondExt', (i, j))]
 
-    def specifyExternalNewBondExtensions(self, i, basename, Rbonds):
+    def specify_external_new_bond_extensions(self, i, basename, r_bonds):
         """
         generates extensions for the creation of a bond (of undefined order) between
         an atom and a new atom that is not H
@@ -1531,12 +1531,12 @@ class Group(Graph):
 
         label_list = []
 
-        ga = GroupAtom([atomTypes['R!H']])
+        ga = GroupAtom([ATOMTYPES['R!H']])
         newgrp = deepcopy(self)
-        newgrp.addAtom(ga)
+        newgrp.add_atom(ga)
         j = newgrp.atoms.index(ga)
-        newgrp.addBond(GroupBond(newgrp.atoms[i], newgrp.atoms[j], Rbonds))
-        atom_type = newgrp.atoms[i].atomType
+        newgrp.add_bond(GroupBond(newgrp.atoms[i], newgrp.atoms[j], r_bonds))
+        atom_type = newgrp.atoms[i].atomtype
         if len(atom_type) > 1:
             atom_type_str = ''
             for k in atom_type:
@@ -1549,16 +1549,16 @@ class Group(Graph):
         return [(newgrp, None, basename + '_Ext-' + str(i + 1) + atom_type_str + '-R', 'extNewBondExt',
                  (len(newgrp.atoms) - 1,))]
 
-    def specifyBondExtensions(self, i, j, basename, Rbonds):
+    def specify_bond_extensions(self, i, j, basename, r_bonds):
         """
         generates extensions for the specification of bond order for a given bond
         """
         cython.declare(grps=list, label_list=list, Rbset=set, bd=float, grp=Group, grpc=Group)
         grps = []
         label_list = []
-        Rbset = set(Rbonds)
+        Rbset = set(r_bonds)
         bdict = {1: '-', 2: '=', 3: '#', 1.5: '-='}
-        for bd in Rbonds:
+        for bd in r_bonds:
             grp = deepcopy(self)
             grpc = deepcopy(self)
             grp.atoms[i].bonds[grp.atoms[j]].order = [bd]
@@ -1566,8 +1566,8 @@ class Group(Graph):
             grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset - {bd})
             grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset - {bd})
 
-            atom_type_i = grp.atoms[i].atomType
-            atom_type_j = grp.atoms[j].atomType
+            atom_type_i = grp.atoms[i].atomtype
+            atom_type_j = grp.atoms[j].atomtype
 
             if len(atom_type_i) > 1:
                 atom_type_i_str = ''
@@ -1592,7 +1592,7 @@ class Group(Graph):
 
         return grps
 
-    def clearLabeledAtoms(self):
+    def clear_labeled_atoms(self):
         """
         Remove the labels from all atoms in the molecular group.
         """
@@ -1600,7 +1600,7 @@ class Group(Graph):
         for atom in self.vertices:
             atom.label = ''
 
-    def containsLabeledAtom(self, label):
+    def contains_labeled_atom(self, label):
         """
         Return ``True`` if the group contains an atom with the label
         `label` and ``False`` otherwise.
@@ -1610,7 +1610,7 @@ class Group(Graph):
             if atom.label == label: return True
         return False
 
-    def getLabeledAtom(self, label):
+    def get_labeled_atoms(self, label):
         """
         Return the atom in the group that is labeled with the given `label`.
         Raises :class:`ValueError` if no atom in the group has that label.
@@ -1619,10 +1619,10 @@ class Group(Graph):
         alist = [atom for atom in self.vertices if atom.label == label]
         if alist == []:
             raise ValueError('No atom in the functional group \n{1}\n has the label '
-                             '"{0}".'.format(label,self.toAdjacencyList()))
+                             '"{0}".'.format(label, self.to_adjacency_list()))
         return alist
 
-    def getLabeledAtoms(self):
+    def get_all_labeled_atoms(self):
         """
         Return the labeled atoms as a ``dict`` with the keys being the labels
         and the values the atoms themselves. If two or more atoms have the
@@ -1653,16 +1653,16 @@ class Group(Graph):
         for atom in self.atoms:
             same = True
             match = None
-            for atomtype in atom.atomType:
+            for atomtype in atom.atomtype:
                 if match is None:
                     # This is the first type in the list, so check all elements
                     for element in allElements:
-                        if atomtype.isSpecificCaseOf(atomTypes[element]):
+                        if atomtype.is_specific_case_of(ATOMTYPES[element]):
                             match = element
                             break
                 else:
                     # We've already matched one atomtype, now confirm that the rest are the same
-                    if not atomtype.isSpecificCaseOf(atomTypes[match]):
+                    if not atomtype.is_specific_case_of(ATOMTYPES[match]):
                         same = False
                         break
             # If match is None, then the group is not a specific case of any element
@@ -1674,27 +1674,27 @@ class Group(Graph):
 
         return element_count
 
-    def fromAdjacencyList(self, adjlist):
+    def from_adjacency_list(self, adjlist):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        from .adjlist import fromAdjacencyList
-        self.vertices, multiplicity = fromAdjacencyList(adjlist, group=True)
+        from rmgpy.molecule.adjlist import from_adjacency_list
+        self.vertices, multiplicity = from_adjacency_list(adjlist, group=True)
         if multiplicity is not None:
             self.multiplicity = multiplicity
         self.update()
         return self
 
-    def toAdjacencyList(self, label=''):
+    def to_adjacency_list(self, label=''):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        from .adjlist import toAdjacencyList
-        return toAdjacencyList(self.vertices, multiplicity=self.multiplicity, label='', group=True)
+        from rmgpy.molecule.adjlist import to_adjacency_list
+        return to_adjacency_list(self.vertices, multiplicity=self.multiplicity, label=label, group=True)
 
-    def updateFingerprint(self):
+    def update_fingerprint(self):
         """
         Update the molecular fingerprint used to accelerate the subgraph
         isomorphism checks.
@@ -1704,13 +1704,13 @@ class Group(Graph):
         self.elementCount = self.get_element_count()
         self.radicalCount = 0
         for atom in self.vertices:
-            if len(atom.radicalElectrons) >= 1:
-                self.radicalCount += atom.radicalElectrons[0]
+            if len(atom.radical_electrons) >= 1:
+                self.radicalCount += atom.radical_electrons[0]
 
-    def isIsomorphic(self, other, initialMap=None, saveOrder=False, strict=True):
+    def is_isomorphic(self, other, initial_map=None, save_order=False, strict=True):
         """
         Returns ``True`` if two graphs are isomorphic and ``False``
-        otherwise. The `initialMap` attribute can be used to specify a required
+        otherwise. The `initial_map` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
@@ -1723,12 +1723,12 @@ class Group(Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
+        return Graph.is_isomorphic(self, other, initial_map, save_order=save_order)
 
-    def findIsomorphism(self, other, initialMap=None, saveOrder=False, strict=True):
+    def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True):
         """
         Returns ``True`` if `other` is isomorphic and ``False``
-        otherwise, and the matching mapping. The `initialMap` attribute can be
+        otherwise, and the matching mapping. The `initial_map` attribute can be
         used to specify a required mapping from `self` to `other` (i.e. the
         atoms of `self` are the keys, while the atoms of `other` are the
         values). The returned mapping also uses the atoms of `self` for the keys
@@ -1743,13 +1743,13 @@ class Group(Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
+        return Graph.find_isomorphism(self, other, initial_map, save_order=save_order)
 
-    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False, saveOrder=False):
+    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` if self is more specific than other.
-        The `initialMap` attribute can be used to specify a required
+        The `initial_map` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
@@ -1765,17 +1765,17 @@ class Group(Graph):
 
         group = other
 
-        if generateInitialMap:
+        if generate_initial_map:
             keys = []
             atms = []
-            initialMap = dict()
+            initial_map = dict()
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
                     if L == []:
                         return False
                     elif len(L) == 1:
-                        initialMap[atom] = L[0]
+                        initial_map[atom] = L[0]
                     else:
                         keys.append(atom)
                         atms.append(L)
@@ -1785,14 +1785,14 @@ class Group(Graph):
                         # skip entries that map multiple graph atoms to the same subgraph atom
                         continue
                     for i, key in enumerate(keys):
-                        initialMap[key] = atmlist[i]
-                    if (self.isMappingValid(other, initialMap, equivalent=False) and
-                            Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)):
+                        initial_map[key] = atmlist[i]
+                    if (self.is_mapping_valid(other, initial_map, equivalent=False) and
+                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)):
                         return True
                 else:
                     return False
             else:
-                if not self.isMappingValid(other, initialMap, equivalent=False):
+                if not self.is_mapping_valid(other, initial_map, equivalent=False):
                     return False
 
         if self.multiplicity:
@@ -1805,14 +1805,14 @@ class Group(Graph):
         else:
             if group.multiplicity: return False
         # Do the isomorphism comparison
-        return Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
+        return Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)
 
-    def findSubgraphIsomorphisms(self, other, initialMap=None, saveOrder=False):
+    def find_subgraph_isomorphisms(self, other, initial_map=None, save_order=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` is self is more specific than other.
         Also returns the lists all of valid mappings. The
-        `initialMap` attribute can be used to specify a required mapping from
+        `initial_map` attribute can be used to specify a required mapping from
         `self` to `other` (i.e. the atoms of `self` are the keys, while the
         atoms of `other` are the values). The returned mappings also use the
         atoms of `self` for the keys and the atoms of `other` for the values.
@@ -1841,12 +1841,12 @@ class Group(Graph):
                 return []
 
         # Do the isomorphism comparison
-        return Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
+        return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
 
-    def isIdentical(self, other, saveOrder=False):
+    def is_identical(self, other, save_order=False):
         """
         Returns ``True`` if `other` is identical and ``False`` otherwise.
-        The function `isIsomorphic` respects wildcards, while this function
+        The function `is_isomorphic` respects wildcards, while this function
         does not, make it more useful for checking groups to groups (as
         opposed to molecules to groups)
         """
@@ -1859,14 +1859,14 @@ class Group(Graph):
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
-        if not self.isSubgraphIsomorphic(other, None, saveOrder=saveOrder):
+        if not self.is_subgraph_isomorphic(other, None, save_order=save_order):
             return False
-        elif not other.isSubgraphIsomorphic(self, None, saveOrder=saveOrder):
+        elif not other.is_subgraph_isomorphic(self, None, save_order=save_order):
             return False
         else:
             return True
 
-    def isAromaticRing(self):
+    def is_aromatic_ring(self):
         """
         This method returns a boolean telling if the group has a 5 or 6 cyclic with
         benzene bonds exclusively
@@ -1875,26 +1875,26 @@ class Group(Graph):
         ring_size = len(self.atoms)
         if ring_size not in [5, 6]:
             return False
-        for ringAtom in self.atoms:
-            for bondedAtom, bond in ringAtom.edges.items():
-                if bondedAtom in self.atoms:
-                    if not bond.isBenzene():
+        for ring_atom in self.atoms:
+            for bonded_atom, bond in ring_atom.edges.items():
+                if bonded_atom in self.atoms:
+                    if not bond.is_benzene():
                         return False
         return True
 
-    def standardizeAtomType(self):
+    def standardize_atomtype(self):
         """
-        This function changes the atomTypes in a group if the atom must
-        be a specific atomType based on its bonds and valency.
+        This function changes the atomtypes in a group if the atom must
+        be a specific atomtype based on its bonds and valency.
 
-        Currently only standardizes oxygen, carbon and sulfur atomTypes
+        Currently only standardizes oxygen, carbon and sulfur ATOMTYPES
 
-        We also only check when there is exactly one atomType,
+        We also only check when there is exactly one atomtype,
         one bondType, one radical setting.
         For any group where there are wildcards or multiple attributes,
         we cannot apply this check.
 
-        In the case where the atomType is ambigious based on bonds
+        In the case where the atomtype is ambiguous based on bonds
         and valency, this function will not change the type.
 
         Returns a 'True' if the group was modified otherwise returns 'False'
@@ -1909,15 +1909,15 @@ class Group(Graph):
         # list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
         specifics = [elementLabel for elementLabel in allElements if elementLabel not in nonSpecifics]
         for atom in self.atoms:
-            claimed_atom_type = atom.atomType[0]
+            claimed_atom_type = atom.atomtype[0]
             new_atom_type = None
             element = None
             # Ignore elements that do not have more than one atomtype
             if claimed_atom_type.label in nonSpecifics: continue
             for elementLabel in specifics:
                 if (claimed_atom_type.label == elementLabel or
-                        atomTypes[claimed_atom_type.label] in atomTypes[elementLabel].specific):
-                    element = atomTypes[elementLabel]
+                        ATOMTYPES[claimed_atom_type.label] in ATOMTYPES[elementLabel].specific):
+                    element = ATOMTYPES[elementLabel]
                     break
 
             # claimed_atom_type is not in one of the specified elements
@@ -1925,27 +1925,27 @@ class Group(Graph):
                 continue
             # Don't standardize atomtypes for nitrogen for now
             # The work on the nitrogen atomtypes is still incomplete
-            elif element is atomTypes['N']:
+            elif element is ATOMTYPES['N']:
                 continue
 
-            group_features = getFeatures(atom, atom.bonds)
+            group_features = get_features(atom, atom.bonds)
 
-            bond_order = atom.getBondOrdersForAtom()
-            filled_valency = atom.radicalElectrons[0] + bond_order
+            bond_order = atom.get_total_bond_order()
+            filled_valency = atom.radical_electrons[0] + bond_order
 
             # For an atomtype to be known for certain, the valency must be filled
             # within 1 of the total valency available
             if filled_valency >= PeriodicSystem.valence_electrons[self.symbol][element] - 1:
                 for specific_atom_type in element.specific:
-                    atomtype_feature_list = specific_atom_type.getFeatures()
+                    atomtype_feature_list = specific_atom_type.get_features()
                     for mol_feature, atomtype_feature in zip(group_features, atomtype_feature_list):
                         if atomtype_feature == []:
                             continue
                         elif mol_feature not in atomtype_feature:
                             break
                     else:
-                        if specific_atom_type is atomTypes['Oa'] or specific_atom_type is atomTypes['Sa']:
-                            if atom.lonePairs == 3 or atom.radicalElectrons == 2:
+                        if specific_atom_type is ATOMTYPES['Oa'] or specific_atom_type is ATOMTYPES['Sa']:
+                            if atom.lone_pairs == 3 or atom.radical_electrons == 2:
                                 new_atom_type = specific_atom_type
                                 break
                         else:
@@ -1954,32 +1954,32 @@ class Group(Graph):
 
             # set the new atom type if the algorithm found one
             if new_atom_type and new_atom_type is not claimed_atom_type:
-                atom.atomType[0] = new_atom_type
+                atom.atomtype[0] = new_atom_type
                 modified = True
 
         return modified
 
-    def createAndConnectAtom(self, atomtypes, connectingAtom, bondOrders):
+    def create_and_connect_atom(self, atomtypes, connecting_atom, bond_orders):
         """
         This method creates an non-radical, uncharged, :class:GroupAtom with specified list of atomtypes and
-        connects it to one atom of the group, 'connectingAtom'. This is useful for making sample atoms.
+        connects it to one atom of the group, 'connecting_atom'. This is useful for making sample atoms.
 
         Args:
             atomtypes: list of atomtype labels (strs)
-            connectingAtom: :class:GroupAtom that is connected to the new benzene atom
-            bondOrders: list of bond Orders connecting new_atom and connectingAtom
+            connecting_atom: :class:GroupAtom that is connected to the new benzene atom
+            bond_orders: list of bond Orders connecting new_atom and connecting_atom
 
         Returns: the newly created atom
         """
-        atomtypes = [atomTypes[label] for label in atomtypes]  # turn into :class: atomtype instead of labels
+        atomtypes = [ATOMTYPES[label] for label in atomtypes]  # turn into :class: atomtype instead of labels
 
-        new_atom = GroupAtom(atomType=atomtypes, radicalElectrons=[0], charge=[], label='', lonePairs=None)
-        new_bond = GroupBond(connectingAtom, new_atom, order=bondOrders)
-        self.addAtom(new_atom)
-        self.addBond(new_bond)
+        new_atom = GroupAtom(atomtype=atomtypes, radical_electrons=[0], charge=[], label='', lone_pairs=None)
+        new_bond = GroupBond(connecting_atom, new_atom, order=bond_orders)
+        self.add_atom(new_atom)
+        self.add_bond(new_bond)
         return new_atom
 
-    def addExplicitLigands(self):
+    def add_explicit_ligands(self):
         """
         This function O2d/S2d ligand to CO or CS atomtypes if they are not already there.
 
@@ -1991,13 +1991,13 @@ class Group(Graph):
         atoms_to_add_to = []
 
         for index, atom in enumerate(self.atoms):
-            claimed_atom_type = atom.atomType[0]
+            claimed_atom_type = atom.atomtype[0]
             # Do not perform is this atom has wildCards
             if atom.hasWildCards:
                 continue
-            elif claimed_atom_type is atomTypes['CO'] or claimed_atom_type is atomTypes['CS']:
+            elif claimed_atom_type is ATOMTYPES['CO'] or claimed_atom_type is ATOMTYPES['CS']:
                 for bond12 in atom.bonds.values():
-                    if bond12.isDouble():
+                    if bond12.is_double():
                         break
                 else:
                     atoms_to_add_to.append(index)
@@ -2005,15 +2005,15 @@ class Group(Graph):
         for atomIndex in atoms_to_add_to:
             modified = True
             atomtypes = None
-            if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
+            if self.atoms[atomIndex].atomtype[0] is ATOMTYPES['CO']:
                 atomtypes = ['O2d']
-            elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
+            elif self.atoms[atomIndex].atomtype[0] is ATOMTYPES['CS']:
                 atomtypes = ['S2d']
-            self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], [2])
+            self.create_and_connect_atom(atomtypes, self.atoms[atomIndex], [2])
 
         return modified
 
-    def standardizeGroup(self):
+    def standardize_group(self):
         """
         This function modifies groups to make them have a standard AdjList form.
 
@@ -2025,11 +2025,11 @@ class Group(Graph):
 
         # If viable then we apply current conventions:
         check_list = []
-        check_list.append(self.standardizeAtomType())
-        check_list.append(self.addExplicitLigands())
+        check_list.append(self.standardize_atomtype())
+        check_list.append(self.add_explicit_ligands())
         return any(check_list)
 
-    def addImplicitAtomsFromAtomType(self):
+    def add_implicit_atoms_from_atomtype(self):
         """
 
         Returns: a modified group with implicit atoms added
@@ -2045,7 +2045,7 @@ class Group(Graph):
         copy_group = deepcopy(self)
 
         for atom1 in copy_group.atoms:
-            atomtype_feature_list = atom1.atomType[0].getFeatures()
+            atomtype_feature_list = atom1.atomtype[0].get_features()
             lone_pairs_required[atom1] = atomtype_feature_list[8]
 
             # set to 0 required if empty list
@@ -2061,64 +2061,64 @@ class Group(Graph):
             single = r_double = o_double = s_double = triple = quadruple = benzene = 0  # note that 0 is immutable
             for atom2, bond12 in atom1.bonds.items():
                 # Count numbers of each higher-order bond type
-                if bond12.isSingle():
+                if bond12.is_single():
                     single += 1
-                elif bond12.isDouble():
-                    if atom2.isOxygen():
+                elif bond12.is_double():
+                    if atom2.is_oxygen():
                         o_double += 1
-                    elif atom2.isSulfur():
+                    elif atom2.is_sulfur():
                         s_double += 1
                     else:
                         # r_double is for double bonds NOT to oxygen or Sulfur
                         r_double += 1
-                elif bond12.isTriple():
+                elif bond12.is_triple():
                     triple += 1
-                elif bond12.isQuadruple():
+                elif bond12.is_quadruple():
                     quadruple += 1
-                elif bond12.isBenzene():
+                elif bond12.is_benzene():
                     benzene += 1
 
             while o_double < o_double_required[0]:
                 o_double += 1
-                new_atom = GroupAtom(atomType=[atomTypes['O']], radicalElectrons=[0], charge=[], label='',
-                                     lonePairs=None)
+                new_atom = GroupAtom(atomtype=[ATOMTYPES['O']], radical_electrons=[0], charge=[], label='',
+                                     lone_pairs=None)
                 new_bond = GroupBond(atom1, new_atom, order=[2])
                 implicit_atoms[new_atom] = new_bond
             while s_double < s_double_required[0]:
                 s_double += 1
-                new_atom = GroupAtom(atomType=[atomTypes['S']], radicalElectrons=[0], charge=[], label='',
-                                     lonePairs=None)
+                new_atom = GroupAtom(atomtype=[ATOMTYPES['S']], radical_electrons=[0], charge=[], label='',
+                                     lone_pairs=None)
                 new_bond = GroupBond(atom1, new_atom, order=[2])
                 implicit_atoms[new_atom] = new_bond
             while r_double < r_double_required[0] or r_double + o_double + s_double < all_double_required[0]:
                 r_double += 1
-                new_atom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='',
-                                     lonePairs=None)
+                new_atom = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[0], charge=[], label='',
+                                     lone_pairs=None)
                 new_bond = GroupBond(atom1, new_atom, order=[2])
                 implicit_atoms[new_atom] = new_bond
             while triple < triple_required[0]:
                 triple += 1
-                new_atom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='',
-                                     lonePairs=None)
+                new_atom = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[0], charge=[], label='',
+                                     lone_pairs=None)
                 new_bond = GroupBond(atom1, new_atom, order=[3])
                 implicit_atoms[new_atom] = new_bond
             while quadruple < quadruple_required[0]:
                 quadruple += 1
-                new_atom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='',
-                                     lonePairs=None)
+                new_atom = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[0], charge=[], label='',
+                                     lone_pairs=None)
                 new_bond = GroupBond(atom1, new_atom, order=[4])
                 implicit_atoms[new_atom] = new_bond
 
         for atom, bond in implicit_atoms.items():
-            copy_group.addAtom(atom)
-            copy_group.addBond(bond)
+            copy_group.add_atom(atom)
+            copy_group.add_bond(bond)
 
-        for atom, lonePair in lone_pairs_required.items():
-            if lonePair: atom.lonePairs = lonePair
+        for atom, lone_pair in lone_pairs_required.items():
+            if lone_pair: atom.lone_pairs = lone_pair
 
         return copy_group
 
-    def classifyBenzeneCarbons(self, partners=None):
+    def classify_benzene_carbons(self, partners=None):
         """
         Args:
             group: :class:Group with atoms to classify
@@ -2136,21 +2136,21 @@ class Group(Graph):
         connected_cbfs = {}  # dictionary of connections to other cbfAtoms
 
         # Only want to work with benzene bonds on carbon
-        labels_of_carbon_atom_types = [x.label for x in atomTypes['C'].specific] + ['C']
+        labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C']
         # Also allow with R!H and some nitrogen groups
         labels_of_carbon_atom_types.extend(['R!H', 'N5b', 'N3b'])
 
         for atom in self.atoms:
-            if atom.atomType[0].label not in labels_of_carbon_atom_types:
+            if atom.atomtype[0].label not in labels_of_carbon_atom_types:
                 continue
-            elif atom.atomType[0].label in ['Cb', 'N5b', 'N3b']:  # Make Cb and N3b into normal cb atoms
+            elif atom.atomtype[0].label in ['Cb', 'N5b', 'N3b']:  # Make Cb and N3b into normal cb atoms
                 cb_atom_list.append(atom)
-            elif atom.atomType[0].label == 'Cbf':
+            elif atom.atomtype[0].label == 'Cbf':
                 cbf_atom_list.append(atom)
             else:
                 benzene_bonds = 0
                 for atom2, bond12 in atom.bonds.items():
-                    if bond12.isBenzene(): benzene_bonds += 1
+                    if bond12.is_benzene(): benzene_bonds += 1
                 if benzene_bonds > 2:
                     cbf_atom_list.append(atom)
                 elif benzene_bonds > 0:
@@ -2181,11 +2181,11 @@ class Group(Graph):
         # check that cbfAtoms only have benzene bonds
         for cbf_atom in cbf_atom_list:
             for atom2, bond12 in cbf_atom.bonds.items():
-                assert bond12.isBenzene(), "Cbf atom in {0} has a bond with an order other than 1.5".format(self)
+                assert bond12.is_benzene(), "Cbf atom in {0} has a bond with an order other than 1.5".format(self)
 
         return cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs
 
-    def addImplicitBenzene(self):
+    def add_implicit_benzene(self):
         """
         Returns: A modified group with any implicit benzene rings added
 
@@ -2200,7 +2200,7 @@ class Group(Graph):
         """
 
         # First define some helper functions
-        def checkSet(super_list, sub_list):
+        def check_set(super_list, sub_list):
             """
             Args:
                 super_list: list to check if superset of partList
@@ -2213,7 +2213,7 @@ class Group(Graph):
             sub_set = set(sub_list)
             return super_set.issuperset(sub_set)
 
-        def addCbAtomToRing(ring, cb_atom):
+        def add_cb_atom_to_ring(ring, cb_atom):
             """
             Every 'Cb' atom belongs in exactly one benzene ring. This function checks
             adds the cb_atom to the ring (in connectivity order) if the cb_atom is connected
@@ -2232,7 +2232,7 @@ class Group(Graph):
             # ring already complete
             if len(ring) == 6: return merged_ring
             for atom2, bond12 in cb_atom.bonds.items():
-                if bond12.isBenzene():
+                if bond12.is_benzene():
                     if atom2 is ring[-1]:
                         merged_ring = ring + [cb_atom]
                     elif atom2 is ring[0]:
@@ -2240,9 +2240,9 @@ class Group(Graph):
 
             return merged_ring
 
-        def mergeOverlappingBenzeneRings(ring1, ring2, od):
+        def merge_overlapping_benzene_rings(ring1, ring2, od):
             """
-            The input arguements of rings are always in the order that the atoms appear
+            The input arguments of rings are always in the order that the atoms appear
             inside the ring. That is, each atom is connected to the ones adjacent on the
             list.
 
@@ -2298,7 +2298,7 @@ class Group(Graph):
 
         Currently we only allow 3 Cbf atoms, so Cbf3 is not possible.
         """
-        (cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs) = copy_group.classifyBenzeneCarbons()
+        (cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs) = copy_group.classify_benzene_carbons()
 
         """
         #Step 2. Partner up each Cbf1 and Cbf2 atom
@@ -2328,9 +2328,9 @@ class Group(Graph):
                     if atom2 in partners:
                         continue
                     # Potential partner must not have any bonds except benzene bonds
-                    elif bond12.isBenzene():
-                        bonds_are_benzene = [True if bond23.isBenzene() else False for bond23 in atom2.bonds.values()]
-                        if all(bonds_are_benzene) and 0 in atom2.radicalElectrons:
+                    elif bond12.is_benzene():
+                        bonds_are_benzene = [True if bond23.is_benzene() else False for bond23 in atom2.bonds.values()]
+                        if all(bonds_are_benzene) and 0 in atom2.radical_electrons:
                             potential_partner = atom2
                 # Make a Cb atom the partner, now marking it as a Cbfatom
                 if potential_partner:
@@ -2338,12 +2338,12 @@ class Group(Graph):
                     partners[potential_partner] = cbf_atom
                 # otherwise create a new atom to be the partner
                 else:
-                    new_atom = copy_group.createAndConnectAtom(['Cbf'], cbf_atom, [1.5])
+                    new_atom = copy_group.create_and_connect_atom(['Cbf'], cbf_atom, [1.5])
                     partners[cbf_atom] = new_atom
                     partners[new_atom] = cbf_atom
 
         # reclassify all atoms since we may have added new ones
-        cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs = copy_group.classifyBenzeneCarbons(partners)
+        cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs = copy_group.classify_benzene_carbons(partners)
 
         """
         Step 3. Sort all lists by connectivity
@@ -2353,9 +2353,9 @@ class Group(Graph):
         It is important that we always check atoms that are already connected to existing rings
         before completely disconnected atoms. Otherwise, we will erroneously create new rings.
         """
-        cb_atom_list = copy_group.sortByConnectivity(cb_atom_list)
-        cbf_atom_list1 = copy_group.sortByConnectivity(cbf_atom_list1)
-        cbf_atom_list2 = copy_group.sortByConnectivity(cbf_atom_list2)
+        cb_atom_list = copy_group.sort_by_connectivity(cb_atom_list)
+        cbf_atom_list1 = copy_group.sort_by_connectivity(cbf_atom_list1)
+        cbf_atom_list2 = copy_group.sort_by_connectivity(cbf_atom_list2)
 
         """
         Step 4. Initalize the list of rings with any benzene rings that are already explicitly stated
@@ -2366,7 +2366,7 @@ class Group(Graph):
         in the list. The first and last atom of the list will also be bonded together.
 
         """
-        rings = [cycle for cycle in copy_group.getAllCyclesOfSize(6) if Group(atoms=cycle).isAromaticRing()]
+        rings = [cycle for cycle in copy_group.get_all_cycles_of_size(6) if Group(atoms=cycle).is_aromatic_ring()]
 
         """
         Step 5. Add Cbf2 atoms to the correct rings
@@ -2390,7 +2390,7 @@ class Group(Graph):
             all_ligands = list(cbf_atom.bonds)
             # add a new cb atom to the second new_ring seed
             if len(all_ligands) == 2:
-                new_atom = copy_group.createAndConnectAtom(['Cb'], cbf_atom, [1.5])
+                new_atom = copy_group.create_and_connect_atom(['Cb'], cbf_atom, [1.5])
                 new_ring_seeds[1].append(new_atom)
             # join the existing atom to the ringSeed
             elif len(all_ligands) == 3:
@@ -2403,9 +2403,9 @@ class Group(Graph):
                 merge_ring_dict = {}
                 for index, ring2 in enumerate(rings):
                     # check if a duplicate of a fully created ring
-                    if checkSet(ring2, ring1): break
+                    if check_set(ring2, ring1): break
                     # Next try to merge the ringseed into rings
-                    merge_ring = mergeOverlappingBenzeneRings(ring2, ring1, 2)
+                    merge_ring = merge_overlapping_benzene_rings(ring2, ring1, 2)
                     if merge_ring:
                         merge_ring_dict[index] = merge_ring
                         break
@@ -2427,14 +2427,14 @@ class Group(Graph):
             in_ring = 0
             # check to see if duplicate of an existing ring
             for ring in rings:
-                if checkSet(ring, new_ring_seed):
+                if check_set(ring, new_ring_seed):
                     in_ring += 1
             # move on to next cbf_atom if we found two rings
             if in_ring == 2: continue
             # try to merge into existing rings, if cbf1 is connected
             for index, ring in enumerate(rings):
                 merge_ring_dict = {}
-                merge_ring = mergeOverlappingBenzeneRings(ring, new_ring_seed, 1)
+                merge_ring = merge_overlapping_benzene_rings(ring, new_ring_seed, 1)
                 if merge_ring:
                     in_ring += 1
                     merge_ring_dict[index] = merge_ring
@@ -2458,14 +2458,14 @@ class Group(Graph):
             in_ring = 0
             # check to see if already in a ring
             for ring in rings:
-                if checkSet(ring, [cb_atom]):
+                if check_set(ring, [cb_atom]):
                     in_ring += 1
             # move on to next ring cb_atom if in a ring
             if in_ring == 1: continue
             # check to see if can be merged to an existing ring
             for index, ring in enumerate(rings):
                 merge_ring_dict = {}
-                merge_ring = addCbAtomToRing(ring, cb_atom)
+                merge_ring = add_cb_atom_to_ring(ring, cb_atom)
                 if merge_ring:
                     in_ring += 1
                     merge_ring_dict[index] = merge_ring
@@ -2492,16 +2492,16 @@ class Group(Graph):
                 else:
                     last_atom = merged_ring_dict[index][-1]
                 # add a new atom to the ring and the group
-                new_atom = copy_group.createAndConnectAtom(['Cb'], last_atom, [1.5])
+                new_atom = copy_group.create_and_connect_atom(['Cb'], last_atom, [1.5])
                 merged_ring_dict[index].append(new_atom)
                 # At the end attach to the other endpoint
                 if x == carbons_to_grow - 1:
                     new_bond = GroupBond(ring[0], new_atom, order=[1.5])
-                    copy_group.addBond(new_bond)
+                    copy_group.add_bond(new_bond)
 
         return copy_group
 
-    def pickWildcards(self):
+    def pick_wildcards(self):
         """
         Returns: the :class:Group object without wildcards in either atomtype or bonding
 
@@ -2509,27 +2509,27 @@ class Group(Graph):
         to pick bond orders that make sense given the selected atomtypes
         """
         for atom1 in self.atoms:
-            atom1.atomType = [atom1.atomType[0]]
+            atom1.atomtype = [atom1.atomtype[0]]
             for atom2, bond12 in atom1.bonds.items():
                 # skip dynamic bond ordering if there are no wildcards
                 if len(bond12.order) < 2:
                     continue
-                atom1_features = atom1.atomType[0].getFeatures()
-                atom2_features = atom2.atomType[0].getFeatures()
+                atom1_features = atom1.atomtype[0].get_features()
+                atom2_features = atom2.atomtype[0].get_features()
                 # skip dynamic bond ordering if there are no features required by the atomtype
                 if not any(atom1_features) and not any(atom2_features):
                     bond12.order = [bond12.order[0]]
                     atom2.bonds[atom1].order = bond12.order
                     continue
 
-                atom1_bonds = atom1.countBonds()  # countBonds list must match getFeatures list
-                atom2_bonds = atom2.countBonds()
+                atom1_bonds = atom1.count_bonds()  # count_bonds list must match get_features list
+                atom2_bonds = atom2.count_bonds()
                 required_features1 = [atom1_features[x][0] - atom1_bonds[x] if atom1_features[x] else 0 for x in
                                       range(len(atom1_bonds))]
                 required_features2 = [atom2_features[x][0] - atom2_bonds[x] if atom2_features[x] else 0 for x in
                                       range(len(atom2_bonds))]
 
-                # subtract 1 from allDouble for each sDouble, oDouble, rDouble so that we don't count them twice
+                # subtract 1 from all_double for each s_double, o_double, r_double so that we don't count them twice
                 required_features1[1] = required_features1[1] - required_features1[2] - required_features1[3] - \
                                         required_features1[4]
                 required_features2[1] = required_features2[1] - required_features2[2] - required_features2[3] - \
@@ -2538,7 +2538,7 @@ class Group(Graph):
                 required_features1.reverse()
                 required_features2.reverse()
 
-                # required features are a now list of [benzene, quadruple, triple, sDouble, oDouble, rDouble, allDouble, single]
+                # required features are a now list of [benzene, quadruple, triple, s_double, o_double, r_double, all_double, single]
                 for index, (feature1, feature2) in enumerate(zip(required_features1[:-1], required_features2[:-1])):
                     if feature1 > 0 or feature2 > 0:
                         if index == 0 and 1.5 in bond12.order:  # benzene bonds
@@ -2554,17 +2554,17 @@ class Group(Graph):
                             atom2.bonds[atom1].order = bond12.order
                             break
                         elif index > 2 and 2 in bond12.order:  # any case of double bonds
-                            if index == 3:  # sDouble bonds
-                                if (feature1 > 0 and atom2.isSulfur()) or (feature2 > 0 and atom1.isSulfur()):
+                            if index == 3:  # s_double bonds
+                                if (feature1 > 0 and atom2.is_sulfur()) or (feature2 > 0 and atom1.is_sulfur()):
                                     bond12.order = [2]
                                     atom2.bonds[atom1].order = bond12.order
                                     break
                             elif index == 4:  # oDoubleBonds
-                                if (feature1 > 0 and atom2.isOxygen()) or (feature2 > 0 and atom1.isOxygen()):
+                                if (feature1 > 0 and atom2.is_oxygen()) or (feature2 > 0 and atom1.is_oxygen()):
                                     bond12.order = [2]
                                     atom2.bonds[atom1].order = bond12.order
                                     break
-                            else:  # rDouble or allDouble necessary
+                            else:  # r_double or all_double necessary
                                 bond12.order = [2]
                                 atom2.bonds[atom1].order = bond12.order
                                 break
@@ -2575,11 +2575,11 @@ class Group(Graph):
         # if we have wildcard atomtypes pick one based on ordering of allElements
         for atom in self.atoms:
             for elementLabel in allElements:
-                if atomTypes[elementLabel] in atom.atomType[0].specific:
-                    atom.atomType = [atomTypes[elementLabel]]
+                if ATOMTYPES[elementLabel] in atom.atomtype[0].specific:
+                    atom.atomtype = [ATOMTYPES[elementLabel]]
                     break
 
-    def makeSampleMolecule(self):
+    def make_sample_molecule(self):
         """
         Returns: A sample class :Molecule: from the group
         """
@@ -2587,28 +2587,28 @@ class Group(Graph):
         modified_group = self.copy(deep=True)
 
         # Remove all wildcards
-        modified_group.pickWildcards()
+        modified_group.pick_wildcards()
 
         # check that there are less than three Cbf atoms
         cbf_count = 0
         for atom in modified_group.atoms:
-            if atom.atomType[0] is atomTypes['Cbf']: cbf_count += 1
+            if atom.atomtype[0] is ATOMTYPES['Cbf']: cbf_count += 1
         if cbf_count > 3:
-            if not modified_group.isBenzeneExplicit():
+            if not modified_group.is_benzene_explicit():
                 raise ImplicitBenzeneError("{0} has more than three Cbf atoms and does not have fully explicit "
                                            "benzene rings.")
 
         # Add implicit atoms
-        modified_group = modified_group.addImplicitAtomsFromAtomType()
+        modified_group = modified_group.add_implicit_atoms_from_atomtype()
 
         # Add implicit benzene rings
-        if not modified_group.isBenzeneExplicit():
-            modified_group = modified_group.addImplicitBenzene()
+        if not modified_group.is_benzene_explicit():
+            modified_group = modified_group.add_implicit_benzene()
         # Make dictionary of :GroupAtoms: to :Atoms: and vice versa
         group_to_mol = {}
         mol_to_group = {}
         for atom in modified_group.atoms:
-            mol_atom = atom.makeSampleAtom()
+            mol_atom = atom.make_sample_atom()
             group_to_mol[atom] = mol_atom
             mol_to_group[mol_atom] = atom
 
@@ -2618,7 +2618,7 @@ class Group(Graph):
         # Add explicit bonds to :Atoms:
         for atom1 in modified_group.atoms:
             for atom2, bond12 in atom1.bonds.items():
-                bond12.makeBond(new_molecule, group_to_mol[atom1], group_to_mol[atom2])
+                bond12.make_bond(new_molecule, group_to_mol[atom1], group_to_mol[atom2])
 
         # Saturate up to expected valency
         for mol_atom in new_molecule.atoms:
@@ -2627,20 +2627,20 @@ class Group(Graph):
             # otherwise assume no charge (or implicit atoms we assume hvae no charge)
             else:
                 stated_charge = 0
-            mol_atom.updateCharge()
+            mol_atom.update_charge()
             if mol_atom.charge - stated_charge:
                 hydrogen_needed = mol_atom.charge - stated_charge
-                if mol_atom in mol_to_group and mol_to_group[mol_atom].atomType[0].single:
-                    max_single = max(mol_to_group[mol_atom].atomType[0].single)
-                    single_present = sum([1 for atom in mol_atom.bonds if mol_atom.bonds[atom].isSingle()])
+                if mol_atom in mol_to_group and mol_to_group[mol_atom].atomtype[0].single:
+                    max_single = max(mol_to_group[mol_atom].atomtype[0].single)
+                    single_present = sum([1 for atom in mol_atom.bonds if mol_atom.bonds[atom].is_single()])
                     max_hydrogen = max_single - single_present
                     if hydrogen_needed > max_hydrogen: hydrogen_needed = max_hydrogen
                 for x in range(hydrogen_needed):
-                    new_h = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
+                    new_h = mol.Atom('H', radical_electrons=0, lone_pairs=0, charge=0)
                     new_bond = mol.Bond(mol_atom, new_h, 1)
-                    new_molecule.addAtom(new_h)
-                    new_molecule.addBond(new_bond)
-                mol_atom.updateCharge()
+                    new_molecule.add_atom(new_h)
+                    new_molecule.add_bond(new_bond)
+                mol_atom.update_charge()
 
         new_molecule.update()
 
@@ -2660,9 +2660,9 @@ class Group(Graph):
                                     'N0sc', 'N1sc', 'N1dc', 'N5dddc',
                                     'O0sc',
                                     'S0sc', 'S2sc', 'S2dc', 'S2tc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
-                if group_atom.atomType[0] in [atomTypes[x] for x in positive_charged] and atom.charge > 0:
+                if group_atom.atomtype[0] in [ATOMTYPES[x] for x in positive_charged] and atom.charge > 0:
                     pass
-                elif group_atom.atomType[0] in [atomTypes[x] for x in negative_charged] and atom.charge < 0:
+                elif group_atom.atomtype[0] in [ATOMTYPES[x] for x in negative_charged] and atom.charge < 0:
                     pass
                 # declared charge in original group is not same as new charge
                 elif atom.charge in group_atom.charge:
@@ -2672,7 +2672,7 @@ class Group(Graph):
 
         return new_molecule
 
-    def isBenzeneExplicit(self):
+    def is_benzene_explicit(self):
         """
 
         Returns: 'True' if all Cb, Cbf atoms are in completely explicitly stated benzene rings.
@@ -2685,21 +2685,21 @@ class Group(Graph):
         cb_atom_list = []
 
         # only want to work with carbon atoms
-        labels_of_carbon_atom_types = [x.label for x in atomTypes['C'].specific] + ['C', 'N3b', 'N5b']
+        labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C', 'N3b', 'N5b']
 
         for atom in self.atoms:
-            if atom.atomType[0].label not in labels_of_carbon_atom_types:
+            if atom.atomtype[0].label not in labels_of_carbon_atom_types:
                 continue
-            elif atom.atomType[0].label in ['Cb', 'Cbf', 'N3b', 'N5b']:  # Make Cb and N3b into normal cb atoms
+            elif atom.atomtype[0].label in ['Cb', 'Cbf', 'N3b', 'N5b']:  # Make Cb and N3b into normal cb atoms
                 cb_atom_list.append(atom)
             else:
                 benzene_bonds = 0
                 for atom2, bond12 in atom.bonds.items():
-                    if bond12.isBenzene(): benzene_bonds += 1
+                    if bond12.is_benzene(): benzene_bonds += 1
                 if benzene_bonds > 0: cb_atom_list.append(atom)
 
         # get all explicit benzene rings
-        rings = [cycle for cycle in self.getAllCyclesOfSize(6) if Group(atoms=cycle).isAromaticRing()]
+        rings = [cycle for cycle in self.get_all_cycles_of_size(6) if Group(atoms=cycle).is_aromatic_ring()]
 
         # test that all benzene atoms are in benzene rings
         for atom in cb_atom_list:
@@ -2712,21 +2712,21 @@ class Group(Graph):
         else:
             return True
 
-    def mergeGroups(self, other, keepIdenticalLabels=False):
+    def merge_groups(self, other, keep_identical_labels=False):
         """
         This function takes `other` :class:Group object and returns a merged :class:Group object based
         on overlapping labeled atoms between self and other
 
         Currently assumes `other` can be merged at the closest labelled atom
-        if keepIdenticalLabels=True mergeGroups will not try to merge atoms with the same labels
+        if keep_identical_labels=True merge_groups will not try to merge atoms with the same labels
         """
-        labeled1 = self.getLabeledAtoms()
-        labeled2 = other.getLabeledAtoms()
+        labeled1 = self.get_all_labeled_atoms()
+        labeled2 = other.get_all_labeled_atoms()
         overlapping_labels = [x for x in labeled1 if x in labeled2]
 
         # dictionary of key = original atoms, value = copy atoms for deep copies of the two groups
-        self_dict = self.copyAndMap()
-        other_dict = other.copyAndMap()
+        self_dict = self.copy_and_map()
+        other_dict = other.copy_and_map()
 
         # Sort atoms to go into the merged_group
         merged_group_atoms = list(other_dict.values())  # all end atoms with end up in the merged_group
@@ -2744,30 +2744,30 @@ class Group(Graph):
         *2. We need to remove the bond between atomA and atomB. Then we need to add a bond
         between atomA and atomC.
         """
-        if not keepIdenticalLabels:
+        if not keep_identical_labels:
             bonds_to_remove = []
             for label in overlapping_labels:
-                old_atom_b = self.getLabeledAtom(label)[0]
+                old_atom_b = self.get_labeled_atoms(label)[0]
                 for old_atom_a, old_bond_ab in old_atom_b.bonds.items():
                     if old_atom_a.label not in overlapping_labels:  # this is bond we need to transfer over
                         # find and record bondAB from new backbone for later removal
                         new_atom_a = self_dict[old_atom_a]
                         new_atom_b = self_dict[old_atom_b]
-                        new_atom_c = merged_group.getLabeledAtom(old_atom_b.label)[0]
+                        new_atom_c = merged_group.get_labeled_atoms(old_atom_b.label)[0]
                         for atom, new_bond_ab in new_atom_a.bonds.items():
                             if atom is new_atom_b:
                                 bonds_to_remove.append(new_bond_ab)
                                 break
                         # add bond between atomA and AtomC
                         new_bond_ac = GroupBond(new_atom_a, new_atom_c, order=old_bond_ab.order)
-                        merged_group.addBond(new_bond_ac)
+                        merged_group.add_bond(new_bond_ac)
             # remove bonds from merged_group
             for bond in bonds_to_remove:
-                merged_group.removeBond(bond)
+                merged_group.remove_bond(bond)
 
         return merged_group
 
-    def resetRingMembership(self):
+    def reset_ring_membership(self):
         """
         Resets ring membership information in the GroupAtom.props attribute.
         """

@@ -39,56 +39,56 @@ cdef dict bond_orders
 cdef class Atom(Vertex):
 
     cdef public Element element
-    cdef public short radicalElectrons
+    cdef public short radical_electrons
     cdef public short charge
     cdef public str label
-    cdef public AtomType atomType
+    cdef public AtomType atomtype
     cdef public np.ndarray coords
-    cdef public short lonePairs
+    cdef public short lone_pairs
     cdef public int id
     cdef public dict props
     
     cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
-    cpdef bint isSpecificCaseOf(self, Vertex other) except -2
+    cpdef bint is_specific_case_of(self, Vertex other) except -2
 
     cpdef Vertex copy(self)
 
-    cpdef bint isHydrogen(self)
+    cpdef bint is_hydrogen(self)
 
-    cpdef bint isNonHydrogen(self)
+    cpdef bint is_non_hydrogen(self)
 
-    cpdef bint isCarbon(self)
+    cpdef bint is_carbon(self)
 
-    cpdef bint isOxygen(self)
+    cpdef bint is_oxygen(self)
 
-    cpdef bint isFluorine(self)
+    cpdef bint is_fluorine(self)
 
-    cpdef bint isSilicon(self)
+    cpdef bint is_silicon(self)
 
-    cpdef bint isSulfur(self)
+    cpdef bint is_sulfur(self)
 
-    cpdef bint isChlorine(self)
+    cpdef bint is_chlorine(self)
 
-    cpdef bint isIodine(self)
+    cpdef bint is_iodine(self)
 
-    cpdef bint isNOS(self)
+    cpdef bint is_nos(self)
     
-    cpdef bint isSurfaceSite(self)
+    cpdef bint is_surface_site(self)
     
-    cpdef incrementRadical(self)
+    cpdef increment_radical(self)
 
-    cpdef decrementRadical(self)
+    cpdef decrement_radical(self)
     
-    cpdef setLonePairs(self, int lonePairs)
+    cpdef set_lone_pairs(self, int lone_pairs)
     
-    cpdef incrementLonePairs(self)
+    cpdef increment_lone_pairs(self)
     
-    cpdef decrementLonePairs(self)
+    cpdef decrement_lone_pairs(self)
     
-    cpdef updateCharge(self)
+    cpdef update_charge(self)
 
-    cpdef getBondOrdersForAtom(self)
+    cpdef get_total_bond_order(self)
     
 ################################################################################
     
@@ -98,35 +98,35 @@ cdef class Bond(Edge):
 
     cpdef bint equivalent(self, Edge other) except -2
 
-    cpdef bint isSpecificCaseOf(self, Edge other) except -2
+    cpdef bint is_specific_case_of(self, Edge other) except -2
 
-    cpdef str getOrderStr(self)
+    cpdef str get_order_str(self)
     
-    cpdef setOrderStr(self, str newOrder)
+    cpdef set_order_str(self, str new_order)
     
-    cpdef float getOrderNum(self)
+    cpdef float get_order_num(self)
     
-    cpdef setOrderNum(self, float newOrder)
+    cpdef set_order_num(self, float new_order)
 
     cpdef Edge copy(self)
     
-    cpdef bint isOrder(self, float otherOrder)
+    cpdef bint is_order(self, float other_order)
 
-    cpdef bint isVanDerWaals(self) except -2
+    cpdef bint is_van_der_waals(self) except -2
 
-    cpdef bint isSingle(self) except -2
+    cpdef bint is_single(self) except -2
 
-    cpdef bint isDouble(self) except -2
+    cpdef bint is_double(self) except -2
 
-    cpdef bint isTriple(self) except -2
+    cpdef bint is_triple(self) except -2
     
-    cpdef bint isQuadruple(self) except -2
+    cpdef bint is_quadruple(self) except -2
     
-    cpdef bint isBenzene(self) except -2
+    cpdef bint is_benzene(self) except -2
 
-    cpdef incrementOrder(self)
+    cpdef increment_order(self)
 
-    cpdef decrementOrder(self)
+    cpdef decrement_order(self)
 
     cpdef str get_bond_string(self)
 
@@ -134,134 +134,131 @@ cdef class Bond(Edge):
 
 cdef class Molecule(Graph):
 
-    cdef public bint implicitHydrogens
-    cdef public float symmetryNumber
+    cdef public float symmetry_number
     cdef public int multiplicity
     cdef public bint reactive
-    cdef public object rdMol
-    cdef public int rdMolConfId
     cdef public dict props
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
 
-    cpdef addAtom(self, Atom atom)
+    cpdef add_atom(self, Atom atom)
 
-    cpdef addBond(self, Bond bond)
+    cpdef add_bond(self, Bond bond)
 
-    cpdef dict getBonds(self, Atom atom)
+    cpdef dict get_bonds(self, Atom atom)
 
-    cpdef Bond getBond(self, Atom atom1, Atom atom2)
+    cpdef Bond get_bond(self, Atom atom1, Atom atom2)
 
-    cpdef bint hasAtom(self, Atom atom)
+    cpdef bint has_atom(self, Atom atom)
 
-    cpdef bint hasBond(self, Atom atom1, Atom atom2)
+    cpdef bint has_bond(self, Atom atom1, Atom atom2)
 
-    cpdef bint containsSurfaceSite(self)
+    cpdef bint contains_surface_site(self)
     
-    cpdef bint isSurfaceSite(self)
+    cpdef bint is_surface_site(self)
 
-    cpdef removeAtom(self, Atom atom)
+    cpdef remove_atom(self, Atom atom)
 
-    cpdef removeBond(self, Bond bond)
+    cpdef remove_bond(self, Bond bond)
 
-    cpdef removeVanDerWaalsBonds(self)
+    cpdef remove_van_der_waals_bonds(self)
 
-    cpdef sortAtoms(self)
+    cpdef sort_atoms(self)
     
-    cpdef str getFormula(self)
+    cpdef str get_formula(self)
 
-    cpdef short getRadicalCount(self)
+    cpdef short get_radical_count(self)
 
-    cpdef short getSingletCarbeneCount(self)
+    cpdef short get_singlet_carbene_count(self)
 
-    cpdef double getMolecularWeight(self)
+    cpdef double get_molecular_weight(self)
 
-    cpdef int getNumAtoms(self, str element=?)
+    cpdef int get_num_atoms(self, str element=?)
 
     cpdef Graph copy(self, bint deep=?)
 
-    cpdef deleteHydrogens(self)
+    cpdef delete_hydrogens(self)
 
-    cpdef clearLabeledAtoms(self)
+    cpdef clear_labeled_atoms(self)
 
-    cpdef bint containsLabeledAtom(self, str label) except -2
+    cpdef bint contains_labeled_atom(self, str label) except -2
 
-    cpdef list getLabeledAtom(self, str label)
+    cpdef list get_labeled_atoms(self, str label)
 
-    cpdef dict getLabeledAtoms(self)
+    cpdef dict get_all_labeled_atoms(self)
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
+    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
+    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?)
 
-    cpdef bint isAtomInCycle(self, Atom atom) except -2
+    cpdef bint is_atom_in_cycle(self, Atom atom) except -2
 
-    cpdef bint isBondInCycle(self, Bond bond) except -2
+    cpdef bint is_bond_in_cycle(self, Bond bond) except -2
 
     cpdef draw(self, str path)
 
-    cpdef fromInChI(self, str inchistr, backend=?)
+    cpdef from_inchi(self, str inchistr, backend=?)
 
-    cpdef fromSMILES(self, str smilesstr, backend=?)
+    cpdef from_smiles(self, str smilesstr, backend=?)
 
-    cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
+    cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?)
 
-    cpdef fromXYZ(self, np.ndarray atomicNums, np.ndarray coordinates)
+    cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates)
     
-    cpdef str toInChI(self)
+    cpdef str to_inchi(self)
 
-    cpdef str toAugmentedInChI(self)
+    cpdef str to_augmented_inchi(self)
 
-    cpdef str toInChIKey(self)
+    cpdef str to_inchi_key(self)
 
-    cpdef str toAugmentedInChIKey(self)
+    cpdef str to_augmented_inchi_key(self)
 
-    cpdef str toSMILES(self)
+    cpdef str to_smiles(self)
 
-    cpdef toAdjacencyList(self, str label=?, bint removeH=?, bint removeLonePairs=?, bint oldStyle=?)
+    cpdef to_adjacency_list(self, str label=?, bint remove_h=?, bint remove_lone_pairs=?, bint old_style=?)
 
-    cpdef bint isLinear(self) except -2
+    cpdef bint is_linear(self) except -2
 
-    cpdef bint isHeterocyclic(self) except -2
+    cpdef bint is_heterocyclic(self) except -2
 
-    cpdef int countInternalRotors(self) except -2
+    cpdef int count_internal_rotors(self) except -2
 
-    cpdef double calculateCp0(self) except -1
+    cpdef double calculate_cp0(self) except -1
 
-    cpdef double calculateCpInf(self) except -1
+    cpdef double calculate_cpinf(self) except -1
     
-    cpdef updateAtomTypes(self, bint logSpecies=?, bint raiseException=?)
+    cpdef update_atomtypes(self, bint log_species=?, bint raise_exception=?)
     
-    cpdef bint isRadical(self) except -2
+    cpdef bint is_radical(self) except -2
 
     cpdef bint has_lone_pairs(self) except -2
 
-    cpdef bint isArylRadical(self, list aromaticRings=?) except -2
+    cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
 
-    cpdef float calculateSymmetryNumber(self) except -1
+    cpdef float calculate_symmetry_number(self) except -1
 
     cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
 
-    cpdef identifyRingMembership(self)
+    cpdef identify_ring_membership(self)
 
-    cpdef tuple getAromaticRings(self, list rings=?)
+    cpdef tuple get_aromatic_rings(self, list rings=?)
 
-    cpdef list getDeterministicSmallestSetOfSmallestRings(self)
+    cpdef list get_deterministic_sssr(self)
 
     cpdef kekulize(self)
 
-    cpdef assignAtomIDs(self)
+    cpdef assign_atom_ids(self)
 
-    cpdef bint atomIDValid(self)
+    cpdef bint atom_ids_valid(self)
 
-    cpdef bint isIdentical(self, Molecule other, bint strict=?) except -2
+    cpdef bint is_identical(self, Molecule other, bint strict=?) except -2
 
     cpdef dict enumerate_bonds(self)
 

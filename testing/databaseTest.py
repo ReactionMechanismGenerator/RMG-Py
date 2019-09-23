@@ -18,7 +18,7 @@ from rmgpy.data.base import LogicOr
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule import Group
-from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 
 
@@ -34,55 +34,55 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         """
         database_directory = settings['database.directory']
         cls.database = RMGDatabase()
-        cls.database.load(database_directory, kineticsFamilies='all')
+        cls.database.load(database_directory, kinetics_families='all')
 
     # These are generators, that call the methods below.
     def test_kinetics(self):
         for family_name, family in self.database.kinetics.families.items():
 
-            test = lambda x: self.kinetics_checkCorrectNumberofNodesInRules(family_name)
+            test = lambda x: self.kinetics_check_correct_number_of_nodes_in_rules(family_name)
             test_name = "Kinetics family {0}: rules have correct number of nodes?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_checkNodesInRulesFoundInGroups(family_name)
+            test = lambda x: self.kinetics_check_nodes_in_rules_found_in_groups(family_name)
             test_name = "Kinetics family {0}: rules' nodes exist in the groups?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_checkGroupsFoundInTree(family_name)
+            test = lambda x: self.kinetics_check_groups_found_in_tree(family_name)
             test_name = "Kinetics family {0}: groups are in the tree with proper parents?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_checkGroupsNonidentical(family_name)
+            test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
             test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkChildParentRelationships(family_name)
+            test = lambda x: self.kinetics_check_child_parent_relationships(family_name)
             test_name = "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkSiblingsForParents(family_name)
+            test = lambda x: self.kinetics_check_siblings_for_parents(family_name)
             test_name = "Kinetics family {0}: sibling relationships are correct?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkCdAtomType(family_name)
+            test = lambda x: self.kinetics_check_cd_atom_type(family_name)
             test_name = "Kinetics family {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkReactantAndProductTemplate(family_name)
+            test = lambda x: self.kinetics_check_reactant_and_product_template(family_name)
             test_name = "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -92,8 +92,8 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
             generated_trees = ["R_Recombination"]
 
-            if len(family.forwardTemplate.reactants) < len(family.groups.top) and family_name not in difficult_families:
-                test = lambda x: self.kinetics_checkUnimolecularGroups(family_name)
+            if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
+                test = lambda x: self.kinetics_check_unimolecular_groups(family_name)
                 test_name = "Kinetics family {0} check that unimolecular group is formatted correctly?".format(
                     family_name)
                 test.description = test_name
@@ -101,39 +101,39 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 yield test, family_name
 
             if family_name not in difficult_families and family_name not in generated_trees:
-                test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
+                test = lambda x: self.kinetics_check_sample_descends_to_group(family_name)
                 test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, family_name
 
             for depository in family.depositories:
-                test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
+                test = lambda x: self.kinetics_check_adjlists_nonidentical(depository)
                 test_name = "Kinetics depository {0}: check adjacency lists are nonidentical?".format(depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
 
-                test = lambda x: self.kinetics_checkRateUnitsAreCorrect(depository, tag='depository')
+                test = lambda x: self.kinetics_check_rate_units_are_correct(depository, tag='depository')
                 test_name = "Kinetics depository {0}: check rates have correct units?".format(depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
 
         for library_name, library in self.database.kinetics.libraries.items():
-            test = lambda x: self.kinetics_checkAdjlistsNonidentical(library)
+            test = lambda x: self.kinetics_check_adjlists_nonidentical(library)
             test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
 
-            test = lambda x: self.kinetics_checkRateUnitsAreCorrect(library)
+            test = lambda x: self.kinetics_check_rate_units_are_correct(library)
             test_name = "Kinetics library {0}: check rates have correct units?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
 
-            test = lambda x: self.kinetics_checkLibraryRatesAreReasonable(library)
+            test = lambda x: self.kinetics_check_library_rates_are_reasonable(library)
             test_name = "Kinetics library {0}: check rates are reasonable?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -141,37 +141,37 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Thermo groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Thermo groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Thermo groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Thermo groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Thermo groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -179,37 +179,37 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Solvation groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Solvation groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Solvation groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Solvation groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Solvation groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -217,37 +217,37 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_statmech(self):
         for group_name, group in self.database.statmech.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Statmech groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Statmech groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Statmech groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Statmech groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -255,49 +255,49 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_transport(self):
         for group_name, group in self.database.transport.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Transport groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Transport groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Transport groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Transport groups {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Transport groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
     # These are the actual tests, that don't start with a "test_" name:
-    def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
+    def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
         """
         family = self.database.kinetics.families[family_name]
-        expected_number_nodes = len(family.getRootTemplate())
+        expected_number_nodes = len(family.get_root_template())
         tst = []
         for label, entries in family.rules.entries.items():
             for entry in entries:
@@ -314,7 +314,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkNodesInRulesFoundInGroups(self, family_name):
+    def kinetics_check_nodes_in_rules_found_in_groups(self, family_name):
         """
         This test ensures that each rate rule contains nodes that exist in the
         groups and that they match the order of the forwardTemplate.
@@ -323,12 +323,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
         # List of the each top node's descendants (including the top node)
         top_descendants = []
-        for topNode in family.getRootTemplate():
+        for topNode in family.get_root_template():
             nodes = [topNode]
             nodes.extend(family.groups.descendants(topNode))
             top_descendants.append(nodes)
 
-        top_group_order = ';'.join(topNode.label for topNode in family.getRootTemplate())
+        top_group_order = ';'.join(topNode.label for topNode in family.get_root_template())
         tst1 = []
         tst2 = []
         for label, entries in family.rules.entries.items():
@@ -354,7 +354,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkGroupsFoundInTree(self, family_name):
+    def kinetics_check_groups_found_in_tree(self, family_name):
         """
         This test checks whether groups are found in the tree, with proper parents.
         """
@@ -370,7 +370,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             ascend_parent = nodeGroup
 
             # Check whether the node has proper parents unless it is the top reactant or product node
-            while ascend_parent not in family.groups.top and ascend_parent not in family.forwardTemplate.products:
+            while ascend_parent not in family.groups.top and ascend_parent not in family.forward_template.products:
                 child = ascend_parent
                 ascend_parent = ascend_parent.parent
                 tst1.append((ascend_parent is not None,
@@ -402,7 +402,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkGroupsNonidentical(self, family_name):
+    def kinetics_check_groups_nonidentical(self, family_name):
         """
         This test checks that the groups are non-identical.
         """
@@ -415,7 +415,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         for nodeName, nodeGroup in family.entries.items():
             del entries_copy[nodeName]
             for nodeNameOther, nodeGroupOther in entries_copy.items():
-                tst.append((family.matchNodeToNode(nodeGroup, nodeGroupOther),
+                tst.append((family.match_node_to_node(nodeGroup, nodeGroupOther),
                             "Group {group} in {family} family was found to be identical to group {groupOther}".format(
                                 group=nodeName, family=family_name, groupOther=nodeNameOther)))
 
@@ -428,7 +428,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkChildParentRelationships(self, family_name):
+    def kinetics_check_child_parent_relationships(self, family_name):
         """
         This test checks that groups' parent-child relationships are correct in the database.
         """
@@ -439,7 +439,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst = []
         for nodeName, childNode in family.entries.items():
             # top nodes and product nodes don't have parents by definition, so they get an automatic pass:
-            if childNode in original_family.groups.top or childNode in original_family.forwardTemplate.products:
+            if childNode in original_family.groups.top or childNode in original_family.forward_template.products:
                 continue
             parent_node = childNode.parent
 
@@ -447,22 +447,22 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 # This is a mistake in the database, but it should be caught by kinetics_checkGroupsFoundInTree
                 # so rather than report it twice or crash, we'll just silently carry on to the next node.
                 continue
-            elif parent_node in original_family.forwardTemplate.products:
+            elif parent_node in original_family.forward_template.products:
                 # This is a product node made by training reactions which we do not need to heck
                 continue
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
-            tst.append((family.matchNodeToChild(parent_node, childNode),
+            tst.append((family.match_node_to_child(parent_node, childNode),
                         "In {family} family, group {parent} is not a proper parent of its child "
                         "{child}.".format(family=family_name, parent=parent_node, child=nodeName)))
             # check that parentNodes which are LogicOr do not have an ancestor that is a Group
-            # If it does, then the childNode must also be a child of the ancestor
+            # If it does, then the child_node must also be a child of the ancestor
             if isinstance(parent_node.item, LogicOr):
                 ancestor_node = parent_node
                 while ancestor_node not in original_family.groups.top and isinstance(ancestor_node.item, LogicOr):
                     ancestor_node = ancestor_node.parent
                 if isinstance(ancestor_node.item, Group):
-                    tst.append((family.matchNodeToChild(ancestor_node, childNode),
+                    tst.append((family.match_node_to_child(ancestor_node, childNode),
                                 "In {family} family, group {ancestor} is not a proper ancestor of its child "
                                 "{child}.".format(family=family_name, ancestor=ancestor_node, child=nodeName)))
 
@@ -475,7 +475,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkSiblingsForParents(self, family_name):
+    def kinetics_check_siblings_for_parents(self, family_name):
         """
         This test checks that siblings in a tree are not actually parent/child
 
@@ -491,11 +491,11 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             # Some families also construct a 2-level trees for the products
             # (root with all entries down one level) We don't care about this
             # tree as it is not used in searching, so we ignore products
-            if node in original_family.forwardTemplate.products:
+            if node in original_family.forward_template.products:
                 continue
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index + 1:]:
-                    tst.append((family.matchNodeToChild(child1, child2),
+                    tst.append((family.match_node_to_child(child1, child2),
                                 "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(
                                     family_name, child1, child2)))
         boo = False
@@ -507,7 +507,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkAdjlistsNonidentical(self, database):
+    def kinetics_check_adjlists_nonidentical(self, database):
         """
         This test checks whether adjacency lists of reactants in a KineticsDepository or KineticsLibrary
         database object are nonidentical.
@@ -526,7 +526,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst = []
         # Go through all species to make sure they are nonidentical
         species_list = list(species_dict.values())
-        labeled_atoms = [species.molecule[0].getLabeledAtoms() for species in species_list]
+        labeled_atoms = [species.molecule[0].get_all_labeled_atoms() for species in species_list]
         for i in range(len(species_list)):
             for j in range(i + 1, len(species_list)):
                 initial_map = {}
@@ -538,7 +538,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 except KeyError:
                     # atom labels did not match, therefore not a match
                     continue
-                tst.append((species_list[i].molecule[0].isIsomorphic(species_list[j].molecule[0], initial_map),
+                tst.append((species_list[i].molecule[0].is_isomorphic(species_list[j].molecule[0], initial_map),
                             "Species {0} and species {1} in {2} database were found to be identical.".format(
                                 species_list[i].label, species_list[j].label, database.label)))
 
@@ -551,7 +551,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkRateUnitsAreCorrect(self, database, tag='library'):
+    def kinetics_check_rate_units_are_correct(self, database, tag='library'):
         """
         This test ensures that every reaction has acceptable units on the A factor.
         """
@@ -567,7 +567,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             k = entry.data
             rxn = entry.item
             molecularity = len(rxn.reactants)
-            surface_reactants = sum([1 for s in rxn.reactants if s.containsSurfaceSite()])
+            surface_reactants = sum([1 for s in rxn.reactants if s.contains_surface_site()])
             try:
 
                 if isinstance(k, rmgpy.kinetics.StickingCoefficient):
@@ -691,7 +691,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError('{0} {1} has some incorrect units'.format(tag.capitalize(), database.label))
 
-    def kinetics_checkLibraryRatesAreReasonable(self, library):
+    def kinetics_check_library_rates_are_reasonable(self, library):
         """
         This test ensures that every library reaction has reasonable kinetics at 1000 K, 1 bar
         """
@@ -706,10 +706,10 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst_limit = (kB * T) / h
         collision_limit = Na * np.pi * h_rad_diam ** 2 * np.sqrt(8 * kB * T / (np.pi * h_rad_mass / 2))
         for entry in library.entries.values():
-            if entry.item.isSurfaceReaction():
+            if entry.item.is_surface_reaction():
                 # Don't check surface reactions
                 continue
-            k = entry.data.getRateCoefficient(T, P)
+            k = entry.data.get_rate_coefficient(T, P)
             rxn = entry.item
             if k < 0:
                 boo = True
@@ -730,7 +730,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError('library {0} has unreasonable rates'.format(library.label))
 
-    def kinetics_checkReactantAndProductTemplate(self, family_name):
+    def kinetics_check_reactant_and_product_template(self, family_name):
         """
         This test checks whether the reactant and product templates within a family are correctly defined.
         For a reversible family, the reactant and product templates must have matching labels.
@@ -738,12 +738,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         otherwise overwriting may occur.
         """
         family = self.database.kinetics.families[family_name]
-        if family.ownReverse:
-            nose.tools.assert_equal(family.forwardTemplate.reactants, family.forwardTemplate.products)
+        if family.own_reverse:
+            nose.tools.assert_equal(family.forward_template.reactants, family.forward_template.products)
         else:
             tst = []
-            reactant_labels = [reactant.label for reactant in family.forwardTemplate.reactants]
-            product_labels = [product.label for product in family.forwardTemplate.products]
+            reactant_labels = [reactant.label for reactant in family.forward_template.reactants]
+            product_labels = [product.label for product in family.forward_template.products]
             for reactant_label in reactant_labels:
                 for product_label in product_labels:
                     tst.append((reactant_label == product_label,
@@ -759,19 +759,19 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if boo:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkCdAtomType(self, family_name):
+    def kinetics_check_cd_atom_type(self, family_name):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
         correctly according to their strict definitions
         """
         family = self.database.kinetics.families[family_name]
         target_label = ['Cd', 'CO', 'CS', 'Cdd']
-        target_atom_types = [atomTypes[x] for x in target_label]
+        target_atom_types = [ATOMTYPES[x] for x in target_label]
 
         # ignore product entries that get created from training reactions
         ignore = []
-        if not family.ownReverse:
-            for product in family.forwardTemplate.products:
+        if not family.own_reverse:
+            for product in family.forward_template.products:
                 ignore.append(product)
                 ignore.extend(product.children)
         else:
@@ -783,7 +783,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             # ignore LogicOr groups
             if isinstance(entry.item, Group):
                 for index, atom in enumerate(entry.item.atoms):
-                    for atomtype1 in atom.atomType:
+                    for atomtype1 in atom.atomtype:
                         if atomtype1 in target_atom_types:
                             break
                     # If Cd not found in atomTypes, go to next atom
@@ -799,19 +799,19 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                         for ligand, bond in atom.bonds.items():
                             # Ignore ligands that are not double bonded
                             if any([abs(2 - order) < 1e-7 for order in bond.order]):
-                                for ligAtomType in ligand.atomType:
-                                    if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']):
+                                for ligAtomType in ligand.atomtype:
+                                    if ligand.atomtype[0].is_specific_case_of(ATOMTYPES['O']):
                                         correct_atom_list.append('CO')
-                                    elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']):
+                                    elif ligand.atomtype[0].is_specific_case_of(ATOMTYPES['S']):
                                         correct_atom_list.append('CS')
 
                     # remove duplicates from correctAtom:
                     correct_atom_list = list(set(correct_atom_list))
                     for correctAtom in correct_atom_list:
-                        tst.append((atomTypes[correctAtom] in atom.atomType, """
+                        tst.append((ATOMTYPES[correctAtom] in atom.atomtype, """
 In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
-{4}""".format(family_name, entry, correctAtom, index + 1, entry.item.toAdjacencyList())))
+{4}""".format(family_name, entry, correctAtom, index + 1, entry.item.to_adjacency_list())))
 
         boo = False
         for i in range(len(tst)):
@@ -822,7 +822,7 @@ The following adjList may have atoms in a different ordering than the input file
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkUnimolecularGroups(self, family_name):
+    def kinetics_check_unimolecular_groups(self, family_name):
         """
         This test goes through all unimolecular groups that have more than one top level, top level groups
         that overlap with family.reactant are assumed to be backbones(contains the whole reactant molecule)
@@ -835,7 +835,7 @@ The following adjList may have atoms in a different ordering than the input file
         4)The end subgraph inside each backbone is exactly the same as the top level of the correspodning end tree
         """
 
-        def getEndFromBackbone(_backbone, _end_labels):
+        def get_end_from_backbone(_backbone, _end_labels):
             """
             :param _backbone: :class: Entry for a backbone of molecule
             :param _end_labels: Labels in the end groups
@@ -857,7 +857,7 @@ The following adjList may have atoms in a different ordering than the input file
                     bonds_to_break.append(bond)
 
             for bond in bonds_to_break:
-                copy_group.removeBond(bond)
+                copy_group.remove_bond(bond)
 
             # split group into end and backbone fragment
             groups = copy_group.split()
@@ -877,9 +877,9 @@ The following adjList may have atoms in a different ordering than the input file
         #################################################################################
         family = self.database.kinetics.families[family_name]
 
-        backbone = family.getBackboneRoots()[0]
+        backbone = family.get_backbone_roots()[0]
 
-        end_groups = family.getEndRoots()
+        end_groups = family.get_end_roots()
 
         end_labels = {}
         for end_group in end_groups:
@@ -890,7 +890,7 @@ The following adjList may have atoms in a different ordering than the input file
             end_labels[end_group] = set(labels)
 
         # get boundary atoms to test that backbones have labels between end groups
-        nose.tools.assert_is_not_none(family.boundaryAtoms)
+        nose.tools.assert_is_not_none(family.boundary_atoms)
 
         # set of all end_labels should be backbone label
         backbone_label = set([])
@@ -916,7 +916,7 @@ The following adjList may have atoms in a different ordering than the input file
                         if not labels.issubset(present_labels):
                             c.append([end_group, entry])
                     # check D
-                    mid_atoms = [group.getLabeledAtom(x)[0] for x in family.boundaryAtoms]
+                    mid_atoms = [group.get_labeled_atoms(x)[0] for x in family.boundary_atoms]
                     path_atoms = find_shortest_path(mid_atoms[0], mid_atoms[1])
                     for atom in path_atoms:
                         if not atom.label:
@@ -924,16 +924,16 @@ The following adjList may have atoms in a different ordering than the input file
                             break
                     # check E
                     for end_group, labels in end_labels.items():
-                        end_from_backbone = getEndFromBackbone(entry, labels)
-                        present_labels = end_from_backbone.getLabeledAtoms()
+                        end_from_backbone = get_end_from_backbone(entry, labels)
+                        present_labels = end_from_backbone.get_all_labeled_atoms()
                         present_labels = set(present_labels.keys())
                         if labels == present_labels:
-                            if not end_group.item.isIdentical(end_from_backbone):
+                            if not end_group.item.is_identical(end_from_backbone):
                                 e.append([end_group, entry])
                         else:
                             raise Exception(
                                 "Group {0} has split into end group {1}, but does not match any root".format(
-                                    entry.label, end_from_backbone.toAdjacencyList()))
+                                    entry.label, end_from_backbone.to_adjacency_list()))
 
                 else:
                     present_labels = set([])
@@ -991,7 +991,7 @@ The following adjList may have atoms in a different ordering than the input file
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkSampleDescendsToGroup(self, family_name):
+    def kinetics_check_sample_descends_to_group(self, family_name):
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
@@ -1003,8 +1003,8 @@ The following adjList may have atoms in a different ordering than the input file
         tst3 = []
         # ignore any products
         ignore = []
-        if not family.ownReverse:
-            for product in family.forwardTemplate.products:
+        if not family.own_reverse:
+            for product in family.forward_template.products:
                 ignore.append(product)
                 ignore.extend(product.children)
         else:
@@ -1012,13 +1012,13 @@ The following adjList may have atoms in a different ordering than the input file
 
         # If family is backbone archetype, then we need to merge groups before descending
         roots = family.groups.top
-        if len(roots) > len(family.forwardTemplate.reactants):
-            backbone_roots = family.getBackboneRoots()
+        if len(roots) > len(family.forward_template.reactants):
+            backbone_roots = family.get_backbone_roots()
             all_backbone_groups = []
             for backboneRoot in backbone_roots:
-                all_backbone_groups.extend(family.getTopLevelGroups(backboneRoot))
+                all_backbone_groups.extend(family.get_top_level_groups(backboneRoot))
             # list of numbered of labelled atoms for all_backbone_groups
-            backbone_sizes = [len(backbone.item.getLabeledAtoms()) for backbone in all_backbone_groups]
+            backbone_sizes = [len(backbone.item.get_all_labeled_atoms()) for backbone in all_backbone_groups]
 
             # pick a backbone that is two labelled atoms larger than the smallest
             if min(backbone_sizes) + 2 in backbone_sizes:
@@ -1043,19 +1043,19 @@ The following adjList may have atoms in a different ordering than the input file
                     root = entry
                 try:
                     if merges_necessary and root not in backbone_roots:  # we may need to merge
-                        merged_group = backbone_sample.item.mergeGroups(entry.item)
-                        sample_molecule = merged_group.makeSampleMolecule()
+                        merged_group = backbone_sample.item.merge_groups(entry.item)
+                        sample_molecule = merged_group.make_sample_molecule()
                     else:
-                        sample_molecule = entry.item.makeSampleMolecule()
+                        sample_molecule = entry.item.make_sample_molecule()
 
                     # test accessibility here
-                    atoms = sample_molecule.getLabeledAtoms()
-                    match = family.groups.descendTree(sample_molecule, atoms, strict=True, root=root)
+                    atoms = sample_molecule.get_all_labeled_atoms()
+                    match = family.groups.descend_tree(sample_molecule, atoms, strict=True, root=root)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, root.label)))
                     if tst1[-1][0] is not None:
                         if merges_necessary and root not in backbone_roots:
                             backbone_msg = "\n\nBackbone Group Adjlist:\n" + backbone_sample.label + '\n'
-                            backbone_msg += backbone_sample.item.toAdjacencyList()
+                            backbone_msg += backbone_sample.item.to_adjacency_list()
                         else:
                             backbone_msg = ''
                         tst2.append((entry, [match] + family.groups.ancestors(match), """
@@ -1067,13 +1067,13 @@ Origin Group AdjList:
 {4}{5}
 
 Matched group AdjList:
-{6}""".format(family_name, entry.label, match.label, sample_molecule.toAdjacencyList(), entry.item.toAdjacencyList(),
-              backbone_msg, match.item.toAdjacencyList())))
+{6}""".format(family_name, entry.label, match.label, sample_molecule.to_adjacency_list(), entry.item.to_adjacency_list(),
+              backbone_msg, match.item.to_adjacency_list())))
 
                 except UnexpectedChargeError as e:
                     if merges_necessary and root not in backbone_roots:
                         backbone_msg = "\n\nBackbone Group Adjlist:\n" + backbone_sample.label + '\n'
-                        backbone_msg += backbone_sample.item.toAdjacencyList()
+                        backbone_msg += backbone_sample.item.to_adjacency_list()
                     else:
                         backbone_msg = ''
                     tst3.append((False, """
@@ -1082,7 +1082,7 @@ Sample molecule AdjList:
 {2}
 
 Origin Group AdjList:
-{3}{4}""".format(family_name, entry.label, e.graph.toAdjacencyList(), entry.item.toAdjacencyList(), backbone_msg)))
+{3}{4}""".format(family_name, entry.label, e.graph.to_adjacency_list(), entry.item.to_adjacency_list(), backbone_msg)))
 
                 except ImplicitBenzeneError:
                     skipped.append(entryName)
@@ -1110,7 +1110,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkNodesFoundInTree(self, group_name, group):
+    def general_check_nodes_found_in_tree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
         """
@@ -1150,7 +1150,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkGroupsNonidentical(self, group_name, group):
+    def general_check_groups_nonidentical(self, group_name, group):
         """
         This test checks whether nodes found in the group are nonidentical.
         """
@@ -1158,11 +1158,11 @@ Origin Group AdjList:
         tst = []
         for node_name, node_group in group.entries.items():
             del entries_copy[node_name]
-            for nodeNameOther, nodeGroupOther in entries_copy.items():
-                group.matchNodeToNode(node_group, nodeGroupOther)
-                tst.append((group.matchNodeToNode(node_group, nodeGroupOther),
-                            "Node {node} in {group} group was found to be identical to node {nodeOther}".format(
-                                node=node_name, group=group_name, nodeOther=nodeNameOther)))
+            for node_name_other, node_group_other in entries_copy.items():
+                group.match_node_to_node(node_group, node_group_other)
+                tst.append((group.match_node_to_node(node_group, node_group_other),
+                            "Node {node} in {group} group was found to be identical to node {node_other}".format(
+                                node=node_name, group=group_name, node_other=node_name_other)))
 
         boo = False
         for i in range(len(tst)):
@@ -1173,7 +1173,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkChildParentRelationships(self, group_name, group):
+    def general_check_child_parent_relationships(self, group_name, group):
         """
         This test checks that nodes' parent-child relationships are correct in the database.
         """
@@ -1186,7 +1186,7 @@ Origin Group AdjList:
             parent_node = child_node.parent
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
-            tst1.append((group.matchNodeToChild(parent_node, child_node),
+            tst1.append((group.match_node_to_child(parent_node, child_node),
                          "In {group} group, node {parent} is not a proper parent of its child {child}.".format(
                              group=group_name, parent=parent_node, child=node_name)))
 
@@ -1197,7 +1197,7 @@ Origin Group AdjList:
                 while ancestor_node not in group.top and isinstance(ancestor_node.item, LogicOr):
                     ancestor_node = ancestor_node.parent
                 if isinstance(ancestor_node.item, Group) and tst1[-1][0]:
-                    tst2.append((group.matchNodeToChild(ancestor_node, child_node),
+                    tst2.append((group.match_node_to_child(ancestor_node, child_node),
                                  "In {group} group, node {ancestor} is not a proper ancestor of its child {child}."
                                  "".format(group=group_name, ancestor=ancestor_node, child=node_name)))
 
@@ -1214,7 +1214,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkSiblingsForParents(self, group_name, group):
+    def general_check_siblings_for_parents(self, group_name, group):
         """
         This test checks that siblings in a tree are not actually parent/child.
 
@@ -1236,7 +1236,7 @@ Origin Group AdjList:
         for nodeName, node in group.entries.items():
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index + 1:]:
-                    tst.append((group.matchNodeToChild(child1, child2),
+                    tst.append((group.match_node_to_child(child1, child2),
                                 "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(
                                     group_name, child1, child2)))
 
@@ -1249,24 +1249,24 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkCdAtomType(self, group_name, group):
+    def general_check_cd_atom_type(self, group_name, group):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
         correctly according to their strict definitions
         """
         target_label = ['Cd', 'CO', 'CS', 'Cdd']
-        target_atom_types = [atomTypes[x] for x in target_label]
+        target_atom_types = [ATOMTYPES[x] for x in target_label]
         tst = []
         for entry_name, entry in group.entries.items():
             if isinstance(entry.item, Group):
                 for index, atom in enumerate(entry.item.atoms):
-                    for atomtype1 in atom.atomType:
+                    for atomtype1 in atom.atomtype:
                         if atomtype1 in target_atom_types:
                             break
                     else:
                         # If Cd not found in atomTypes, go to next atom
                         continue
-                    # figure out what the correct atomType is
+                    # figure out what the correct atomtype is
                     correct_atom_list = []
                     num_of_d_bonds = sum(
                         [1 if x.order[0] is 'D' and len(x.order) == 1 else 0 for x in atom.bonds.values()])
@@ -1276,19 +1276,19 @@ Origin Group AdjList:
                         for ligand, bond in atom.bonds.items():
                             # Ignore ligands that are not double bonded
                             if any([abs(2 - order) < 1e-7 for order in bond.order]):
-                                for lig_atom_type in ligand.atomType:
-                                    if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']):
+                                for lig_atom_type in ligand.atomtype:
+                                    if ligand.atomtype[0].is_specific_case_of(ATOMTYPES['O']):
                                         correct_atom_list.append('CO')
-                                    elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']):
+                                    elif ligand.atomtype[0].is_specific_case_of(ATOMTYPES['S']):
                                         correct_atom_list.append('CS')
 
                     # remove duplicates from correctAtom:
                     correct_atom_list = list(set(correct_atom_list))
                     for correctAtom in correct_atom_list:
-                        tst.append((atomTypes[correctAtom] in atom.atomType, """
+                        tst.append((ATOMTYPES[correctAtom] in atom.atomtype, """
 In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
-{4}""".format(group_name, entry, correctAtom, index + 1, entry.item.toAdjacencyList())))
+{4}""".format(group_name, entry, correctAtom, index + 1, entry.item.to_adjacency_list())))
 
         boo = False
         for i in range(len(tst)):
@@ -1299,7 +1299,7 @@ The following adjList may have atoms in a different ordering than the input file
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkSampleDescendsToGroup(self, group_name, group):
+    def general_check_sample_descends_to_group(self, group_name, group):
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
@@ -1313,22 +1313,22 @@ The following adjList may have atoms in a different ordering than the input file
             try:
                 if isinstance(entry.item, Group):
                     try:
-                        sample_molecule = entry.item.makeSampleMolecule()
+                        sample_molecule = entry.item.make_sample_molecule()
                     except:
                         logging.error("Problem making sample molecule for group {}\n{}".format(
-                            entryName, entry.item.toAdjacencyList()))
+                            entryName, entry.item.to_adjacency_list()))
                         raise
                     # for now ignore sample atoms that use nitrogen types
                     nitrogen = False
                     for atom in sample_molecule.atoms:
-                        if atom.isNitrogen():
+                        if atom.is_nitrogen():
                             nitrogen = True
                     if nitrogen:
                         skipped.append(entryName)
                         continue
 
-                    atoms = sample_molecule.getLabeledAtoms()
-                    match = group.descendTree(sample_molecule, atoms, strict=True)
+                    atoms = sample_molecule.get_all_labeled_atoms()
+                    match = group.descend_tree(sample_molecule, atoms, strict=True)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, group.top[0])))
                     tst2.append((entry, [match] + group.ancestors(match), """
 In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
@@ -1343,9 +1343,9 @@ Matched group AdjList:
 """.format(group_name,
            entry,
            match,
-           sample_molecule.toAdjacencyList(),
-           entry.item.toAdjacencyList(),
-           match.item.toAdjacencyList())))
+           sample_molecule.to_adjacency_list(),
+           entry.item.to_adjacency_list(),
+           match.item.to_adjacency_list())))
 
             except UnexpectedChargeError as e:
                 tst3.append((False, """
@@ -1354,7 +1354,7 @@ Sample molecule AdjList:
 {2}
 
 Origin Group AdjList:
-{3}""".format(group_name, entry.label, e.graph.toAdjacencyList(), entry.item.toAdjacencyList())))
+{3}""".format(group_name, entry.label, e.graph.to_adjacency_list(), entry.item.to_adjacency_list())))
 
             except ImplicitBenzeneError:
                 skipped.append(entryName)

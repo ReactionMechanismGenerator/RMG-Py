@@ -35,7 +35,7 @@ This module contains functionality for working with kinetics depositories.
 import re
 
 from rmgpy.data.base import Database, Entry, DatabaseError
-from rmgpy.data.kinetics.common import saveEntry
+from rmgpy.data.kinetics.common import save_entry
 from rmgpy.reaction import Reaction
 
 
@@ -52,10 +52,10 @@ class DepositoryReaction(Reaction):
                  index=-1,
                  reactants=None,
                  products=None,
-                 specificCollider=None,
+                 specific_collider=None,
                  kinetics=None,
                  reversible=True,
-                 transitionState=None,
+                 transition_state=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
@@ -67,10 +67,10 @@ class DepositoryReaction(Reaction):
                           index=index,
                           reactants=reactants,
                           products=products,
-                          specificCollider=specificCollider,
+                          specific_collider=specific_collider,
                           kinetics=kinetics,
                           reversible=reversible,
-                          transitionState=transitionState,
+                          transition_state=transition_state,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
                           pairs=pairs
@@ -86,10 +86,10 @@ class DepositoryReaction(Reaction):
         return (DepositoryReaction, (self.index,
                                      self.reactants,
                                      self.products,
-                                     self.specificCollider,
+                                     self.specific_collider,
                                      self.kinetics,
                                      self.reversible,
-                                     self.transitionState,
+                                     self.transition_state,
                                      self.duplicate,
                                      self.degeneracy,
                                      self.pairs,
@@ -98,7 +98,7 @@ class DepositoryReaction(Reaction):
                                      self.entry
                                      ))
 
-    def getSource(self):
+    def get_source(self):
         """
         Return the database that was the source of this reaction. For a
         DepositoryReaction this should be a KineticsDepository object.
@@ -116,8 +116,8 @@ class KineticsDepository(Database):
     real reactant and product species (as in a kinetics library).
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+    def __init__(self, label='', name='', short_desc='', long_desc=''):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
 
     def __str__(self):
         return 'Kinetics Depository {0}'.format(self.label)
@@ -131,7 +131,7 @@ class KineticsDepository(Database):
 
         # Load the species in the kinetics library
         # Do not generate resonance structures, since training reactions may be written for a specific resonance form
-        species_dict = self.getSpecies(os.path.join(os.path.dirname(path), 'dictionary.txt'), resonance=False)
+        species_dict = self.get_species(os.path.join(os.path.dirname(path), 'dictionary.txt'), resonance=False)
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
         for entry in entries:
@@ -177,7 +177,7 @@ class KineticsDepository(Database):
                     raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'
                                         ''.format(reactant, self.label))
                 # Depository reactions should have molecule objects because they are needed in order to descend the
-                # tree using `getReactionTemplate()` later, but species objects work because `getReactionTemplate()`
+                # tree using `get_reaction_template()` later, but species objects work because `get_reaction_template()`
                 # will simply pick the first molecule object in `Species().molecule`.
                 rxn.reactants.append(species_dict[reactant])
             for product in products.split('+'):
@@ -188,33 +188,36 @@ class KineticsDepository(Database):
                 # Same comment about molecule vs species objects as above.
                 rxn.products.append(species_dict[product])
 
-            if not rxn.isBalanced():
+            if not rxn.is_balanced():
                 raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'
                                     ''.format(rxn, self.label))
 
+    def load_entry(self,
+                   index,
+                   reactant1=None,
+                   reactant2=None,
+                   reactant3=None,
+                   product1=None,
+                   product2=None,
+                   product3=None,
+                   specificCollider=None,
+                   kinetics=None,
+                   degeneracy=1,
+                   label='',
+                   duplicate=False,
+                   reversible=True,
+                   reference=None,
+                   referenceType='',
+                   shortDesc='',
+                   longDesc='',
+                   rank=None,
+                   ):
+        """
+        Method for parsing entries in database files.
+        Note that these argument names are retained for backward compatibility.
+        """
 
-    def loadEntry(self,
-                  index,
-                  reactant1=None,
-                  reactant2=None,
-                  reactant3=None,
-                  product1=None,
-                  product2=None,
-                  product3=None,
-                  specificCollider=None,
-                  kinetics=None,
-                  degeneracy=1,
-                  label='',
-                  duplicate=False,
-                  reversible=True,
-                  reference=None,
-                  referenceType='',
-                  shortDesc='',
-                  longDesc='',
-                  rank=None,
-                  ):
-
-        reaction = Reaction(reactants=[], products=[], specificCollider=specificCollider,
+        reaction = Reaction(reactants=[], products=[], specific_collider=specificCollider,
                             degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
 
         entry = Entry(
@@ -223,17 +226,17 @@ class KineticsDepository(Database):
             item=reaction,
             data=kinetics,
             reference=reference,
-            referenceType=referenceType,
-            shortDesc=shortDesc,
-            longDesc=longDesc.strip(),
+            reference_type=referenceType,
+            short_desc=shortDesc,
+            long_desc=longDesc.strip(),
             rank=rank,
         )
         assert index not in self.entries
         self.entries[index] = entry
         return entry
 
-    def saveEntry(self, f, entry):
+    def save_entry(self, f, entry):
         """
         Write the given `entry` in the kinetics database to the file object `f`.
         """
-        return saveEntry(f, entry)
+        return save_entry(f, entry)

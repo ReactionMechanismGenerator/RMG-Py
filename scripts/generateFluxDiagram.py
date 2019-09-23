@@ -40,7 +40,7 @@ Chemkin output file can also be passed as an optional positional argument.
 import argparse
 import os
 
-from rmgpy.tools.fluxdiagram import createFluxDiagram
+from rmgpy.tools.fluxdiagram import create_flux_diagram
 
 
 ################################################################################
@@ -92,14 +92,14 @@ def parse_arguments():
     save_states = args.saveStates
     read_states = args.readStates
 
-    keys = ('maximumNodeCount',
-            'maximumEdgeCount',
-            'concentrationTolerance',
-            'speciesRateTolerance',
+    keys = ('max_node_count',
+            'max_edge_count',
+            'concentration_tol',
+            'species_rate_tol',
             'radius',
-            'centralReactionCount',
-            'timeStep')
-    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
+            'central_reaction_count',
+            'time_step')
+    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.central_reaction_count, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
 
     return (input_file,
@@ -118,24 +118,24 @@ def parse_arguments():
 
 
 def main():
-    (inputFile,
-     chemkinFile,
-     dictFile,
-     speciesPath,
-     chemkinOutput,
-     useJava,
+    (input_file,
+     chemkin_file,
+     dict_file,
+     species_path,
+     chemkin_output,
+     use_java,
      dflag,
-     checkDuplicates,
+     check_duplicates,
      settings,
-     centralSpeciesList,
+     central_species_list,
      superimpose,
-     saveStates,
-     readStates) = parse_arguments()
+     save_states,
+     read_states) = parse_arguments()
 
-    createFluxDiagram(inputFile, chemkinFile, dictFile, speciesPath=speciesPath, java=useJava, settings=settings,
-                      chemkinOutput=chemkinOutput, diffusionLimited=dflag, centralSpeciesList=centralSpeciesList,
-                      superimpose=superimpose, saveStates=saveStates, readStates=readStates,
-                      checkDuplicates=checkDuplicates)
+    create_flux_diagram(input_file, chemkin_file, dict_file, species_path=species_path, java=use_java,
+                        settings=settings, chemkin_output=chemkin_output, central_species_list=central_species_list,
+                        superimpose=superimpose, save_states=save_states, read_states=read_states,
+                        diffusion_limited=dflag, check_duplicates=check_duplicates)
 
 
 if __name__ == '__main__':

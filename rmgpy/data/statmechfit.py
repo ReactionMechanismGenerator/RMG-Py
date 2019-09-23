@@ -51,30 +51,30 @@ from rmgpy.statmech import HarmonicOscillator, HinderedRotor
 # aspects of the optimization (bounds, iterations, etc.)
 
 # The lower bound for harmonic oscillator frequencies in cm^-1
-hoFreqLowerBound = 180.0
+ho_freq_lower_bound = 180.0
 # The upper bound for harmonic oscillator frequencies in cm^-1
-hoFreqUpperBound = 4000.0
+ho_freq_upper_bound = 4000.0
 
 # The lower bound for hindered rotor frequencies in cm^-1
-hrFreqLowerBound = 180.0
+hr_freq_lower_bound = 180.0
 # The upper bound for hindered rotor frequencies in cm^-1
-hrFreqUpperBound = 4000.0
+hr_freq_upper_bound = 4000.0
 
 # The lower bound for hindered rotor barrier heights in cm^-1
-hrBarrLowerBound = 10.0
+hr_barr_lower_bound = 10.0
 # The upper bound for hindered rotor barrier heights in cm^-1
-hrBarrUpperBound = 10000.0
+hr_barr_upper_bound = 10000.0
 
 # The maximum number of iterations for the optimization solver to use
-maxIter = 200
+max_iter = 200
 
 
 ################################################################################
 
-def fitStatmechToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fit_statmech_to_heat_capacity(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     """
     For a given set of dimensionless heat capacity data `Cvlist` corresponding
-    to temperature list `Tlist` in K, fit `Nvib` harmonic oscillator and `Nrot`
+    to temperature list `Tlist` in K, fit `n_vib` harmonic oscillator and `n_rot`
     hindered internal rotor modes. External and other previously-known modes
     should have already been removed from `Cvlist` prior to calling this
     function. You must provide at least 7 values for `Cvlist`.
@@ -99,30 +99,30 @@ def fitStatmechToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     if max_variables > 16:
         max_variables = 16
 
-    # The type of variables fitted depends on the values of Nvib and Nrot and
+    # The type of variables fitted depends on the values of n_vib and n_rot and
     # the number of heat capacity points provided
-    # For low values of Nvib and Nrot, we can fit the individual
+    # For low values of n_vib and n_rot, we can fit the individual
     # parameters directly
-    # For high values of Nvib and/or Nrot we are limited by the number of
+    # For high values of n_vib and/or n_rot we are limited by the number of
     # temperatures we are fitting at, and so we can only fit
     # pseudo-oscillators and/or pseudo-rotors
     vib = []
     hind = []
-    if Nvib <= 0 and Nrot <= 0:
+    if n_vib <= 0 and n_rot <= 0:
         pass
-    elif Nvib + 2 * Nrot <= max_variables:
-        vib, hind = fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule)
-    elif Nvib + 2 <= max_variables:
-        vib, hind = fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule)
+    elif n_vib + 2 * n_rot <= max_variables:
+        vib, hind = fit_statmech_direct(Tlist, Cvlist, n_vib, n_rot, molecule)
+    elif n_vib + 2 <= max_variables:
+        vib, hind = fit_statmech_pseudo_rotors(Tlist, Cvlist, n_vib, n_rot, molecule)
     else:
-        vib, hind = fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule)
+        vib, hind = fit_statmech_pseudo(Tlist, Cvlist, n_vib, n_rot, molecule)
 
     modes = []
-    if Nvib > 0:
+    if n_vib > 0:
         vib.sort()
         ho = HarmonicOscillator(frequencies=(vib[:], "cm^-1"))
         modes.append(ho)
-    for i in range(Nrot):
+    for i in range(n_rot):
         freq = hind[i][0]
         barr = hind[i][1]
         inertia = (barr * constants.c * 100.0 * constants.h) / (8 * math.pi * math.pi * (freq*constants.c*100.0) ** 2)
@@ -137,9 +137,9 @@ def fitStatmechToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
 ################################################################################
 
-def fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fit_statmech_direct(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     """
-    Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
+    Fit `n_vib` harmonic oscillator and `n_rot` hindered internal rotor modes to
     the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
     in K. This method assumes that there are enough heat capacity points
     provided that the vibrational frequencies and hindered rotation frequency-
@@ -149,32 +149,32 @@ def fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     # Construct the lower and upper bounds for each variable
     bounds = []
     # Bounds for harmonic oscillator frequencies
-    for i in range(Nvib):
-        bounds.append((hoFreqLowerBound, hoFreqUpperBound))
+    for i in range(n_vib):
+        bounds.append((ho_freq_lower_bound, ho_freq_upper_bound))
     # Bounds for hindered rotor frequencies and barrier heights
-    for i in range(Nrot):
-        bounds.append((hrFreqLowerBound, hrFreqUpperBound))
-        bounds.append((hrBarrLowerBound, hrBarrUpperBound))
+    for i in range(n_rot):
+        bounds.append((hr_freq_lower_bound, hr_freq_upper_bound))
+        bounds.append((hr_barr_lower_bound, hr_barr_upper_bound))
 
     # Construct the initial guess
     # Initial guesses within each mode type must be distinct or else the
     # optimization will fail
-    x0 = np.zeros(Nvib + 2 * Nrot, np.float64)
+    x0 = np.zeros(n_vib + 2 * n_rot, np.float64)
     # Initial guess for harmonic oscillator frequencies
-    if Nvib > 0:
+    if n_vib > 0:
         x0[0] = 200.0
-        x0[1:Nvib] = np.linspace(800.0, 1600.0, Nvib - 1)
+        x0[1:n_vib] = np.linspace(800.0, 1600.0, n_vib - 1)
     # Initial guess for hindered rotor frequencies and barrier heights
-    if Nrot > 0:
-        x0[Nvib] = 100.0
-        x0[Nvib + 1] = 100.0
-        for i in range(1, Nrot):
-            x0[Nvib + 2 * i] = x0[Nvib + 2 * i - 2] + 20.0
-            x0[Nvib + 2 * i + 1] = x0[Nvib + 2 * i - 1] + 100.0
+    if n_rot > 0:
+        x0[n_vib] = 100.0
+        x0[n_vib + 1] = 100.0
+        for i in range(1, n_rot):
+            x0[n_vib + 2 * i] = x0[n_vib + 2 * i - 2] + 20.0
+            x0[n_vib + 2 * i + 1] = x0[n_vib + 2 * i - 1] + 100.0
 
     # Execute the optimization
-    fit = DirectFit(Tlist, Cvlist, Nvib, Nrot)
-    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
+    fit = DirectFit(Tlist, Cvlist, n_vib, n_rot)
+    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=max_iter)
     x, igo = fit.solve(x0)
 
     # Check that the results of the optimization are valid
@@ -182,26 +182,26 @@ def fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for '
-                        '{0}.'.format(molecule.toSMILES()))
+                        '{0}.'.format(molecule.to_smiles()))
     elif igo > 8:
-        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
-    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(Nvib, Nrot))
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.to_smiles()))
+    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(n_vib, n_rot))
     logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
     # Postprocess optimization results
-    vib = list(x[0:Nvib])
+    vib = list(x[0:n_vib])
     hind = []
-    for i in range(Nrot):
-        hind.append((x[Nvib + 2 * i], x[Nvib + 2 * i + 1]))
+    for i in range(n_rot):
+        hind.append((x[n_vib + 2 * i], x[n_vib + 2 * i + 1]))
 
     return vib, hind
 
 
 ################################################################################
 
-def fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fit_statmech_pseudo_rotors(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     """
-    Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
+    Fit `n_vib` harmonic oscillator and `n_rot` hindered internal rotor modes to
     the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
     in K. This method assumes that there are enough heat capacity points
     provided that the vibrational frequencies can be fit directly, but the
@@ -211,27 +211,27 @@ def fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     # Construct the lower and upper bounds for each variable
     bounds = []
     # Bounds for harmonic oscillator frequencies
-    for i in range(Nvib):
-        bounds.append((hoFreqLowerBound, hoFreqUpperBound))
+    for i in range(n_vib):
+        bounds.append((ho_freq_lower_bound, ho_freq_upper_bound))
     # Bounds for pseudo-hindered rotor frequency and barrier height
-    bounds.append((hrFreqLowerBound, hrFreqUpperBound))
-    bounds.append((hrBarrLowerBound, hrBarrUpperBound))
+    bounds.append((hr_freq_lower_bound, hr_freq_upper_bound))
+    bounds.append((hr_barr_lower_bound, hr_barr_upper_bound))
 
     # Construct the initial guess
     # Initial guesses within each mode type must be distinct or else the
     # optimization will fail
-    x0 = np.zeros(Nvib + 2, np.float64)
+    x0 = np.zeros(n_vib + 2, np.float64)
     # Initial guess for harmonic oscillator frequencies
-    if Nvib > 0:
+    if n_vib > 0:
         x0[0] = 200.0
-        x0[1:Nvib] = np.linspace(800.0, 1600.0, Nvib - 1)
+        x0[1:n_vib] = np.linspace(800.0, 1600.0, n_vib - 1)
     # Initial guess for hindered rotor frequencies and barrier heights
-    x0[Nvib] = 100.0
-    x0[Nvib + 1] = 300.0
+    x0[n_vib] = 100.0
+    x0[n_vib + 1] = 300.0
 
     # Execute the optimization
-    fit = PseudoRotorFit(Tlist, Cvlist, Nvib, Nrot)
-    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
+    fit = PseudoRotorFit(Tlist, Cvlist, n_vib, n_rot)
+    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=max_iter)
     x, igo = fit.solve(x0)
 
     # Check that the results of the optimization are valid
@@ -239,26 +239,26 @@ def fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for '
-                        '{0}.'.format(molecule.toSMILES()))
+                        '{0}.'.format(molecule.to_smiles()))
     if igo > 8:
-        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
-    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(Nvib, Nrot))
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.to_smiles()))
+    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(n_vib, n_rot))
     logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
     # Postprocess optimization results
-    vib = list(x[0:Nvib])
+    vib = list(x[0:n_vib])
     hind = []
-    for i in range(Nrot):
-        hind.append((x[Nvib], x[Nvib + 1]))
+    for i in range(n_rot):
+        hind.append((x[n_vib], x[n_vib + 1]))
 
     return vib, hind
 
 
 ################################################################################
 
-def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fit_statmech_pseudo(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     """
-    Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
+    Fit `n_vib` harmonic oscillator and `n_rot` hindered internal rotor modes to
     the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
     in K. This method assumes that there are relatively few heat capacity points
     provided, so the vibrations must be combined into one real vibration and
@@ -269,30 +269,30 @@ def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     # Construct the lower and upper bounds for each variable
     bounds = []
     # x[0] corresponds to the first harmonic oscillator (real) frequency
-    bounds.append((hoFreqLowerBound, hoFreqUpperBound))
+    bounds.append((ho_freq_lower_bound, ho_freq_upper_bound))
     # x[1] corresponds to the degeneracy of the second harmonic oscillator
-    bounds.append((1.0, float(Nvib - 2)))
+    bounds.append((1.0, float(n_vib - 2)))
     # x[2] corresponds to the second harmonic oscillator pseudo-frequency
-    bounds.append((hoFreqLowerBound, hoFreqUpperBound))
+    bounds.append((ho_freq_lower_bound, ho_freq_upper_bound))
     # x[3] corresponds to the third harmonic oscillator pseudo-frequency
-    bounds.append((hoFreqLowerBound, hoFreqUpperBound))
+    bounds.append((ho_freq_lower_bound, ho_freq_upper_bound))
     # x[4] corresponds to the hindered rotor pseudo-frequency
-    bounds.append((hrFreqLowerBound, hrFreqUpperBound))
+    bounds.append((hr_freq_lower_bound, hr_freq_upper_bound))
     # x[5] corresponds to the hindered rotor pseudo-barrier
-    bounds.append((hrBarrLowerBound, hrBarrUpperBound))
+    bounds.append((hr_barr_lower_bound, hr_barr_upper_bound))
 
     # Construct the initial guess
     x0 = np.zeros(6, np.float64)  # Initial guess
     x0[0] = 300.0
-    x0[1] = float(math.floor((Nvib - 1) / 2.0))
+    x0[1] = float(math.floor((n_vib - 1) / 2.0))
     x0[2] = 800.0
     x0[3] = 1600.0
     x0[4] = 100.0
     x0[5] = 300.0
 
     # Execute the optimization
-    fit = PseudoFit(Tlist, Cvlist, Nvib, Nrot)
-    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=maxIter)
+    fit = PseudoFit(Tlist, Cvlist, n_vib, n_rot)
+    fit.initialize(Neq=len(Tlist), Nvars=len(x0), Ncons=0, bounds=bounds, maxIter=max_iter)
     x, igo = fit.solve(x0)
 
     # Check that the results of the optimization are valid
@@ -300,16 +300,16 @@ def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for '
-                        '{0}.'.format(molecule.toSMILES()))
+                        '{0}.'.format(molecule.to_smiles()))
     if igo > 8:
-        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
-    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(Nvib, Nrot))
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.to_smiles()))
+    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(n_vib, n_rot))
     logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
     # Postprocess optimization results
     n_vib2 = int(round(x[1]))
-    n_vib_3 = Nvib - n_vib2 - 1
-    if n_vib2 < 0 or n_vib2 > Nvib - 1 or n_vib_3 < 0 or n_vib_3 > Nvib - 1:
+    n_vib_3 = n_vib - n_vib2 - 1
+    if n_vib2 < 0 or n_vib2 > n_vib - 1 or n_vib_3 < 0 or n_vib_3 > n_vib - 1:
         raise StatmechFitError('Invalid degeneracies {0} and {1} fitted for '
                                'pseudo-frequencies.'.format(n_vib2, n_vib_3))
 
@@ -319,7 +319,7 @@ def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     for i in range(n_vib_3):
         vib.append(x[3])
     hind = []
-    for i in range(Nrot):
+    for i in range(n_rot):
         hind.append((x[4], x[5]))
 
     return vib, hind
@@ -327,7 +327,7 @@ def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
 ################################################################################
 
-def harmonicOscillator_heatCapacity(T, freq):
+def harmonic_oscillator_heat_capacity(T, freq):
     """
     Return the heat capacity in J/mol*K at the given set of temperatures `Tlist`
     in K for the harmonic oscillator with a frequency `freq` in cm^-1.
@@ -338,7 +338,7 @@ def harmonicOscillator_heatCapacity(T, freq):
     return x * x * exp_x / one_minus_exp_x / one_minus_exp_x
 
 
-def harmonicOscillator_d_heatCapacity_d_freq(T, freq):
+def harmonic_oscillator_d_heat_capacity_d_freq(T, freq):
     """
     Return the first derivative of the heat capacity with respect to the
     harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
@@ -350,7 +350,7 @@ def harmonicOscillator_d_heatCapacity_d_freq(T, freq):
     return x * exp_x / one_minus_exp_x / one_minus_exp_x * (2.0 + x + 2.0 * x * exp_x / one_minus_exp_x) * x / freq
 
 
-def hinderedRotor_heatCapacity(T, freq, barr):
+def hindered_rotor_heat_capacity(T, freq, barr):
     """
     Return the heat capacity in J/mol*K at the given set of temperatures `Tlist`
     in K for the 1D hindered rotor with a frequency `freq` in cm^-1 and a
@@ -364,7 +364,7 @@ def hinderedRotor_heatCapacity(T, freq, barr):
     return x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - bb - z * bb * bb)
 
 
-def hinderedRotor_d_heatCapacity_d_freq(T, freq, barr):
+def hindered_rotor_d_heat_capacity_d_freq(T, freq, barr):
     """
     Return the first derivative of the heat capacity with respect to the
     hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
@@ -377,7 +377,7 @@ def hinderedRotor_d_heatCapacity_d_freq(T, freq, barr):
     return x * exp_x / one_minus_exp_x / one_minus_exp_x * (2 + x + 2 * x * exp_x / one_minus_exp_x) * x / freq
 
 
-def hinderedRotor_d_heatCapacity_d_barr(T, freq, barr):
+def hindered_rotor_d_heat_capacity_d_barr(T, freq, barr):
     """
     Return the first derivative of the heat capacity with respect to the
     hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
@@ -398,11 +398,11 @@ class DirectFit(DQED):
     and rotors that their values can be fit directly.
     """
 
-    def __init__(self, Tdata, Cvdata, Nvib, Nrot):
+    def __init__(self, Tdata, Cvdata, n_vib, n_rot):
         self.Tdata = Tdata
         self.Cvdata = Cvdata
-        self.Nvib = Nvib
-        self.Nrot = Nrot
+        self.n_vib = n_vib
+        self.n_rot = n_rot
 
     def evaluate(self, x):
         n_eq = self.Neq
@@ -413,24 +413,24 @@ class DirectFit(DQED):
         f_cons = np.zeros((n_cons), np.float64)
         J_cons = np.zeros((n_cons, n_vars), np.float64)
 
-        n_vib = self.Nvib
-        n_rot = self.Nrot
+        n_vib = self.n_vib
+        n_rot = self.n_rot
 
         for i in range(len(self.Tdata)):
             # Residual
             for n in range(n_vib):
-                f[i] += harmonicOscillator_heatCapacity(self.Tdata[i], x[n])
+                f[i] += harmonic_oscillator_heat_capacity(self.Tdata[i], x[n])
             for n in range(n_rot):
-                f[i] += hinderedRotor_heatCapacity(self.Tdata[i], x[n_vib + 2 * n], x[n_vib + 2 * n + 1])
+                f[i] += hindered_rotor_heat_capacity(self.Tdata[i], x[n_vib + 2 * n], x[n_vib + 2 * n + 1])
             f[i] -= self.Cvdata[i]
             # Jacobian
             for n in range(n_vib):
-                J[i, n] = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[n])
+                J[i, n] = harmonic_oscillator_d_heat_capacity_d_freq(self.Tdata[i], x[n])
             for n in range(n_rot):
-                J[i, n_vib + 2 * n] = hinderedRotor_d_heatCapacity_d_freq(self.Tdata[i], x[n_vib + 2 * n],
-                                                                          x[n_vib + 2 * n + 1])
-                J[i, n_vib + 2 * n + 1] = hinderedRotor_d_heatCapacity_d_barr(self.Tdata[i], x[n_vib + 2 * n],
-                                                                              x[n_vib + 2 * n + 1])
+                J[i, n_vib + 2 * n] = hindered_rotor_d_heat_capacity_d_freq(self.Tdata[i], x[n_vib + 2 * n],
+                                                                            x[n_vib + 2 * n + 1])
+                J[i, n_vib + 2 * n + 1] = hindered_rotor_d_heat_capacity_d_barr(self.Tdata[i], x[n_vib + 2 * n],
+                                                                                x[n_vib + 2 * n + 1])
 
         return f, J, f_cons, J_cons
 
@@ -444,11 +444,11 @@ class PseudoRotorFit(DQED):
     frequencies directly.
     """
 
-    def __init__(self, Tdata, Cvdata, Nvib, Nrot):
+    def __init__(self, Tdata, Cvdata, n_vib, n_rot):
         self.Tdata = Tdata
         self.Cvdata = Cvdata
-        self.Nvib = Nvib
-        self.Nrot = Nrot
+        self.n_vib = n_vib
+        self.n_rot = n_rot
 
     def evaluate(self, x):
         n_eq = self.Neq
@@ -459,19 +459,19 @@ class PseudoRotorFit(DQED):
         f_cons = np.zeros((n_cons), np.float64)
         J_cons = np.zeros((n_cons, n_vars), np.float64)
 
-        n_vib = self.Nvib
-        n_rot = self.Nrot
+        n_vib = self.n_vib
+        n_rot = self.n_rot
 
         cv = np.zeros((len(self.Tdata), n_vib + 1), np.float64)
         d_cv = np.zeros((len(self.Tdata), n_vib + 2), np.float64)
 
         for i in range(len(self.Tdata)):
             for j in range(n_vib):
-                cv[i, j] = harmonicOscillator_heatCapacity(self.Tdata[i], x[j])
-                d_cv[i, j] = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[j])
-            cv[i, n_vib] = hinderedRotor_heatCapacity(self.Tdata[i], x[n_vib], x[n_vib + 1])
-            d_cv[i, n_vib] = hinderedRotor_d_heatCapacity_d_freq(self.Tdata[i], x[n_vib], x[n_vib + 1])
-            d_cv[i, n_vib + 1] = hinderedRotor_d_heatCapacity_d_barr(self.Tdata[i], x[n_vib], x[n_vib + 1])
+                cv[i, j] = harmonic_oscillator_heat_capacity(self.Tdata[i], x[j])
+                d_cv[i, j] = harmonic_oscillator_d_heat_capacity_d_freq(self.Tdata[i], x[j])
+            cv[i, n_vib] = hindered_rotor_heat_capacity(self.Tdata[i], x[n_vib], x[n_vib + 1])
+            d_cv[i, n_vib] = hindered_rotor_d_heat_capacity_d_freq(self.Tdata[i], x[n_vib], x[n_vib + 1])
+            d_cv[i, n_vib + 1] = hindered_rotor_d_heat_capacity_d_barr(self.Tdata[i], x[n_vib], x[n_vib + 1])
 
         for i in range(len(self.Tdata)):
             # Residual
@@ -497,11 +497,11 @@ class PseudoFit(DQED):
     "pseudo-rotors".
     """
 
-    def __init__(self, Tdata, Cvdata, Nvib, Nrot):
+    def __init__(self, Tdata, Cvdata, n_vib, n_rot):
         self.Tdata = Tdata
         self.Cvdata = Cvdata
-        self.Nvib = Nvib
-        self.Nrot = Nrot
+        self.n_vib = n_vib
+        self.n_rot = n_rot
 
     def evaluate(self, x):
         n_eq = self.Neq
@@ -512,19 +512,19 @@ class PseudoFit(DQED):
         f_cons = np.zeros((n_cons), np.float64)
         J_cons = np.zeros((n_cons, n_vars), np.float64)
 
-        n_vib = self.Nvib
-        n_rot = self.Nrot
+        n_vib = self.n_vib
+        n_rot = self.n_rot
 
         for i in range(len(self.Tdata)):
-            cv1 = harmonicOscillator_heatCapacity(self.Tdata[i], x[0])
-            cv2 = harmonicOscillator_heatCapacity(self.Tdata[i], x[2])
-            cv3 = harmonicOscillator_heatCapacity(self.Tdata[i], x[3])
-            cv4 = hinderedRotor_heatCapacity(self.Tdata[i], x[4], x[5])
-            d_cv1 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[0])
-            d_cv2 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[2])
-            d_cv3 = harmonicOscillator_d_heatCapacity_d_freq(self.Tdata[i], x[3])
-            d_cv4 = hinderedRotor_d_heatCapacity_d_freq(self.Tdata[i], x[4], x[5])
-            d_cv5 = hinderedRotor_d_heatCapacity_d_barr(self.Tdata[i], x[4], x[5])
+            cv1 = harmonic_oscillator_heat_capacity(self.Tdata[i], x[0])
+            cv2 = harmonic_oscillator_heat_capacity(self.Tdata[i], x[2])
+            cv3 = harmonic_oscillator_heat_capacity(self.Tdata[i], x[3])
+            cv4 = hindered_rotor_heat_capacity(self.Tdata[i], x[4], x[5])
+            d_cv1 = harmonic_oscillator_d_heat_capacity_d_freq(self.Tdata[i], x[0])
+            d_cv2 = harmonic_oscillator_d_heat_capacity_d_freq(self.Tdata[i], x[2])
+            d_cv3 = harmonic_oscillator_d_heat_capacity_d_freq(self.Tdata[i], x[3])
+            d_cv4 = hindered_rotor_d_heat_capacity_d_freq(self.Tdata[i], x[4], x[5])
+            d_cv5 = hindered_rotor_d_heat_capacity_d_barr(self.Tdata[i], x[4], x[5])
 
             # Residual
             f[i] = cv1 + x[1] * cv2 + (n_vib - x[1] - 1) * cv3 + n_rot * cv4 - self.Cvdata[i]

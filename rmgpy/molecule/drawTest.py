@@ -53,9 +53,9 @@ class TestMoleculeDrawer(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.drawer = MoleculeDrawer()
-        self.molecule = Molecule(SMILES='CC(=O)CC')
+        self.molecule = Molecule(smiles='CC(=O)CC')
 
-    def testDrawPNG(self):
+    def test_draw_png(self):
         """
         Test we can create PNG files from molecules.
         """
@@ -66,12 +66,12 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = 'test_molecule.png'
         if os.path.exists(path):
             os.unlink(path)
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='png', target=path)
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, file_format='png', target=path)
         self.assertTrue(os.path.exists(path), "File doesn't exist")
         os.unlink(path)
         self.assertIsInstance(surface, ImageSurface)
 
-    def testDrawPDF(self):
+    def test_draw_pdf(self):
         """
         Test we can create PDF files from molecules.
         """
@@ -82,12 +82,12 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = 'test_molecule.pdf'
         if os.path.exists(path):
             os.unlink(path)
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', target=path)
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, file_format='pdf', target=path)
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
         os.unlink(path)
 
-    def testDrawPolycycle(self):
+    def test_draw_polycycle(self):
         """
         Test we can draw a polycyclic molecule
         """
@@ -98,13 +98,13 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = 'test_molecule.pdf'
         if os.path.exists(path):
             os.unlink(path)
-        polycycle = Molecule(SMILES="C123CC4CC1COCC2CCC34")
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', target=path)
+        polycycle = Molecule(smiles="C123CC4CC1COCC2CCC34")
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, file_format='pdf', target=path)
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
         os.unlink(path)
 
-    def testDrawPDFwithoutFile(self):
+    def test_draw_pdf_without_file(self):
         """
         Test we can create PDF surface without a temporary file (newer versions of PyCairo?)
         """
@@ -112,19 +112,19 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf')
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, file_format='pdf')
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
 
-    def testDrawNonStandardBonds(self):
+    def test_draw_non_standard_bonds(self):
 
-        spec = Species().fromSMILES('[CH2]C=C[CH2]')
-        hybrid = spec.getResonanceHybrid()
+        spec = Species().from_smiles('[CH2]C=C[CH2]')
+        hybrid = spec.get_resonance_hybrid()
         try:
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(hybrid, format='pdf')
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(hybrid, file_format='pdf')
         self.assertIsInstance(surface, PDFSurface)
 
 

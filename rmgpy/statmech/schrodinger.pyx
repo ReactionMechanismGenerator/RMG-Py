@@ -45,11 +45,11 @@ cimport rmgpy.constants as constants
 
 ################################################################################
 
-def unitDegeneracy(n):
+def unit_degeneracy(n):
     return 1
 
-cpdef double getPartitionFunction(double T, energy, degeneracy=unitDegeneracy, int n0=0, int nmax=10000,
-                                  double tol=1e-12) except -1:
+cpdef double get_partition_function(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
+                                    double tol=1e-12) except -1:
     """
     Return the value of the partition function :math:`Q(T)` at a given
     temperature `T` in K. The solution to the Schrodinger equation is given
@@ -77,8 +77,8 @@ cpdef double getPartitionFunction(double T, energy, degeneracy=unitDegeneracy, i
 
     return Q
 
-cpdef double getHeatCapacity(double T, energy, degeneracy=unitDegeneracy, int n0=0, int nmax=10000,
-                             double tol=1e-12) except -100000000:
+cpdef double get_heat_capacity(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
+                               double tol=1e-12) except -100000000:
     """
     Return the value of the dimensionless heat capacity :math:`C_\\mathrm{v}(T)/R`
     at a given temperature `T` in K. The solution to the Schrodinger equation
@@ -112,8 +112,8 @@ cpdef double getHeatCapacity(double T, energy, degeneracy=unitDegeneracy, int n0
 
     return beta * beta * (sumE2 / Q - sumE * sumE / (Q * Q))
 
-cpdef double getEnthalpy(double T, energy, degeneracy=unitDegeneracy, int n0=0, int nmax=10000,
-                         double tol=1e-12) except 100000000:
+cpdef double get_enthalpy(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
+                          double tol=1e-12) except 100000000:
     """
     Return the value of the dimensionless enthalpy :math:`H(T)/RT` at a given
     temperature `T` in K. The solution to the Schrodinger equation is given
@@ -144,8 +144,8 @@ cpdef double getEnthalpy(double T, energy, degeneracy=unitDegeneracy, int n0=0, 
 
     return beta * sumE / Q
 
-cpdef double getEntropy(double T, energy, degeneracy=unitDegeneracy, int n0=0, int nmax=10000,
-                        double tol=1e-12) except -100000000:
+cpdef double get_entropy(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
+                         double tol=1e-12) except -100000000:
     """
     Return the value of the dimensionless entropy :math:`S(T)/R` at a given
     temperature `T` in K. The solution to the Schrodinger equation is given
@@ -178,35 +178,35 @@ cpdef double getEntropy(double T, energy, degeneracy=unitDegeneracy, int n0=0, i
 
 ################################################################################
 
-cpdef np.ndarray getSumOfStates(np.ndarray Elist, energy, degeneracy=unitDegeneracy, int n0=0,
-                                   np.ndarray sumStates0=None):
+cpdef np.ndarray get_sum_of_states(np.ndarray e_list, energy, degeneracy=unit_degeneracy, int n0=0,
+                                   np.ndarray sum_states_0=None):
     """
     Return the values of the sum of states :math:`N(E)` for a given set of
-    energies `Elist` in J/mol above the ground state using an initial sum of
-    states `sumStates0`. The solution to the Schrodinger equation is given
+    energies `e_list` in J/mol above the ground state using an initial sum of
+    states `sum_states_0`. The solution to the Schrodinger equation is given
     using functions `energy` and `degeneracy` that accept as argument a quantum
     number and return the corresponding energy in J/mol and degeneracy of that
     level. The quantum number always begins at `n0` and increases by ones.
     """
-    if sumStates0 is None:
-        sumStates0 = np.ones_like(Elist)
-    return convolveBSSR(Elist, sumStates0, energy, degeneracy, n0)
+    if sum_states_0 is None:
+        sum_states_0 = np.ones_like(e_list)
+    return convolve_bssr(e_list, sum_states_0, energy, degeneracy, n0)
 
-cpdef np.ndarray getDensityOfStates(np.ndarray Elist, energy, degeneracy=unitDegeneracy, int n0=0,
-                                       np.ndarray densStates0=None):
+cpdef np.ndarray get_density_of_states(np.ndarray e_list, energy, degeneracy=unit_degeneracy, int n0=0,
+                                       np.ndarray dens_states_0=None):
     """
     Return the values of the dimensionless density of states
-    :math:`\\rho(E) \\ dE` for a given set of energies `Elist` in J/mol above
-    the ground state using an initial density of states `densStates0`. The
+    :math:`\\rho(E) \\ dE` for a given set of energies `e_list` in J/mol above
+    the ground state using an initial density of states `dens_states_0`. The
     solution to the Schrodinger equation is given using functions `energy` and
     `degeneracy` that accept as argument a quantum number and return the
     corresponding energy in J/mol and degeneracy of that level. The quantum 
     number always begins at `n0` and increases by ones.
     """
-    if densStates0 is None:
-        densStates0 = np.zeros_like(Elist)
-        densStates0[0] = 1.0
-    return convolveBSSR(Elist, densStates0, energy, degeneracy, n0)
+    if dens_states_0 is None:
+        dens_states_0 = np.zeros_like(e_list)
+        dens_states_0[0] = 1.0
+    return convolve_bssr(e_list, dens_states_0, energy, degeneracy, n0)
 
 ################################################################################
 
@@ -234,27 +234,27 @@ def convolve(np.ndarray[np.float64_t, ndim=1] rho1, np.ndarray[np.float64_t, ndi
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def convolveBS(np.ndarray[np.float64_t, ndim=1] Elist,
-               np.ndarray[np.float64_t, ndim=1] rho0,
-               double energy, int degeneracy=1):
+def convolve_bs(np.ndarray[np.float64_t, ndim=1] e_list,
+                np.ndarray[np.float64_t, ndim=1] rho0,
+                double energy, int degeneracy=1):
     """
     Convolve a molecular degree of freedom into a density or sum of states
     using the Beyer-Swinehart (BS) direct count algorithm. This algorithm is
     suitable for unevenly-spaced energy levels in the array of energy grains
-    `Elist` (in J/mol), but assumes the solution of the Schrodinger equation
+    `e_list` (in J/mol), but assumes the solution of the Schrodinger equation
     gives evenly-spaced energy levels with spacing `energy` in kJ/mol and
     degeneracy `degeneracy`.
     """
     cdef int n = 0
-    cdef double Emax = np.max(Elist), E_n
-    cdef int i, j, nE = Elist.shape[0], g_n
+    cdef double Emax = np.max(e_list), E_n
+    cdef int i, j, nE = e_list.shape[0], g_n
     cdef np.ndarray[np.float64_t, ndim=1] rho
 
     rho = rho0.copy()
 
     for i in range(nE):
         for j in range(i, nE):
-            if Elist[j] - Elist[i] >= 0.9999 * energy:
+            if e_list[j] - e_list[i] >= 0.9999 * energy:
                 rho[j] += degeneracy * rho[i]
                 break
 
@@ -262,19 +262,19 @@ def convolveBS(np.ndarray[np.float64_t, ndim=1] Elist,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def convolveBSSR(np.ndarray[np.float64_t, ndim=1] Elist,
-                 np.ndarray[np.float64_t, ndim=1] rho0,
-                 energy, degeneracy=unitDegeneracy, int n0=0):
+def convolve_bssr(np.ndarray[np.float64_t, ndim=1] e_list,
+                  np.ndarray[np.float64_t, ndim=1] rho0,
+                  energy, degeneracy=unit_degeneracy, int n0=0):
     """
     Convolve a molecular degree of freedom into a density or sum of states
     using the Beyer-Swinehart-Stein-Rabinovitch (BSSR) direct count algorithm.
     This algorithm is suitable for unevenly-spaced energy levels in both the
-    array of energy grains `Elist` (in J/mol) and the energy levels
+    array of energy grains `e_list` (in J/mol) and the energy levels
     corresponding to the solution of the Schrodinger equation.
     """
     cdef int n = n0
-    cdef double Emax = np.max(Elist), E_n
-    cdef int i, j, nE = Elist.shape[0], g_n
+    cdef double Emax = np.max(e_list), E_n
+    cdef int i, j, nE = e_list.shape[0], g_n
     cdef np.ndarray[np.float64_t, ndim=1] rho
 
     rho = np.zeros_like(rho0)
@@ -285,7 +285,7 @@ def convolveBSSR(np.ndarray[np.float64_t, ndim=1] Elist,
 
         for i in range(nE):
             for j in range(i, nE):
-                if Elist[j] - Elist[i] >= 0.9999 * E_n:
+                if e_list[j] - e_list[i] >= 0.9999 * E_n:
                     rho[j] += g_n * rho0[i]
                     break
 

@@ -54,7 +54,7 @@ from arkane.main import Arkane
 arkane = Arkane()
 
 # Parse and validate the command-line arguments
-arkane.parseCommandLineArguments()
+arkane.parse_command_line_arguments()
 
 # Execute the job
 arkane.execute()

@@ -40,7 +40,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from rmgpy import settings
-from rmgpy.chemkin import readReactionsBlock
+from rmgpy.chemkin import read_reactions_block
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.species import Species
 
@@ -70,28 +70,28 @@ class ArkaneTest(unittest.TestCase):
             if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))
 
-    def testPDepJob(self):
+    def test_pdep_job(self):
         """
         A general test for a PDep job in Arkane
         """
         self.tst1 = Arkane()
-        self.tst1.inputFile = self.input_file
-        self.tst1.outputDirectory = self.directory
+        self.tst1.input_file = self.input_file
+        self.tst1.output_directory = self.directory
         self.tst1.verbose = logging.WARN
         self.tst1.plot = False
-        self.tst1.jobList = []
-        self.tst1.jobList = self.tst1.loadInputFile(self.tst1.inputFile)
+        self.tst1.job_list = []
+        self.tst1.job_list = self.tst1.load_input_file(self.tst1.input_file)
         self.tst1.execute()
 
-        job = self.tst1.jobList[0]
+        job = self.tst1.job_list[0]
         self.assertEquals(job.Tmin.value_si, 300.0)
-        self.assertEquals(job.minimumGrainCount, 100)
+        self.assertEquals(job.minimum_grain_count, 100)
         self.assertFalse(job.rmgmode)
-        self.assertTrue(job.activeJRotor)
-        self.assertEquals(job.network.pathReactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.E0_TS.value_si, -24267.2)
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.frequency.value_si, -1679.04)
-        self.assertEquals(len(job.network.netReactions[0].reactants[0].conformer.modes), 6)
+        self.assertTrue(job.active_j_rotor)
+        self.assertEquals(job.network.path_reactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
+        self.assertAlmostEquals(job.network.path_reactions[0].transition_state.tunneling.E0_TS.value_si, -24267.2)
+        self.assertAlmostEquals(job.network.path_reactions[0].transition_state.tunneling.frequency.value_si, -1679.04)
+        self.assertEquals(len(job.network.net_reactions[0].reactants[0].conformer.modes), 6)
         # self.assertEquals(self.tst1.frequencyScaleFactor, 0.947)
 
         # test that a network pdf was generated
@@ -99,13 +99,13 @@ class ArkaneTest(unittest.TestCase):
         self.assertTrue(any(f == 'network.pdf' for f in files))
 
         # Test the generated network reaction
-        dictionary = {'hydroperoxylvinoxy': Species().fromSMILES('[CH2]C(=O)OO'),
-                      'acetylperoxy': Species().fromSMILES('CC(=O)O[O]')}
+        dictionary = {'hydroperoxylvinoxy': Species().from_smiles('[CH2]C(=O)OO'),
+                      'acetylperoxy': Species().from_smiles('CC(=O)O[O]')}
         with open(os.path.join(self.directory, 'chem.inp'), 'r') as chem:
-            reaction_list = readReactionsBlock(chem, dictionary)
+            reaction_list = read_reactions_block(chem, dictionary)
         rxn = reaction_list[0]
         self.assertIsInstance(rxn.kinetics, Chebyshev)
-        self.assertAlmostEquals(rxn.kinetics.getRateCoefficient(1000.0, 1.0), 88.88253229631246)
+        self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246)
 
         files = [f for f in os.listdir(os.path.join(self.directory, 'sensitivity', ''))
                  if os.path.isfile(os.path.join(self.directory, 'sensitivity', f))]

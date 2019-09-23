@@ -78,15 +78,15 @@ class TestPdep(unittest.TestCase):
                      [-0.982845, 1.76637, -1.57619, 0.474364, -0.000681718]], "kJ/mol")),
                     HinderedRotor(inertia=(2.81525, "amu*angstrom^2"), symmetry=3, barrier=(2.96807, "kcal/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
-            molecularWeight=(74.07, "g/mol"),
-            transportData=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
-            energyTransferModel=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
+            molecular_weight=(74.07, "g/mol"),
+            transport_data=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
-        self.nC4H10O.fromSMILES('CCCCO')
+        self.nC4H10O.from_smiles('CCCCO')
 
         self.nC4H8 = Species(
             label='n-C4H8',
@@ -106,12 +106,12 @@ class TestPdep(unittest.TestCase):
                     [[0.0400372, 0.0301986, -6.4787, -0.0248675, -0.0324753],
                      [0.0312541, 0.0538, -0.493785, 0.0965968, 0.125292]], "kJ/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
-        self.nC4H8.fromSMILES('CCC=C')
+        self.nC4H8.from_smiles('CCC=C')
 
         self.H2O = Species(
             label='H2O',
@@ -122,21 +122,21 @@ class TestPdep(unittest.TestCase):
                     NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),
                     HarmonicOscillator(frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
-        self.H2O.fromSMILES('O')
+        self.H2O.from_smiles('O')
 
         self.N2 = Species(
             label='N2',
-            molecularWeight=(28.04, "g/mol"),
-            transportData=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
-            energyTransferModel=None,
+            molecular_weight=(28.04, "g/mol"),
+            transport_data=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
+            energy_transfer_model=None,
         )
 
-        self.N2.fromSMILES('N#N')
+        self.N2.from_smiles('N#N')
 
         logging.error('to TS')
 
@@ -157,8 +157,8 @@ class TestPdep(unittest.TestCase):
                     [[0.208938, -1.55291, -4.05398, -0.105798, -0.104752],
                      [2.00518, -0.020767, -0.333595, 0.137791, -0.274578]], "kJ/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
             frequency=(-2038.34, 'cm^-1'),
         )
@@ -167,7 +167,7 @@ class TestPdep(unittest.TestCase):
             label='dehydration',
             reactants=[self.nC4H10O],
             products=[self.nC4H8, self.H2O],
-            transitionState=self.TS,
+            transition_state=self.TS,
             kinetics=Arrhenius(A=(0.0387, 'm^3/(mol*s)'), n=2.7, Ea=(2.6192e4, 'J/mol'), T0=(1, 'K'))
         )
 
@@ -176,8 +176,8 @@ class TestPdep(unittest.TestCase):
             isomers=[Configuration(self.nC4H10O)],
             reactants=[],
             products=[Configuration(self.nC4H8, self.H2O)],
-            pathReactions=[self.reaction],
-            bathGas={self.N2: 1.0},
+            path_reactions=[self.reaction],
+            bath_gas={self.N2: 1.0},
         )
 
         self.pdepnetwork = deepcopy(self.network)
@@ -189,7 +189,7 @@ class TestPdep(unittest.TestCase):
     def test_energy_filter(self):
         rxns = self.pdepnetwork.get_energy_filtered_reactions(1000.0, 0.0)
         self.assertEquals(len(rxns), 1)
-        self.assertEquals(rxns[0], self.pdepnetwork.pathReactions[0])
+        self.assertEquals(rxns[0], self.pdepnetwork.path_reactions[0])
 
     def test_flux_filter(self):
         prods = self.pdepnetwork.get_rate_filtered_products(1000.0, 100000.0, 1.0)

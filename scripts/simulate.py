@@ -67,7 +67,7 @@ def parse_arguments():
 def main():
     input_file, chemkin_file, dict_file, dflag, check_duplicates = parse_arguments()
 
-    run_simulation(input_file, chemkin_file, dict_file, diffusionLimited=dflag, checkDuplicates=check_duplicates)
+    run_simulation(input_file, chemkin_file, dict_file, diffusion_limited=dflag, check_duplicates=check_duplicates)
 
 
 ################################################################################

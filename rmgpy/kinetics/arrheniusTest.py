@@ -70,7 +70,7 @@ class TestArrhenius(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_A(self):
+    def test_a_factor(self):
         """
         Test that the Arrhenius A property was properly set.
         """
@@ -82,25 +82,25 @@ class TestArrhenius(unittest.TestCase):
         """
         self.assertAlmostEqual(self.arrhenius.n.value_si, self.n, 6)
 
-    def test_Ea(self):
+    def test_ea(self):
         """
         Test that the Arrhenius Ea property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.Ea.value_si * 0.001, self.Ea, 6)
 
-    def test_T0(self):
+    def test_temperature0(self):
         """
         Test that the Arrhenius T0 property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.T0.value_si, self.T0, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Arrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Arrhenius Tmax property was properly set.
         """
@@ -112,49 +112,49 @@ class TestArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.arrhenius.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the Arrhenius.isTemperatureValid() method.
+        Test the Arrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
         for T, valid in zip(Tdata, validdata):
-            valid0 = self.arrhenius.isTemperatureValid(T)
+            valid0 = self.arrhenius.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the Arrhenius.getRateCoefficient() method.
+        Test the Arrhenius.get_rate_coefficient() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
             [1.6721e-4, 6.8770e1, 5.5803e3, 5.2448e4, 2.0632e5, 5.2285e5, 1.0281e6, 1.7225e6, 2.5912e6, 3.6123e6])
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.arrhenius.getRateCoefficient(T)
+            kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
-    def test_changeT0(self):
+    def test_change_t0(self):
         """
-        Test the Arrhenius.changeT0() method.
+        Test the Arrhenius.change_t0() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.arrhenius.getRateCoefficient(T) for T in Tlist])
-        self.arrhenius.changeT0(300)
+        k0list = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tlist])
+        self.arrhenius.change_t0(300)
         self.assertEqual(self.arrhenius.T0.value_si, 300)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.arrhenius.getRateCoefficient(T)
+            kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-6 * kexp)
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
-        Test the Arrhenius.fitToData() method.
+        Test the Arrhenius.fit_to_data() method.
         """
         Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        kdata = np.array([self.arrhenius.getRateCoefficient(T) for T in Tdata])
-        arrhenius = Arrhenius().fitToData(Tdata, kdata, kunits="m^3/(mol*s)")
+        kdata = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tdata])
+        arrhenius = Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
         self.assertEqual(float(self.arrhenius.T0.value_si), 1)
         for T, k in zip(Tdata, kdata):
-            self.assertAlmostEqual(k, arrhenius.getRateCoefficient(T), delta=1e-6 * k)
+            self.assertAlmostEqual(k, arrhenius.get_rate_coefficient(T), delta=1e-6 * k)
         self.assertAlmostEqual(arrhenius.A.value_si, self.arrhenius.A.value_si, delta=1e0)
         self.assertAlmostEqual(arrhenius.n.value_si, self.arrhenius.n.value_si, 1, 4)
         self.assertAlmostEqual(arrhenius.Ea.value_si, self.arrhenius.Ea.value_si, 2)
@@ -202,50 +202,50 @@ class TestArrhenius(unittest.TestCase):
         self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
         self.assertEqual(self.arrhenius.comment, arrhenius.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the Arrhenius.changeRate() method.
+        Test the Arrhenius.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.arrhenius.getRateCoefficient(T) for T in Tlist])
-        self.arrhenius.changeRate(2)
+        k0list = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tlist])
+        self.arrhenius.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.arrhenius.getRateCoefficient(T)
+            kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
-    def test_toCanteraKinetics(self):
+    def test_to_cantera_kinetics(self):
         """
         Test that the Arrhenius cantera object can be set properly within 
         a cantera ElementaryReaction object
         """
-        ctArrhenius = self.arrhenius.toCanteraKinetics()
+        ctArrhenius = self.arrhenius.to_cantera_kinetics()
         self.assertAlmostEqual(ctArrhenius.pre_exponential_factor, 1e9, 6)
         self.assertAlmostEqual(ctArrhenius.temperature_exponent, 0.5)
         self.assertAlmostEqual(ctArrhenius.activation_energy, 41.84e6)
 
-    def test_toArrheniusEP(self):
+    def test_to_arrhenius_ep(self):
         """
         Tests that the Arrhenius object can be converted to ArrheniusEP
         """
-        arr_rate = self.arrhenius.getRateCoefficient(500)
-        arr_ep = self.arrhenius.toArrheniusEP()
-        arr_ep_rate = arr_ep.getRateCoefficient(500, 10)  # the second number should not matter
+        arr_rate = self.arrhenius.get_rate_coefficient(500)
+        arr_ep = self.arrhenius.to_arrhenius_ep()
+        arr_ep_rate = arr_ep.get_rate_coefficient(500, 10)  # the second number should not matter
         self.assertAlmostEqual(arr_rate, arr_ep_rate)
 
-    def test_toArrheniusEP_with_alpha_and_Hrxn(self):
+    def test_to_arrhenius_ep_with_alpha_and_hrxn(self):
         """
         Tests that the Arrhenius object can be converted to ArrheniusEP given parameters
         """
         hrxn = 5
-        arr_rate = self.arrhenius.getRateCoefficient(500)
-        arr_ep = self.arrhenius.toArrheniusEP(alpha=1, dHrxn=hrxn)
+        arr_rate = self.arrhenius.get_rate_coefficient(500)
+        arr_ep = self.arrhenius.to_arrhenius_ep(alpha=1, dHrxn=hrxn)
         self.assertAlmostEqual(1., arr_ep.alpha.value_si)
-        arr_ep_rate = arr_ep.getRateCoefficient(500, hrxn)
+        arr_ep_rate = arr_ep.get_rate_coefficient(500, hrxn)
         self.assertAlmostEqual(arr_rate, arr_ep_rate)
 
-    def test_toArrheniusEP_throws_error_with_just_alpha(self):
+    def test_to_arrhenius_ep_throws_error_with_just_alpha(self):
         with self.assertRaises(Exception):
-            self.arrhenius.toArrheniusEP(alpha=1)
+            self.arrhenius.to_arrhenius_ep(alpha=1)
 
 
 ################################################################################
@@ -276,7 +276,7 @@ class TestArrheniusEP(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_A(self):
+    def test_a_factor(self):
         """
         Test that the ArrheniusEP A property was properly set.
         """
@@ -294,19 +294,19 @@ class TestArrheniusEP(unittest.TestCase):
         """
         self.assertAlmostEqual(self.arrhenius.alpha.value_si, self.alpha, 6)
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the ArrheniusEP E0 property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.E0.value_si * 0.001, self.E0, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the ArrheniusEP Tmin property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the ArrheniusEP Tmax property was properly set.
         """
@@ -318,25 +318,25 @@ class TestArrheniusEP(unittest.TestCase):
         """
         self.assertEqual(self.arrhenius.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the ArrheniusEP.isTemperatureValid() method.
+        Test the ArrheniusEP.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
         for T, valid in zip(Tdata, validdata):
-            valid0 = self.arrhenius.isTemperatureValid(T)
+            valid0 = self.arrhenius.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the ArrheniusEP.getRateCoefficient() method.
+        Test the ArrheniusEP.get_rate_coefficient() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
             [1.6721e-4, 6.8770e1, 5.5803e3, 5.2448e4, 2.0632e5, 5.2285e5, 1.0281e6, 1.7225e6, 2.5912e6, 3.6123e6])
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.arrhenius.getRateCoefficient(T, )
+            kact = self.arrhenius.get_rate_coefficient(T, )
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
     def test_pickle(self):
@@ -379,15 +379,15 @@ class TestArrheniusEP(unittest.TestCase):
         self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
         self.assertEqual(self.arrhenius.comment, arrhenius.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the ArrheniusEP.changeRate() method.
+        Test the ArrheniusEP.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.arrhenius.getRateCoefficient(T) for T in Tlist])
-        self.arrhenius.changeRate(2)
+        k0list = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tlist])
+        self.arrhenius.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.arrhenius.getRateCoefficient(T)
+            kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -464,25 +464,25 @@ class TestPDepArrhenius(unittest.TestCase):
             self.assertEqual(self.kinetics.arrhenius[i].Tmax.units, self.arrhenius[i].Tmax.units)
             self.assertEqual(self.kinetics.arrhenius[i].comment, self.arrhenius[i].comment)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the PDepArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the PDepArrhenius Tmax property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the PDepArrhenius Pmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the PDepArrhenius Pmax property was properly set.
         """
@@ -494,46 +494,46 @@ class TestPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
-        Test the PDepArrhenius.isPressureDependent() method.
+        Test the PDepArrhenius.is_pressure_dependent() method.
         """
-        self.assertTrue(self.kinetics.isPressureDependent())
+        self.assertTrue(self.kinetics.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the PDepArrhenius.getRateCoefficient() method.
+        Test the PDepArrhenius.get_rate_coefficient() method.
         """
         P = 1e4
         for T in [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]:
-            k0 = self.kinetics.getRateCoefficient(T, P)
-            k1 = self.arrhenius0.getRateCoefficient(T)
+            k0 = self.kinetics.get_rate_coefficient(T, P)
+            k1 = self.arrhenius0.get_rate_coefficient(T)
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
         P = 1e6
         for T in [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]:
-            k0 = self.kinetics.getRateCoefficient(T, P)
-            k1 = self.arrhenius1.getRateCoefficient(T)
+            k0 = self.kinetics.get_rate_coefficient(T, P)
+            k1 = self.arrhenius1.get_rate_coefficient(T)
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
         P = 1e5
         for T in [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]:
-            k0 = self.kinetics.getRateCoefficient(T, P)
-            k1 = math.sqrt(self.arrhenius0.getRateCoefficient(T) * self.arrhenius1.getRateCoefficient(T))
+            k0 = self.kinetics.get_rate_coefficient(T, P)
+            k1 = math.sqrt(self.arrhenius0.get_rate_coefficient(T) * self.arrhenius1.get_rate_coefficient(T))
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
-        Test the PDepArrhenius.fitToData() method.
+        Test the PDepArrhenius.fit_to_data() method.
         """
         Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500], np.float)
         Pdata = np.array([1e4, 3e4, 1e5, 3e5, 1e6], np.float)
         kdata = np.zeros([len(Tdata), len(Pdata)], np.float)
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
-                kdata[t, p] = self.kinetics.getRateCoefficient(Tdata[t], Pdata[p])
-        kinetics = PDepArrhenius().fitToData(Tdata, Pdata, kdata, kunits="s^-1")
+                kdata[t, p] = self.kinetics.get_rate_coefficient(Tdata[t], Pdata[p])
+        kinetics = PDepArrhenius().fit_to_data(Tdata, Pdata, kdata, kunits="s^-1")
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
-                self.assertAlmostEqual(kinetics.getRateCoefficient(Tdata[t], Pdata[p]), kdata[t, p],
+                self.assertAlmostEqual(kinetics.get_rate_coefficient(Tdata[t], Pdata[p]), kdata[t, p],
                                        delta=1e-6 * kdata[t, p])
 
     def test_pickle(self):
@@ -600,15 +600,15 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the PDepArrhenius.changeRate() method.
+        Test the PDepArrhenius.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.kinetics.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.kinetics.changeRate(2)
+        k0list = np.array([self.kinetics.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.kinetics.getRateCoefficient(T, 1e5)
+            kact = self.kinetics.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -665,13 +665,13 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.arrhenius, self.arrhenius)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the MultiArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the MultiArrhenius Tmax property was properly set.
         """
@@ -683,26 +683,26 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the MultiArrhenius.isTemperatureValid() method.
+        Test the MultiArrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         validdata = np.array([False, True, True, True, True, True, True, False, False, False], np.bool)
         for T, valid in zip(Tdata, validdata):
-            valid0 = self.kinetics.isTemperatureValid(T)
+            valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the MultiArrhenius.getRateCoefficient() method.
+        Test the MultiArrhenius.get_rate_coefficient() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
             [2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05,
              1.67743e+06, 3.12290e+06])
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.kinetics.getRateCoefficient(T)
+            kact = self.kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
     def test_pickle(self):
@@ -751,49 +751,49 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
-    def test_toArrhenius(self):
+    def test_to_arrhenius(self):
         """
         Test that we can convert to an Arrhenius
         """
         answer = self.single_kinetics.arrhenius[0]
-        fitted = self.single_kinetics.toArrhenius()
+        fitted = self.single_kinetics.to_arrhenius()
 
         self.assertAlmostEqual(fitted.A.value_si, answer.A.value_si, delta=1e0)
         self.assertAlmostEqual(fitted.n.value_si, answer.n.value_si, 1, 4)
         self.assertAlmostEqual(fitted.Ea.value_si, answer.Ea.value_si, 2)
         self.assertAlmostEqual(fitted.T0.value_si, answer.T0.value_si, 4)
 
-    def test_toArrheniusTrange(self):
+    def test_to_arrhenius_temperature_range(self):
         """
-        Test the toArrhenius temperature range is set correctly.
+        Test the to_arrhenius temperature range is set correctly.
         """
         answer = self.single_kinetics.arrhenius[0]
-        fitted = self.single_kinetics.toArrhenius(Tmin=800, Tmax=1200)
+        fitted = self.single_kinetics.to_arrhenius(Tmin=800, Tmax=1200)
         self.assertAlmostEqual(fitted.Tmin.value_si, 800.0)
         self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
         for T in [800, 1000, 1200]:
-            self.assertAlmostEqual(fitted.getRateCoefficient(T) / answer.getRateCoefficient(T), 1.0)
+            self.assertAlmostEqual(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0)
 
-    def test_toArrheniusMultiple(self):
+    def test_to_arrhenius_multiple(self):
         """
-        Test the toArrhenius fitting multiple kinetics over a small range, see if we're within 5% at a few points
+        Test the to_arrhenius fitting multiple kinetics over a small range, see if we're within 5% at a few points
         """
         answer = self.kinetics
-        fitted = self.kinetics.toArrhenius(Tmin=800, Tmax=1200)
+        fitted = self.kinetics.to_arrhenius(Tmin=800, Tmax=1200)
         self.assertAlmostEqual(fitted.Tmin.value_si, 800.0)
         self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
         for T in [800, 1000, 1200]:
-            self.assertAlmostEqual(fitted.getRateCoefficient(T) / answer.getRateCoefficient(T), 1.0, delta=0.05)
+            self.assertAlmostEqual(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0, delta=0.05)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the MultiArrhenius.changeRate() method.
+        Test the MultiArrhenius.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.kinetics.getRateCoefficient(T) for T in Tlist])
-        self.kinetics.changeRate(2)
+        k0list = np.array([self.kinetics.get_rate_coefficient(T) for T in Tlist])
+        self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.kinetics.getRateCoefficient(T)
+            kact = self.kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -887,25 +887,25 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.arrhenius, self.arrhenius)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the MultiPDepArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the MultiPDepArrhenius Tmax property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the MultiPDepArrhenius Pmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the MultiPDepArrhenius Pmax property was properly set.
         """
@@ -917,29 +917,29 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
-        Test the MultiPDepArrhenius.isTemperatureValid() method.
+        Test the MultiPDepArrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         validdata = np.array([False, True, True, True, True, True, True, False, False, False], np.bool)
         for T, valid in zip(Tdata, validdata):
-            valid0 = self.kinetics.isTemperatureValid(T)
+            valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_isPressureValid(self):
+    def test_is_pressure_valid(self):
         """
-        Test the MultiPDepArrhenius.isPressureValid() method.
+        Test the MultiPDepArrhenius.is_pressure_valid() method.
         """
         Pdata = np.array([1e3, 1e4, 1e5, 1e6, 1e7])
         validdata = np.array([False, True, True, True, False], np.bool)
         for P, valid in zip(Pdata, validdata):
-            valid0 = self.kinetics.isPressureValid(P)
+            valid0 = self.kinetics.is_pressure_valid(P)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
-        Test the MultiPDepArrhenius.getRateCoefficient() method.
+        Test the MultiPDepArrhenius.get_rate_coefficient() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -954,12 +954,12 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         for i in range(Tlist.shape[0]):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
-                kact = self.kinetics.getRateCoefficient(Tlist[i], Plist[j])
+                kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
                 self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
-    def test_getRateCoefficient_diff_plist(self):
+    def test_get_rate_coefficient_diff_plist(self):
         """
-        Test the MultiPDepArrhenius.getRateCoefficient() when plists are different.
+        Test the MultiPDepArrhenius.get_rate_coefficient() when plists are different.
         """
         # modify the MultiPDepArrhenius object with an additional entry
         pressures = np.array([1e-1, 1e-1, 1e1])
@@ -979,7 +979,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         for i in range(Tlist.shape[0]):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
-                kact = self.kinetics.getRateCoefficient(Tlist[i], Plist[j])
+                kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
                 self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
     def test_pickle(self):
@@ -1012,13 +1012,13 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
-        Test the PDepMultiArrhenius.changeRate() method.
+        Test the PDepMultiArrhenius.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.kinetics.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.kinetics.changeRate(2)
+        k0list = np.array([self.kinetics.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.kinetics.getRateCoefficient(T, 1e5)
+            kact = self.kinetics.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)

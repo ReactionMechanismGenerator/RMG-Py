@@ -58,7 +58,7 @@ class TestGraph(unittest.TestCase):
 
         self.graph = Graph(vertices)
         for edge in edges:
-            self.graph.addEdge(edge)
+            self.graph.add_edge(edge)
 
     def test_vertices(self):
         """
@@ -68,30 +68,30 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(isinstance(vertices, list))
         self.assertEqual(len(vertices), 6)
 
-    def test_addVertex(self):
+    def test_add_vertex(self):
         """
-        Test the Graph.addVertex() method.
+        Test the Graph.add_vertex() method.
         """
         vertex = Vertex()
-        self.graph.addVertex(vertex)
+        self.graph.add_vertex(vertex)
         self.assertTrue(vertex in self.graph.vertices)
         self.assertTrue(vertex.edges == {})
 
-    def test_addEdge(self):
+    def test_add_edge(self):
         """
-        Test the Graph.addEdge() method.
+        Test the Graph.add_edge() method.
         """
         vertex1 = Vertex()
         vertex2 = Vertex()
         edge = Edge(vertex1, vertex2)
         try:
-            self.graph.addEdge(edge)
+            self.graph.add_edge(edge)
             self.fail('Added edge between vertices not in graph to graph.')
         except ValueError:
             pass
-        self.graph.addVertex(vertex1)
-        self.graph.addVertex(vertex2)
-        self.graph.addEdge(edge)
+        self.graph.add_vertex(vertex1)
+        self.graph.add_vertex(vertex2)
+        self.graph.add_edge(edge)
         self.assertTrue(vertex1 in self.graph.vertices)
         self.assertTrue(vertex1 in vertex2.edges)
         self.assertTrue(vertex2 in self.graph.vertices)
@@ -99,84 +99,84 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(vertex1.edges[vertex2] is edge)
         self.assertTrue(vertex2.edges[vertex1] is edge)
 
-    def test_getEdge(self):
+    def test_get_edge(self):
         """
-        Test the Graph.getEdge() method.
+        Test the Graph.get_edge() method.
         """
         vertex1 = self.graph.vertices[2]
         vertex2 = self.graph.vertices[4]
         try:
-            self.graph.getEdge(vertex1, vertex2)
+            self.graph.get_edge(vertex1, vertex2)
             self.fail('Returned an edge between vertices that should not be connected in graph.')
         except ValueError:
             pass
         vertex1 = self.graph.vertices[2]
         vertex2 = self.graph.vertices[3]
-        edge = self.graph.getEdge(vertex1, vertex2)
+        edge = self.graph.get_edge(vertex1, vertex2)
         self.assertNotEqual(edge, None)
         self.assertTrue(isinstance(edge, Edge))
         self.assertTrue(vertex1.edges[vertex2] is edge)
         self.assertTrue(vertex2.edges[vertex1] is edge)
 
-    def test_getEdges(self):
+    def test_get_edges(self):
         """
-        Test the Graph.getEdges() method.
+        Test the Graph.get_edges() method.
         """
         vertex1 = self.graph.vertices[2]
-        edges = self.graph.getEdges(vertex1)
+        edges = self.graph.get_edges(vertex1)
         self.assertTrue(isinstance(edges, dict))
         self.assertEqual(len(edges), 2)
         self.assertTrue(self.graph.vertices[1] in edges)
         self.assertTrue(self.graph.vertices[3] in edges)
 
-    def test_getAllEdges(self):
+    def test_get_all_edges(self):
         """
-        Test the Graph.getAllEdges() method.
+        Test the Graph.get_all_edges() method.
         """
-        edges = self.graph.getAllEdges()
+        edges = self.graph.get_all_edges()
         self.assertTrue(isinstance(edges, list))
         self.assertEqual(len(edges), 5)
 
-    def test_hasVertex(self):
+    def test_has_vertex(self):
         """
-        Test the Graph.hasVertex() method.
+        Test the Graph.has_vertex() method.
         """
         vertex = Vertex()
-        self.assertFalse(self.graph.hasVertex(vertex))
+        self.assertFalse(self.graph.has_vertex(vertex))
         for v in self.graph.vertices:
-            self.assertTrue(self.graph.hasVertex(v))
+            self.assertTrue(self.graph.has_vertex(v))
 
-    def test_hasEdge(self):
+    def test_has_edge(self):
         """
-        Test the Graph.hasEdge() method.
+        Test the Graph.has_edge() method.
         """
         vertex1 = self.graph.vertices[2]
         vertex2 = self.graph.vertices[4]
-        self.assertFalse(self.graph.hasEdge(vertex1, vertex2))
+        self.assertFalse(self.graph.has_edge(vertex1, vertex2))
         vertex1 = self.graph.vertices[2]
         vertex2 = self.graph.vertices[3]
-        self.assertTrue(self.graph.hasEdge(vertex1, vertex2))
+        self.assertTrue(self.graph.has_edge(vertex1, vertex2))
 
-    def test_removeVertex(self):
+    def test_remove_vertex(self):
         """
-        Test the Graph.removeVertex() method.
+        Test the Graph.remove_vertex() method.
         """
         vertex = self.graph.vertices[2]
-        self.assertTrue(self.graph.hasVertex(vertex))
-        self.graph.removeVertex(vertex)
-        self.assertFalse(self.graph.hasVertex(vertex))
+        self.assertTrue(self.graph.has_vertex(vertex))
+        self.graph.remove_vertex(vertex)
+        self.assertFalse(self.graph.has_vertex(vertex))
         for v in self.graph.vertices:
             self.assertFalse(vertex in v.edges)
 
-    def test_removeEdge(self):
+    def test_remove_edge(self):
         """
-        Test the Graph.removeEdge() method.
+        Test the Graph.remove_edge() method.
         """
         vertex1 = self.graph.vertices[2]
         vertex2 = self.graph.vertices[3]
-        self.assertTrue(self.graph.hasEdge(vertex1, vertex2))
-        edge = self.graph.getEdge(vertex1, vertex2)
-        self.graph.removeEdge(edge)
+        self.assertTrue(self.graph.has_edge(vertex1, vertex2))
+        edge = self.graph.get_edge(vertex1, vertex2)
+        self.graph.remove_edge(edge)
         self.assertFalse(vertex1 in vertex2.edges)
         self.assertFalse(vertex2 in vertex1.edges)
 
@@ -197,21 +197,21 @@ class TestGraph(unittest.TestCase):
 
         graph = Graph()
         for vertex in vertices:
-            graph.addVertex(vertex)
+            graph.add_vertex(vertex)
         for edge in edges:
-            graph.addEdge(edge)
+            graph.add_edge(edge)
 
         graph2 = graph.copy()
         for vertex in graph.vertices:
-            self.assertTrue(graph2.hasVertex(vertex))
+            self.assertTrue(graph2.has_vertex(vertex))
         for v1 in graph.vertices:
             for v2 in v1.edges:
-                self.assertTrue(graph2.hasEdge(v1, v2))
-                self.assertTrue(graph2.hasEdge(v2, v1))
-        self.assertTrue(graph2.isIsomorphic(graph))
-        self.assertTrue(graph.isIsomorphic(graph2))
+                self.assertTrue(graph2.has_edge(v1, v2))
+                self.assertTrue(graph2.has_edge(v2, v1))
+        self.assertTrue(graph2.is_isomorphic(graph))
+        self.assertTrue(graph.is_isomorphic(graph2))
 
-    def test_copyAndMap(self):
+    def test_copy_and_map(self):
         """
         Test the returned dictionary points toward equivaalent vertices and edges
         """
@@ -227,21 +227,21 @@ class TestGraph(unittest.TestCase):
 
         graph = Graph()
         for vertex in vertices:
-            graph.addVertex(vertex)
+            graph.add_vertex(vertex)
         for edge in edges:
-            graph.addEdge(edge)
+            graph.add_edge(edge)
 
-        graph_dict = graph.copyAndMap()
+        graph_dict = graph.copy_and_map()
         graph2 = Graph(vertices=list(graph_dict.values()))
 
         for vertex in graph.vertices:
-            self.assertTrue(graph2.hasVertex(graph_dict[vertex]))
+            self.assertTrue(graph2.has_vertex(graph_dict[vertex]))
         for v1 in graph.vertices:
             for v2 in v1.edges:
-                self.assertTrue(graph2.hasEdge(graph_dict[v1], graph_dict[v2]))
-                self.assertTrue(graph2.hasEdge(graph_dict[v2], graph_dict[v1]))
-        self.assertTrue(graph2.isIsomorphic(graph))
-        self.assertTrue(graph.isIsomorphic(graph2))
+                self.assertTrue(graph2.has_edge(graph_dict[v1], graph_dict[v2]))
+                self.assertTrue(graph2.has_edge(graph_dict[v2], graph_dict[v1]))
+        self.assertTrue(graph2.is_isomorphic(graph))
+        self.assertTrue(graph.is_isomorphic(graph2))
 
     def test_split(self):
         """
@@ -259,9 +259,9 @@ class TestGraph(unittest.TestCase):
 
         graph = Graph()
         for vertex in vertices:
-            graph.addVertex(vertex)
+            graph.add_vertex(vertex)
         for edge in edges:
-            graph.addEdge(edge)
+            graph.add_edge(edge)
 
         graphs = graph.split()
 
@@ -290,15 +290,15 @@ class TestGraph(unittest.TestCase):
 
         graph1 = Graph()
         for vertex in vertices1:
-            graph1.addVertex(vertex)
+            graph1.add_vertex(vertex)
         for edge in edges1:
-            graph1.addEdge(edge)
+            graph1.add_edge(edge)
 
         graph2 = Graph()
         for vertex in vertices2:
-            graph2.addVertex(vertex)
+            graph2.add_vertex(vertex)
         for edge in edges2:
-            graph2.addEdge(edge)
+            graph2.add_edge(edge)
 
         graph = graph1.merge(graph2)
 
@@ -312,55 +312,55 @@ class TestGraph(unittest.TestCase):
             for vertex1 in vertex2.edges:
                 self.assertTrue(vertex1 in vertex2.edges)
 
-    def test_resetConnectivityValues(self):
+    def test_reset_connectivity_values(self):
         """
-        Test the Graph.resetConnectivityValues() method.
+        Test the Graph.reset_connectivity_values() method.
         """
-        self.graph.resetConnectivityValues()
+        self.graph.reset_connectivity_values()
         for vertex in self.graph.vertices:
             self.assertEqual(vertex.connectivity1, -1)
             self.assertEqual(vertex.connectivity2, -1)
             self.assertEqual(vertex.connectivity3, -1)
-            self.assertEqual(vertex.sortingLabel, -1)
+            self.assertEqual(vertex.sorting_label, -1)
 
-    def test_updateConnectivityValues(self):
+    def test_update_connectivity_values(self):
         """
-        Test the Graph.updateConnectivityValues() method.
+        Test the Graph.update_connectivity_values() method.
         """
-        self.graph.updateConnectivityValues()
+        self.graph.update_connectivity_values()
         self.assertEqual(self.graph.vertices[0].connectivity1, 1)
         self.assertEqual(self.graph.vertices[0].connectivity2, 2)
         self.assertEqual(self.graph.vertices[0].connectivity3, 3)
-        self.assertEqual(self.graph.vertices[0].sortingLabel, -1)
+        self.assertEqual(self.graph.vertices[0].sorting_label, -1)
         self.assertEqual(self.graph.vertices[1].connectivity1, 2)
         self.assertEqual(self.graph.vertices[1].connectivity2, 3)
         self.assertEqual(self.graph.vertices[1].connectivity3, 6)
-        self.assertEqual(self.graph.vertices[1].sortingLabel, -1)
+        self.assertEqual(self.graph.vertices[1].sorting_label, -1)
         self.assertEqual(self.graph.vertices[2].connectivity1, 2)
         self.assertEqual(self.graph.vertices[2].connectivity2, 4)
         self.assertEqual(self.graph.vertices[2].connectivity3, 7)
-        self.assertEqual(self.graph.vertices[2].sortingLabel, -1)
+        self.assertEqual(self.graph.vertices[2].sorting_label, -1)
         self.assertEqual(self.graph.vertices[3].connectivity1, 2)
         self.assertEqual(self.graph.vertices[3].connectivity2, 4)
         self.assertEqual(self.graph.vertices[3].connectivity3, 7)
-        self.assertEqual(self.graph.vertices[3].sortingLabel, -1)
+        self.assertEqual(self.graph.vertices[3].sorting_label, -1)
         self.assertEqual(self.graph.vertices[4].connectivity1, 2)
         self.assertEqual(self.graph.vertices[4].connectivity2, 3)
         self.assertEqual(self.graph.vertices[4].connectivity3, 6)
-        self.assertEqual(self.graph.vertices[4].sortingLabel, -1)
+        self.assertEqual(self.graph.vertices[4].sorting_label, -1)
         self.assertEqual(self.graph.vertices[5].connectivity1, 1)
         self.assertEqual(self.graph.vertices[5].connectivity2, 2)
         self.assertEqual(self.graph.vertices[5].connectivity3, 3)
-        self.assertEqual(self.graph.vertices[5].sortingLabel, -1)
+        self.assertEqual(self.graph.vertices[5].sorting_label, -1)
 
-    def test_sortVertices(self):
+    def test_sort_vertices(self):
         """
-        Test the Graph.sortVertices() method.
+        Test the Graph.sort_vertices() method.
         """
-        self.graph.updateConnectivityValues()
-        self.graph.sortVertices()
+        self.graph.update_connectivity_values()
+        self.graph.sort_vertices()
         for vertex1, vertex2 in zip(self.graph.vertices[:-1], self.graph.vertices[1:]):
-            self.assertTrue(vertex1.sortingLabel < vertex2.sortingLabel)
+            self.assertTrue(vertex1.sorting_label < vertex2.sorting_label)
             self.assertTrue(vertex1.connectivity3 >= vertex2.connectivity3)
             self.assertTrue(vertex1.connectivity2 >= vertex2.connectivity2)
             self.assertTrue(vertex1.connectivity1 >= vertex2.connectivity1)
@@ -391,11 +391,11 @@ class TestGraph(unittest.TestCase):
 
         graph = Graph()
         for vertex in vertices:
-            graph.addVertex(vertex)
+            graph.add_vertex(vertex)
         for edge in edges:
-            graph.addEdge(edge)
+            graph.add_edge(edge)
 
-        graph.updateConnectivityValues()
+        graph.update_connectivity_values()
 
         for i, cv_ in enumerate([1, 3, 2, 2, 1, 1]):
             cv = vertices[i].connectivity1
@@ -432,20 +432,20 @@ class TestGraph(unittest.TestCase):
 
         graph1 = Graph()
         for vertex in vertices1:
-            graph1.addVertex(vertex)
+            graph1.add_vertex(vertex)
         for edge in edges1:
-            graph1.addEdge(edge)
+            graph1.add_edge(edge)
 
         graph2 = Graph()
         for vertex in vertices2:
-            graph2.addVertex(vertex)
+            graph2.add_vertex(vertex)
         for edge in edges2:
-            graph2.addEdge(edge)
+            graph2.add_edge(edge)
 
-        self.assertTrue(graph1.isIsomorphic(graph2))
-        self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
-        self.assertTrue(graph2.isIsomorphic(graph1))
-        self.assertTrue(graph2.isSubgraphIsomorphic(graph1))
+        self.assertTrue(graph1.is_isomorphic(graph2))
+        self.assertTrue(graph1.is_subgraph_isomorphic(graph2))
+        self.assertTrue(graph2.is_isomorphic(graph1))
+        self.assertTrue(graph2.is_subgraph_isomorphic(graph1))
 
     def test_isomorphism_disconnected(self):
         """
@@ -475,23 +475,23 @@ class TestGraph(unittest.TestCase):
 
         graph1 = Graph()
         for vertex in vertices1:
-            graph1.addVertex(vertex)
+            graph1.add_vertex(vertex)
         for edge in edges1:
-            graph1.addEdge(edge)
+            graph1.add_edge(edge)
 
         graph2 = Graph()
         for vertex in vertices2:
-            graph2.addVertex(vertex)
+            graph2.add_vertex(vertex)
         for edge in edges2:
-            graph2.addEdge(edge)
+            graph2.add_edge(edge)
 
-        self.assertTrue(graph1.isIsomorphic(graph2))
-        self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
-        self.assertTrue(graph2.isIsomorphic(graph1))
-        self.assertTrue(graph2.isSubgraphIsomorphic(graph1))
-        self.assertTrue(len(graph1.findSubgraphIsomorphisms(graph2)) > 0)
+        self.assertTrue(graph1.is_isomorphic(graph2))
+        self.assertTrue(graph1.is_subgraph_isomorphic(graph2))
+        self.assertTrue(graph2.is_isomorphic(graph1))
+        self.assertTrue(graph2.is_subgraph_isomorphic(graph1))
+        self.assertTrue(len(graph1.find_subgraph_isomorphisms(graph2)) > 0)
 
-    def test_subgraphIsomorphism(self):
+    def test_subgraph_isomorphism(self):
         """
         Check the subgraph isomorphism functions.
         """
@@ -511,26 +511,26 @@ class TestGraph(unittest.TestCase):
 
         graph1 = Graph()
         for vertex in vertices1:
-            graph1.addVertex(vertex)
+            graph1.add_vertex(vertex)
         for edge in edges1:
-            graph1.addEdge(edge)
+            graph1.add_edge(edge)
 
         graph2 = Graph()
         for vertex in vertices2:
-            graph2.addVertex(vertex)
+            graph2.add_vertex(vertex)
         for edge in edges2:
-            graph2.addEdge(edge)
+            graph2.add_edge(edge)
 
-        self.assertFalse(graph1.isIsomorphic(graph2))
-        self.assertFalse(graph2.isIsomorphic(graph1))
-        self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
+        self.assertFalse(graph1.is_isomorphic(graph2))
+        self.assertFalse(graph2.is_isomorphic(graph1))
+        self.assertTrue(graph1.is_subgraph_isomorphic(graph2))
 
-        map_list = graph1.findSubgraphIsomorphisms(graph2)
+        map_list = graph1.find_subgraph_isomorphisms(graph2)
         self.assertTrue(len(map_list) == 10)
 
         for mapping in map_list:
-            self.assertTrue(graph1.isMappingValid(graph2, mapping))
-            self.assertTrue(graph1.isMappingValid(graph2, mapping))
+            self.assertTrue(graph1.is_mapping_valid(graph2, mapping))
+            self.assertTrue(graph1.is_mapping_valid(graph2, mapping))
 
     def test_pickle(self):
         """
@@ -549,10 +549,10 @@ class TestGraph(unittest.TestCase):
 
         graph0 = Graph()
         for vertex in vertices:
-            graph0.addVertex(vertex)
+            graph0.add_vertex(vertex)
         for edge in edges:
-            graph0.addEdge(edge)
-        graph0.updateConnectivityValues()
+            graph0.add_edge(edge)
+        graph0.update_connectivity_values()
 
         import pickle
         graph = pickle.loads(pickle.dumps(graph0))
@@ -562,197 +562,197 @@ class TestGraph(unittest.TestCase):
             self.assertEqual(v1.connectivity1, v2.connectivity1)
             self.assertEqual(v1.connectivity2, v2.connectivity2)
             self.assertEqual(v1.connectivity3, v2.connectivity3)
-            self.assertEqual(v1.sortingLabel, v2.sortingLabel)
+            self.assertEqual(v1.sorting_label, v2.sorting_label)
             self.assertEqual(len(v1.edges), len(v2.edges))
-        self.assertTrue(graph0.isIsomorphic(graph))
-        self.assertTrue(graph.isIsomorphic(graph0))
+        self.assertTrue(graph0.is_isomorphic(graph))
+        self.assertTrue(graph.is_isomorphic(graph0))
 
-    def test_isCyclic(self):
+    def test_is_cyclic(self):
         """
-        Test the Graph.isCyclic() method.
+        Test the Graph.is_cyclic() method.
         """
-        self.assertFalse(self.graph.isCyclic())
+        self.assertFalse(self.graph.is_cyclic())
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
-        self.assertTrue(self.graph.isCyclic())
+        self.graph.add_edge(edge)  # To create a cycle
+        self.assertTrue(self.graph.is_cyclic())
 
-    def test_isVertexInCycle(self):
+    def test_is_vertex_in_cycle(self):
         """
-        Test the Graph.isVertexInCycle() method.
+        Test the Graph.is_vertex_in_cycle() method.
         """
         for vertex in self.graph.vertices:
-            self.assertFalse(self.graph.isVertexInCycle(vertex))
+            self.assertFalse(self.graph.is_vertex_in_cycle(vertex))
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
+        self.graph.add_edge(edge)  # To create a cycle
         for vertex in self.graph.vertices[0:4]:
-            self.assertTrue(self.graph.isVertexInCycle(vertex))
+            self.assertTrue(self.graph.is_vertex_in_cycle(vertex))
         for vertex in self.graph.vertices[4:]:
-            self.assertFalse(self.graph.isVertexInCycle(vertex))
+            self.assertFalse(self.graph.is_vertex_in_cycle(vertex))
 
-    def test_isEdgeInCycle(self):
+    def test_is_edge_in_cycle(self):
         """
-        Test the Graph.isEdgeInCycle() method.
+        Test the Graph.is_edge_in_cycle() method.
         """
         for vertex1 in self.graph.vertices:
             for vertex2, edge in vertex1.edges.items():
-                self.assertFalse(self.graph.isEdgeInCycle(edge))
+                self.assertFalse(self.graph.is_edge_in_cycle(edge))
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
+        self.graph.add_edge(edge)  # To create a cycle
         for vertex1 in self.graph.vertices:
             for vertex2, edge in vertex1.edges.items():
                 if self.graph.vertices.index(vertex1) < 4 and self.graph.vertices.index(vertex2) < 4:
-                    self.assertTrue(self.graph.isEdgeInCycle(edge))
+                    self.assertTrue(self.graph.is_edge_in_cycle(edge))
                 else:
-                    self.assertFalse(self.graph.isEdgeInCycle(edge))
+                    self.assertFalse(self.graph.is_edge_in_cycle(edge))
 
-    def test_getAllCyclicVertices(self):
-        self.assertListEqual(self.graph.getAllCyclicVertices(), [])
+    def test_get_all_cyclic_vertices(self):
+        self.assertListEqual(self.graph.get_all_cyclic_vertices(), [])
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
-        self.assertEqual(len(self.graph.getAllCyclicVertices()), 4)
+        self.graph.add_edge(edge)  # To create a cycle
+        self.assertEqual(len(self.graph.get_all_cyclic_vertices()), 4)
 
-    def test_getAllPolycylicVertices(self):
+    def test_get_all_polycylic_vertices(self):
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
-        self.assertListEqual(self.graph.getAllPolycyclicVertices(), [])
+        self.graph.add_edge(edge)  # To create a cycle
+        self.assertListEqual(self.graph.get_all_polycyclic_vertices(), [])
         edge2 = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.addEdge(edge2)  # Create another cycle to generate two fused cycles
-        self.assertEqual(len(self.graph.getAllPolycyclicVertices()), 2)
+        self.graph.add_edge(edge2)  # Create another cycle to generate two fused cycles
+        self.assertEqual(len(self.graph.get_all_polycyclic_vertices()), 2)
         # Add new vertices and edges to generate a spirocyclic cycle      
         vertices = [Vertex() for _ in range(2)]
         for vertex in vertices:
-            self.graph.addVertex(vertex)
+            self.graph.add_vertex(vertex)
         edges = [
             Edge(self.graph.vertices[5], self.graph.vertices[6]),
             Edge(self.graph.vertices[6], self.graph.vertices[7]),
             Edge(self.graph.vertices[5], self.graph.vertices[7]),
         ]
         for edge in edges:
-            self.graph.addEdge(edge)
-        self.assertEqual(len(self.graph.getAllPolycyclicVertices()), 3)
+            self.graph.add_edge(edge)
+        self.assertEqual(len(self.graph.get_all_polycyclic_vertices()), 3)
 
-    def test_getAllCycles(self):
+    def test_get_all_cycles(self):
         """
-        Test the Graph.getAllCycles() method.
+        Test the Graph.get_all_cycles() method.
         """
-        cycle_list = self.graph.getAllCycles(self.graph.vertices[0])
+        cycle_list = self.graph.get_all_cycles(self.graph.vertices[0])
         self.assertEqual(len(cycle_list), 0)
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
-        cycle_list = self.graph.getAllCycles(self.graph.vertices[0])
+        self.graph.add_edge(edge)  # To create a cycle
+        cycle_list = self.graph.get_all_cycles(self.graph.vertices[0])
         self.assertEqual(len(cycle_list), 2)
         self.assertEqual(len(cycle_list[0]), 4)
         self.assertEqual(len(cycle_list[1]), 4)
 
-    def test_getAllCyclesOfSize(self):
+    def test_get_all_cycles_of_size(self):
         """
         Test the Graph.getRingsOfSize() method
         """
-        cycle_list = self.graph.getAllCyclesOfSize(6)
+        cycle_list = self.graph.get_all_cycles_of_size(6)
         self.assertEqual(len(cycle_list), 0)
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle of length 4
+        self.graph.add_edge(edge)  # To create a cycle of length 4
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.addEdge(edge)  # To create a cycle of length 6 and another cycle of length 4
-        cycle_list = self.graph.getAllCyclesOfSize(4)
+        self.graph.add_edge(edge)  # To create a cycle of length 6 and another cycle of length 4
+        cycle_list = self.graph.get_all_cycles_of_size(4)
         self.assertEqual(len(cycle_list), 2)
         self.assertEqual(len(cycle_list[0]), 4)
         self.assertEqual(len(cycle_list[1]), 4)
 
-    def test_getAllSimpleCyclesOfSize(self):
+    def test_get_all_simple_cycles_of_size(self):
         """
-        Test the Graph.getAllSimpleCyclesOfSize() method.
+        Test the Graph.get_all_simple_cycles_of_size() method.
         """
-        cycle_list = self.graph.getAllCyclesOfSize(6)
+        cycle_list = self.graph.get_all_cycles_of_size(6)
         self.assertEqual(len(cycle_list), 0)
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle of length 4
+        self.graph.add_edge(edge)  # To create a cycle of length 4
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.addEdge(edge)  # To create a cycle of length 6 and another cycle of length 4
-        cycle_list = self.graph.getAllSimpleCyclesOfSize(4)
+        self.graph.add_edge(edge)  # To create a cycle of length 6 and another cycle of length 4
+        cycle_list = self.graph.get_all_simple_cycles_of_size(4)
         self.assertEqual(len(cycle_list), 2)
         self.assertEqual(len(cycle_list[0]), 4)
         self.assertEqual(len(cycle_list[1]), 4)
-        cycle_list = self.graph.getAllSimpleCyclesOfSize(6)
+        cycle_list = self.graph.get_all_simple_cycles_of_size(6)
         self.assertEqual(len(cycle_list), 0)
 
-    def test_getSmallestSetOfSmallestRings(self):
+    def test_get_smallest_set_of_smallest_rings(self):
         """
-        Test the Graph.getSmallestSetOfSmallestRings() method.
+        Test the Graph.get_smallest_set_of_smallest_rings() method.
         """
-        cycle_list = self.graph.getSmallestSetOfSmallestRings()
+        cycle_list = self.graph.get_smallest_set_of_smallest_rings()
         self.assertEqual(len(cycle_list), 0)
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)  # To create a cycle
-        cycle_list = self.graph.getSmallestSetOfSmallestRings()
+        self.graph.add_edge(edge)  # To create a cycle
+        cycle_list = self.graph.get_smallest_set_of_smallest_rings()
         self.assertEqual(len(cycle_list), 1)
         self.assertEqual(len(cycle_list[0]), 4)
 
-    def test_getRelevantCycles(self):
+    def test_get_relevant_cycles(self):
         """
-        Test the Graph.getRelevantCycles() method.
+        Test the Graph.get_relevant_cycles() method.
         """
-        cycle_list = self.graph.getRelevantCycles()
+        cycle_list = self.graph.get_relevant_cycles()
         self.assertEqual(len(cycle_list), 0)
         # Create a cycle of length 4
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
-        self.graph.addEdge(edge)
+        self.graph.add_edge(edge)
         # Create a second cycle of length 4
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.addEdge(edge)
+        self.graph.add_edge(edge)
         # Create a bridge forming multiple cycles of length 4
         edge = Edge(self.graph.vertices[1], self.graph.vertices[4])
-        self.graph.addEdge(edge)
+        self.graph.add_edge(edge)
 
         # SSSR should be 3 cycles of length 4
-        cycle_list = self.graph.getSmallestSetOfSmallestRings()
+        cycle_list = self.graph.get_smallest_set_of_smallest_rings()
         self.assertEqual(len(cycle_list), 3)
         size_list = sorted([len(cycle) for cycle in cycle_list])
         self.assertEqual(size_list, [4, 4, 4])
 
         # RC should be 5 cycles of length 4
-        cycle_list = self.graph.getRelevantCycles()
+        cycle_list = self.graph.get_relevant_cycles()
         self.assertEqual(len(cycle_list), 5)
         size_list = sorted([len(cycle) for cycle in cycle_list])
         self.assertEqual(size_list, [4, 4, 4, 4, 4])
 
-    def test_cycleListOrderSSSR(self):
+    def test_cycle_list_order_sssr(self):
         """
-        Test that getSmallestSetOfSmallestRings return vertices in the proper order.
+        Test that get_smallest_set_of_smallest_rings return vertices in the proper order.
 
         There are methods such as symmetry and molecule drawing which rely
         on the fact that subsequent list entries are connected.
         """
         # Create a cycle of length 5
         edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
-        self.graph.addEdge(edge)
+        self.graph.add_edge(edge)
         # Test SSSR
-        sssr = self.graph.getSmallestSetOfSmallestRings()
+        sssr = self.graph.get_smallest_set_of_smallest_rings()
         self.assertEqual(len(sssr), 1)
         self.assertEqual(len(sssr[0]), 5)
         for i in range(5):
-            self.assertTrue(self.graph.hasEdge(sssr[0][i], sssr[0][i - 1]))
+            self.assertTrue(self.graph.has_edge(sssr[0][i], sssr[0][i - 1]))
 
-    def test_cycleListOrderRC(self):
+    def test_cycle_list_order_relevant_cycles(self):
         """
-        Test that getRelevantCycles return vertices in the proper order.
+        Test that get_relevant_cycles return vertices in the proper order.
 
         There are methods such as symmetry and molecule drawing which rely
         on the fact that subsequent list entries are connected.
         """
         # Create a cycle of length 5
         edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
-        self.graph.addEdge(edge)
+        self.graph.add_edge(edge)
         # Test RC
-        rc = self.graph.getRelevantCycles()
+        rc = self.graph.get_relevant_cycles()
         self.assertEqual(len(rc), 1)
         self.assertEqual(len(rc[0]), 5)
         for i in range(5):
-            self.assertTrue(self.graph.hasEdge(rc[0][i], rc[0][i - 1]))
+            self.assertTrue(self.graph.has_edge(rc[0][i], rc[0][i - 1]))
 
-    def test_getPolycyclicRings(self):
+    def test_get_polycyclic_rings(self):
         """
-        Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
+        Test that the Graph.get_polycycles() method returns only polycyclic rings.
         """
         vertices = [Vertex() for _ in range(27)]
         bonds = [
@@ -794,19 +794,19 @@ class TestGraph(unittest.TestCase):
 
         graph = Graph()
         for vertex in vertices:
-            graph.addVertex(vertex)
+            graph.add_vertex(vertex)
         for edge in edges:
-            graph.addEdge(edge)
-        graph.updateConnectivityValues()
+            graph.add_edge(edge)
+        graph.update_connectivity_values()
 
-        sssr = graph.getSmallestSetOfSmallestRings()
+        sssr = graph.get_smallest_set_of_smallest_rings()
         self.assertEqual(len(sssr), 6)
-        polycyclic_vertices = set(graph.getAllPolycyclicVertices())
+        polycyclic_vertices = set(graph.get_all_polycyclic_vertices())
         expected_polycyclic_vertices = set([vertices[index] for index in [3, 23, 4, 22, 12]])
 
         self.assertEqual(polycyclic_vertices, expected_polycyclic_vertices)
 
-        continuous_rings = graph.getPolycyclicRings()
+        continuous_rings = graph.get_polycycles()
         expected_continuous_rings = [[vertices[index] for index in [1, 2, 3, 4, 5, 6, 22, 23, 24, 25]],
                                      # [vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
                                      [vertices[index] for index in [10, 11, 12, 13, 14, 16]],
@@ -818,9 +818,9 @@ class TestGraph(unittest.TestCase):
         for ring in expected_continuous_rings:
             self.assertTrue(ring in continuous_rings)
 
-    def test_getMaxCycleOverlap(self):
+    def test_get_max_cycle_overlap(self):
         """
-        Test that getMaxCycleOverlap returns the correct overlap numbers
+        Test that get_max_cycle_overlap returns the correct overlap numbers
         for different graphs.
         """
 
@@ -829,7 +829,7 @@ class TestGraph(unittest.TestCase):
             vertices = [Vertex() for _ in range(nvert)]
             graph = Graph(vertices)
             for idx1, idx2 in edge_inds:
-                graph.addEdge(Edge(vertices[idx1], vertices[idx2]))
+                graph.add_edge(Edge(vertices[idx1], vertices[idx2]))
             return graph
 
         linear = make_graph([(0, 1), (1, 2)])
@@ -840,20 +840,20 @@ class TestGraph(unittest.TestCase):
         cube = make_graph([(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3),
                            (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)])
 
-        self.assertEqual(linear.getMaxCycleOverlap(), 0)
-        self.assertEqual(mono.getMaxCycleOverlap(), 0)
-        self.assertEqual(spiro.getMaxCycleOverlap(), 1)
-        self.assertEqual(fused.getMaxCycleOverlap(), 2)
-        self.assertEqual(bridged.getMaxCycleOverlap(), 3)
+        self.assertEqual(linear.get_max_cycle_overlap(), 0)
+        self.assertEqual(mono.get_max_cycle_overlap(), 0)
+        self.assertEqual(spiro.get_max_cycle_overlap(), 1)
+        self.assertEqual(fused.get_max_cycle_overlap(), 2)
+        self.assertEqual(bridged.get_max_cycle_overlap(), 3)
         # With the current algorithm for maximum overlap determination, a cube
         # only has an overlap of 2, because the set of relevant cycles
         # contains the six four-membered faces. This could be changed in the
         # future.
-        self.assertEqual(cube.getMaxCycleOverlap(), 2)
+        self.assertEqual(cube.get_max_cycle_overlap(), 2)
 
-    def test_getLargestRing(self):
+    def test_get_largest_ring(self):
         """
-        Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
+        Test that the Graph.get_polycycles() method returns only polycyclic rings.
         """
         vertices = [Vertex() for _ in range(27)]
         bonds = [
@@ -891,18 +891,18 @@ class TestGraph(unittest.TestCase):
 
         graph = Graph()
         for vertex in vertices:
-            graph.addVertex(vertex)
+            graph.add_vertex(vertex)
         for edge in edges:
-            graph.addEdge(edge)
-        graph.updateConnectivityValues()
+            graph.add_edge(edge)
+        graph.update_connectivity_values()
 
-        rings = graph.getPolycyclicRings()
+        rings = graph.get_polycycles()
         self.assertEqual(len(rings), 1)
 
         # ensure the last ring doesn't include vertex 8, since it isn't in the
         # longest ring. Try two different items since one might contain the vertex 8
-        long_ring = graph.getLargestRing(rings[0][0])
-        long_ring2 = graph.getLargestRing(rings[0][1])
+        long_ring = graph.get_largest_ring(rings[0][0])
+        long_ring2 = graph.get_largest_ring(rings[0][1])
 
         if len(long_ring) > len(long_ring2):
             longest_ring = long_ring
@@ -911,14 +911,14 @@ class TestGraph(unittest.TestCase):
 
         self.assertEqual(len(longest_ring), len(rings[0]) - 1)
 
-    def testSortCyclicVertices(self):
-        """Test that _sortCyclicVertices works properly for a valid input."""
+    def test_sort_cyclic_vertices(self):
+        """Test that sort_cyclic_vertices works properly for a valid input."""
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.addEdge(edge)  # To create a cycle
+        self.graph.add_edge(edge)  # To create a cycle
 
         # Sort the vertices
         original = list(self.graph.vertices)
-        ordered = self.graph._sortCyclicVertices(original)
+        ordered = self.graph.sort_cyclic_vertices(original)
 
         # Check that we didn't lose any vertices
         self.assertEqual(len(self.graph.vertices), len(ordered), 'Sorting changed the number of vertices.')
@@ -928,30 +928,30 @@ class TestGraph(unittest.TestCase):
 
         # Check that subsequent vertices are connected
         for i in range(5):
-            self.assertTrue(self.graph.hasEdge(ordered[i], ordered[i - 1]))
+            self.assertTrue(self.graph.has_edge(ordered[i], ordered[i - 1]))
 
-    def testSortCyclicVerticesInvalid(self):
-        """Test that _sortCyclicVertices raises an error for an invalid input."""
+    def test_sort_cyclic_vertices_invalid(self):
+        """Test that sort_cyclic_vertices raises an error for an invalid input."""
         edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
-        self.graph.addEdge(edge)  # To create a cycle
+        self.graph.add_edge(edge)  # To create a cycle
 
         original = list(self.graph.vertices)
 
         with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
-            self.graph._sortCyclicVertices(original)
+            self.graph.sort_cyclic_vertices(original)
 
-    def testSortCyclicVerticesNoncyclic(self):
-        """Test that _sortCyclicVertices raises an error for a noncyclic input."""
+    def test_sort_cyclic_vertices_noncyclic(self):
+        """Test that sort_cyclic_vertices raises an error for a noncyclic input."""
         original = list(self.graph.vertices)
         with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
-            self.graph._sortCyclicVertices(original)
+            self.graph.sort_cyclic_vertices(original)
 
-    def testSortCyclicVerticesUnconnected(self):
-        """Test that _sortCyclicVertices raises an error for an unconnected input."""
-        self.graph.addVertex(Vertex())
+    def test_sort_cyclic_vertices_unconnected(self):
+        """Test that sort_cyclic_vertices raises an error for an unconnected input."""
+        self.graph.add_vertex(Vertex())
         original = list(self.graph.vertices)
         with self.assertRaisesRegexp(RuntimeError, 'not all vertices are connected'):
-            self.graph._sortCyclicVertices(original)
+            self.graph.sort_cyclic_vertices(original)
 
 
 ################################################################################

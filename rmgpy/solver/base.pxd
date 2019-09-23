@@ -43,61 +43,59 @@ cdef class ReactionSystem(DASx):
     cdef public np.ndarray dydt0
 
     #  variables that determine the dimensions of arrays and matrices:
-    cdef public int numCoreSpecies
-    cdef public int numCoreReactions
-    cdef public int numEdgeSpecies
-    cdef public int numSurfaceSpecies
-    cdef public int numSurfaceReactions
-    cdef public int numEdgeReactions
-    cdef public int numPdepNetworks
+    cdef public int num_core_species
+    cdef public int num_core_reactions
+    cdef public int num_edge_species
+    cdef public int num_edge_reactions
+    cdef public int num_pdep_networks
     cdef public int neq
 
     # variables that store stoichiometry data
-    cdef public dict speciesIndex
-    cdef public dict reactionIndex
-    cdef public np.ndarray reactantIndices
-    cdef public np.ndarray productIndices
-    cdef public np.ndarray networkIndices
+    cdef public dict species_index
+    cdef public dict reaction_index
+    cdef public np.ndarray reactant_indices
+    cdef public np.ndarray product_indices
+    cdef public np.ndarray network_indices
 
     # matrices that cache kinetic and rate data
     cdef public np.ndarray kf  # forward rate coefficients
     cdef public np.ndarray kb  # reverse rate coefficients
     cdef public np.ndarray Keq  # equilibrium constants
-    cdef public np.ndarray networkLeakCoefficients
-    cdef public np.ndarray jacobianMatrix
+    cdef public np.ndarray network_leak_coefficients
+    cdef public np.ndarray jacobian_matrix
 
-    cdef public np.ndarray coreSpeciesConcentrations
+    cdef public np.ndarray core_species_concentrations
     
     #surface information
-    cdef public np.ndarray surfaceSpeciesIndices
-    cdef public np.ndarray surfaceReactionIndices
-    cdef public np.ndarray validLayeringIndices
+    cdef public np.ndarray surface_species_indices
+    cdef public np.ndarray surface_reaction_indices
+    cdef public np.ndarray valid_layering_indices
     
     # The reaction and species rates at the current time (in mol/m^3*s)
-    cdef public np.ndarray coreSpeciesRates
-    cdef public np.ndarray coreReactionRates
-    cdef public np.ndarray coreSpeciesProductionRates
-    cdef public np.ndarray coreSpeciesConsumptionRates
-    cdef public np.ndarray edgeSpeciesRates
-    cdef public np.ndarray edgeReactionRates
+    cdef public np.ndarray core_species_rates
+    cdef public np.ndarray core_reaction_rates
+    cdef public np.ndarray core_species_production_rates
+    cdef public np.ndarray core_species_consumption_rates
+    cdef public np.ndarray edge_species_rates
+    cdef public np.ndarray edge_reaction_rates
 
-    cdef public np.ndarray networkLeakRates    
+    cdef public np.ndarray network_leak_rates    
 
     # variables that cache maximum rate (ratio) data
-    cdef public np.ndarray maxEdgeSpeciesRateRatios
-    cdef public np.ndarray maxNetworkLeakRateRatios
+    cdef public np.ndarray max_edge_species_rate_ratios
+    cdef public np.ndarray max_network_leak_rate_ratios
     
     #for managing prunable edge species
-    cdef public list prunableSpecies
-    cdef public list prunableNetworks
-    cdef public np.ndarray prunableSpeciesIndices
-    cdef public np.ndarray prunableNetworkIndices
+    cdef public list prunable_species
+    cdef public list prunable_networks
+    cdef public np.ndarray prunable_species_indices
+    cdef public np.ndarray prunable_network_indices
     
     # sensitivity variables
     # cdef public int sensmethod
-    cdef public np.ndarray sensitivityCoefficients
-    cdef public list sensitiveSpecies
-    cdef public double sensitivityThreshold
+    cdef public np.ndarray sensitivity_coefficients
+    cdef public list sensitive_species
+    cdef public double sensitivity_threshold
     # cdef public np.ndarray senpar
 
     # tolerance settings
@@ -112,26 +110,26 @@ cdef class ReactionSystem(DASx):
     cdef public bint trimolecular
 
     # reaction threshold settings
-    cdef public np.ndarray unimolecularThreshold
-    cdef public np.ndarray bimolecularThreshold
-    cdef public np.ndarray trimolecularThreshold
+    cdef public np.ndarray unimolecular_threshold
+    cdef public np.ndarray bimolecular_threshold
+    cdef public np.ndarray trimolecular_threshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        list surfaceSpecies=?, list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?,
-        sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?, dict conditions=?)
+    cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
+        list surface_species=?, list surface_reactions=?, list pdep_networks=?, atol=?, rtol=?,
+        sensitivity=?, sens_atol=?, sens_rtol=?, filter_reactions=?, dict conditions=?)
 
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
-        list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        list pdepNetworks=?, bool prune=?, bool sensitivity=?, list sensWorksheet=?, object modelSettings=?,
-        object simulatorSettings=?, dict conditions=?)
+    cpdef simulate(self, list core_species, list core_reactions, list edge_species, 
+        list edge_reactions,list surface_species, list surface_reactions,
+        list pdep_networks=?, bool prune=?, bool sensitivity=?, list sens_worksheet=?, object model_settings=?,
+        object simulator_settings=?, dict conditions=?)
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
+    cpdef log_rates(self, double char_rate, object species, double species_rate, double max_dif_ln_accum_num, object network, double network_rate)
      
-    cpdef logConversions(self, speciesIndex, y0)
+    cpdef log_conversions(self, species_index, y0)
     
-    cpdef getLayeringIndices(self)
+    cpdef get_layering_indices(self)
     
-    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions)
+    cpdef initialize_surface(self,list core_species,list core_reactions,list surface_species,list surface_reactions)
     
-    cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list surfaceSpecies,list surfaceReactions,list edgeSpecies)
+    cpdef add_reactions_to_surface(self,list new_surface_reactions,list new_surface_reaction_inds,list surface_species,list surface_reactions,list edge_species)

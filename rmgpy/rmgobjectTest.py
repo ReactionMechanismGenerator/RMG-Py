@@ -343,7 +343,7 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         """
         self.assertEqual(expand_to_dict(self.np_array), self.np_dict)
 
-    def test_expanding_RMGObjects(self):
+    def test_expanding_rmg_objects(self):
         """
         Test that RMGObjects (even when nested) can be expanded using the as_dict method
         """

@@ -224,8 +224,8 @@ pressureDependence(
     minimumGrainCount=500,
     method='modified strong collision',
     # Other methods include: 'reservoir state', 'chemically-significant eigenvalues',
-    interpolationModel=('pdeparrhenius'),
+    interpolationModel='pdeparrhenius',
     activeKRotor=True,
-    #    activeJRotor = False,  # causes Arkane to crash
+    #    active_j_rotor = False,  # causes Arkane to crash
     rmgmode=False,
 )

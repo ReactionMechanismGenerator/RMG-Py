@@ -41,7 +41,7 @@ import os.path
 
 from rmg import parse_command_line_arguments
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.rmg.main import initializeLog, RMG
+from rmgpy.rmg.main import initialize_log, RMG
 from rmgpy.rmg.output import OutputHTMLWriter
 
 
@@ -68,9 +68,9 @@ def main():
         'kineticsdatastore': args.kineticsdatastore
     }
 
-    initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
+    initialize_log(level, os.path.join(args.output_directory, 'RMG.log'))
 
-    rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
+    rmg = RMG(input_file=args.file, output_directory=args.output_directory)
 
     # Add output listeners:
     rmg.attach(ChemkinWriter(args.output_directory))
@@ -92,15 +92,15 @@ def execute(rmg, **kwargs):
     """
     rmg.initialize(**kwargs)
 
-    rmg.reactionModel.enlarge(reactEdge=True,
-                              unimolecularReact=rmg.unimolecularReact,
-                              bimolecularReact=rmg.bimolecularReact,
-                              trimolecularReact=rmg.trimolecularReact)
+    rmg.reaction_model.enlarge(react_edge=True,
+                               unimolecular_react=rmg.unimolecular_react,
+                               bimolecular_react=rmg.bimolecular_react,
+                               trimolecular_react=rmg.trimolecular_react)
     # Show all core and edge species and reactions in the output
-    rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
-    rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
+    rmg.reaction_model.output_species_list.extend(rmg.reaction_model.edge.species)
+    rmg.reaction_model.output_reaction_list.extend(rmg.reaction_model.edge.reactions)
 
-    rmg.saveEverything()
+    rmg.save_everything()
 
     rmg.finish()
 

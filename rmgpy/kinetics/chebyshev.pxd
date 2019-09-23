@@ -41,15 +41,15 @@ cdef class Chebyshev(PDepKineticsModel):
     
     cdef double chebyshev(self, int n, double x)
     
-    cdef double getReducedTemperature(self, double T) except -1000
+    cdef double get_reduced_temperature(self, double T) except -1000
     
-    cdef double getReducedPressure(self, double P) except -1000
+    cdef double get_reduced_pressure(self, double P) except -1000
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits,
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits,
         int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)

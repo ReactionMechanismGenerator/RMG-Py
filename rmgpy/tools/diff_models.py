@@ -62,14 +62,14 @@ import os
 
 import matplotlib.pyplot as plt
 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.rmg.model import ReactionModel
-from rmgpy.rmg.output import saveDiffHTML
+from rmgpy.rmg.output import save_diff_html
 
 
 ################################################################################
 
-def compareModelKinetics(model1, model2):
+def compare_model_kinetics(model1, model2):
     """
     Compare the kinetics of :class:`ReactionModel` objects `model1` and 
     `model2`, printing the results to stdout.
@@ -78,7 +78,7 @@ def compareModelKinetics(model1, model2):
     common_reactions = {}
     for rxn1 in model1.reactions:
         for rxn2 in model2.reactions:
-            if rxn1.isIsomorphic(rxn2):
+            if rxn1.is_isomorphic(rxn2):
                 common_reactions[rxn1] = rxn2
                 model2.reactions.remove(rxn2)
                 break
@@ -100,11 +100,11 @@ def compareModelKinetics(model1, model2):
     kinetics1 = []
     kinetics2 = []
     for rxn1, rxn2 in common_reactions.items():
-        kinetics1.append(rxn1.getRateCoefficient(T, P))
-        if rxn1.isIsomorphic(rxn2, eitherDirection=False):
-            kinetics2.append(rxn2.getRateCoefficient(T, P))
+        kinetics1.append(rxn1.get_rate_coefficient(T, P))
+        if rxn1.is_isomorphic(rxn2, either_direction=False):
+            kinetics2.append(rxn2.get_rate_coefficient(T, P))
         else:
-            kinetics2.append(rxn2.getRateCoefficient(T, P) / rxn2.getEquilibriumConstant(T))
+            kinetics2.append(rxn2.get_rate_coefficient(T, P) / rxn2.get_equilibrium_constant(T))
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     plt.loglog(kinetics1, kinetics2, 'o', picker=5)
     xlim = plt.xlim()
@@ -131,7 +131,7 @@ def compareModelKinetics(model1, model2):
     plt.show()
 
 
-def compareModelSpecies(model1, model2):
+def compare_model_species(model1, model2):
     """
     This function compares two RMG models and returns a list of common species (with a nested list containing
     both species objects as elements), as well as a list of unique species for each model.
@@ -143,7 +143,7 @@ def compareModelSpecies(model1, model2):
 
     for spec2 in model2.species:
         for spec1 in unique_species1[:]:  # make a copy so you don't remove from the list you are iterating over
-            if spec1.isIsomorphic(spec2):
+            if spec1.is_isomorphic(spec2):
                 common_species.append([spec1, spec2])
                 unique_species1.remove(spec1)
                 break
@@ -162,7 +162,7 @@ def compareModelSpecies(model1, model2):
     return common_species, unique_species1, unique_species2
 
 
-def compareModelReactions(model1, model2):
+def compare_model_reactions(model1, model2):
     """
     This function compares two RMG models and returns a list of common reactions (with a nested list containing
     both reaction objects as elements), as well as a list of unique reactions for each model.
@@ -189,7 +189,7 @@ def compareModelReactions(model1, model2):
     unique_reactions2 = []
     for rxn1 in reaction_list1:
         for rxn2 in reaction_list2[:]:  # make a copy so you don't remove from the list you are iterating over
-            if rxn1.isIsomorphic(rxn2):
+            if rxn1.is_isomorphic(rxn2):
                 common_reactions.append([rxn1, rxn2])
                 # Remove reaction 2 from being chosen a second time.
                 # Let each reaction only appear only once in the diff comparison.
@@ -212,25 +212,25 @@ def compareModelReactions(model1, model2):
     return common_reactions, unique_reactions1, unique_reactions2
 
 
-def saveCompareHTML(outputDir, chemkinPath1, speciesDictPath1, chemkinPath2, speciesDictPath2, readComments1=True,
-                    readComments2=True):
+def save_compare_html(outputDir, chemkin_path1, species_dict_path1, chemkin_path2, species_dict_path2,
+                      read_comments1=True, read_comments2=True):
     """
     Saves a model comparison HTML file based on two sets of chemkin and species dictionary
     files.
     """
     model1 = ReactionModel()
-    model1.species, model1.reactions = loadChemkinFile(chemkinPath1, speciesDictPath1, readComments=readComments1)
+    model1.species, model1.reactions = load_chemkin_file(chemkin_path1, species_dict_path1, read_comments=read_comments1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2, readComments=readComments2)
-    common_reactions, unique_reactions1, unique_reactions2 = compareModelReactions(model1, model2)
-    common_species, unique_species1, unique_species2 = compareModelSpecies(model1, model2)
+    model2.species, model2.reactions = load_chemkin_file(chemkin_path2, species_dict_path2, read_comments=read_comments2)
+    common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
+    common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
 
     output_path = outputDir + 'diff.html'
-    saveDiffHTML(output_path, common_species, unique_species1, unique_species2, common_reactions, unique_reactions1,
-                 unique_reactions2)
+    save_diff_html(output_path, common_species, unique_species1, unique_species2, common_reactions, unique_reactions1,
+                   unique_reactions2)
 
 
-def enthalpyDiff(species):
+def enthalpy_diff(species):
     """
     Returns the enthalpy discrepancy between the same species in the two models
     """
@@ -243,7 +243,7 @@ def enthalpyDiff(species):
     return -1 * diff
 
 
-def kineticsDiff(reaction):
+def kinetics_diff(reaction):
     """
     Returns some measure of the discrepancy between two reactions in a model
     """
@@ -256,17 +256,17 @@ def kineticsDiff(reaction):
     return -1 * diff
 
 
-def identicalThermo(species_pair):
-    return species_pair[0].thermo.isIdenticalTo(species_pair[1].thermo)
+def identical_thermo(species_pair):
+    return species_pair[0].thermo.is_identical_to(species_pair[1].thermo)
 
 
-def identicalKinetics(reaction_pair):
-    return reaction_pair[0].kinetics.isIdenticalTo(reaction_pair[1].kinetics)
+def identical_kinetics(reaction_pair):
+    return reaction_pair[0].kinetics.is_identical_to(reaction_pair[1].kinetics)
 
 
 ################################################################################
 
-def parseCommandLineArguments():
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('chemkin1', metavar='CHEMKIN1', type=str, nargs=1,
                         help='the Chemkin file of the first model')
@@ -294,7 +294,7 @@ def main():
     """
     Driver function that parses command line arguments and passes them to the execute function.
     """
-    args = parseCommandLineArguments()
+    args = parse_command_line_arguments()
 
     chemkin1 = args.chemkin1[0]
     species_dict1 = args.speciesDict1[0]
@@ -319,14 +319,14 @@ def main():
     execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, **kwargs)
 
 
-def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **kwargs):
+def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, **kwargs):
     model1 = ReactionModel()
-    model1.species, model1.reactions = loadChemkinFile(chemkin1, speciesDict1, thermoPath=thermo1)
+    model1.species, model1.reactions = load_chemkin_file(chemkin1, species_dict1, thermo_path=thermo1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = loadChemkinFile(chemkin2, speciesDict2, thermoPath=thermo2)
+    model2.species, model2.reactions = load_chemkin_file(chemkin2, species_dict2, thermo_path=thermo2)
 
-    common_species, unique_species1, unique_species2 = compareModelSpecies(model1, model2)
-    common_reactions, unique_reactions1, unique_reactions2 = compareModelReactions(model1, model2)
+    common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
+    common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
 
     try:
         diff_only = kwargs['diffOnly']
@@ -339,8 +339,8 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
         common_diff_only = False
 
     if diff_only or common_diff_only:
-        common_species = [x for x in common_species if not identicalThermo(x)]
-        common_reactions = [x for x in common_reactions if not identicalKinetics(x)]
+        common_species = [x for x in common_species if not identical_thermo(x)]
+        common_reactions = [x for x in common_reactions if not identical_kinetics(x)]
 
     if common_diff_only:
         unique_species1 = []
@@ -358,30 +358,30 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
         for spec1, spec2 in common_species:
             logging.info('    {0!s}'.format(spec1))
             if spec1.thermo and spec2.thermo:
-                spec1.molecule[0].getSymmetryNumber()
+                spec1.molecule[0].get_symmetry_number()
                 logging.info(
                     '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format(
-                        spec1.thermo.getEnthalpy(300) / 4184.,
-                        spec1.thermo.getEntropy(300) / 4.184,
-                        spec1.thermo.getHeatCapacity(300) / 4.184,
-                        spec1.thermo.getHeatCapacity(400) / 4.184,
-                        spec1.thermo.getHeatCapacity(500) / 4.184,
-                        spec1.thermo.getHeatCapacity(600) / 4.184,
-                        spec1.thermo.getHeatCapacity(800) / 4.184,
-                        spec1.thermo.getHeatCapacity(1000) / 4.184,
-                        spec1.thermo.getHeatCapacity(1500) / 4.184,
+                        spec1.thermo.get_enthalpy(300) / 4184.,
+                        spec1.thermo.get_entropy(300) / 4.184,
+                        spec1.thermo.get_heat_capacity(300) / 4.184,
+                        spec1.thermo.get_heat_capacity(400) / 4.184,
+                        spec1.thermo.get_heat_capacity(500) / 4.184,
+                        spec1.thermo.get_heat_capacity(600) / 4.184,
+                        spec1.thermo.get_heat_capacity(800) / 4.184,
+                        spec1.thermo.get_heat_capacity(1000) / 4.184,
+                        spec1.thermo.get_heat_capacity(1500) / 4.184,
                     ))
                 logging.info(
                     '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format(
-                        spec2.thermo.getEnthalpy(300) / 4184.,
-                        spec2.thermo.getEntropy(300) / 4.184,
-                        spec2.thermo.getHeatCapacity(300) / 4.184,
-                        spec2.thermo.getHeatCapacity(400) / 4.184,
-                        spec2.thermo.getHeatCapacity(500) / 4.184,
-                        spec2.thermo.getHeatCapacity(600) / 4.184,
-                        spec2.thermo.getHeatCapacity(800) / 4.184,
-                        spec2.thermo.getHeatCapacity(1000) / 4.184,
-                        spec2.thermo.getHeatCapacity(1500) / 4.184,
+                        spec2.thermo.get_enthalpy(300) / 4184.,
+                        spec2.thermo.get_entropy(300) / 4.184,
+                        spec2.thermo.get_heat_capacity(300) / 4.184,
+                        spec2.thermo.get_heat_capacity(400) / 4.184,
+                        spec2.thermo.get_heat_capacity(500) / 4.184,
+                        spec2.thermo.get_heat_capacity(600) / 4.184,
+                        spec2.thermo.get_heat_capacity(800) / 4.184,
+                        spec2.thermo.get_heat_capacity(1000) / 4.184,
+                        spec2.thermo.get_heat_capacity(1500) / 4.184,
                     ))
         logging.info('{0:d} species were only found in the first model:'.format(len(unique_species1)))
         for spec in unique_species1:
@@ -395,24 +395,24 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
             logging.info('    {0!s}'.format(rxn1))
             if rxn1.kinetics and rxn2.kinetics:
                 logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn1.kinetics.getRateCoefficient(300, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(400, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(500, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(600, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(800, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(1000, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(1500, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(2000, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(300, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(400, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(500, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(600, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(800, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(1000, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(1500, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(2000, 1e5)),
                 ))
                 logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn2.kinetics.getRateCoefficient(300, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(400, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(500, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(600, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(800, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(1000, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(1500, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(2000, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(300, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(400, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(500, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(600, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(800, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(1000, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(1500, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(2000, 1e5)),
                 ))
         logging.info('{0:d} reactions were only found in the first model:'.format(len(unique_reactions1)))
         for rxn in unique_reactions1:
@@ -429,8 +429,8 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
         wd = os.getcwd()
 
     output_path = os.path.join(wd, 'diff.html')
-    saveDiffHTML(output_path, common_species, unique_species1, unique_species2,
-                 common_reactions, unique_reactions1, unique_reactions2)
+    save_diff_html(output_path, common_species, unique_species1, unique_species2,
+                   common_reactions, unique_reactions1, unique_reactions2)
     logging.info("Finished!")
 
     return common_species, unique_species1, unique_species2, common_reactions, unique_reactions1, unique_reactions2

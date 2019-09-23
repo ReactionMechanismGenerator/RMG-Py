@@ -78,52 +78,52 @@ class Species(object):
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
-    `transportData`         A set of transport collision parameters
-    `molecularWeight`       The molecular weight of the species
-    `energyTransferModel`   The collisional energy transfer model to use
+    `transport_data`        A set of transport collision parameters
+    `molecular_weight`      The molecular weight of the species
+    `energy_transfer_model` The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
                                 Reaction libraries and seed mechanisms that include the species are
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
-    `symmetryNumber`        Estimated symmetry number of the species, using the resonance hybrid
-    `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
-    `explicitlyAllowed`     Flag to exempt species from forbidden structure checks
+    `symmetry_number`       Estimated symmetry number of the species, using the resonance hybrid
+    `creation_iteration`    Iteration which the species is created within the reaction mechanism generation algorithm
+    `explicitly_allowed`    Flag to exempt species from forbidden structure checks
     ======================= ====================================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transportData=None,
-                 molecularWeight=None, energyTransferModel=None, reactive=True, props=None, SMILES='', InChI='',
-                 aug_inchi=None, symmetryNumber=-1, creationIteration=0, explicitlyAllowed=False):
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transport_data=None,
+                 molecular_weight=None, energy_transfer_model=None, reactive=True, props=None, smiles='', inchi='',
+                 aug_inchi=None, symmetry_number=-1, creation_iteration=0, explicitly_allowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
         self.conformer = conformer
         self.molecule = molecule or []
-        self.transportData = transportData
+        self.transport_data = transport_data
         self.reactive = reactive
-        self.molecularWeight = molecularWeight
-        self.energyTransferModel = energyTransferModel
+        self.molecular_weight = molecular_weight
+        self.energy_transfer_model = energy_transfer_model
         self.props = props or {}
         self.aug_inchi = aug_inchi
-        self.symmetryNumber = symmetryNumber
-        self.isSolvent = False
-        self.creationIteration = creationIteration
-        self.explicitlyAllowed = explicitlyAllowed
+        self.symmetry_number = symmetry_number
+        self.is_solvent = False
+        self.creation_iteration = creation_iteration
+        self.explicitly_allowed = explicitly_allowed
         self._fingerprint = None
         self._inchi = None
         self._smiles = None
 
-        if InChI and SMILES:
+        if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Species instantiation, '
                             'using InChI and ignoring SMILES.')
-        if InChI:
-            self.molecule = [Molecule(InChI=InChI)]
-            self._inchi = InChI
-        elif SMILES:
-            self.molecule = [Molecule(SMILES=SMILES)]
-            self._smiles = SMILES
+        if inchi:
+            self.molecule = [Molecule(inchi=inchi)]
+            self._inchi = inchi
+        elif smiles:
+            self.molecule = [Molecule(smiles=smiles)]
+            self._smiles = smiles
 
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule) > 1:
@@ -149,14 +149,14 @@ class Species(object):
             string += 'conformer={0!r}, '.format(self.conformer)
         if len(self.molecule) > 0:
             string += 'molecule={0!r}, '.format(self.molecule)
-        if self.transportData is not None:
-            string += 'transportData={0!r}, '.format(self.transportData)
+        if self.transport_data is not None:
+            string += 'transport_data={0!r}, '.format(self.transport_data)
         if not self.reactive:
             string += 'reactive={0}, '.format(self.reactive)
-        if self.molecularWeight is not None:
-            string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
-        if self.energyTransferModel is not None:
-            string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
+        if self.molecular_weight is not None:
+            string += 'molecular_weight={0!r}, '.format(self.molecular_weight)
+        if self.energy_transfer_model is not None:
+            string += 'energy_transfer_model={0!r}, '.format(self.energy_transfer_model)
         string = string[:-2] + ')'
         return string
 
@@ -171,7 +171,7 @@ class Species(object):
         Return a string representation of the species, in the form 'label(id)'.
         """
         if not self.label:
-            self.label = self.molecule[0].toSMILES()
+            self.label = self.molecule[0].to_smiles()
         if self.index == -1:
             return self.label
         else:
@@ -181,8 +181,8 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData,
-                          self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transport_data,
+                          self.molecular_weight, self.energy_transfer_model, self.reactive, self.props))
 
     def __hash__(self):
         """
@@ -228,15 +228,15 @@ class Species(object):
         return self._fingerprint
 
     @property
-    def InChI(self):
+    def inchi(self):
         """InChI string representation of this species. Read-only."""
         if self._inchi is None:
             if self.molecule:
-                self._inchi = self.molecule[0].InChI
+                self._inchi = self.molecule[0].inchi
         return self._inchi
 
     @property
-    def SMILES(self):
+    def smiles(self):
         """
         SMILES string representation of this species. Read-only.
 
@@ -244,7 +244,7 @@ class Species(object):
         """
         if self._smiles is None:
             if self.molecule:
-                self._smiles = self.molecule[0].SMILES
+                self._smiles = self.molecule[0].smiles
         return self._smiles
 
     @property
@@ -256,15 +256,15 @@ class Species(object):
             return None
 
     @property
-    def molecularWeight(self):
+    def molecular_weight(self):
         """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
-        if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
-            self._molecularWeight = quantity.Mass(self.molecule[0].getMolecularWeight(), 'kg/mol')
-        return self._molecularWeight
+        if self._molecular_weight is None and self.molecule is not None and len(self.molecule) > 0:
+            self._molecular_weight = quantity.Mass(self.molecule[0].get_molecular_weight(), 'kg/mol')
+        return self._molecular_weight
 
-    @molecularWeight.setter
-    def molecularWeight(self, value):
-        self._molecularWeight = quantity.Mass(value)
+    @molecular_weight.setter
+    def molecular_weight(self, value):
+        self._molecular_weight = quantity.Mass(value)
 
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
@@ -273,36 +273,36 @@ class Species(object):
         `molecule` is already greater than one, it is assumed that all of the
         resonance structures have already been generated.
         """
-        if len(self.molecule) == 1 or not self.molecule[0].atomIDValid():
-            if not self.molecule[0].atomIDValid():
-                self.molecule[0].assignAtomIDs()
+        if len(self.molecule) == 1 or not self.molecule[0].atom_ids_valid():
+            if not self.molecule[0].atom_ids_valid():
+                self.molecule[0].assign_atom_ids()
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
 
-    def isIsomorphic(self, other, generateInitialMap=False, strict=True):
+    def is_isomorphic(self, other, generate_initial_map=False, strict=True):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
 
         Args:
-            generateInitialMap (bool, optional): If ``True``, make initial map by matching labeled atoms
+            generate_initial_map (bool, optional): If ``True``, make initial map by matching labeled atoms
             strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIsomorphic(other, generateInitialMap=generateInitialMap, strict=strict):
+                if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIsomorphic(molecule2, generateInitialMap=generateInitialMap, strict=strict):
+                    if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map, strict=strict):
                         return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'
                              ' should be a Molecule or Species object.'.format(other))
         return False
 
-    def isIdentical(self, other, strict=True):
+    def is_identical(self, other, strict=True):
         """
         Return ``True`` if at least one molecule of the species is identical to `other`,
         which can be either a :class:`Molecule` object or a :class:`Species` object.
@@ -311,12 +311,12 @@ class Species(object):
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIdentical(other, strict=strict):
+                if molecule.is_identical(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIdentical(molecule2, strict=strict):
+                    if molecule1.is_identical(molecule2, strict=strict):
                         return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'
@@ -330,20 +330,20 @@ class Species(object):
         """
         for species in species_list:
             if isinstance(species, Species):
-                return self.isIsomorphic(species)
+                return self.is_isomorphic(species)
             else:
                 raise TypeError('Unexpected value "{0!r}" for species_list parameter;'
                                 ' should be a List of Species objects.'.format(species))
         return False
 
-    def fromAdjacencyList(self, adjlist):
+    def from_adjacency_list(self, adjlist):
         """
         Load the structure of a species as a :class:`Molecule` object from the
         given adjacency list `adjlist` and store it as the first entry of a 
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
-        self.molecule = [Molecule().fromAdjacencyList(adjlist)]
+        self.molecule = [Molecule().from_adjacency_list(adjlist)]
         # If the first line is a label, then save it to the label attribute
         for label in adjlist.splitlines():
             if label.strip():
@@ -352,46 +352,46 @@ class Species(object):
             label = ''
         if len(label.split()) > 0 and not label.split()[0].isdigit():
             self.label = label.strip()
-        # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
+        # Return a reference to itself so we can use e.g. Species().from_adjacency_list()
         return self
 
-    def fromSMILES(self, smiles):
+    def from_smiles(self, smiles):
         """
         Load the structure of a species as a :class:`Molecule` object from the
         given SMILES string `smiles` and store it as the first entry of a 
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
-        self.molecule = [Molecule().fromSMILES(smiles)]
-        # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
+        self.molecule = [Molecule().from_smiles(smiles)]
+        # Return a reference to itself so we can use e.g. Species().from_adjacency_list()
         return self
 
-    def toAdjacencyList(self):
+    def to_adjacency_list(self):
         """
         Return a string containing each of the molecules' adjacency lists.
         """
-        output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
+        output = '\n\n'.join([m.to_adjacency_list(label=self.label, remove_h=False) for m in self.molecule])
         return output
 
-    def toChemkin(self):
+    def to_chemkin(self):
         """
         Return the chemkin-formatted string for this species.
         """
-        from rmgpy.chemkin import getSpeciesIdentifier
-        return getSpeciesIdentifier(self)
+        from rmgpy.chemkin import get_species_identifier
+        return get_species_identifier(self)
 
-    def toCantera(self, useChemkinIdentifier=False):
+    def to_cantera(self, use_chemkin_identifier=False):
         """
         Converts the RMG Species object to a Cantera Species object
         with the appropriate thermo data.
 
-        If useChemkinIdentifier is set to False, the species label is used
+        If use_chemkin_identifier is set to False, the species label is used
         instead. Be sure that species' labels are unique when setting it False.
         """
         import cantera as ct
 
         # Determine the number of each type of element in the molecule
-        element_dict = {}  # elementCounts = [0,0,0,0]
+        element_dict = {}  # element_counts = [0,0,0,0]
         for atom in self.molecule[0].atoms:
             # The atom itself
             symbol = atom.element.symbol
@@ -399,24 +399,24 @@ class Species(object):
                 element_dict[symbol] = 1
             else:
                 element_dict[symbol] += 1
-        if useChemkinIdentifier:
-            ct_species = ct.Species(self.toChemkin(), element_dict)
+        if use_chemkin_identifier:
+            ct_species = ct.Species(self.to_chemkin(), element_dict)
         else:
             ct_species = ct.Species(self.label, element_dict)
         if self.thermo:
             try:
-                ct_species.thermo = self.thermo.toCantera()
+                ct_species.thermo = self.thermo.to_cantera()
             except Exception:
                 logging.error('Could not convert thermo to create Cantera Species object. '
                               'Check that thermo is a NASA polynomial.')
                 raise
 
-        if self.transportData:
-            ct_species.transport = self.transportData.toCantera()
+        if self.transport_data:
+            ct_species.transport = self.transport_data.to_cantera()
 
         return ct_species
 
-    def hasStatMech(self):
+    def has_statmech(self):
         """
         Return ``True`` if the species has statistical mechanical parameters,
         or ``False`` otherwise.
@@ -428,119 +428,119 @@ class Species(object):
             # polyatomic molecules should have modes and E0, so check both
             return self.conformer is not None and len(self.conformer.modes) > 0 and self.conformer.E0 is not None
 
-    def hasThermo(self):
+    def has_thermo(self):
         """
         Return ``True`` if the species has thermodynamic parameters, or 
         ``False`` otherwise.
         """
         return self.thermo is not None
 
-    def containsSurfaceSite(self):
+    def contains_surface_site(self):
         """
         Return ``True`` if the species is adsorbed on a surface (or is itself a site), else ``False``.
         """
-        return self.molecule[0].containsSurfaceSite()
+        return self.molecule[0].contains_surface_site()
 
-    def isSurfaceSite(self):
-        "Return ``True`` if the species is a vacant surface site."
-        return self.molecule[0].isSurfaceSite()
+    def is_surface_site(self):
+        """Return ``True`` if the species is a vacant surface site."""
+        return self.molecule[0].is_surface_site()
 
-    def getPartitionFunction(self, T):
+    def get_partition_function(self, T):
         """
         Return the partition function for the species at the specified
         temperature `T` in K.
         """
         cython.declare(Q=cython.double)
-        if self.hasStatMech():
-            Q = self.conformer.getPartitionFunction(T)
+        if self.has_statmech():
+            Q = self.conformer.get_partition_function(T)
         else:
             raise Exception('Unable to calculate partition function for species {0!r}: '
                             'no statmech data available.'.format(self.label))
         return Q
 
-    def getHeatCapacity(self, T):
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the species at the specified
         temperature `T` in K.
         """
         cython.declare(Cp=cython.double)
         Cp = 0.0
-        if self.hasThermo():
-            Cp = self.getThermoData().getHeatCapacity(T)
-        elif self.hasStatMech():
-            Cp = self.conformer.getHeatCapacity(T)
+        if self.has_thermo():
+            Cp = self.get_thermo_data().get_heat_capacity(T)
+        elif self.has_statmech():
+            Cp = self.conformer.get_heat_capacity(T)
         else:
             raise Exception('Unable to calculate heat capacity for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return Cp
 
-    def getEnthalpy(self, T):
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the species at the specified
         temperature `T` in K.
         """
         cython.declare(H=cython.double)
         H = 0.0
-        if self.hasThermo():
-            H = self.getThermoData().getEnthalpy(T)
-        elif self.hasStatMech():
-            H = self.conformer.getEnthalpy(T) + self.conformer.E0.value_si
+        if self.has_thermo():
+            H = self.get_thermo_data().get_enthalpy(T)
+        elif self.has_statmech():
+            H = self.conformer.get_enthalpy(T) + self.conformer.E0.value_si
         else:
             raise Exception('Unable to calculate enthalpy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return H
 
-    def getEntropy(self, T):
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the species at the specified
         temperature `T` in K.
         """
         cython.declare(S=cython.double)
         S = 0.0
-        if self.hasThermo():
-            S = self.getThermoData().getEntropy(T)
-        elif self.hasStatMech():
-            S = self.conformer.getEntropy(T)
+        if self.has_thermo():
+            S = self.get_thermo_data().get_entropy(T)
+        elif self.has_statmech():
+            S = self.conformer.get_entropy(T)
         else:
             raise Exception('Unable to calculate entropy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return S
 
-    def getFreeEnergy(self, T):
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol for the species at the specified
         temperature `T` in K.
         """
         cython.declare(G=cython.double)
         G = 0.0
-        if self.hasThermo():
-            G = self.getThermoData().getFreeEnergy(T)
-        elif self.hasStatMech():
-            G = self.conformer.getFreeEnergy(T) + self.conformer.E0.value_si
+        if self.has_thermo():
+            G = self.get_thermo_data().get_free_energy(T)
+        elif self.has_statmech():
+            G = self.conformer.get_free_energy(T) + self.conformer.E0.value_si
         else:
             raise Exception('Unable to calculate free energy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return G
 
-    def getSumOfStates(self, Elist):
+    def get_sum_of_states(self, e_list):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol.
         """
-        if self.hasStatMech():
-            return self.conformer.getSumOfStates(Elist)
+        if self.has_statmech():
+            return self.conformer.get_sum_of_states(e_list)
         else:
             raise Exception('Unable to calculate sum of states for species {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def getDensityOfStates(self, Elist):
+    def get_density_of_states(self, e_list):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state.
+        energies `e_list` in J/mol above the ground state.
         """
-        if self.hasStatMech():
+        if self.has_statmech():
             try:
-                return self.conformer.getDensityOfStates(Elist)
+                return self.conformer.get_density_of_states(e_list)
             except StatmechError:
                 logging.error('StatmechError raised for species {0}'.format(self.label))
                 raise
@@ -548,27 +548,27 @@ class Species(object):
             raise Exception('Unable to calculate density of states for species {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def getSymmetryNumber(self):
+    def get_symmetry_number(self):
         """
         Get the symmetry number for the species, which is the highest symmetry number amongst
         its resonance isomers and the resonance hybrid.  
         This function is currently used for website purposes and testing only as it
-        requires additional calculateSymmetryNumber calls.
+        requires additional calculate_symmetry_number calls.
         """
-        if self.symmetryNumber < 1:
+        if self.symmetry_number < 1:
             cython.declare(resonanceHybrid=Molecule, maxSymmetryNum=cython.short)
-            resonanceHybrid = self.getResonanceHybrid()
+            resonance_hybrid = self.get_resonance_hybrid()
             try:
-                self.symmetryNumber = resonanceHybrid.getSymmetryNumber()
+                self.symmetry_number = resonance_hybrid.get_symmetry_number()
             except KeyError:
                 logging.error('Wrong bond order generated by resonance hybrid.')
-                logging.error('Resonance Hybrid: {}'.format(resonanceHybrid.toAdjacencyList()))
+                logging.error('Resonance Hybrid: {}'.format(resonance_hybrid.to_adjacency_list()))
                 for index, mol in enumerate(self.molecule):
-                    logging.error("Resonance Structure {}: {}".format(index, mol.toAdjacencyList()))
+                    logging.error("Resonance Structure {}: {}".format(index, mol.to_adjacency_list()))
                 raise
-        return self.symmetryNumber
+        return self.symmetry_number
 
-    def getResonanceHybrid(self):
+    def get_resonance_hybrid(self):
         """
         Returns a molecule object with bond orders that are the average 
         of all the resonance structures.
@@ -604,7 +604,7 @@ class Species(object):
         new_mol = Molecule()
         original_atoms = atoms_from_structures[0]
         for atom1 in original_atoms:
-            atom = new_mol.addAtom(Atom(atom1.element))
+            atom = new_mol.add_atom(Atom(atom1.element))
             atom.id = atom1.id
 
         new_atoms = new_mol.atoms
@@ -614,7 +614,7 @@ class Species(object):
             for atom2 in atom1.bonds:
                 index2 = original_atoms.index(atom2)
                 bond = Bond(new_atoms[index1], new_atoms[index2], 0)
-                new_mol.addBond(bond)
+                new_mol.add_bond(bond)
 
         # set bonds to the proper value
         for structureNum, oldMol in enumerate(molecules):
@@ -625,27 +625,27 @@ class Species(object):
                 for atom2 in atom1.bonds:
                     index2 = old_atoms.index(atom2)
 
-                    new_bond = new_mol.getBond(new_atoms[index1], new_atoms[index2])
-                    old_bond_order = oldMol.getBond(old_atoms[index1], old_atoms[index2]).getOrderNum()
-                    new_bond.applyAction(('CHANGE_BOND', None, old_bond_order / num_resonance_structures / 2))
+                    new_bond = new_mol.get_bond(new_atoms[index1], new_atoms[index2])
+                    old_bond_order = oldMol.get_bond(old_atoms[index1], old_atoms[index2]).get_order_num()
+                    new_bond.apply_action(('CHANGE_BOND', None, old_bond_order / num_resonance_structures / 2))
                 # set radicals in resonance hybrid to maximum of all structures
-                if atom1.radicalElectrons > 0:
-                    new_atoms[index1].radicalElectrons = max(atom1.radicalElectrons,
-                                                             new_atoms[index1].radicalElectrons)
-        new_mol.updateAtomTypes(logSpecies=False, raiseException=False)
+                if atom1.radical_electrons > 0:
+                    new_atoms[index1].radical_electrons = max(atom1.radical_electrons,
+                                                              new_atoms[index1].radical_electrons)
+        new_mol.update_atomtypes(log_species=False, raise_exception=False)
         return new_mol
 
-    def calculateCp0(self):
+    def calculate_cp0(self):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
-        return self.molecule[0].calculateCp0()
+        return self.molecule[0].calculate_cp0()
 
-    def calculateCpInf(self):
+    def calculate_cpinf(self):
         """
         Return the value of the heat capacity at infinite temperature in J/mol*K.
         """
-        return self.molecule[0].calculateCpInf()
+        return self.molecule[0].calculate_cpinf()
 
     def has_reactive_molecule(self):
         """
@@ -678,16 +678,16 @@ class Species(object):
 
         other.conformer = deepcopy(self.conformer)
 
-        other.transportData = deepcopy(self.transportData)
+        other.transport_data = deepcopy(self.transport_data)
 
-        other.molecularWeight = deepcopy(self.molecularWeight)
-        other.energyTransferModel = deepcopy(self.energyTransferModel)
+        other.molecular_weight = deepcopy(self.molecular_weight)
+        other.energy_transfer_model = deepcopy(self.energy_transfer_model)
         other.reactive = self.reactive
         other.props = deepcopy(self.props)
 
         return other
 
-    def getAugmentedInChI(self):
+    def get_augmented_inchi(self):
         if self.aug_inchi is None:
             self.aug_inchi = self.generate_aug_inchi()
         return self.aug_inchi
@@ -697,7 +697,7 @@ class Species(object):
         self.generate_resonance_structures()
         for mol in self.molecule:
             try:
-                cand = [mol.toAugmentedInChI(), mol]
+                cand = [mol.to_augmented_inchi(), mol]
             except ValueError:
                 pass  # not all resonance structures can be parsed into InChI (e.g. if containing a hypervalance atom)
             else:
@@ -708,7 +708,7 @@ class Species(object):
                 return cand[0]
         return candidates[0][0]
 
-    def getThermoData(self, solventName=''):
+    def get_thermo_data(self, solvent_name=''):
         """
         Returns a `thermoData` object of the current Species object.
 
@@ -728,87 +728,87 @@ class Species(object):
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
         else:
-            submit(self, solventName)
+            submit(self, solvent_name)
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
 
         return self.thermo
 
-    def generateTransportData(self):
+    def generate_transport_data(self):
         """
-        Generate the transportData parameters for the species.
+        Generate the transport_data parameters for the species.
         """
-        from rmgpy.data.rmg import getDB
+        from rmgpy.data.rmg import get_db
         try:
-            transport_db = getDB('transport')
+            transport_db = get_db('transport')
             if not transport_db: raise Exception
         except Exception:
             logging.debug('Could not obtain the transport database. Not generating transport...')
             raise
 
-        # count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.transportData = transport_db.getTransportProperties(self)[0]
+        # count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
+        self.transport_data = transport_db.get_transport_properties(self)[0]
 
-    def getTransportData(self):
+    def get_transport_data(self):
         """
         Returns the transport data associated with this species, and
         calculates it if it is not yet available.
         """
 
-        if not self.transportData:
-            self.generateTransportData()
+        if not self.transport_data:
+            self.generate_transport_data()
 
-        return self.transportData
+        return self.transport_data
 
-    def generateStatMech(self):
+    def generate_statmech(self):
         """
         Generate molecular degree of freedom data for the species. You must
         have already provided a thermodynamics model using e.g.
-        :meth:`generateThermoData()`.
+        :meth:`generate_thermo_data()`.
         """
         logging.debug("Generating statmech for species {}".format(self.label))
-        from rmgpy.data.rmg import getDB
+        from rmgpy.data.rmg import get_db
         try:
-            statmech_db = getDB('statmech')
+            statmech_db = get_db('statmech')
             if not statmech_db: raise Exception
         except Exception:
             logging.debug('Could not obtain the stat. mech database. Not generating stat. mech...')
             raise
 
         molecule = self.molecule[0]
-        conformer = statmech_db.getStatmechData(molecule, self.getThermoData())
+        conformer = statmech_db.get_statmech_data(molecule, self.get_thermo_data())
 
         if self.conformer is None:
             self.conformer = Conformer()
 
         if self.conformer.E0 is None:
-            self.setE0WithThermo()
+            self.set_e0_with_thermo()
 
         self.conformer.modes = conformer.modes
-        self.conformer.spinMultiplicity = conformer.spinMultiplicity
-        if self.conformer.E0 is None or not self.hasStatMech():
+        self.conformer.spin_multiplicity = conformer.spin_multiplicity
+        if self.conformer.E0 is None or not self.has_statmech():
             logging.error('The conformer in question is {}'.format(self.conformer))
-            raise StatmechError('Species {0} does not have stat mech after generateStatMech called'.format(self.label))
+            raise StatmechError('Species {0} does not have stat mech after generate_statmech called'.format(self.label))
 
-    def setE0WithThermo(self):
+    def set_e0_with_thermo(self):
         """
         Helper method that sets species' E0 using the species' thermo data
         """
-        if self.getThermoData().E0 is not None:
-            self.conformer.E0 = self.getThermoData().E0
+        if self.get_thermo_data().E0 is not None:
+            self.conformer.E0 = self.get_thermo_data().E0
         else:
             if not self.thermo.Cp0 or not self.thermo.CpInf:
                 # set Cp0 and CpInf
-                from rmgpy.data.thermo import findCp0andCpInf
-                findCp0andCpInf(self, self.thermo)
-            self.conformer.E0 = self.getThermoData().toWilhoit().E0
+                from rmgpy.data.thermo import find_cp0_and_cpinf
+                find_cp0_and_cpinf(self, self.thermo)
+            self.conformer.E0 = self.get_thermo_data().to_wilhoit().E0
 
-    def generateEnergyTransferModel(self):
+    def generate_energy_transfer_model(self):
         """
         Generate the collisional energy transfer model parameters for the
         species. This "algorithm" is *very* much in need of improvement.
         """
-        self.energyTransferModel = SingleExponentialDown(
+        self.energy_transfer_model = SingleExponentialDown(
             alpha0=(300 * 0.011962, "kJ/mol"),
             T0=(300, "K"),
             n=0.85,
@@ -820,10 +820,10 @@ class Species(object):
         """
         if not self.molecule:
             try:
-                self.molecule = [Molecule(SMILES=structure)]
+                self.molecule = [Molecule(smiles=structure)]
             except ValueError:
                 try:
-                    self.molecule = [Molecule().fromAdjacencyList(structure)]
+                    self.molecule = [Molecule().from_adjacency_list(structure)]
                 except ValueError:
                     logging.error("Cannot understand the given structure '{0}' of species {1}. Could not "
                                   "interpret it as SMILES nor as adjacency list".format(structure, self.label))
@@ -886,20 +886,20 @@ class TransitionState(object):
     def frequency(self, value):
         self._frequency = quantity.Frequency(value)
 
-    def getPartitionFunction(self, T):
+    def get_partition_function(self, T):
         """
         Return the partition function for the transition state at the
         specified temperature `T` in K.
         """
         cython.declare(Q=cython.double)
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            Q = self.conformer.getPartitionFunction(T)
+            Q = self.conformer.get_partition_function(T)
         else:
             raise SpeciesError('Unable to calculate partition function for transition state {0!r}: '
                                'no statmech data available.'.format(self.label))
         return Q
 
-    def getHeatCapacity(self, T):
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the transition state at the
         specified temperature `T` in K.
@@ -907,16 +907,16 @@ class TransitionState(object):
         cython.declare(Cp=cython.double)
         Cp = 0.0
 
-        if self.getThermoData() is not None:
-            Cp = self.getThermoData().getHeatCapacity(T)
+        if self.get_thermo_data() is not None:
+            Cp = self.get_thermo_data().get_heat_capacity(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            Cp = self.conformer.getHeatCapacity(T)
+            Cp = self.conformer.get_heat_capacity(T)
         else:
             raise Exception('Unable to calculate heat capacity for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return Cp
 
-    def getEnthalpy(self, T):
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the transition state at the
         specified temperature `T` in K.
@@ -924,16 +924,16 @@ class TransitionState(object):
         cython.declare(H=cython.double)
         H = 0.0
 
-        if self.getThermoData() is not None:
-            H = self.getThermoData().getEnthalpy(T)
+        if self.get_thermo_data() is not None:
+            H = self.get_thermo_data().get_enthalpy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            H = self.conformer.getEnthalpy(T)
+            H = self.conformer.get_enthalpy(T)
         else:
             raise Exception('Unable to calculate enthalpy for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return H
 
-    def getEntropy(self, T):
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the transition state at the
         specified temperature `T` in K.
@@ -941,16 +941,16 @@ class TransitionState(object):
         cython.declare(S=cython.double)
         S = 0.0
 
-        if self.getThermoData() is not None:
-            S = self.getThermoData().getEntropy(T)
+        if self.get_thermo_data() is not None:
+            S = self.get_thermo_data().get_entropy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            S = self.conformer.getEntropy(T)
+            S = self.conformer.get_entropy(T)
         else:
             raise Exception('Unable to calculate entropy for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return S
 
-    def getFreeEnergy(self, T):
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol for the transition state at the
         specified temperature `T` in K.
@@ -958,61 +958,61 @@ class TransitionState(object):
         cython.declare(G=cython.double)
         G = 0.0
 
-        if self.getThermoData() is not None:
-            G = self.getThermoData().getFreeEnergy(T)
+        if self.get_thermo_data() is not None:
+            G = self.get_thermo_data().get_free_energy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            G = self.conformer.getFreeEnergy(T)
+            G = self.conformer.get_free_energy(T)
         else:
             raise Exception('Unable to calculate free energy for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return G
 
-    def getSumOfStates(self, Elist):
+    def get_sum_of_states(self, e_list):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol.
         """
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            return self.conformer.getSumOfStates(Elist)
+            return self.conformer.get_sum_of_states(e_list)
         else:
             raise Exception('Unable to calculate sum of states for transition state {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def getDensityOfStates(self, Elist):
+    def get_density_of_states(self, e_list):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state.
+        energies `e_list` in J/mol above the ground state.
         """
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            return self.conformer.getDensityOfStates(Elist)
+            return self.conformer.get_density_of_states(e_list)
         else:
             raise Exception('Unable to calculate density of states for transition state {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def calculateTunnelingFactor(self, T):
+    def calculate_tunneling_factor(self, T):
         """
         Calculate and return the value of the canonical tunneling correction 
         factor for the reaction at the given temperature `T` in K.
         """
         if self.tunneling is not None:
-            return self.tunneling.calculateTunnelingFactor(T)
+            return self.tunneling.calculate_tunneling_factor(T)
         else:
             # Return unity
             return 1.0
 
-    def calculateTunnelingFunction(self, Elist):
+    def calculate_tunneling_function(self, e_list):
         """
         Calculate and return the value of the microcanonical tunneling 
-        correction for the reaction at the given energies `Elist` in J/mol.
+        correction for the reaction at the given energies `e_list` in J/mol.
         """
         if self.tunneling is not None:
-            return self.tunneling.calculateTunnelingFunction(Elist)
+            return self.tunneling.calculate_tunneling_function(e_list)
         else:
             # Return step function
-            kappa = np.ones_like(Elist)
+            kappa = np.ones_like(e_list)
             E0 = float(self.conformer.E0.value_si)
-            for r in range(Elist.shape[0]):
-                if Elist[r] >= E0:
+            for r in range(e_list.shape[0]):
+                if e_list[r] >= E0:
                     break
                 kappa[r] = 0.0
             return kappa

@@ -35,7 +35,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 import rmgpy
-from rmgpy.tools.regression import readInputFile, run
+from rmgpy.tools.regression import read_input_file, run
 
 
 @attr('functional')
@@ -47,7 +47,7 @@ class regressionTest(unittest.TestCase):
         tested = os.path.join(folder, 'tested')
         input_file = os.path.join(folder, 'input.py')
 
-        args = readInputFile(input_file)
+        args = read_input_file(input_file)
         run(benchmark, tested, *args)
 
     def tearDown(self):

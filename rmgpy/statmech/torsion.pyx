@@ -193,13 +193,13 @@ cdef class HinderedRotor(Torsion):
         def __set__(self, value):
             self._barrier = quantity.Energy(value)
 
-    cdef double getRotationalConstantEnergy(self):
+    cdef double get_rotational_constant_energy(self):
         """
         Return the value of the rotational constant in J/mol.
         """
         return constants.hbar * constants.hbar / (2 * self._inertia.value_si) * constants.Na
 
-    cpdef double getFrequency(self) except -1:
+    cpdef double get_frequency(self) except -1:
         """
         Return the frequency of vibration in cm^-1 corresponding to the limit of
         harmonic oscillation.
@@ -229,29 +229,29 @@ cdef class HinderedRotor(Torsion):
         self.frequency = frequency / (constants.c * 100.)
         return self.frequency
 
-    cpdef double getLevelEnergy(self, int J) except -1:
+    cpdef double get_level_energy(self, int J) except -1:
         """
         Return the energy of level `J` in J.
         """
         return self.energies[J] if J < self.energies.shape[0] else 0.0
 
-    cpdef int getLevelDegeneracy(self, int J) except -1:
+    cpdef int get_level_degeneracy(self, int J) except -1:
         """
         Return the degeneracy of level `J`.
         """
         return 1
 
-    cpdef np.ndarray solveSchrodingerEquation(self, int Nbasis=401):
+    cpdef np.ndarray solve_schrodinger_equation(self, int n_basis=401):
         """
         Solves the one-dimensional time-independent Schrodinger equation to 
         determine the energy levels of a one-dimensional hindered rotor with a
-        Fourier series potential using `Nbasis` basis functions. For the
+        Fourier series potential using `n_basis` basis functions. For the
         purposes of this function it is usually sufficient to use 401 basis
         functions (the default). Returns the energy eigenvalues of the
         Hamiltonian matrix in J/mol.
         """
         # Populate Hamiltonian matrix (banded in lower triangular form)
-        H = self.getHamiltonian(Nbasis)
+        H = self.get_hamiltonian(n_basis)
         # The overlap matrix is the identity matrix, i.e. this is a standard
         # eigenvalue problem
 
@@ -265,10 +265,10 @@ cdef class HinderedRotor(Torsion):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef np.ndarray getHamiltonian(self, int Nbasis):
+    cpdef np.ndarray get_hamiltonian(self, int n_basis):
         """
         Return the to the Hamiltonian matrix for the hindered rotor for the
-        given number of basis functions `Nbasis`. The Hamiltonian matrix is
+        given number of basis functions `n_basis`. The Hamiltonian matrix is
         returned in banded lower triangular form and with units of J/mol.
         """
         cdef int M, m, col, n
@@ -276,10 +276,10 @@ cdef class HinderedRotor(Torsion):
         cdef double V0
 
         # The number of terms to use is 2*M + 1, ranging from -M to M inclusive
-        if Nbasis % 2 == 0:
-            M = Nbasis / 2
+        if n_basis % 2 == 0:
+            M = n_basis / 2
         else:
-            M = (Nbasis - 1) / 2
+            M = (n_basis - 1) / 2
 
         if self._fourier is not None:
             coeffs = self._fourier.value_si
@@ -291,7 +291,7 @@ cdef class HinderedRotor(Torsion):
 
         # Populate Hamiltonian matrix (banded in lower triangular form)
         H = np.zeros((coeffs.shape[1] + 1, 2 * M + 1), np.complex64)
-        B = self.getRotationalConstantEnergy()
+        B = self.get_rotational_constant_energy()
         col = 0
         for m in range(-M, M + 1):
             H[0, col] = B * m * m + V0
@@ -303,7 +303,7 @@ cdef class HinderedRotor(Torsion):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getPotential(self, double phi) except -100000000:
+    cpdef double get_potential(self, double phi) except -100000000:
         """
         Return the value of the hindered rotor potential :math:`V(\\phi)`
         in J/mol at the angle `phi` in radians.
@@ -319,7 +319,7 @@ cdef class HinderedRotor(Torsion):
             V = 0.5 * self._barrier.value_si * (1 - cos(self.symmetry * phi))
         return V
 
-    cpdef double getPartitionFunction(self, double T) except -1:
+    cpdef double get_partition_function(self, double T) except -1:
         """
         Return the value of the partition function :math:`Q(T)` at the
         specified temperature `T` in K.
@@ -328,11 +328,11 @@ cdef class HinderedRotor(Torsion):
         cdef double beta = 1. / (constants.R * T), V, phi, dphi
         cdef int k
 
-        frequency = self.getFrequency() * constants.c * 100
+        frequency = self.get_frequency() * constants.c * 100
         x = constants.h * frequency / (constants.kB * T)
 
         if self.quantum:
-            if self.energies is None: self.solveSchrodingerEquation()
+            if self.energies is None: self.solve_schrodinger_equation()
             return np.sum(np.exp(-self.energies / constants.R / T)) / self.symmetry
         elif self._fourier is not None:
             # Fourier series data found, so use it
@@ -340,8 +340,8 @@ cdef class HinderedRotor(Torsion):
             dphi = constants.pi / 32.
             Q = 0.0
             for phi in np.arange(0, 2 * constants.pi, dphi):
-                Q += exp(-beta * self.getPotential(phi)) * dphi
-            Q *= sqrt(constants.R * T / (4 * constants.pi * self.getRotationalConstantEnergy())) / self.symmetry
+                Q += exp(-beta * self.get_potential(phi)) * dphi
+            Q *= sqrt(constants.R * T / (4 * constants.pi * self.get_rotational_constant_energy())) / self.symmetry
         else:
             # No Fourier data, so use the cosine potential data
             z = 0.5 * self._barrier.value_si / (constants.R * T)
@@ -349,7 +349,7 @@ cdef class HinderedRotor(Torsion):
                 Q = sqrt(0.5 / z / constants.pi)
             else:
                 Q = exp(-z) * i0(z)
-            Q *= sqrt(constants.pi * constants.R * T / self.getRotationalConstantEnergy()) / self.symmetry
+            Q *= sqrt(constants.pi * constants.R * T / self.get_rotational_constant_energy()) / self.symmetry
 
         # Semiclassical correction
         if self.semiclassical:
@@ -357,7 +357,7 @@ cdef class HinderedRotor(Torsion):
 
         return Q
 
-    cpdef double getHeatCapacity(self, double T) except -100000000:
+    cpdef double get_heat_capacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
@@ -366,7 +366,7 @@ cdef class HinderedRotor(Torsion):
         cdef double Tlow, Thigh, logQlow, logQhigh, logQ
 
         if self.quantum:
-            if self.energies is None: self.solveSchrodingerEquation()
+            if self.energies is None: self.solve_schrodinger_equation()
             E = self.energies
             e_kT = np.exp(-E / constants.R / T)
             Cv = (np.sum(E*E*e_kT) * np.sum(e_kT) - np.sum(E*e_kT)**2) / (constants.R*constants.R*T*T * np.sum(e_kT)**2)
@@ -374,13 +374,13 @@ cdef class HinderedRotor(Torsion):
             # Fourier series data found, so use it
             Tlow = T * 0.999
             Thigh = T * 1.001
-            logQlow = log(self.getPartitionFunction(Tlow))
-            logQhigh = log(self.getPartitionFunction(Thigh))
-            logQ = log(self.getPartitionFunction(T))
+            logQlow = log(self.get_partition_function(Tlow))
+            logQhigh = log(self.get_partition_function(Thigh))
+            logQ = log(self.get_partition_function(T))
             Cv = T * T * (logQhigh - 2 * logQ + logQlow) / ((Thigh - T) * (T - Tlow)) + 2 * T * (logQhigh - logQlow) / (Thigh - Tlow)
         else:
             # No Fourier data, so use the cosine potential data
-            frequency = self.getFrequency() * constants.c * 100
+            frequency = self.get_frequency() * constants.c * 100
             x = constants.h * frequency / (constants.kB * T)
             z = 0.5 * self._barrier.value_si / (constants.R * T)
             exp_x = exp(x)
@@ -389,7 +389,7 @@ cdef class HinderedRotor(Torsion):
             Cv = (x * x * exp_x / one_minus_exp_x / one_minus_exp_x - 0.5 + z * (z - BB - z * BB * BB))
         return Cv * constants.R
 
-    cpdef double getEnthalpy(self, double T) except 100000000:
+    cpdef double get_enthalpy(self, double T) except 100000000:
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
@@ -397,7 +397,7 @@ cdef class HinderedRotor(Torsion):
         cdef double Tlow, Thigh
 
         if self.quantum:
-            if self.energies is None: self.solveSchrodingerEquation()
+            if self.energies is None: self.solve_schrodinger_equation()
             E = self.energies
             e_kT = np.exp(-E / constants.R / T)
             return np.sum(E * e_kT) / np.sum(e_kT)
@@ -406,11 +406,11 @@ cdef class HinderedRotor(Torsion):
             Tlow = T * 0.999
             Thigh = T * 1.001
             return (T *
-                    (log(self.getPartitionFunction(Thigh)) -
-                     log(self.getPartitionFunction(Tlow))) /
+                    (log(self.get_partition_function(Thigh)) -
+                     log(self.get_partition_function(Tlow))) /
                     (Thigh - Tlow)) * constants.R * T
 
-    cpdef double getEntropy(self, double T) except -100000000:
+    cpdef double get_entropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
@@ -418,38 +418,38 @@ cdef class HinderedRotor(Torsion):
         cdef double Tlow, Thigh
 
         if self.quantum:
-            if self.energies is None: self.solveSchrodingerEquation()
+            if self.energies is None: self.solve_schrodinger_equation()
             E = self.energies
             e_kT = np.exp(-E / constants.R / T)
-            return np.log(self.getPartitionFunction(T)) * constants.R + np.sum(E * e_kT) / (T * np.sum(e_kT))
+            return np.log(self.get_partition_function(T)) * constants.R + np.sum(E * e_kT) / (T * np.sum(e_kT))
         else:
             # No Fourier data, so use the cosine potential data
             Tlow = T * 0.999
             Thigh = T * 1.001
-            return (log(self.getPartitionFunction(T)) +
-                    T * (log(self.getPartitionFunction(Thigh)) -
-                         log(self.getPartitionFunction(Tlow))) /
+            return (log(self.get_partition_function(T)) +
+                    T * (log(self.get_partition_function(Thigh)) -
+                         log(self.get_partition_function(Tlow))) /
                     (Thigh - Tlow)) * constants.R
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. If an initial sum of states 
-        `sumStates0` is given, the rotor sum of states will be convoluted into
+        `sum_states_0` is given, the rotor sum of states will be convoluted into
         these states.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] sum_states, _Elist = Elist
+        cdef np.ndarray[np.float64_t, ndim=1] sum_states, _e_list = e_list
         cdef double q1f, pre, V0
         cdef int i
 
-        if sumStates0 is not None:
-            return schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist))
+        if sum_states_0 is not None:
+            return schrodinger.convolve(sum_states_0, self.get_density_of_states(e_list))
         elif self.quantum:
-            if self.energies is None: self.solveSchrodingerEquation()
-            sum_states = schrodinger.getSumOfStates(Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
-                                                    sumStates0) / self.symmetry
+            if self.energies is None: self.solve_schrodinger_equation()
+            sum_states = schrodinger.get_sum_of_states(e_list, self.get_level_energy, self.get_level_degeneracy, 0,
+                                                       sum_states_0) / self.symmetry
         elif self.semiclassical:
             raise NotImplementedError
         elif self._fourier is not None:
@@ -457,36 +457,36 @@ cdef class HinderedRotor(Torsion):
             raise NotImplementedError
         else:
             # No Fourier data, so use the cosine potential data
-            sum_states = np.zeros_like(_Elist)
-            q1f = sqrt(constants.pi / self.getRotationalConstantEnergy()) / self.symmetry
+            sum_states = np.zeros_like(_e_list)
+            q1f = sqrt(constants.pi / self.get_rotational_constant_energy()) / self.symmetry
             V0 = self._barrier.value_si
             pre = 4.0 * q1f * sqrt(V0 / (constants.pi * constants.pi * constants.pi))
             # The following is only valid in the classical limit
             # Note that ellipk(1) = infinity, so we must skip that value
-            for i in range(_Elist.shape[0]):
-                if _Elist[i] < V0:
-                    sum_states[i] = pre * (ellipe(_Elist[i] / V0) - (1 - _Elist[i] / V0) * ellipk(_Elist[i] / V0))
-                elif _Elist[i] > V0:
-                    sum_states[i] = pre * sqrt(_Elist[i] / V0) * ellipe(V0 / _Elist[i])
+            for i in range(_e_list.shape[0]):
+                if _e_list[i] < V0:
+                    sum_states[i] = pre * (ellipe(_e_list[i] / V0) - (1 - _e_list[i] / V0) * ellipk(_e_list[i] / V0))
+                elif _e_list[i] > V0:
+                    sum_states[i] = pre * sqrt(_e_list[i] / V0) * ellipe(V0 / _e_list[i])
         return sum_states
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist, np.ndarray densStates0=None):
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state. If an initial density
-        of states `densStates0` is given, the rotor density of states will be
+        energies `e_list` in J/mol above the ground state. If an initial density
+        of states `dens_states_0` is given, the rotor density of states will be
         convoluted into these states.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] dens_states, _Elist = Elist
+        cdef np.ndarray[np.float64_t, ndim=1] dens_states, _e_list = e_list
         cdef double q1f, pre, V0
         cdef int i
 
         if self.quantum:
-            if self.energies is None: self.solveSchrodingerEquation()
-            dens_states = schrodinger.getDensityOfStates(_Elist, self.getLevelEnergy, self.getLevelDegeneracy, 0,
-                                                         densStates0) / self.symmetry
+            if self.energies is None: self.solve_schrodinger_equation()
+            dens_states = schrodinger.get_density_of_states(_e_list, self.get_level_energy, self.get_level_degeneracy, 0,
+                                                            dens_states_0) / self.symmetry
         elif self.semiclassical:
             raise NotImplementedError
         elif self._fourier is not None:
@@ -494,25 +494,25 @@ cdef class HinderedRotor(Torsion):
             raise NotImplementedError
         else:
             # No Fourier data, so use the cosine potential data
-            dens_states = np.zeros_like(Elist)
-            q1f = sqrt(constants.pi / self.getRotationalConstantEnergy()) / self.symmetry
+            dens_states = np.zeros_like(e_list)
+            q1f = sqrt(constants.pi / self.get_rotational_constant_energy()) / self.symmetry
             V0 = self._barrier.value_si
             pre = 2.0 * q1f / sqrt(constants.pi * constants.pi * constants.pi * V0)
             # The following is only valid in the classical limit
             # Note that ellipk(1) = infinity, so we must skip that value
-            for i in range(_Elist.shape[0]):
-                if _Elist[i] < V0:
-                    dens_states[i] = pre * ellipk(_Elist[i] / V0)
-                elif _Elist[i] > V0:
-                    dens_states[i] = pre * sqrt(V0 / _Elist[i]) * ellipk(V0 / _Elist[i])
-            dens_states *= _Elist[1] - _Elist[0]
-            if densStates0 is not None:
-                dens_states = schrodinger.convolve(densStates0, dens_states)
+            for i in range(_e_list.shape[0]):
+                if _e_list[i] < V0:
+                    dens_states[i] = pre * ellipk(_e_list[i] / V0)
+                elif _e_list[i] > V0:
+                    dens_states[i] = pre * sqrt(V0 / _e_list[i]) * ellipk(V0 / _e_list[i])
+            dens_states *= _e_list[1] - _e_list[0]
+            if dens_states_0 is not None:
+                dens_states = schrodinger.convolve(dens_states_0, dens_states)
         return dens_states
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef fitFourierPotentialToData(self, np.ndarray angle, np.ndarray V):
+    cpdef fit_fourier_potential_to_data(self, np.ndarray angle, np.ndarray V):
         """
         Fit the given angles in radians and corresponding potential energies in
         J/mol to the Fourier series potential. For best results, the angle
@@ -567,7 +567,7 @@ cdef class HinderedRotor(Torsion):
         self.barrier = None
         return self
 
-    cpdef fitCosinePotentialToData(self, np.ndarray angle, np.ndarray V):
+    cpdef fit_cosine_potential_to_data(self, np.ndarray angle, np.ndarray V):
         """
         Fit the given angles in radians and corresponding potential energies in
         J/mol to the cosine potential. For best results, the angle should 
@@ -657,53 +657,53 @@ cdef class FreeRotor(Torsion):
             I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
             self._inertia = quantity.ScalarQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
-    cdef double getRotationalConstantEnergy(self):
+    cdef double get_rotational_constant_energy(self):
         """
         Return the value of the rotational constant in J/mol.
         """
         return constants.hbar * constants.hbar / (2 * self._inertia.value_si) * constants.Na
 
-    cpdef double getPartitionFunction(self, double T) except -1:
+    cpdef double get_partition_function(self, double T) except -1:
         """
         Return the value of the partition function :math:`Q(T)` at the
         specified temperature `T` in K.
         """
         return np.sqrt(8 * np.pi ** 3 * constants.kB * T * self._inertia.value_si) / (self.symmetry * constants.h)
 
-    cpdef double getHeatCapacity(self, double T) except -100000000:
+    cpdef double get_heat_capacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
         return constants.R / 2.0
 
-    cpdef double getEnthalpy(self, double T) except 100000000:
+    cpdef double get_enthalpy(self, double T) except 100000000:
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
         """
         return constants.R * T / 2.0
 
-    cpdef double getEntropy(self, double T) except -100000000:
+    cpdef double get_entropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
         cdef double Q
-        Q = self.getPartitionFunction(T)
+        Q = self.get_partition_function(T)
         return constants.R * (np.log(Q) + .5)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist, np.ndarray sumStates0=None):
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. 
         formula from
         Forst 1995 Journal of Computational Chemistry, Vol. 17, No. 8 954-961 (1996)
         """
-        if sumStates0:
+        if sum_states_0:
             raise NotImplementedError
 
         A = constants.hbar / (2.0 * self.inertia.value_si)
-        return 2.0 / self.symmetry * np.sqrt(Elist / A)
+        return 2.0 / self.symmetry * np.sqrt(e_list / A)

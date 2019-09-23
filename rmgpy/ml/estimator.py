@@ -72,14 +72,14 @@ class MLEstimator:
 
         Returns: ThermoData
         """
-        molecule = Molecule(SMILES=molecule) if isinstance(molecule, str) else molecule
+        molecule = Molecule(smiles=molecule) if isinstance(molecule, str) else molecule
 
-        hf298 = self.hf298_estimator(molecule.SMILES)[0][0]
-        s298_cp = self.s298_cp_estimator(molecule.SMILES)[0]
+        hf298 = self.hf298_estimator(molecule.smiles)[0][0]
+        s298_cp = self.s298_cp_estimator(molecule.smiles)[0]
         s298, cp = s298_cp[0], s298_cp[1:]
 
-        cp0 = molecule.calculateCp0()
-        cpinf = molecule.calculateCpInf()
+        cp0 = molecule.calculate_cp0()
+        cpinf = molecule.calculate_cpinf()
 
         # Set uncertainties to 0 because the current model cannot estimate them
         thermo = ThermoData(

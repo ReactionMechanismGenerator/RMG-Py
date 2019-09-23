@@ -37,7 +37,7 @@ from rmgpy.tools.diff_models import execute
 logger = logging.getLogger('checkModels')
 
 
-def parseCommandLineArguments():
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('name', metavar='NAME', type=str, nargs=1,
@@ -62,10 +62,10 @@ def main():
     """
     Driver function that parses command line arguments and passes them to the execute function.
     """
-    args = parseCommandLineArguments()
+    args = parse_command_line_arguments()
 
     name = args.name[0]
-    initializeLog(logging.WARNING, name + '.log')
+    initialize_log(logging.WARNING, name + '.log')
 
     bench_chemkin = args.benchChemkin[0]
     bench_species_dict = args.benchSpeciesDict[0]
@@ -137,7 +137,7 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
         for spec1, spec2 in commonSpecies:
             logger.info('    {0!s}'.format(spec1))
             if spec1.thermo and spec2.thermo:
-                if not spec1.thermo.isSimilarTo(spec2.thermo):
+                if not spec1.thermo.is_similar_to(spec2.thermo):
                     error = True
                     logger.error('')
                     logger.error('Non-identical thermo!')
@@ -182,7 +182,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
         for rxn1, rxn2 in commonReactions:
             logger.info('    {0!s}'.format(rxn1))
             if rxn1.kinetics and rxn2.kinetics:
-                if not rxn1.kinetics.isSimilarTo(rxn2.kinetics):
+                if not rxn1.kinetics.is_similar_to(rxn2.kinetics):
                     error = True
                     logger.error('')
                     logger.error('Non-identical kinetics!')
@@ -226,14 +226,14 @@ def printRates(rxn):
     logger.error("{0:7}|{1:7.2f}|{2:7.2f}|{3:7.2f}|{4:7.2f}|{5:7.2f}|{6:7.2f}|{7:7.2f}|{8:7.2f}"
         .format(
         'k(T): ',
-        math.log10(rxn.kinetics.getRateCoefficient(300, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(400, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(500, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(600, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(800, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(1000, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(1500, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(2000, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(300, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(400, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(500, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(600, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(800, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(1000, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(1500, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(2000, 1e5)),
     ))
 
 
@@ -243,20 +243,20 @@ def printThermo(spec):
     """
     logger.error("{0:10.2f}|{1:10.2f}|{2:10.2f}|{3:10.2f}|{4:10.2f}|{5:10.2f}|{6:10.2f}|{7:10.2f}|{8:10.2f}"
         .format(
-        spec.thermo.getEnthalpy(300) / 4184.,
-        spec.thermo.getEntropy(300) / 4.184,
-        spec.thermo.getHeatCapacity(300) / 4.184,
-        spec.thermo.getHeatCapacity(400) / 4.184,
-        spec.thermo.getHeatCapacity(500) / 4.184,
-        spec.thermo.getHeatCapacity(600) / 4.184,
-        spec.thermo.getHeatCapacity(800) / 4.184,
-        spec.thermo.getHeatCapacity(1000) / 4.184,
-        spec.thermo.getHeatCapacity(1500) / 4.184,
+        spec.thermo.get_enthalpy(300) / 4184.,
+        spec.thermo.get_entropy(300) / 4.184,
+        spec.thermo.get_heat_capacity(300) / 4.184,
+        spec.thermo.get_heat_capacity(400) / 4.184,
+        spec.thermo.get_heat_capacity(500) / 4.184,
+        spec.thermo.get_heat_capacity(600) / 4.184,
+        spec.thermo.get_heat_capacity(800) / 4.184,
+        spec.thermo.get_heat_capacity(1000) / 4.184,
+        spec.thermo.get_heat_capacity(1500) / 4.184,
     ))
 
 
 def printReaction(rxn):
-    logger.error('rxn: {}\t\torigin: {}'.format(rxn, rxn.getSource()))
+    logger.error('rxn: {}\t\torigin: {}'.format(rxn, rxn.get_source()))
 
 
 def printReactionComments(rxn):
@@ -271,7 +271,7 @@ def printKinetics(rxn):
     logger.error('Kinetics: {}'.format(rxn.kinetics))
 
 
-def initializeLog(verbose, log_file_name='checkModels.log'):
+def initialize_log(verbose, log_file_name='checkModels.log'):
     """
     Set up a logger for RMG to use to print output to stdout. The
     `verbose` parameter is an integer specifying the amount of log text seen
