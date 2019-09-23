@@ -2277,7 +2277,7 @@ def makeProfileGraph(stats_file):
         dot.show_function_events.append(SAMPLES)
     
     profile = profile
-    profile.prune(options.node_thres/100.0, options.edge_thres/100.0)
+    profile.prune(options.node_thres / 100.0, options.edge_thres / 100.0, [], False)
 
     if options.root:
         rootId = profile.getFunctionId(options.root)
