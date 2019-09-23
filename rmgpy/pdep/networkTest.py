@@ -201,20 +201,20 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(1, len(self.network.products))
         self.assertEqual(1, self.network.n_prod)
 
-    def test_pathReactions(self):
+    def test_path_reactions(self):
         """
         Test that the network `path_reactions` property was properly set.
         """
         self.assertEqual(1, len(self.network.path_reactions))
 
-    def test_bathGas(self):
+    def test_bath_gas(self):
         """
         Test that the network `bath_gas` property was properly set.
         """
         self.assertEqual(1, len(self.network.bath_gas))
         self.assertTrue(self.N2 in self.network.bath_gas)
 
-    def test_netReactions(self):
+    def test_net_reactions(self):
         """
         Test that the network `net_reactions` property was properly set.
         """
@@ -254,7 +254,7 @@ class TestNetwork(unittest.TestCase):
         for label in attributes:
             self.assertNotIn(label, output)
 
-    def test_collisionMatrixMemoryHandling(self):
+    def test_collision_matrix_memory_handling(self):
         net = Network()
         net.e_list = [1] * 10000
         net.E0 = 1.0
