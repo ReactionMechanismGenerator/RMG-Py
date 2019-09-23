@@ -107,7 +107,7 @@ class TestLibrary(unittest.TestCase):
             logging.debug("Processing reaction {0}".format(rxn))
             success = rxn.generate_high_p_limit_kinetics()
             if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000) \
-                    or not rxn.isUnimolecular():
+                    or not rxn.is_unimolecular():
                 # generate_high_p_limit_kinetics() should return `False` if the reaction is not unimolecular
                 # or if it is a PDepArrhenius or Chebyshev with Pmax < 90 bar
                 self.assertFalse(success)

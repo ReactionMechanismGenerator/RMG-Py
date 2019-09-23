@@ -113,7 +113,7 @@ cdef class SingleExponentialDown(RMGObject):
         def __set__(self, value):
             self._t0 = quantity.Temperature(value)
 
-    cpdef double getAlpha(self, double T) except -1000000000:
+    cpdef double get_alpha(self, double T) except -1000000000:
         """
         Return the value of the :math:`\\alpha` parameter - the average energy
         transferred in a deactivating collision - in J/mol at temperature `T`
@@ -129,16 +129,16 @@ cdef class SingleExponentialDown(RMGObject):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def generateCollisionMatrix(self, double T,
-        np.ndarray[np.float64_t,ndim=2] densStates,
-        np.ndarray[np.float64_t,ndim=1] Elist,
-        np.ndarray[np.int_t,ndim=1] Jlist=None):
+    def generate_collision_matrix(self, double T,
+                                  np.ndarray[np.float64_t,ndim=2] dens_states,
+                                  np.ndarray[np.float64_t,ndim=1] e_list,
+                                  np.ndarray[np.int_t,ndim=1] j_list=None):
         """
         Generate and return the collision matrix
         :math:`\\matrix{M}_\\mathrm{coll} / \\omega = \\matrix{P} - \\matrix{I}`
         corresponding to this collision model for a given set of energies
-        `Elist` in J/mol, temperature `T` in K, and isomer density of states
-        `densStates`.
+        `e_list` in J/mol, temperature `T` in K, and isomer density of states
+        `dens_states`.
         """
 
         cdef double alpha, beta
@@ -148,20 +148,20 @@ cdef class SingleExponentialDown(RMGObject):
         cdef np.ndarray[np.float64_t,ndim=2] phi, p0
         cdef np.ndarray[np.float64_t,ndim=4] p
 
-        n_grains = Elist.shape[0]
-        n_j = Jlist.shape[0] if Jlist is not None else 1
+        n_grains = e_list.shape[0]
+        n_j = j_list.shape[0] if j_list is not None else 1
         p = np.zeros((n_grains, n_j, n_grains, n_j), np.float64)
         p0 = np.zeros((n_grains, n_grains), np.float64)
 
-        alpha = 1.0 / self.getAlpha(T)
+        alpha = 1.0 / self.get_alpha(T)
         beta = 1.0 / (constants.R * T)
         
         if n_j > 1:
             rho = np.zeros(n_grains)
             for r in range(n_grains):
-                rho[r] = np.sum((2*Jlist+1) * densStates[r,:])
+                rho[r] = np.sum((2 * j_list + 1) * dens_states[r, :])
         else:
-            rho = densStates[:,0]
+            rho = dens_states[:, 0]
         
         for start in range(n_grains):
             if rho[start] > 0:
@@ -170,9 +170,9 @@ cdef class SingleExponentialDown(RMGObject):
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, n_grains):
             for s in range(start, r + 1):
-                p0[s, r] = exp(-(Elist[r] - Elist[s]) * alpha)
+                p0[s, r] = exp(-(e_list[r] - e_list[s]) * alpha)
             for s in range(r+1,n_grains):
-                p0[s, r] = exp(-(Elist[s] - Elist[r]) * alpha) * rho[s] / rho[r] * exp(-(Elist[s] - Elist[r]) * beta)
+                p0[s, r] = exp(-(e_list[s] - e_list[r]) * alpha) * rho[s] / rho[r] * exp(-(e_list[s] - e_list[r]) * beta)
         
         # Normalize using detailed balance
         # This method is much more robust, and corresponds to:
@@ -217,9 +217,9 @@ cdef class SingleExponentialDown(RMGObject):
         # by assuming that the J distribution after the collision is independent
         # of that before the collision (the strong collision approximation in J)
         if n_j > 1:
-            phi = np.zeros_like(densStates)
+            phi = np.zeros_like(dens_states)
             for s in range(n_j):
-                phi[:,s] = (2 * Jlist[s] + 1) * densStates[:,s]
+                phi[:,s] = (2 * j_list[s] + 1) * dens_states[:, s]
             for r in range(start, n_grains):
                 phi[r,:] /= rho[r]
             for r in range(start, n_grains):
@@ -232,18 +232,18 @@ cdef class SingleExponentialDown(RMGObject):
             
         return p
 
-    def calculateCollisionEfficiency(self,
-        double T,
-        np.ndarray[np.float64_t,ndim=1] Elist,
-        np.ndarray[np.int_t,ndim=1] Jlist,
-        np.ndarray[np.float64_t,ndim=2] densStates,
-        double E0, double Ereac):
+    def calculate_collision_efficiency(self,
+                                       double T,
+                                       np.ndarray[np.float64_t,ndim=1] e_list,
+                                       np.ndarray[np.int_t,ndim=1] j_list,
+                                       np.ndarray[np.float64_t,ndim=2] dens_states,
+                                       double e0, double e_reac):
         """
         Calculate an efficiency factor for collisions, particularly useful for the
         modified strong collision method. The collisions involve the given 
-        `species` with density of states `densStates` corresponding to energies 
-        Elist` in J/mol, ground-state energy `E0` in kJ/mol, and first 
-        reactive energy `Ereac` in kJ/mol. The collisions occur at temperature `T` 
+        `species` with density of states `dens_states` corresponding to energies
+        e_list` in J/mol, ground-state energy `e0` in kJ/mol, and first
+        reactive energy `e_reac` in kJ/mol. The collisions occur at temperature `T`
         in K and are described by the average energy transferred in a deactivating
         collision `d_e_down` in kJ/mol. The algorithm here is implemented as
         described by Chang, Bozzelli, and Dean [Chang2000]_.
@@ -260,22 +260,22 @@ cdef class SingleExponentialDown(RMGObject):
     
         # Ensure that the barrier height is sufficiently above the ground state
         # Otherwise invalid efficiencies are observed
-        if Ereac - E0 < 100:
-            Ereac = E0 + 100
+        if e_reac - e0 < 100:
+            e_reac = e0 + 100
     
-        d_e_down = self.getAlpha(T)
+        d_e_down = self.get_alpha(T)
     
-        n_grains = len(Elist)
-        n_j = 1 if Jlist is None else len(Jlist)
-        d_e = Elist[1] - Elist[0]
+        n_grains = len(e_list)
+        n_j = 1 if j_list is None else len(j_list)
+        d_e = e_list[1] - e_list[0]
         
         fe_num, fe_den, delta1, delta2, delta_n, delta = 0, 0, 0, 0, 0, 1
     
         for r in range(n_grains):
             value = 0.0
             for s in range(n_j):
-                value += densStates[r,s] * (2 * Jlist[s] + 1) * exp(-Elist[r] / (gas_constant * T))
-            if Elist[r] > Ereac:
+                value += dens_states[r, s] * (2 * j_list[s] + 1) * exp(-e_list[r] / (gas_constant * T))
+            if e_list[r] > e_reac:
                 fe_num += value
                 if fe_den == 0:
                     fe_den = value * gas_constant * T / d_e
@@ -293,11 +293,11 @@ cdef class SingleExponentialDown(RMGObject):
         for r in range(n_grains):
             value = 0.0
             for s in range(n_j):
-                value += densStates[r,s] * (2*Jlist[s]+1) * exp(-Elist[r] / (gas_constant * T))
+                value += dens_states[r, s] * (2 * j_list[s] + 1) * exp(-e_list[r] / (gas_constant * T))
             # Delta
-            if Elist[r] < Ereac:
+            if e_list[r] < e_reac:
                 delta1 += value
-                delta2 += value * exp(-(Ereac - Elist[r]) / (fe * gas_constant * T))
+                delta2 += value * exp(-(e_reac - e_list[r]) / (fe * gas_constant * T))
             delta_n += value
     
         delta1 /= delta_n

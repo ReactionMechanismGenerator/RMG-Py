@@ -376,29 +376,29 @@ end_temperatures                   #
             self.evals = np.array(evals) * 10 ** 2 * constants.c * constants.h * constants.Na  # J/mol
             self.energy = lambda x: self.evals[x]
 
-    def getPartitionFunction(self, T):
-        return schrodinger.getPartitionFunction(T, self.energy, nmax=len(self.evals))
+    def get_partition_function(self, T):
+        return schrodinger.get_partition_function(T, self.energy, nmax=len(self.evals))
 
-    def getHeatCapacity(self, T):
-        return schrodinger.getHeatCapacity(T, self.energy, nmax=len(self.evals))
+    def get_heat_capacity(self, T):
+        return schrodinger.get_heat_capacity(T, self.energy, nmax=len(self.evals))
 
-    def getEnthalpy(self, T):
-        return schrodinger.getEnthalpy(T, self.energy, nmax=len(self.evals))
+    def get_enthalpy(self, T):
+        return schrodinger.get_enthalpy(T, self.energy, nmax=len(self.evals))
 
-    def getEntropy(self, T):
-        return schrodinger.getEntropy(T, self.energy, nmax=len(self.evals))
+    def get_entropy(self, T):
+        return schrodinger.get_entropy(T, self.energy, nmax=len(self.evals))
 
-    def getSumOfStates(self, Elist, sumStates0=None):
-        if sumStates0:
-            return schrodinger.getSumOfStates(Elist, self.energy, sumStates0=sumStates0, nmax=len(self.evals))
+    def get_sum_of_states(self, e_list, sum_states_0=None):
+        if sum_states_0:
+            return schrodinger.get_sum_of_states(e_list, self.energy, sum_states_0=sum_states_0, nmax=len(self.evals))
         else:
-            return schrodinger.getSumOfStates(Elist, self.energy, nmax=len(self.evals))
+            return schrodinger.get_sum_of_states(e_list, self.energy, nmax=len(self.evals))
 
-    def getDensityOfStates(self, Elist, densStates0=None):
-        if densStates0:
-            return schrodinger.getDensityOfStates(Elist, self.energy, densStates0=densStates0, nmax=len(self.evals))
+    def get_density_of_states(self, e_list, dens_states_0=None):
+        if dens_states_0:
+            return schrodinger.get_density_of_states(e_list, self.energy, dens_states_0=dens_states_0, nmax=len(self.evals))
         else:
-            return schrodinger.getDensityOfStates(Elist, self.energy, nmax=len(self.evals))
+            return schrodinger.get_density_of_states(e_list, self.energy, nmax=len(self.evals))
 
     def run(self):
         """
@@ -535,7 +535,7 @@ class HinderedRotorClassicalND(Mode):
             ]
 
             self.rootDs = np.array([
-                np.prod([conf.getInternalReducedMomentOfInertia(self.pivots[k], self.tops[k], option=3)
+                np.prod([conf.get_internal_reduced_moment_of_inertia(self.pivots[k], self.tops[k], option=3)
                          for k in range(len(self.pivots))]) ** 0.5
                 for conf in self.confs
             ])
@@ -550,7 +550,7 @@ class HinderedRotorClassicalND(Mode):
             lg = determine_qm_software(self.calcPath)
             self.Es, self.phis = lg.loadScanEnergies()
             self.atnums = self.conformer.number
-            rootD = self.conformer.getInternalReducedMomentOfInertia(self.pivots[0], self.tops[0]) ** 0.5
+            rootD = self.conformer.get_internal_reduced_moment_of_inertia(self.pivots[0], self.tops[0]) ** 0.5
             self.rootDs = [rootD for i in range(len(self.Es))]
 
             phis = self.phis.tolist()
@@ -621,19 +621,19 @@ class HinderedRotorClassicalND(Mode):
 
         return Q
 
-    def getPartitionFunction(self, T):
+    def get_partition_function(self, T):
         """
         calculate the partition function
         """
         return self.Q(T)
 
-    def getEnthalpy(self, T):
+    def get_enthalpy(self, T):
         """
         calculate the enthalpy
         """
         return self.dQdT(T) / self.Q(T) * constants.R * T ** 2
 
-    def getHeatCapacity(self, T):
+    def get_heat_capacity(self, T):
         """
         calculate the heat capacity
         """
@@ -641,7 +641,7 @@ class HinderedRotorClassicalND(Mode):
                               - (T * self.dQdT(T) / self.Q(T)) ** 2
                               + 2.0 * T * self.dQdT(T) / self.Q(T))
 
-    def getEntropy(self, T):
+    def get_entropy(self, T):
         """
         calculate the entropy
         """

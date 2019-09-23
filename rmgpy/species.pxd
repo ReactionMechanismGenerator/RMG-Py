@@ -79,19 +79,19 @@ cdef class Species:
 
     cpdef bint has_thermo(self) except -2
 
-    cpdef double getPartitionFunction(self, double T) except -1
+    cpdef double get_partition_function(self, double T) except -1
 
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double get_heat_capacity(self, double T) except -100000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double get_enthalpy(self, double T) except 100000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double get_entropy(self, double T) except -100000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double get_free_energy(self, double T) except 100000000
 
-    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist)
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray Elist)
 
-    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
+    cpdef np.ndarray get_density_of_states(self, np.ndarray Elist)
 
     cpdef double calculate_cp0(self) except -1
 
@@ -113,19 +113,19 @@ cdef class TransitionState:
     cdef public int degeneracy
     cdef public TunnelingModel tunneling
 
-    cpdef double getPartitionFunction(self, double T) except -1
+    cpdef double get_partition_function(self, double T) except -1
 
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double get_heat_capacity(self, double T) except -100000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double get_enthalpy(self, double T) except 100000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double get_entropy(self, double T) except -100000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double get_free_energy(self, double T) except 100000000
 
-    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist)
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray Elist)
 
-    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
+    cpdef np.ndarray get_density_of_states(self, np.ndarray Elist)
     
     cpdef double calculateTunnelingFactor(self, double T) except -1
     

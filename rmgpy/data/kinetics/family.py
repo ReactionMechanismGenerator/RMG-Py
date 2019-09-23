@@ -1230,7 +1230,7 @@ class KineticsFamily(Database):
                 product.thermo = thermo_database.get_thermo_data(product, training_set=True)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
-            data = item.generateReverseRateCoefficient()
+            data = item.generate_reverse_rate_coefficient()
 
             item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products],
                                     products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
@@ -2384,7 +2384,7 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[0]])
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[0], reaction.products[2]])
-        elif reaction.isSurfaceReaction():
+        elif reaction.is_surface_reaction():
             # remove vacant active sites from consideration
             reactants = [sp for sp in reaction.reactants if not sp.is_surface_site()]
             products = [sp for sp in reaction.products if not sp.is_surface_site()]
@@ -2414,7 +2414,7 @@ class KineticsFamily(Database):
                         pairs.append([reaction.reactants[1], reaction.products[0]])
         if not pairs:
             logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, '
-                          'falling back to Reaction.generatePairs'.format(self.label))
+                          'falling back to Reaction.generate_pairs'.format(self.label))
 
         return pairs
 
@@ -3507,7 +3507,7 @@ class KineticsFamily(Database):
 
                 if L != []:
                     kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forwardRecipe.actions)
-                    kinetics = kinetics.to_arrhenius(rxn.getEnthalpyOfReaction(T))
+                    kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
                     k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
                 else:
@@ -3922,7 +3922,7 @@ class KineticsFamily(Database):
                     reacts = [Species(molecule=[get_label_fixed_mol(x.molecule[0], root_labels)], thermo=x.thermo)
                               for x in rxns[i].reactants]
                     rrev = Reaction(reactants=products, products=reacts,
-                                    kinetics=rxns[i].generateReverseRateCoefficient(), rank=rxns[i].rank)
+                                    kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank)
                     rrev.is_forward = False
 
                     if estimate_thermo:
@@ -3960,7 +3960,7 @@ class KineticsFamily(Database):
                     products = [Species(molecule=[p]) for p in products]
 
                 rrev = Reaction(reactants=products, products=rxns[i].reactants,
-                                kinetics=rxns[i].generateReverseRateCoefficient(), rank=rxns[i].rank)
+                                kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank)
 
                 rrev.is_forward = False
 
@@ -4348,7 +4348,7 @@ def _make_rule(rr):
             dlnks = np.array([
                 np.log(
                     ArrheniusBM().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
-                    .to_arrhenius(rxn.getEnthalpyOfReaction(Tref))
+                    .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
                     .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                 ) for i, rxn in enumerate(rxns)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref

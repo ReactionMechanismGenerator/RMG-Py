@@ -164,15 +164,15 @@ def generate_old_library_entry(data):
         return data
     else:
         return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
-            data.getEnthalpy(298) / 4184.,
-            data.getEntropy(298) / 4.184,
-            data.getHeatCapacity(300) / 4.184,
-            data.getHeatCapacity(400) / 4.184,
-            data.getHeatCapacity(500) / 4.184,
-            data.getHeatCapacity(600) / 4.184,
-            data.getHeatCapacity(800) / 4.184,
-            data.getHeatCapacity(1000) / 4.184,
-            data.getHeatCapacity(1500) / 4.184,
+            data.get_enthalpy(298) / 4184.,
+            data.get_entropy(298) / 4.184,
+            data.get_heat_capacity(300) / 4.184,
+            data.get_heat_capacity(400) / 4.184,
+            data.get_heat_capacity(500) / 4.184,
+            data.get_heat_capacity(600) / 4.184,
+            data.get_heat_capacity(800) / 4.184,
+            data.get_heat_capacity(1000) / 4.184,
+            data.get_heat_capacity(1500) / 4.184,
             0,
             0,
             0,
@@ -1236,7 +1236,7 @@ class ThermoDatabase(object):
                             tdata = self.estimate_thermo_via_group_additivity(molecule)
                             priority = 3
 
-                        thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
+                        thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
 
                     if len(thermo) > 1:
                         # Sort thermo first by the priority, then by the most stable H298 value
@@ -1277,7 +1277,7 @@ class ThermoDatabase(object):
                         # First see if the saturated molecule is in the libaries
                         tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
                         if tdata:
-                            thermo.append((tdata.getEnthalpy(298.), molecule, tdata))
+                            thermo.append((tdata.get_enthalpy(298.), molecule, tdata))
 
                 if thermo:
                     # Sort thermo by the most stable H298 value when choosing between thermoLibrary values
@@ -1786,11 +1786,11 @@ class ThermoDatabase(object):
                     entries.append((thermo, sum_rank))
 
                 # Sort first by rank, then by enthalpy at 298 K
-                entries = sorted(entries, key=lambda entry: (entry[1], entry[0].getEnthalpy(298.)))
+                entries = sorted(entries, key=lambda entry: (entry[1], entry[0].get_enthalpy(298.)))
                 indices = [thermo_data_list.index(entry[0]) for entry in entries]
             else:
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
-                H298 = np.array([t.getEnthalpy(298.) for t in thermo_data_list])
+                H298 = np.array([t.get_enthalpy(298.) for t in thermo_data_list])
                 indices = H298.argsort()
             indices = np.array([i for i in indices if species.molecule[i].reactive] +
                                [i for i in indices if not species.molecule[i].reactive])

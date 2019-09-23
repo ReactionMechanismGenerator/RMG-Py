@@ -188,7 +188,7 @@ class KineticsDepository(Database):
                 # Same comment about molecule vs species objects as above.
                 rxn.products.append(species_dict[product])
 
-            if not rxn.isBalanced():
+            if not rxn.is_balanced():
                 raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'
                                     ''.format(rxn, self.label))
 

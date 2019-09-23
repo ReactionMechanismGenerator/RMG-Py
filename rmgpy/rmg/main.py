@@ -1189,7 +1189,7 @@ class RMG(util.Subject):
         violators = []
         num_rxn_violators = 0
         for rxn in self.reactionModel.core.reactions:
-            if rxn.isSurfaceReaction():
+            if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
                 continue
             violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax,

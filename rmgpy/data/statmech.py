@@ -365,7 +365,7 @@ class StatmechGroups(Database):
         # For closed-shell molecule the spin multiplicity is 1
         # For monoradicals the spin multiplicity is 2
         # For higher-order radicals the highest allowed spin multiplicity is assumed
-        conformer.spinMultiplicity = molecule.get_radical_count() + 1
+        conformer.spin_multiplicity = molecule.get_radical_count() + 1
 
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:
@@ -422,11 +422,11 @@ class StatmechGroups(Database):
 
         # Subtract out contributions to heat capacity from the group frequencies
         Tlist = np.arange(300.0, 1501.0, 100.0, np.float64)
-        Cv = np.array([thermo_model.getHeatCapacity(T) / constants.R for T in Tlist], np.float64)
+        Cv = np.array([thermo_model.get_heat_capacity(T) / constants.R for T in Tlist], np.float64)
         logging.debug('Fitting statmech with heat capacities {0}'.format(Cv))
         ho = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
         for i in range(Tlist.shape[0]):
-            Cv[i] -= ho.getHeatCapacity(Tlist[i]) / constants.R
+            Cv[i] -= ho.get_heat_capacity(Tlist[i]) / constants.R
         logging.debug('After removing found frequencies, the heat capacities are {0}'.format(Cv))
         # Subtract out translational modes
         Cv -= 1.5

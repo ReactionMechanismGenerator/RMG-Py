@@ -551,7 +551,7 @@ cdef class TunnelingModel:
     cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Calculate and return the value of the tunneling correction for
-        the reaction at the energies `Elist` in J/mol.
+        the reaction at the energies `e_list` in J/mol.
         """
         raise NotImplementedError('Unexpected call to Tunneling.calculate_tunneling_function(); '
                                   'you should be using a class derived from TunnelingModel.')

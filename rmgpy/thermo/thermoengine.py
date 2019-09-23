@@ -75,7 +75,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA, solventName=''):
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
         spc.conformer = Conformer()
-    spc.conformer.E0 = wilhoit.E0
+    spc.conformer.e0 = wilhoit.E0
 
     # Convert to desired thermo class
     if thermoClass is Wilhoit:
@@ -106,7 +106,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA, solventName=''):
         Tlist = np.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], np.float64)
         err = 0.0
         for T in Tlist:
-            err += (thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T)) ** 2
+            err += (thermo.get_heat_capacity(T) - thermo0.get_heat_capacity(T)) ** 2
         err = math.sqrt(err / len(Tlist)) / constants.R
         # logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(spc, err))
 

@@ -125,34 +125,34 @@ cdef class HeatCapacityModel(RMGObject):
         """
         return (self._Tmin is None or self._Tmin.value_si <= T) and (self.Tmax is None or T <= self._Tmax.value_si)
 
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K. This method must be overloaded in the derived
         class.
         """
-        raise NotImplementedError('Unexpected call to HeatCapacityModel.getHeatCapacity(); you should be using a class derived from HeatCapacityModel.')
+        raise NotImplementedError('Unexpected call to HeatCapacityModel.get_heat_capacity(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         This method must be overloaded in the derived class.
         """
-        raise NotImplementedError('Unexpected call to HeatCapacityModel.getEnthalpy(); you should be using a class derived from HeatCapacityModel.')
+        raise NotImplementedError('Unexpected call to HeatCapacityModel.get_enthalpy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         This method must be overloaded in the derived class.
         """
-        raise NotImplementedError('Unexpected call to HeatCapacityModel.getEntropy(); you should be using a class derived from HeatCapacityModel.')
+        raise NotImplementedError('Unexpected call to HeatCapacityModel.get_entropy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K. This method must be overloaded in the derived class.
         """
-        raise NotImplementedError('Unexpected call to HeatCapacityModel.getFreeEnergy(); you should be using a class derived from HeatCapacityModel.')
+        raise NotImplementedError('Unexpected call to HeatCapacityModel.get_free_energy(); you should be using a class derived from HeatCapacityModel.')
 
     cpdef bint isSimilarTo(self, HeatCapacityModel other) except -2:
         """
@@ -165,13 +165,13 @@ cdef class HeatCapacityModel(RMGObject):
         
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
-            if not (0.8 < self.getHeatCapacity(T) / other.getHeatCapacity(T) < 1.25):
+            if not (0.8 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.25):
                 return False
-            elif not (0.8 < self.getEnthalpy(T) / other.getEnthalpy(T) < 1.25):
+            elif not (0.8 < self.get_enthalpy(T) / other.get_enthalpy(T) < 1.25):
                 return False
-            elif not (0.8 < self.getEntropy(T) / other.getEntropy(T) < 1.25):
+            elif not (0.8 < self.get_entropy(T) / other.get_entropy(T) < 1.25):
                 return False
-            elif not (0.8 < self.getFreeEnergy(T) / other.getFreeEnergy(T) < 1.25):
+            elif not (0.8 < self.get_free_energy(T) / other.get_free_energy(T) < 1.25):
                 return False
 
         return True
@@ -187,13 +187,13 @@ cdef class HeatCapacityModel(RMGObject):
         
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
-            if not (0.95 < self.getHeatCapacity(T) / other.getHeatCapacity(T) < 1.05):
+            if not (0.95 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.05):
                 return False
-            elif not (0.95 < self.getEnthalpy(T) / other.getEnthalpy(T) < 1.05):
+            elif not (0.95 < self.get_enthalpy(T) / other.get_enthalpy(T) < 1.05):
                 return False
-            elif not (0.95 < self.getEntropy(T) / other.getEntropy(T) < 1.05):
+            elif not (0.95 < self.get_entropy(T) / other.get_entropy(T) < 1.05):
                 return False
-            elif not (0.95 < self.getFreeEnergy(T) / other.getFreeEnergy(T) < 1.05):
+            elif not (0.95 < self.get_free_energy(T) / other.get_free_energy(T) < 1.05):
                 return False
 
         return True
@@ -212,8 +212,8 @@ cdef class HeatCapacityModel(RMGObject):
         Tdata = [300,400,500,600,800,1000,1500,2000]
         discrepancy = 0.0
         for T in Tdata:
-            #discrepancy += abs(self.getHeatCapacity(T) / other.getHeatCapacity(T) - 1.0)
-            #discrepancy += abs(self.getEnthalpy(T) - other.getEnthalpy(T) )/1000
-            #discrepancy += abs(self.getEntropy(T) - other.getEntropy(T) )
-            discrepancy += abs(self.getFreeEnergy(T) - other.getFreeEnergy(T) )/1000
+            #discrepancy += abs(self.get_heat_capacity(T) / other.get_heat_capacity(T) - 1.0)
+            #discrepancy += abs(self.get_enthalpy(T) - other.get_enthalpy(T) )/1000
+            #discrepancy += abs(self.get_entropy(T) - other.get_entropy(T) )
+            discrepancy += abs(self.get_free_energy(T) - other.get_free_energy(T) )/1000
         return discrepancy

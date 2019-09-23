@@ -202,7 +202,7 @@ cdef class Eckart(TunnelingModel):
     cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Calculate and return the value of the Eckart tunneling function for
-        the reaction at the energies `Elist` in J/mol.
+        the reaction at the energies `e_list` in J/mol.
         """
         cdef double frequency, E0_reac, E0_prod, E0_TS
         cdef np.ndarray[np.float64_t, ndim=1] kappa, _Elist

@@ -76,7 +76,7 @@ class TestHinderedRotor2D(unittest.TestCase):
 
     def test_partition_function_calc(self):
         self.hd2d.readEigvals()
-        self.assertAlmostEqual(self.hd2d.getPartitionFunction(300.0), 3.29752, 4)
+        self.assertAlmostEqual(self.hd2d.get_partition_function(300.0), 3.29752, 4)
 
     @classmethod
     def tearDownClass(cls):

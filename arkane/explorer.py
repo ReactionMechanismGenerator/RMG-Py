@@ -231,7 +231,7 @@ class ExplorerJob(object):
                                 kchar += rxn.kinetics.get_rate_coefficient(T=temperature, P=pressure)
                             elif (set(rxn.products) == set(self.source)
                                   and rxn.reactants[0].molecule[0].get_formula() == form):
-                                kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).get_rate_coefficient(
+                                kchar += rxn.generate_reverse_rate_coefficient(network_kinetics=True).get_rate_coefficient(
                                     T=temperature, P=pressure)
 
                         if network.getLeakCoefficient(T=temperature, P=pressure) > self.explore_tol * kchar:

@@ -2202,7 +2202,7 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
             else:
                 gas_species_list.append(s)
         for r in rxn_list:
-            if r.isSurfaceReaction():
+            if r.is_surface_reaction():
                 surface_rxn_list.append(r)
             else:
                 gas_rxn_list.append(r)

@@ -706,7 +706,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst_limit = (kB * T) / h
         collision_limit = Na * np.pi * h_rad_diam ** 2 * np.sqrt(8 * kB * T / (np.pi * h_rad_mass / 2))
         for entry in library.entries.values():
-            if entry.item.isSurfaceReaction():
+            if entry.item.is_surface_reaction():
                 # Don't check surface reactions
                 continue
             k = entry.data.get_rate_coefficient(T, P)

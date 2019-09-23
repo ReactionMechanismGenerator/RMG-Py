@@ -445,20 +445,20 @@ class Species(object):
         """Return ``True`` if the species is a vacant surface site."""
         return self.molecule[0].is_surface_site()
 
-    def getPartitionFunction(self, T):
+    def get_partition_function(self, T):
         """
         Return the partition function for the species at the specified
         temperature `T` in K.
         """
         cython.declare(Q=cython.double)
         if self.has_statmech():
-            Q = self.conformer.getPartitionFunction(T)
+            Q = self.conformer.get_partition_function(T)
         else:
             raise Exception('Unable to calculate partition function for species {0!r}: '
                             'no statmech data available.'.format(self.label))
         return Q
 
-    def getHeatCapacity(self, T):
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the species at the specified
         temperature `T` in K.
@@ -466,15 +466,15 @@ class Species(object):
         cython.declare(Cp=cython.double)
         Cp = 0.0
         if self.has_thermo():
-            Cp = self.get_thermo_data().getHeatCapacity(T)
+            Cp = self.get_thermo_data().get_heat_capacity(T)
         elif self.has_statmech():
-            Cp = self.conformer.getHeatCapacity(T)
+            Cp = self.conformer.get_heat_capacity(T)
         else:
             raise Exception('Unable to calculate heat capacity for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return Cp
 
-    def getEnthalpy(self, T):
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the species at the specified
         temperature `T` in K.
@@ -482,15 +482,15 @@ class Species(object):
         cython.declare(H=cython.double)
         H = 0.0
         if self.has_thermo():
-            H = self.get_thermo_data().getEnthalpy(T)
+            H = self.get_thermo_data().get_enthalpy(T)
         elif self.has_statmech():
-            H = self.conformer.getEnthalpy(T) + self.conformer.E0.value_si
+            H = self.conformer.get_enthalpy(T) + self.conformer.E0.value_si
         else:
             raise Exception('Unable to calculate enthalpy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return H
 
-    def getEntropy(self, T):
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the species at the specified
         temperature `T` in K.
@@ -498,15 +498,15 @@ class Species(object):
         cython.declare(S=cython.double)
         S = 0.0
         if self.has_thermo():
-            S = self.get_thermo_data().getEntropy(T)
+            S = self.get_thermo_data().get_entropy(T)
         elif self.has_statmech():
-            S = self.conformer.getEntropy(T)
+            S = self.conformer.get_entropy(T)
         else:
             raise Exception('Unable to calculate entropy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return S
 
-    def getFreeEnergy(self, T):
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol for the species at the specified
         temperature `T` in K.
@@ -514,33 +514,33 @@ class Species(object):
         cython.declare(G=cython.double)
         G = 0.0
         if self.has_thermo():
-            G = self.get_thermo_data().getFreeEnergy(T)
+            G = self.get_thermo_data().get_free_energy(T)
         elif self.has_statmech():
-            G = self.conformer.getFreeEnergy(T) + self.conformer.E0.value_si
+            G = self.conformer.get_free_energy(T) + self.conformer.E0.value_si
         else:
             raise Exception('Unable to calculate free energy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return G
 
-    def getSumOfStates(self, Elist):
+    def get_sum_of_states(self, Elist):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol.
         """
         if self.has_statmech():
-            return self.conformer.getSumOfStates(Elist)
+            return self.conformer.get_sum_of_states(Elist)
         else:
             raise Exception('Unable to calculate sum of states for species {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def getDensityOfStates(self, Elist):
+    def get_density_of_states(self, Elist):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state.
+        energies `e_list` in J/mol above the ground state.
         """
         if self.has_statmech():
             try:
-                return self.conformer.getDensityOfStates(Elist)
+                return self.conformer.get_density_of_states(Elist)
             except StatmechError:
                 logging.error('StatmechError raised for species {0}'.format(self.label))
                 raise
@@ -781,12 +781,12 @@ class Species(object):
         if self.conformer is None:
             self.conformer = Conformer()
 
-        if self.conformer.E0 is None:
+        if self.conformer.e0 is None:
             self.set_e0_with_thermo()
 
         self.conformer.modes = conformer.modes
-        self.conformer.spinMultiplicity = conformer.spinMultiplicity
-        if self.conformer.E0 is None or not self.has_statmech():
+        self.conformer.spin_multiplicity = conformer.spinMultiplicity
+        if self.conformer.e0 is None or not self.has_statmech():
             logging.error('The conformer in question is {}'.format(self.conformer))
             raise StatmechError('Species {0} does not have stat mech after generate_statmech called'.format(self.label))
 
@@ -886,20 +886,20 @@ class TransitionState(object):
     def frequency(self, value):
         self._frequency = quantity.Frequency(value)
 
-    def getPartitionFunction(self, T):
+    def get_partition_function(self, T):
         """
         Return the partition function for the transition state at the
         specified temperature `T` in K.
         """
         cython.declare(Q=cython.double)
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            Q = self.conformer.getPartitionFunction(T)
+            Q = self.conformer.get_partition_function(T)
         else:
             raise SpeciesError('Unable to calculate partition function for transition state {0!r}: '
                                'no statmech data available.'.format(self.label))
         return Q
 
-    def getHeatCapacity(self, T):
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the transition state at the
         specified temperature `T` in K.
@@ -908,15 +908,15 @@ class TransitionState(object):
         Cp = 0.0
 
         if self.getThermoData() is not None:
-            Cp = self.getThermoData().getHeatCapacity(T)
+            Cp = self.getThermoData().get_heat_capacity(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            Cp = self.conformer.getHeatCapacity(T)
+            Cp = self.conformer.get_heat_capacity(T)
         else:
             raise Exception('Unable to calculate heat capacity for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return Cp
 
-    def getEnthalpy(self, T):
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the transition state at the
         specified temperature `T` in K.
@@ -925,15 +925,15 @@ class TransitionState(object):
         H = 0.0
 
         if self.getThermoData() is not None:
-            H = self.getThermoData().getEnthalpy(T)
+            H = self.getThermoData().get_enthalpy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            H = self.conformer.getEnthalpy(T)
+            H = self.conformer.get_enthalpy(T)
         else:
             raise Exception('Unable to calculate enthalpy for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return H
 
-    def getEntropy(self, T):
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the transition state at the
         specified temperature `T` in K.
@@ -942,15 +942,15 @@ class TransitionState(object):
         S = 0.0
 
         if self.getThermoData() is not None:
-            S = self.getThermoData().getEntropy(T)
+            S = self.getThermoData().get_entropy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            S = self.conformer.getEntropy(T)
+            S = self.conformer.get_entropy(T)
         else:
             raise Exception('Unable to calculate entropy for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return S
 
-    def getFreeEnergy(self, T):
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol for the transition state at the
         specified temperature `T` in K.
@@ -959,32 +959,32 @@ class TransitionState(object):
         G = 0.0
 
         if self.getThermoData() is not None:
-            G = self.getThermoData().getFreeEnergy(T)
+            G = self.getThermoData().get_free_energy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
-            G = self.conformer.getFreeEnergy(T)
+            G = self.conformer.get_free_energy(T)
         else:
             raise Exception('Unable to calculate free energy for transition state {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return G
 
-    def getSumOfStates(self, Elist):
+    def get_sum_of_states(self, Elist):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol.
         """
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            return self.conformer.getSumOfStates(Elist)
+            return self.conformer.get_sum_of_states(Elist)
         else:
             raise Exception('Unable to calculate sum of states for transition state {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def getDensityOfStates(self, Elist):
+    def get_density_of_states(self, Elist):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state.
+        energies `e_list` in J/mol above the ground state.
         """
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            return self.conformer.getDensityOfStates(Elist)
+            return self.conformer.get_density_of_states(Elist)
         else:
             raise Exception('Unable to calculate density of states for transition state {0!r}: '
                             'no statmech data available.'.format(self.label))
@@ -1003,7 +1003,7 @@ class TransitionState(object):
     def calculateTunnelingFunction(self, Elist):
         """
         Calculate and return the value of the microcanonical tunneling 
-        correction for the reaction at the given energies `Elist` in J/mol.
+        correction for the reaction at the given energies `e_list` in J/mol.
         """
         if self.tunneling is not None:
             return self.tunneling.calculate_tunneling_function(Elist)

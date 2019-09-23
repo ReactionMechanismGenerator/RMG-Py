@@ -62,123 +62,123 @@ class TestHarmonicOscillator(unittest.TestCase):
 
     def test_getPartitionFunction_classical(self):
         """
-        Test the HarmonicOscillator.getPartitionFunction() method for a set of
+        Test the HarmonicOscillator.get_partition_function() method for a set of
         classical oscillators.
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
         q_exp_list = np.array([0.00906536, 0.04196925, 0.335754, 1.13316978, 2.68603])
         for temperature, q_exp in zip(t_list, q_exp_list):
-            q_act = self.mode.getPartitionFunction(temperature)
+            q_act = self.mode.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
     def test_getPartitionFunction_quantum(self):
         """
-        Test the HarmonicOscillator.getPartitionFunction() method for a set of
+        Test the HarmonicOscillator.get_partition_function() method for a set of
         quantum oscillators.
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
         q_exp_list = np.array([1.10923, 1.39358, 2.70819, 4.98825, 8.459780])
         for temperature, q_exp in zip(t_list, q_exp_list):
-            q_act = self.mode.getPartitionFunction(temperature)
+            q_act = self.mode.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
     def test_getHeatCapacity_classical(self):
         """
-        Test the HarmonicOscillator.getHeatCapacity() method using a set of
+        Test the HarmonicOscillator.get_heat_capacity() method using a set of
         classical oscillators.
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
         cv_exp_list = np.array([3, 3, 3, 3, 3]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
-            cv_act = self.mode.getHeatCapacity(temperature)
+            cv_act = self.mode.get_heat_capacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
 
     def test_getHeatCapacity_quantum(self):
         """
-        Test the HarmonicOscillator.getHeatCapacity() method using a set of
+        Test the HarmonicOscillator.get_heat_capacity() method using a set of
         quantum oscillators.
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
         cv_exp_list = np.array([0.832004, 1.47271, 2.32513, 2.65024, 2.79124]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
-            cv_act = self.mode.getHeatCapacity(temperature)
+            cv_act = self.mode.get_heat_capacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
 
     def test_getEnthalpy_classical(self):
         """
-        Test the HarmonicOscillator.getEnthalpy() method using a set of
+        Test the HarmonicOscillator.get_enthalpy() method using a set of
         classical oscillators.
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
         h_exp_list = np.array([3, 3, 3, 3, 3]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
-            h_act = self.mode.getEnthalpy(temperature)
+            h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
     def test_getEnthalpy_quantum(self):
         """
-        Test the HarmonicOscillator.getEnthalpy() method using a set of quantum
+        Test the HarmonicOscillator.get_enthalpy() method using a set of quantum
         oscillators.
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
         h_exp_list = np.array([0.280395, 0.637310, 1.30209, 1.70542, 1.96142]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
-            h_act = self.mode.getEnthalpy(temperature)
+            h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
     def test_getEntropy_classical(self):
         """
-        Test the HarmonicOscillator.getEntropy() method using a set of
+        Test the HarmonicOscillator.get_entropy() method using a set of
         classical oscillators.
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
         s_exp_list = np.array([-1.70329, -0.170818, 1.90862, 3.12502, 3.98807]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
-            s_act = self.mode.getEntropy(temperature)
+            s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * abs(s_exp))
 
     def test_getEntropy_quantum(self):
         """
-        Test the HarmonicOscillator.getEntropy() method using a set of quantum
+        Test the HarmonicOscillator.get_entropy() method using a set of quantum
         oscillators.
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
         s_exp_list = np.array([0.384065, 0.969182, 2.29837, 3.31251, 4.09675]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
-            s_act = self.mode.getEntropy(temperature)
+            s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
 
     def test_getSumOfStates_classical(self):
         """
-        Test the HarmonicOscillator.getSumOfStates() method using a set of
+        Test the HarmonicOscillator.get_sum_of_states() method using a set of
         classical oscillators.
         """
         self.mode.quantum = False
         self.mode.frequencies = ([500, 1000], 'cm^-1')
         e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
-        sum_states = self.mode.getSumOfStates(e_list)
-        dens_states = self.mode.getDensityOfStates(e_list)
+        sum_states = self.mode.get_sum_of_states(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
             self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n] < 1.25,
                              '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
     def test_getSumOfStates_quantum(self):
         """
-        Test the HarmonicOscillator.getSumOfStates() method using a set of
+        Test the HarmonicOscillator.get_sum_of_states() method using a set of
         quantum oscillators.
         """
         self.mode.quantum = True
         e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
-        sum_states = self.mode.getSumOfStates(e_list)
-        dens_states = self.mode.getDensityOfStates(e_list)
+        sum_states = self.mode.get_sum_of_states(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
         for n in range(1, len(e_list)):
             if sum_states[n - 1] == 0:
                 self.assertEqual(np.sum(dens_states[0:n]), 0)
@@ -188,27 +188,27 @@ class TestHarmonicOscillator(unittest.TestCase):
 
     def test_getDensityOfStates_classical(self):
         """
-        Test the HarmonicOscillator.getDensityOfStates() method using a set of
+        Test the HarmonicOscillator.get_density_of_states() method using a set of
         classical oscillators.
         """
         self.mode.quantum = False
         factor = constants.h * constants.c * 100. * constants.Na  # cm^-1 to J/mol
         e_list = np.arange(0, 10000 * factor, 1 * factor)
-        dens_states = self.mode.getDensityOfStates(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
         temperature = 100
         q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
-        q_exp = self.mode.getPartitionFunction(temperature)
+        q_exp = self.mode.get_partition_function(temperature)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
     def test_getDensityOfStates_quantum(self):
         """
-        Test the HarmonicOscillator.getDensityOfStates() method using a set of
+        Test the HarmonicOscillator.get_density_of_states() method using a set of
         quantum oscillators.
         """
         self.mode.quantum = True
         factor = constants.h * constants.c * 100. * constants.Na  # cm^-1 to J/mol
         e_list = np.arange(0, 10000 * factor, 1 * factor)
-        dens_states = self.mode.getDensityOfStates(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
         for n in range(len(e_list)):
             if dens_states[n] != 0:
                 # The peaks should occur near a multiple of 500 cm^-1

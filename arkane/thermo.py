@@ -124,7 +124,7 @@ class ThermoJob(object):
         conformer = self.species.conformer
         for i in range(Tlist.shape[0]):
             Cplist[i] += conformer.getHeatCapacity(Tlist[i])
-        H298 += conformer.getEnthalpy(298.) + conformer.E0.value_si
+        H298 += conformer.getEnthalpy(298.) + conformer.e0.value_si
         S298 += conformer.getEntropy(298.)
 
         if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
@@ -277,7 +277,7 @@ class ThermoJob(object):
             try:
                 Cplist[i] = conformer.getHeatCapacity(Tlist[i])
                 Slist[i] = conformer.getEntropy(Tlist[i])
-                Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.E0.value_si) * 0.001
+                Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.e0.value_si) * 0.001
                 Glist[i] = Hlist[i] - Tlist[i] * Slist[i] * 0.001
                 Cplist1[i] = thermo.getHeatCapacity(Tlist[i])
                 Slist1[i] = thermo.getEntropy(Tlist[i])

@@ -162,7 +162,7 @@ class LibraryReaction(Reaction):
         If this method successfully generated the high pressure limit kinetics, return ``True``, otherwise ``False``.
         """
         logging.debug("Generating high pressure limit kinetics for {0}...".format(self))
-        if not self.isUnimolecular():
+        if not self.is_unimolecular():
             return False
         if isinstance(self.kinetics, Arrhenius):
             return self.elementary_high_p
@@ -481,7 +481,7 @@ class KineticsLibrary(Database):
                                         'dictionary.'.format(product, self.label))
                 rxn.products.append(species_dict[product])
 
-            if not rxn.isBalanced():
+            if not rxn.is_balanced():
                 raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! '
                                     'Please reformulate.'.format(rxn, self.label))
 
@@ -528,7 +528,7 @@ class KineticsLibrary(Database):
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
                        allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p,
                        allow_max_rate_violation=allow_max_rate_violation)
-        # if not rxn.isBalanced():
+        # if not rxn.is_balanced():
         #    raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))
         # label = str(rxn)
         assert index not in self.entries, "Index of reaction {0} is not unique!".format(label)

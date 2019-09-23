@@ -225,18 +225,18 @@ class TestSurfaceReaction(unittest.TestCase):
         )
 
     def testIsSurfaceReactionSpecies(self):
-        """Test isSurfaceReaction for reaction based on Species """
-        self.assertTrue(self.rxn1s.isSurfaceReaction())
+        """Test is_surface_reaction for reaction based on Species """
+        self.assertTrue(self.rxn1s.is_surface_reaction())
 
     def testIsSurfaceReactionMolecules(self):
-        """Test isSurfaceReaction for reaction based on Molecules """
-        self.assertTrue(self.rxn1m.isSurfaceReaction())
+        """Test is_surface_reaction for reaction based on Molecules """
+        self.assertTrue(self.rxn1m.is_surface_reaction())
 
     def testMethylAdsorptionSurfaceArrhenius(self):
         """Test the CH3 adsorption rate given by SurfaceArrhenius"""
         T = 800
         surface_site_density = Quantity(2.72e-9, 'mol/cm^2').value_si
-        calculated = self.rxn2sSA.getSurfaceRateCoefficient(T, surface_site_density)
+        calculated = self.rxn2sSA.get_surface_rate_coefficient(T, surface_site_density)
         target = 1e6  # mol/m2
         self.assertAlmostEqual(numpy.log10(calculated),
                                numpy.log10(target),
@@ -251,7 +251,7 @@ class TestSurfaceReaction(unittest.TestCase):
 
         T = 800
         surface_site_density = Quantity(2.72e-9, 'mol/cm^2').value_si
-        calculated = self.rxn2sSC.getSurfaceRateCoefficient(T, surface_site_density)
+        calculated = self.rxn2sSC.get_surface_rate_coefficient(T, surface_site_density)
         target = 1e6  # mol/m2
         self.assertAlmostEqual(numpy.log10(calculated),
                                numpy.log10(target),
@@ -270,7 +270,7 @@ class TestReaction(unittest.TestCase):
         ethylene = Species(
             label='C2H4',
             conformer=Conformer(
-                E0=(44.7127, 'kJ/mol'),
+                e0=(44.7127, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(28.0313, 'amu'),
@@ -290,29 +290,29 @@ class TestReaction(unittest.TestCase):
                         ),
                     ),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
         hydrogen = Species(
             label='H',
             conformer=Conformer(
-                E0=(211.794, 'kJ/mol'),
+                e0=(211.794, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(1.00783, 'amu'),
                     ),
                 ],
-                spinMultiplicity=2,
-                opticalIsomers=1,
+                spin_multiplicity=2,
+                optical_isomers=1,
             ),
         )
 
         ethyl = Species(
             label='C2H5',
             conformer=Conformer(
-                E0=(111.603, 'kJ/mol'),
+                e0=(111.603, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(29.0391, 'amu'),
@@ -338,15 +338,15 @@ class TestReaction(unittest.TestCase):
                         semiclassical=None,
                     ),
                 ],
-                spinMultiplicity=2,
-                opticalIsomers=1,
+                spin_multiplicity=2,
+                optical_isomers=1,
             ),
         )
 
         TS = TransitionState(
             label='TS',
             conformer=Conformer(
-                E0=(266.694, 'kJ/mol'),
+                e0=(266.694, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(29.0391, 'amu'),
@@ -366,8 +366,8 @@ class TestReaction(unittest.TestCase):
                         ),
                     ),
                 ],
-                spinMultiplicity=2,
-                opticalIsomers=1,
+                spin_multiplicity=2,
+                optical_isomers=1,
             ),
             frequency=(-750.232, 'cm^-1'),
         )
@@ -438,159 +438,159 @@ class TestReaction(unittest.TestCase):
 
     def testIsIsomerization(self):
         """
-        Test the Reaction.isIsomerization() method.
+        Test the Reaction.is_isomerization() method.
         """
         isomerization = Reaction(reactants=[Species()], products=[Species()])
         association = Reaction(reactants=[Species(), Species()], products=[Species()])
         dissociation = Reaction(reactants=[Species()], products=[Species(), Species()])
         bimolecular = Reaction(reactants=[Species(), Species()], products=[Species(), Species()])
-        self.assertTrue(isomerization.isIsomerization())
-        self.assertFalse(association.isIsomerization())
-        self.assertFalse(dissociation.isIsomerization())
-        self.assertFalse(bimolecular.isIsomerization())
+        self.assertTrue(isomerization.is_isomerization())
+        self.assertFalse(association.is_isomerization())
+        self.assertFalse(dissociation.is_isomerization())
+        self.assertFalse(bimolecular.is_isomerization())
 
     def testIsAssociation(self):
         """
-        Test the Reaction.isAssociation() method.
+        Test the Reaction.is_association() method.
         """
         isomerization = Reaction(reactants=[Species()], products=[Species()])
         association = Reaction(reactants=[Species(), Species()], products=[Species()])
         dissociation = Reaction(reactants=[Species()], products=[Species(), Species()])
         bimolecular = Reaction(reactants=[Species(), Species()], products=[Species(), Species()])
-        self.assertFalse(isomerization.isAssociation())
-        self.assertTrue(association.isAssociation())
-        self.assertFalse(dissociation.isAssociation())
-        self.assertFalse(bimolecular.isAssociation())
+        self.assertFalse(isomerization.is_association())
+        self.assertTrue(association.is_association())
+        self.assertFalse(dissociation.is_association())
+        self.assertFalse(bimolecular.is_association())
 
     def testIsDissociation(self):
         """
-        Test the Reaction.isDissociation() method.
+        Test the Reaction.is_dissociation() method.
         """
         isomerization = Reaction(reactants=[Species()], products=[Species()])
         association = Reaction(reactants=[Species(), Species()], products=[Species()])
         dissociation = Reaction(reactants=[Species()], products=[Species(), Species()])
         bimolecular = Reaction(reactants=[Species(), Species()], products=[Species(), Species()])
-        self.assertFalse(isomerization.isDissociation())
-        self.assertFalse(association.isDissociation())
-        self.assertTrue(dissociation.isDissociation())
-        self.assertFalse(bimolecular.isDissociation())
+        self.assertFalse(isomerization.is_dissociation())
+        self.assertFalse(association.is_dissociation())
+        self.assertTrue(dissociation.is_dissociation())
+        self.assertFalse(bimolecular.is_dissociation())
 
     def testHasTemplate(self):
         """
-        Test the Reaction.hasTemplate() method.
+        Test the Reaction.has_template() method.
         """
         reactants = self.reaction.reactants[:]
         products = self.reaction.products[:]
-        self.assertTrue(self.reaction.hasTemplate(reactants, products))
-        self.assertTrue(self.reaction.hasTemplate(products, reactants))
-        self.assertFalse(self.reaction2.hasTemplate(reactants, products))
-        self.assertFalse(self.reaction2.hasTemplate(products, reactants))
+        self.assertTrue(self.reaction.has_template(reactants, products))
+        self.assertTrue(self.reaction.has_template(products, reactants))
+        self.assertFalse(self.reaction2.has_template(reactants, products))
+        self.assertFalse(self.reaction2.has_template(products, reactants))
 
         reactants.reverse()
         products.reverse()
-        self.assertTrue(self.reaction.hasTemplate(reactants, products))
-        self.assertTrue(self.reaction.hasTemplate(products, reactants))
-        self.assertFalse(self.reaction2.hasTemplate(reactants, products))
-        self.assertFalse(self.reaction2.hasTemplate(products, reactants))
+        self.assertTrue(self.reaction.has_template(reactants, products))
+        self.assertTrue(self.reaction.has_template(products, reactants))
+        self.assertFalse(self.reaction2.has_template(reactants, products))
+        self.assertFalse(self.reaction2.has_template(products, reactants))
 
         reactants = self.reaction2.reactants[:]
         products = self.reaction2.products[:]
-        self.assertFalse(self.reaction.hasTemplate(reactants, products))
-        self.assertFalse(self.reaction.hasTemplate(products, reactants))
-        self.assertTrue(self.reaction2.hasTemplate(reactants, products))
-        self.assertTrue(self.reaction2.hasTemplate(products, reactants))
+        self.assertFalse(self.reaction.has_template(reactants, products))
+        self.assertFalse(self.reaction.has_template(products, reactants))
+        self.assertTrue(self.reaction2.has_template(reactants, products))
+        self.assertTrue(self.reaction2.has_template(products, reactants))
 
         reactants.reverse()
         products.reverse()
-        self.assertFalse(self.reaction.hasTemplate(reactants, products))
-        self.assertFalse(self.reaction.hasTemplate(products, reactants))
-        self.assertTrue(self.reaction2.hasTemplate(reactants, products))
-        self.assertTrue(self.reaction2.hasTemplate(products, reactants))
+        self.assertFalse(self.reaction.has_template(reactants, products))
+        self.assertFalse(self.reaction.has_template(products, reactants))
+        self.assertTrue(self.reaction2.has_template(reactants, products))
+        self.assertTrue(self.reaction2.has_template(products, reactants))
 
     def testEnthalpyOfReaction(self):
         """
-        Test the Reaction.getEnthalpyOfReaction() method.
+        Test the Reaction.get_enthalpy_of_reaction() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Hlist0 = [float(v) for v in
                   ['-146007', '-145886', '-144195', '-141973', '-139633', '-137341', '-135155', '-133093', '-131150',
                    '-129316']]
-        Hlist = self.reaction2.getEnthalpiesOfReaction(Tlist)
+        Hlist = self.reaction2.get_enthalpies_of_reaction(Tlist)
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Hlist[i] / 1000., Hlist0[i] / 1000., 2)
 
     def testEntropyOfReaction(self):
         """
-        Test the Reaction.getEntropyOfReaction() method.
+        Test the Reaction.get_entropy_of_reaction() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Slist0 = [float(v) for v in
                   ['-156.793', '-156.872', '-153.504', '-150.317', '-147.707', '-145.616', '-143.93', '-142.552',
                    '-141.407', '-140.441']]
-        Slist = self.reaction2.getEntropiesOfReaction(Tlist)
+        Slist = self.reaction2.get_entropies_of_reaction(Tlist)
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Slist[i], Slist0[i], 2)
 
     def testFreeEnergyOfReaction(self):
         """
-        Test the Reaction.getFreeEnergyOfReaction() method.
+        Test the Reaction.get_free_energy_of_reaction() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Glist0 = [float(v) for v in
                   ['-114648', '-83137.2', '-52092.4', '-21719.3', '8073.53', '37398.1', '66346.8', '94990.6', '123383',
                    '151565']]
-        Glist = self.reaction2.getFreeEnergiesOfReaction(Tlist)
+        Glist = self.reaction2.get_free_energies_of_reaction(Tlist)
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Glist[i] / 1000., Glist0[i] / 1000., 2)
 
     def testEquilibriumConstantKa(self):
         """
-        Test the Reaction.getEquilibriumConstant() method.
+        Test the Reaction.get_equilibrium_constant() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Kalist0 = [float(v) for v in
                    ['8.75951e+29', '7.1843e+10', '34272.7', '26.1877', '0.378696', '0.0235579', '0.00334673',
                     '0.000792389', '0.000262777', '0.000110053']]
-        Kalist = self.reaction2.getEquilibriumConstants(Tlist, type='Ka')
+        Kalist = self.reaction2.get_equilibrium_constants(Tlist, type='Ka')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kalist[i] / Kalist0[i], 1.0, 4)
 
     def testEquilibriumConstantKc(self):
         """
-        Test the Reaction.getEquilibriumConstant() method.
+        Test the Reaction.get_equilibrium_constant() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Kclist0 = [float(v) for v in
                    ['1.45661e+28', '2.38935e+09', '1709.76', '1.74189', '0.0314866', '0.00235045', '0.000389568',
                     '0.000105413', '3.93273e-05', '1.83006e-05']]
-        Kclist = self.reaction2.getEquilibriumConstants(Tlist, type='Kc')
+        Kclist = self.reaction2.get_equilibrium_constants(Tlist, type='Kc')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
 
     def testEquilibriumConstantKp(self):
         """
-        Test the Reaction.getEquilibriumConstant() method.
+        Test the Reaction.get_equilibrium_constant() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         Kplist0 = [float(v) for v in
                    ['8.75951e+24', '718430', '0.342727', '0.000261877', '3.78696e-06', '2.35579e-07', '3.34673e-08',
                     '7.92389e-09', '2.62777e-09', '1.10053e-09']]
-        Kplist = self.reaction2.getEquilibriumConstants(Tlist, type='Kp')
+        Kplist = self.reaction2.get_equilibrium_constants(Tlist, type='Kp')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kplist[i] / Kplist0[i], 1.0, 4)
 
     def testStoichiometricCoefficient(self):
         """
-        Test the Reaction.getStoichiometricCoefficient() method.
+        Test the Reaction.get_stoichiometric_coefficient() method.
         """
         for reactant in self.reaction.reactants:
-            self.assertEqual(self.reaction.getStoichiometricCoefficient(reactant), -1)
+            self.assertEqual(self.reaction.get_stoichiometric_coefficient(reactant), -1)
         for product in self.reaction.products:
-            self.assertEqual(self.reaction.getStoichiometricCoefficient(product), 1)
+            self.assertEqual(self.reaction.get_stoichiometric_coefficient(product), 1)
         for reactant in self.reaction2.reactants:
-            self.assertEqual(self.reaction.getStoichiometricCoefficient(reactant), 0)
+            self.assertEqual(self.reaction.get_stoichiometric_coefficient(reactant), 0)
         for product in self.reaction2.products:
-            self.assertEqual(self.reaction.getStoichiometricCoefficient(product), 0)
+            self.assertEqual(self.reaction.get_stoichiometric_coefficient(product), 0)
 
     def testRateCoefficient(self):
         """
@@ -604,13 +604,13 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficient(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method.
+        Test the Reaction.generate_reverse_rate_coefficient() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         P = 1e5
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
         for T in Tlist:
-            kr0 = self.reaction2.get_rate_coefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
+            kr0 = self.reaction2.get_rate_coefficient(T, P) / self.reaction2.get_equilibrium_constant(T)
             kr = reverse_kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
 
@@ -618,7 +618,7 @@ class TestReaction(unittest.TestCase):
         """
         Test that fix_barrier_height:
             1) raises Ea to match endothermicity of reaction
-            2) forces Ea to be positive if forcePositive=True
+            2) forces Ea to be positive if force_positive=True
             3) Evans-Polanyi kinetics are handled so that negative Ea if Ea<E0 are set to min(0,E0)
         """
 
@@ -629,28 +629,28 @@ class TestReaction(unittest.TestCase):
         rev_rxn.products = rxn.reactants
 
         # test that endothermicity is matched
-        rxn.fixBarrierHeight()
+        rxn.fix_barrier_height()
         Ea = rxn.kinetics.Ea.value_si
         self.assertTrue(Ea == 0.0)
 
-        rev_rxn.fixBarrierHeight()
+        rev_rxn.fix_barrier_height()
         Ea = rev_rxn.kinetics.Ea.value_si
         H0 = sum([spec.get_thermo_data().E0.value_si for spec in rxn.products]) \
              - sum([spec.get_thermo_data().E0.value_si for spec in rxn.reactants])
         self.assertAlmostEqual(Ea, -H0, 3)
 
-        # test that Ea is forced to be positive if forcePositive is set to True
+        # test that Ea is forced to be positive if force_positive is set to True
         Ea = Quantity((-10000.0, 'J/mol'))
         rxn.kinetics.Ea = Ea
-        rxn.fixBarrierHeight()
+        rxn.fix_barrier_height()
         self.assertTrue(rxn.kinetics.Ea.value_si == Ea.value_si)
 
-        rxn.fixBarrierHeight(forcePositive=True)
+        rxn.fix_barrier_height(force_positive=True)
         self.assertTrue(rxn.kinetics.Ea.value_si == 0.0)
 
         # Test for ArrheniusEP handling
         # if calculated Ea < 0 and Ea < E0, Ea is set to min(0,E0)
-        H298 = rxn.getEnthalpyOfReaction(298)
+        H298 = rxn.get_enthalpy_of_reaction(298)
         E0s = [-1000000.0, -10.0, 0.0, 10.0, 1000000.0]
 
         for i, E0 in enumerate(E0s):
@@ -661,7 +661,7 @@ class TestReaction(unittest.TestCase):
                 E0=(E0, 'J/mol'),
             )
             rxn.kinetics = kinetics
-            rxn.fixBarrierHeight()
+            rxn.fix_barrier_height()
             Ea = rxn.kinetics.Ea.value_si
             if i < 2:
                 self.assertTrue(Ea == E0)
@@ -672,7 +672,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientArrhenius(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the Arrhenius format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the Arrhenius format.
         """
         original_kinetics = Arrhenius(
             A=(2.65e12, 'cm^3/(mol*s)'),
@@ -684,12 +684,12 @@ class TestReaction(unittest.TestCase):
         )
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
@@ -702,7 +702,7 @@ class TestReaction(unittest.TestCase):
     @work_in_progress
     def testGenerateReverseRateCoefficientArrheniusEP(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the ArrheniusEP format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the ArrheniusEP format.
         """
 
         original_kinetics = ArrheniusEP(
@@ -715,12 +715,12 @@ class TestReaction(unittest.TestCase):
         )
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float64)
@@ -732,7 +732,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientPDepArrhenius(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the PDepArrhenius format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the PDepArrhenius format.
         """
 
         arrhenius0 = Arrhenius(
@@ -775,12 +775,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -792,7 +792,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientPDepMultiArrhenius(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the PDepArrhenius format with MultiArrhenius rates.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the PDepArrhenius format with MultiArrhenius rates.
         """
 
         arrhenius0 = MultiArrhenius(
@@ -835,12 +835,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -852,7 +852,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientMultiArrhenius(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the MultiArrhenius format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the MultiArrhenius format.
         """
 
         pressures = numpy.array([0.1, 10.0])
@@ -892,12 +892,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -909,7 +909,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientMultiPDepArrhenius(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the MultiPDepArrhenius format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the MultiPDepArrhenius format.
         """
 
         Tmin = 350.
@@ -988,12 +988,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -1005,7 +1005,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientThirdBody(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the ThirdBody format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the ThirdBody format.
         """
 
         arrhenius_low = Arrhenius(
@@ -1034,12 +1034,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -1051,7 +1051,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientLindemann(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the Lindemann format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the Lindemann format.
         """
 
         arrhenius_high = Arrhenius(
@@ -1087,12 +1087,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -1104,7 +1104,7 @@ class TestReaction(unittest.TestCase):
 
     def testGenerateReverseRateCoefficientTroe(self):
         """
-        Test the Reaction.generateReverseRateCoefficient() method works for the Troe format.
+        Test the Reaction.generate_reverse_rate_coefficient() method works for the Troe format.
         """
 
         arrhenius_high = Arrhenius(
@@ -1148,12 +1148,12 @@ class TestReaction(unittest.TestCase):
 
         self.reaction2.kinetics = original_kinetics
 
-        reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         self.reaction2.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
-        reverse_reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
@@ -1169,7 +1169,7 @@ class TestReaction(unittest.TestCase):
         using the reaction H + C2H4 -> C2H5.
         """
         Tlist = 1000.0 / numpy.arange(0.4, 3.35, 0.01)
-        klist = numpy.array([self.reaction.calculateTSTRateCoefficient(T) for T in Tlist])
+        klist = numpy.array([self.reaction.calculate_tst_rate_coefficient(T) for T in Tlist])
         arrhenius = Arrhenius().fit_to_data(Tlist, klist, kunits='m^3/(mol*s)')
         klist2 = numpy.array([arrhenius.get_rate_coefficient(T) for T in Tlist])
 
@@ -1271,7 +1271,7 @@ class TestReaction(unittest.TestCase):
         This method tests that reaction pairs are being generated for sulfur species
         """
 
-        self.reaction3.generatePairs()
+        self.reaction3.generate_pairs()
         self.assertEqual(len(self.reaction3.pairs[0]), 2)
         self.assertEqual(len(self.reaction3.pairs[1]), 2)
 

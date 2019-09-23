@@ -127,7 +127,7 @@ cdef class Wilhoit(HeatCapacityModel):
         For the Wilhoit class, this is calculated as the Enthalpy at 0.001 Kelvin."""
         def __get__(self):
             cdef double E0
-            E0 = self.getEnthalpy(0.001) # in J/mol
+            E0 = self.get_enthalpy(0.001) # in J/mol
             return quantity.Enthalpy(E0 * 0.001, "kJ/mol")
         def __set__(self, value):
             assert value is None, "You should not be setting E0 on a Wilhoit object - it is determined from the Enthalpy at 0.001 Kelvin."
@@ -139,7 +139,7 @@ cdef class Wilhoit(HeatCapacityModel):
         def __set__(self, value):
             self._S0 = quantity.Entropy(value)
 
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
@@ -152,7 +152,7 @@ cdef class Wilhoit(HeatCapacityModel):
             1 + (y - 1) * (a0 + y * (a1 + y * (a2 + y * a3))) 
         )
             
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
@@ -168,7 +168,7 @@ cdef class Wilhoit(HeatCapacityModel):
             (2 + a0 + a1 + a2 + a3) * (y / 2. - 1 + (1.0 / y - 1.) * log(B + T))
         )
     
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
@@ -182,12 +182,12 @@ cdef class Wilhoit(HeatCapacityModel):
             logy + y * (1 + y * (a0 / 2. + y * (a1 / 3. + y * (a2 / 4. + y * a3 / 5.))))
         )
     
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K.
         """
-        return self.getEnthalpy(T) - T * self.getEntropy(T)
+        return self.get_enthalpy(T) - T * self.get_entropy(T)
     
     cpdef Wilhoit copy(self):
         """
@@ -210,7 +210,7 @@ cdef class Wilhoit(HeatCapacityModel):
         self.fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B)
         # Objective function is linear least-squares
         for i in range(Cpdata.shape[0]):
-            diff = self.getHeatCapacity(Tdata[i]) - Cpdata[i]
+            diff = self.get_heat_capacity(Tdata[i]) - Cpdata[i]
             res += diff * diff
         return res
     
@@ -292,8 +292,8 @@ cdef class Wilhoit(HeatCapacityModel):
 
         self.H0 = (0.0,"kJ/mol")
         self.S0 = (0.0,"J/(mol*K)")
-        self._H0.value_si = H298 - self.getEnthalpy(298)
-        self._S0.value_si = S298 - self.getEntropy(298)
+        self._H0.value_si = H298 - self.get_enthalpy(298)
+        self._S0.value_si = S298 - self.get_entropy(298)
 
         return self
 
@@ -470,13 +470,13 @@ cdef class Wilhoit(HeatCapacityModel):
         from rmgpy.thermo.thermodata import ThermoData
         
         Tdata = [300,400,500,600,800,1000,1500]
-        Cpdata = [self.getHeatCapacity(T) for T in Tdata]
+        Cpdata = [self.get_heat_capacity(T) for T in Tdata]
         
         return ThermoData(
             Tdata = (Tdata,"K"),
             Cpdata = (Cpdata,"J/(mol*K)"),
-            H298 = (self.getEnthalpy(298)*0.001,"kJ/mol"),
-            S298 = (self.getEntropy(298),"J/(mol*K)"),
+            H298 = (self.get_enthalpy(298)*0.001,"kJ/mol"),
+            S298 = (self.get_entropy(298),"J/(mol*K)"),
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
@@ -569,12 +569,12 @@ cdef class Wilhoit(HeatCapacityModel):
         # comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
     
         # For the low polynomial, we want the results to match the Wilhoit value at 298 K
-        nasa_low.c5 = (self.getEnthalpy(298) - nasa_low.getEnthalpy(298)) / constants.R
-        nasa_low.c6 = (self.getEntropy(298) - nasa_low.getEntropy(298)) / constants.R
+        nasa_low.c5 = (self.get_enthalpy(298) - nasa_low.get_enthalpy(298)) / constants.R
+        nasa_low.c6 = (self.get_entropy(298) - nasa_low.get_entropy(298)) / constants.R
         
         # For the high polynomial, we want the results to match the low polynomial value at tint
-        nasa_high.c5 = (nasa_low.getEnthalpy(Tint) - nasa_high.getEnthalpy(Tint)) / constants.R
-        nasa_high.c6 = (nasa_low.getEntropy(Tint) - nasa_high.getEntropy(Tint)) / constants.R
+        nasa_high.c5 = (nasa_low.get_enthalpy(Tint) - nasa_high.get_enthalpy(Tint)) / constants.R
+        nasa_high.c6 = (nasa_low.get_entropy(Tint) - nasa_high.get_entropy(Tint)) / constants.R
     
         nasa = NASA(
             polynomials = [nasa_low, nasa_high],

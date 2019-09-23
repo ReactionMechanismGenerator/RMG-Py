@@ -88,7 +88,7 @@ class NetworkDrawer:
         self.surface = None
         self.cr = None
 
-    def __getEnergyRange(self):
+    def _get_energy_range(self):
         """
         Return the minimum and maximum energy in J/mol on the potential energy
         surface.
@@ -124,7 +124,7 @@ class NetworkDrawer:
 
         return e0_min, e0_max
 
-    def __useStructureForLabel(self, configuration):
+    def _use_structure_for_label(self, configuration):
         """
         Return ``True`` if the configuration should use molecular structures
         for its labels or ``False`` otherwise.
@@ -142,7 +142,7 @@ class NetworkDrawer:
 
         return use_structures
 
-    def __getTextSize(self, text, padding=2, format='pdf'):
+    def _get_text_size(self, text, padding=2, format='pdf'):
         """
         
         """
@@ -162,7 +162,7 @@ class NetworkDrawer:
 
         return [0, 0, width, height]
 
-    def __drawText(self, text, cr, x0, y0, padding=2):
+    def _draw_text(self, text, cr, x0, y0, padding=2):
         """
         
         """
@@ -179,22 +179,22 @@ class NetworkDrawer:
 
         return [0, 0, width, height]
 
-    def __getLabelSize(self, configuration, format='pdf'):
+    def _get_label_size(self, configuration, format='pdf'):
         """
         
         """
         width = 0
         height = 0
         bounding_rects = []
-        if self.__useStructureForLabel(configuration):
+        if self._use_structure_for_label(configuration):
             for spec in configuration.species:
                 surface, cr, rect = MoleculeDrawer().draw(spec.molecule[0], format=format)
                 bounding_rects.append(list(rect))
         else:
             for spec in configuration.species:
-                bounding_rects.append(self.__getTextSize(spec.label, format=format))
+                bounding_rects.append(self._get_text_size(spec.label, format=format))
 
-        plus_rect = self.__getTextSize('+', format=format)
+        plus_rect = self._get_text_size('+', format=format)
 
         for rect in bounding_rects:
             if width < rect[2]:
@@ -204,18 +204,18 @@ class NetworkDrawer:
 
         return [0, 0, width, height]
 
-    def __drawLabel(self, configuration, cr, x0, y0, format='pdf'):
+    def _draw_label(self, configuration, cr, x0, y0, format='pdf'):
 
-        bounding_rect = self.__getLabelSize(configuration, format=format)
+        bounding_rect = self._get_label_size(configuration, format=format)
         padding = 2
 
-        use_structures = self.__useStructureForLabel(configuration)
+        use_structures = self._use_structure_for_label(configuration)
         y = y0
         for i, spec in enumerate(configuration.species):
             if i > 0:
-                rect = self.__getTextSize('+', padding=padding, format=format)
+                rect = self._get_text_size('+', padding=padding, format=format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
-                self.__drawText('+', cr, x, y)
+                self._draw_text('+', cr, x, y)
                 y += rect[3]
 
             if use_structures:
@@ -229,9 +229,9 @@ class NetworkDrawer:
                 cr.restore()
                 y += rect[3]
             else:
-                rect = self.__getTextSize(spec.label, padding=padding, format=format)
+                rect = self._get_text_size(spec.label, padding=padding, format=format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
-                self.__drawText(spec.label, cr, x, y)
+                self._draw_text(spec.label, cr, x, y)
                 y += rect[3]
 
         return bounding_rect
@@ -266,10 +266,10 @@ class NetworkDrawer:
         # Generate the bounding rectangles for each configuration label
         label_rects = []
         for well in wells:
-            label_rects.append(self.__getLabelSize(well, format=format))
+            label_rects.append(self._get_label_size(well, format=format))
 
         # Get energy range (use kJ/mol internally)
-        e0_min, e0_max = self.__getEnergyRange()
+        e0_min, e0_max = self._get_energy_range()
         e0_min *= 0.001
         e0_max *= 0.001
 
@@ -295,7 +295,7 @@ class NetworkDrawer:
             raise Exception('Invalid value "{0}" for Eunits parameter.'.format(e_units))
 
         # Determine height required for drawing
-        e_height = self.__getTextSize('0.0', format=format)[3] + 6
+        e_height = self._get_text_size('0.0', format=format)[3] + 6
         y_e0 = (e0_max - 0.0) * e_slope + padding + e_height
         height = (e0_max - e0_min) * e_slope + 2 * padding + e_height + 6
         for i in range(len(wells)):
@@ -400,7 +400,7 @@ class NetworkDrawer:
         # Fill the background with white
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.paint()
-        self.__drawText('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
+        self._draw_text('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
 
         # # DEBUG: Draw well bounding rectangles
         # cr.save()
@@ -511,7 +511,7 @@ class NetworkDrawer:
             cr.rectangle(x, y, label_rects[i][2], label_rects[i][3])
             cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
             cr.fill()
-            self.__drawLabel(well, cr, x, y, format=format)
+            self._draw_label(well, cr, x, y, format=format)
 
         # Finish Cairo drawing
         if format == 'png':

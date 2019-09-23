@@ -58,62 +58,62 @@ cdef class Reaction:
     cdef public bint allow_max_rate_violation
     cdef public object rank
     
-    cpdef bint isIsomerization(self)
+    cpdef bint is_isomerization(self)
 
-    cpdef bint isDissociation(self)
+    cpdef bint is_dissociation(self)
 
-    cpdef bint isAssociation(self)
+    cpdef bint is_association(self)
     
-    cpdef bint isUnimolecular(self)
+    cpdef bint is_unimolecular(self)
 
-    cpdef bint isSurfaceReaction(self)
+    cpdef bint is_surface_reaction(self)
 
-    cpdef bint hasTemplate(self, list reactants, list products)
+    cpdef bint has_template(self, list reactants, list products)
     
-    cpdef bint matchesSpecies(self, list reactants, list products=?)
+    cpdef bint matches_species(self, list reactants, list products=?)
 
     cpdef bint is_isomorphic(self, Reaction other, bint either_direction=?, bint check_identical=?, bint check_only_label=?,
                             bint check_template_rxn_products=?, bint generate_initial_map=?, bint strict=?) except -2
 
-    cpdef double getEnthalpyOfReaction(self, double T)
+    cpdef double get_enthalpy_of_reaction(self, double T)
 
-    cpdef double getEntropyOfReaction(self, double T)
+    cpdef double get_entropy_of_reaction(self, double T)
 
-    cpdef double getFreeEnergyOfReaction(self, double T)
+    cpdef double get_free_energy_of_reaction(self, double T)
 
-    cpdef double getEquilibriumConstant(self, double T, str type=?)
+    cpdef double get_equilibrium_constant(self, double T, str type=?)
 
-    cpdef np.ndarray getEnthalpiesOfReaction(self, np.ndarray Tlist)
+    cpdef np.ndarray get_enthalpies_of_reaction(self, np.ndarray Tlist)
 
-    cpdef np.ndarray getEntropiesOfReaction(self, np.ndarray Tlist)
+    cpdef np.ndarray get_entropies_of_reaction(self, np.ndarray Tlist)
 
-    cpdef np.ndarray getFreeEnergiesOfReaction(self, np.ndarray Tlist)
+    cpdef np.ndarray get_free_energies_of_reaction(self, np.ndarray Tlist)
 
-    cpdef np.ndarray getEquilibriumConstants(self, np.ndarray Tlist, str type=?)
+    cpdef np.ndarray get_equilibrium_constants(self, np.ndarray Tlist, str type=?)
 
-    cpdef int getStoichiometricCoefficient(self, Species spec)
+    cpdef int get_stoichiometric_coefficient(self, Species spec)
 
     cpdef double get_rate_coefficient(self, double T, double P=?)
 
-    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity) except -2
+    cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density) except -2
 
-    cpdef fixBarrierHeight(self, bint forcePositive=?)
+    cpdef fix_barrier_height(self, bint force_positive=?)
 
-    cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits, Tmin=?, Tmax=?)
+    cpdef reverse_arrhenius_rate(self, Arrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef generateReverseRateCoefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
+    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
 
-    cpdef np.ndarray calculateTSTRateCoefficients(self, np.ndarray Tlist)
+    cpdef np.ndarray calculate_tst_rate_coefficients(self, np.ndarray Tlist)
 
-    cpdef double calculateTSTRateCoefficient(self, double T) except -2
+    cpdef double calculate_tst_rate_coefficient(self, double T) except -2
 
-    cpdef bint canTST(self) except -2
+    cpdef bint can_tst(self) except -2
 
-    cpdef calculateMicrocanonicalRateCoefficient(self, np.ndarray Elist, np.ndarray Jlist, np.ndarray reacDensStates, np.ndarray prodDensStates=?, double T=?)
+    cpdef calculate_microcanonical_rate_coefficient(self, np.ndarray e_list, np.ndarray j_list, np.ndarray reac_dens_states, np.ndarray prod_dens_states=?, double T=?)
 
-    cpdef bint isBalanced(self)
+    cpdef bint is_balanced(self)
     
-    cpdef generatePairs(self)
+    cpdef generate_pairs(self)
     
     cpdef copy(self)
 

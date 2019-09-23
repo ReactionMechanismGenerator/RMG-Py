@@ -62,70 +62,70 @@ class TestIdealGasTranslation(unittest.TestCase):
 
     def test_get_partition_function_classical(self):
         """
-        Test the IdealGasTranslation.getPartitionFunction() method for a
+        Test the IdealGasTranslation.get_partition_function() method for a
         classical translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         q_exp_list = np.array([7.22597e+06, 2.59130e+07, 1.46586e+08, 4.03944e+08, 8.29217e+08])
         for temperature, q_exp in zip(t_list, q_exp_list):
-            q_act = self.mode.getPartitionFunction(temperature)
+            q_act = self.mode.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
     def test_get_heat_capacity_classical(self):
         """
-        Test the IdealGasTranslation.getHeatCapacity() method using a classical
+        Test the IdealGasTranslation.get_heat_capacity() method using a classical
         translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         cv_exp_list = np.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
-            cv_act = self.mode.getHeatCapacity(temperature)
+            cv_act = self.mode.get_heat_capacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
 
     def test_get_enthalpy_classical(self):
         """
-        Test the IdealGasTranslation.getEnthalpy() method using a classical
+        Test the IdealGasTranslation.get_enthalpy() method using a classical
         translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         h_exp_list = np.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
-            h_act = self.mode.getEnthalpy(temperature)
+            h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
     def test_get_entropy_classical(self):
         """
-        Test the IdealGasTranslation.getEntropy() method using a classical
+        Test the IdealGasTranslation.get_entropy() method using a classical
         translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
         s_exp_list = np.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
-            s_act = self.mode.getEntropy(temperature)
+            s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
 
     def test_get_sum_of_states_classical(self):
         """
-        Test the IdealGasTranslation.getSumOfStates() method using a classical
+        Test the IdealGasTranslation.get_sum_of_states() method using a classical
         translator.
         """
         e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
-        sum_states = self.mode.getSumOfStates(e_list)
-        dens_states = self.mode.getDensityOfStates(e_list)
+        sum_states = self.mode.get_sum_of_states(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
             self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
                              '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
     def test_get_density_of_states_classical(self):
         """
-        Test the IdealGasTranslation.getDensityOfStates() method using a
+        Test the IdealGasTranslation.get_density_of_states() method using a
         classical translator.
         """
         e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
-        dens_states = self.mode.getDensityOfStates(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
         temperature = 100
         q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
-        q_exp = self.mode.getPartitionFunction(temperature)
+        q_exp = self.mode.get_partition_function(temperature)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-6 * q_exp)
 
     def test_repr(self):

@@ -290,14 +290,14 @@ class LiquidReactorCheck(unittest.TestCase):
             # 6 and 7. Use Jacobians calculated by hand instead.
             elif rxn_num == 6:
                 kforward = rxn.get_rate_coefficient(self.T)
-                kreverse = kforward / rxn.getEquilibriumConstant(self.T)
+                kreverse = kforward / rxn.get_equilibrium_constant(self.T)
                 jacobian = jacobian_rxn6(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):
                         self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j]))
             elif rxn_num == 7:
                 kforward = rxn.get_rate_coefficient(self.T)
-                kreverse = kforward / rxn.getEquilibriumConstant(self.T)
+                kreverse = kforward / rxn.get_equilibrium_constant(self.T)
                 jacobian = jacobian_rxn7(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):

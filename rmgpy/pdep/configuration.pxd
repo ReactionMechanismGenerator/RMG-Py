@@ -32,37 +32,37 @@ cimport numpy as np
 cdef class Configuration(object):
 
     cdef public list species
-    cdef public np.ndarray Elist
-    cdef public np.ndarray densStates
-    cdef public np.ndarray sumStates
-    cdef public bint activeJRotor
-    cdef public bint activeKRotor
+    cdef public np.ndarray e_list
+    cdef public np.ndarray dens_states
+    cdef public np.ndarray sum_states
+    cdef public bint active_j_rotor
+    cdef public bint active_k_rotor
 
     cpdef cleanup(self)
 
-    cpdef bint isUnimolecular(self) except -2
+    cpdef bint is_unimolecular(self) except -2
     
-    cpdef bint isBimolecular(self) except -2
+    cpdef bint is_bimolecular(self) except -2
 
-    cpdef bint isTermolecular(self) except -2
+    cpdef bint is_termolecular(self) except -2
 
-    cpdef bint isTransitionState(self) except -2
+    cpdef bint is_transition_state(self) except -2
     
-    cpdef bint hasStatMech(self) except -2
+    cpdef bint has_statmech(self) except -2
     
-    cpdef bint hasThermo(self) except -2
+    cpdef bint has_thermo(self) except -2
     
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double get_heat_capacity(self, double T) except -100000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double get_enthalpy(self, double T) except 100000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double get_entropy(self, double T) except -100000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double get_free_energy(self, double T) except 100000000
     
-    cpdef double calculateCollisionFrequency(self, double T, double P, dict bathGas) except -1
+    cpdef double calculate_collision_frequency(self, double T, double P, dict bath_gas) except -1
         
-    cpdef np.ndarray generateCollisionMatrix(self, double T, np.ndarray dens_states,
-                                             np.ndarray e_list, np.ndarray Jlist=?)
+    cpdef np.ndarray generate_collision_matrix(self, double T, np.ndarray dens_states,
+                                             np.ndarray e_list, np.ndarray j_list=?)
     
-    cpdef calculateDensityOfStates(self, np.ndarray Elist, bint activeJRotor=?, bint activeKRotor=?, bint rmgmode=?)
+    cpdef calculate_density_of_states(self, np.ndarray e_list, bint active_j_rotor=?, bint active_k_rotor=?, bint rmgmode=?)

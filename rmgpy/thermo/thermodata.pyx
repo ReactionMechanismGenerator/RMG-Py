@@ -119,7 +119,7 @@ cdef class ThermoData(HeatCapacityModel):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
@@ -171,7 +171,7 @@ cdef class ThermoData(HeatCapacityModel):
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
@@ -244,7 +244,7 @@ cdef class ThermoData(HeatCapacityModel):
         
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
@@ -320,7 +320,7 @@ cdef class ThermoData(HeatCapacityModel):
 
         return S
     
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature
         `T` in K.
@@ -343,7 +343,7 @@ cdef class ThermoData(HeatCapacityModel):
         elif T > Tdata[N-1] + 5 and CpInf == 0.0:
             raise ValueError('Unable to compute Gibbs free energy at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
-        return self.getEnthalpy(T) - T * self.getEntropy(T)
+        return self.get_enthalpy(T) - T * self.get_entropy(T)
 
     cpdef Wilhoit toWilhoit(self, B=None):
         """
@@ -359,8 +359,8 @@ cdef class ThermoData(HeatCapacityModel):
         
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
-        H298 = self.getEnthalpy(298)
-        S298 = self.getEntropy(298)
+        H298 = self.get_enthalpy(298)
+        S298 = self.get_entropy(298)
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
         

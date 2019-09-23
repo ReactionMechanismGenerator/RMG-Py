@@ -146,10 +146,10 @@ class TestThermoDatabase(unittest.TestCase):
 
         symmetry_contribution_to_entropy = - constants.R * math.log(symmetry_number)
 
-        self.assertAlmostEqual(thermo_with_sym.getEntropy(298.),
-                               thermo_without_sym.getEntropy(298.) + symmetry_contribution_to_entropy,
+        self.assertAlmostEqual(thermo_with_sym.get_entropy(298.),
+                               thermo_without_sym.get_entropy(298.) + symmetry_contribution_to_entropy,
                                msg='The symmetry contribution is wrong {:.3f} /= {:.3f} + {:.3f}'.format(
-                                   thermo_with_sym.getEntropy(298.), thermo_without_sym.getEntropy(298.),
+                                   thermo_with_sym.get_entropy(298.), thermo_without_sym.get_entropy(298.),
                                    symmetry_contribution_to_entropy))
 
     def testSymmetryContributionRadicals(self):
@@ -166,7 +166,7 @@ class TestThermoDatabase(unittest.TestCase):
 
         thermo_data_ga = self.databaseWithoutLibraries.get_thermo_data(spc)
 
-        self.assertAlmostEqual(thermo_data_lib.getEntropy(298.), thermo_data_ga.getEntropy(298.), 0)
+        self.assertAlmostEqual(thermo_data_lib.get_entropy(298.), thermo_data_ga.get_entropy(298.), 0)
 
     def testParseThermoComments(self):
         """
@@ -524,7 +524,7 @@ multiplicity 2
     def testThermoEstimationNotAffectDatabase(self):
 
         poly_root = self.database.groups['polycyclic'].entries['PolycyclicRing']
-        previous_enthalpy = poly_root.data.getEnthalpy(298) / 4184.0
+        previous_enthalpy = poly_root.data.get_enthalpy(298) / 4184.0
         smiles = 'C1C2CC1C=CC=C2'
         spec = Species().from_smiles(smiles)
         spec.generate_resonance_structures()
@@ -536,7 +536,7 @@ multiplicity 2
 
         self.assertIn('PolycyclicRing', polycyclic_group_labels)
 
-        latter_enthalpy = poly_root.data.getEnthalpy(298) / 4184.0
+        latter_enthalpy = poly_root.data.get_enthalpy(298) / 4184.0
 
         self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
 
@@ -561,7 +561,7 @@ multiplicity 2
         thermo_gav1 = self.database.get_thermo_data_from_groups(spec)
         spec.generate_resonance_structures()
         thermo_gav2 = self.database.get_thermo_data_from_groups(spec)
-        self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
+        self.assertTrue(thermo_gav2.get_enthalpy(298) < thermo_gav1.get_enthalpy(298),
                         msg="Did not select the molecule with the lowest H298 "
                             "as a the thermo entry for [C]#C[O] / [C]=C=O")
 
@@ -571,7 +571,7 @@ multiplicity 2
         thermo_gav1 = self.database.get_thermo_data_from_groups(spec)
         spec.generate_resonance_structures()
         thermo_gav2 = self.database.get_thermo_data_from_groups(spec)
-        self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
+        self.assertTrue(thermo_gav2.get_enthalpy(298) < thermo_gav1.get_enthalpy(298),
                         msg="Did not select the molecule with the lowest H298 "
                             "as a the thermo entry for C=C[CH][O] / C=CC=O")
 
@@ -584,7 +584,7 @@ multiplicity 2
         spec.generate_resonance_structures()
         spec.molecule[0].reactive = False  # set the more stable molecule to nonreactive for this check
         thermo_gav2 = self.database.get_thermo_data_from_groups(spec)  # thermo of the speciesless stable molecule
-        self.assertTrue(thermo_gav2.getEnthalpy(298) > thermo_gav1.getEnthalpy(298),
+        self.assertTrue(thermo_gav2.get_enthalpy(298) > thermo_gav1.get_enthalpy(298),
                         msg="Did not select the reactive molecule for thermo")
 
 
@@ -643,21 +643,21 @@ class TestThermoAccuracy(unittest.TestCase):
             for mol in species.molecule[1:]:
                 thermo_data0 = self.database.get_all_thermo_data(Species(molecule=[mol]))[0][0]
                 for data in self.database.get_all_thermo_data(Species(molecule=[mol]))[1:]:
-                    if data[0].getEnthalpy(298) < thermo_data0.getEnthalpy(298):
+                    if data[0].get_enthalpy(298) < thermo_data0.get_enthalpy(298):
                         thermo_data0 = data[0]
-                if thermo_data0.getEnthalpy(298) < thermo_data.getEnthalpy(298):
+                if thermo_data0.get_enthalpy(298) < thermo_data.get_enthalpy(298):
                     thermo_data = thermo_data0
                     molecule = mol
-            self.assertAlmostEqual(H298, thermo_data.getEnthalpy(298) / 4184, places=1,
+            self.assertAlmostEqual(H298, thermo_data.get_enthalpy(298) / 4184, places=1,
                                    msg="H298 error for {0}. Expected {1}, but calculated {2}.".format(
-                                       smiles, H298, thermo_data.getEnthalpy(298) / 4184))
-            self.assertAlmostEqual(S298, thermo_data.getEntropy(298) / 4.184, places=1,
+                                       smiles, H298, thermo_data.get_enthalpy(298) / 4184))
+            self.assertAlmostEqual(S298, thermo_data.get_entropy(298) / 4.184, places=1,
                                    msg="S298 error for {0}. Expected {1}, but calculated {2}.".format(
-                                       smiles, S298, thermo_data.getEntropy(298) / 4.184))
+                                       smiles, S298, thermo_data.get_entropy(298) / 4.184))
             for T, Cp in zip(self.Tlist, cp_list):
-                self.assertAlmostEqual(Cp, thermo_data.getHeatCapacity(T) / 4.184, places=1,
+                self.assertAlmostEqual(Cp, thermo_data.get_heat_capacity(T) / 4.184, places=1,
                                        msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(
-                                           smiles, Cp, thermo_data.getHeatCapacity(T) / 4.184, T))
+                                           smiles, Cp, thermo_data.get_heat_capacity(T) / 4.184, T))
 
     def testSymmetryNumberGeneration(self):
         """
@@ -853,9 +853,9 @@ class TestCyclicThermo(unittest.TestCase):
         # If the parent pointed toward group_to_remove, we need should have copied data object
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         self.assertNotIsInstance(group_to_remove2.parent.data, str)
-        self.assertEqual(group_to_remove2.parent.data.getEnthalpy(298), group_to_remove2.data.getEnthalpy(298))
-        self.assertEqual(group_to_remove2.parent.data.getEntropy(298), group_to_remove2.data.getEntropy(298))
-        self.assertTrue(all([group_to_remove2.parent.data.getHeatCapacity(x) == group_to_remove2.data.getHeatCapacity(x)
+        self.assertEqual(group_to_remove2.parent.data.get_enthalpy(298), group_to_remove2.data.get_enthalpy(298))
+        self.assertEqual(group_to_remove2.parent.data.get_entropy(298), group_to_remove2.data.get_entropy(298))
+        self.assertTrue(all([group_to_remove2.parent.data.get_heat_capacity(x) == group_to_remove2.data.get_heat_capacity(x)
                              for x in Tlist]))
 
     def testIsRingPartialMatched(self):

@@ -267,8 +267,8 @@ class QChemLog(Log):
                     inertia = []
 
         modes = mmass + rot + freq
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
-                         opticalIsomers=opticalIsomers), unscaled_frequencies
+        return Conformer(e0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spinMultiplicity,
+                         optical_isomers=opticalIsomers), unscaled_frequencies
 
     def loadEnergy(self, zpe_scale_factor=1.):
         """

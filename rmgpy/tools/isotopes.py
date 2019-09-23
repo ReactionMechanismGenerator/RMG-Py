@@ -693,11 +693,11 @@ def ensure_correct_symmetry(isotopmoper_list, isotopic_element='C'):
         if atom.element.symbol == isotopic_element:
             number_elements += 1
 
-    minimum_entropy = min([spec.getEntropy(298) for spec in isotopmoper_list])
+    minimum_entropy = min([spec.get_entropy(298) for spec in isotopmoper_list])
 
     count = 0.
     for spec in isotopmoper_list:
-        entropy_diff = spec.getEntropy(298) - minimum_entropy
+        entropy_diff = spec.get_entropy(298) - minimum_entropy
         count += math.exp(entropy_diff / constants.R)
     return abs(count - 2 ** number_elements) < 0.01
 
@@ -807,9 +807,9 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
         if isinstance(rxn.kinetics, MultiArrhenius):
             reverse_A_factor = 0
             for arr in rxn.kinetics.arrhenius:
-                reverse_A_factor += arr.A.value_si / rxn.getEquilibriumConstant(298)
+                reverse_A_factor += arr.A.value_si / rxn.get_equilibrium_constant(298)
         else:
-            reverse_A_factor = rxn.kinetics.A.value_si / rxn.getEquilibriumConstant(298)
+            reverse_A_factor = rxn.kinetics.A.value_si / rxn.get_equilibrium_constant(298)
 
         # get reverse flux using product symmetries
         product_conc = 1.

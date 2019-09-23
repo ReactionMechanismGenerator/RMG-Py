@@ -121,7 +121,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     species_rates = np.zeros((len(times), num_species, num_species), np.float64)
     for index, reaction in enumerate(reaction_list):
         rate = reactionRates[:, index]
-        if not reaction.pairs: reaction.generatePairs()
+        if not reaction.pairs: reaction.generate_pairs()
         for reactant, product in reaction.pairs:
             reactant_index = species_list.index(reactant)
             product_index = species_list.index(product)

@@ -41,7 +41,7 @@ from rmgpy.exceptions import ReservoirStateError
 ################################################################################
 
 
-cpdef applyReservoirStateMethod(network):
+cpdef apply_reservoir_state_method(network):
     """A method for applying the Reservoir State approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=2] n_res, n_act
@@ -57,8 +57,8 @@ cpdef applyReservoirStateMethod(network):
     cdef int i, j, n, r, s, u, v, row, iter
 
     temperature = network.T
-    e_list = network.Elist
-    j_list = network.Jlist
+    e_list = network.e_list
+    j_list = network.j_list
     dens_states = network.densStates
     m_coll = network.Mcoll
     k_ij = network.Kij

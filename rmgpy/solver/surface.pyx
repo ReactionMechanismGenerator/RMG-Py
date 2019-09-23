@@ -167,7 +167,7 @@ cdef class SurfaceReactor(ReactionSystem):
             if spec.contains_surface_site():
                 species_on_surface[index] = 1
         for rxn, index in self.reactionIndex.items():
-            if rxn.isSurfaceReaction():
+            if rxn.is_surface_reaction():
                 reactions_on_surface[index] = 1
         self.speciesOnSurface = species_on_surface
         self.reactionsOnSurface = reactions_on_surface
@@ -208,7 +208,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
             # ToDo: get_rate_coefficient should also depend on surface coverages vector
 
-            if rxn.isSurfaceReaction():
+            if rxn.is_surface_reaction():
                 """
                 Be careful! From here on kf and kb will now be in Volume units,
                 even for surface reactions (which you may expect to be in Area units).
@@ -216,17 +216,17 @@ cdef class SurfaceReactor(ReactionSystem):
                 loop of the ODE solver.
                 """
                 self.kf[j] = (surface_volume_ratio_si *
-                              rxn.getSurfaceRateCoefficient(self.T.value_si,
-                                                            self.surfaceSiteDensity.value_si
-                                                            ))
+                              rxn.get_surface_rate_coefficient(self.T.value_si,
+                                                               self.surfaceSiteDensity.value_si
+                                                               ))
             else:
                 if not warned and rxn.kinetics.is_pressure_dependent():
                     logging.warning("Pressure may be varying, but using initial pressure to evaluate k(T,P) expressions!")
                     warned = True
                 self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, P)
             if rxn.reversible:
-                # ToDo: getEquilibriumConstant should be coverage dependent
-                self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                # ToDo: get_equilibrium_constant should be coverage dependent
+                self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
     def log_initial_conditions(self, number=None):

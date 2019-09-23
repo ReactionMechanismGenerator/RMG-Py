@@ -111,7 +111,7 @@ class TransportData(RMGObject):
         given temperature `T` in K for colliders with the given concentration
         `M` in mol/m^3 and reduced mass `mu` in amu.
         
-        This seems to also exist in rmgpy.pdep.configuration.calculateCollisionFrequency
+        This seems to also exist in rmgpy.pdep.configuration.calculate_collision_frequency
         Why the redundancy?
         """
         sigma = self.sigma.value_si

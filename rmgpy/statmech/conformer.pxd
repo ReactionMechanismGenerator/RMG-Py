@@ -36,41 +36,41 @@ cdef class Conformer(RMGObject):
 
     cdef public ScalarQuantity _E0
     cdef public list modes
-    cdef public int spinMultiplicity
-    cdef public int opticalIsomers
+    cdef public int spin_multiplicity
+    cdef public int optical_isomers
     cdef public ArrayQuantity _number
     cdef public ArrayQuantity _mass
     cdef public ArrayQuantity _coordinates
 
-    cpdef double getPartitionFunction(self, double T) except -1
+    cpdef double get_partition_function(self, double T) except -1
 
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double get_heat_capacity(self, double T) except -100000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double get_enthalpy(self, double T) except 100000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double get_entropy(self, double T) except -100000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double get_free_energy(self, double T) except 100000000
 
-    cpdef np.ndarray getSumOfStates(self, np.ndarray Elist)
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list)
 
-    cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list)
 
-    cpdef double getTotalMass(self, atoms=?) except -1
+    cpdef double get_total_mass(self, atoms=?) except -1
 
-    cpdef np.ndarray getCenterOfMass(self, atoms=?)
+    cpdef np.ndarray get_center_of_mass(self, atoms=?)
 
-    cpdef np.ndarray getMomentOfInertiaTensor(self)
+    cpdef np.ndarray get_moment_of_inertia_tensor(self)
 
-    cpdef getPrincipalMomentsOfInertia(self)
+    cpdef get_principal_moments_of_inertia(self)
 
-    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1, option=?) except -1
+    cpdef double get_internal_reduced_moment_of_inertia(self, pivots, top1, option=?) except -1
 
-    cpdef getSymmetricTopRotors(self)
+    cpdef get_symmetric_top_rotors(self)
 
-    cpdef list getActiveModes(self, bint activeJRotor=?, bint activeKRotor=?)
+    cpdef list get_active_modes(self, bint active_j_rotor=?, bint active_k_rotor=?)
     
-    cpdef getNumberDegreesOfFreedom(self)
+    cpdef get_number_degrees_of_freedom(self)
 
 ################################################################################
 

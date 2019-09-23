@@ -41,7 +41,7 @@ from libc.math cimport log, exp, sqrt
 
 import rmgpy.constants as constants
 from rmgpy.statmech import LinearRotor, NonlinearRotor, IdealGasTranslation, HarmonicOscillator
-from rmgpy.statmech.conformer import getDensityOfStatesForst
+from rmgpy.statmech.conformer import get_density_of_states_forst
 from rmgpy.species import Species, TransitionState
 from rmgpy.transport import TransportData
 
@@ -55,11 +55,11 @@ cdef class Configuration(object):
 
     def __init__(self, *species):
         self.species = list(species)
-        self.Elist = None
-        self.densStates = None
-        self.sumStates = None
-        self.activeJRotor = False
-        self.activeKRotor = False
+        self.e_list = None
+        self.dens_states = None
+        self.sum_states = None
+        self.active_j_rotor = False
+        self.active_k_rotor = False
 
     def __str__(self):
         return ' + '.join([str(spec) for spec in self.species])
@@ -67,15 +67,15 @@ cdef class Configuration(object):
     def __repr__(self):
         string = 'Configuration('
         string += 'species="{0!r}", '.format(self.species)
-        if self.Elist is not None: string += 'Elist={0}, '.format(self.Elist)
-        if self.densStates is not None: string += 'densStates={0}, '.format(self.densStates)
-        if self.sumStates is not None: string += 'sumStates={0}, '.format(self.sumStates)
-        string += 'activeKRotor={0}, '.format(self.activeKRotor)
-        string += 'activeJRotor={0}, '.format(self.activeJRotor)
+        if self.e_list is not None: string += 'e_list={0}, '.format(self.e_list)
+        if self.dens_states is not None: string += 'dens_states={0}, '.format(self.dens_states)
+        if self.sum_states is not None: string += 'sum_states={0}, '.format(self.sum_states)
+        string += 'active_k_rotor={0}, '.format(self.active_k_rotor)
+        string += 'active_j_rotor={0}, '.format(self.active_j_rotor)
         string += ')'
         return string
 
-    property E0:
+    property e0:
         """The ground-state energy of the configuration in J/mol."""
         def __get__(self):
             return sum([float(spec.conformer.E0.value_si) for spec in self.species])
@@ -84,94 +84,94 @@ cdef class Configuration(object):
         """
         Delete intermediate arrays used in computing k(T,P) values.
         """
-        self.Elist = None
-        self.densStates = None
-        self.sumStates = None
+        self.e_list = None
+        self.dens_states = None
+        self.sum_states = None
 
-    cpdef bint isUnimolecular(self) except -2:
+    cpdef bint is_unimolecular(self) except -2:
         """
         Return ``True`` if the configuration represents a unimolecular isomer,
         or ``False`` otherwise.
         """
         return len(self.species) == 1 and isinstance(self.species[0], Species)
 
-    cpdef bint isBimolecular(self) except -2:
+    cpdef bint is_bimolecular(self) except -2:
         """
         Return ``True`` if the configuration represents a bimolecular reactant
         or product channel, or ``False`` otherwise.
         """
         return len(self.species) == 2
 
-    cpdef bint isTermolecular(self) except -2:
+    cpdef bint is_termolecular(self) except -2:
         """
         Return ``True`` if the configuration represents a termolecular reactant
         or product channel, or ``False`` otherwise.
         """
         return len(self.species) == 3
 
-    cpdef bint isTransitionState(self) except -2:
+    cpdef bint is_transition_state(self) except -2:
         """
         Return ``True`` if the configuration represents a transition state,
         or ``False`` otherwise.
         """
         return len(self.species) == 1 and isinstance(self.species[0], TransitionState)
 
-    cpdef bint hasStatMech(self) except -2:
+    cpdef bint has_statmech(self) except -2:
         """
         Return ``True`` if all species in the configuration have statistical
         mechanics parameters, or ``False`` otherwise.
         """
         return all([spec.has_statmech() for spec in self.species])
 
-    cpdef bint hasThermo(self) except -2:
+    cpdef bint has_thermo(self) except -2:
         """
         Return ``True`` if all species in the configuration have thermodynamics
         parameters, or ``False`` otherwise.
         """
         return all([spec.has_thermo() for spec in self.species])
     
-    cpdef double getHeatCapacity(self, double T) except -100000000:
+    cpdef double get_heat_capacity(self, double T) except -100000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the
         specified temperature `T` in K.
         """
         cdef double cp = 0.0
         for spec in self.species:
-            cp += spec.getHeatCapacity(T)
+            cp += spec.get_heat_capacity(T)
         return cp
 
-    cpdef double getEnthalpy(self, double T) except 100000000:
+    cpdef double get_enthalpy(self, double T) except 100000000:
         """
         Return the enthalpy in kJ/mol at the specified temperature `T` in K.
         """
         cdef double h = 0.0
         for spec in self.species:
-            h += spec.getEnthalpy(T)
+            h += spec.get_enthalpy(T)
         return h
 
-    cpdef double getEntropy(self, double T) except -100000000:
+    cpdef double get_entropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
         cdef double s = 0.0
         for spec in self.species:
-            s += spec.getEntropy(T)
+            s += spec.get_entropy(T)
         return s
 
-    cpdef double getFreeEnergy(self, double T) except 100000000:
+    cpdef double get_free_energy(self, double T) except 100000000:
         """
         Return the Gibbs free energy in kJ/mol at the specified temperature
         `T` in K.
         """
         cdef double g = 0.0
         for spec in self.species:
-            g += spec.getFreeEnergy(T)
+            g += spec.get_free_energy(T)
         return g
 
-    cpdef double calculateCollisionFrequency(self, double T, double P, dict bathGas) except -1:
+    cpdef double calculate_collision_frequency(self, double T, double P, dict bath_gas) except -1:
         """
         Return the value of the collision frequency in Hz at the given 
-        temperature `T` in K and pressure `P` in Pa. If a dictionary `bathGas`
+        temperature `T` in K and pressure `P` in Pa. If a dictionary `bath_gas`
         of bath gas species and corresponding mole fractions is given, the
         collision parameters of the bas gas species will be averaged with those
         of the species before computing the collision frequency. 
@@ -181,13 +181,13 @@ cdef class Configuration(object):
         cdef double bath_gas_sigma, bath_gas_epsilon, bath_gas_mw
         cdef double sigma, epsilon, mu, gas_concentration, frac, tred, omega22
 
-        assert self.isUnimolecular()
+        assert self.is_unimolecular()
         assert isinstance(self.species[0].get_transport_data(), TransportData)
-        for spec, frac in bathGas.items():
+        for spec, frac in bath_gas.items():
             assert isinstance(spec.get_transport_data(), TransportData)
 
         bath_gas_sigma, bath_gas_epsilon, bath_gas_mw = 0.0, 1.0, 0.0
-        for spec, frac in bathGas.items():
+        for spec, frac in bath_gas.items():
             bath_gas_sigma += spec.get_transport_data().sigma.value_si * frac
             bath_gas_epsilon *= spec.get_transport_data().epsilon.value_si ** frac
             bath_gas_mw += spec.molecularWeight.value_si * frac
@@ -204,25 +204,25 @@ cdef class Configuration(object):
         # Evaluate collision frequency
         return omega22 * sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma*sigma * gas_concentration
 
-    cpdef np.ndarray generateCollisionMatrix(self, double T, np.ndarray densStates, np.ndarray Elist,
-                                             np.ndarray Jlist=None):
+    cpdef np.ndarray generate_collision_matrix(self, double T, np.ndarray dens_states, np.ndarray e_list,
+                                               np.ndarray j_list=None):
         """
         Return the collisional energy transfer probabilities matrix for the
         configuration at the given temperature `T` in K using the given
-        energies `Elist` in kJ/mol and total angular momentum quantum numbers
-        `Jlist`. The density of states of the configuration `densStates` in
+        energies `e_list` in kJ/mol and total angular momentum quantum numbers
+        `j_list`. The density of states of the configuration `dens_states` in
         mol/kJ is also required.
         """
-        assert self.isUnimolecular()
+        assert self.is_unimolecular()
         assert self.species[0].energyTransferModel is not None
-        return self.species[0].energyTransferModel.generateCollisionMatrix(T, densStates, Elist, Jlist)
+        return self.species[0].energyTransferModel.generate_collision_matrix(T, dens_states, e_list, j_list)
 
-    cpdef calculateDensityOfStates(self, np.ndarray Elist, bint activeJRotor=True, bint activeKRotor=True,
-                                   bint rmgmode=False):
+    cpdef calculate_density_of_states(self, np.ndarray e_list, bint active_j_rotor=True, bint active_k_rotor=True,
+                                      bint rmgmode=False):
         """
         Calculate the density (and sum) of states for the configuration at the
-        given energies above the ground state `Elist` in J/mol. The
-        `activeJRotor` and `activeKRotor` flags control whether the J-rotor
+        given energies above the ground state `e_list` in J/mol. The
+        `active_j_rotor` and `active_k_rotor` flags control whether the J-rotor
         and/or K-rotor are treated as active (and therefore included in the
         density and sum of states). The computed density and sum of states
         arrays are stored on the object for future use.
@@ -232,15 +232,15 @@ cdef class Configuration(object):
 
         logging.debug('calculating density of states for {}'.format(self.__str__()))
 
-        self.Elist = Elist
-        self.activeJRotor = activeJRotor
-        self.activeKRotor = activeKRotor
+        self.e_list = e_list
+        self.active_j_rotor = active_j_rotor
+        self.active_k_rotor = active_k_rotor
 
         # Get the active rovibrational modes for each species in the configuration
         modes = []
         for i, species in enumerate(self.species):
-            modes.extend(species.conformer.getActiveModes(activeKRotor=self.activeKRotor,
-                                                          activeJRotor=self.activeJRotor))
+            modes.extend(species.conformer.get_active_modes(active_k_rotor=self.active_k_rotor,
+                                                            active_j_rotor=self.active_j_rotor))
 
         if rmgmode or len(modes) == 0:
             # Include an arbitrary active rigid rotor if needed
@@ -261,12 +261,12 @@ cdef class Configuration(object):
                     modes.insert(0, NonlinearRotor(inertia=([1.0, 1.0, 1.0], "amu*angstrom^2"), symmetry=1))
 
         if len(modes) == 0:
-            self.densStates = None
-            self.sumStates = None
+            self.dens_states = None
+            self.sum_states = None
         else:        
             # If the configuration is bimolecular, also include the relative
             # translational motion of the two molecules
-            if self.isBimolecular() or self.isTermolecular():
+            if self.is_bimolecular() or self.is_termolecular():
                 mass = []
                 for species in self.species:
                     for mode in species.conformer.modes:
@@ -281,7 +281,7 @@ cdef class Configuration(object):
                             for atom in species.molecule[0].atoms:
                                 m += atom.element.mass
                             mass.append(m * constants.amu * 1000)
-                if self.isBimolecular():
+                if self.is_bimolecular():
                     if len(mass) != 2:
                         raise AttributeError('Length of masses should be two for bimolecular reactants. '
                                              'We got {0}.'.format(len(mass)))
@@ -302,7 +302,7 @@ cdef class Configuration(object):
                 dens_states = None
                 for mode in modes:
                     if not isinstance(mode,HarmonicOscillator):
-                        dens_states = mode.getDensityOfStates(self.Elist, dens_states)
+                        dens_states = mode.get_density_of_states(self.e_list, dens_states)
                     # Fix a numerical artifact that occurs when two modes have
                     # density of states expressions that are zero at the
                     # ground state
@@ -315,10 +315,10 @@ cdef class Configuration(object):
                         dens_states[1] = dens_states[2] * dens_states[2] / dens_states[3]
                 for mode in modes:
                     if isinstance(mode,HarmonicOscillator):
-                        dens_states = mode.getDensityOfStates(self.Elist, dens_states)
-                self.densStates = dens_states
+                        dens_states = mode.get_density_of_states(self.e_list, dens_states)
+                self.dens_states = dens_states
                 for spec in self.species:
-                    self.densStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                    self.dens_states *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
 
             else:
                 # Since the evaluation of quantum hindered rotors is slow, it is
@@ -332,25 +332,25 @@ cdef class Configuration(object):
                 for i in range(t_data.shape[0]):
                     t = t_data[i]
                     for mode in modes:
-                        q_data[i] = q_data[i] * mode.getPartitionFunction(t)
+                        q_data[i] = q_data[i] * mode.get_partition_function(t)
                 log_q = scipy.interpolate.InterpolatedUnivariateSpline(t_data, np.log(q_data))
                 # log_q = LinearInterpolator(t_data, np.log(q_data))
 
-                self.densStates, self.sumStates = getDensityOfStatesForst(self.Elist, log_q)
+                self.dens_states, self.sum_states = get_density_of_states_forst(self.e_list, log_q)
 
                 for spec in self.species:
-                    self.densStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
-                    self.sumStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
-        if self.densStates is None:
+                    self.dens_states *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                    self.sum_states *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+        if self.dens_states is None:
             raise ValueError("Species {} has no active modes".format(species.label))
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def mapDensityOfStates(self, np.ndarray[np.float64_t,ndim=1] Elist, np.ndarray[np.int_t,ndim=1] Jlist=None):
+    def map_density_of_states(self, np.ndarray[np.float64_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
         """
         Return a mapping of the density of states for the configuration to the
-        given energies `Elist` in J/mol and, if the J-rotor is not active, the
-        total angular momentum quantum numbers `Jlist`.
+        given energies `e_list` in J/mol and, if the J-rotor is not active, the
+        total angular momentum quantum numbers `j_list`.
         """
         cdef np.ndarray[np.float64_t,ndim=2] dens_states
         cdef double e0, de0, b1, b2, e, d_j
@@ -358,43 +358,43 @@ cdef class Configuration(object):
         cdef list b_list
 
         import scipy.interpolate
-        for r in range(self.Elist.shape[0]):
-            if self.densStates[r] > 0:
+        for r in range(self.e_list.shape[0]):
+            if self.dens_states[r] > 0:
                 break
-        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[r:], np.log(self.densStates[r:]))
+        f = scipy.interpolate.InterpolatedUnivariateSpline(self.e_list[r:], np.log(self.dens_states[r:]))
 
-        e0 = self.E0
-        n_grains = Elist.shape[0]
-        d_e = Elist[1] - Elist[0]
-        d_e0 = self.Elist[1] - self.Elist[0]
+        e0 = self.e0
+        n_grains = e_list.shape[0]
+        d_e = e_list[1] - e_list[0]
+        d_e0 = self.e_list[1] - self.e_list[0]
 
-        if self.activeJRotor:
+        if self.active_j_rotor:
             dens_states = np.zeros((n_grains,1))
             for r0 in range(n_grains):
-                if Elist[r0] >= e0: break
+                if e_list[r0] >= e0: break
             for r in range(r0, n_grains):
-                dens_states[r, 0] = f(Elist[r] - e0)
+                dens_states[r, 0] = f(e_list[r] - e0)
             dens_states[r0:, 0] = np.exp(dens_states[r0:, 0])
         else:
-            assert Jlist is not None
-            n_j = Jlist.shape[0]
-            d_j = Jlist[1] - Jlist[0]
+            assert j_list is not None
+            n_j = j_list.shape[0]
+            d_j = j_list[1] - j_list[0]
             dens_states = np.zeros((n_grains, n_j))
 
             b_list = []
             for spec in self.species:
-                j_rotor, k_rotor = spec.conformer.getSymmetricTopRotors()
+                j_rotor, k_rotor = spec.conformer.get_symmetric_top_rotors()
                 b_list.append(float(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
-                if Elist[r0] >= e0: break
+                if e_list[r0] >= e0: break
 
             if len(b_list) == 1:
                 b1 = b_list[0] * 11.962  # cm^-1 to J/mol
                 for r in range(r0, n_grains):
                     for s in range(n_j):
-                        j1 = Jlist[s]
-                        e = Elist[r] - e0 - b1 * j1 * (j1 + 1)
+                        j1 = j_list[s]
+                        e = e_list[r] - e0 - b1 * j1 * (j1 + 1)
                         if e < 0: break
                         dens_states[r,s] = (2 * j1 + 1) * exp(f(e)) * d_j
 
@@ -403,11 +403,11 @@ cdef class Configuration(object):
                 b2 = b_list[1] * 11.962
                 for r in range(r0, n_grains):
                     for s in range(n_j):
-                        j = Jlist[s]
+                        j = j_list[s]
                         for t in range(s + 1):
-                            j1 = Jlist[t]
+                            j1 = j_list[t]
                             j2 = j - j1
-                            e = Elist[r] - e0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
+                            e = e_list[r] - e0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
                             if e > 0:
                                 dens_states[r, s] += (2 * j1 + 1) * (2 * j2 + 2) * exp(f(e)) * d_j * d_j
 
@@ -415,54 +415,54 @@ cdef class Configuration(object):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def mapSumOfStates(self, np.ndarray[np.float64_t,ndim=1] Elist, np.ndarray[np.int_t,ndim=1] Jlist=None):
+    def map_sum_of_states(self, np.ndarray[np.float64_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
         """
         Return a mapping of the density of states for the configuration to the
-        given energies `Elist` in J/mol and, if the J-rotor is not active, the
-        total angular momentum quantum numbers `Jlist`.
+        given energies `e_list` in J/mol and, if the J-rotor is not active, the
+        total angular momentum quantum numbers `j_list`.
         """
         cdef np.ndarray[np.float64_t,ndim=2] sum_states
         cdef double e0, b1, b2, d_j
         cdef int r0, r, s, n_grains, n_j, j1, j2
 
         import scipy.interpolate
-        for r in range(self.Elist.shape[0]):
-            if self.sumStates[r] > 0:
+        for r in range(self.e_list.shape[0]):
+            if self.sum_states[r] > 0:
                 break
-        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[r:], np.log(self.sumStates[r:]))
+        f = scipy.interpolate.InterpolatedUnivariateSpline(self.e_list[r:], np.log(self.sum_states[r:]))
 
-        e0 = self.E0
-        n_grains = len(Elist)
+        e0 = self.e0
+        n_grains = len(e_list)
 
-        if self.activeJRotor:
+        if self.active_j_rotor:
             sum_states = np.zeros((n_grains,1))
             for r0 in range(n_grains):
-                if Elist[r0] >= e0:
+                if e_list[r0] >= e0:
                     break
             for r in range(r0, n_grains):
-                sum_states[r, 0] = f(Elist[r] - e0)
+                sum_states[r, 0] = f(e_list[r] - e0)
             sum_states[r0:, 0] = np.exp(sum_states[r0:, 0])
         else:
-            assert Jlist is not None
-            n_j = len(Jlist)
-            d_j = Jlist[1] - Jlist[0]
+            assert j_list is not None
+            n_j = len(j_list)
+            d_j = j_list[1] - j_list[0]
             sum_states = np.zeros((n_grains, n_j))
 
             b_list = []
             for spec in self.species:
-                j_rotor, k_rotor = spec.conformer.getSymmetricTopRotors()
+                j_rotor, k_rotor = spec.conformer.get_symmetric_top_rotors()
                 b_list.append(float(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
-                if Elist[r0] >= e0:
+                if e_list[r0] >= e0:
                     break
 
             if len(b_list) == 1:
                 b1 = b_list[0] * 11.962  # cm^-1 to J/mol
                 for r in range(r0, n_grains):
                     for s in range(n_j):
-                        j1 = Jlist[s]
-                        e = Elist[r] - e0 - b1 * j1 * (j1 + 1)
+                        j1 = j_list[s]
+                        e = e_list[r] - e0 - b1 * j1 * (j1 + 1)
                         if e < 0:
                             break
                         sum_states[r,s] = (2 * j1 + 1) * exp(f(e)) * d_j
@@ -472,11 +472,11 @@ cdef class Configuration(object):
                 b2 = b_list[1] * 11.962
                 for r in range(r0, n_grains):
                     for s in range(n_j):
-                        j = Jlist[s]
+                        j = j_list[s]
                         for t in range(s + 1):
-                            j1 = Jlist[t]
+                            j1 = j_list[t]
                             j2 = j - j1
-                            e = Elist[r] - e0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
+                            e = e_list[r] - e0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
                             if e > 0:
                                 sum_states[r, s] += (2 * j1 + 1) * (2 * j2 + 1) * exp(f(e)) * d_j * d_j
 

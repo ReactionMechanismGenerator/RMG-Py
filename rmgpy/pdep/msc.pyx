@@ -41,7 +41,7 @@ from rmgpy.exceptions import ModifiedStrongCollisionError
 
 ################################################################################
 
-cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default'):
+cpdef apply_modified_strong_collision_method(network, str efficiency_model='default'):
     """A method for applying the Modified Strong Collision approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, e0, e_reac
@@ -53,8 +53,8 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
     cdef int i, j, n, r, s, start, src
 
     temperature = network.T
-    e_list = network.Elist
-    j_list = network.Jlist
+    e_list = network.e_list
+    j_list = network.j_list
     dens_states = network.densStates
     coll_freq = network.collFreq
     k_ij = network.Kij
@@ -90,18 +90,18 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
     
     d_e_down = np.zeros(n_isom)
     for i in range(n_isom):
-        d_e_down[i] = network.isomers[i].species[0].energyTransferModel.getAlpha(temperature)
+        d_e_down[i] = network.isomers[i].species[0].energyTransferModel.get_alpha(temperature)
     
     # Compute collision efficiencies
     coll_eff = np.ones(n_isom)
-    if efficiencyModel == 'default':
+    if efficiency_model == 'default':
         for i in range(n_isom):
-            coll_eff[i] = network.isomers[i].species[0].energyTransferModel.calculateCollisionEfficiency(
+            coll_eff[i] = network.isomers[i].species[0].energyTransferModel.calculate_collision_efficiency(
                 temperature, e_list, j_list, dens_states[i, :, :], e0[i], e_reac[i])
-    elif efficiencyModel == 'none':
+    elif efficiency_model == 'none':
         pass
     else:
-        raise ValueError('Unknown efficiency model "{0}".'.format(efficiencyModel))
+        raise ValueError('Unknown efficiency model "{0}".'.format(efficiency_model))
     
     # Zero LHS matrix and RHS vectors
     a_mat = np.zeros((n_isom, n_isom), np.float64)

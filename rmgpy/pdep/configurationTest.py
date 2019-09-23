@@ -59,7 +59,7 @@ class TestConfiguration(unittest.TestCase):
         self.nC4H10O = Species(
             label='n-C4H10O',
             conformer=Conformer(
-                E0=(-317.807, 'kJ/mol'),
+                e0=(-317.807, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(74.07, "g/mol")),
                     NonlinearRotor(inertia=([41.5091, 215.751, 233.258], "amu*angstrom^2"), symmetry=1),
@@ -79,8 +79,8 @@ class TestConfiguration(unittest.TestCase):
                          [-0.982845, 1.76637, -1.57619, 0.474364, -0.000681718]], "kJ/mol")),
                     HinderedRotor(inertia=(2.81525, "amu*angstrom^2"), symmetry=3, barrier=(2.96807, "kcal/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
             molecularWeight=(74.07, "g/mol"),
             transportData=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
@@ -90,7 +90,7 @@ class TestConfiguration(unittest.TestCase):
         self.nC4H8 = Species(
             label='n-C4H8',
             conformer=Conformer(
-                E0=(-17.8832, 'kJ/mol'),
+                e0=(-17.8832, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(56.06, "g/mol")),
                     NonlinearRotor(inertia=([22.2748, 122.4, 125.198], "amu*angstrom^2"), symmetry=1),
@@ -106,22 +106,22 @@ class TestConfiguration(unittest.TestCase):
                         [[0.0400372, 0.0301986, -6.4787, -0.0248675, -0.0324753],
                          [0.0312541, 0.0538, -0.493785, 0.0965968, 0.125292]], "kJ/mol")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
         self.H2O = Species(
             label='H2O',
             conformer=Conformer(
-                E0=(-269.598, 'kJ/mol'),
+                e0=(-269.598, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(18.01, "g/mol")),
                     NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),
                     HarmonicOscillator(frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
         )
 
@@ -156,7 +156,7 @@ class TestConfiguration(unittest.TestCase):
 
         # ensure this extra fluff is not in Network string
         attributes = ['Species', 'Conformer', 'Molecule', 'NonlinearRotor',
-                      'HarmonicOscillator', 'frequencies', 'spinMultiplicity', 'TransportData',
+                      'HarmonicOscillator', 'frequencies', 'spin_multiplicity', 'TransportData',
                       'molecularWeight', 'SingleExponentialDown']
         for label in attributes:
             self.assertNotIn(label, output)

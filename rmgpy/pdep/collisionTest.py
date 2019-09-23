@@ -76,11 +76,11 @@ class TestSingleExponentialDown(unittest.TestCase):
 
     def test_getAlpha(self):
         """
-        Test the SingleExponentialDown.getAlpha() method.
+        Test the SingleExponentialDown.get_alpha() method.
         """
         for T in [300, 400, 500, 600, 800, 1000, 1500, 2000]:
             dEdown0 = 1000. * self.alpha0 * (T / self.T0) ** self.n
-            dEdown = self.singleExponentialDown.getAlpha(T)
+            dEdown = self.singleExponentialDown.get_alpha(T)
             self.assertAlmostEqual(dEdown0, dEdown, 6)
 
     def test_pickle(self):

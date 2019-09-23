@@ -235,7 +235,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         print("Surface site density:", rxn_system.surfaceSiteDensity.value_si)
 
         print("rxn1 rate coefficient",
-              rxn1.getSurfaceRateCoefficient(rxn_system.T.value_si, rxn_system.surfaceSiteDensity.value_si))
+              rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surfaceSiteDensity.value_si))
 
         # Integrate to get the solution at each time point
         t = []

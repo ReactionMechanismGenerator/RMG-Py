@@ -110,8 +110,8 @@ class MolproTest(unittest.TestCase):
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.9734989e0, delta=1e-4)
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -768.275662, 4)
-        self.assertEqual(conformer.spinMultiplicity, 1)
-        self.assertEqual(conformer.opticalIsomers, 1)
+        self.assertEqual(conformer.spin_multiplicity, 1)
+        self.assertEqual(conformer.optical_isomers, 1)
 
     def test_load_non_f12_e0(self):
         """

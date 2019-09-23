@@ -485,17 +485,17 @@ class QMMolecule(object):
 
         # @todo: We need to extract or calculate E0 somehow from the qmdata
         E0 = (0, "kJ/mol")
-        self.statesmodel = rmgpy.statmech.Conformer(E0=E0,
+        self.statesmodel = rmgpy.statmech.Conformer(e0=E0,
                                                     modes=[trans, rot, vib],
-                                                    spinMultiplicity=self.qmData.groundStateDegeneracy)
+                                                    spin_multiplicity=self.qmData.groundStateDegeneracy)
 
         # we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
         # SI units are J/mol, but converted to kJ/mol for generating the thermo.
         Hf298 = self.qmData.energy.value_si / 1000
 
-        S298 = self.statesmodel.getEntropy(298.0)
+        S298 = self.statesmodel.get_entropy(298.0)
         Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
-        Cp = [self.statesmodel.getHeatCapacity(T) for T in Tdata]
+        Cp = [self.statesmodel.get_heat_capacity(T) for T in Tdata]
         S298 = S298 + self.calculateChiralityCorrection()
         comment = self.qmData.source or "QM calculation of some sort."
 

@@ -111,7 +111,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
 
     # Generate flux pairs for each reaction if needed
     for reaction in reaction_list:
-        if not reaction.pairs: reaction.generatePairs()
+        if not reaction.pairs: reaction.generate_pairs()
 
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:
@@ -209,7 +209,7 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages
 
     # Generate flux pairs for each reaction if needed
     for reaction in reaction_list:
-        if not reaction.pairs: reaction.generatePairs()
+        if not reaction.pairs: reaction.generate_pairs()
 
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:

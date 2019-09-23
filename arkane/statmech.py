@@ -296,7 +296,7 @@ class StatMechJob(object):
             external_symmetry = None
 
         try:
-            spin_multiplicity = local_context['spinMultiplicity']
+            spin_multiplicity = local_context['spin_multiplicity']
         except KeyError:
             spin_multiplicity = 0
 
@@ -404,7 +404,7 @@ class StatMechJob(object):
             # Sometimes the translational mode is not appended to modes for monoatomic species
             conformer.modes.append(IdealGasTranslation(mass=self.species.molecularWeight))
 
-        if conformer.spinMultiplicity == 0:
+        if conformer.spin_multiplicity == 0:
             raise ValueError("Could not read spin multiplicity from log file {0},\n"
                              "please specify the multiplicity in the input file.".format(self.path))
 
@@ -451,7 +451,7 @@ class StatMechJob(object):
                     self.bonds = self.species.molecule[0].enumerate_bonds()
                 bond_corrections = get_bac(self.modelChemistry, self.bonds, coordinates, number,
                                            bac_type=self.bondEnergyCorrectionType,
-                                           multiplicity=conformer.spinMultiplicity)
+                                           multiplicity=conformer.spin_multiplicity)
             else:
                 bond_corrections = 0
             e_electronic_with_corrections = e_electronic + atom_corrections + bond_corrections
@@ -466,7 +466,7 @@ class StatMechJob(object):
             logging.debug('         Scaled ZPE (0 K) = {0:g} kcal/mol'.format(zpe / 4184.))
             logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
 
-        conformer.E0 = (e0 * 0.001, "kJ/mol")
+        conformer.e0 = (e0 * 0.001, "kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
@@ -488,7 +488,7 @@ class StatMechJob(object):
                 if len(q) == 3:
                     # No potential scan is given, this is a free rotor
                     pivots, top, symmetry = q
-                    inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
+                    inertia = conformer.get_internal_reduced_moment_of_inertia(pivots, top) * constants.Na * 1e23
                     rotor = FreeRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                     conformer.modes.append(rotor)
                     rotor_count += 1
@@ -545,18 +545,18 @@ class StatMechJob(object):
                         symmetry = determine_rotor_symmetry(v_list, self.species.label, pivots)
                     self.raw_hindered_rotor_data.append((self.species.label, rotor_count, symmetry, angle,
                                                          v_list, pivot_atoms, frozen_atoms))
-                    inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
+                    inertia = conformer.get_internal_reduced_moment_of_inertia(pivots, top) * constants.Na * 1e23
 
                     cosine_rotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                    cosine_rotor.fitCosinePotentialToData(angle, v_list)
+                    cosine_rotor.fit_cosine_potential_to_data(angle, v_list)
                     fourier_rotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                    fourier_rotor.fitFourierPotentialToData(angle, v_list)
+                    fourier_rotor.fit_fourier_potential_to_data(angle, v_list)
 
                     Vlist_cosine = np.zeros_like(angle)
                     Vlist_fourier = np.zeros_like(angle)
                     for i in range(angle.shape[0]):
-                        Vlist_cosine[i] = cosine_rotor.getPotential(angle[i])
-                        Vlist_fourier[i] = fourier_rotor.getPotential(angle[i])
+                        Vlist_cosine[i] = cosine_rotor.get_potential(angle[i])
+                        Vlist_fourier[i] = fourier_rotor.get_potential(angle[i])
 
                     if fit == 'cosine':
                         rotor = cosine_rotor
@@ -674,12 +674,12 @@ class StatMechJob(object):
             z = coordinates[i, 2]
             f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(symbol_by_number[number[i]], x, y, z))
 
-        result = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spinMultiplicity={3:d}, opticalIsomers={4:d}'.format(
+        result = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spin_multiplicity={3:d}, opticalIsomers={4:d}'.format(
             self.species.label,
-            conformer.E0,
+            conformer.e0,
             conformer.modes,
-            conformer.spinMultiplicity,
-            conformer.opticalIsomers,
+            conformer.spin_multiplicity,
+            conformer.optical_isomers,
         )
         try:
             result += ', frequency={0!r}'.format(self.species.frequency)
@@ -698,8 +698,8 @@ class StatMechJob(object):
         Vlist_cosine = np.zeros_like(phi)
         Vlist_fourier = np.zeros_like(phi)
         for i in range(phi.shape[0]):
-            Vlist_cosine[i] = cosineRotor.getPotential(phi[i])
-            Vlist_fourier[i] = fourierRotor.getPotential(phi[i])
+            Vlist_cosine[i] = cosineRotor.get_potential(phi[i])
+            Vlist_fourier[i] = fourierRotor.get_potential(phi[i])
 
         fig = plt.figure(figsize=(6, 5))
         plt.plot(angle, v_list / 4184., 'ok')
@@ -814,7 +814,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts, getProjectedOutFreqs=Fals
     amass = np.sqrt(mass / constants.amu)
 
     # Rotation matrix
-    inertia = conformer.getMomentOfInertiaTensor()
+    inertia = conformer.get_moment_of_inertia_tensor()
     PMoI, Ixyz = np.linalg.eigh(inertia)
 
     external = 6

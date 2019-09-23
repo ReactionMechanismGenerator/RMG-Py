@@ -78,8 +78,8 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.0481e0, delta=1e-4)
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.467452, 4)
-        self.assertEqual(conformer.spinMultiplicity, 1)
-        self.assertEqual(conformer.opticalIsomers, 1)
+        self.assertEqual(conformer.spin_multiplicity, 1)
+        self.assertEqual(conformer.optical_isomers, 1)
 
     def testLoadOxygenFromGaussianLog(self):
         """
@@ -105,8 +105,8 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.00037e0, delta=1e-4)
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -150.3784877, 4)
-        self.assertEqual(conformer.spinMultiplicity, 3)
-        self.assertEqual(conformer.opticalIsomers, 1)
+        self.assertEqual(conformer.spin_multiplicity, 3)
+        self.assertEqual(conformer.optical_isomers, 1)
 
     @work_in_progress
     def testLoadEthyleneFromGaussianLog_G3(self):
@@ -134,8 +134,8 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.0304e0, delta=1e-4)
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.562189, 4)
-        self.assertEqual(conformer.spinMultiplicity, 1)
-        self.assertEqual(conformer.opticalIsomers, 1)
+        self.assertEqual(conformer.spin_multiplicity, 1)
+        self.assertEqual(conformer.optical_isomers, 1)
 
     def testLoadSymmetryAndOptics(self):
         """
@@ -149,7 +149,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(symmetry, 2)
 
         conf = log.loadConformer()[0]
-        self.assertEqual(conf.opticalIsomers, 1)
+        self.assertEqual(conf.optical_isomers, 1)
         found_rotor = False
         for mode in conf.modes:
             if isinstance(mode, LinearRotor):

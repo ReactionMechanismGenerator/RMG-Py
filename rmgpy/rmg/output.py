@@ -410,15 +410,15 @@ $(document).ready(function() {
             <tr>
                 <td>
                 {% if spec.thermo.Tmin.value_si <= 298 %}                    
-                {{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}
+                {{ "%.2f"|format(spec.thermo.get_enthalpy(298) / 4184) }}
                 {% endif %} </td>
                 <td>{% if spec.thermo.Tmin.value_si <= 298 %}
-                {{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}
+                {{ "%.2f"|format(spec.thermo.get_entropy(298) / 4.184) }}
                 {% endif %}</td>
-                <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
-                <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
-                <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
-                <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(300) / 4.184) }}</td>
+                <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(500) / 4.184) }}</td>
+                <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(1000) / 4.184) }}</td>
+                <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(1500) / 4.184) }}</td>
             </tr>
 <tr><td colspan="6" class="thermoComment">
 <div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
@@ -489,9 +489,9 @@ $(document).ready(function() {
 </tr>
 <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
-    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
-    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
-    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.get_enthalpy_of_reaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.get_entropy_of_reaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.get_free_energy_of_reaction(298)/4184) }}</td>
     <td></td>
 </tr>
 <tr class="chemkin {{ rxn.get_source()|csssafe }} hide_chemkin">
@@ -904,16 +904,16 @@ $(document).ready(function() {
                 </tr>
                 <tr>
                     <td>{% if spec1.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}
+                    {{ "%.2f"|format(spec1.thermo.get_enthalpy(298) / 4184) }}
                     {% endif %}</td>
                     <td>
                     {% if spec1.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}
+                    {{ "%.2f"|format(spec1.thermo.get_entropy(298) / 4.184) }}
                     {% endif %}</td>
-                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(300) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(500) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1000) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.get_heat_capacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.get_heat_capacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.get_heat_capacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.get_heat_capacity(1500) / 4.184) }}</td>
                 </tr>
                 <tr><td colspan="6" class="thermoComment">
 <div id="thermoComment" class="thermoComment">{{textwrap.fill(spec1.thermo.comment,80).replace('\n','<br>')}}</div>
@@ -943,15 +943,15 @@ $(document).ready(function() {
                 </tr>
                 <tr>
                     <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}
+                    {{ "%.2f"|format(spec2.thermo.get_enthalpy(298) / 4184) }}
                     {% endif %}</td>
                     <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}
+                    {{ "%.2f"|format(spec2.thermo.get_entropy(298) / 4.184) }}
                     {% endif %}</td>
-                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(300) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(500) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1000) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.get_heat_capacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.get_heat_capacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.get_heat_capacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.get_heat_capacity(1500) / 4.184) }}</td>
                 </tr>
                                 <tr><td colspan="6" class="thermoComment">
 <div id="thermoComment" class="thermoComment">{{textwrap.fill(spec2.thermo.comment,80).replace('\n','<br>')}}</div>
@@ -1011,16 +1011,16 @@ $(document).ready(function() {
                 </tr>
                 <tr>
                     <td>{% if spec.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}
+                    {{ "%.2f"|format(spec.thermo.get_enthalpy(298) / 4184) }}
                     {% endif %}</td>
                     <td>
                     {% if spec.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}
+                    {{ "%.2f"|format(spec.thermo.get_entropy(298) / 4.184) }}
                     {% endif %}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(1500) / 4.184) }}</td>
                 </tr>
                                 <tr><td colspan="6" class="thermoComment">
 <div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
@@ -1061,16 +1061,16 @@ $(document).ready(function() {
                 </tr>
                 <tr>
                     <td>{% if spec.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}
+                    {{ "%.2f"|format(spec.thermo.get_enthalpy(298) / 4184) }}
                     {% endif %}</td>
                     <td>
                     {% if spec.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}
+                    {{ "%.2f"|format(spec.thermo.get_entropy(298) / 4.184) }}
                     {% endif %}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.get_heat_capacity(1500) / 4.184) }}</td>
                 </tr>
                                 <tr><td colspan="6" class="thermoComment">
 <div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
@@ -1183,7 +1183,7 @@ $(document).ready(function() {
 
 <P><b>Fitted Reverse Kinetics:</b>
 {% if not rxn2.kinetics.is_pressure_dependent() %}
-{{rxn2.generateReverseRateCoefficient().to_html() }}
+{{rxn2.generate_reverse_rate_coefficient().to_html() }}
 {% else %} Pressure dependent
 {% endif %}
 {% endif %}
@@ -1204,14 +1204,14 @@ $(document).ready(function() {
 <tr width=100% class="energy">
 
     <td colspan="2" valign="top" width=50%>
-    <b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn1.getEnthalpyOfReaction(298)/4184) }}
-    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn1.getEntropyOfReaction(298)/4.184) }}
-    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn1.getFreeEnergyOfReaction(298)/4184) }}
+    <b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn1.get_enthalpy_of_reaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn1.get_entropy_of_reaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn1.get_free_energy_of_reaction(298)/4184) }}
     </td>
     
-    <td colspan="2" valign="top" width=50%><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn2.getEnthalpyOfReaction(298)/4184) }}
-    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn2.getEntropyOfReaction(298)/4.184) }}
-    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn2.getFreeEnergyOfReaction(298)/4184) }}
+    <td colspan="2" valign="top" width=50%><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn2.get_enthalpy_of_reaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn2.get_entropy_of_reaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn2.get_free_energy_of_reaction(298)/4184) }}
     </td>
 
 </tr>
@@ -1249,9 +1249,9 @@ $(document).ready(function() {
     </tr>
     <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
-    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
-    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
-    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.get_enthalpy_of_reaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.get_entropy_of_reaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.get_free_energy_of_reaction(298)/4184) }}</td>
     <td></td>
 </tr>
 
@@ -1283,9 +1283,9 @@ $(document).ready(function() {
     </tr>
     <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
-    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
-    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
-    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.get_enthalpy_of_reaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.get_entropy_of_reaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.get_free_energy_of_reaction(298)/4184) }}</td>
     <td></td>
 </tr>
     <tr class="chemkin {{ rxn.get_source()|csssafe }}">

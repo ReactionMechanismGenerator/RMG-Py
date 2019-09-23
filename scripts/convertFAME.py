@@ -194,8 +194,8 @@ def loadFAMEInput(path, moleculeDict=None):
 
         # Read species E0
         E0units, E0 = readMeaningfulLine(f).split()
-        species.conformer.E0 = Quantity(float(E0), E0units)
-        species.conformer.E0.units = 'kJ/mol'
+        species.conformer.e0 = Quantity(float(E0), E0units)
+        species.conformer.e0.units = 'kJ/mol'
 
         # Read species thermo data
         H298units, H298 = readMeaningfulLine(f).split()
@@ -268,7 +268,7 @@ def loadFAMEInput(path, moleculeDict=None):
             ))
 
         # Read overall symmetry number
-        species.conformer.spinMultiplicity = int(readMeaningfulLine(f))
+        species.conformer.spin_multiplicity = int(readMeaningfulLine(f))
 
     # Read isomer, reactant channel, and product channel data
     n_isom = int(readMeaningfulLine(f))
@@ -318,8 +318,8 @@ def loadFAMEInput(path, moleculeDict=None):
 
         # Read reaction E0
         E0units, E0 = readMeaningfulLine(f).split()
-        reaction.transition_state.conformer.E0 = Quantity(float(E0), E0units)
-        reaction.transition_state.conformer.E0.units = 'kJ/mol'
+        reaction.transition_state.conformer.e0 = Quantity(float(E0), E0units)
+        reaction.transition_state.conformer.e0.units = 'kJ/mol'
 
         # Read high-pressure limit kinetics
         data = readMeaningfulLine(f)

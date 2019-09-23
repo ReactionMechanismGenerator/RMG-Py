@@ -56,43 +56,43 @@ class Network(object):
     `isomers`               A list of the unimolecular isomers in the network
     `reactants`             A list of the bimolecular reactant channels (Configuration objects) in the network
     `products`              A list of the bimolecular product channels (Configuration objects) in the network
-    `pathReactions`         A list of "path" reaction objects that connect adjacent isomers (the high-pressure-limit)
-    `bathGas`               A dictionary of the bath gas species (keys) and their mole fractions (values)
-    `netReactions`          A list of "net" reaction objects that connect any pair of isomers
+    `path_reactions`        A list of "path" reaction objects that connect adjacent isomers (the high-pressure-limit)
+    `bath_gas`              A dictionary of the bath gas species (keys) and their mole fractions (values)
+    `net_reactions`         A list of "net" reaction objects that connect any pair of isomers
     ----------------------- ----------------------------------------------------
     `T`                     The current temperature in K
     `P`                     The current pressure in bar
-    `Elist`                 The current array of energy grains in kJ/mol
-    `Jlist`                 The current array of total angular momentum quantum numbers
+    `e_list`                The current array of energy grains in kJ/mol
+    `j_list`                The current array of total angular momentum quantum numbers
     ----------------------- ----------------------------------------------------
-    `Nisom`                 The number of unimolecular isomers in the network
-    `Nreac`                 The number of bimolecular reactant channels in the network
-    `Nprod`                 The number of bimolecular product channels in the network
-    `Ngrains`               The number of energy grains
-    `NJ`                    The number of angular momentum grains
+    `n_isom`                 The number of unimolecular isomers in the network
+    `n_reac`                 The number of bimolecular reactant channels in the network
+    `n_prod`                 The number of bimolecular product channels in the network
+    `n_grains`               The number of energy grains
+    `n_j`                    The number of angular momentum grains
     ----------------------- ----------------------------------------------------
-     `grainSize`            Maximum size of separation between energies
-     `grainCount`           Minimum number of descrete energies separated
-     `E0`                   A list of ground state energies of isomers, reactants, and products
-    `activeKRotor`          ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
-    `activeJRotor`          ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
+    `grain_size`            Maximum size of separation between energies
+    `grain_count`           Minimum number of descrete energies separated
+    `e0`                    A list of ground state energies of isomers, reactants, and products
+    `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
+    `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
     ----------------------- ----------------------------------------------------
     `eqRatios`              An array containing concentration of each isomer and reactant channel present at equilibrium
     `collFreq`              An array of the frequency of collision between
     `Mcoll`                 Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer
-    `densStates`            3D np array of stable configurations, number of grains, and number of J
+    `dens_states`           3D np array of stable configurations, number of grains, and number of J
     ======================= ====================================================
     
     """
 
     def __init__(self, label='', isomers=None, reactants=None, products=None,
-                 pathReactions=None, bathGas=None, netReactions=None, T=0.0, P=0.0,
-                 Elist=None, Jlist=None, Ngrains=0, NJ=0, activeKRotor=True,
-                 activeJRotor=True, grainSize=0.0, grainCount=0, E0=None):
+                 path_reactions=None, bath_gas=None, net_reactions=None, T=0.0, P=0.0,
+                 e_list=None, j_list=None, n_grains=0, n_j=0, active_k_rotor=True,
+                 active_j_rotor=True, grain_size=0.0, grain_count=0, e0=None):
         """
         To initialize a Network object for running a pressure dependent job,
-        only label, isomers, reactants, products pathReactions and bathGas are useful,
+        only label, isomers, reactants, products path_reactions and bath_gas are useful,
         since the other attributes will be created during the run.
 
         The other attributes are used to reinstantiate the created network object
@@ -102,27 +102,27 @@ class Network(object):
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
-        self.pathReactions = pathReactions or []
-        self.bathGas = bathGas or {}
-        self.netReactions = netReactions or []
+        self.path_reactions = path_reactions or []
+        self.bath_gas = bath_gas or {}
+        self.net_reactions = net_reactions or []
 
         self.T = T
         self.P = P
-        self.Elist = Elist
-        self.Jlist = Jlist
+        self.e_list = e_list
+        self.j_list = j_list
 
-        self.Nisom = len(self.isomers)
-        self.Nreac = len(self.reactants)
-        self.Nprod = len(self.products)
-        self.Ngrains = Ngrains
-        self.NJ = NJ
+        self.n_isom = len(self.isomers)
+        self.n_reac = len(self.reactants)
+        self.n_prod = len(self.products)
+        self.n_grains = n_grains
+        self.n_j = n_j
 
-        self.activeKRotor = activeKRotor
-        self.activeJRotor = activeJRotor
+        self.active_k_rotor = active_k_rotor
+        self.active_j_rotor = active_j_rotor
 
-        self.grainSize = grainSize
-        self.grainCount = grainCount
-        self.E0 = E0
+        self.grain_size = grain_size
+        self.grain_count = grain_count
+        self.e0 = e0
 
         self.valid = False
 
@@ -132,33 +132,33 @@ class Network(object):
         if self.isomers: string += 'isomers="{0!r}", '.format(self.isomers)
         if self.reactants: string += 'reactants="{0!r}", '.format(self.reactants)
         if self.products: string += 'products="{0!r}", '.format(self.products)
-        if self.pathReactions: string += 'pathReactions="{0!r}", '.format(self.pathReactions)
-        if self.bathGas: string += 'bathGas="{0!r}", '.format(self.bathGas)
-        if self.netReactions: string += 'netReactions="{0!r}", '.format(self.netReactions)
+        if self.path_reactions: string += 'path_reactions="{0!r}", '.format(self.path_reactions)
+        if self.bath_gas: string += 'bath_gas="{0!r}", '.format(self.bath_gas)
+        if self.net_reactions: string += 'net_reactions="{0!r}", '.format(self.net_reactions)
         if self.T != 0.0: string += 'T="{0}", '.format(self.T)
         if self.P != 0.0: string += 'P="{0}", '.format(self.P)
-        if self.Elist is not None: string += 'Elist="{0}", '.format(self.Elist)
-        if self.Jlist is not None: string += 'Jlist="{0}", '.format(self.Jlist)
-        if self.Ngrains != 0: string += 'Ngrains="{0}", '.format(self.Ngrains)
-        if self.NJ != 0: string += 'NJ="{0}", '.format(self.NJ)
-        string += 'activeKRotor="{0}", '.format(self.activeKRotor)
-        string += 'activeJRotor="{0}", '.format(self.activeJRotor)
-        if self.grainSize != 0.0: string += 'grainSize="{0}", '.format(self.grainSize)
-        if self.grainCount != 0: string += 'grainCount="{0}", '.format(self.grainCount)
-        if self.E0 is not None: string += 'E0="{0}", '.format(self.E0)
+        if self.e_list is not None: string += 'e_list="{0}", '.format(self.e_list)
+        if self.j_list is not None: string += 'j_list="{0}", '.format(self.j_list)
+        if self.n_grains != 0: string += 'n_grains="{0}", '.format(self.n_grains)
+        if self.n_j != 0: string += 'n_j="{0}", '.format(self.n_j)
+        string += 'active_k_rotor="{0}", '.format(self.active_k_rotor)
+        string += 'active_j_rotor="{0}", '.format(self.active_j_rotor)
+        if self.grain_size != 0.0: string += 'grain_size="{0}", '.format(self.grain_size)
+        if self.grain_count != 0: string += 'grain_count="{0}", '.format(self.grain_count)
+        if self.e0 is not None: string += 'e0="{0}", '.format(self.e0)
         string += ')'
         return string
 
     def __str__(self):
         """return Network like it would be seen in an Arkane input file"""
         string = "Network(label = '{0}', isomers = {1}, reactants = {2}, products = {3}, " \
-                 "pathReactions = {4}, bathGas = {5}, netReactions = {6})".format(
+                 "path_reactions = {4}, bath_gas = {5}, net_reactions = {6})".format(
                         self.label, [i.species[0].label for i in self.isomers],
                         [[r.label for r in pair.species] for pair in self.reactants],
                         [[p.label for p in pair.species] for pair in self.products],
-                        [r.label for r in self.pathReactions],
-                        dict([(s.label, value) for s, value in self.bathGas.items()]),
-                        [r.toLabeledStr() for r in self.netReactions]
+                        [r.label for r in self.path_reactions],
+                        dict([(s.label, value) for s, value in self.bath_gas.items()]),
+                        [r.toLabeledStr() for r in self.net_reactions]
                     )
         return string
 
@@ -169,7 +169,7 @@ class Network(object):
         """
         self.valid = False
 
-    def getAllSpecies(self):
+    def get_all_species(self):
         """
         Return a list of all unique species in the network, including all
         isomers, reactant and product channels, and bath gas species.
@@ -187,64 +187,64 @@ class Network(object):
             for spec in product.species:
                 if spec not in species_list:
                     species_list.append(spec)
-        for spec in self.bathGas:
+        for spec in self.bath_gas:
             if spec not in species_list:
                 species_list.append(spec)
         return species_list
 
-    def initialize(self, Tmin, Tmax, Pmin, Pmax, maximumGrainSize=0.0, minimumGrainCount=0, activeJRotor=True,
-                   activeKRotor=True, rmgmode=False):
+    def initialize(self, Tmin, Tmax, Pmin, Pmax, maximum_grain_size=0.0, minimum_grain_count=0, active_j_rotor=True,
+                   active_k_rotor=True, rmgmode=False):
         """
         Initialize a pressure dependence calculation by computing several
         quantities that are independent of the conditions. You must specify
         the temperature and pressure ranges of interesting using `Tmin` and
         `Tmax` in K and `Pmin` and `Pmax` in Pa. You must also specify the
-        maximum energy grain size `grainSize` in J/mol and/or the minimum
-        number of grains `grainCount`.
+        maximum energy grain size `grain_size` in J/mol and/or the minimum
+        number of grains `grain_count`.
         """
 
         logging.debug("initializing network")
-        if maximumGrainSize == 0.0 and minimumGrainCount == 0:
-            raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
+        if maximum_grain_size == 0.0 and minimum_grain_count == 0:
+            raise NetworkError('Must provide either grain_size or n_grains parameter to Network.determineEnergyGrains().')
 
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Pmin = Pmin
         self.Pmax = Pmax
-        self.grainSize = maximumGrainSize
-        self.grainCount = minimumGrainCount
+        self.grain_size = maximum_grain_size
+        self.grain_count = minimum_grain_count
 
-        self.Nisom = len(self.isomers)
-        self.Nreac = len(self.reactants)
-        self.Nprod = len(self.products)
-        self.Ngrains = 0
-        self.NJ = 0
+        self.n_isom = len(self.isomers)
+        self.n_reac = len(self.reactants)
+        self.n_prod = len(self.products)
+        self.n_grains = 0
+        self.n_j = 0
 
         # Calculate ground-state energies
-        self.E0 = np.zeros((self.Nisom + self.Nreac + self.Nprod), np.float64)
-        for i in range(self.Nisom):
-            self.E0[i] = self.isomers[i].E0
-        for n in range(self.Nreac):
-            self.E0[n + self.Nisom] = self.reactants[n].E0
-        for n in range(self.Nprod):
-            self.E0[n + self.Nisom + self.Nreac] = self.products[n].E0
+        self.e0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float64)
+        for i in range(self.n_isom):
+            self.e0[i] = self.isomers[i].e0
+        for n in range(self.n_reac):
+            self.e0[n + self.n_isom] = self.reactants[n].e0
+        for n in range(self.n_prod):
+            self.e0[n + self.n_isom + self.n_reac] = self.products[n].e0
 
         # Calculate densities of states
-        self.activeJRotor = activeJRotor
-        self.activeKRotor = activeKRotor
+        self.active_j_rotor = active_j_rotor
+        self.active_k_rotor = active_k_rotor
         self.rmgmode = rmgmode
 
-        self.calculateDensitiesOfStates()
+        self.calculate_densities_of_states()
         logging.debug('Finished initialization for network {0}.'.format(self.label))
         logging.debug('The network now has values of {0}'.format(repr(self)))
 
-    def calculateRateCoefficients(self, Tlist, Plist, method, errorCheck=True):
+    def calculate_rate_coefficients(self, Tlist, Plist, method, error_check=True):
 
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
         n_prod = len(self.products)
 
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             if len(rxn.transition_state.conformer.modes) > 0:
                 logging.debug('Using RRKM theory to compute k(E) for path reaction {0}.'.format(rxn))
             elif rxn.kinetics is not None:
@@ -256,15 +256,15 @@ class Network(object):
 
         for t, T in enumerate(Tlist):
             for p, P in enumerate(Plist):
-                self.setConditions(T, P)
+                self.set_conditions(T, P)
 
                 # Apply method
                 if method.lower() == 'modified strong collision':
-                    self.applyModifiedStrongCollisionMethod()
+                    self.apply_modified_strong_collision_method()
                 elif method.lower() == 'reservoir state':
-                    self.applyReservoirStateMethod()
+                    self.apply_reservoir_state_method()
                 elif method.lower() == 'chemically-significant eigenvalues':
-                    self.applyChemicallySignificantEigenvaluesMethod()
+                    self.apply_chemically_significant_eigenvalues_method()
                 else:
                     raise NetworkError('Unknown method "{0}". Valid options are "modified strong collision", '
                                        '"reservoir state", or "chemically-significant eigenvalues"'.format(method))
@@ -298,7 +298,7 @@ class Network(object):
                                                'equilibrium.'.format(reaction))
 
                 # Reject if any rate coefficients are negative
-                if errorCheck:
+                if error_check:
                     negative_rate = False
                     for i in range(n_isom + n_reac + n_prod):
                         for j in range(i):
@@ -313,7 +313,7 @@ class Network(object):
         logging.debug('Master equation matrix found for network {0} is {1}'.format(self.label, K))
         return K
 
-    def setConditions(self, T, P, ymB=None):
+    def set_conditions(self, T, P, ymB=None):
         """
         Set the current network conditions to the temperature `T` in K and
         pressure `P` in Pa. All of the internal variables are updated 
@@ -328,13 +328,13 @@ class Network(object):
         self.P = P
         self.ymB = ymB
 
-        n_isom = self.Nisom
-        n_reac = self.Nreac
-        n_proc = self.Nprod
+        n_isom = self.n_isom
+        n_reac = self.n_reac
+        n_proc = self.n_prod
 
-        e0 = self.E0
-        grain_size = self.grainSize
-        grain_count = self.grainCount
+        e0 = self.e0
+        grain_size = self.grain_size
+        grain_count = self.grain_count
 
         success = False
         previous_error = None
@@ -344,8 +344,8 @@ class Network(object):
             if temperature_changed:
 
                 # Choose the energy grains to use to compute k(T,P) values at this temperature
-                e_list = self.Elist = self.selectEnergyGrains(T, grain_size, grain_count)
-                n_grains = self.Ngrains = len(e_list)
+                e_list = self.e_list = self.select_energy_grains(T, grain_size, grain_count)
+                n_grains = self.n_grains = len(e_list)
                 logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute '
                              'the k(T,P) values at {4:g} K'.format(n_grains, np.min(e_list) * 0.001,
                                                                    np.max(e_list) * 0.001,
@@ -353,23 +353,23 @@ class Network(object):
 
                 # Choose the angular momenta to use to compute k(T,P) values at this temperature
                 # (This only applies if the J-rotor is adiabatic
-                if not self.activeJRotor:
-                    j_list = self.Jlist = np.arange(0, 20, 1, np.int)
-                    n_j = self.NJ = len(j_list)
+                if not self.active_j_rotor:
+                    j_list = self.j_list = np.arange(0, 20, 1, np.int)
+                    n_j = self.n_j = len(j_list)
                 else:
-                    j_list = self.Jlist = np.array([0], np.int)
-                    n_j = self.NJ = 1
+                    j_list = self.j_list = np.array([0], np.int)
+                    n_j = self.n_j = 1
 
                 # Map the densities of states onto this set of energies
                 # Also shift each density of states to a common zero of energy
-                self.mapDensitiesOfStates()
+                self.map_densities_of_states()
 
                 # Use free energy to determine equilibrium ratios of each isomer and product channel
-                self.calculateEquilibriumRatios()
+                self.calculate_equilibrium_ratios()
 
                 # Calculate microcanonical rate coefficients for each path reaction
                 try:
-                    self.calculateMicrocanonicalRates()
+                    self.calculate_microcanonical_rates()
                 except InvalidMicrocanonicalRateError as error:
                     badness = error.badness()
                     if previous_error and (previous_error.message == error.message):
@@ -398,83 +398,83 @@ class Network(object):
                     Q = 0.0
                     for s in range(n_j):
                         Q += np.sum(
-                            self.densStates[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list / constants.R / T))
-                    self.densStates[i, :, :] /= Q
+                            self.dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list / constants.R / T))
+                    self.dens_states[i, :, :] /= Q
 
             # Update parameters that depend on temperature and pressure if necessary
             if temperature_changed or pressure_changed:
-                self.calculateCollisionModel()
+                self.calculate_collision_model()
         logging.debug('Finished setting conditions for network {0}.'.format(self.label))
         logging.debug('The network now has values of {0}'.format(repr(self)))
 
-    def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
+    def _get_energy_grains(self, Emin, Emax, grain_size=0.0, grain_count=0):
         """
         Return an array of energy grains that have a minimum of `Emin`, a
-        maximum of `Emax`, and either a spacing of `grainSize` or have number of
-        grains `grainCount`. The first three parameters are in J/mol, as is the
+        maximum of `Emax`, and either a spacing of `grain_size` or have number of
+        grains `grain_count`. The first three parameters are in J/mol, as is the
         returned array of energy grains.
         """
 
         # Now determine the grain size and number of grains to use
-        if grainCount <= 0 and grainSize <= 0.0:
+        if grain_count <= 0 and grain_size <= 0.0:
             # Neither grain size nor number of grains specified, so raise exception
-            raise NetworkError('You must specify a positive value for either dE or Ngrains.')
-        elif grainCount <= 0 and grainSize > 0.0:
+            raise NetworkError('You must specify a positive value for either dE or n_grains.')
+        elif grain_count <= 0 and grain_size > 0.0:
             # Only grain size was specified, so we must use it
             use_grain_size = True
-        elif grainCount > 0 and grainSize <= 0.0:
+        elif grain_count > 0 and grain_size <= 0.0:
             # Only number of grains was specified, so we must use it
             use_grain_size = False
         else:
             # Both were specified, so we choose the tighter constraint
             # (i.e. the one that will give more grains, and so better accuracy)
-            grain_size0 = (Emax - Emin) / (grainCount - 1)
-            use_grain_size = (grain_size0 > grainSize)
+            grain_size0 = (Emax - Emin) / (grain_count - 1)
+            use_grain_size = (grain_size0 > grain_size)
 
         # Generate the array of energies
         if use_grain_size:
-            e_list = np.arange(Emin, Emax + grainSize, grainSize, dtype=np.float64)
+            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=np.float64)
         else:
-            e_list = np.linspace(Emin, Emax, grainCount, dtype=np.float64)
+            e_list = np.linspace(Emin, Emax, grain_count, dtype=np.float64)
 
         return e_list
 
-    def selectEnergyGrains(self, T, grainSize=0.0, grainCount=0):
+    def select_energy_grains(self, T, grain_size=0.0, grain_count=0):
         """
         Select a suitable list of energies to use for subsequent calculations.
         This is done by finding the minimum and maximum energies on the 
         potential energy surface, then adding a multiple of 
         :math:`k_\\mathrm{B} T` onto the maximum energy.
 
-        You must specify either the desired grain spacing `grainSize` in J/mol
-        or the desired number of grains `Ngrains`, as well as a temperature
+        You must specify either the desired grain spacing `grain_size` in J/mol
+        or the desired number of grains `n_grains`, as well as a temperature
         `T` in K to use for the equilibrium calculation. You can specify both
-        `grainSize` and `grainCount`, in which case the one that gives the more
+        `grain_size` and `grain_count`, in which case the one that gives the more
         accurate result will be used (i.e. they represent a maximum grain size
         and a minimum number of grains). An array containing the energy grains
         in J/mol is returned.
         """
 
-        if grainSize == 0.0 and grainCount == 0:
-            raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
+        if grain_size == 0.0 and grain_count == 0:
+            raise NetworkError('Must provide either grain_size or n_grains parameter to Network.determineEnergyGrains().')
 
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
-        e_min = np.min(self.E0)
+        e_min = np.min(self.e0)
         e_min = math.floor(e_min)  # Round to nearest whole number
 
         # Use the highest energy on the PES as the initial guess for Emax0
-        e_max = np.max(self.E0)
-        for rxn in self.pathReactions:
-            E0 = float(rxn.transition_state.conformer.E0.value_si)
-            if E0 > e_max: e_max = E0
+        e_max = np.max(self.e0)
+        for rxn in self.path_reactions:
+            e0 = float(rxn.transition_state.conformer.e0.value_si)
+            if e0 > e_max: e_max = e0
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
         # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
         e_max += 40. * constants.R * T
 
-        return self.__getEnergyGrains(e_min, e_max, grainSize, grainCount)
+        return self._get_energy_grains(e_min, e_max, grain_size, grain_count)
 
-    def calculateDensitiesOfStates(self):
+    def calculate_densities_of_states(self):
         """
         Calculate the densities of states of each configuration that has states
         data. The densities of states are computed such that they can be
@@ -483,26 +483,26 @@ class Network(object):
 
         Tmin = self.Tmin
         Tmax = self.Tmax
-        grain_size = self.grainSize
-        grain_count = self.grainCount
+        grain_size = self.grain_size
+        grain_count = self.grain_count
 
-        n_isom = self.Nisom
-        n_reac = self.Nreac
-        n_prod = self.Nprod
+        n_isom = self.n_isom
+        n_reac = self.n_reac
+        n_prod = self.n_prod
 
         logging.info('Calculating densities of states for {0} network...'.format(self.label))
 
         # Choose the energies used to compute the densities of states
         # Use Tmin to select the minimum energy and grain size
-        e_list0 = self.selectEnergyGrains(Tmin, grain_size, grain_count)
+        e_list0 = self.select_energy_grains(Tmin, grain_size, grain_count)
         e_min0 = np.min(e_list0)
         grain_size0 = e_list0[1] - e_list0[0]
         # Use Tmax to select the maximum energy and grain count
-        e_list0 = self.selectEnergyGrains(Tmax, grain_size, grain_count)
+        e_list0 = self.select_energy_grains(Tmax, grain_size, grain_count)
         grain_count0 = len(e_list0)
         e_max0 = np.max(e_list0)
 
-        e_list = self.__getEnergyGrains(e_min0, e_max0, grain_size0, grain_count0)
+        e_list = self._get_energy_grains(e_min0, e_max0, grain_size0, grain_count0)
         n_grains = len(e_list)
         de = e_list[1] - e_list[0]
         logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute '
@@ -516,15 +516,15 @@ class Network(object):
         # Densities of states for isomers
         for i in range(n_isom):
             logging.debug('Calculating density of states for isomer "{0}"'.format(self.isomers[i]))
-            self.isomers[i].calculateDensityOfStates(e_list, activeKRotor=self.activeKRotor,
-                                                     activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
+            self.isomers[i].calculate_density_of_states(e_list, active_k_rotor=self.active_k_rotor,
+                                                        active_j_rotor=self.active_j_rotor, rmgmode=self.rmgmode)
 
         # Densities of states for reactant channels
         for n in range(n_reac):
             if self.reactants[n].has_statmech():
                 logging.debug('Calculating density of states for reactant channel "{0}"'.format(self.reactants[n]))
-                self.reactants[n].calculateDensityOfStates(e_list, activeKRotor=self.activeKRotor,
-                                                           activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
+                self.reactants[n].calculate_density_of_states(e_list, active_k_rotor=self.active_k_rotor,
+                                                              active_j_rotor=self.active_j_rotor, rmgmode=self.rmgmode)
             else:
                 logging.warning(
                     'NOT calculating density of states for reactant channel "{0}". Missing Statmech.'.format(
@@ -535,8 +535,8 @@ class Network(object):
             for n in range(n_prod):
                 if self.products[n].has_statmech():
                     logging.debug('Calculating density of states for product channel "{0}"'.format(self.products[n]))
-                    self.products[n].calculateDensityOfStates(e_list, activeKRotor=self.activeKRotor,
-                                                              activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
+                    self.products[n].calculate_density_of_states(e_list, active_k_rotor=self.active_k_rotor,
+                                                                 active_j_rotor=self.active_j_rotor, rmgmode=self.rmgmode)
                 else:
                     logging.warning(
                         'NOT calculating density of states for product channel "{0}" Missing Statmech.'.format(
@@ -546,50 +546,50 @@ class Network(object):
 
         # import pylab
         # for i in range(n_isom):
-        #    pylab.semilogy(e_list*0.001, self.isomers[i].densStates)
+        #    pylab.semilogy(e_list*0.001, self.isomers[i].dens_states)
         # for n in range(n_reac):
-        #    if self.reactants[n].densStates is not None:
-        #        pylab.semilogy(e_list*0.001, self.reactants[n].densStates)
+        #    if self.reactants[n].dens_states is not None:
+        #        pylab.semilogy(e_list*0.001, self.reactants[n].dens_states)
         # for n in range(n_prod):
-        #    if self.products[n].densStates is not None:
-        #        pylab.semilogy(e_list*0.001, self.products[n].densStates)
+        #    if self.products[n].dens_states is not None:
+        #        pylab.semilogy(e_list*0.001, self.products[n].dens_states)
         # pylab.show()
 
-    def mapDensitiesOfStates(self):
+    def map_densities_of_states(self):
         """
         Map the overall densities of states to the current energy grains.
         Semi-logarithmic interpolation will be used if the grain sizes of 
-        `Elist0` and `Elist` do not match; this should not be a significant
+        `Elist0` and `e_list` do not match; this should not be a significant
         source of error as long as the grain sizes are sufficiently small.
         """
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
         n_prod = len(self.products)
-        n_grains = len(self.Elist)
-        n_j = len(self.Jlist)
+        n_grains = len(self.e_list)
+        n_j = len(self.j_list)
 
-        self.densStates = np.zeros((n_isom + n_reac + n_prod, n_grains, n_j))
+        self.dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains, n_j))
         # Densities of states for isomers
         for i in range(n_isom):
             logging.debug('Mapping density of states for isomer "{0}"'.format(self.isomers[i]))
-            self.densStates[i, :, :] = self.isomers[i].mapDensityOfStates(self.Elist, self.Jlist)
+            self.dens_states[i, :, :] = self.isomers[i].map_density_of_states(self.e_list, self.j_list)
         # Densities of states for reactant channels
         for n in range(n_reac):
-            if self.reactants[n].densStates is not None:
+            if self.reactants[n].dens_states is not None:
                 logging.debug('Mapping density of states for reactant channel "{0}"'.format(self.reactants[n]))
-                self.densStates[n + n_isom, :, :] = self.reactants[n].mapDensityOfStates(self.Elist, self.Jlist)
+                self.dens_states[n + n_isom, :, :] = self.reactants[n].map_density_of_states(self.e_list, self.j_list)
         # Densities of states for product channels
         for n in range(n_prod):
-            if self.products[n].densStates is not None:
+            if self.products[n].dens_states is not None:
                 logging.debug('Mapping density of states for product channel "{0}"'.format(self.products[n]))
-                self.densStates[n + n_isom + n_reac, :, :] = self.products[n].mapDensityOfStates(self.Elist, self.Jlist)
+                self.dens_states[n + n_isom + n_reac, :, :] = self.products[n].map_density_of_states(self.e_list, self.j_list)
 
         # import pylab
         # for i in range(n_isom + n_reac + n_prod):
-        #    pylab.semilogy(self.Elist*0.001, self.densStates[i,:])
+        #    pylab.semilogy(self.e_list*0.001, self.dens_states[i,:])
         # pylab.show()
 
-    def calculateMicrocanonicalRates(self):
+    def calculate_microcanonical_rates(self):
         """
         Calculate and return arrays containing the microcanonical rate
         coefficients :math:`k(E)` for the isomerization, dissociation, and
@@ -597,14 +597,14 @@ class Network(object):
         """
 
         temperature = self.T
-        e_list = self.Elist
-        j_list = self.Jlist
-        dens_states = self.densStates
+        e_list = self.e_list
+        j_list = self.j_list
+        dens_states = self.dens_states
         n_grains = len(e_list)
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
         n_prod = len(self.products)
-        n_j = 1 if self.activeJRotor else len(j_list)
+        n_j = 1 if self.active_j_rotor else len(j_list)
 
         self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], np.float64)
         self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], np.float64)
@@ -614,7 +614,7 @@ class Network(object):
         reactants = [reactant.species for reactant in self.reactants]
         products = [product.species for product in self.products]
 
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             if rxn.reactants[0] in isomers and rxn.products[0] in isomers:
                 # Isomerization
                 reac = isomers.index(rxn.reactants[0])
@@ -676,24 +676,24 @@ class Network(object):
             # Compute the microcanonical rate coefficient k(E)
             reac_dens_states = dens_states[reac, :, :]
             prod_dens_states = dens_states[prod, :, :]
-            kf, kr = rxn.calculateMicrocanonicalRateCoefficient(self.Elist, self.Jlist,
-                                                                reac_dens_states, prod_dens_states,
-                                                                temperature)
+            kf, kr = rxn.calculate_microcanonical_rate_coefficient(self.e_list, self.j_list,
+                                                                   reac_dens_states, prod_dens_states,
+                                                                   temperature)
 
             # Check for NaN (just to be safe)
             if np.isnan(kf).any() or np.isnan(kr).any():
                 raise NetworkError('One or more k(E) values is NaN for path reaction "{0}".'.format(rxn))
 
             # Determine the expected value of the rate coefficient k(T)
-            if rxn.canTST():
+            if rxn.can_tst():
                 # RRKM theory was used to compute k(E), so use TST to compute k(T)
                 logging.debug('Using RRKM rate for Expected kf')
-                kf_expected = rxn.calculateTSTRateCoefficient(temperature)
+                kf_expected = rxn.calculate_tst_rate_coefficient(temperature)
             else:
                 # ILT was used to compute k(E), so use high-P kinetics to compute k(T)
                 logging.debug('Using high pressure rate coefficient rate for Expected kf')
                 kf_expected = rxn.kinetics.get_rate_coefficient(temperature) if rxn.network_kinetics is None else \
-                    rxn.network_kinetics.getRateCoefficient(temperature)
+                    rxn.network_kinetics.get_rate_coefficient(temperature)
 
             # Determine the expected value of the equilibrium constant (Kc)
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac]
@@ -807,7 +807,7 @@ class Network(object):
 
         return self.Kij, self.Gnj, self.Fim
 
-    def calculateEquilibriumRatios(self):
+    def calculate_equilibrium_ratios(self):
         """
         Return an array containing the fraction of each isomer and reactant
         channel present at equilibrium, as determined from the Gibbs free 
@@ -823,28 +823,28 @@ class Network(object):
         eq_ratios = np.zeros(n_isom + n_reac + n_prod, np.float64)
         conc = (1e5 / constants.R / temperature)  # [=] mol/m^3
         for i in range(n_isom):
-            G = self.isomers[i].getFreeEnergy(temperature)
+            G = self.isomers[i].get_free_energy(temperature)
             logging.debug("Free energy for isomer {} is {}.".format(i, G))
             eq_ratios[i] = math.exp(-G / constants.R / temperature)
         for i in range(n_reac):
-            G = self.reactants[i].getFreeEnergy(temperature)
+            G = self.reactants[i].get_free_energy(temperature)
             eq_ratios[n_isom + i] = math.exp(-G / constants.R / temperature) * conc ** (len(self.reactants[i].species) - 1)
         for i in range(n_prod):
             if self.products[i].has_statmech() or self.products[i].has_thermo():
-                G = self.products[i].getFreeEnergy(temperature)
+                G = self.products[i].get_free_energy(temperature)
                 eq_ratios[n_isom + n_reac + i] = math.exp(-G / constants.R / temperature) * conc ** (len(self.products[i].species) - 1)
         self.eqRatios = eq_ratios
         return eq_ratios / np.sum(eq_ratios)
 
-    def calculateCollisionModel(self):
+    def calculate_collision_model(self):
         """
         Calculate the matrix of first-order rate coefficients for collisional
         population transfer between grains for each isomer, including the
         corresponding collision frequencies.
         """
         n_isom = len(self.isomers)
-        n_grains = len(self.Elist)
-        n_j = 1 if self.Jlist is None else len(self.Jlist)
+        n_grains = len(self.e_list)
+        n_j = 1 if self.j_list is None else len(self.j_list)
 
         try:
             coll_freq = np.zeros(n_isom, np.float64)
@@ -853,78 +853,78 @@ class Network(object):
             logging.warning('Collision matrix too large to manage')
             new_n_grains = int(n_grains / 2.0)
             logging.warning('Adjusting to use {0} grains instead of {1}'.format(new_n_grains, n_grains))
-            self.Elist = self.selectEnergyGrains(self.T, grainCount=new_n_grains)
-            return self.calculateCollisionModel()
+            self.e_list = self.select_energy_grains(self.T, grain_count=new_n_grains)
+            return self.calculate_collision_model()
 
         for i, isomer in enumerate(self.isomers):
-            coll_freq[i] = isomer.calculateCollisionFrequency(self.T, self.P, self.bathGas)
-            m_coll[i, :, :, :, :] = coll_freq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i, :, :],
-                                                                                  self.Elist, self.Jlist)
+            coll_freq[i] = isomer.calculate_collision_frequency(self.T, self.P, self.bath_gas)
+            m_coll[i, :, :, :, :] = coll_freq[i] * isomer.generate_collision_matrix(self.T, self.dens_states[i, :, :],
+                                                                                    self.e_list, self.j_list)
 
         self.collFreq = coll_freq
         self.Mcoll = m_coll
 
         return m_coll
 
-    def applyModifiedStrongCollisionMethod(self, efficiencyModel='default'):
+    def apply_modified_strong_collision_method(self, efficiency_model='default'):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the modified strong collision method.
         """
         import rmgpy.pdep.msc as msc
         logging.debug('Applying modified strong collision method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
-        self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self, efficiencyModel)
+        self.K, self.p0 = msc.apply_modified_strong_collision_method(self, efficiency_model)
         return self.K, self.p0
 
-    def applyReservoirStateMethod(self):
+    def apply_reservoir_state_method(self):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the reservoir state method.
         """
         import rmgpy.pdep.rs as rs
         logging.debug('Applying reservoir state method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
-        self.K, self.p0 = rs.applyReservoirStateMethod(self)
+        self.K, self.p0 = rs.apply_reservoir_state_method(self)
         return self.K, self.p0
 
-    def applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder=None):
+    def apply_chemically_significant_eigenvalues_method(self, lumping_order=None):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the chemically-significant eigenvalues method.
-        If a `lumpingOrder` is provided, the algorithm will attempt to lump the
+        If a `lumping_order` is provided, the algorithm will attempt to lump the
         configurations (given by index) in the order provided, and return a
         reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
         logging.debug(
             'Applying chemically-significant eigenvalues method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
-        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
+        self.K, self.p0 = cse.apply_chemically_significant_eigenvalues_method(self, lumping_order)
         return self.K, self.p0
 
-    def generateFullMEMatrix(self, products=True):
+    def generate_full_me_matrix(self, products=True):
         import rmgpy.pdep.me as me
-        return me.generateFullMEMatrix(self, products=products)
+        return me.generate_full_me_matrix(self, products=products)
 
-    def solveFullME(self, tlist, x0):
+    def solve_full_me(self, tlist, x0):
         """
         Directly solve the full master equation using a stiff ODE solver. Pass the
         reaction `network` to solve, the temperature `T` in K and pressure `P` in
-        Pa to solve at, the energies `Elist` in J/mol to use, the output time
+        Pa to solve at, the energies `e_list` in J/mol to use, the output time
         points `tlist` in s, the initial total populations `x0`, the full master
         equation matrix `M`, the accounting matrix `indices` relating isomer and
         energy grain indices to indices of the master equation matrix, and the
-        densities of states `densStates` in mol/J of each isomer.
+        densities of states `dens_states` in mol/J of each isomer.
         Returns the times in s, population distributions for each isomer, and total
         population profiles for each configuration.
         """
         import scipy.integrate
 
-        e_list = self.Elist
-        j_list = self.Jlist
-        dens_states = self.densStates
+        e_list = self.e_list
+        j_list = self.j_list
+        dens_states = self.dens_states
 
-        n_isom = self.Nisom
-        n_reac = self.Nreac
-        n_prod = self.Nprod
+        n_isom = self.n_isom
+        n_reac = self.n_reac
+        n_prod = self.n_prod
         n_grains = len(e_list)
         n_j = len(j_list)
         n_time = len(tlist)
@@ -936,7 +936,7 @@ class Network(object):
             return K
 
         ymB = self.P / constants.R / self.T
-        M, indices = self.generateFullMEMatrix()
+        M, indices = self.generate_full_me_matrix()
         n_rows = M.shape[0]
         M[:, n_rows - n_reac - n_prod:] *= ymB
 
@@ -990,7 +990,7 @@ class Network(object):
 
         return t, p, x
 
-    def solveReducedME(self, tlist, x0):
+    def solve_reduced_me(self, tlist, x0):
         """
         Directly solve the reduced master equation using a stiff ODE solver. 
         Pass the output time points `tlist` in s and the initial total
@@ -1001,12 +1001,12 @@ class Network(object):
         """
         import scipy.integrate
 
-        e_list = self.Elist
-        j_list = self.Jlist
+        e_list = self.e_list
+        j_list = self.j_list
 
-        n_isom = self.Nisom
-        n_reac = self.Nreac
-        n_prod = self.Nprod
+        n_isom = self.n_isom
+        n_reac = self.n_reac
+        n_prod = self.n_prod
         n_grains = len(e_list)
         n_j = len(j_list)
         n_time = len(tlist)
@@ -1056,7 +1056,7 @@ class Network(object):
 
         return t, p, x
 
-    def printSummary(self, level=logging.INFO):
+    def log_summary(self, level=logging.INFO):
         """
         Print a formatted list of information about the current network. Each
         molecular configuration - unimolecular isomers, bimolecular reactant
@@ -1072,19 +1072,19 @@ class Network(object):
         logging.log(level, '-' * (len(self.label) + 20))
         logging.log(level, 'Isomers:')
         for isomer in self.isomers:
-            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(isomer, isomer.E0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(isomer, isomer.e0 * 0.001))
         logging.log(level, 'Reactant channels:')
         for reactants in self.reactants:
-            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(reactants, reactants.E0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(reactants, reactants.e0 * 0.001))
         logging.log(level, 'Product channels:')
         for products in self.products:
-            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(products, products.E0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(products, products.e0 * 0.001))
         logging.log(level, 'Path reactions:')
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(
-                rxn, float(rxn.transition_state.conformer.E0.value_si * 0.001)))
+                rxn, float(rxn.transition_state.conformer.e0.value_si * 0.001)))
         logging.log(level, 'Net reactions:')
-        for rxn in self.netReactions:
+        for rxn in self.net_reactions:
             logging.log(level, '    {0!s:<48}'.format(rxn))
         logging.log(level, '========================================================================')
         logging.log(level, '')

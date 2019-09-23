@@ -70,7 +70,7 @@ class DiffusionLimited(object):
         reactants = len(reaction.reactants)
         products = len(reaction.products)
         k_forward = intrinsic_kinetics.get_rate_coefficient(T, P=100e5)
-        Keq = reaction.getEquilibriumConstant(T)  # Kc
+        Keq = reaction.get_equilibrium_constant(T)  # Kc
         k_reverse = k_forward / Keq
         k_eff = k_forward
 

@@ -43,13 +43,13 @@ cdef class Wilhoit(HeatCapacityModel):
 
     cpdef make_object(self, dict data, dict class_dict)
     
-    cpdef double getHeatCapacity(self, double T) except -1000000000
+    cpdef double get_heat_capacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 1000000000
+    cpdef double get_enthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -1000000000
+    cpdef double get_entropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 1000000000
+    cpdef double get_free_energy(self, double T) except 1000000000
     
     cpdef Wilhoit copy(self)
     

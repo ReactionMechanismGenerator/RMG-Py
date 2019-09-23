@@ -140,45 +140,45 @@ class TestNASA(unittest.TestCase):
 
     def test_getHeatCapacity(self):
         """
-        Test the NASA.getHeatCapacity() method.
+        Test the NASA.get_heat_capacity() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         cp_exp_list = np.array([7.80157, 10.5653, 12.8213, 14.5817, 15.9420,
                                 16.9861, 17.78645, 18.4041, 18.8883]) * constants.R
         for T, cp_exp in zip(Tlist, cp_exp_list):
-            cp_act = self.nasa.getHeatCapacity(T)
+            cp_act = self.nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp / cp_act, 1.0, 4, '{0} != {1}'.format(cp_exp, cp_act))
 
     def test_getEnthalpy(self):
         """
-        Test the NASA.getEnthalpy() method.
+        Test the NASA.get_enthalpy() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         h_exp_list = np.array([-22.7613, -12.1027, -6.14236, -2.16615, 0.743456,
                                2.99256, 4.79397, 6.27334, 7.51156]) * constants.R * Tlist
         for T, h_exp in zip(Tlist, h_exp_list):
-            h_act = self.nasa.getEnthalpy(T)
+            h_act = self.nasa.get_enthalpy(T)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 3, '{0} != {1}'.format(h_exp, h_act))
 
     def test_getEntropy(self):
         """
-        Test the NASA.getEntropy() method.
+        Test the NASA.get_entropy() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         s_exp_list = np.array([29.6534, 33.3516, 36.7131, 39.7715, 42.5557,
                                45.0952, 47.4179, 49.5501, 51.5152]) * constants.R
         for T, s_exp in zip(Tlist, s_exp_list):
-            s_act = self.nasa.getEntropy(T)
+            s_act = self.nasa.get_entropy(T)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4, '{0} != {1}'.format(s_exp, s_act))
 
     def test_getFreeEnergy(self):
         """
-        Test the NASA.getFreeEnergy() method.
+        Test the NASA.get_free_energy() method.
         """
         Tlist = np.array([400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         for T in Tlist:
-            g_exp = self.nasa.getEnthalpy(T) - T * self.nasa.getEntropy(T)
-            g_act = self.nasa.getFreeEnergy(T)
+            g_exp = self.nasa.get_enthalpy(T) - T * self.nasa.get_entropy(T)
+            g_act = self.nasa.get_free_energy(T)
             self.assertAlmostEqual(g_exp / g_act, 1.0, 4, '{0} != {1}'.format(g_exp, g_act))
 
     def test_pickle(self):
@@ -251,8 +251,8 @@ class TestNASA(unittest.TestCase):
         """
         nasapoly2 = self.nasa.toCantera()
         # NasaPoly2 units use J/kmol rather than J/mol
-        self.assertAlmostEqual(self.nasa.getEnthalpy(900), nasapoly2.h(900) / 1000, 1)
-        self.assertAlmostEqual(self.nasa.getEntropy(700), nasapoly2.s(700) / 1000, 1)
+        self.assertAlmostEqual(self.nasa.get_enthalpy(900), nasapoly2.h(900) / 1000, 1)
+        self.assertAlmostEqual(self.nasa.get_entropy(700), nasapoly2.s(700) / 1000, 1)
 
     def testToNASA(self):
         """
@@ -275,17 +275,17 @@ class TestNASA(unittest.TestCase):
 
         # nasa to thermodata
         nasa = spc.thermo
-        s_nasa = nasa.getEntropy(T)
+        s_nasa = nasa.get_entropy(T)
 
         td = nasa.toThermoData()
-        s_td = td.getEntropy(T)
+        s_td = td.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(td.comment, nasa.comment)
 
         # thermodata to nasa
         nasa = td.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        s_nasa = nasa.getEntropy(T)
+        s_nasa = nasa.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(td.comment, nasa.comment)
@@ -293,7 +293,7 @@ class TestNASA(unittest.TestCase):
         # wilhoit to nasa
         wilhoit = nasa.toWilhoit()
         nasa = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        s_nasa = nasa.getEntropy(T)
+        s_nasa = nasa.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(wilhoit.comment, nasa.comment)
@@ -305,7 +305,7 @@ class TestNASA(unittest.TestCase):
         Test that NASA.as_dict functions properly with all attributes
         """
         nasa_dict = self.nasa.as_dict()
-        self.assertEqual(nasa_dict['E0']['value'], self.E0)
+        self.assertEqual(nasa_dict['e0']['value'], self.E0)
         self.assertEqual(nasa_dict['Tmin']['value'], self.Tmin)
         self.assertEqual(nasa_dict['Tmax']['value'], self.Tmax)
         self.assertEqual(nasa_dict['comment'], self.comment)

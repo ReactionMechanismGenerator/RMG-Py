@@ -208,9 +208,9 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
         """
-        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.TminValue),
+        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.TminValue),
                          str(46608.5904933))
-        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.Tmaxvalue),
+        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.Tmaxvalue),
                          str(498796.64535))
 
     def testTunneling(self):

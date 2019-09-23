@@ -40,12 +40,12 @@ from libc.math cimport exp, sqrt
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ChemicallySignificantEigenvaluesError
-from rmgpy.pdep.me import generateFullMEMatrix
+from rmgpy.pdep.me import generate_full_me_matrix
 
 ################################################################################
 
 
-def applyChemicallySignificantEigenvaluesMethod(network, list lumpingOrder=None):
+def apply_chemically_significant_eigenvalues_method(network, list lumping_order=None):
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=3] indices
@@ -60,8 +60,8 @@ def applyChemicallySignificantEigenvaluesMethod(network, list lumpingOrder=None)
 
     temperature = network.T
     pressure = network.P
-    e_list = network.Elist
-    j_list = network.Jlist
+    e_list = network.e_list
+    j_list = network.j_list
     dens_states = network.dens_states
     g_nj = network.Gnj
     eq_ratios = network.eq_ratios
@@ -77,7 +77,7 @@ def applyChemicallySignificantEigenvaluesMethod(network, list lumpingOrder=None)
     ym_b = 1.0e-6 * pressure / constants.R / temperature
     
     # Generate the full master equation matrix
-    me_mat, indices = generateFullMEMatrix(network, products=False)
+    me_mat, indices = generate_full_me_matrix(network, products=False)
     n_rows = me_mat.shape[0]
     me_mat[:, n_rows-n_reac:] *= ym_b
     
@@ -143,10 +143,10 @@ def applyChemicallySignificantEigenvaluesMethod(network, list lumpingOrder=None)
         logging.error('Could only identify {0:d} distinct eigenvalues, when {1:d} are required.'.format(n_cse, n_chem))
         logging.info('Last IERE = {0:g}    First CSE = {1:g}    Ratio = {2:g}'.format(
                       omega0[ind[-n_chem-1]], omega0[ind[-n_chem]], omega0[ind[-n_chem-1]] / omega0[ind[-n_chem]]))
-        if lumpingOrder is None or len(lumpingOrder) < n_chem - n_cse:
+        if lumping_order is None or len(lumping_order) < n_chem - n_cse:
             # If we don't have a lumping order, then don't try to recover from this situation
             return k, pa
-        lumping = lumpingOrder[0:n_chem - n_cse]
+        lumping = lumping_order[0:n_chem - n_cse]
         unlumping = [i for i in range(n_chem) if i not in lumping]
     
     # elif n_prod == 0 and abs(omega0[ind[-1]]) > 1e-3:

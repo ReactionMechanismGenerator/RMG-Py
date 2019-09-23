@@ -162,10 +162,10 @@ class KineticsJob(object):
             tunneling.frequency = (self.reaction.transition_state.frequency.value_si, "cm^-1")
         elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
             tunneling.frequency = (self.reaction.transition_state.frequency.value_si, "cm^-1")
-            tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
+            tunneling.E0_reac = (sum([reactant.conformer.e0.value_si
                                       for reactant in self.reaction.reactants]) * 0.001, "kJ/mol")
-            tunneling.E0_TS = (self.reaction.transition_state.conformer.E0.value_si * 0.001, "kJ/mol")
-            tunneling.E0_prod = (sum([product.conformer.E0.value_si
+            tunneling.E0_TS = (self.reaction.transition_state.conformer.e0.value_si * 0.001, "kJ/mol")
+            tunneling.E0_prod = (sum([product.conformer.e0.value_si
                                       for product in self.reaction.products]) * 0.001, "kJ/mol")
         elif tunneling is not None:
             if tunneling.frequency is not None:
@@ -176,7 +176,7 @@ class KineticsJob(object):
         logging.debug('Generating {0} kinetics model for {1}...'.format(kinetics_class, self.reaction))
         klist = np.zeros_like(self.Tlist.value_si)
         for i, t in enumerate(self.Tlist.value_si):
-            klist[i] = self.reaction.calculateTSTRateCoefficient(t)
+            klist[i] = self.reaction.calculate_tst_rate_coefficient(t)
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order - 1)
         self.kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
@@ -221,12 +221,12 @@ class KineticsJob(object):
                 tunneling = reaction.transition_state.tunneling
                 reaction.transition_state.tunneling = None
                 try:
-                    k0 = reaction.calculateTSTRateCoefficient(T) * factor
+                    k0 = reaction.calculate_tst_rate_coefficient(T) * factor
                 except SpeciesError:
                     k0 = 0
                 reaction.transition_state.tunneling = tunneling
                 try:
-                    k = reaction.calculateTSTRateCoefficient(T) * factor
+                    k = reaction.calculate_tst_rate_coefficient(T) * factor
                     kappa = k / k0
                 except (SpeciesError, ZeroDivisionError):
                     k = reaction.get_rate_coefficient(T)
@@ -332,7 +332,7 @@ class KineticsJob(object):
         klist = np.zeros_like(t_list)
         klist2 = np.zeros_like(t_list)
         for i in range(len(t_list)):
-            klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
+            klist[i] = self.reaction.calculate_tst_rate_coefficient(t_list[i])
             klist2[i] = self.reaction.kinetics.get_rate_coefficient(t_list[i])
 
         order = len(self.reaction.reactants)
@@ -426,15 +426,15 @@ class KineticsDrawer(object):
         """
         Return the minimum and maximum energy in J/mol on the potential energy surface.
         """
-        e0_min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transition_state.conformer.E0.value_si)
-        e0_max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transition_state.conformer.E0.value_si)
+        e0_min = min(self.wells[0].e0, self.wells[1].e0, self.reaction.transition_state.conformer.e0.value_si)
+        e0_max = max(self.wells[0].e0, self.wells[1].e0, self.reaction.transition_state.conformer.e0.value_si)
         if e0_max - e0_min > 5e5:
             # the energy barrier in one of the reaction directions is larger than 500 kJ/mol, warn the user
             logging.warning('The energy differences between the stationary points of reaction {0} '
                             'seems too large.'.format(self.reaction))
             logging.warning('Got the following energies:\nWell 1: {0} kJ/mol\nTS: {1} kJ/mol\nWell 2: {2}'
-                            ' kJ/mol'.format(self.wells[0].E0 / 1000., self.wells[1].E0 / 1000.,
-                                             self.reaction.transition_state.conformer.E0.value_si / 1000.))
+                            ' kJ/mol'.format(self.wells[0].e0 / 1000., self.wells[1].e0 / 1000.,
+                                             self.reaction.transition_state.conformer.e0.value_si / 1000.))
         return e0_min, e0_max
 
     def __useStructureForLabel(self, configuration):
@@ -586,7 +586,7 @@ class KineticsDrawer(object):
         y_e0 = (e0_max - 0.0) * e_slope + padding + Eheight
         height = (e0_max - e0_min) * e_slope + 2 * padding + Eheight + 6
         for i in range(len(self.wells)):
-            if 0.001 * self.wells[i].E0 == e0_min:
+            if 0.001 * self.wells[i].e0 == e0_min:
                 height += label_rects[i][3]
                 break
 
@@ -597,7 +597,7 @@ class KineticsDrawer(object):
             well = self.wells[i]
             rect = label_rects[i]
             this_well_width = max(well_width, rect[2])
-            e0 = 0.001 * well.E0
+            e0 = 0.001 * well.e0
             y = y_e0 - e0 * e_slope
             coordinates[i] = [x + 0.5 * this_well_width, y]
             x += this_well_width + well_spacing
@@ -690,9 +690,9 @@ class KineticsDrawer(object):
         self.__drawText('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
 
         # Draw reactions
-        e0_reac = self.wells[0].E0 * 0.001 - e0_offset
-        e0_prod = self.wells[1].E0 * 0.001 - e0_offset
-        e0_ts = self.reaction.transition_state.conformer.E0.value_si * 0.001 - e0_offset
+        e0_reac = self.wells[0].e0 * 0.001 - e0_offset
+        e0_prod = self.wells[1].e0 * 0.001 - e0_offset
+        e0_ts = self.reaction.transition_state.conformer.e0.value_si * 0.001 - e0_offset
         x1, y1 = coordinates[0, :]
         x2, y2 = coordinates[1, :]
         x1 += well_spacing / 2.0
@@ -757,7 +757,7 @@ class KineticsDrawer(object):
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
-            e0 = well.E0 * 0.001 - e0_offset
+            e0 = well.e0 * 0.001 - e0_offset
             e0 = "{0:.1f}".format(e0 * 1000. * e_mult)
             extents = cr.text_extents(e0)
             x = x0 - extents[2] / 2.0
@@ -792,4 +792,4 @@ class Well(object):
 
     def __init__(self, species_list):
         self.species_list = species_list
-        self.E0 = sum([species.conformer.E0.value_si for species in species_list])
+        self.e0 = sum([species.conformer.e0.value_si for species in species_list])

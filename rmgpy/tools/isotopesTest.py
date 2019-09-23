@@ -727,8 +727,8 @@ multiplicity 2
 
         correct_entropy(propanei, propane)
 
-        self.assertAlmostEqual(propane.getEnthalpy(298), propanei.getEnthalpy(298))
-        self.assertAlmostEqual(propanei.getEntropy(298) - propane.getEntropy(298), constants.R * np.log(2))
+        self.assertAlmostEqual(propane.get_enthalpy(298), propanei.get_enthalpy(298))
+        self.assertAlmostEqual(propanei.get_entropy(298) - propane.get_entropy(298), constants.R * np.log(2))
 
     def testGenerateIsotopomers(self):
         """

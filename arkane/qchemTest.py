@@ -104,10 +104,10 @@ class QChemTest(unittest.TestCase):
         """
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'npropyl.out'))
         conformer, unscaled_frequencies = log.loadConformer()
-        self.assertEqual(conformer.spinMultiplicity, 2)
+        self.assertEqual(conformer.spin_multiplicity, 2)
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'co.out'))
         conformer, unscaled_frequencies = log.loadConformer()
-        self.assertEqual(conformer.spinMultiplicity, 1)
+        self.assertEqual(conformer.spin_multiplicity, 1)
 
     def testLoadCOModesFromQChemLog(self):
         """

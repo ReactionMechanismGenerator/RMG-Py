@@ -66,7 +66,7 @@ class TestSpecies(unittest.TestCase):
                 Tmax=(2000.0, 'K'),
             ),
             conformer=Conformer(
-                E0=(0.0, 'kJ/mol'),
+                e0=(0.0, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(28.03, 'amu')),
                     NonlinearRotor(inertia=([5.6952e-47, 2.7758e-46, 3.3454e-46], 'kg*m^2'), symmetry=1),
@@ -74,8 +74,8 @@ class TestSpecies(unittest.TestCase):
                     [834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0],
                     'cm^-1')),
                 ],
-                spinMultiplicity=1,
-                opticalIsomers=1,
+                spin_multiplicity=1,
+                optical_isomers=1,
             ),
             molecule=[Molecule().from_smiles('C=C')],
             transportData=TransportData(sigma=(1, 'angstrom'), epsilon=(100, 'K')),

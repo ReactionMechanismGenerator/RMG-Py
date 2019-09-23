@@ -455,7 +455,7 @@ and immediately used in input files without any additional changes.
 
         reaction_list = []
         for entry in library.entries.values():
-            if entry.item.matchesSpecies(reactants, products=products):
+            if entry.item.matches_species(reactants, products=products):
                 reaction = LibraryReaction(
                     reactants=entry.item.reactants[:],
                     products=entry.item.products[:],
@@ -659,7 +659,7 @@ and immediately used in input files without any additional changes.
                 T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
                 k_data = np.zeros_like(T_data)
                 for i in range(T_data.shape[0]):
-                    k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.getEquilibriumConstant(T_data[i])
+                    k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.get_equilibrium_constant(T_data[i])
                 try:
                     k_units = ('s^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)')[len(reverse[0].reactants) - 1]
                 except IndexError:
@@ -754,7 +754,7 @@ and immediately used in input files without any additional changes.
                 if reverse:
                     reverse_kinetics = training_entry.data
                     rxn_copy.kinetics = reverse_kinetics
-                    forward_kinetics = rxn_copy.generateReverseRateCoefficient()
+                    forward_kinetics = rxn_copy.generate_reverse_rate_coefficient()
                     kinetics = forward_kinetics
                 else:
                     kinetics = training_entry.data
@@ -808,12 +808,12 @@ and immediately used in input files without any additional changes.
                         spc.thermo = wilhoit
 
                 rxn_copy.kinetics = kinetics
-                rxn_copy.fixBarrierHeight(forcePositive=force_positive_barrier)
+                rxn_copy.fix_barrier_height(force_positive=force_positive_barrier)
 
                 return rxn_copy.kinetics
             else:
 
-                h298 = rxn_copy.getEnthalpyOfReaction(298)
+                h298 = rxn_copy.get_enthalpy_of_reaction(298)
                 if isinstance(kinetics, (ArrheniusEP, ArrheniusBM)):
                     kinetics = kinetics.to_arrhenius(h298)
                 return kinetics
