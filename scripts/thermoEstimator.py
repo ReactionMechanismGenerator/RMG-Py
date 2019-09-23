@@ -48,43 +48,43 @@ from rmgpy.thermo.thermoengine import submit
 
 ################################################################################
 
-def runThermoEstimator(inputFile, library_flag):
+def run_thermo_estimator(input_file, library_flag):
     """
     Estimate thermo for a list of species using RMG and the settings chosen inside a thermo input file.
     """
 
     rmg = RMG()
-    rmg.load_thermo_input(inputFile)
+    rmg.load_thermo_input(input_file)
 
     rmg.database = RMGDatabase()
     path = os.path.join(settings['database.directory'])
 
     # forbidden structure loading
-    rmg.database.load_thermo(os.path.join(path, 'thermo'), rmg.thermoLibraries, depository=False)
+    rmg.database.load_thermo(os.path.join(path, 'thermo'), rmg.thermo_libraries, depository=False)
 
     if rmg.solvent:
         rmg.database.load_solvation(os.path.join(path, 'solvation'))
-        Species.solventData = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        Species.solventName = rmg.solvent
+        Species.solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
+        Species.solvent_name = rmg.solvent
 
-    for species in rmg.initialSpecies:
+    for species in rmg.initial_species:
         submit(species)
 
     if library_flag:
         library = ThermoLibrary(name='Thermo Estimation Library')
-        for species in rmg.initialSpecies:
-            library.loadEntry(
+        for species in rmg.initial_species:
+            library.load_entry(
                 index=len(library.entries) + 1,
                 label=species.label,
                 molecule=species.molecule[0].to_adjacency_list(),
                 thermo=species.get_thermo_data().to_thermo_data(),
                 shortDesc=species.get_thermo_data().comment,
             )
-        library.save(os.path.join(rmg.outputDirectory, 'ThermoLibrary.py'))
+        library.save(os.path.join(rmg.output_directory, 'ThermoLibrary.py'))
 
     # Save the thermo data to chemkin format output files and dictionary, with no reactions    
-    save_chemkin_file(os.path.join(rmg.outputDirectory, 'chem_annotated.inp'), species=rmg.initialSpecies, reactions=[])
-    save_species_dictionary(os.path.join(rmg.outputDirectory, 'species_dictionary.txt'), species=rmg.initialSpecies)
+    save_chemkin_file(os.path.join(rmg.output_directory, 'chem_annotated.inp'), species=rmg.initial_species, reactions=[])
+    save_species_dictionary(os.path.join(rmg.output_directory, 'species_dictionary.txt'), species=rmg.initial_species)
 
 
 ################################################################################
@@ -99,6 +99,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    inputFile = os.path.abspath(args.input[0])
+    input_file = os.path.abspath(args.input[0])
 
-    runThermoEstimator(inputFile, args.library)
+    run_thermo_estimator(input_file, args.library)

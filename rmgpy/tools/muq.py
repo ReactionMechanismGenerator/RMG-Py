@@ -238,7 +238,7 @@ class ReactorModPiece(ModPiece):
         # The model must be refreshed when there are any thermo changes
         # kinetics can be refreshed automatically so we don't need to recreate the Solution() object.
         if G_rv:
-            self.cantera.refreshModel()
+            self.cantera.refresh_model()
 
         # Run the cantera simulation
         allData = self.cantera.simulate()
@@ -300,7 +300,7 @@ class ReactorModPiece(ModPiece):
 
         # The rate is loguniform in k
         rxn.kinetics.change_rate(10 ** factor)
-        self.cantera.modifyReactionKinetics(reactionIndex, rxn)
+        self.cantera.modify_reaction_kinetics(reactionIndex, rxn)
 
     def scaleToThermo(self, randomInput, uncertaintyFactor, speciesIndex):
         """
@@ -316,7 +316,7 @@ class ReactorModPiece(ModPiece):
         deltaH = randomInput * uncertaintyFactor * 4184.0  # Convert kcal/mol to J/mol
 
         species.thermo.change_base_enthalpy(deltaH)
-        self.cantera.modifySpeciesThermo(speciesIndex, species, useChemkinIdentifier=True)
+        self.cantera.modify_species_thermo(speciesIndex, species, useChemkinIdentifier=True)
 
 
 class ReactorPCEFactory(object):

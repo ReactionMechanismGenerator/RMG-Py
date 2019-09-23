@@ -53,7 +53,7 @@ from rmgpy.transport import TransportData
 
 ################################################################################
 
-def parseCommandLineArguments():
+def parse_command_line_arguments():
     """
     Parse the command-line arguments being passed to MEASURE. These are
     described in the module docstring.
@@ -136,14 +136,14 @@ def loadFAMEInput(path, moleculeDict=None):
         job.interpolationModel = ('pdeparrhenius',)
 
     # Read grain size or number of grains
-    job.minimumGrainCount = 0
-    job.maximumGrainSize = None
+    job.minimum_grain_count = 0
+    job.maximum_grain_size = None
     for i in range(2):
         data = readMeaningfulLine(f).split()
         if data[0].lower() == 'numgrains':
-            job.minimumGrainCount = int(data[1])
+            job.minimum_grain_count = int(data[1])
         elif data[0].lower() == 'grainsize':
-            job.maximumGrainSize = (float(data[2]), data[1])
+            job.maximum_grain_size = (float(data[2]), data[1])
 
     # A FAME file is almost certainly created during an RMG job, so use RMG mode
     job.rmgmode = True
@@ -177,7 +177,7 @@ def loadFAMEInput(path, moleculeDict=None):
         sigma=Quantity(float(sigmaLJ), sigmaLJunits),
         epsilon=Quantity(float(epsilonLJ) / constants.kB, 'K'),
     )
-    job.network.bathGas = {bath_gas: 1.0}
+    job.network.bath_gas = {bath_gas: 1.0}
 
     # Read species data
     n_spec = int(readMeaningfulLine(f))
@@ -296,7 +296,7 @@ def loadFAMEInput(path, moleculeDict=None):
         # Read and ignore reaction equation
         equation = readMeaningfulLine(f)
         reaction = Reaction(transition_state=TransitionState(), reversible=True)
-        job.network.pathReactions.append(reaction)
+        job.network.path_reactions.append(reaction)
         reaction.transition_state.conformer = Conformer()
 
         # Read reactant and product indices
@@ -383,19 +383,19 @@ def pruneNetwork(network, Emax):
     removed_configurations.extend([reactant.species for reactant in reactants_to_remove])
     removed_configurations.extend([product.species for product in products_to_remove])
     reactions_to_remove = []
-    for rxn in network.pathReactions:
+    for rxn in network.path_reactions:
         if rxn.reactants in removed_configurations or rxn.products in removed_configurations:
             reactions_to_remove.append(rxn)
     for rxn in reactions_to_remove:
-        network.pathReactions.remove(rxn)
+        network.path_reactions.remove(rxn)
 
     # Remove path reactions with barrier heights above the given Emax
     reactions_to_remove = []
-    for rxn in network.pathReactions:
-        if rxn.transitionState.conformer.E0.value_si > Emax:
+    for rxn in network.path_reactions:
+        if rxn.transition_state.conformer.E0.value_si > Emax:
             reactions_to_remove.append(rxn)
     for rxn in reactions_to_remove:
-        network.pathReactions.remove(rxn)
+        network.path_reactions.remove(rxn)
 
     def ismatch(speciesList1, speciesList2):
         if len(speciesList1) == len(speciesList2) == 1:
@@ -422,7 +422,7 @@ def pruneNetwork(network, Emax):
     # Remove orphaned configurations (those with zero path reactions involving them)
     isomers_to_remove = []
     for isomer in network.isomers:
-        for rxn in network.pathReactions:
+        for rxn in network.path_reactions:
             if ismatch(rxn.reactants, isomer.species) or ismatch(rxn.products, isomer.species):
                 break
         else:
@@ -432,7 +432,7 @@ def pruneNetwork(network, Emax):
 
     reactants_to_remove = []
     for reactant in network.reactants:
-        for rxn in network.pathReactions:
+        for rxn in network.path_reactions:
             if ismatch(rxn.reactants, reactant.species) or ismatch(rxn.products, reactant.species):
                 break
         else:
@@ -442,7 +442,7 @@ def pruneNetwork(network, Emax):
 
     products_to_remove = []
     for product in network.products:
-        for rxn in network.pathReactions:
+        for rxn in network.path_reactions:
             if ismatch(rxn.reactants, product.species) or ismatch(rxn.products, product.species):
                 break
         else:
@@ -456,7 +456,7 @@ def pruneNetwork(network, Emax):
 if __name__ == '__main__':
 
     # Parse the command-line arguments
-    args = parseCommandLineArguments()
+    args = parse_command_line_arguments()
 
     if args.max_energy:
         Emax = float(args.max_energy[0])
@@ -500,4 +500,4 @@ if __name__ == '__main__':
         dirname, basename = os.path.split(os.path.abspath(fstr))
         basename, ext = os.path.splitext(basename)
         path = os.path.join(dirname, basename + '.py')
-        job.saveInputFile(path)
+        job.save_input_file(path)

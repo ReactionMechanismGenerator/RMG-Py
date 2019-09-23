@@ -85,8 +85,8 @@ def main():
     family.generate_tree(thermo_database=database.thermo, nprocs=min(4, nprocs))
     family.check_tree()
     family.regularize()
-    template_rxn_map = family.get_reaction_matches(thermoDatabase=database.thermo, remove_degeneracy=True, get_reverse=True,
-                                                   fix_labels=True)
+    template_rxn_map = family.get_reaction_matches(thermo_database=database.thermo, remove_degeneracy=True,
+                                                   get_reverse=True, fix_labels=True)
     family.make_bm_rules_from_template_rxn_map(template_rxn_map, nprocs=min(6, nprocs))
     family.check_tree()
     family.save(os.path.join(dbdir, 'kinetics', 'families', family_name))

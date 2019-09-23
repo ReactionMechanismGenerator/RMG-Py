@@ -39,7 +39,7 @@ import numpy as np
 from rmgpy.chemkin import get_species_identifier
 
 
-def getROPFromCKCSV(ckcsvFile):
+def get_rop_from_ckcsv(ckcsv_file):
     """
     from ckcsv file get three dicts: first_col_dict (e.g., Time/Distance_units:numpy.array)
     spc_total_dict (e.g., species_string: (header,numpy.array)), where header is sth like
@@ -51,7 +51,7 @@ def getROPFromCKCSV(ckcsvFile):
     spc_total_dict = {}
     spc_indiv_dict = {}
     read_flag = False
-    with open(ckcsvFile, 'r') as stream:
+    with open(ckcsv_file, 'r') as stream:
         reader = csv.reader(stream)
         for row in reader:
             if row[1].strip().startswith('rate-of-production'):
@@ -108,7 +108,7 @@ def getROPFromCKCSV(ckcsvFile):
     return first_col_dict, spc_total_dict, spc_indiv_dict
 
 
-def getConcentrationDictFromCKCSV(ckcsvFile):
+def get_concentration_dict_from_ckcsv(ckcsv_file):
     """
     from ckcsv file get two dicts: first_col_dict (e.g., Time/Distance_units:numpy.array)
     spc_conc_dict (e.g., species_string: numpy.array)
@@ -116,7 +116,7 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
     first_col_dict = {}  # store Time/Distance series
     spc_conc_dict = {}
 
-    with open(ckcsvFile, 'r') as stream:
+    with open(ckcsv_file, 'r') as stream:
         reader = csv.reader(stream)
         for row in reader:
             label = row[0].strip()
@@ -195,49 +195,49 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
     return first_col_dict, spc_conc_dict
 
 
-def getFluxGraphEdgesDict(spc_rop_dict, core_reactions):
+def get_flux_graph_edges_dict(spc_rop_dict, core_reactions):
     graph_edges_dict = {}
     for rxn in core_reactions:
         for pair in rxn.pairs:
             if pair in graph_edges_dict:
                 # get flux from spc_rop_dict
                 species_string = get_species_identifier(pair[0])
-                flux = getROPFlux(spc_rop_dict, species_string, rxn.index)
+                flux = get_rop_flux(spc_rop_dict, species_string, rxn.index)
                 if len(flux) > 0:
                     graph_edges_dict[pair][rxn] = flux
                 else:
                     # for rxns like PDD + rad4 == PDD + rad1
                     species_string = get_species_identifier(pair[1])
-                    flux = getROPFlux(spc_rop_dict, species_string, rxn.index)
+                    flux = get_rop_flux(spc_rop_dict, species_string, rxn.index)
                     if len(flux) > 0:
                         graph_edges_dict[pair][rxn] = -flux
             elif (pair[1], pair[0]) in graph_edges_dict:
                 # get flux from spc_rop_dict
                 species_string = get_species_identifier(pair[1])
-                flux = getROPFlux(spc_rop_dict, species_string, rxn.index)
+                flux = get_rop_flux(spc_rop_dict, species_string, rxn.index)
                 if len(flux) > 0:
                     graph_edges_dict[(pair[1], pair[0])][rxn] = flux
                 else:
                     species_string = get_species_identifier(pair[0])
-                    flux = getROPFlux(spc_rop_dict, species_string, rxn.index)
+                    flux = get_rop_flux(spc_rop_dict, species_string, rxn.index)
                     if len(flux) > 0:
                         graph_edges_dict[(pair[1], pair[0])][rxn] = -flux
             else:
                 # get flux from spc_rop_dict
                 graph_edges_dict[pair] = {}
                 species_string = get_species_identifier(pair[0])
-                flux = getROPFlux(spc_rop_dict, species_string, rxn.index)
+                flux = get_rop_flux(spc_rop_dict, species_string, rxn.index)
                 if len(flux) > 0:
                     graph_edges_dict[pair][rxn] = flux
                 else:
                     species_string = get_species_identifier(pair[1])
-                    flux = getROPFlux(spc_rop_dict, species_string, rxn.index)
+                    flux = get_rop_flux(spc_rop_dict, species_string, rxn.index)
                     if len(flux) > 0:
                         graph_edges_dict[pair][rxn] = -flux
     return graph_edges_dict
 
 
-def getROPFlux(spc_rop_dict, species_string, rxn_index):
+def get_rop_flux(spc_rop_dict, species_string, rxn_index):
     """
     get the flux (numpy:array) for a given species and given rxn
     """

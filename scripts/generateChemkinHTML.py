@@ -53,8 +53,8 @@ from rmgpy.rmg.output import save_output_html
 
 def main(chemkin, dictionary, output, foreign):
     model = CoreEdgeReactionModel()
-    model.core.species, model.core.reactions = load_chemkin_file(chemkin, dictionary, readComments=not foreign,
-                                                                 checkDuplicates=foreign)
+    model.core.species, model.core.reactions = load_chemkin_file(chemkin, dictionary, read_comments=not foreign,
+                                                                 check_duplicates=foreign)
     output_path = os.path.join(output, 'output.html')
     species_path = os.path.join(output, 'species')
     if not os.path.isdir(species_path):

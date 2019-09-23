@@ -48,7 +48,7 @@ from rmgpy.tools.isotopes import run
 ################################################################################
 
 
-def parseCommandLineArguments():
+def parse_command_line_arguments():
     """
     Parse the command-line arguments being passed to RMG-Py. This uses the
     :mod:`argparse` module, which ensures that the command-line arguments are
@@ -72,7 +72,7 @@ def parseCommandLineArguments():
 
 
 def main():
-    args = parseCommandLineArguments()
+    args = parse_command_line_arguments()
     if args.useOriginalReactions and not args.original:
         raise InputError('Cannot use original reactions without a previously run RMG job')
     maximum_isotopic_atoms = args.maximumIsotopicAtoms[0]
@@ -86,9 +86,9 @@ def main():
         raise InputError('The kie input, {0}, is not one of the currently supported methods, {1}'.format(kie, supported_kie_methods))
     initialize_log(logging.INFO, os.path.join(os.getcwd(), 'RMG.log'))
     run(input_file, outputdir, original=original,
-        maximumIsotopicAtoms=maximum_isotopic_atoms,
-        useOriginalReactions=use_original_reactions,
-        kineticIsotopeEffect=kie)
+        maximum_isotopic_atoms=maximum_isotopic_atoms,
+        use_original_reactions=use_original_reactions,
+        kinetic_isotope_effect=kie)
 
 
 if __name__ == '__main__':

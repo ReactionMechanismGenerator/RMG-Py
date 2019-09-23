@@ -72,7 +72,7 @@ class SimulateTest(unittest.TestCase):
         chemkin_file = os.path.join(folder, 'chem.inp')
         dict_file = os.path.join(folder, 'species_dictionary.txt')
 
-        run_simulation(input_file, chemkin_file, dict_file, diffusionLimited=False)
+        run_simulation(input_file, chemkin_file, dict_file, diffusion_limited=False)
 
         simfile = os.path.join(folder, 'solver', 'simulation_1_28.csv')
         sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')

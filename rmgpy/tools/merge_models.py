@@ -52,7 +52,7 @@ from rmgpy.rmg.model import ReactionModel
 
 ################################################################################
 
-def parseCommandLineArguments():
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model1', metavar='FILE', type=str, nargs='+',
                         help='the Chemkin files and species dictionaries of the first model to merge')
@@ -74,7 +74,7 @@ def main():
     Driver function that parses command line arguments and passes them to the execute function.
     """
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    args = parse_command_line_arguments()
 
     transport = False
     input_model_files = []

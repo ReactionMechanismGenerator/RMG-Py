@@ -874,7 +874,7 @@ def load_transport_file(path, species_dict):
 
 
 def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comments=True, thermo_path=None,
-                      useChemkinNames=False, checkDuplicates=True):
+                      use_chemkin_names=False, check_duplicates=True):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermo_path' point to a separate thermo file, or, if 'None' is
@@ -938,7 +938,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
         reaction.index = index
 
     # Process duplicate reactions
-    if checkDuplicates:
+    if check_duplicates:
         _process_duplicate_reactions(reaction_list)
 
     # If the transport path is given, then read it to obtain the transport
@@ -946,7 +946,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     if transport_path:
         load_transport_file(transport_path, species_dict)
 
-    if not useChemkinNames:
+    if not use_chemkin_names:
         # Apply species aliases if known
         for spec in species_list:
             try:

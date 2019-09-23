@@ -1102,8 +1102,8 @@ class RMG(util.Subject):
                             # Set up Cantera reactor
                             job = Cantera(speciesList=uncertainty.species_list, reactionList=uncertainty.reaction_list,
                                           outputDirectory=os.path.join(self.output_directory, 'global_uncertainty'))
-                            job.loadModel()
-                            job.generateConditions(
+                            job.load_model()
+                            job.generate_conditions(
                                 reactorTypeList=['IdealGasConstPressureTemperatureReactor'],
                                 reactionTimeList=time_criteria,
                                 molFracList=molFracList,

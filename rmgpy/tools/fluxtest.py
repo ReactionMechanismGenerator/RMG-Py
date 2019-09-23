@@ -36,7 +36,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 import rmgpy
-from rmgpy.tools.fluxdiagram import createFluxDiagram
+from rmgpy.tools.fluxdiagram import create_flux_diagram
 
 
 @attr('functional')
@@ -48,17 +48,17 @@ class FluxDiagramTest(unittest.TestCase):
         input_file = os.path.join(folder, 'input_simple.py')
         chemkin_file = os.path.join(folder, 'chemkin', 'chem.inp')
         dict_file = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
-        settings = {'maximumNodeCount': 50,
-                    'maximumEdgeCount': 50,
-                    'concentrationTolerance': 1e-6,
-                    'speciesRateTolerance': 1e-6,
-                    'maximumNodePenWidth': 10.0,
-                    'maximumEdgePenWidth': 10.0,
+        settings = {'max_node_count': 50,
+                    'max_edge_count': 50,
+                    'concentration_tol': 1e-6,
+                    'species_rate_tol': 1e-6,
+                    'max_node_pen_width': 10.0,
+                    'max_edge_pen_width': 10.0,
                     'radius': 2,
-                    'centralReactionCount': 2,
-                    'timeStep': 10 ** 0.1}
-        createFluxDiagram(input_file, chemkin_file, dict_file,
-                          centralSpeciesList=[1], superimpose=True, settings=settings)
+                    'central_reaction_count': 2,
+                    'time_step': 10 ** 0.1}
+        create_flux_diagram(input_file, chemkin_file, dict_file,
+                            central_species_list=[1], superimpose=True, settings=settings)
 
         outputdir = os.path.join(folder, 'flux')
         simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')
@@ -76,7 +76,7 @@ class FluxDiagramTest(unittest.TestCase):
         input_file = os.path.join(folder, 'input_liquid.py')
         chemkin_file = os.path.join(folder, 'chemkin', 'chem.inp')
         dict_file = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
-        createFluxDiagram(input_file, chemkin_file, dict_file, diffusionLimited=False)
+        create_flux_diagram(input_file, chemkin_file, dict_file, diffusionLimited=False)
 
         outputdir = os.path.join(folder, 'flux')
         simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')

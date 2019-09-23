@@ -35,14 +35,14 @@ import numpy as np
 
 import rmgpy
 from rmgpy.quantity import Quantity
-from rmgpy.tools.canteraModel import findIgnitionDelay, CanteraCondition, Cantera
+from rmgpy.tools.canteraModel import find_ignition_delay, CanteraCondition, Cantera
 
 
 class CanteraTest(unittest.TestCase):
 
     def testIgnitionDelay(self):
         """
-        Test that findIgnitionDelay() works.
+        Test that find_ignition_delay() works.
         """
 
         t = np.arange(0, 5, 0.5)
@@ -50,13 +50,13 @@ class CanteraTest(unittest.TestCase):
         OH = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 7, 2])
         CO = OH * 0.9
 
-        t_ign = findIgnitionDelay(t, P)
+        t_ign = find_ignition_delay(t, P)
         self.assertEqual(t_ign, 2.75)
 
-        t_ign = findIgnitionDelay(t, OH, 'maxHalfConcentration')
+        t_ign = find_ignition_delay(t, OH, 'maxHalfConcentration')
         self.assertEqual(t_ign, 3)
 
-        t_ign = findIgnitionDelay(t, [OH, CO], 'maxSpeciesConcentrations')
+        t_ign = find_ignition_delay(t, [OH, CO], 'maxSpeciesConcentrations')
         self.assertEqual(t_ign, 3.5)
 
     def testRepr(self):
@@ -78,7 +78,7 @@ class CanteraTest(unittest.TestCase):
         self.assertEqual(repr_condition.T0.value_si, Quantity(T).value_si)
         self.assertEqual(repr_condition.P0.value_si, Quantity(P).value_si)
         self.assertEqual(repr_condition.V0, None)
-        self.assertEqual(repr_condition.molFrac, mol_frac)
+        self.assertEqual(repr_condition.mol_frac, mol_frac)
 
 
 class RMGToCanteraTest(unittest.TestCase):
@@ -108,7 +108,7 @@ class RMGToCanteraTest(unittest.TestCase):
             else:
                 self.rmg_ctReactions.append(converted_reactions)
         job = Cantera()
-        job.loadChemkinModel(chemkin_path, transportFile=transport_path, quiet=True)
+        job.load_chemkin_model(chemkin_path, transport_file=transport_path, quiet=True)
         self.ctSpecies = job.model.species()
         self.ctReactions = job.model.reactions()
 
@@ -116,14 +116,14 @@ class RMGToCanteraTest(unittest.TestCase):
         """
         Test that species objects convert properly
         """
-        from rmgpy.tools.canteraModel import checkEquivalentCanteraSpecies
+        from rmgpy.tools.canteraModel import check_equivalent_cantera_species
         for i in range(len(self.ctSpecies)):
-            self.assertTrue(checkEquivalentCanteraSpecies(self.ctSpecies[i], self.rmg_ctSpecies[i]))
+            self.assertTrue(check_equivalent_cantera_species(self.ctSpecies[i], self.rmg_ctSpecies[i]))
 
     def testReactionConversion(self):
         """
         Test that species objects convert properly
         """
-        from rmgpy.tools.canteraModel import checkEquivalentCanteraReaction
+        from rmgpy.tools.canteraModel import check_equivalent_cantera_reaction
         for i in range(len(self.ctReactions)):
-            self.assertTrue(checkEquivalentCanteraReaction(self.ctReactions[i], self.rmg_ctReactions[i]))
+            self.assertTrue(check_equivalent_cantera_reaction(self.ctReactions[i], self.rmg_ctReactions[i]))

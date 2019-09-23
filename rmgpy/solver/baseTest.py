@@ -34,7 +34,7 @@ import unittest
 
 import rmgpy
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
-from rmgpy.tools.loader import loadRMGPyJob
+from rmgpy.tools.loader import load_rmg_py_job
 
 
 class ConcentrationPrinter(object):
@@ -56,7 +56,7 @@ class ReactionSystemTest(unittest.TestCase):
         chemkin_file = os.path.join(folder, 'chemkin/chem.inp')
         spc_dict = os.path.join(folder, 'chemkin/species_dictionary.txt')
 
-        self.rmg = loadRMGPyJob(input_file, chemkin_file, spc_dict, generateImages=False, checkDuplicates=False)
+        self.rmg = load_rmg_py_job(input_file, chemkin_file, spc_dict, generate_images=False, check_duplicates=False)
 
     def testSurfaceInitialization(self):
         """

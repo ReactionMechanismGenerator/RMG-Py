@@ -245,7 +245,7 @@ class ChemkinTest(unittest.TestCase):
         dictionary_path = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
         # load_chemkin_file
-        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, useChemkinNames=True)
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, use_chemkin_names=True)
 
         expected = [
             'Ar',
@@ -273,7 +273,7 @@ class ChemkinTest(unittest.TestCase):
         dictionary_path = os.path.join(folder, 'NC', 'species_dictionary.txt')
 
         # load_chemkin_file
-        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, useChemkinNames=True)
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, use_chemkin_names=True)
 
         for n2 in species:
             if n2.label == 'N2':

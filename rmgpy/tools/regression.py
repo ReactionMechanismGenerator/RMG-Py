@@ -50,7 +50,7 @@ initialSpecies = {}
 tol = 0.05
 
 
-def readInputFile(path):
+def read_input_file(path):
     """
     Read an regression input file at `path` on disk.
     """
@@ -153,16 +153,16 @@ def convert(origDict, initialSpecies):
 def run(benchmarkDir, testDir, title, observables, setups, tol):
     case = ObservablesTestCase(
         title=title,
-        oldDir=benchmarkDir,
-        newDir=testDir,
+        old_dir=benchmarkDir,
+        new_dir=testDir,
         observables={'species': observables}
     )
 
     reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times = setups
-    case.generateConditions(
-        reactorTypeList=reactor_types,
-        reactionTimeList=termination_times,
-        molFracList=initial_mole_fractions_list,
+    case.generate_conditions(
+        reactor_type_list=reactor_types,
+        reaction_time_list=termination_times,
+        mol_frac_list=initial_mole_fractions_list,
         Tlist=temperatures,
         Plist=pressures
     )
@@ -170,7 +170,7 @@ def run(benchmarkDir, testDir, title, observables, setups, tol):
     case.compare(tol)
 
 
-def parseArguments():
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
                         help='regression input file')
@@ -189,9 +189,9 @@ def parseArguments():
 
 
 def main():
-    input_file, benchmark, tested = parseArguments()
+    input_file, benchmark, tested = parse_command_line_arguments()
 
-    args = readInputFile(input_file)
+    args = read_input_file(input_file)
 
     run(benchmark, tested, *args)
 
