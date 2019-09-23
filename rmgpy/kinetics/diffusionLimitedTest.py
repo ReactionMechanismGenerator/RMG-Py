@@ -193,7 +193,7 @@ class TestDiffusionLimited(unittest.TestCase):
     def tearDown(self):
         diffusion_limiter.disable()
 
-    def testGetEffectiveRateUnimolecular(self):
+    def test_get_effective_rate_unimolecular(self):
         """
         Tests that the effective rate is the same as the intrinsic rate for
         unimiolecular reactions.
@@ -201,7 +201,7 @@ class TestDiffusionLimited(unittest.TestCase):
         effective_rate = diffusion_limiter.get_effective_rate(self.uni_reaction, self.T)
         self.assertEqual(effective_rate, self.intrinsic_rates[self.uni_reaction])
 
-    def testGetEffectiveRate2to1(self):
+    def test_get_effective_rate_2_to_1(self):
         """
         Tests that the effective rate is limited in the forward direction for
         a 2 -> 1 reaction
@@ -210,7 +210,7 @@ class TestDiffusionLimited(unittest.TestCase):
         self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.bi_uni_reaction])
 
-    def testGetEffectiveRate3to2(self):
+    def test_get_effective_rate_3_to_2(self):
         """
         Tests that the effective rate is limited for a 3 -> 2 reaction
         """

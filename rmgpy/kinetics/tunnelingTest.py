@@ -61,7 +61,7 @@ class TestWigner(unittest.TestCase):
         """
         self.assertAlmostEqual(self.tunneling.frequency.value_si, self.frequency, 4)
 
-    def test_calculateTunnelingFactor(self):
+    def test_calculate_tunneling_factor(self):
         """
         Test the Wigner.calculate_tunneling_factor() method.
         """
@@ -122,25 +122,25 @@ class TestEckart(unittest.TestCase):
         """
         self.assertAlmostEqual(self.tunneling.frequency.value_si, self.frequency, 4)
 
-    def test_E0_reac(self):
+    def test_e0_reac(self):
         """
         Test that the Eckart E0_reac property was properly set.
         """
         self.assertAlmostEqual(self.tunneling.E0_reac.value_si * 0.001, self.E0_reac, 4)
 
-    def test_E0_TS(self):
+    def test_e0_ts(self):
         """
         Test that the Eckart E0_TS property was properly set.
         """
         self.assertAlmostEqual(self.tunneling.E0_TS.value_si * 0.001, self.E0_TS, 4)
 
-    def test_E0_prod(self):
+    def test_e0_prod(self):
         """
         Test that the Eckart E0_prod property was properly set.
         """
         self.assertAlmostEqual(self.tunneling.E0_prod.value_si * 0.001, self.E0_prod, 4)
 
-    def test_calculateTunnelingFactor(self):
+    def test_calculate_tunneling_factor(self):
         """
         Test the Eckart.calculate_tunneling_factor() method.
         """

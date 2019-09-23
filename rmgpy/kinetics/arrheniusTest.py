@@ -70,7 +70,7 @@ class TestArrhenius(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_A(self):
+    def test_a_factor(self):
         """
         Test that the Arrhenius A property was properly set.
         """
@@ -82,25 +82,25 @@ class TestArrhenius(unittest.TestCase):
         """
         self.assertAlmostEqual(self.arrhenius.n.value_si, self.n, 6)
 
-    def test_Ea(self):
+    def test_ea(self):
         """
         Test that the Arrhenius Ea property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.Ea.value_si * 0.001, self.Ea, 6)
 
-    def test_T0(self):
+    def test_temperature0(self):
         """
         Test that the Arrhenius T0 property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.T0.value_si, self.T0, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Arrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Arrhenius Tmax property was properly set.
         """
@@ -112,7 +112,7 @@ class TestArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.arrhenius.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the Arrhenius.is_temperature_valid() method.
         """
@@ -122,7 +122,7 @@ class TestArrhenius(unittest.TestCase):
             valid0 = self.arrhenius.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the Arrhenius.get_rate_coefficient() method.
         """
@@ -133,7 +133,7 @@ class TestArrhenius(unittest.TestCase):
             kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
-    def test_changeT0(self):
+    def test_change_t0(self):
         """
         Test the Arrhenius.change_t0() method.
         """
@@ -145,7 +145,7 @@ class TestArrhenius(unittest.TestCase):
             kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-6 * kexp)
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
         Test the Arrhenius.fit_to_data() method.
         """
@@ -202,7 +202,7 @@ class TestArrhenius(unittest.TestCase):
         self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
         self.assertEqual(self.arrhenius.comment, arrhenius.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the Arrhenius.change_rate() method.
         """
@@ -213,7 +213,7 @@ class TestArrhenius(unittest.TestCase):
             kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
-    def test_toCanteraKinetics(self):
+    def test_to_cantera_kinetics(self):
         """
         Test that the Arrhenius cantera object can be set properly within 
         a cantera ElementaryReaction object
@@ -223,7 +223,7 @@ class TestArrhenius(unittest.TestCase):
         self.assertAlmostEqual(ctArrhenius.temperature_exponent, 0.5)
         self.assertAlmostEqual(ctArrhenius.activation_energy, 41.84e6)
 
-    def test_toArrheniusEP(self):
+    def test_to_arrhenius_ep(self):
         """
         Tests that the Arrhenius object can be converted to ArrheniusEP
         """
@@ -232,7 +232,7 @@ class TestArrhenius(unittest.TestCase):
         arr_ep_rate = arr_ep.get_rate_coefficient(500, 10)  # the second number should not matter
         self.assertAlmostEqual(arr_rate, arr_ep_rate)
 
-    def test_toArrheniusEP_with_alpha_and_Hrxn(self):
+    def test_to_arrhenius_ep_with_alpha_and_hrxn(self):
         """
         Tests that the Arrhenius object can be converted to ArrheniusEP given parameters
         """
@@ -243,7 +243,7 @@ class TestArrhenius(unittest.TestCase):
         arr_ep_rate = arr_ep.get_rate_coefficient(500, hrxn)
         self.assertAlmostEqual(arr_rate, arr_ep_rate)
 
-    def test_toArrheniusEP_throws_error_with_just_alpha(self):
+    def test_to_arrhenius_ep_throws_error_with_just_alpha(self):
         with self.assertRaises(Exception):
             self.arrhenius.to_arrhenius_ep(alpha=1)
 
@@ -276,7 +276,7 @@ class TestArrheniusEP(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_A(self):
+    def test_a_factor(self):
         """
         Test that the ArrheniusEP A property was properly set.
         """
@@ -294,19 +294,19 @@ class TestArrheniusEP(unittest.TestCase):
         """
         self.assertAlmostEqual(self.arrhenius.alpha.value_si, self.alpha, 6)
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the ArrheniusEP E0 property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.E0.value_si * 0.001, self.E0, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the ArrheniusEP Tmin property was properly set.
         """
         self.assertAlmostEqual(self.arrhenius.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the ArrheniusEP Tmax property was properly set.
         """
@@ -318,7 +318,7 @@ class TestArrheniusEP(unittest.TestCase):
         """
         self.assertEqual(self.arrhenius.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the ArrheniusEP.is_temperature_valid() method.
         """
@@ -328,7 +328,7 @@ class TestArrheniusEP(unittest.TestCase):
             valid0 = self.arrhenius.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the ArrheniusEP.get_rate_coefficient() method.
         """
@@ -379,7 +379,7 @@ class TestArrheniusEP(unittest.TestCase):
         self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
         self.assertEqual(self.arrhenius.comment, arrhenius.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the ArrheniusEP.change_rate() method.
         """
@@ -464,25 +464,25 @@ class TestPDepArrhenius(unittest.TestCase):
             self.assertEqual(self.kinetics.arrhenius[i].Tmax.units, self.arrhenius[i].Tmax.units)
             self.assertEqual(self.kinetics.arrhenius[i].comment, self.arrhenius[i].comment)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the PDepArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the PDepArrhenius Tmax property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the PDepArrhenius Pmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the PDepArrhenius Pmax property was properly set.
         """
@@ -494,13 +494,13 @@ class TestPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
         Test the PDepArrhenius.is_pressure_dependent() method.
         """
         self.assertTrue(self.kinetics.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the PDepArrhenius.get_rate_coefficient() method.
         """
@@ -520,7 +520,7 @@ class TestPDepArrhenius(unittest.TestCase):
             k1 = math.sqrt(self.arrhenius0.get_rate_coefficient(T) * self.arrhenius1.get_rate_coefficient(T))
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
         Test the PDepArrhenius.fit_to_data() method.
         """
@@ -600,7 +600,7 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the PDepArrhenius.change_rate() method.
         """
@@ -665,13 +665,13 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.arrhenius, self.arrhenius)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the MultiArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the MultiArrhenius Tmax property was properly set.
         """
@@ -683,7 +683,7 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the MultiArrhenius.is_temperature_valid() method.
         """
@@ -693,7 +693,7 @@ class TestMultiArrhenius(unittest.TestCase):
             valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the MultiArrhenius.get_rate_coefficient() method.
         """
@@ -751,7 +751,7 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
-    def test_toArrhenius(self):
+    def test_to_arrhenius(self):
         """
         Test that we can convert to an Arrhenius
         """
@@ -763,7 +763,7 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertAlmostEqual(fitted.Ea.value_si, answer.Ea.value_si, 2)
         self.assertAlmostEqual(fitted.T0.value_si, answer.T0.value_si, 4)
 
-    def test_toArrheniusTrange(self):
+    def test_to_arrhenius_temperature_range(self):
         """
         Test the to_arrhenius temperature range is set correctly.
         """
@@ -774,7 +774,7 @@ class TestMultiArrhenius(unittest.TestCase):
         for T in [800, 1000, 1200]:
             self.assertAlmostEqual(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0)
 
-    def test_toArrheniusMultiple(self):
+    def test_to_arrhenius_multiple(self):
         """
         Test the to_arrhenius fitting multiple kinetics over a small range, see if we're within 5% at a few points
         """
@@ -785,7 +785,7 @@ class TestMultiArrhenius(unittest.TestCase):
         for T in [800, 1000, 1200]:
             self.assertAlmostEqual(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0, delta=0.05)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the MultiArrhenius.change_rate() method.
         """
@@ -887,25 +887,25 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.arrhenius, self.arrhenius)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the MultiPDepArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the MultiPDepArrhenius Tmax property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the MultiPDepArrhenius Pmin property was properly set.
         """
         self.assertAlmostEqual(self.kinetics.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the MultiPDepArrhenius Pmax property was properly set.
         """
@@ -917,7 +917,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.kinetics.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the MultiPDepArrhenius.is_temperature_valid() method.
         """
@@ -927,7 +927,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
             valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_isPressureValid(self):
+    def test_is_pressure_valid(self):
         """
         Test the MultiPDepArrhenius.is_pressure_valid() method.
         """
@@ -937,7 +937,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
             valid0 = self.kinetics.is_pressure_valid(P)
             self.assertEqual(valid0, valid)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the MultiPDepArrhenius.get_rate_coefficient() method.
         """
@@ -957,7 +957,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
                 kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
                 self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
-    def test_getRateCoefficient_diff_plist(self):
+    def test_get_rate_coefficient_diff_plist(self):
         """
         Test the MultiPDepArrhenius.get_rate_coefficient() when plists are different.
         """
@@ -1012,7 +1012,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the PDepMultiArrhenius.change_rate() method.
         """

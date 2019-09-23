@@ -44,7 +44,7 @@ class TestUncertainties(unittest.TestCase):
     Contains unit tests for the RateUncertainty class
     """
 
-    def testExpectedUncertainty(self):
+    def test_expected_uncertainty(self):
         """
         Test RateUncertainty constructed from factor
         """

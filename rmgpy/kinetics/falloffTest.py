@@ -75,31 +75,31 @@ class TestThirdBody(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_arrheniusLow(self):
+    def test_arrhenius_low(self):
         """
         Test that the ThirdBody arrhenius property was properly set.
         """
         self.assertTrue(self.thirdBody.arrheniusLow is self.arrheniusLow)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the ThirdBody Tmin property was properly set.
         """
         self.assertAlmostEqual(self.thirdBody.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the ThirdBody Tmax property was properly set.
         """
         self.assertAlmostEqual(self.thirdBody.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the ThirdBody Pmin property was properly set.
         """
         self.assertAlmostEqual(self.thirdBody.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the ThirdBody Pmax property was properly set.
         """
@@ -111,13 +111,13 @@ class TestThirdBody(unittest.TestCase):
         """
         self.assertEqual(self.thirdBody.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
         Test the ThirdBody.is_pressure_dependent() method.
         """
         self.assertTrue(self.thirdBody.is_pressure_dependent())
 
-    def test_getEffectivePressure(self):
+    def test_get_effective_pressure(self):
         """
         Test the ThirdBody.get_effective_pressure() method.
         """
@@ -179,7 +179,7 @@ class TestThirdBody(unittest.TestCase):
         Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
-    def test_getEffectiveColliderEfficiencies(self):
+    def test_get_effective_collider_efficiencies(self):
         """
         Test the get_effective_collider_efficiencies() method
         """
@@ -195,7 +195,7 @@ class TestThirdBody(unittest.TestCase):
         efficiencies = np.array([3, 3, 0.7])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the ThirdBody.get_rate_coefficient() method.
         """
@@ -278,7 +278,7 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the ThirdBody.change_rate() method.
         """
@@ -330,37 +330,37 @@ class TestLindemann(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_arrheniusHigh(self):
+    def test_arrhenius_high(self):
         """
         Test that the Lindemann arrheniusHigh property was properly set.
         """
         self.assertTrue(self.lindemann.arrheniusHigh is self.arrheniusHigh)
 
-    def test_arrheniusLow(self):
+    def test_arrhenius_low(self):
         """
         Test that the Lindemann arrheniusLow property was properly set.
         """
         self.assertTrue(self.lindemann.arrheniusLow is self.arrheniusLow)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Lindemann Tmin property was properly set.
         """
         self.assertAlmostEqual(self.lindemann.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Lindemann Tmax property was properly set.
         """
         self.assertAlmostEqual(self.lindemann.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the Lindemann Pmin property was properly set.
         """
         self.assertAlmostEqual(self.lindemann.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the Lindemann Pmax property was properly set.
         """
@@ -372,13 +372,13 @@ class TestLindemann(unittest.TestCase):
         """
         self.assertEqual(self.lindemann.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
         Test the Lindemann.is_pressure_dependent() method.
         """
         self.assertTrue(self.lindemann.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the Lindemann.get_rate_coefficient() method.
         """
@@ -477,7 +477,7 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the Lindemann.change_rate() method.
         """
@@ -537,13 +537,13 @@ class TestTroe(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_arrheniusHigh(self):
+    def test_arrhenius_high(self):
         """
         Test that the Troe arrheniusHigh property was properly set.
         """
         self.assertTrue(self.troe.arrheniusHigh is self.arrheniusHigh)
 
-    def test_arrheniusLow(self):
+    def test_arrhenius_low(self):
         """
         Test that the Troe arrheniusLow property was properly set.
         """
@@ -555,43 +555,43 @@ class TestTroe(unittest.TestCase):
         """
         self.assertEqual(self.troe.alpha, self.alpha)
 
-    def test_T3(self):
+    def test_t3(self):
         """
         Test that the Troe T3 property was properly set.
         """
         self.assertAlmostEqual(self.troe.T3.value_si, self.T3, 6)
 
-    def test_T1(self):
+    def test_t1(self):
         """
         Test that the Troe T1 property was properly set.
         """
         self.assertAlmostEqual(self.troe.T1.value_si, self.T1, 6)
 
-    def test_T2(self):
+    def test_t2(self):
         """
         Test that the Troe T2 property was properly set.
         """
         self.assertAlmostEqual(self.troe.T2.value_si, self.T2, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Troe Tmin property was properly set.
         """
         self.assertAlmostEqual(self.troe.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Troe Tmax property was properly set.
         """
         self.assertAlmostEqual(self.troe.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the Troe Pmin property was properly set.
         """
         self.assertAlmostEqual(self.troe.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the Troe Pmax property was properly set.
         """
@@ -603,13 +603,13 @@ class TestTroe(unittest.TestCase):
         """
         self.assertEqual(self.troe.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
         Test the Troe.is_pressure_dependent() method.
         """
         self.assertTrue(self.troe.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the Troe.get_rate_coefficient() method.
         """
@@ -722,7 +722,7 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the Troe.change_rate() method.
         """

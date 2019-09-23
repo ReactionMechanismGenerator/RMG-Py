@@ -87,25 +87,25 @@ class TestChebyshev(unittest.TestCase):
                 if i == 0 and j == 0: C0 -= 6  # Unit conversion from cm^3/(mol*s) to m^3/(mol*s)
                 self.assertAlmostEqual(C0, C, delta=1e-6 * C0)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Chebyshev Tmin property was properly set.
         """
         self.assertAlmostEqual(self.chebyshev.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Chebyshev Tmax property was properly set.
         """
         self.assertAlmostEqual(self.chebyshev.Tmax.value_si, self.Tmax, 6)
 
-    def test_Pmin(self):
+    def test_pressure_min(self):
         """
         Test that the Chebyshev Pmin property was properly set.
         """
         self.assertAlmostEqual(self.chebyshev.Pmin.value_si * 1e-5, self.Pmin, 6)
 
-    def test_Pmax(self):
+    def test_pressure_max(self):
         """
         Test that the Chebyshev Pmax property was properly set.
         """
@@ -117,14 +117,14 @@ class TestChebyshev(unittest.TestCase):
         """
         self.assertEqual(self.chebyshev.comment, self.comment)
 
-    def test_isPressureDependent(self):
+    def test_is_pressure_dependent(self):
         """
         Test the Chebyshev.is_pressure_dependent() method.
         
         """
         self.assertTrue(self.chebyshev.is_pressure_dependent())
 
-    def test_getRateCoefficient(self):
+    def test_get_rate_coefficient(self):
         """
         Test the Chebyshev.get_rate_coefficient() method.
         """
@@ -141,7 +141,7 @@ class TestChebyshev(unittest.TestCase):
                 Kact = self.chebyshev.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact / Kexp[t, p], 1.0, 4, '{0} != {1} within 4 places'.format(Kexp[t, p], Kact))
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
         Test the Chebyshev.fit_to_data() method.
         """
@@ -161,7 +161,7 @@ class TestChebyshev(unittest.TestCase):
                 kfit = chebyshev.get_rate_coefficient(Tdata[t], Pdata[p]) * 1e6
                 self.assertAlmostEqual(kfit, kdata[t, p], delta=1e-4 * kdata[t, p])
 
-    def test_fitToData2(self):
+    def test_fit_to_data2(self):
         """
         Test the Chebyshev.fit_to_data() method throws error without enough degrees of freedom.
         
@@ -229,7 +229,7 @@ class TestChebyshev(unittest.TestCase):
         self.assertEqual(self.chebyshev.Pmax.units, chebyshev.Pmax.units)
         self.assertEqual(self.chebyshev.comment, chebyshev.comment)
 
-    def test_changeRate(self):
+    def test_change_rate(self):
         """
         Test the Chebyshev.change_rate() method.
         """
