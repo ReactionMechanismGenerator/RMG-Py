@@ -677,12 +677,12 @@ class PressureDependenceJob(object):
                         f.write('    ],\n')
                     f.write('    spinMultiplicity = {0:d},\n'.format(spec.conformer.spin_multiplicity))
                     f.write('    opticalIsomers = {0:d},\n'.format(spec.conformer.optical_isomers))
-                if spec.molecularWeight is not None:
-                    f.write('    molecularWeight = {0!r},\n'.format(spec.molecularWeight))
-                if spec.transportData is not None:
-                    f.write('    collisionModel = {0!r},\n'.format(spec.transportData))
-                if spec.energyTransferModel is not None:
-                    f.write('    energyTransferModel = {0!r},\n'.format(spec.energyTransferModel))
+                if spec.molecular_weight is not None:
+                    f.write('    molecularWeight = {0!r},\n'.format(spec.molecular_weight))
+                if spec.transport_data is not None:
+                    f.write('    collisionModel = {0!r},\n'.format(spec.transport_data))
+                if spec.energy_transfer_model is not None:
+                    f.write('    energyTransferModel = {0!r},\n'.format(spec.energy_transfer_model))
                 if spec.thermo is not None:
                     f.write('    thermo = {0!r},\n'.format(spec.thermo))
                 f.write(')\n\n')

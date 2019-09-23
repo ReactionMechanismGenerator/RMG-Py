@@ -679,7 +679,7 @@ class Reaction:
             if adsorbate is None or adsorbate.contains_surface_site():
                 logging.error("Problem reaction: {0!s}".format(self))
                 raise ReactionError("Couldn't find the adsorbate!")
-            molecular_weight_kg = adsorbate.molecularWeight.value_si
+            molecular_weight_kg = adsorbate.molecular_weight.value_si
             # molecular_weight_kg in kg per molecule
             rate_coefficient *= math.sqrt(constants.kB * T / (2 * math.pi * molecular_weight_kg))
 

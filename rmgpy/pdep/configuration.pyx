@@ -190,11 +190,11 @@ cdef class Configuration(object):
         for spec, frac in bath_gas.items():
             bath_gas_sigma += spec.get_transport_data().sigma.value_si * frac
             bath_gas_epsilon *= spec.get_transport_data().epsilon.value_si ** frac
-            bath_gas_mw += spec.molecularWeight.value_si * frac
+            bath_gas_mw += spec.molecular_weight.value_si * frac
 
         sigma = 0.5 * (self.species[0].get_transport_data().sigma.value_si + bath_gas_sigma)
         epsilon = sqrt((self.species[0].get_transport_data().epsilon.value_si * bath_gas_epsilon))
-        mu = 1.0 / (1.0 / self.species[0].molecularWeight.value_si + 1.0 / bath_gas_mw)
+        mu = 1.0 / (1.0 / self.species[0].molecular_weight.value_si + 1.0 / bath_gas_mw)
         gas_concentration = P / constants.kB / T
 
         # Evaluate configuration integral
@@ -214,8 +214,8 @@ cdef class Configuration(object):
         mol/kJ is also required.
         """
         assert self.is_unimolecular()
-        assert self.species[0].energyTransferModel is not None
-        return self.species[0].energyTransferModel.generate_collision_matrix(T, dens_states, e_list, j_list)
+        assert self.species[0].energy_transfer_model is not None
+        return self.species[0].energy_transfer_model.generate_collision_matrix(T, dens_states, e_list, j_list)
 
     cpdef calculate_density_of_states(self, np.ndarray e_list, bint active_j_rotor=True, bint active_k_rotor=True,
                                       bint rmgmode=False):
@@ -274,8 +274,8 @@ cdef class Configuration(object):
                             mass.append(mode.mass.value_si)
                             break
                     else:
-                        if species.molecularWeight is not None:
-                            mass.append(species.molecularWeight.value_si)
+                        if species.molecular_weight is not None:
+                            mass.append(species.molecular_weight.value_si)
                         else:
                             m = 0
                             for atom in species.molecule[0].atoms:

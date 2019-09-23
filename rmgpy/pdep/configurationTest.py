@@ -82,9 +82,9 @@ class TestConfiguration(unittest.TestCase):
                 spin_multiplicity=1,
                 optical_isomers=1,
             ),
-            molecularWeight=(74.07, "g/mol"),
-            transportData=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
-            energyTransferModel=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
+            molecular_weight=(74.07, "g/mol"),
+            transport_data=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
         self.nC4H8 = Species(
@@ -157,7 +157,7 @@ class TestConfiguration(unittest.TestCase):
         # ensure this extra fluff is not in Network string
         attributes = ['Species', 'Conformer', 'Molecule', 'NonlinearRotor',
                       'HarmonicOscillator', 'frequencies', 'spin_multiplicity', 'TransportData',
-                      'molecularWeight', 'SingleExponentialDown']
+                      'molecular_weight', 'SingleExponentialDown']
         for label in attributes:
             self.assertNotIn(label, output)
 

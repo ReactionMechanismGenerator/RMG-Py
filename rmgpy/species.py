@@ -78,52 +78,52 @@ class Species(object):
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
-    `transportData`         A set of transport collision parameters
-    `molecularWeight`       The molecular weight of the species
-    `energyTransferModel`   The collisional energy transfer model to use
+    `transport_data`        A set of transport collision parameters
+    `molecular_weight`      The molecular weight of the species
+    `energy_transfer_model` The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
                                 Reaction libraries and seed mechanisms that include the species are
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
-    `symmetry_number`        Estimated symmetry number of the species, using the resonance hybrid
-    `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
-    `explicitlyAllowed`     Flag to exempt species from forbidden structure checks
+    `symmetry_number`       Estimated symmetry number of the species, using the resonance hybrid
+    `creation_iteration`    Iteration which the species is created within the reaction mechanism generation algorithm
+    `explicitly_allowed`    Flag to exempt species from forbidden structure checks
     ======================= ====================================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transportData=None,
-                 molecularWeight=None, energyTransferModel=None, reactive=True, props=None, SMILES='', InChI='',
-                 aug_inchi=None, symmetry_number=-1, creationIteration=0, explicitlyAllowed=False):
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transport_data=None,
+                 molecular_weight=None, energy_transfer_model=None, reactive=True, props=None, smiles='', inchi='',
+                 aug_inchi=None, symmetry_number=-1, creation_iteration=0, explicitly_allowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
         self.conformer = conformer
         self.molecule = molecule or []
-        self.transportData = transportData
+        self.transport_data = transport_data
         self.reactive = reactive
-        self.molecularWeight = molecularWeight
-        self.energyTransferModel = energyTransferModel
+        self.molecular_weight = molecular_weight
+        self.energy_transfer_model = energy_transfer_model
         self.props = props or {}
         self.aug_inchi = aug_inchi
         self.symmetry_number = symmetry_number
-        self.isSolvent = False
-        self.creationIteration = creationIteration
-        self.explicitlyAllowed = explicitlyAllowed
+        self.is_solvent = False
+        self.creation_iteration = creation_iteration
+        self.explicitly_allowed = explicitly_allowed
         self._fingerprint = None
         self._inchi = None
         self._smiles = None
 
-        if InChI and SMILES:
+        if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Species instantiation, '
                             'using InChI and ignoring SMILES.')
-        if InChI:
-            self.molecule = [Molecule(inchi=InChI)]
-            self._inchi = InChI
-        elif SMILES:
-            self.molecule = [Molecule(smiles=SMILES)]
-            self._smiles = SMILES
+        if inchi:
+            self.molecule = [Molecule(inchi=inchi)]
+            self._inchi = inchi
+        elif smiles:
+            self.molecule = [Molecule(smiles=smiles)]
+            self._smiles = smiles
 
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule) > 1:
@@ -149,14 +149,14 @@ class Species(object):
             string += 'conformer={0!r}, '.format(self.conformer)
         if len(self.molecule) > 0:
             string += 'molecule={0!r}, '.format(self.molecule)
-        if self.transportData is not None:
-            string += 'transportData={0!r}, '.format(self.transportData)
+        if self.transport_data is not None:
+            string += 'transport_data={0!r}, '.format(self.transport_data)
         if not self.reactive:
             string += 'reactive={0}, '.format(self.reactive)
-        if self.molecularWeight is not None:
-            string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
-        if self.energyTransferModel is not None:
-            string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
+        if self.molecular_weight is not None:
+            string += 'molecular_weight={0!r}, '.format(self.molecular_weight)
+        if self.energy_transfer_model is not None:
+            string += 'energy_transfer_model={0!r}, '.format(self.energy_transfer_model)
         string = string[:-2] + ')'
         return string
 
@@ -181,8 +181,8 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData,
-                          self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transport_data,
+                          self.molecular_weight, self.energy_transfer_model, self.reactive, self.props))
 
     def __hash__(self):
         """
@@ -256,15 +256,15 @@ class Species(object):
             return None
 
     @property
-    def molecularWeight(self):
+    def molecular_weight(self):
         """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
-        if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
-            self._molecularWeight = quantity.Mass(self.molecule[0].get_molecular_weight(), 'kg/mol')
-        return self._molecularWeight
+        if self._molecular_weight is None and self.molecule is not None and len(self.molecule) > 0:
+            self._molecular_weight = quantity.Mass(self.molecule[0].get_molecular_weight(), 'kg/mol')
+        return self._molecular_weight
 
-    @molecularWeight.setter
-    def molecularWeight(self, value):
-        self._molecularWeight = quantity.Mass(value)
+    @molecular_weight.setter
+    def molecular_weight(self, value):
+        self._molecular_weight = quantity.Mass(value)
 
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
@@ -411,8 +411,8 @@ class Species(object):
                               'Check that thermo is a NASA polynomial.')
                 raise
 
-        if self.transportData:
-            ct_species.transport = self.transportData.to_cantera()
+        if self.transport_data:
+            ct_species.transport = self.transport_data.to_cantera()
 
         return ct_species
 
@@ -557,12 +557,12 @@ class Species(object):
         """
         if self.symmetry_number < 1:
             cython.declare(resonanceHybrid=Molecule, maxSymmetryNum=cython.short)
-            resonanceHybrid = self.get_resonance_hybrid()
+            resonance_hybrid = self.get_resonance_hybrid()
             try:
-                self.symmetry_number = resonanceHybrid.get_symmetry_number()
+                self.symmetry_number = resonance_hybrid.get_symmetry_number()
             except KeyError:
                 logging.error('Wrong bond order generated by resonance hybrid.')
-                logging.error('Resonance Hybrid: {}'.format(resonanceHybrid.to_adjacency_list()))
+                logging.error('Resonance Hybrid: {}'.format(resonance_hybrid.to_adjacency_list()))
                 for index, mol in enumerate(self.molecule):
                     logging.error("Resonance Structure {}: {}".format(index, mol.to_adjacency_list()))
                 raise
@@ -631,7 +631,7 @@ class Species(object):
                 # set radicals in resonance hybrid to maximum of all structures
                 if atom1.radical_electrons > 0:
                     new_atoms[index1].radical_electrons = max(atom1.radical_electrons,
-                                                             new_atoms[index1].radical_electrons)
+                                                              new_atoms[index1].radical_electrons)
         new_mol.update_atomtypes(log_species=False, raise_exception=False)
         return new_mol
 
@@ -678,10 +678,10 @@ class Species(object):
 
         other.conformer = deepcopy(self.conformer)
 
-        other.transportData = deepcopy(self.transportData)
+        other.transport_data = deepcopy(self.transport_data)
 
-        other.molecularWeight = deepcopy(self.molecularWeight)
-        other.energyTransferModel = deepcopy(self.energyTransferModel)
+        other.molecular_weight = deepcopy(self.molecular_weight)
+        other.energy_transfer_model = deepcopy(self.energy_transfer_model)
         other.reactive = self.reactive
         other.props = deepcopy(self.props)
 
@@ -736,7 +736,7 @@ class Species(object):
 
     def generate_transport_data(self):
         """
-        Generate the transportData parameters for the species.
+        Generate the transport_data parameters for the species.
         """
         from rmgpy.data.rmg import get_db
         try:
@@ -747,7 +747,7 @@ class Species(object):
             raise
 
         # count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
-        self.transportData = transport_db.get_transport_properties(self)[0]
+        self.transport_data = transport_db.get_transport_properties(self)[0]
 
     def get_transport_data(self):
         """
@@ -755,10 +755,10 @@ class Species(object):
         calculates it if it is not yet available.
         """
 
-        if not self.transportData:
+        if not self.transport_data:
             self.generate_transport_data()
 
-        return self.transportData
+        return self.transport_data
 
     def generate_statmech(self):
         """
@@ -808,7 +808,7 @@ class Species(object):
         Generate the collisional energy transfer model parameters for the
         species. This "algorithm" is *very* much in need of improvement.
         """
-        self.energyTransferModel = SingleExponentialDown(
+        self.energy_transfer_model = SingleExponentialDown(
             alpha0=(300 * 0.011962, "kJ/mol"),
             T0=(300, "K"),
             n=0.85,

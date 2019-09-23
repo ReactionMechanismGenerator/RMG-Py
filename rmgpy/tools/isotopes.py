@@ -268,7 +268,7 @@ def generate_isotopomers(spc, N=1):
 
     spcs = []
     for isomol in mols:
-        isotopomer = Species(molecule=[isomol], thermo=deepcopy(spc.thermo), transportData=spc.transportData,
+        isotopomer = Species(molecule=[isomol], thermo=deepcopy(spc.thermo), transport_data=spc.transport_data,
                              reactive=spc.reactive)
         isotopomer.generate_resonance_structures(keep_isomorphic=True)
         spcs.append(isotopomer)

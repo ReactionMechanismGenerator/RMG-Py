@@ -218,9 +218,9 @@ class ChemkinTest(unittest.TestCase):
         Test that we can write to chemkin and recreate the same transport object
         """
         Ar = Species(label="Ar",
-                     transportData=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
-                                                 dipoleMoment=(0, 'De'), polarizability=(0, 'angstrom^3'),
-                                                 rotrelaxcollnum=0.0, comment="""GRI-Mech"""))
+                     transport_data=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
+                                                  dipoleMoment=(0, 'De'), polarizability=(0, 'angstrom^3'),
+                                                  rotrelaxcollnum=0.0, comment="""GRI-Mech"""))
 
         Ar_write = Species(label="Ar")
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data')

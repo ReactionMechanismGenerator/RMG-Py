@@ -185,15 +185,15 @@ def species(label, *args, **kwargs):
         spec.conformer = Conformer(E0=E0, modes=modes, spin_multiplicity=spin_multiplicity,
                                    optical_isomers=optical_isomers)
         if molecular_weight is not None:
-            spec.molecularWeight = molecular_weight
-        elif spec.molecularWeight is None and is_pdep(job_list):
-            # If a structure was given, simply calling spec.molecularWeight will calculate the molecular weight
+            spec.molecular_weight = molecular_weight
+        elif spec.molecular_weight is None and is_pdep(job_list):
+            # If a structure was given, simply calling spec.molecular_weight will calculate the molecular weight
             # If one of the jobs is pdep and no molecular weight is given or calculated, raise an error
             raise ValueError("No molecularWeight was entered for species {0}. Since a structure wasn't given"
                              " as well, the molecularWeight, which is important for pressure dependent jobs,"
                              " cannot be reconstructed.".format(spec.label))
-        spec.transportData = collision_model
-        spec.energyTransferModel = energy_transfer_model
+        spec.transport_data = collision_model
+        spec.energy_transfer_model = energy_transfer_model
         spec.thermo = thermo
         spec.reactive = reactive
 
@@ -225,7 +225,7 @@ def species(label, *args, **kwargs):
             spec.generate_statmech()
 
         if not energy_transfer_model:
-            # default to RMG's method of generating energyTransferModel
+            # default to RMG's method of generating energy_transfer_model
             spec.generate_energy_transfer_model()
 
     return spec

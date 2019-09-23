@@ -862,7 +862,7 @@ def load_transport_file(path, species_dict):
                 label = line[0:16].strip()
                 data = line[16:].split()
                 species = species_dict[label]
-                species.transportData = TransportData(
+                species.transport_data = TransportData(
                     shapeIndex=int(data[0]),
                     sigma=(float(data[2]), 'angstrom'),
                     epsilon=(float(data[1]), 'K'),

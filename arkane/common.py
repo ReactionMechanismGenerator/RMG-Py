@@ -168,13 +168,13 @@ class ArkaneSpecies(RMGObject):
             if species.conformer is not None:
                 self.conformer = species.conformer
                 self.xyz = self.update_xyz_string()
-            self.molecular_weight = species.molecularWeight
+            self.molecular_weight = species.molecular_weight
             if species.symmetry_number != -1:
                 self.symmetry_number = species.symmetry_number
-            if species.transportData is not None:
-                self.transport_data = species.transportData  # called `collisionModel` in Arkane
-            if species.energyTransferModel is not None:
-                self.energy_transfer_model = species.energyTransferModel
+            if species.transport_data is not None:
+                self.transport_data = species.transport_data  # called `collisionModel` in Arkane
+            if species.energy_transfer_model is not None:
+                self.energy_transfer_model = species.energy_transfer_model
             if species.thermo is not None:
                 self.thermo = species.thermo.as_dict()
                 data = species.get_thermo_data()
@@ -282,11 +282,11 @@ class ArkaneSpecies(RMGObject):
             del data['imaginary_frequency']
         if not data['is_ts']:
             if 'smiles' in data:
-                data['species'] = Species(SMILES=data['smiles'])
+                data['species'] = Species(smiles=data['smiles'])
             elif 'adjacency_list' in data:
                 data['species'] = Species().from_adjacency_list(data['adjacency_list'])
             elif 'inchi' in data:
-                data['species'] = Species(InChI=data['inchi'])
+                data['species'] = Species(inchi=data['inchi'])
             else:
                 raise ValueError('Cannot load ArkaneSpecies from YAML file {0}. Either `smiles`, `adjacency_list`, or '
                                  'InChI must be specified'.format(path))

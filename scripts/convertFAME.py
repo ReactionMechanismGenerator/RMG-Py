@@ -166,14 +166,14 @@ def loadFAMEInput(path, moleculeDict=None):
     species_dict = {}
 
     # Read bath gas parameters
-    bath_gas = Species(label='bath_gas', energyTransferModel=energy_transfer_model)
+    bath_gas = Species(label='bath_gas', energy_transfer_model=energy_transfer_model)
     mol_wt_units, mol_wt = readMeaningfulLine(f).split()
     if mol_wt_units == 'u': mol_wt_units = 'amu'
-    bath_gas.molecularWeight = Quantity(float(mol_wt), mol_wt_units)
+    bath_gas.molecular_weight = Quantity(float(mol_wt), mol_wt_units)
     sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
     epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
     assert epsilonLJunits == 'J'
-    bath_gas.transportData = TransportData(
+    bath_gas.transport_data = TransportData(
         sigma=Quantity(float(sigmaLJ), sigmaLJunits),
         epsilon=Quantity(float(epsilonLJ) / constants.kB, 'K'),
     )
@@ -184,7 +184,7 @@ def loadFAMEInput(path, moleculeDict=None):
     for i in range(n_spec):
         species = Species()
         species.conformer = Conformer()
-        species.energyTransferModel = energy_transfer_model
+        species.energy_transfer_model = energy_transfer_model
 
         # Read species label
         species.label = readMeaningfulLine(f)
@@ -218,11 +218,11 @@ def loadFAMEInput(path, moleculeDict=None):
         # Read species collision parameters
         mol_wt_units, mol_wt = readMeaningfulLine(f).split()
         if mol_wt_units == 'u': mol_wt_units = 'amu'
-        species.molecularWeight = Quantity(float(mol_wt), mol_wt_units)
+        species.molecular_weight = Quantity(float(mol_wt), mol_wt_units)
         sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
         epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
         assert epsilonLJunits == 'J'
-        species.transportData = TransportData(
+        species.transport_data = TransportData(
             sigma=Quantity(float(sigmaLJ), sigmaLJunits),
             epsilon=Quantity(float(epsilonLJ) / constants.kB, 'K'),
         )

@@ -81,9 +81,9 @@ class TestPdep(unittest.TestCase):
                 spin_multiplicity=1,
                 optical_isomers=1,
             ),
-            molecularWeight=(74.07, "g/mol"),
-            transportData=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
-            energyTransferModel=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
+            molecular_weight=(74.07, "g/mol"),
+            transport_data=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
         self.nC4H10O.from_smiles('CCCCO')
@@ -131,9 +131,9 @@ class TestPdep(unittest.TestCase):
 
         self.N2 = Species(
             label='N2',
-            molecularWeight=(28.04, "g/mol"),
-            transportData=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
-            energyTransferModel=None,
+            molecular_weight=(28.04, "g/mol"),
+            transport_data=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
+            energy_transfer_model=None,
         )
 
         self.N2.from_smiles('N#N')

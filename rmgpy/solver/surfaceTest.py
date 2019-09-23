@@ -175,7 +175,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                 Tmin=(100, 'K'), Tmax=(5000, 'K'), E0=(135.382, 'kJ/mol'),
                 comment="""Thermo library: primaryThermoLibrary + radical(CH3)"""
             ),
-            molecularWeight=(15.0345, 'amu'),
+            molecular_weight=(15.0345, 'amu'),
         )
 
         x = Species(

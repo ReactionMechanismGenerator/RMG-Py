@@ -90,13 +90,13 @@ cpdef apply_modified_strong_collision_method(network, str efficiency_model='defa
     
     d_e_down = np.zeros(n_isom)
     for i in range(n_isom):
-        d_e_down[i] = network.isomers[i].species[0].energyTransferModel.get_alpha(temperature)
+        d_e_down[i] = network.isomers[i].species[0].energy_transfer_model.get_alpha(temperature)
     
     # Compute collision efficiencies
     coll_eff = np.ones(n_isom)
     if efficiency_model == 'default':
         for i in range(n_isom):
-            coll_eff[i] = network.isomers[i].species[0].energyTransferModel.calculate_collision_efficiency(
+            coll_eff[i] = network.isomers[i].species[0].energy_transfer_model.calculate_collision_efficiency(
                 temperature, e_list, j_list, dens_states[i, :, :], E0[i], e_reac[i])
     elif efficiency_model == 'none':
         pass

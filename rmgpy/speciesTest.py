@@ -78,8 +78,8 @@ class TestSpecies(unittest.TestCase):
                 optical_isomers=1,
             ),
             molecule=[Molecule().from_smiles('C=C')],
-            transportData=TransportData(sigma=(1, 'angstrom'), epsilon=(100, 'K')),
-            molecularWeight=(28.03, 'amu'),
+            transport_data=TransportData(sigma=(1, 'angstrom'), epsilon=(100, 'K')),
+            molecular_weight=(28.03, 'amu'),
             reactive=True,
         )
 
@@ -117,13 +117,13 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.species.molecule[0].is_isomorphic(species.molecule[0]))
         self.assertEqual(self.species.conformer.E0.value_si, species.conformer.E0.value_si)
         self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
-        self.assertEqual(self.species.transportData.sigma.value_si, species.transportData.sigma.value_si)
-        self.assertEqual(self.species.transportData.sigma.units, species.transportData.sigma.units)
-        self.assertAlmostEqual(self.species.transportData.epsilon.value_si / 1.381e-23,
-                               species.transportData.epsilon.value_si / 1.381e-23, 4)
-        self.assertEqual(self.species.transportData.epsilon.units, species.transportData.epsilon.units)
-        self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
-        self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
+        self.assertEqual(self.species.transport_data.sigma.value_si, species.transport_data.sigma.value_si)
+        self.assertEqual(self.species.transport_data.sigma.units, species.transport_data.sigma.units)
+        self.assertAlmostEqual(self.species.transport_data.epsilon.value_si / 1.381e-23,
+                               species.transport_data.epsilon.value_si / 1.381e-23, 4)
+        self.assertEqual(self.species.transport_data.epsilon.units, species.transport_data.epsilon.units)
+        self.assertEqual(self.species.molecular_weight.value_si, species.molecular_weight.value_si)
+        self.assertEqual(self.species.molecular_weight.units, species.molecular_weight.units)
         self.assertEqual(self.species.reactive, species.reactive)
 
     def test_output(self):
@@ -146,18 +146,18 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.species.molecule[0].is_isomorphic(species.molecule[0]))
         self.assertEqual(self.species.conformer.E0.value_si, species.conformer.E0.value_si)
         self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
-        self.assertEqual(self.species.transportData.sigma.value_si, species.transportData.sigma.value_si)
-        self.assertEqual(self.species.transportData.sigma.units, species.transportData.sigma.units)
-        self.assertAlmostEqual(self.species.transportData.epsilon.value_si, species.transportData.epsilon.value_si, 3)
-        self.assertEqual(self.species.transportData.epsilon.units, species.transportData.epsilon.units)
-        self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
-        self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
+        self.assertEqual(self.species.transport_data.sigma.value_si, species.transport_data.sigma.value_si)
+        self.assertEqual(self.species.transport_data.sigma.units, species.transport_data.sigma.units)
+        self.assertAlmostEqual(self.species.transport_data.epsilon.value_si, species.transport_data.epsilon.value_si, 3)
+        self.assertEqual(self.species.transport_data.epsilon.units, species.transport_data.epsilon.units)
+        self.assertEqual(self.species.molecular_weight.value_si, species.molecular_weight.value_si)
+        self.assertEqual(self.species.molecular_weight.units, species.molecular_weight.units)
         self.assertEqual(self.species.reactive, species.reactive)
 
     def test_equality(self):
         """Test that we can perform equality comparison with Species objects"""
-        spc1 = Species(SMILES='C')
-        spc2 = Species(SMILES='C')
+        spc1 = Species(smiles='C')
+        spc2 = Species(smiles='C')
 
         self.assertNotEqual(spc1, spc2)
         self.assertEqual(spc1, spc1)
@@ -165,10 +165,10 @@ class TestSpecies(unittest.TestCase):
 
     def test_less_than(self):
         """Test that we can perform less than comparison with Species objects"""
-        spc1 = Species(index=1, label='a', SMILES='C')
-        spc2 = Species(index=2, label='a', SMILES='C')
-        spc3 = Species(index=2, label='b', SMILES='C')
-        spc4 = Species(index=1, label='a', SMILES='CC')
+        spc1 = Species(index=1, label='a', smiles='C')
+        spc2 = Species(index=2, label='a', smiles='C')
+        spc3 = Species(index=2, label='b', smiles='C')
+        spc4 = Species(index=1, label='a', smiles='CC')
 
         self.assertLess(spc1, spc2)
         self.assertLess(spc1, spc3)
@@ -179,10 +179,10 @@ class TestSpecies(unittest.TestCase):
 
     def test_greater_than(self):
         """Test that we can perform greater than comparison with Species objects"""
-        spc1 = Species(index=1, label='a', SMILES='C')
-        spc2 = Species(index=2, label='a', SMILES='C')
-        spc3 = Species(index=2, label='b', SMILES='C')
-        spc4 = Species(index=1, label='a', SMILES='CC')
+        spc1 = Species(index=1, label='a', smiles='C')
+        spc2 = Species(index=2, label='a', smiles='C')
+        spc3 = Species(index=2, label='b', smiles='C')
+        spc4 = Species(index=1, label='a', smiles='CC')
 
         self.assertGreater(spc2, spc1)
         self.assertGreater(spc3, spc1)
@@ -193,10 +193,10 @@ class TestSpecies(unittest.TestCase):
 
     def test_hash(self):
         """Test behavior of Species hashing using dictionaries and sets"""
-        spc1 = Species(index=1, label='a', SMILES='C')
-        spc2 = Species(index=2, label='a', SMILES='C')
-        spc3 = Species(index=2, label='b', SMILES='C')
-        spc4 = Species(index=1, label='a', SMILES='CC')
+        spc1 = Species(index=1, label='a', smiles='C')
+        spc2 = Species(index=2, label='a', smiles='C')
+        spc3 = Species(index=2, label='b', smiles='C')
+        spc4 = Species(index=1, label='a', smiles='CC')
 
         # Test dictionary behavior
         self.assertEqual(len(dict.fromkeys([spc1, spc2, spc3, spc4])), 4)
@@ -357,7 +357,7 @@ class TestSpecies(unittest.TestCase):
         self.assertEquals(self.species.label, spc_cp.label)
         self.assertEquals(self.species.index, spc_cp.index)
 
-        self.assertTrue(self.species.molecularWeight.equals(spc_cp.molecularWeight))
+        self.assertTrue(self.species.molecular_weight.equals(spc_cp.molecular_weight))
         self.assertEquals(self.species.reactive, spc_cp.reactive)
 
     def test_cantera(self):
@@ -371,10 +371,10 @@ class TestSpecies(unittest.TestCase):
                          NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 4.37967], Tmin=(1000, 'K'),
                                         Tmax=(6000, 'K'))], Tmin=(200, 'K'), Tmax=(6000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(smiles="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'),
-                                                                      sigma=(3.33, 'angstrom'), dipoleMoment=(2, 'De'),
-                                                                      polarizability=(1, 'angstrom^3'),
-                                                                      rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+"""), molecule=[Molecule(smiles="[Ar]")], transport_data=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'),
+                                                                       sigma=(3.33, 'angstrom'), dipoleMoment=(2, 'De'),
+                                                                       polarizability=(1, 'angstrom^3'),
+                                                                       rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
 
         rmg_ct_species = rmg_species.to_cantera(use_chemkin_identifier=True)
 
@@ -407,11 +407,11 @@ Thermo library: primaryThermoLibrary
         """
 
         spc = Species(label="Ar", molecule=[Molecule(smiles="[Ar]")],
-                      transportData=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
-                                                  dipoleMoment=(2, 'De'), polarizability=(1, 'angstrom^3'),
-                                                  rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+                      transport_data=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
+                                                   dipoleMoment=(2, 'De'), polarizability=(1, 'angstrom^3'),
+                                                   rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
 
-        self.assertTrue(spc.get_transport_data() is spc.transportData)
+        self.assertTrue(spc.get_transport_data() is spc.transport_data)
 
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
@@ -431,13 +431,13 @@ Thermo library: primaryThermoLibrary
 
     def test_inchi_instantiation(self):
         """Test that we can create a species using the InChI argument"""
-        test = Species(InChI='InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+        test = Species(inchi='InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
 
         self.assertTrue(test.is_isomorphic(self.species2))
 
     def test_smiles_instantiation(self):
         """Test that we can create a species using the SMILES argument"""
-        test = Species(SMILES='C1=CC=CC=C1')
+        test = Species(smiles='C1=CC=CC=C1')
 
         self.assertTrue(test.is_isomorphic(self.species2))
 

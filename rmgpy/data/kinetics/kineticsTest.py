@@ -1131,10 +1131,10 @@ class TestKinetics(unittest.TestCase):
 
         This tests a case involving identical reactants
         """
-        reactant1 = Species(index=1, label='ethyl', SMILES='C[CH2]')
+        reactant1 = Species(index=1, label='ethyl', smiles='C[CH2]')
         reactant1_copy = reactant1.copy(deep=True)  # These copies record the state of the original attributes
-        expected_product_1 = Species(SMILES='CC')
-        expected_product_2 = Species(SMILES='C=C')
+        expected_product_1 = Species(smiles='CC')
+        expected_product_2 = Species(smiles='C=C')
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(
             [reactant1, reactant1], only_families=['Disproportionation'], resonance=True
@@ -1181,12 +1181,12 @@ class TestKinetics(unittest.TestCase):
 
         This tests a case involving benzene bond modification
         """
-        reactant1 = Species(index=1, label='methyl', SMILES='[CH3]')
-        reactant2 = Species(index=2, label='benzene', SMILES='c1ccccc1')
+        reactant1 = Species(index=1, label='methyl', smiles='[CH3]')
+        reactant2 = Species(index=2, label='benzene', smiles='c1ccccc1')
         reactant2.generate_resonance_structures()  # Only benzene has resonance structures
         reactant1_copy = reactant1.copy(deep=True)  # These copies record the state of the original attributes
         reactant2_copy = reactant2.copy(deep=True)
-        expected_product = Species(SMILES='CC1[CH]C=CC=C1')
+        expected_product = Species(smiles='CC1[CH]C=CC=C1')
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(
             [reactant1, reactant2], only_families=['R_Addition_MultipleBond'], resonance=True

@@ -42,17 +42,17 @@ cdef class Species:
     cdef public str label
     cdef public object thermo
     cdef public Conformer conformer
-    cdef public object transportData
+    cdef public object transport_data
     cdef public list molecule
-    cdef public ScalarQuantity _molecularWeight
+    cdef public ScalarQuantity _molecular_weight
     cdef public bint reactive
-    cdef public object energyTransferModel
+    cdef public object energy_transfer_model
     cdef public dict props
     cdef public str aug_inchi
     cdef public float symmetry_number
-    cdef public bint isSolvent
-    cdef public int creationIteration
-    cdef public bint explicitlyAllowed
+    cdef public bint is_solvent
+    cdef public int creation_iteration
+    cdef public bint explicitly_allowed
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles

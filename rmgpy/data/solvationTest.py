@@ -239,7 +239,7 @@ class TestSoluteDatabase(TestCase):
         rmg.solvent = 'octane'
         solvent_structure = Species().from_smiles('CCCCCCCC')
         self.database.check_solvent_in_initial_species(rmg, solvent_structure)
-        self.assertTrue(rmg.initial_species[0].isSolvent)
+        self.assertTrue(rmg.initial_species[0].is_solvent)
 
         # Case 2: the solvent SMILES is not provided. In this case, it can identify the species as the
         # solvent by looking at the string name.
@@ -251,7 +251,7 @@ class TestSoluteDatabase(TestCase):
         # Case 2-2: The label 'n-ocatne' is corrected to 'octane', so it is identified as the solvent
         rmg.initial_species[0].label = 'octane'
         self.database.check_solvent_in_initial_species(rmg, solvent_structure)
-        self.assertTrue(rmg.initial_species[0].isSolvent)
+        self.assertTrue(rmg.initial_species[0].is_solvent)
 
     def test_solvent_molecule(self):
         """Test that we can assign a proper solvent molecular structure when different formats are given"""

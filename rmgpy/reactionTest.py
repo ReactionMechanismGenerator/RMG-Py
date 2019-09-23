@@ -178,7 +178,7 @@ class TestSurfaceReaction(unittest.TestCase):
                         Tmin=(100, 'K'), Tmax=(5000, 'K'), E0=(135.382, 'kJ/mol'),
                         comment="""Thermo library: primaryThermoLibrary + radical(CH3)"""
                         ),
-            molecularWeight=(15.0345, 'amu'),
+            molecular_weight=(15.0345, 'amu'),
         )
 
         s_ch3x = Species(
@@ -246,7 +246,7 @@ class TestSurfaceReaction(unittest.TestCase):
         """Test the CH3 adsorption rate given by StickingCoefficient"""
 
         # First, check the molecular weight is in units we expect
-        self.assertAlmostEqual(self.rxn2sSC.reactants[0].molecularWeight.value_si / constants.amu / 1000,
+        self.assertAlmostEqual(self.rxn2sSC.reactants[0].molecular_weight.value_si / constants.amu / 1000,
                                15.0345e-3)  # kg/mol
 
         T = 800

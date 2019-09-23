@@ -79,8 +79,8 @@ class InputTest(unittest.TestCase):
         self.assertEqual(spc0.conformer.spin_multiplicity, 1)
         self.assertEqual(spc0.conformer.optical_isomers, 1)
         self.assertEqual(len(spc0.conformer.modes), 3)
-        self.assertIsInstance(spc0.transportData, TransportData)
-        self.assertIsInstance(spc0.energyTransferModel, SingleExponentialDown)
+        self.assertIsInstance(spc0.transport_data, TransportData)
+        self.assertIsInstance(spc0.energy_transfer_model, SingleExponentialDown)
 
     def test_species_atomic_nasa_polynomial(self):
         """

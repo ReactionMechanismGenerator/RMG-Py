@@ -291,13 +291,13 @@ class CoreEdgeReactionModel:
             species_index = -1
         try:
             spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive,
-                           thermo=object.thermo, transportData=object.transportData)
+                           thermo=object.thermo, transport_data=object.transport_data)
         except AttributeError:
             spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive)
 
-        spec.creationIteration = self.iteration_num
+        spec.creation_iteration = self.iteration_num
         spec.generate_resonance_structures()
-        spec.molecularWeight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
+        spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
 
         if generate_thermo:
             self.generate_thermo(spec)
@@ -1025,7 +1025,7 @@ class CoreEdgeReactionModel:
         forbidden_structures = get_db('forbidden')
 
         # check RMG globally forbidden structures
-        if not spec.explicitlyAllowed and forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
+        if not spec.explicitly_allowed and forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
 
             rxn_list = []
             if spec in self.edge.species:
@@ -1141,7 +1141,7 @@ class CoreEdgeReactionModel:
                     inds) and num_to_remove > 0:  # find the species we can remove and collect indices for removal
                 i = inds[ind]
                 spc = spcs[i]
-                if iteration - spc.creationIteration >= min_species_exist_iterations_for_prune:
+                if iteration - spc.creation_iteration >= min_species_exist_iterations_for_prune:
                     remove_spcs.append(spc)
                     rInds.append(i)
                     num_to_remove -= 1
@@ -1198,7 +1198,7 @@ class CoreEdgeReactionModel:
         # All edge species that have not existed for more than two enlarge
         # iterations are ineligible for pruning
         for spec in prunable_species:
-            if iteration - spec.creationIteration <= min_species_exist_iterations_for_prune:
+            if iteration - spec.creation_iteration <= min_species_exist_iterations_for_prune:
                 ineligible_species.append(spec)
 
         # Get the maximum species rates (and network leak rates)
@@ -1480,7 +1480,7 @@ class CoreEdgeReactionModel:
         for spec in self.new_species_list:
             if database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
                 if 'allowed' in rmg.species_constraints and 'seed mechanisms' in rmg.species_constraints['allowed']:
-                    spec.explicitlyAllowed = True
+                    spec.explicitly_allowed = True
                     logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  "
                                     "It will behave as an inert unless found in a seed mechanism "
                                     "or reaction library.".format(spec.label, seed_mechanism.label))
@@ -1577,7 +1577,7 @@ class CoreEdgeReactionModel:
             if not reaction_library.auto_generated:  # No need to check for forbidden species otherwise
                 if database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
                     if 'allowed' in rmg.species_constraints and 'reaction libraries' in rmg.species_constraints['allowed']:
-                        spec.explicitlyAllowed = True
+                        spec.explicitly_allowed = True
                         logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave "
                                         "as an inert unless found in a seed mechanism or reaction "
                                         "library.".format(spec.label, reaction_library.label))

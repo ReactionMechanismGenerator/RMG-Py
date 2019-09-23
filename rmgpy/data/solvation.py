@@ -975,10 +975,10 @@ class SolvationDatabase(object):
         """
         for spec in rmg.initial_species:
             if solvent_structure is not None:
-                spec.isSolvent = spec.is_isomorphic(solvent_structure)
+                spec.is_solvent = spec.is_isomorphic(solvent_structure)
             else:
-                spec.isSolvent = rmg.solvent == spec.label
-        if not any([spec.isSolvent for spec in rmg.initial_species]):
+                spec.is_solvent = rmg.solvent == spec.label
+        if not any([spec.is_solvent for spec in rmg.initial_species]):
             if solvent_structure is not None:
                 logging.info('One of the initial species must be the solvent')
                 raise ValueError('One of the initial species must be the solvent')

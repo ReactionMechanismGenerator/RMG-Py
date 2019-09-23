@@ -239,8 +239,8 @@ class StatMechJob(object):
             if is_ts:
                 self.species.frequency = self.arkane_species.imaginary_frequency
             else:
-                self.species.transportData = self.arkane_species.transport_data
-                self.species.energyTransferModel = self.arkane_species.energy_transfer_model
+                self.species.transport_data = self.arkane_species.transport_data
+                self.species.energy_transfer_model = self.arkane_species.energy_transfer_model
                 if self.arkane_species.adjacency_list is not None:
                     self.species.molecule = [Molecule().from_adjacency_list(adjlist=self.arkane_species.adjacency_list)]
                 elif self.arkane_species.inchi is not None:
@@ -402,7 +402,7 @@ class StatMechJob(object):
                 break
         else:
             # Sometimes the translational mode is not appended to modes for monoatomic species
-            conformer.modes.append(IdealGasTranslation(mass=self.species.molecularWeight))
+            conformer.modes.append(IdealGasTranslation(mass=self.species.molecular_weight))
 
         if conformer.spin_multiplicity == 0:
             raise ValueError("Could not read spin multiplicity from log file {0},\n"
@@ -673,7 +673,7 @@ class StatMechJob(object):
             z = coordinates[i, 2]
             f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(symbol_by_number[number[i]], x, y, z))
 
-        result = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spin_multiplicity={3:d}, opticalIsomers={4:d}'.format(
+        result = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spin_multiplicity={3:d}, optical_isomers={4:d}'.format(
             self.species.label,
             conformer.E0,
             conformer.modes,
