@@ -60,7 +60,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             quantum=self.quantum,
         )
 
-    def test_getPartitionFunction_classical(self):
+    def test_get_partition_function_classical(self):
         """
         Test the HarmonicOscillator.get_partition_function() method for a set of
         classical oscillators.
@@ -72,7 +72,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             q_act = self.mode.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
-    def test_getPartitionFunction_quantum(self):
+    def test_get_partition_function_quantum(self):
         """
         Test the HarmonicOscillator.get_partition_function() method for a set of
         quantum oscillators.
@@ -84,7 +84,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             q_act = self.mode.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
-    def test_getHeatCapacity_classical(self):
+    def test_get_heat_capacity_classical(self):
         """
         Test the HarmonicOscillator.get_heat_capacity() method using a set of
         classical oscillators.
@@ -96,7 +96,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             cv_act = self.mode.get_heat_capacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
 
-    def test_getHeatCapacity_quantum(self):
+    def test_get_heat_capacity_quantum(self):
         """
         Test the HarmonicOscillator.get_heat_capacity() method using a set of
         quantum oscillators.
@@ -108,7 +108,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             cv_act = self.mode.get_heat_capacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
 
-    def test_getEnthalpy_classical(self):
+    def test_get_enthalpy_classical(self):
         """
         Test the HarmonicOscillator.get_enthalpy() method using a set of
         classical oscillators.
@@ -120,7 +120,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
-    def test_getEnthalpy_quantum(self):
+    def test_get_enthalpy_quantum(self):
         """
         Test the HarmonicOscillator.get_enthalpy() method using a set of quantum
         oscillators.
@@ -132,7 +132,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
 
-    def test_getEntropy_classical(self):
+    def test_get_entropy_classical(self):
         """
         Test the HarmonicOscillator.get_entropy() method using a set of
         classical oscillators.
@@ -144,7 +144,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * abs(s_exp))
 
-    def test_getEntropy_quantum(self):
+    def test_get_entropy_quantum(self):
         """
         Test the HarmonicOscillator.get_entropy() method using a set of quantum
         oscillators.
@@ -156,7 +156,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
 
-    def test_getSumOfStates_classical(self):
+    def test_get_sum_of_states_classical(self):
         """
         Test the HarmonicOscillator.get_sum_of_states() method using a set of
         classical oscillators.
@@ -170,7 +170,7 @@ class TestHarmonicOscillator(unittest.TestCase):
             self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n] < 1.25,
                              '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
-    def test_getSumOfStates_quantum(self):
+    def test_get_sum_of_states_quantum(self):
         """
         Test the HarmonicOscillator.get_sum_of_states() method using a set of
         quantum oscillators.
@@ -186,7 +186,7 @@ class TestHarmonicOscillator(unittest.TestCase):
                 self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
                                  '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
 
-    def test_getDensityOfStates_classical(self):
+    def test_get_density_of_states_classical(self):
         """
         Test the HarmonicOscillator.get_density_of_states() method using a set of
         classical oscillators.
@@ -200,7 +200,7 @@ class TestHarmonicOscillator(unittest.TestCase):
         q_exp = self.mode.get_partition_function(temperature)
         self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
 
-    def test_getDensityOfStates_quantum(self):
+    def test_get_density_of_states_quantum(self):
         """
         Test the HarmonicOscillator.get_density_of_states() method using a set of
         quantum oscillators.

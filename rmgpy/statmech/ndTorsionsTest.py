@@ -114,7 +114,7 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
         cls.hdnd = HinderedRotorClassicalND(pivots=[[3, 12]], tops=[[12, 13, 14, 15]], sigmas=[6.0],
                                             calc_path=rotpath, conformer=conf, F=F, semiclassical=True)
 
-    def test_hindered_rotor_ND(self):
+    def test_hindered_rotor_nd(self):
         self.hdnd.read_scan()
         self.assertAlmostEqual(self.hdnd.Es[0], 20.048316823666962, 4)
         self.hdnd.fit()
