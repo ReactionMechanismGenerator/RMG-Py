@@ -56,7 +56,7 @@ class GenerateReactionsTest(unittest.TestCase):
 
         shutil.rmtree(os.path.join(folder, 'pdep'))
 
-    def testDuplicateReaction(self):
+    def test_duplicate_reaction(self):
         """
         Test that the radical addition reaction
 
@@ -90,7 +90,7 @@ class GenerateReactionsTest(unittest.TestCase):
 
         shutil.rmtree(os.path.join(folder, 'pdep'))
 
-    def testLibraryReactionEntersCore(self):
+    def test_library_reaction_enters_core(self):
         """
         Test that a reaction from a Reaction Library enters the core
         right after the initialization step if all the input species are 

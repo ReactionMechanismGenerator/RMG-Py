@@ -77,7 +77,7 @@ class TestUncertainty(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def testUncertaintyAssignment(self):
+    def test_uncertainty_assignment(self):
         """
         Test that the thermo and kinetic parameter uncertainties can be properly assigned.
         """

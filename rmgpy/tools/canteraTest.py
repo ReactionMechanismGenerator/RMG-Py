@@ -40,7 +40,7 @@ from rmgpy.tools.canteraModel import find_ignition_delay, CanteraCondition, Cant
 
 class CanteraTest(unittest.TestCase):
 
-    def testIgnitionDelay(self):
+    def test_ignition_delay(self):
         """
         Test that find_ignition_delay() works.
         """
@@ -59,7 +59,7 @@ class CanteraTest(unittest.TestCase):
         t_ign = find_ignition_delay(t, [OH, CO], 'maxSpeciesConcentrations')
         self.assertEqual(t_ign, 3.5)
 
-    def testRepr(self):
+    def test_repr(self):
         """
         Test that the repr function for a CanteraCondition object can reconstitute
         the same object
@@ -112,7 +112,7 @@ class RMGToCanteraTest(unittest.TestCase):
         self.ctSpecies = job.model.species()
         self.ctReactions = job.model.reactions()
 
-    def testSpeciesConversion(self):
+    def test_species_conversion(self):
         """
         Test that species objects convert properly
         """
@@ -120,7 +120,7 @@ class RMGToCanteraTest(unittest.TestCase):
         for i in range(len(self.ctSpecies)):
             self.assertTrue(check_equivalent_cantera_species(self.ctSpecies[i], self.rmg_ctSpecies[i]))
 
-    def testReactionConversion(self):
+    def test_reaction_conversion(self):
         """
         Test that species objects convert properly
         """

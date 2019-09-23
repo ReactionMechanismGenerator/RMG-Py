@@ -85,7 +85,7 @@ class IsotopesTest(unittest.TestCase):
         cls.database = database
         cls.family = database.kinetics.families['H_Abstraction']
 
-    def testClusterWithSpecies(self):
+    def test_cluster_with_species(self):
         """
         Test that isotope partitioning algorithm work with Reaction Objects.
         """
@@ -132,7 +132,7 @@ class IsotopesTest(unittest.TestCase):
         self.assertEquals(len(clusters), 2)
         self.assertEquals(len(clusters[0]), 1)
 
-    def testClusterWithReactions(self):
+    def test_cluster_with_reactions(self):
         """
         Test that isotope partitioning algorithm works with Reaction objects
         """
@@ -192,7 +192,7 @@ class IsotopesTest(unittest.TestCase):
         self.assertEquals(len(clusters), 4)
         self.assertEquals(len(clusters[0]), 1)
 
-    def testRemoveIsotopeForReactions(self):
+    def test_remove_isotope_for_reactions(self):
         """
         Test that remove isotope algorithm works with Reaction objects.
         """
@@ -224,7 +224,7 @@ class IsotopesTest(unittest.TestCase):
 
         self.assertTrue(unlabeled_rxn.is_isomorphic(stripped))
 
-    def testRemoveIsotopeForSpecies(self):
+    def test_remove_isotope_for_species(self):
         """
         Test that remove isotope algorithm works with Species.
         """
@@ -255,7 +255,7 @@ class IsotopesTest(unittest.TestCase):
 
         self.assertTrue(eth.is_isomorphic(stripped))
 
-    def testInplaceRemoveIsotopeForReactions(self):
+    def test_inplace_remove_isotope_for_reactions(self):
         """
         Test that removeIsotope and redoIsotope works with reactions
         """
@@ -292,7 +292,7 @@ class IsotopesTest(unittest.TestCase):
 
         self.assertTrue(stored_labeled_rxn.is_isomorphic(labeled_rxn))
 
-    def testEnsureReactionDirection(self):
+    def test_ensure_reaction_direction(self):
         """
         Tests that the direction of the reaction is constant for every isotopomer
         """
@@ -404,7 +404,7 @@ multiplicity 2
                                            'Check the reactions degeneracy and how A.value is obtained. '
                                            'The reaction is:{1}'.format(rxn.kinetics.A.value, rxn))
 
-    def test_ensure_reaction_direction_with_multiple_TS(self):
+    def test_ensure_reaction_direction_with_multiple_ts(self):
         """Tests that ensure reaction direction can handle multiple transition states"""
         family = self.database.kinetics.families['intra_H_migration']
         r = Molecule().from_smiles("[CH2]CCC")
@@ -462,7 +462,7 @@ multiplicity 2
         self.assertAlmostEqual(rxn_cluster[0].kinetics.get_rate_coefficient(298),
                                rxn_cluster[1].kinetics.get_rate_coefficient(298))
 
-    def testCompareIsotopomersWorksOnSpecies(self):
+    def test_compare_isotopomers_works_on_species(self):
         """
         Test that compareIsotomers works on species objects
         """
@@ -488,7 +488,7 @@ multiplicity 2
 """)
         self.assertTrue(compare_isotopomers(ethii, ethi))
 
-    def testCompareIsotopomersDoesNotAlterSpecies(self):
+    def test_compare_isotopomers_does_not_alter_species(self):
         """
         Test that compareIsotomers works on species objects
         """
@@ -519,7 +519,7 @@ multiplicity 2
             if atom.element.symbol == 'C':
                 self.assertEqual(atom.element.isotope, 13, 'compareIsotopomer removed the isotope of a species.')
 
-    def testCompareIsotopomersFailsOnSpecies(self):
+    def test_compare_isotopomers_fails_on_species(self):
         """
         Test that compareIsotomers fails on species objects
         """
@@ -543,7 +543,7 @@ multiplicity 2
 """)
         self.assertFalse(compare_isotopomers(ethane, ethenei))
 
-    def testCompareIsotopomersWorksOnReactions(self):
+    def test_compare_isotopomers_works_on_reactions(self):
         """
         Test that compareIsotomers works on different reaction objects
         """
@@ -616,7 +616,7 @@ multiplicity 2
                                      family='H_Abstraction')
         self.assertTrue(compare_isotopomers(reaction2, reaction3))
 
-    def testCompareIsotopomersFailsOnReactions(self):
+    def test_compare_isotopomers_fails_on_reactions(self):
         """
         Test that compareIsotomers fails on different reaction objects
         """
@@ -677,7 +677,7 @@ multiplicity 2
                                          family='H_Abstraction')
         self.assertFalse(compare_isotopomers(reaction2, magic_reaction))
 
-    def testCorrectEntropy(self):
+    def test_correct_entropy(self):
         """
         Tests that correctEntropy effectively makes the isotopomer have the same
         thermo as isotopeless with the change in entropy corresponding to the
@@ -730,7 +730,7 @@ multiplicity 2
         self.assertAlmostEqual(propane.get_enthalpy(298), propanei.get_enthalpy(298))
         self.assertAlmostEqual(propanei.get_entropy(298) - propane.get_entropy(298), constants.R * np.log(2))
 
-    def testGenerateIsotopomers(self):
+    def test_generate_isotopomers(self):
         """
         Test that the generation of isotopomers with N isotopes works.
         """
@@ -758,7 +758,7 @@ multiplicity 2
         spcs = generate_isotopomers(spc, 3)
         self.assertEquals(len(spcs), 2)
 
-    def testIsEnriched(self):
+    def test_is_enriched(self):
         """
         ensures the Enriched method functions
         """
@@ -803,7 +803,7 @@ multiplicity 2
 
         self.assertFalse(is_enriched(bare_reaction))
 
-    def testGetLabeledReactants(self):
+    def test_get_labeled_reactants(self):
         """
         tests to ensure that get_labeled_reactants returns labeled reactants
         """
@@ -819,7 +819,7 @@ multiplicity 2
         r2_labels = labeled_reactants[1].get_all_labeled_atoms()
         self.assertIn("*3", list(r2_labels.keys()))
 
-    def testGetReducedMass(self):
+    def test_get_reduced_mass(self):
         """
         tests that get_reduced_mass returns the proper value for H_abstraction
         """
@@ -839,7 +839,7 @@ multiplicity 2
         reduced_mass = get_reduced_mass(reactants, labels, True)
         self.assertAlmostEqual(reduced_mass, 1 / (1 / 1.008 + 1 / (1.008 + 12.01)) / 1000, places=6)
 
-    def testGetReducedMass2(self):
+    def test_get_reduced_mass2(self):
         """
         tests that get_reduced_mass returns proper value when isotopes are labeled
         """
@@ -859,7 +859,7 @@ multiplicity 2
         reduced_mass = get_reduced_mass(reactants, labels, True)
         self.assertAlmostEqual(reduced_mass, 1 / (1 / 1.008 + 1 / (1.008 + 13.01)) / 1000, places=6)
 
-    def testGetKineticIsotopeEffectSimple(self):
+    def test_get_kinetic_isotope_effect_simple(self):
         reactant_pair = [Species().from_smiles("C"), Species().from_smiles("[H]")]
         product_pair = [Species().from_smiles("[H][H]"), Species().from_smiles("[CH3]")]
         rxn_unlabeled = TemplateReaction(reactants=reactant_pair,
@@ -897,7 +897,7 @@ multiplicity 2
         expected_kie = ((1 / 1.008 + 1 / (13.01 + 1.008)) / (1 / 1.008 + 1 / (12.01 + 1.008))) ** 0.5
         self.assertAlmostEqual(rxn_cluster[0][0].kinetics.A.value, 1e5 * expected_kie, places=-1)
 
-    def testGenerateIsotopeReactions(self):
+    def test_generate_isotope_reactions(self):
         """
         shows that all isotope reactions are created with generateIsotopeReactions
         """
@@ -959,7 +959,7 @@ multiplicity 3
 
         self.assertEqual(degeneracies_found, set([3]))
 
-    def testGenerateIsotopeReactionsLimitedLabeling(self):
+    def test_generate_isotope_reactions_limited_labeling(self):
         """
         shows that all isotope reactions are created with generateIsotopeReactions
         with limits of two isotopes per molecule
