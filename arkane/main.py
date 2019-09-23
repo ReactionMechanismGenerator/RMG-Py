@@ -329,7 +329,7 @@ class Arkane(object):
         for i, reaction in enumerate(reaction_list):
             entry = Entry(
                 index=i + 1,
-                label=reaction.toLabeledStr(),
+                label=reaction.to_labeled_str(),
                 item=reaction,
                 data=reaction.kinetics)
 

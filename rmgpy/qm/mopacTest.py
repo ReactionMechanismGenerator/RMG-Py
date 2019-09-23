@@ -34,7 +34,7 @@ import unittest
 
 import numpy as np
 
-from rmgpy import getPath
+from rmgpy import get_path
 from rmgpy.exceptions import DependencyError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.main import QMCalculator
@@ -65,7 +65,7 @@ class TestMopacMolPM3(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='mopac',
                           method='pm3',
@@ -129,7 +129,7 @@ class TestMopacMolPM6(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='mopac',
                           method='pm6',
@@ -194,7 +194,7 @@ class TestMopacMolPM7(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='mopac',
                           method='pm7',

@@ -170,9 +170,9 @@ class Reaction:
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
         If a specific_collider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
         """
-        return self.toLabeledStr(use_index=True)
+        return self.to_labeled_str(use_index=True)
 
-    def toLabeledStr(self, use_index=False):
+    def to_labeled_str(self, use_index=False):
         """
         the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
         the labels plus the index in parentheses

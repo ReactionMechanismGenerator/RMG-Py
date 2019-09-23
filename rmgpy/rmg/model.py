@@ -523,8 +523,8 @@ class CoreEdgeReactionModel:
         self.new_species_list = []
 
         # Determine number of parallel processes.
-        from rmgpy.rmg.main import determine_procnum_from_RAM
-        procnum = determine_procnum_from_RAM()
+        from rmgpy.rmg.main import determine_procnum_from_ram
+        procnum = determine_procnum_from_ram()
 
         if react_edge is False:
             # We are adding core species 

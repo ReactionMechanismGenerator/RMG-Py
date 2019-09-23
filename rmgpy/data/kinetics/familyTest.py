@@ -696,7 +696,7 @@ class TestTreeGeneration(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def test_AClearTree(self):
+    def test_a_clear_tree(self):
         """
         Test that the tree was properly cleared before generation
         """

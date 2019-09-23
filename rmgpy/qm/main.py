@@ -76,12 +76,12 @@ class QMSettings(object):
         self.maxRadicalNumber = maxRadicalNumber
 
         if os.sys.platform == 'win32':
-            symmetryPath = os.path.join(rmgpy.getPath(), '..', 'bin', 'symmetry.exe')
+            symmetryPath = os.path.join(rmgpy.get_path(), '..', 'bin', 'symmetry.exe')
             # If symmetry is not installed in the bin folder, assume it is available on the path somewhere
             if not os.path.exists(symmetryPath):
                 symmetryPath = 'symmetry.exe'
         else:
-            symmetryPath = os.path.join(rmgpy.getPath(), '..', 'bin', 'symmetry')
+            symmetryPath = os.path.join(rmgpy.get_path(), '..', 'bin', 'symmetry')
             if not os.path.exists(symmetryPath):
                 symmetryPath = 'symmetry'
         self.symmetryPath = symmetryPath

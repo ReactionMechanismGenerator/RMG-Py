@@ -158,7 +158,7 @@ settings = Settings(path=None)
 
 ################################################################################
 
-def getPath():
+def get_path():
     """
     Return the directory that this file is found in on disk.
     """

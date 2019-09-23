@@ -34,7 +34,7 @@ import unittest
 
 import numpy as np
 
-from rmgpy import getPath
+from rmgpy import get_path
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.gaussian import Gaussian, GaussianMolPM3, GaussianMolPM6
 from rmgpy.qm.main import QMCalculator
@@ -55,7 +55,7 @@ class TestGaussianMolPM3(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='gaussian',
                           method='pm3',
@@ -112,7 +112,7 @@ class TestGaussianMolPM6(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmgpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmgpy_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         qm = QMCalculator(software='gaussian',
                           method='pm6',

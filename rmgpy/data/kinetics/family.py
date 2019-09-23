@@ -1122,8 +1122,8 @@ class KineticsFamily(Database):
             return
 
         # Determine number of parallel processes.
-        from rmgpy.rmg.main import determine_procnum_from_RAM
-        procnum = determine_procnum_from_RAM()
+        from rmgpy.rmg.main import determine_procnum_from_ram
+        procnum = determine_procnum_from_ram()
 
         tentries = depository.entries
 

@@ -1292,7 +1292,7 @@ class RMG(util.Subject):
                 reaction = reaction_list[i]
                 entry = Entry(
                     index=i + 1,
-                    label=reaction.toLabeledStr(),
+                    label=reaction.to_labeled_str(),
                     item=reaction,
                     data=reaction.kinetics,
                 )
@@ -1312,7 +1312,7 @@ class RMG(util.Subject):
             for i, reaction in enumerate(edge_reaction_list):
                 entry = Entry(
                     index=i + 1,
-                    label=reaction.toLabeledStr(),
+                    label=reaction.to_labeled_str(),
                     item=reaction,
                     data=reaction.kinetics,
                 )
@@ -1763,7 +1763,7 @@ class RMG(util.Subject):
         """
         Output a header containing identifying information about RMG to the log.
         """
-        from rmgpy import __version__, getPath
+        from rmgpy import __version__, get_path
         logging.log(level, '#########################################################')
         logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python       #')
         logging.log(level, '# Version: {0:44s} #'.format(__version__))
@@ -1774,7 +1774,7 @@ class RMG(util.Subject):
         logging.log(level, '#########################################################\n')
 
         # Extract git commit from RMG-Py
-        head, date = self.get_git_commit(getPath())
+        head, date = self.get_git_commit(get_path())
         if head != '' and date != '':
             logging.log(level, 'The current git HEAD for RMG-Py is:')
             logging.log(level, '\t%s' % head)
@@ -1989,7 +1989,7 @@ class RMG(util.Subject):
 
 ################################################################################
 
-def determine_procnum_from_RAM():
+def determine_procnum_from_ram():
     """
     Get available RAM (GB)and procnum dependent on OS.
     """

@@ -33,7 +33,7 @@ import shutil
 import subprocess
 import unittest
 
-from rmgpy import getPath
+from rmgpy import get_path
 from rmgpy.molecule import Molecule
 from rmgpy.qm.gaussian import Gaussian
 from rmgpy.qm.main import QMSettings, QMCalculator
@@ -50,7 +50,7 @@ class TestQMSettings(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmg_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmg_path = os.path.normpath(os.path.join(get_path(), '..'))
 
         self.settings1 = QMSettings(software='mopac',
                                     method='pm3',
@@ -99,7 +99,7 @@ class TestQMCalculator(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        rmg_path = os.path.normpath(os.path.join(getPath(), '..'))
+        rmg_path = os.path.normpath(os.path.join(get_path(), '..'))
         self.fileStore = os.path.join(rmg_path, 'testing', 'qm', 'QMfiles')
 
         self.mop1 = QMCalculator(software='mopac',

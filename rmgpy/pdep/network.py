@@ -158,7 +158,7 @@ class Network(object):
                         [[p.label for p in pair.species] for pair in self.products],
                         [r.label for r in self.path_reactions],
                         dict([(s.label, value) for s, value in self.bath_gas.items()]),
-                        [r.toLabeledStr() for r in self.net_reactions]
+                        [r.to_labeled_str() for r in self.net_reactions]
                     )
         return string
 

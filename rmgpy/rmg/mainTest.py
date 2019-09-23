@@ -36,14 +36,14 @@ from nose.plugins.attrib import attr
 
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.main import RMG_Memory
-from rmgpy import getPath
+from rmgpy import get_path
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.model import CoreEdgeReactionModel
 
 ###################################################
 
-originalPath = getPath()
+originalPath = get_path()
 
 
 @attr('functional')
