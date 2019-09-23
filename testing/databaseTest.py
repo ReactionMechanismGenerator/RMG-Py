@@ -40,49 +40,49 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
     def test_kinetics(self):
         for family_name, family in self.database.kinetics.families.items():
 
-            test = lambda x: self.kinetics_checkCorrectNumberofNodesInRules(family_name)
+            test = lambda x: self.kinetics_check_correct_number_of_nodes_in_rules(family_name)
             test_name = "Kinetics family {0}: rules have correct number of nodes?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_checkNodesInRulesFoundInGroups(family_name)
+            test = lambda x: self.kinetics_check_nodes_in_rules_found_in_groups(family_name)
             test_name = "Kinetics family {0}: rules' nodes exist in the groups?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_checkGroupsFoundInTree(family_name)
+            test = lambda x: self.kinetics_check_groups_found_in_tree(family_name)
             test_name = "Kinetics family {0}: groups are in the tree with proper parents?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_checkGroupsNonidentical(family_name)
+            test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
             test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkChildParentRelationships(family_name)
+            test = lambda x: self.kinetics_check_child_parent_relationships(family_name)
             test_name = "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkSiblingsForParents(family_name)
+            test = lambda x: self.kinetics_check_siblings_for_parents(family_name)
             test_name = "Kinetics family {0}: sibling relationships are correct?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkCdAtomType(family_name)
+            test = lambda x: self.kinetics_check_cd_atom_type(family_name)
             test_name = "Kinetics family {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
 
-            test = lambda x: self.kinetics_checkReactantAndProductTemplate(family_name)
+            test = lambda x: self.kinetics_check_reactant_and_product_template(family_name)
             test_name = "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -93,7 +93,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             generated_trees = ["R_Recombination"]
 
             if len(family.forwardTemplate.reactants) < len(family.groups.top) and family_name not in difficult_families:
-                test = lambda x: self.kinetics_checkUnimolecularGroups(family_name)
+                test = lambda x: self.kinetics_check_unimolecular_groups(family_name)
                 test_name = "Kinetics family {0} check that unimolecular group is formatted correctly?".format(
                     family_name)
                 test.description = test_name
@@ -101,39 +101,39 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 yield test, family_name
 
             if family_name not in difficult_families and family_name not in generated_trees:
-                test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
+                test = lambda x: self.kinetics_check_sample_descends_to_group(family_name)
                 test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, family_name
 
             for depository in family.depositories:
-                test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
+                test = lambda x: self.kinetics_check_adjlists_nonidentical(depository)
                 test_name = "Kinetics depository {0}: check adjacency lists are nonidentical?".format(depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
 
-                test = lambda x: self.kinetics_checkRateUnitsAreCorrect(depository, tag='depository')
+                test = lambda x: self.kinetics_check_rate_units_are_correct(depository, tag='depository')
                 test_name = "Kinetics depository {0}: check rates have correct units?".format(depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
 
         for library_name, library in self.database.kinetics.libraries.items():
-            test = lambda x: self.kinetics_checkAdjlistsNonidentical(library)
+            test = lambda x: self.kinetics_check_adjlists_nonidentical(library)
             test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
 
-            test = lambda x: self.kinetics_checkRateUnitsAreCorrect(library)
+            test = lambda x: self.kinetics_check_rate_units_are_correct(library)
             test_name = "Kinetics library {0}: check rates have correct units?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
 
-            test = lambda x: self.kinetics_checkLibraryRatesAreReasonable(library)
+            test = lambda x: self.kinetics_check_library_rates_are_reasonable(library)
             test_name = "Kinetics library {0}: check rates are reasonable?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -141,37 +141,37 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Thermo groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Thermo groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Thermo groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Thermo groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Thermo groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -179,37 +179,37 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Solvation groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Solvation groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Solvation groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Solvation groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Solvation groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -217,37 +217,37 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_statmech(self):
         for group_name, group in self.database.statmech.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Statmech groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Statmech groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Statmech groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Statmech groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
@@ -255,44 +255,44 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
     def test_transport(self):
         for group_name, group in self.database.transport.groups.items():
-            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
             test_name = "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test = lambda x: self.general_check_groups_nonidentical(group_name, group)
             test_name = "Transport groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test = lambda x: self.general_check_child_parent_relationships(group_name, group)
             test_name = "Transport groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test = lambda x: self.general_check_siblings_for_parents(group_name, group)
             test_name = "Transport groups {0}: sibling relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test = lambda x: self.general_check_cd_atom_type(group_name, group)
             test_name = "Transport groups {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test = lambda x: self.general_check_sample_descends_to_group(group_name, group)
             test_name = "Transport groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
 
     # These are the actual tests, that don't start with a "test_" name:
-    def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
+    def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
         """
@@ -314,7 +314,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkNodesInRulesFoundInGroups(self, family_name):
+    def kinetics_check_nodes_in_rules_found_in_groups(self, family_name):
         """
         This test ensures that each rate rule contains nodes that exist in the
         groups and that they match the order of the forwardTemplate.
@@ -354,7 +354,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkGroupsFoundInTree(self, family_name):
+    def kinetics_check_groups_found_in_tree(self, family_name):
         """
         This test checks whether groups are found in the tree, with proper parents.
         """
@@ -402,7 +402,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkGroupsNonidentical(self, family_name):
+    def kinetics_check_groups_nonidentical(self, family_name):
         """
         This test checks that the groups are non-identical.
         """
@@ -428,7 +428,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkChildParentRelationships(self, family_name):
+    def kinetics_check_child_parent_relationships(self, family_name):
         """
         This test checks that groups' parent-child relationships are correct in the database.
         """
@@ -475,7 +475,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkSiblingsForParents(self, family_name):
+    def kinetics_check_siblings_for_parents(self, family_name):
         """
         This test checks that siblings in a tree are not actually parent/child
 
@@ -507,7 +507,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkAdjlistsNonidentical(self, database):
+    def kinetics_check_adjlists_nonidentical(self, database):
         """
         This test checks whether adjacency lists of reactants in a KineticsDepository or KineticsLibrary
         database object are nonidentical.
@@ -551,7 +551,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkRateUnitsAreCorrect(self, database, tag='library'):
+    def kinetics_check_rate_units_are_correct(self, database, tag='library'):
         """
         This test ensures that every reaction has acceptable units on the A factor.
         """
@@ -691,7 +691,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError('{0} {1} has some incorrect units'.format(tag.capitalize(), database.label))
 
-    def kinetics_checkLibraryRatesAreReasonable(self, library):
+    def kinetics_check_library_rates_are_reasonable(self, library):
         """
         This test ensures that every library reaction has reasonable kinetics at 1000 K, 1 bar
         """
@@ -730,7 +730,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         if boo:
             raise ValueError('library {0} has unreasonable rates'.format(library.label))
 
-    def kinetics_checkReactantAndProductTemplate(self, family_name):
+    def kinetics_check_reactant_and_product_template(self, family_name):
         """
         This test checks whether the reactant and product templates within a family are correctly defined.
         For a reversible family, the reactant and product templates must have matching labels.
@@ -759,7 +759,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if boo:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkCdAtomType(self, family_name):
+    def kinetics_check_cd_atom_type(self, family_name):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
         correctly according to their strict definitions
@@ -822,7 +822,7 @@ The following adjList may have atoms in a different ordering than the input file
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkUnimolecularGroups(self, family_name):
+    def kinetics_check_unimolecular_groups(self, family_name):
         """
         This test goes through all unimolecular groups that have more than one top level, top level groups
         that overlap with family.reactant are assumed to be backbones(contains the whole reactant molecule)
@@ -835,7 +835,7 @@ The following adjList may have atoms in a different ordering than the input file
         4)The end subgraph inside each backbone is exactly the same as the top level of the correspodning end tree
         """
 
-        def getEndFromBackbone(_backbone, _end_labels):
+        def get_end_from_backbone(_backbone, _end_labels):
             """
             :param _backbone: :class: Entry for a backbone of molecule
             :param _end_labels: Labels in the end groups
@@ -924,7 +924,7 @@ The following adjList may have atoms in a different ordering than the input file
                             break
                     # check E
                     for end_group, labels in end_labels.items():
-                        end_from_backbone = getEndFromBackbone(entry, labels)
+                        end_from_backbone = get_end_from_backbone(entry, labels)
                         present_labels = end_from_backbone.get_all_labeled_atoms()
                         present_labels = set(present_labels.keys())
                         if labels == present_labels:
@@ -991,7 +991,7 @@ The following adjList may have atoms in a different ordering than the input file
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
-    def kinetics_checkSampleDescendsToGroup(self, family_name):
+    def kinetics_check_sample_descends_to_group(self, family_name):
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
@@ -1110,7 +1110,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkNodesFoundInTree(self, group_name, group):
+    def general_check_nodes_found_in_tree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
         """
@@ -1150,7 +1150,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkGroupsNonidentical(self, group_name, group):
+    def general_check_groups_nonidentical(self, group_name, group):
         """
         This test checks whether nodes found in the group are nonidentical.
         """
@@ -1173,7 +1173,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkChildParentRelationships(self, group_name, group):
+    def general_check_child_parent_relationships(self, group_name, group):
         """
         This test checks that nodes' parent-child relationships are correct in the database.
         """
@@ -1214,7 +1214,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkSiblingsForParents(self, group_name, group):
+    def general_check_siblings_for_parents(self, group_name, group):
         """
         This test checks that siblings in a tree are not actually parent/child.
 
@@ -1249,7 +1249,7 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkCdAtomType(self, group_name, group):
+    def general_check_cd_atom_type(self, group_name, group):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
         correctly according to their strict definitions
@@ -1299,7 +1299,7 @@ The following adjList may have atoms in a different ordering than the input file
         if boo:
             raise ValueError("Error Occurred")
 
-    def general_checkSampleDescendsToGroup(self, group_name, group):
+    def general_check_sample_descends_to_group(self, group_name, group):
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
