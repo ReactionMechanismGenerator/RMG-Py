@@ -80,32 +80,32 @@ class TestElement(unittest.TestCase):
 
     def testGetElement(self):
         """
-        Test the rmgpy.elements.getElement() method.
+        Test the rmgpy.elements.get_element() method.
         """
-        self.assertTrue(rmgpy.molecule.element.getElement(6) is self.element)
-        self.assertTrue(rmgpy.molecule.element.getElement('C') is self.element)
-        self.assertTrue(rmgpy.molecule.element.getElement(0) is self.element_x)
-        self.assertTrue(rmgpy.molecule.element.getElement('X') is self.element_x)
+        self.assertTrue(rmgpy.molecule.element.get_element(6) is self.element)
+        self.assertTrue(rmgpy.molecule.element.get_element('C') is self.element)
+        self.assertTrue(rmgpy.molecule.element.get_element(0) is self.element_x)
+        self.assertTrue(rmgpy.molecule.element.get_element('X') is self.element_x)
 
     def testGetElementIsotope(self):
         """
-        Test that the rmgpy.elements.getElement() method works for isotopes.
+        Test that the rmgpy.elements.get_element() method works for isotopes.
         """
-        self.assertTrue(isinstance(rmgpy.molecule.element.getElement('C', isotope=13), Element))
-        self.assertTrue(isinstance(rmgpy.molecule.element.getElement(6, isotope=13), Element))
+        self.assertTrue(isinstance(rmgpy.molecule.element.get_element('C', isotope=13), Element))
+        self.assertTrue(isinstance(rmgpy.molecule.element.get_element(6, isotope=13), Element))
 
     def testChemkinName(self):
         """
         Test that retrieving the chemkin name of an element works.
         """
-        d = rmgpy.molecule.element.getElement('H', isotope=2)
-        self.assertEqual(d.chemkinName, 'D')
+        d = rmgpy.molecule.element.get_element('H', isotope=2)
+        self.assertEqual(d.chemkin_name, 'D')
 
-        c13 = rmgpy.molecule.element.getElement('C', isotope=13)
-        self.assertEqual(c13.chemkinName, 'CI')
+        c13 = rmgpy.molecule.element.get_element('C', isotope=13)
+        self.assertEqual(c13.chemkin_name, 'CI')
 
-        o18 = rmgpy.molecule.element.getElement('O', isotope=18)
-        self.assertEqual(o18.chemkinName, 'OI')
+        o18 = rmgpy.molecule.element.get_element('O', isotope=18)
+        self.assertEqual(o18.chemkin_name, 'OI')
 
 
 ################################################################################

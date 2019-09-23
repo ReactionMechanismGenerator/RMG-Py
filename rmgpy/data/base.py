@@ -272,7 +272,7 @@ class Database(object):
             for line in f:
                 if line.strip() == '' and adjlist.strip() != '':
                     # Finish this adjacency list
-                    species = Species().fromAdjacencyList(adjlist)
+                    species = Species().from_adjacency_list(adjlist)
                     if resonance:
                         species.generate_resonance_structures()
                     label = species.label
@@ -286,7 +286,7 @@ class Database(object):
             else:  # reached end of file
                 if adjlist.strip() != '':
                     # Finish this adjacency list
-                    species = Species().fromAdjacencyList(adjlist)
+                    species = Species().from_adjacency_list(adjlist)
                     if resonance:
                         species.generate_resonance_structures()
                     label = species.label
@@ -320,7 +320,7 @@ class Database(object):
 
         with open(path, 'w') as f:
             for label in species_dict.keys():
-                f.write(species_dict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+                f.write(species_dict[label].molecule[0].to_adjacency_list(label=label, remove_h=False))
                 f.write('\n')
 
     def save(self, path):
@@ -446,9 +446,9 @@ class Database(object):
                     self.entries[label].item = make_logic_node(' '.join(lines[1:]))
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
-                    self.entries[label].item = Group().fromAdjacencyList(record)
+                    self.entries[label].item = Group().from_adjacency_list(record)
                 else:
-                    self.entries[label].item = Molecule().fromAdjacencyList(record, saturateH=True)
+                    self.entries[label].item = Molecule().from_adjacency_list(record, saturate_h=True)
         except InvalidAdjacencyListError:
             logging.error('Error while loading old-style dictionary "{0}"'.format(path))
             logging.error('Error occurred while parsing adjacency list "{0}"'.format(label))
@@ -603,11 +603,11 @@ class Database(object):
                     offset += num_labels
                     # Extract numeric parameter(s) or label of node with data to use
                     if num_parameters < 0:
-                        parameters = self.processOldLibraryEntry(info[offset:])
+                        parameters = self.process_old_library_entry(info[offset:])
                         comment = ''
                     else:
                         try:
-                            parameters = self.processOldLibraryEntry(info[offset:offset + num_parameters])
+                            parameters = self.process_old_library_entry(info[offset:offset + num_parameters])
                             offset += num_parameters
                         except (IndexError, ValueError):
                             parameters = info[offset]
@@ -717,12 +717,12 @@ class Database(object):
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
                     try:
-                        f.write(entry.item.toAdjacencyList(removeH=True, oldStyle=True) + '\n')
+                        f.write(entry.item.to_adjacency_list(remove_h=True, old_style=True) + '\n')
                     except InvalidAdjacencyListError:
                         f.write("// Couldn't save in old syntax adjacency list. Here it is in new syntax:\n")
-                        f.write(comment(entry.item.toAdjacencyList(removeH=False, oldStyle=False) + '\n'))
+                        f.write(comment(entry.item.to_adjacency_list(remove_h=False, old_style=False) + '\n'))
                 elif isinstance(entry.item, Group):
-                    f.write(entry.item.toAdjacencyList(oldStyle=True).replace('{2S,2T}', '2') + '\n')
+                    f.write(entry.item.to_adjacency_list(old_style=True).replace('{2S,2T}', '2') + '\n')
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':
@@ -737,9 +737,9 @@ class Database(object):
             for entry in entries_not_in_tree:
                 f.write(comment(entry.label + '\n'))
                 if isinstance(entry.item, Molecule):
-                    f.write(comment(entry.item.toAdjacencyList(removeH=False) + '\n'))
+                    f.write(comment(entry.item.to_adjacency_list(remove_h=False) + '\n'))
                 elif isinstance(entry.item, Group):
-                    f.write(comment(entry.item.toAdjacencyList().replace('{2S,2T}', '2') + '\n'))
+                    f.write(comment(entry.item.to_adjacency_list().replace('{2S,2T}', '2') + '\n'))
                 elif isinstance(entry.item, LogicOr):
                     f.write(comment('{0}\n\n'.format(entry.item).replace('OR{', 'Union {')))
                 elif entry.label[0:7] == 'Others-':
@@ -802,7 +802,7 @@ class Database(object):
                 if entry.data is not None:
                     data = entry.data
                     if not isinstance(data, str):
-                        data = self.generateOldLibraryEntry(data)
+                        data = self.generate_old_library_entry(data)
                     records.append((entry.index, [entry.label], data, entry.shortDesc))
 
             records.sort()
@@ -868,8 +868,8 @@ class Database(object):
         Both `node` and `node_other` must be Entry types with items containing Group or LogicNode types.
         """
         if isinstance(node.item, Group) and isinstance(node_other.item, Group):
-            return (self.match_node_to_structure(node, node_other.item, atoms=node_other.item.getLabeledAtoms()) and
-                    self.match_node_to_structure(node_other, node.item, atoms=node.item.getLabeledAtoms()))
+            return (self.match_node_to_structure(node, node_other.item, atoms=node_other.item.get_all_labeled_atoms()) and
+                    self.match_node_to_structure(node_other, node.item, atoms=node.item.get_all_labeled_atoms()))
         elif isinstance(node.item, LogicOr) and isinstance(node_other.item, LogicOr):
             return node.item.match_logic_or(node_other.item)
         else:
@@ -885,9 +885,9 @@ class Database(object):
 
         if isinstance(parent_node.item, Group) and isinstance(child_node.item, Group):
             if (self.match_node_to_structure(parent_node, child_node.item,
-                                             atoms=child_node.item.getLabeledAtoms(), strict=True) and
+                                             atoms=child_node.item.get_all_labeled_atoms(), strict=True) and
                     not self.match_node_to_structure(child_node, parent_node.item,
-                                                     atoms=parent_node.item.getLabeledAtoms(), strict=True)):
+                                                     atoms=parent_node.item.get_all_labeled_atoms(), strict=True)):
                 return True
             return False
 
@@ -926,7 +926,7 @@ class Database(object):
         =================== ========================================================
         `node`              Either an Entry or a key in the self.entries dictionary which has a Group or LogicNode as its Entry.item
         `structure`         A Group or a Molecule
-        `atoms`             Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()
+        `atoms`             Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.get_all_labeled_atoms()
         `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
         =================== ========================================================
         """
@@ -937,7 +937,7 @@ class Database(object):
             return group.match_to_structure(self, structure, atoms, strict)
         else:
             # try to pair up labeled atoms
-            centers = group.getLabeledAtoms()
+            centers = group.get_all_labeled_atoms()
             initial_map = {}
             for label in centers.keys():
                 # Make sure the labels are in both group and structure.
@@ -956,20 +956,20 @@ class Database(object):
                 if isinstance(center, list) or isinstance(atom, list):
                     pass
                 else:
-                    if not atom.isSpecificCaseOf(center):
+                    if not atom.is_specific_case_of(center):
                         return False
                 # Semantic check #2: labeled atoms that share bond in the group (node)
                 # also share equivalent (or more specific) bond in the structure
                 for atom2, atom1 in initial_map.items():
-                    if group.hasBond(center, atom1) and structure.hasBond(atom, atom2):
-                        bond1 = group.getBond(center, atom1)  # bond1 is group
-                        bond2 = structure.getBond(atom, atom2)  # bond2 is structure
-                        if not bond2.isSpecificCaseOf(bond1):
+                    if group.has_bond(center, atom1) and structure.has_bond(atom, atom2):
+                        bond1 = group.get_bond(center, atom1)  # bond1 is group
+                        bond2 = structure.get_bond(atom, atom2)  # bond2 is structure
+                        if not bond2.is_specific_case_of(bond1):
                             return False
-                    elif group.hasBond(center, atom1):  # but structure doesn't
+                    elif group.has_bond(center, atom1):  # but structure doesn't
                         return False
                     # but we don't mind if...
-                    elif structure.hasBond(atom, atom2):  # but group doesn't
+                    elif structure.has_bond(atom, atom2):  # but group doesn't
                         logging.debug("We don't mind that structure " + str(structure) +
                                       " has bond but group {0} doesn't".format(node))
                 # Passed semantic checks, so add to maps of already-matched atoms
@@ -978,12 +978,12 @@ class Database(object):
             # Labeled atoms in the structure that are not in the group should
             # not be considered in the isomorphism check, so flag them temporarily
             # Without this we would hit a lot of nodes that are ambiguous
-            flagged_atoms = [atom for label, atom in structure.getLabeledAtoms().items() if label not in centers]
+            flagged_atoms = [atom for label, atom in structure.get_all_labeled_atoms().items() if label not in centers]
             for atom in flagged_atoms:
                 atom.ignore = True
 
             # use mapped (labeled) atoms to try to match subgraph
-            result = structure.isSubgraphIsomorphic(group, initial_map)
+            result = structure.is_subgraph_isomorphic(group, initial_map)
 
             # Restore atoms flagged in previous step
             for atom in flagged_atoms:
@@ -1302,23 +1302,23 @@ class ForbiddenStructures(Database):
         for entry in self.entries.values():
             if isinstance(entry.item, Molecule) or isinstance(entry.item, Species):
                 # Perform an isomorphism check
-                if entry.item.isIsomorphic(molecule):
+                if entry.item.is_isomorphic(molecule):
                     return True
             elif isinstance(entry.item, Group):
                 # We need to do subgraph isomorphism
-                entry_labeled_atoms = entry.item.getLabeledAtoms()
-                molecule_labeled_atoms = molecule.getLabeledAtoms()
+                entry_labeled_atoms = entry.item.get_all_labeled_atoms()
+                molecule_labeled_atoms = molecule.get_all_labeled_atoms()
                 for label in entry_labeled_atoms:
                     # all group labels must be present in the molecule
                     if label not in molecule_labeled_atoms: break
                 else:
-                    if molecule.isSubgraphIsomorphic(entry.item, generateInitialMap=True):
+                    if molecule.is_subgraph_isomorphic(entry.item, generate_initial_map=True):
                         return True
             else:
                 raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
 
         # Until we have more thermodynamic data of molecular ions we will forbid them
-        if molecule.getNetCharge() != 0:
+        if molecule.get_net_charge() != 0:
             return True
 
         return False
@@ -1348,9 +1348,9 @@ class ForbiddenStructures(Database):
             raise DatabaseError('A forbidden group should be defined with exactly one item from '
                                 'the following options: group, molecule, or species.')
         if molecule is not None:
-            item = Molecule().fromAdjacencyList(molecule)
+            item = Molecule().from_adjacency_list(molecule)
         elif species is not None:
-            item = Species().fromAdjacencyList(species)
+            item = Species().from_adjacency_list(species)
             item.generate_resonance_structures()
         elif group is not None:
             if (group[0:3].upper() == 'OR{' or
@@ -1359,7 +1359,7 @@ class ForbiddenStructures(Database):
                     group[0:8].upper() == 'NOT AND{'):
                 item = make_logic_node(group)
             else:
-                item = Group().fromAdjacencyList(group)
+                item = Group().from_adjacency_list(group)
         self.entries[label] = Entry(
             label=label,
             item=item,
@@ -1379,12 +1379,12 @@ class ForbiddenStructures(Database):
         if isinstance(entry.item, Molecule):
             f.write('    molecule = \n')
             f.write('"""\n')
-            f.write(entry.item.toAdjacencyList(removeH=False))
+            f.write(entry.item.to_adjacency_list(remove_h=False))
             f.write('""",\n')
         elif isinstance(entry.item, Group):
             f.write('    group = \n')
             f.write('"""\n')
-            f.write(entry.item.toAdjacencyList())
+            f.write(entry.item.to_adjacency_list())
             f.write('""",\n')
         else:
             f.write('    group = "{0}",\n'.format(entry.item))

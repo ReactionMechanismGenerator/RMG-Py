@@ -53,7 +53,7 @@ class TestBaseDatabase(unittest.TestCase):
         Test that the MatchNodeToStructure family works properly.
         """
         entry1 = Entry(
-            item=Group().fromAdjacencyList(
+            item=Group().from_adjacency_list(
                 """
                 1 *3 C  u1 {2,D} {3,S}
                 2    C  u0 {1,D}
@@ -63,7 +63,7 @@ class TestBaseDatabase(unittest.TestCase):
         )
 
         entry2 = Entry(
-            item=Group().fromAdjacencyList(
+            item=Group().from_adjacency_list(
                 """
                 1 *3 C  u1 {2,D} {3,S}
                 2 *5 C  u0 {1,D}
@@ -73,7 +73,7 @@ class TestBaseDatabase(unittest.TestCase):
         )
 
         entry3 = Entry(
-            item=Group().fromAdjacencyList(
+            item=Group().from_adjacency_list(
                 """
                 1 *3 C  u1 {2,D} {3,S}
                 2    C  u0 {1,D}
@@ -82,30 +82,30 @@ class TestBaseDatabase(unittest.TestCase):
                 """)
         )
         # The group should match to itself
-        self.assertTrue(self.database.match_node_to_structure(entry1, entry1.item, atoms=entry1.item.getLabeledAtoms()))
+        self.assertTrue(self.database.match_node_to_structure(entry1, entry1.item, atoms=entry1.item.get_all_labeled_atoms()))
 
         # These groups should not match each other
-        self.assertFalse(self.database.match_node_to_structure(entry1, entry2.item, atoms=entry2.item.getLabeledAtoms()))
+        self.assertFalse(self.database.match_node_to_structure(entry1, entry2.item, atoms=entry2.item.get_all_labeled_atoms()))
 
         # entry1 contains more labels than entry3, therefore cannot be matched by entry3
-        self.assertFalse(self.database.match_node_to_structure(entry3, entry1.item, atoms=entry1.item.getLabeledAtoms()))
+        self.assertFalse(self.database.match_node_to_structure(entry3, entry1.item, atoms=entry1.item.get_all_labeled_atoms()))
 
         # entry3 contains fewer labels than entry1, therefore it can be matched
-        self.assertTrue(self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.getLabeledAtoms()))
+        self.assertTrue(self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms()))
 
     def testMatchNodeToNode(self):
         """
         Test that nodes can match other nodes.
         """
         entry1 = Entry(
-            item=Group().fromAdjacencyList(
+            item=Group().from_adjacency_list(
                 """
                 1 *1 R!H u1
                 """)
         )
 
         entry2 = Entry(
-            item=Group().fromAdjacencyList(
+            item=Group().from_adjacency_list(
                 """
                 1 *1 Cb u1
                 """)
@@ -130,7 +130,7 @@ class TestForbiddenStructures(unittest.TestCase):
             group=test,
         )
 
-        molecule = Molecule().fromAdjacencyList("""
+        molecule = Molecule().from_adjacency_list("""
 multiplicity 3
 1 C u2 p0 c0 {2,D}
 2 C u0 p0 c0 {1,D} {3,S} {4,S}
@@ -150,7 +150,7 @@ multiplicity 3
             molecule=test,
         )
 
-        molecule = Molecule().fromAdjacencyList("""
+        molecule = Molecule().from_adjacency_list("""
 1 C u4 p0 c0
 """)
 
@@ -179,7 +179,7 @@ multiplicity 3
             species=test,
         )
 
-        molecule1 = Molecule().fromAdjacencyList("""
+        molecule1 = Molecule().from_adjacency_list("""
 1  C u0 p0 c0 {2,D} {6,S} {7,S}
 2  C u0 p0 c0 {1,D} {3,S} {8,S}
 3  C u0 p0 c0 {2,S} {4,D} {9,S}
@@ -193,7 +193,7 @@ multiplicity 3
 11 H u0 p0 c0 {5,S}
 12 H u0 p0 c0 {6,S}
 """)
-        molecule2 = Molecule().fromAdjacencyList("""
+        molecule2 = Molecule().from_adjacency_list("""
 1  C u0 p0 c0 {2,B} {6,B} {7,S}
 2  C u0 p0 c0 {1,B} {3,B} {8,S}
 3  C u0 p0 c0 {2,B} {4,B} {9,S}

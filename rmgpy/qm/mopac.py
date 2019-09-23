@@ -215,9 +215,9 @@ class Mopac(object):
         # Compare the optimized geometry to the original molecule
         qmData = self.parse()
         cclibMol = Molecule()
-        cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
-        testMol = self.molecule.toSingleBonds()
-        if not cclibMol.isIsomorphic(testMol):
+        cclibMol.from_xyz(qmData.atomicNumbers, qmData.atomCoords.value)
+        testMol = self.molecule.to_single_bonds()
+        if not cclibMol.is_isomorphic(testMol):
             logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
             return False
 
@@ -305,16 +305,16 @@ class MopacMol(QMMolecule, Mopac):
             for attempt in range(1, self.maxAttempts + 1):
                 self.writeInputFile(attempt)
                 logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts,
-                                                                                     self.molecule.toSMILES(),
+                                                                                     self.molecule.to_smiles(),
                                                                                      self.__class__.__name__))
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts,
-                                                                                       self.molecule.toAugmentedInChI()))
+                                                                                       self.molecule.to_augmented_inchi()))
                     source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt)
                     break
             else:
-                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.to_augmented_inchi()))
                 return None
         result = self.parse()  # parsed in cclib
         result.source = source

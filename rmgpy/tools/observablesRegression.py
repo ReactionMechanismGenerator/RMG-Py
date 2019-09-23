@@ -244,7 +244,7 @@ class ObservablesTestCase(object):
                 multiplicity_list = ['', '(S)', '(D)', '(T)', '(Q)']  # list ot add multiplcity
                 for species in self.observables['species']:
 
-                    smiles = species.molecule[0].toSMILES()  # For purpose of naming the plot only
+                    smiles = species.molecule[0].to_smiles()  # For purpose of naming the plot only
                     if smiles in smiles_list: smiles = smiles + multiplicity_list[species.molecule[0].multiplicity]
                     smiles_list.append(smiles)
 

@@ -64,8 +64,8 @@ class KineticsDatabase(object):
         self.recommended_families = {}
         self.families = {}
         self.libraries = {}
-        self.libraryOrder = []  # a list of tuples in the format ('library_label', LibraryType),
-                                # where LibraryType is set to either 'Reaction Library' or 'Seed'.
+        self.library_order = []  # a list of tuples in the format ('library_label', LibraryType),
+                                 # where LibraryType is set to either 'Reaction Library' or 'Seed'.
         self.local_context = {
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
@@ -93,7 +93,7 @@ class KineticsDatabase(object):
         d = {
             'families': self.families,
             'libraries': self.libraries,
-            'library_order': self.libraryOrder,
+            'library_order': self.library_order,
         }
         return KineticsDatabase, (), d
 
@@ -103,7 +103,7 @@ class KineticsDatabase(object):
         """
         self.families = d['families']
         self.libraries = d['libraries']
-        self.libraryOrder = d['library_order']
+        self.library_order = d['library_order']
 
     def load(self, path, families=None, libraries=None, depositories=None):
         """
@@ -248,7 +248,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         else:
             # load all the libraries you can find
             # this cannot be activated in a normal RMG job. Only activated when loading the database for other purposes
-            self.libraryOrder = []
+            self.library_order = []
             for (root, dirs, files) in os.walk(os.path.join(path)):
                 for f in files:
                     name, ext = os.path.splitext(f)
@@ -263,7 +263,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                             logging.error("Problem loading reaction library {0!r}".format(library_file))
                             raise
                         self.libraries[library.label] = library
-                        self.libraryOrder.append((library.label, 'Reaction Library'))
+                        self.library_order.append((library.label, 'Reaction Library'))
 
     def save(self, path):
         """
@@ -438,7 +438,7 @@ and immediately used in input files without any additional changes.
         :class:`Species` objects.
         """
         reaction_list = []
-        for label, library_type in self.libraryOrder:
+        for label, library_type in self.library_order:
             # Generate reactions from reaction libraries (no need to generate them from seeds)
             if library_type == "Reaction Library":
                 reaction_list.extend(self.generate_reactions_from_library(self.libraries[label],
@@ -498,7 +498,7 @@ and immediately used in input files without any additional changes.
             if reactants[0] is reactants[1]:
                 reactants[1] = reactants[1].copy(deep=True)
                 same_reactants = 2
-            elif reactants[0].isIsomorphic(reactants[1]):
+            elif reactants[0].is_isomorphic(reactants[1]):
                 same_reactants = 2
         elif len(reactants) == 3:
             same_01 = reactants[0] is reactants[1]
@@ -517,13 +517,13 @@ and immediately used in input files without any additional changes.
                 same_reactants = 2
                 reactants[2] = reactants[2].copy(deep=True)
             else:
-                same_01 = reactants[0].isIsomorphic(reactants[1])
-                same_02 = reactants[0].isIsomorphic(reactants[2])
+                same_01 = reactants[0].is_isomorphic(reactants[1])
+                same_02 = reactants[0].is_isomorphic(reactants[2])
                 if same_01 and same_02:
                     same_reactants = 3
                 elif same_01 or same_02:
                     same_reactants = 2
-                elif reactants[1].isIsomorphic(reactants[2]):
+                elif reactants[1].is_isomorphic(reactants[2]):
                     same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
@@ -568,7 +568,7 @@ and immediately used in input files without any additional changes.
                     raise
 
         for reactant in molecules:
-            reactant.clearLabeledAtoms()
+            reactant.clear_labeled_atoms()
 
         return reaction_list
 

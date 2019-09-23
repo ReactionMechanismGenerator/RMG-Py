@@ -37,7 +37,7 @@ Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747
 import numpy as np
 import pybel
 
-from rmgpy.molecule import Molecule, Atom, Bond, getElement
+from rmgpy.molecule import Molecule, Atom, Bond, get_element
 
 import arkane.encorr.data as data
 from arkane.exceptions import BondAdditivityCorrectionError
@@ -97,11 +97,11 @@ def get_bac(model_chemistry, coords, nums, multiplicity=1, mol_corr=0.0):
         bac_bond += length_corr * np.exp(-alpha * length)
 
         # Neighbor correction
-        for other_atom, other_bond in mol.getBonds(atom1).items():  # Atoms adjacent to atom1
+        for other_atom, other_bond in mol.get_bonds(atom1).items():  # Atoms adjacent to atom1
             if other_bond is not bond:
                 other_symbol = other_atom.element.symbol
                 bac_bond += bond_corr_neighbor[symbol1] + bond_corr_neighbor[other_symbol]
-        for other_atom, other_bond in mol.getBonds(atom2).items():  # Atoms adjacent to atom2
+        for other_atom, other_bond in mol.get_bonds(atom2).items():  # Atoms adjacent to atom2
             if other_bond is not bond:
                 other_symbol = other_atom.element.symbol
                 bac_bond += bond_corr_neighbor[symbol2] + bond_corr_neighbor[other_symbol]
@@ -120,7 +120,7 @@ def geo_to_mol(coords, nums):
     """
     if list(nums) == [1, 1]:
         mol = Molecule()
-        mol.fromXYZ(nums, coords)
+        mol.from_xyz(nums, coords)
     else:
         xyz = '{}\n\n'.format(len(nums))
         xyz += '\n'.join('{0}  {1[0]: .10f}  {1[1]: .10f}  {1[2]: .10f}'.format(n, c) for n, c in zip(nums, coords))
@@ -136,12 +136,12 @@ def pybel_to_rmg(pybel_mol):
     """
     mol = Molecule()
     for pybel_atom in pybel_mol:
-        element = getElement(pybel_atom.atomicnum)
+        element = get_element(pybel_atom.atomicnum)
         atom = Atom(element=element, coords=np.array(pybel_atom.coords))
         mol.vertices.append(atom)
     for obbond in pybel.ob.OBMolBondIter(pybel_mol.OBMol):
         begin_idx = obbond.GetBeginAtomIdx() - 1  # Open Babel indexes atoms starting at 1
         end_idx = obbond.GetEndAtomIdx() - 1
         bond = Bond(mol.vertices[begin_idx], mol.vertices[end_idx])
-        mol.addBond(bond)
+        mol.add_bond(bond)
     return mol

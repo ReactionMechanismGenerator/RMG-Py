@@ -99,10 +99,10 @@ class RMGToCanteraTest(unittest.TestCase):
 
         species, reactions = loadChemkinFile(chemkin_path, dictionary_path, transport_path)
 
-        self.rmg_ctSpecies = [spec.toCantera(useChemkinIdentifier=True) for spec in species]
+        self.rmg_ctSpecies = [spec.to_cantera(use_chemkin_identifier=True) for spec in species]
         self.rmg_ctReactions = []
         for rxn in reactions:
-            converted_reactions = rxn.toCantera(species, useChemkinIdentifier=True)
+            converted_reactions = rxn.to_cantera(species, use_chemkin_identifier=True)
             if isinstance(converted_reactions, list):
                 self.rmg_ctReactions.extend(converted_reactions)
             else:

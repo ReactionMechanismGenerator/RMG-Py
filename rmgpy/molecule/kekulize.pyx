@@ -75,7 +75,7 @@ cpdef kekulize(Molecule mol):
     cdef AromaticRing aromatic_ring
 
     # Get all potentially aromatic rings
-    rings = mol.getAllCyclesOfSize(6)
+    rings = mol.get_all_cycles_of_size(6)
 
     # Identify aromatic rings and categorize endocyclic and exocyclic bonds for each ring
     aromatic_rings = []
@@ -122,12 +122,12 @@ cpdef kekulize(Molecule mol):
         itercount += 1
 
     if aromatic_rings:
-        raise KekulizationError('Unable to kekulize molecule, reached maximum attempts:/n{0}'.format(mol.toAdjacencyList()))
+        raise KekulizationError('Unable to kekulize molecule, reached maximum attempts:/n{0}'.format(mol.to_adjacency_list()))
 
     try:
-        mol.updateAtomTypes(logSpecies=False)
+        mol.update_atomtypes(log_species=False)
     except AtomTypeError:
-        logging.debug('Unable to kekulize molecule, final result was invalid:/n{0}'.format(mol.toAdjacencyList()))
+        logging.debug('Unable to kekulize molecule, final result was invalid:/n{0}'.format(mol.to_adjacency_list()))
         raise KekulizationError('Unable to kekulize molecule, final result was invalid.')
 
 cdef list prioritize_rings(list item_list):
@@ -175,12 +175,12 @@ cdef class AromaticRing(object):
 
         endo_dof = 0
         for bond in self.endo_bonds:
-            if bond.isBenzene():
+            if bond.is_benzene():
                 # Add one dof for each aromatic bond
                 endo_dof += 1
         exo_dof = 0
         for bond in self.exo_bonds:
-            if bond.isBenzene():
+            if bond.is_benzene():
                 # Add one dof for each aromatic bond
                 exo_dof += 1
         self.endo_dof = endo_dof
@@ -201,14 +201,14 @@ cdef class AromaticRing(object):
         i = 0
         while i < len(self.unresolved):
             bond0 = self.unresolved[i].bond
-            if bond0.isOrder(round(bond0.order)):
+            if bond0.is_order(round(bond0.order)):
                 # Bond has already been assigned, so mark as resolved
                 self.resolved.append(self.unresolved.pop(i))
-            elif bond0.isOrder(2.5):
+            elif bond0.is_order(2.5):
                 # Bond was incremented, so it must be a double bond
                 bond0.order = 2
                 self.resolved.append(self.unresolved.pop(i))
-            elif bond0.isOrder(0.5):
+            elif bond0.is_order(0.5):
                 # Bond was decremented, so it must be a single bond
                 bond0.order = 1
                 self.resolved.append(self.unresolved.pop(i))
@@ -320,7 +320,7 @@ cdef class AromaticBond(object):
                 if abs(round(bond.order) - bond.order) < 1e-9:
                     # This is a fixed bond, either single or double
                     occupied += int(round(bond.order))
-                elif bond.isBenzene():
+                elif bond.is_benzene():
                     # The atom has a benzene bond, so at least one electron is occupied, but there is a second uncertain electron
                     occupied += 1
                     uncertain += 1
@@ -332,8 +332,8 @@ cdef class AromaticBond(object):
                 else:
                     raise KekulizationError('Unexpected bond order {0}.'.format(bond.order))
             # Count radicals and lone pairs
-            occupied += atom.radicalElectrons
-            occupied += 2 * atom.lonePairs
+            occupied += atom.radical_electrons
+            occupied += 2 * atom.lone_pairs
             # Valence calculation to determine available electrons
             available = valences[atom.element.symbol] - occupied
             if available < 0:

@@ -56,12 +56,12 @@ def save_entry(f, entry):
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write(entry.item.to_adjacency_list(remove_h=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList())
+        f.write(entry.item.to_adjacency_list())
         f.write('""",\n')
     else:
         f.write('    group = "{0}",\n'.format(entry.item))
@@ -128,7 +128,7 @@ class TransportLibrary(Database):
                    shortDesc='',
                    longDesc='',
                    ):
-        item = Molecule().fromAdjacencyList(molecule)
+        item = Molecule().from_adjacency_list(molecule)
 
         self.entries[label] = Entry(
             index=index,
@@ -186,7 +186,7 @@ class TransportGroups(Database):
                 group[0:8].upper() == 'NOT AND{'):
             item = make_logic_node(group)
         else:
-            item = Group().fromAdjacencyList(group)
+            item = Group().from_adjacency_list(group)
         self.entries[label] = Entry(
             index=index,
             label=label,
@@ -329,7 +329,7 @@ class TransportDatabase(object):
         """
         transport = (None, None, None)
 
-        if species.containsSurfaceSite():
+        if species.contains_surface_site():
             return transport
 
         for label in self.library_order:
@@ -379,7 +379,7 @@ class TransportDatabase(object):
         :class:`DatabaseError` is raised.
         """
         for entry in library.entries.values():
-            if species.isIsomorphic(entry.item) and entry.data is not None:
+            if species.is_isomorphic(entry.item) and entry.data is not None:
                 return deepcopy(entry.data), library, entry
         return None
 
@@ -394,20 +394,20 @@ class TransportDatabase(object):
         # assume that the stablest resonance isomer has already been put as the first
         # and that we want the transport properties of this isomer
         molecule = species.molecule[0]
-        molecule.clearLabeledAtoms()
-        molecule.updateAtomTypes()
+        molecule.clear_labeled_atoms()
+        molecule.update_atomtypes()
         critical_point = self.estimate_critical_properties_via_group_additivity(molecule)
         Tc = critical_point.Tc
         Pc = critical_point.Pc
         Vc = critical_point.Vc
         Tb = critical_point.Tb
-        if critical_point.linear != molecule.isLinear():
-            logging.warning("Group-based structure index and isLinear() function disagree about "
+        if critical_point.linear != molecule.is_linear():
+            logging.warning("Group-based structure index and is_linear() function disagree about "
                             "linearity of {mol!r}".format(mol=molecule))
 
         if len(molecule.atoms) == 1:
             shape_index = 0
-        elif molecule.isLinear():
+        elif molecule.is_linear():
             shape_index = 1
         else:
             shape_index = 2
@@ -441,7 +441,7 @@ class TransportDatabase(object):
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the transport wrong
 
-        if molecule.isRadical():  # radical species
+        if molecule.is_radical():  # radical species
             # Make a copy of the structure so we don't change the original
             saturated_struct = molecule.copy(deep=True)
 
@@ -462,10 +462,10 @@ class TransportDatabase(object):
             # for atom in added:
             #    # Remove the added hydrogen atoms and bond and restore the radical
             #    for H, bond in added[atom]:
-            #        saturated_struct.removeBond(bond)
-            #        saturated_struct.removeAtom(H)
-            #        atom.incrementRadical()
-            #    saturated_struct.updateConnectivityValues()
+            #        saturated_struct.remove_bond(bond)
+            #        saturated_struct.remove_atom(H)
+            #        atom.increment_radical()
+            #    saturated_struct.update_connectivity_values()
             return critical_point
 
         # non-radical species
@@ -482,9 +482,9 @@ class TransportDatabase(object):
         for atom in molecule.atoms:
             num_atoms += 1
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.isNonHydrogen():
+            if atom.is_non_hydrogen():
                 try:
-                    if molecule.isVertexInCycle(atom):
+                    if molecule.is_vertex_in_cycle(atom):
                         self._add_critical_point_contribution(group_data, self.groups['ring'], molecule, {'*': atom})
                     else:
                         self._add_critical_point_contribution(group_data, self.groups['nonring'], molecule, {'*': atom})
@@ -551,7 +551,7 @@ class TransportDatabase(object):
         
         Generate the Lennard-Jones parameters for the species.
         """
-        count = sum([1 for atom in species.molecule[0].vertices if atom.isNonHydrogen()])
+        count = sum([1 for atom in species.molecule[0].vertices if atom.is_non_hydrogen()])
 
         if count == 1:
             sigma = (3.758e-10, "m")
@@ -574,7 +574,7 @@ class TransportDatabase(object):
 
         if len(species.molecule[0].atoms) == 1:
             shape_index = 0
-        elif species.molecule[0].isLinear():
+        elif species.molecule[0].is_linear():
             shape_index = 1
         else:
             shape_index = 2

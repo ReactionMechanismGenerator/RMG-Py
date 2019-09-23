@@ -56,19 +56,19 @@ class SurfaceReactorCheck(unittest.TestCase):
         We use a SurfaceArrhenius for the rate expression.
         """
         h2 = Species(
-            molecule=[Molecule().fromSMILES("[H][H]")],
+            molecule=[Molecule().from_smiles("[H][H]")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003, 7.103, 7.502], "cal/(mol*K)"),
                               H298=(0, "kcal/mol"),
                               S298=(31.129, "cal/(mol*K)")))
         x = Species(
-            molecule=[Molecule().fromAdjacencyList("1 X u0 p0")],
+            molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
                               H298=(0.0, "kcal/mol"),
                               S298=(0.0, "cal/(mol*K)")))
         hx = Species(
-            molecule=[Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
+            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                               Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
                               H298=(-11.26, "kcal/mol"),
@@ -163,7 +163,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         """
 
         ch3 = Species(
-            molecule=[Molecule().fromSMILES("[CH3]")],
+            molecule=[Molecule().from_smiles("[CH3]")],
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(
@@ -179,7 +179,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         )
 
         x = Species(
-            molecule=[Molecule().fromAdjacencyList("1 X u0 p0")],
+            molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
             thermo=NASA(polynomials=[NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, 'K'), Tmax=(1000, 'K')),
                                      NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
                         Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-6.19426, 'kJ/mol'),
@@ -187,7 +187,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         )
 
         ch3x = Species(
-            molecule=[Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
+            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(

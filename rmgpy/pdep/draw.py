@@ -37,7 +37,7 @@ import logging
 
 import numpy as np
 
-from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
+from rmgpy.molecule.draw import MoleculeDrawer, create_new_surface
 
 
 ################################################################################
@@ -152,7 +152,7 @@ class NetworkDrawer:
             import cairo
 
         # Use dummy surface to determine text extents
-        surface = createNewSurface(format)
+        surface = create_new_surface(format)
         cr = cairo.Context(surface)
         cr.set_font_size(self.options['fontSizeNormal'])
         extents = cr.text_extents(text)
@@ -390,7 +390,7 @@ class NetworkDrawer:
         width = max([rect[2] + rect[0] for rect in well_rects]) - min([rect[0] for rect in well_rects]) + 2 * padding
 
         # Draw to the final surface
-        surface = createNewSurface(format=format, target=path, width=width, height=height)
+        surface = create_new_surface(format=format, target=path, width=width, height=height)
         cr = cairo.Context(surface)
 
         # Some global settings

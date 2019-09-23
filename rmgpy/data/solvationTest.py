@@ -58,7 +58,7 @@ class TestSoluteDatabase(TestCase):
 
     def testSoluteLibrary(self):
         """Test we can obtain solute parameters from a library"""
-        species = Species(molecule=[Molecule(SMILES='COC=O')])  # methyl formate - we know this is in the solute library
+        species = Species(molecule=[Molecule(smiles='COC=O')])  # methyl formate - we know this is in the solute library
 
         library_data = self.database.get_solute_data_from_library(species, self.database.libraries['solute'])
         self.assertEqual(len(library_data), 3)
@@ -80,7 +80,7 @@ class TestSoluteDatabase(TestCase):
         ]
 
         for smiles, volume in self.testCases:
-            species = Species(molecule=[Molecule(SMILES=smiles)])
+            species = Species(molecule=[Molecule(smiles=smiles)])
             solute_data = self.database.get_solute_data(species)
             solute_data.set_mcgowan_volume(species)  # even if it was found in library, recalculate
             self.assertIsNotNone(solute_data.V)  # so if it wasn't found in library, we should have calculated it
@@ -88,7 +88,7 @@ class TestSoluteDatabase(TestCase):
 
     def testDiffusivity(self):
         """Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity"""
-        species = Species(molecule=[Molecule(SMILES='O')])  # water
+        species = Species(molecule=[Molecule(smiles='O')])  # water
         solute_data = self.database.get_solute_data(species)
         temperature = 298.
         solvent_viscosity = 0.00089  # water is about 8.9e-4 Pa.s
@@ -116,7 +116,7 @@ class TestSoluteDatabase(TestCase):
         ]
 
         for name, smiles, S, B, E, L, A, V in self.testCases:
-            species = Species(molecule=[Molecule(SMILES=smiles)])
+            species = Species(molecule=[Molecule(smiles=smiles)])
             solute_data = self.database.get_solute_data_from_groups(Species(molecule=[species.molecule[0]]))
             self.assertAlmostEqual(solute_data.S, S, places=2)
             self.assertAlmostEqual(solute_data.B, B, places=2)
@@ -126,7 +126,7 @@ class TestSoluteDatabase(TestCase):
 
     def testLonePairSoluteGeneration(self):
         """Test we can obtain solute parameters via group additivity for a molecule with lone pairs"""
-        molecule = Molecule().fromAdjacencyList(
+        molecule = Molecule().from_adjacency_list(
             """
             CH2_singlet
             multiplicity 1
@@ -140,7 +140,7 @@ class TestSoluteDatabase(TestCase):
 
     def testSoluteDataGenerationAmmonia(self):
         """Test we can obtain solute parameters via group additivity for ammonia"""
-        molecule = Molecule().fromAdjacencyList(
+        molecule = Molecule().from_adjacency_list(
             """
             1 N u0 p1 c0 {2,S} {3,S} {4,S}
             2 H u0 p0 c0 {1,S}
@@ -153,7 +153,7 @@ class TestSoluteDatabase(TestCase):
 
     def testSoluteDataGenerationAmide(self):
         """Test that we can obtain solute parameters via group additivity for an amide"""
-        molecule = Molecule().fromAdjacencyList(
+        molecule = Molecule().from_adjacency_list(
             """
             1 N u0 p1 {2,S} {3,S} {4,S}
             2 H u0 {1,S}
@@ -171,7 +171,7 @@ class TestSoluteDatabase(TestCase):
 
     def testSoluteDataGenerationCO(self):
         """Test that we can obtain solute parameters via group additivity for CO."""
-        molecule = Molecule().fromAdjacencyList(
+        molecule = Molecule().from_adjacency_list(
             """
             1  C u0 p1 c-1 {2,T}
             2  O u0 p1 c+1 {1,T}
@@ -185,7 +185,7 @@ class TestSoluteDatabase(TestCase):
         Test we can obtain solute parameters via group additivity for a molecule with both lone 
         pairs and a radical
         """
-        molecule = Molecule().fromAdjacencyList(
+        molecule = Molecule().from_adjacency_list(
             """
             [C]OH
             multiplicity 2
@@ -210,7 +210,7 @@ class TestSoluteDatabase(TestCase):
         ]
 
         for solventName, soluteName, smiles, H, G in self.testCases:
-            species = Species(molecule=[Molecule(SMILES=smiles)])
+            species = Species(molecule=[Molecule(smiles=smiles)])
             solute_data = self.database.get_solute_data(species)
             solvent_data = self.database.get_solvent_data(solventName)
             solvation_correction = self.database.get_solvation_correction(solute_data, solvent_data)
@@ -230,17 +230,17 @@ class TestSoluteDatabase(TestCase):
         # Case 1-1: the solvent water is not in the initialSpecies list, so it raises Exception
         rmg = RMG()
         rmg.initialSpecies = []
-        solute = Species(label='n-octane', molecule=[Molecule().fromSMILES('C(CCCCC)CC')])
+        solute = Species(label='n-octane', molecule=[Molecule().from_smiles('C(CCCCC)CC')])
         rmg.initialSpecies.append(solute)
         rmg.solvent = 'water'
-        solvent_structure = Species().fromSMILES('O')
+        solvent_structure = Species().from_smiles('O')
         self.assertRaises(Exception, self.database.check_solvent_in_initial_species, rmg, solvent_structure)
 
         # Case 1-2: the solvent is now octane and it is listed as the initialSpecies. Although the string
         # names of the solute and the solvent are different, because the solvent SMILES is provided,
         # it can identify the 'n-octane' as the solvent
         rmg.solvent = 'octane'
-        solvent_structure = Species().fromSMILES('CCCCCCCC')
+        solvent_structure = Species().from_smiles('CCCCCCCC')
         self.database.check_solvent_in_initial_species(rmg, solvent_structure)
         self.assertTrue(rmg.initialSpecies[0].isSolvent)
 
@@ -270,8 +270,8 @@ class TestSoluteDatabase(TestCase):
         # Case 2: When the solventDatabase contains the correct solvent SMILES, the item attribute is the instance of
         # Species with the correct solvent molecular structure
         solventlibrary.load_entry(index=2, label='octane', solvent=None, molecule='CCCCCCCC')
-        solvent_species = Species().fromSMILES('C(CCCCC)CC')
-        self.assertTrue(solvent_species.isIsomorphic(solventlibrary.entries['octane'].item[0]))
+        solvent_species = Species().from_smiles('C(CCCCC)CC')
+        self.assertTrue(solvent_species.is_isomorphic(solventlibrary.entries['octane'].item[0]))
 
         # Case 3: When the solventDatabase contains the correct solvent adjacency list, the item attribute
         # is the instance of the species with the correct solvent molecular structure.
@@ -287,8 +287,8 @@ class TestSoluteDatabase(TestCase):
         8 H u0 p0 c0 {2,S}
         9 H u0 p0 c0 {3,S}
         """)
-        solvent_species = Species().fromSMILES('CCO')
-        self.assertTrue(solvent_species.isIsomorphic(solventlibrary.entries['ethanol'].item[0]))
+        solvent_species = Species().from_smiles('CCO')
+        self.assertTrue(solvent_species.is_isomorphic(solventlibrary.entries['ethanol'].item[0]))
 
         # Case 4: when the solventDatabase contains incorrect values for the molecule attribute, it raises Exception
         # This will display the SMILES Parse Error message from the external function, but ignore it.
@@ -296,10 +296,10 @@ class TestSoluteDatabase(TestCase):
 
         # Case 5: when the solventDatabase contains data for co-solvents.
         solventlibrary.load_entry(index=5, label='methanol_50_water_50', solvent=None, molecule=['CO', 'O'])
-        solvent_species_list = [Species().fromSMILES('CO'), Species().fromSMILES('O')]
+        solvent_species_list = [Species().from_smiles('CO'), Species().from_smiles('O')]
         self.assertEqual(len(solventlibrary.entries['methanol_50_water_50'].item), 2)
         for spc1 in solventlibrary.entries['methanol_50_water_50'].item:
-            self.assertTrue(any([spc1.isIsomorphic(spc2) for spc2 in solvent_species_list]))
+            self.assertTrue(any([spc1.is_isomorphic(spc2) for spc2 in solvent_species_list]))
 
 
 #####################################################

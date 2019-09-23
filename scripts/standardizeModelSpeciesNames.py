@@ -94,7 +94,7 @@ if __name__ == '__main__':
         speciesIndices[i] = []
         for j, species in enumerate(model.species):
             for index, species0 in enumerate(allSpecies):
-                if species0.isIsomorphic(species):
+                if species0.is_isomorphic(species):
                     speciesIndices[i].append(index)
                     break
             else:

@@ -51,7 +51,7 @@ cdef class VF2:
     @graphA.setter
     def graphA(self, value):
         self.graph1 = value
-        self.graph1.sortVertices()
+        self.graph1.sort_vertices()
 
     @property
     def graphB(self):
@@ -60,75 +60,75 @@ cdef class VF2:
     @graphB.setter
     def graphB(self, value):
         self.graph2 = value
-        self.graph2.sortVertices()
+        self.graph2.sort_vertices()
 
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False,
-                            bint strict=True) except -2:
+    cpdef bint is_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
+                             bint strict=True) except -2:
         """
         Return ``True`` if graph `graph1` is isomorphic to graph `graph2` with
-        the optional initial mapping `initialMapping`, or ``False`` otherwise.
+        the optional initial mapping `initial_mapping`, or ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, False, saveOrder=saveOrder, strict=strict)
-        return self.isMatch
+        self.isomorphism(graph1, graph2, initial_mapping, False, False, save_order=save_order, strict=strict)
+        return self.is_match
 
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False,
-                               bint strict=True):
+    cpdef list find_isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
+                                bint strict=True):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
         `graph1` to graph `graph2` with the optional initial mapping 
-        `initialMapping`. If no valid isomorphisms are found, an empty list is
+        `initial_mapping`. If no valid isomorphisms are found, an empty list is
         returned.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, True, saveOrder=saveOrder, strict=strict)
-        return self.mappingList
+        self.isomorphism(graph1, graph2, initial_mapping, False, True, save_order=save_order, strict=strict)
+        return self.mapping_list
 
-    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping,
-                                    bint saveOrder=False) except -2:
+    cpdef bint is_subgraph_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping,
+                                      bint save_order=False) except -2:
         """
         Return ``True`` if graph `graph1` is subgraph isomorphic to subgraph
-        `graph2` with the optional initial mapping `initialMapping`, or
+        `graph2` with the optional initial mapping `initial_mapping`, or
         ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initialMapping, True, False, saveOrder)
-        return self.isMatch
+        self.isomorphism(graph1, graph2, initial_mapping, True, False, save_order)
+        return self.is_match
 
-    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False):
+    cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False):
         """
         Return a list of dicts of all valid subgraph isomorphism mappings from
         graph `graph1` to subgraph `graph2` with the optional initial mapping 
-        `initialMapping`. If no valid subgraph isomorphisms are found, an empty
+        `initial_mapping`. If no valid subgraph isomorphisms are found, an empty
         list is returned.
         """
-        self.isomorphism(graph1, graph2, initialMapping, True, True, saveOrder)
-        return self.mappingList
+        self.isomorphism(graph1, graph2, initial_mapping, True, True, save_order)
+        return self.mapping_list
 
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll,
-                     bint saveOrder=False, bint strict=True):
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all,
+                     bint save_order=False, bint strict=True):
         """
         Evaluate the isomorphism relationship between graphs `graph1` and
-        `graph2` with optional initial mapping `initialMapping`. If `subgraph`
+        `graph2` with optional initial mapping `initial_mapping`. If `subgraph`
         is ``True``, `graph2` is treated as a possible subgraph of `graph1`.
-        If `findAll` is ``True``, all isomorphisms are found; otherwise only
+        If `find_all` is ``True``, all isomorphisms are found; otherwise only
         the first is found.
         """
-        cdef int callDepth, index1, index2
+        cdef int call_depth, index1, index2
 
         if self.graph1 is not graph1:
             self.graph1 = graph1
-            graph1.sortVertices(saveOrder)
+            graph1.sort_vertices(save_order)
 
         if self.graph2 is not graph2:
             self.graph2 = graph2
-            graph2.sortVertices(saveOrder)
+            graph2.sort_vertices(save_order)
 
-        self.initialMapping = initialMapping
+        self.initial_mapping = initial_mapping
         self.subgraph = subgraph
-        self.findAll = findAll
+        self.find_all = find_all
         self.strict = strict
 
         # Clear previous result
-        self.isMatch = False
-        self.mappingList = []
+        self.is_match = False
+        self.mapping_list = []
 
         # Some quick isomorphism checks based on graph sizes
         if not self.subgraph and len(graph2.vertices) != len(graph1.vertices):
@@ -138,18 +138,18 @@ cdef class VF2:
         elif not self.subgraph and len(graph2.vertices) == len(graph1.vertices) == 0:
             # The two graphs don't have any vertices; this means they are
             # trivially isomorphic
-            self.isMatch = True
+            self.is_match = True
             return
         elif self.subgraph and len(graph2.vertices) > len(graph1.vertices):
             # The second graph has more vertices than the first, so it cannot be
             # a subgraph of the first
             return
 
-        # Initialize callDepth with the size of the smallest graph
+        # Initialize call_depth with the size of the smallest graph
         # Each recursive call to match() will decrease it by one;
         # when the whole graph has been explored, it should reach 0
         # It should never go below zero!
-        callDepth = len(graph2.vertices)
+        call_depth = len(graph2.vertices)
 
         # Initialize mapping by clearing any previous mapping information
         for vertex1 in graph1.vertices:
@@ -159,14 +159,14 @@ cdef class VF2:
             vertex2.mapping = None
             vertex2.terminal = False
         # Set the initial mapping if provided
-        if self.initialMapping is not None:
-            for vertex1, vertex2 in self.initialMapping.items():
-                self.addToMapping(vertex1, vertex2)
-            callDepth -= len(self.initialMapping)
+        if self.initial_mapping is not None:
+            for vertex1, vertex2 in self.initial_mapping.items():
+                self.add_to_mapping(vertex1, vertex2)
+            call_depth -= len(self.initial_mapping)
 
-        self.match(callDepth)
+        self.match(call_depth)
 
-        if saveOrder:
+        if save_order:
             graph1.restore_vertex_order()
             graph2.restore_vertex_order()
 
@@ -178,23 +178,23 @@ cdef class VF2:
             vertex2.mapping = None
             vertex2.terminal = False
 
-    cdef bint match(self, int callDepth) except -2:
+    cdef bint match(self, int call_depth) except -2:
         """
         Recursively search for pairs of vertices to match, until all vertices
-        are matched or the viable set of matches is exhausted. The `callDepth`
+        are matched or the viable set of matches is exhausted. The `call_depth`
         parameter helps ensure we never enter an infinite loop.
         """
         cdef Vertex vertex1, vertex2
         cdef dict mapping
-        cdef bint hasTerminals
+        cdef bint has_terminals
 
         # The call depth should never be negative!
-        if callDepth < 0:
+        if call_depth < 0:
             raise VF2Error('Negative call depth encountered in VF2_match().')
 
         # Done if we have mapped to all vertices in graph
-        if callDepth == 0:
-            if self.findAll:
+        if call_depth == 0:
+            if self.find_all:
                 mapping = {}
                 for vertex2 in self.graph2.vertices:
                     if vertex2.ignore:
@@ -202,8 +202,8 @@ cdef class VF2:
                     assert vertex2.mapping is not None
                     assert vertex2.mapping.mapping is vertex2
                     mapping[vertex2.mapping] = vertex2
-                self.mappingList.append(mapping)
-            self.isMatch = True
+                self.mapping_list.append(mapping)
+            self.is_match = True
             return True
 
         # Create list of pairs of candidates for inclusion in mapping
@@ -218,13 +218,13 @@ cdef class VF2:
         But: for us, bonds are not directional, so ignore Tin(s)
         and just use Tout(s) which is what we call "terminals".
         """
-        hasTerminals = False
+        has_terminals = False
         for vertex2 in self.graph2.vertices:
             if vertex2.ignore:
                 continue
             if vertex2.terminal:
                 # graph2 has terminals, so graph1 also must have terminals
-                hasTerminals = True
+                has_terminals = True
                 break
         else:
             """
@@ -248,7 +248,7 @@ cdef class VF2:
                 continue
             # If terminals are available, then skip vertices in the first
             # graph that are not terminals
-            if hasTerminals and not vertex1.terminal:
+            if has_terminals and not vertex1.terminal:
                 continue
             # Otherwise take any node that is not already matched
             if vertex1.mapping is not None:
@@ -256,13 +256,13 @@ cdef class VF2:
             # Propose a pairing
             if self.feasible(vertex1, vertex2):
                 # Add proposed match to mapping
-                self.addToMapping(vertex1, vertex2)
+                self.add_to_mapping(vertex1, vertex2)
                 # Recurse
-                isMatch = self.match(callDepth - 1)
-                if isMatch and not self.findAll:
+                is_match = self.match(call_depth - 1)
+                if is_match and not self.find_all:
                     return True
                 # Undo proposed match
-                self.removeFromMapping(vertex1, vertex2)
+                self.remove_from_mapping(vertex1, vertex2)
 
         # None of the proposed matches led to a complete isomorphism, so return False
         return False
@@ -277,7 +277,7 @@ cdef class VF2:
         """
         cdef Vertex vert1, vert2
         cdef Edge edge1, edge2
-        cdef int term1Count, term2Count, neither1Count, neither2Count
+        cdef int term1_count, term2_count, neither1_count, neither2_count
 
         if not self.subgraph:
             # To be feasible the connectivity values must be an exact match
@@ -287,7 +287,7 @@ cdef class VF2:
 
         # Semantic check #1: vertex1 and vertex2 must be equivalent
         if self.subgraph:
-            if not vertex1.isSpecificCaseOf(vertex2): return False
+            if not vertex1.is_specific_case_of(vertex2): return False
         else:
             if not vertex1.equivalent(vertex2, strict=self.strict): return False
 
@@ -305,7 +305,7 @@ cdef class VF2:
                     edge1 = vertex1.edges[vert1]
                     edge2 = vertex2.edges[vert2]
                     if self.subgraph:
-                        if not edge1.isSpecificCaseOf(edge2): return False
+                        if not edge1.is_specific_case_of(edge2): return False
                     else:
                         if not edge1.equivalent(edge2): return False
 
@@ -319,31 +319,31 @@ cdef class VF2:
                         return False
 
         # Count number of terminals adjacent to vertex1 and vertex2
-        term1Count = term2Count = neither1Count = neither2Count = 0  # note that 0 is immutable
+        term1_count = term2_count = neither1_count = neither2_count = 0  # note that 0 is immutable
         for vert1 in vertex1.edges:
             if vert1.terminal:
-                term1Count += 1
+                term1_count += 1
             elif vert1.mapping is not None:
-                neither1Count += 1
+                neither1_count += 1
         for vert2 in vertex2.edges:
             if vert2.terminal:
-                term2Count += 1
+                term2_count += 1
             elif vert2.mapping is not None:
-                neither2Count += 1
+                neither2_count += 1
 
         # Level 2 look-ahead: the number of adjacent vertices of vertex1 and
         # vertex2 that are non-terminals must be equal
         if self.subgraph:
-            if neither1Count < neither2Count: return False
+            if neither1_count < neither2_count: return False
         else:
-            if neither1Count != neither2Count: return False
+            if neither1_count != neither2_count: return False
 
         # Level 1 look-ahead: the number of adjacent vertices of vertex1 and
         # vertex2 that are terminals must be equal
         if self.subgraph:
-            if term1Count < term2Count: return False
+            if term1_count < term2_count: return False
         else:
-            if term1Count != term2Count: return False
+            if term1_count != term2_count: return False
 
         # Level 0 look-ahead: all adjacent vertices of vertex2 already in the
         # mapping must map to adjacent vertices of vertex1
@@ -360,7 +360,7 @@ cdef class VF2:
         # All of our tests have been passed, so the two vertices are a feasible pair
         return True
 
-    cdef addToMapping(self, Vertex vertex1, Vertex vertex2):
+    cdef add_to_mapping(self, Vertex vertex1, Vertex vertex2):
         """
         Add as valid a mapping of vertex `vertex1` from the first graph to
         vertex `vertex2` from the second graph, and update the terminals
@@ -382,7 +382,7 @@ cdef class VF2:
         for v in vertex2.edges:
             v.terminal = v.mapping is None
 
-    cdef removeFromMapping(self, Vertex vertex1, Vertex vertex2):
+    cdef remove_from_mapping(self, Vertex vertex1, Vertex vertex2):
         """
         Remove as valid a mapping of vertex `vertex1` from the first graph to
         vertex `vertex2` from the second graph, and update the terminals

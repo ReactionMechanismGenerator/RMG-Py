@@ -75,7 +75,7 @@ def getMechDict(spcs, rxns, solvent='solvent', solventData=None):
 
 
 def getRadicals(spc):
-    if spc.molecule[0].toSMILES() == "[O][O]":  # treat oxygen as stable to improve radical analysis
+    if spc.molecule[0].to_smiles() == "[O][O]":  # treat oxygen as stable to improve radical analysis
         return 0
     else:
         return spc.molecule[0].multiplicity-1
@@ -86,7 +86,7 @@ def obj2dict(obj, spcs, label="solvent"):
     if isinstance(obj, Species):
         D["name"] = obj.label
         D["type"] = "Species"
-        D["smiles"] = obj.molecule[0].toSMILES()
+        D["smiles"] = obj.molecule[0].to_smiles()
         D["thermo"] = obj2dict(obj.thermo, spcs)
         D["radicalelectrons"] = getRadicals(obj)
     elif isinstance(obj, NASA):

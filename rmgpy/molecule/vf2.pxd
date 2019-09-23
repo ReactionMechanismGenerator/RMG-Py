@@ -33,28 +33,28 @@ cdef class VF2:
 
     cpdef Graph graphA, graphB
     
-    cdef dict initialMapping
+    cdef dict initial_mapping
     cdef bint subgraph
-    cdef bint findAll
+    cdef bint find_all
     cdef bint strict
     
-    cdef bint isMatch
-    cdef list mappingList
+    cdef bint is_match
+    cdef list mapping_list
     
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint strict=?) except -2
         
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?, bint strict=?)
+    cpdef list find_isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint strict=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?) except -2
+    cpdef bint is_subgraph_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?)
+    cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?)
     
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=?, bint strict=?)
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all, bint save_order=?, bint strict=?)
 
-    cdef bint match(self, int callDepth) except -2
+    cdef bint match(self, int call_depth) except -2
         
     cpdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2
     
-    cdef addToMapping(self, Vertex vertex1, Vertex vertex2)
+    cdef add_to_mapping(self, Vertex vertex1, Vertex vertex2)
         
-    cdef removeFromMapping(self, Vertex vertex1, Vertex vertex2)
+    cdef remove_from_mapping(self, Vertex vertex1, Vertex vertex2)

@@ -164,7 +164,7 @@ cdef class SurfaceReactor(ReactionSystem):
         for spec, index in self.speciesIndex.items():
             if index >= self.numCoreSpecies:
                 continue
-            if spec.containsSurfaceSite():
+            if spec.contains_surface_site():
                 species_on_surface[index] = 1
         for rxn, index in self.reactionIndex.items():
             if rxn.isSurfaceReaction():
@@ -206,7 +206,7 @@ cdef class SurfaceReactor(ReactionSystem):
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
 
-            # ToDo: getRateCoefficient should also depend on surface coverages vector
+            # ToDo: get_rate_coefficient should also depend on surface coverages vector
 
             if rxn.isSurfaceReaction():
                 """
@@ -223,7 +223,7 @@ cdef class SurfaceReactor(ReactionSystem):
                 if not warned and rxn.kinetics.is_pressure_dependent():
                     logging.warning("Pressure may be varying, but using initial pressure to evaluate k(T,P) expressions!")
                     warned = True
-                self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)
+                self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, P)
             if rxn.reversible:
                 # ToDo: getEquilibriumConstant should be coverage dependent
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)

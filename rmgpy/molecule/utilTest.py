@@ -31,7 +31,7 @@
 import unittest
 from scipy.special import comb
 
-from rmgpy.molecule.util import retrieveElementCount, agglomerate, generate_combo, partition, swap
+from rmgpy.molecule.util import get_element_count, agglomerate, generate_combo, partition, swap
 
 
 class ElementCountTest(unittest.TestCase):
@@ -42,7 +42,7 @@ class ElementCountTest(unittest.TestCase):
 
         expected = {'C': 4, 'H': 10, 'O': 1}
 
-        count = retrieveElementCount(inchi)
+        count = get_element_count(inchi)
 
         self.assertEqual(count, expected)
 
@@ -52,7 +52,7 @@ class ElementCountTest(unittest.TestCase):
 
         expected = {'C': 5, 'H': 12, 'O': 2}
 
-        count = retrieveElementCount(inchi)
+        count = get_element_count(inchi)
 
         self.assertEqual(count, expected)
 

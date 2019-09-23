@@ -176,7 +176,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         Returns:
             list of the generated reactions for further analysis if desired
         """
-        method = Molecule.fromAdjacencyList if adjlists else Molecule.fromSMILES
+        method = Molecule.from_adjacency_list if adjlists else Molecule.from_smiles
 
         reactants = [method(Molecule(), identifier) for identifier in reactants]
         if products is not None:
@@ -414,10 +414,10 @@ class TestReactionDegeneracy(unittest.TestCase):
         This reaction should have two transition states, which should occur regardless
         of the order .
         """
-        mol_a = Molecule().fromSMILES('C=[C]C')
-        mol_b = Molecule().fromSMILES('C=C[CH2]')
-        mol_c = Molecule().fromSMILES('C=C=C')
-        mol_d = Molecule().fromSMILES('C=CC')
+        mol_a = Molecule().from_smiles('C=[C]C')
+        mol_b = Molecule().from_smiles('C=C[CH2]')
+        mol_c = Molecule().from_smiles('C=C=C')
+        mol_d = Molecule().from_smiles('C=CC')
 
         family = database.kinetics.families['Disproportionation']
         reaction_list = family._generate_reactions([mol_a, mol_b], products=[mol_c, mol_d])
@@ -545,15 +545,15 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         family = database.kinetics.families['Disproportionation']
 
-        mol_a = Molecule().fromSMILES('C[CH2]')
-        mol_b = Molecule().fromSMILES('C[CH2]')
-        mol_c = Molecule().fromSMILES('C=C')
-        mol_d = Molecule().fromSMILES('CC')
+        mol_a = Molecule().from_smiles('C[CH2]')
+        mol_b = Molecule().from_smiles('C[CH2]')
+        mol_c = Molecule().from_smiles('C=C')
+        mol_d = Molecule().from_smiles('CC')
 
-        mol_a.assignAtomIDs()
-        mol_b.assignAtomIDs()
-        mol_c.assignAtomIDs()
-        mol_d.assignAtomIDs()
+        mol_a.assign_atom_ids()
+        mol_b.assign_atom_ids()
+        mol_c.assign_atom_ids()
+        mol_d.assign_atom_ids()
 
         # generate reactions in both directions
         forward_reactions = family._generate_reactions([mol_a, mol_b], products=[mol_c, mol_d],
@@ -736,7 +736,7 @@ class TestKinetics(unittest.TestCase):
         Test that reaction generation for Molecule objects works.
         """
 
-        molecule_tuple = (Molecule(SMILES='CC'), Molecule(SMILES='[CH3]'))
+        molecule_tuple = (Molecule(smiles='CC'), Molecule(smiles='[CH3]'))
 
         reaction_list = self.database.kinetics.react_molecules(molecule_tuple)
 
@@ -747,8 +747,8 @@ class TestKinetics(unittest.TestCase):
         """
         Ensure ensure_independent_atom_ids modifies atom labels
         """
-        s1 = Species().fromSMILES('CCC')
-        s2 = Species().fromSMILES('C=C[CH]C')
+        s1 = Species().from_smiles('CCC')
+        s2 = Species().from_smiles('C=C[CH]C')
         self.assertEqual(s2.molecule[0].atoms[0].id, -1)
 
         ensure_independent_atom_ids([s1, s2])
@@ -761,8 +761,8 @@ class TestKinetics(unittest.TestCase):
         """
         Ensure ensure_independent_atom_ids does not generate resonance
         """
-        s1 = Species().fromSMILES('CCC')
-        s2 = Species().fromSMILES('C=C[CH]C')
+        s1 = Species().from_smiles('CCC')
+        s2 = Species().from_smiles('C=C[CH]C')
         self.assertEqual(s2.molecule[0].atoms[0].id, -1)
 
         ensure_independent_atom_ids([s1, s2], resonance=False)
@@ -856,10 +856,10 @@ class TestKinetics(unittest.TestCase):
             '''
         ]
         family = get_db('kinetics').families['H_Abstraction']
-        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
-        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])
-        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
-        p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
+        r1 = Species(molecule=[Molecule().from_adjacency_list(adjlist[0])])
+        r2 = Species(molecule=[Molecule().from_adjacency_list(adjlist[1])])
+        p1 = Species(molecule=[Molecule().from_adjacency_list(adjlist[2])])
+        p2 = Species(molecule=[Molecule().from_adjacency_list(adjlist[3])])
         r1.generate_resonance_structures(keep_isomorphic=True)
         p1.generate_resonance_structures(keep_isomorphic=True)
 
@@ -893,10 +893,10 @@ class TestKinetics(unittest.TestCase):
         3 H u0 p0 c0 {1,S}''']
 
         family = get_db('kinetics').families['R_Recombination']
-        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
-        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])  # r2 is not the representative structure of
+        r1 = Species(molecule=[Molecule().from_adjacency_list(adjlist[0])])
+        r2 = Species(molecule=[Molecule().from_adjacency_list(adjlist[1])])  # r2 is not the representative structure of
         # NO, but it is the correct structure participating in this reaction
-        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
+        p1 = Species(molecule=[Molecule().from_adjacency_list(adjlist[2])])
         r2.generate_resonance_structures(keep_isomorphic=True)
 
         rxn = TemplateReaction(reactants=[r1, r2], products=[p1])
@@ -906,11 +906,11 @@ class TestKinetics(unittest.TestCase):
     def test_generate_reactions_from_families_with_resonance(self):
         """Test that we can generate reactions from families with resonance structures"""
         reactants = [
-            Molecule().fromSMILES('CC=C[CH2]'),
-            Molecule().fromSMILES('[OH]'),
+            Molecule().from_smiles('CC=C[CH2]'),
+            Molecule().from_smiles('[OH]'),
         ]
-        expected_product_1 = Molecule().fromSMILES('CC=CCO')
-        expected_product_2 = Molecule().fromSMILES('CC(O)C=C')
+        expected_product_1 = Molecule().from_smiles('CC=CCO')
+        expected_product_2 = Molecule().from_smiles('CC(O)C=C')
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(reactants,
                                                                                 only_families=['R_Recombination'],
@@ -918,10 +918,10 @@ class TestKinetics(unittest.TestCase):
 
         self.assertEqual(len(reaction_list), 2)
 
-        case_1 = (reaction_list[0].products[0].isIsomorphic(expected_product_1) and
-                  reaction_list[1].products[0].isIsomorphic(expected_product_2))
-        case_2 = (reaction_list[0].products[0].isIsomorphic(expected_product_2) and
-                  reaction_list[1].products[0].isIsomorphic(expected_product_1))
+        case_1 = (reaction_list[0].products[0].is_isomorphic(expected_product_1) and
+                  reaction_list[1].products[0].is_isomorphic(expected_product_2))
+        case_2 = (reaction_list[0].products[0].is_isomorphic(expected_product_2) and
+                  reaction_list[1].products[0].is_isomorphic(expected_product_1))
 
         # Only one case should be true
         self.assertTrue(case_1 ^ case_2)
@@ -929,10 +929,10 @@ class TestKinetics(unittest.TestCase):
     def test_generate_reactions_from_families_no_resonance(self):
         """Test that we can generate reactions from families without resonance structures"""
         reactants = [
-            Molecule().fromSMILES('CC=C[CH2]'),
-            Molecule().fromSMILES('[OH]'),
+            Molecule().from_smiles('CC=C[CH2]'),
+            Molecule().from_smiles('[OH]'),
         ]
-        expected_product = Molecule().fromSMILES('CC=CCO')
+        expected_product = Molecule().from_smiles('CC=CCO')
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(reactants,
                                                                                 only_families=['R_Recombination'],
@@ -940,17 +940,17 @@ class TestKinetics(unittest.TestCase):
 
         self.assertEqual(len(reaction_list), 1)
 
-        self.assertTrue(reaction_list[0].products[0].isIsomorphic(expected_product))
+        self.assertTrue(reaction_list[0].products[0].is_isomorphic(expected_product))
 
     def test_generate_reactions_from_families_product_resonance(self):
         """Test that we can specify the product resonance structure when generating reactions"""
         reactants = [
-            Molecule().fromSMILES('CCC=C'),
-            Molecule().fromSMILES('[H]'),
+            Molecule().from_smiles('CCC=C'),
+            Molecule().from_smiles('[H]'),
         ]
         products = [
-            Molecule().fromSMILES('CC=C[CH2]'),
-            Molecule().fromSMILES('[H][H]'),
+            Molecule().from_smiles('CC=C[CH2]'),
+            Molecule().from_smiles('[H][H]'),
         ]
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products,
@@ -963,12 +963,12 @@ class TestKinetics(unittest.TestCase):
     def test_generate_reactions_from_families_product_resonance2(self):
         """Test that we can specify the no product resonance structure when generating reactions"""
         reactants = [
-            Molecule().fromSMILES('CCC=C'),
-            Molecule().fromSMILES('[H]'),
+            Molecule().from_smiles('CCC=C'),
+            Molecule().from_smiles('[H]'),
         ]
         products = [
-            Molecule().fromSMILES('CC=C[CH2]'),
-            Molecule().fromSMILES('[H][H]'),
+            Molecule().from_smiles('CC=C[CH2]'),
+            Molecule().from_smiles('[H][H]'),
         ]
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products,
@@ -979,8 +979,8 @@ class TestKinetics(unittest.TestCase):
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
         reactants = [
-            Molecule().fromSMILES('CC=O'),
-            Molecule().fromSMILES('[H]'),
+            Molecule().from_smiles('CC=O'),
+            Molecule().from_smiles('[H]'),
         ]
 
         reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
@@ -990,12 +990,12 @@ class TestKinetics(unittest.TestCase):
     def test_generate_reactions_from_libraries2(self):
         """Test that we can generate reactions from libraries specifying products"""
         reactants = [
-            Molecule().fromSMILES('CC=O'),
-            Molecule().fromSMILES('[H]'),
+            Molecule().from_smiles('CC=O'),
+            Molecule().from_smiles('[H]'),
         ]
         products = [
-            Molecule().fromSMILES('[CH2]C=O'),
-            Molecule().fromSMILES('[H][H]'),
+            Molecule().from_smiles('[CH2]C=O'),
+            Molecule().from_smiles('[H][H]'),
         ]
         reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(reactants, products)
 
@@ -1006,12 +1006,12 @@ class TestKinetics(unittest.TestCase):
         The molecule [CH]=C=C has resonance in this reaction"""
         from rmgpy.data.rmg import get_db
         reactants = [
-            Molecule().fromSMILES('C=C=C'),
-            Molecule().fromSMILES('[CH]=C=C'),
+            Molecule().from_smiles('C=C=C'),
+            Molecule().from_smiles('[CH]=C=C'),
         ]
         products = [
-            Molecule().fromSMILES('C#C[CH2]'),
-            Molecule().fromSMILES('C#CC'),
+            Molecule().from_smiles('C#C[CH2]'),
+            Molecule().from_smiles('C#CC'),
         ]
         reaction = TemplateReaction(reactants=reactants,
                                     products=products,
@@ -1046,9 +1046,9 @@ class TestKinetics(unittest.TestCase):
         """Test that add_atom_labels_for_reaction can identify reactions with identical references
         The molecule [CH]=C=C has resonance in this reaction"""
         from rmgpy.data.rmg import get_db
-        s1 = Species().fromSMILES('C=C=C')
-        s2 = Species().fromSMILES('C=C=[CH]')
-        s3 = Species().fromSMILES('C#CC')
+        s1 = Species().from_smiles('C=C=C')
+        s2 = Species().from_smiles('C=C=[CH]')
+        s3 = Species().from_smiles('C#CC')
         s2.generate_resonance_structures()
         reactants = [s1, s2]
         products = [s2, s3]
@@ -1085,11 +1085,11 @@ class TestKinetics(unittest.TestCase):
     def test_add_atom_labels_for_reaction_3(self):
         """Test that add_atom_labels_for_reaction can identify reactions with resonance and isotopes"""
         from rmgpy.data.rmg import get_db
-        mr0 = Molecule().fromAdjacencyList('1    C u0 p0 c0 i13 {3,D} {4,S} {5,S}\n2 *1 C u0 p0 c0 {3,D} {6,S} {7,S}\n3    C u0 p0 c0 {1,D} {2,D}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {2,S}\n7 *4 H u0 p0 c0 {2,S}\n')
-        mr1a = Molecule().fromAdjacencyList('multiplicity 2\n1    C u0 p0 c0 i13 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
-        mr1b = Molecule().fromAdjacencyList('multiplicity 2\n1    C u1 p0 c0 i13 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
-        mp1a = Molecule().fromAdjacencyList('multiplicity 2\n1    C u0 p0 c0 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 i13 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
-        mp1b = Molecule().fromAdjacencyList('multiplicity 2\n1    C u1 p0 c0 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 i13 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mr0 = Molecule().from_adjacency_list('1    C u0 p0 c0 i13 {3,D} {4,S} {5,S}\n2 *1 C u0 p0 c0 {3,D} {6,S} {7,S}\n3    C u0 p0 c0 {1,D} {2,D}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {2,S}\n7 *4 H u0 p0 c0 {2,S}\n')
+        mr1a = Molecule().from_adjacency_list('multiplicity 2\n1    C u0 p0 c0 i13 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mr1b = Molecule().from_adjacency_list('multiplicity 2\n1    C u1 p0 c0 i13 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mp1a = Molecule().from_adjacency_list('multiplicity 2\n1    C u0 p0 c0 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 i13 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mp1b = Molecule().from_adjacency_list('multiplicity 2\n1    C u1 p0 c0 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 i13 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
         s1 = Species(molecule=[mr0])
         s2 = Species(molecule=[mr1a,mr1b])
         s3 = Species(molecule=[mp1a,mp1b])
@@ -1143,10 +1143,10 @@ class TestKinetics(unittest.TestCase):
         # First confirm that we get the expected reaction
         self.assertEqual(len(reaction_list), 1)
         reaction = reaction_list[0]
-        case_1 = (reaction.products[0].isIsomorphic(expected_product_1) and
-                  reaction.products[1].isIsomorphic(expected_product_2))
-        case_2 = (reaction.products[0].isIsomorphic(expected_product_2) and
-                  reaction.products[1].isIsomorphic(expected_product_1))
+        case_1 = (reaction.products[0].is_isomorphic(expected_product_1) and
+                  reaction.products[1].is_isomorphic(expected_product_2))
+        case_2 = (reaction.products[0].is_isomorphic(expected_product_2) and
+                  reaction.products[1].is_isomorphic(expected_product_1))
         # Only one case should be true
         self.assertTrue(case_1 or case_2)
 
@@ -1161,10 +1161,10 @@ class TestKinetics(unittest.TestCase):
         self.assertIs(reactant1.molecule[0], reactant2_out.molecule[0])
 
         # They should be isomorphic
-        self.assertTrue(reactant1.isIsomorphic(reactant1_out))
-        self.assertTrue(reactant1.isIsomorphic(reactant2_out))
-        self.assertTrue(reactant1_copy.isIsomorphic(reactant1_out))
-        self.assertTrue(reactant1_copy.isIsomorphic(reactant2_out))
+        self.assertTrue(reactant1.is_isomorphic(reactant1_out))
+        self.assertTrue(reactant1.is_isomorphic(reactant2_out))
+        self.assertTrue(reactant1_copy.is_isomorphic(reactant1_out))
+        self.assertTrue(reactant1_copy.is_isomorphic(reactant2_out))
 
         # Now, we only care whether the original reactants have deviated from the copies
         # The output reactants will be replaced by the original reactants in CERM.checkForExistingSpecies
@@ -1172,7 +1172,7 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(reactant1.label, reactant1_copy.label)
         self.assertEqual(reactant1.props, reactant1_copy.props)
         self.assertEqual(reactant1.molecule, reactant1_copy.molecule)
-        self.assertEqual(reactant1.molecule[0].getLabeledAtoms(), reactant1_copy.molecule[0].getLabeledAtoms())
+        self.assertEqual(reactant1.molecule[0].get_all_labeled_atoms(), reactant1_copy.molecule[0].get_all_labeled_atoms())
         self.assertEqual(reactant1.molecule[0].props, reactant1_copy.molecule[0].props)
 
     def test_species_preserved_after_generate_reactions_2(self):
@@ -1195,7 +1195,7 @@ class TestKinetics(unittest.TestCase):
         # First confirm that we get the expected reaction
         self.assertEqual(len(reaction_list), 1)
         reaction = reaction_list[0]
-        self.assertTrue(reaction.products[0].isIsomorphic(expected_product))
+        self.assertTrue(reaction.products[0].is_isomorphic(expected_product))
 
         reactant1_out, reactant2_out = reaction.reactants
 
@@ -1208,10 +1208,10 @@ class TestKinetics(unittest.TestCase):
         self.assertIs(reactant2.molecule[0], reactant2_out.molecule[0])
 
         # They should be isomorphic
-        self.assertTrue(reactant1.isIsomorphic(reactant1_out))
-        self.assertTrue(reactant2.isIsomorphic(reactant2_out))
-        self.assertTrue(reactant1_copy.isIsomorphic(reactant1_out))
-        self.assertTrue(reactant2_copy.isIsomorphic(reactant2_out))
+        self.assertTrue(reactant1.is_isomorphic(reactant1_out))
+        self.assertTrue(reactant2.is_isomorphic(reactant2_out))
+        self.assertTrue(reactant1_copy.is_isomorphic(reactant1_out))
+        self.assertTrue(reactant2_copy.is_isomorphic(reactant2_out))
 
         # Now, we only care whether the original reactants have deviated from the copies
         # The output reactants will be replaced by the original reactants in CERM.checkForExistingSpecies
@@ -1223,7 +1223,7 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(reactant2.props, reactant2_copy.props)
         self.assertEqual(reactant1.molecule, reactant1_copy.molecule)
         self.assertEqual(reactant2.molecule, reactant2_copy.molecule)
-        self.assertEqual(reactant1.molecule[0].getLabeledAtoms(), reactant1_copy.molecule[0].getLabeledAtoms())
-        self.assertEqual(reactant2.molecule[0].getLabeledAtoms(), reactant2_copy.molecule[0].getLabeledAtoms())
+        self.assertEqual(reactant1.molecule[0].get_all_labeled_atoms(), reactant1_copy.molecule[0].get_all_labeled_atoms())
+        self.assertEqual(reactant2.molecule[0].get_all_labeled_atoms(), reactant2_copy.molecule[0].get_all_labeled_atoms())
         self.assertEqual(reactant1.molecule[0].props, reactant1_copy.molecule[0].props)
         self.assertEqual(reactant2.molecule[0].props, reactant2_copy.molecule[0].props)

@@ -51,7 +51,7 @@ from rmgpy.data.rmg import get_db
 from rmgpy.data.thermo import find_cp0_and_cpinf
 from rmgpy.kinetics.arrhenius import MultiArrhenius
 from rmgpy.molecule import Molecule
-from rmgpy.molecule.element import getElement
+from rmgpy.molecule.element import get_element
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.species import Species
@@ -261,7 +261,7 @@ def generate_isotopomers(spc, N=1):
     """
 
     mol = spc.molecule[0]
-    isotope = getElement(6, 13)
+    isotope = get_element(6, 13)
 
     mols = []
     add_isotope(0, N, mol, mols, isotope)
@@ -279,7 +279,7 @@ def generate_isotopomers(spc, N=1):
         candidate = spcs.pop()
         unique = True
         for isotopomer in filtered:
-            if isotopomer.isIsomorphic(candidate):
+            if isotopomer.is_isomorphic(candidate):
                 unique = False
                 break
         if unique: filtered.append(candidate)
@@ -362,14 +362,14 @@ def remove_isotope(labeledObj, inplace=False):
                 for atom in mol.atoms:
                     if atom.element.isotope != -1:
                         modified_atoms.append((atom, atom.element))
-                        atom.element = getElement(atom.element.symbol)
+                        atom.element = get_element(atom.element.symbol)
             return modified_atoms
         else:
             stripped = labeledObj.copy(deep=True)
 
             for atom in stripped.molecule[0].atoms:
                 if atom.element.isotope != -1:
-                    atom.element = getElement(atom.element.symbol)
+                    atom.element = get_element(atom.element.symbol)
 
             # only do it for the first molecule, generate the other resonance isomers.
             stripped.molecule = [stripped.molecule[0]]
@@ -412,14 +412,14 @@ def remove_isotope(labeledObj, inplace=False):
             for atom in labeledObj.atoms:
                 if atom.element.isotope != -1:
                     modified_atoms.append((atom, atom.element))
-                    atom.element = getElement(atom.element.symbol)
+                    atom.element = get_element(atom.element.symbol)
             return modified_atoms
         else:
             stripped = labeledObj.copy(deep=True)
 
             for atom in stripped.atoms:
                 if atom.element.isotope != -1:
-                    atom.element = getElement(atom.element.symbol)
+                    atom.element = get_element(atom.element.symbol)
 
             return stripped
     else:
@@ -488,7 +488,7 @@ def compare_isotopomers(obj1, obj2, eitherDirection=True):
     atomlist = remove_isotope(obj1, inplace=True) + remove_isotope(obj2, inplace=True)
     if isinstance(obj1, Reaction):
         # make sure isotomorphic
-        comparison_bool = obj1.isIsomorphic(obj2, eitherDirection)
+        comparison_bool = obj1.is_isomorphic(obj2, eitherDirection)
         if comparison_bool and isinstance(obj1, TemplateReaction):
             # ensure families are the same
             comparison_bool = obj1.family == obj2.family
@@ -496,7 +496,7 @@ def compare_isotopomers(obj1, obj2, eitherDirection=True):
                 # make sure templates are identical if in the same direction
                 comparison_bool = frozenset(obj1.template) == frozenset(obj2.template)
     elif isinstance(obj1, Species):
-        comparison_bool = obj1.isIsomorphic(obj2)
+        comparison_bool = obj1.is_isomorphic(obj2)
     else:
         raise TypeError('Only Reaction and Speicies Objects are supported in compareIsotopomers')
     redo_isotope(atomlist)
@@ -528,8 +528,8 @@ def correct_entropy(isotopomer, isotopeless):
     """
 
     # calculate -R ln (sigma) in SI units (J/K/mol)
-    s_isotopeless = - constants.R * math.log(isotopeless.getSymmetryNumber())
-    s_isotopomer = - constants.R * math.log(isotopomer.getSymmetryNumber())
+    s_isotopeless = - constants.R * math.log(isotopeless.get_symmetry_number())
+    s_isotopomer = - constants.R * math.log(isotopomer.get_symmetry_number())
 
     # convert species thermo to ThermoData object:
     nasa = isotopomer.thermo
@@ -651,7 +651,7 @@ def get_reduced_mass(labeled_molecules, labels, three_member_ts):
     if reduced_mass == 0. and combined_mass == 0:
         from rmgpy.exceptions import KineticsError
         raise KineticsError(
-            "Did not find a labeled atom in molecules {}".format([mol.toAdjacencyList() for mol in labeled_molecules]))
+            "Did not find a labeled atom in molecules {}".format([mol.to_adjacency_list() for mol in labeled_molecules]))
     if three_member_ts:  # actually convert to reduced mass using the mass of hydrogen
         reduced_mass = 1 / rmgpy.molecule.element.H.mass + 1 / combined_mass
     return 1. / reduced_mass
@@ -664,7 +664,7 @@ def is_enriched(obj):
 
     if isinstance(obj, Species):
         for atom in obj.molecule[0].atoms:
-            if atom.element.isotope != -1 and not np.allclose(atom.element.mass, getElement(atom.element.symbol).mass):
+            if atom.element.isotope != -1 and not np.allclose(atom.element.mass, get_element(atom.element.symbol).mass):
                 return True
         return False
     elif isinstance(obj, Reaction):
@@ -751,11 +751,11 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
             spec = product_list.at[index, 'product']
             # if species already listed, add to its flux
             if product_list.at[index, 'product_struc_index'] == structure_index \
-                    and spec.isIsomorphic(species):
+                    and spec.is_isomorphic(species):
                 product_list.at[index, 'flux'] += flux
                 return product_list
         # add product to list
-        symmetry_ratio = product_structures[structure_index].getSymmetryNumber() / float(species.getSymmetryNumber())
+        symmetry_ratio = product_structures[structure_index].get_symmetry_number() / float(species.get_symmetry_number())
         return product_list.append({'product': species,
                                     'flux': flux,
                                     'product_struc_index': structure_index,
@@ -777,8 +777,8 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
             remove_isotope(mol, inplace=True)
         for mol in unlabeled_rxn.products:
             remove_isotope(mol, inplace=True)
-    unlabeled_symmetry_reactants = np.prod([mol.getSymmetryNumber() for mol in unlabeled_rxn.reactants])
-    unlabeled_symmetry_products = np.prod([mol.getSymmetryNumber() for mol in unlabeled_rxn.products])
+    unlabeled_symmetry_reactants = np.prod([mol.get_symmetry_number() for mol in unlabeled_rxn.reactants])
+    unlabeled_symmetry_products = np.prod([mol.get_symmetry_number() for mol in unlabeled_rxn.products])
 
     # prepare index of structures (product_structures)
     for struc in unlabeled_rxn.reactants + unlabeled_rxn.products:
@@ -789,7 +789,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
     for rxn in reaction_isotopomer_list:
         # find characteristic flux for the forward direction
         reactant_conc = 1.
-        reactant_conc /= np.prod([mol.getSymmetryNumber() for mol in rxn.reactants])
+        reactant_conc /= np.prod([mol.get_symmetry_number() for mol in rxn.reactants])
         reactant_conc *= unlabeled_symmetry_reactants
         if isinstance(rxn.kinetics, MultiArrhenius):
             rate = sum([arr.A.value_si for arr in rxn.kinetics.arrhenius])
@@ -813,7 +813,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data=False, r_to
 
         # get reverse flux using product symmetries
         product_conc = 1.
-        product_conc /= np.prod([mol.getSymmetryNumber() for mol in rxn.products])
+        product_conc /= np.prod([mol.get_symmetry_number() for mol in rxn.products])
         product_conc *= unlabeled_symmetry_products
         reactant_flux = product_conc * reverse_A_factor
 

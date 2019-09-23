@@ -429,11 +429,11 @@ $(document).ready(function() {
 
  </td>
     
-    <td class="structure" valign="top"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
+    <td class="structure" valign="top"><a href={{ spec.molecule[0].get_url() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
     <td class="label" valign="top">{{ getSpeciesIdentifier(spec) }}</td>
-    <td class="SMILES" valign="top">{{ spec.molecule[0].toSMILES() }}</td>
+    <td class="SMILES" valign="top">{{ spec.molecule[0].to_smiles() }}</td>
     
-  <td class="MW" valign="top">{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
+  <td class="MW" valign="top">{{ "%.2f"|format(spec.molecule[0].get_molecular_weight() * 1000) }}</td>
     
 </tr>
 {% endfor %}
@@ -477,10 +477,10 @@ $(document).ready(function() {
 {% for rxn in reactions %}
 <tbody class="reaction">
 <tr class="{{ rxn.get_source()|csssafe }} rxnStart">
-    <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}" {% if reactant.containsSurfaceSite() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="index"><a href="{{ rxn.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
+    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}" {% if reactant.contains_surface_site() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}" {% if product.containsSurfaceSite() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].get_url() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].get_molecular_weight() * 1000) }}" {% if product.contains_surface_site() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="family">{{ rxn.get_source() }}</td>
 </tr>
 <tr class="kinetics {{ rxn.get_source()|csssafe }} hide_kinetics">
@@ -496,7 +496,7 @@ $(document).ready(function() {
 </tr>
 <tr class="chemkin {{ rxn.get_source()|csssafe }} hide_chemkin">
     <td></td>
-    <td colspan="4">{{ rxn.toChemkin(species) }}</td>
+    <td colspan="4">{{ rxn.to_chemkin(species) }}</td>
 </tr>
 </tbody>
 {% endfor %}
@@ -879,9 +879,9 @@ $(document).ready(function() {
             <table align="center">
                 <tr><th>Structure</th><th>SMILES</th><th>MW (g/mol)</th></tr>
                 <tr>
-                    <td>{{ spec1.molecule[0].toSMILES() }}</td>
-                    <td class="structure" align="center"><a href="{{spec1.molecule[0].getURL()}}"><img src="species1/{{ spec1|replace('#','%23') }}.png"></a></td>
-                    <td>{{ "%.2f"|format(spec1.molecule[0].getMolecularWeight() * 1000) }}</td>
+                    <td>{{ spec1.molecule[0].to_smiles() }}</td>
+                    <td class="structure" align="center"><a href="{{spec1.molecule[0].get_url()}}"><img src="species1/{{ spec1|replace('#','%23') }}.png"></a></td>
+                    <td>{{ "%.2f"|format(spec1.molecule[0].get_molecular_weight() * 1000) }}</td>
                 </tr>
             </table>
         </td>
@@ -992,10 +992,10 @@ $(document).ready(function() {
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
-        <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species1/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
+        <td class="structure"><a href="{{ spec.molecule[0].get_url() }}"><img src="species1/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
         <td class="label">{{ getSpeciesIdentifier(spec) }}</td>
-        <td>{{spec.molecule[0].toSMILES()}}</td>
-        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
+        <td>{{spec.molecule[0].to_smiles()}}</td>
+        <td>{{ "%.2f"|format(spec.molecule[0].get_molecular_weight() * 1000) }}</td>
     </tr>
     <tr><td colspan="5">
     
@@ -1041,10 +1041,10 @@ $(document).ready(function() {
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
-        <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species2/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
+        <td class="structure"><a href="{{ spec.molecule[0].get_url() }}"><img src="species2/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
         <td class="label">{{ getSpeciesIdentifier(spec) }}</td>
-        <td>{{spec.molecule[0].toSMILES()}}</td>
-        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
+        <td>{{spec.molecule[0].to_smiles()}}</td>
+        <td>{{ "%.2f"|format(spec.molecule[0].get_molecular_weight() * 1000) }}</td>
     </tr>
     
         <tr><td colspan="5">
@@ -1138,9 +1138,9 @@ $(document).ready(function() {
 <td width=100% colspan="4">
 <table align="center">
 <tr>
-    <td class="reactants" align="right">{% for reactant in rxn1.reactants %}<a href="{{reactant.molecule[0].getURL() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="reactants" align="right">{% for reactant in rxn1.reactants %}<a href="{{reactant.molecule[0].get_url() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow" align="center">{% if rxn1.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-    <td class="products" align="left">{% for product in rxn1.products %}<a href="{{product.molecule[0].getURL()}}"><img src="species1/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="products" align="left">{% for product in rxn1.products %}<a href="{{product.molecule[0].get_url()}}"><img src="species1/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
 </tr>
 </table>
 </td>
@@ -1168,14 +1168,14 @@ $(document).ready(function() {
 
 
 <tr width=100%>
-     <td class="index" width=10%><a href="{{ rxn1.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn1.index }}.</a></td>
+     <td class="index" width=10%><a href="{{ rxn1.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn1.index }}.</a></td>
      <td class="family" width=40%>{{ rxn1.get_source() }}</td>
 
-     <td class="index" width=10%><a href="{{ rxn2.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn2.index }}.</a></td>
+     <td class="index" width=10%><a href="{{ rxn2.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn2.index }}.</a></td>
      <td class="family" width=40%>{{ rxn2.get_source() }}</td>
  </tr>
 
-<tr "width=100%" class="kinetics">{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
+<tr "width=100%" class="kinetics">{% if not rxn1.is_isomorphic(rxn2, either_direction=False) %} 
 <td colspan="2" width=50%></td>
 <td colspan="2" width=50%>* Reaction was found in reverse 
 
@@ -1217,8 +1217,8 @@ $(document).ready(function() {
 </tr>
 
 <tr width=100% class="chemkin">
-    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(speciesList) }}</font></td>
-    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(speciesList) }}</font></td>
+    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.to_chemkin(speciesList) }}</font></td>
+    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.to_chemkin(speciesList) }}</font></td>
 </tr>
 
 
@@ -1237,10 +1237,10 @@ $(document).ready(function() {
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions1 %}
     <tr class="reaction {{ rxn.get_source()|csssafe }}">
-        <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="index"><a href="{{ rxn.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species1/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].get_url() }}"><img src="species1/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.get_source() }}</td>
     </tr>
     <tr class="kinetics {{ rxn.get_source()|csssafe }}">
@@ -1257,7 +1257,7 @@ $(document).ready(function() {
 
     <tr class="chemkin {{ rxn.get_source()|csssafe }}">
         <td></td>
-        <td colspan="4">{{ rxn.toChemkin(species) }}</td>
+        <td colspan="4">{{ rxn.to_chemkin(species) }}</td>
     </tr>
     {% endfor %}
     </table>
@@ -1271,10 +1271,10 @@ $(document).ready(function() {
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions2 %}
     <tr class="reaction {{ rxn.get_source()|csssafe }}">
-        <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species2/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="index"><a href="{{ rxn.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species2/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species2/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].get_url() }}"><img src="species2/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].get_molecular_weight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.get_source() }}</td>
     </tr>
     <tr class="kinetics {{ rxn.get_source()|csssafe }}">
@@ -1290,7 +1290,7 @@ $(document).ready(function() {
 </tr>
     <tr class="chemkin {{ rxn.get_source()|csssafe }}">
         <td></td>
-        <td colspan="4">{{ rxn.toChemkin(species) }}</td>
+        <td colspan="4">{{ rxn.to_chemkin(species) }}</td>
     </tr>
     {% endfor %}
     </table>

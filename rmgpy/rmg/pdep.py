@@ -329,15 +329,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for conf in self.isomers + self.products + self.reactants:
             if len(conf.species) == len(self.source):
                 if len(self.source) == 1:
-                    if self.source[0].isIsomorphic(conf.species[0]):
+                    if self.source[0].is_isomorphic(conf.species[0]):
                         E0source = conf.E0
                         break
                 elif len(self.source) == 2:
-                    boo00 = self.source[0].isIsomorphic(conf.species[0])
-                    boo01 = self.source[0].isIsomorphic(conf.species[1])
+                    boo00 = self.source[0].is_isomorphic(conf.species[0])
+                    boo01 = self.source[0].is_isomorphic(conf.species[1])
                     if boo00 or boo01:  # if we found source[0]
-                        boo10 = self.source[1].isIsomorphic(conf.species[0])
-                        boo11 = self.source[1].isIsomorphic(conf.species[1])
+                        boo10 = self.source[1].is_isomorphic(conf.species[0])
+                        boo11 = self.source[1].is_isomorphic(conf.species[1])
                         if (boo00 and boo11) or (boo01 and boo10):
                             E0source = conf.E0
                             break
@@ -762,25 +762,25 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
-            if not spec.hasStatMech():
-                spec.generateStatMech()
+            if not spec.has_statmech():
+                spec.generate_statmech()
         for reactants in self.reactants:
             for spec in reactants.species:
-                if not spec.hasStatMech():
-                    spec.generateStatMech()
+                if not spec.has_statmech():
+                    spec.generate_statmech()
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.pathReactions:
             for spec in reaction.reactants:
-                if not spec.hasStatMech():
-                    spec.generateStatMech()
+                if not spec.has_statmech():
+                    spec.generate_statmech()
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
         for products in self.products:
             for spec in products.species:
                 if spec.conformer is None:
-                    spec.conformer = Conformer(E0=spec.getThermoData().E0)
+                    spec.conformer = Conformer(E0=spec.get_thermo_data().E0)
 
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
@@ -869,7 +869,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         # Check whether netReaction already exists in the core as a LibraryReaction
                         for rxn in reactionModel.core.reactions:
                             if isinstance(rxn, LibraryReaction) \
-                                    and rxn.isIsomorphic(net_reaction, eitherDirection=True) \
+                                    and rxn.is_isomorphic(net_reaction, either_direction=True) \
                                     and not rxn.allow_pdep_route and not rxn.elementary_high_p:
                                 logging.info('Network reaction {0} matched an existing core reaction {1}'
                                              ' from the {2} library, and was not added to the model'.format(
@@ -881,7 +881,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         # Check whether netReaction already exists in the edge as a LibraryReaction
                         for rxn in reactionModel.edge.reactions:
                             if isinstance(rxn, LibraryReaction) \
-                                    and rxn.isIsomorphic(net_reaction, eitherDirection=True) \
+                                    and rxn.is_isomorphic(net_reaction, either_direction=True) \
                                     and not rxn.allow_pdep_route and not rxn.elementary_high_p:
                                 logging.info('Network reaction {0} matched an existing edge reaction {1}'
                                              ' from the {2} library, and was not added to the model'.format(

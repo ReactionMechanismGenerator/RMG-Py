@@ -44,7 +44,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 import rmgpy
 import rmgpy.constants as constants
-from rmgpy.molecule.element import elementList
+from rmgpy.molecule.element import element_list
 from rmgpy.statmech import schrodinger
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.statmech.mode import Mode
@@ -470,7 +470,7 @@ class HinderedRotorClassicalND(Mode):
         """
         from arkane.util import determine_qm_software
         if os.path.isdir(self.calcPath):
-            massdict = {el.number: el.mass for el in elementList if el.isotope == -1}
+            massdict = {el.number: el.mass for el in element_list if el.isotope == -1}
             N = len(self.pivots)
             phis = []
             xyzs = []

@@ -476,7 +476,7 @@ class PressureDependenceJob(object):
             spcs.extend(rxn.products)
         for spc in spcs:
             if spc.thermo:
-                f.write("#" + spc.label + "  SMILES: " + spc.molecule[0].toSMILES() + "\n")
+                f.write("#" + spc.label + "  SMILES: " + spc.molecule[0].to_smiles() + "\n")
                 f.write("#" + spc.thermo.comment + "\n")
         f.write("\n#Path Reactions used:  \n")
         for rxn in self.network.pathReactions:
@@ -495,7 +495,7 @@ class PressureDependenceJob(object):
                 reaction = self.network.netReactions[count]
                 count += 1
                 # make sure we aren't double counting any reactions
-                if not any([reaction.isIsomorphic(other_rxn, checkOnlyLabel=True)
+                if not any([reaction.is_isomorphic(other_rxn, check_only_label=True)
                             for other_rxn in printed_reactions]):
                     duplicate = False
                     # add reaction to printed reaction
@@ -673,7 +673,7 @@ class PressureDependenceJob(object):
                 f.write('species(\n')
                 f.write('    label = {0!r},\n'.format(str(spec)))
                 if len(spec.molecule) > 0:
-                    f.write('    structure = SMILES({0!r}),\n'.format(spec.molecule[0].toSMILES()))
+                    f.write('    structure = SMILES({0!r}),\n'.format(spec.molecule[0].to_smiles()))
                 if spec.conformer is not None:
                     if spec.conformer.E0 is not None:
                         f.write('    E0 = {0!r},\n'.format(spec.conformer.E0))

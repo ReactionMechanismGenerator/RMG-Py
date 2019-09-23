@@ -99,8 +99,8 @@ class ArkaneTest(unittest.TestCase):
         self.assertTrue(any(f == 'network.pdf' for f in files))
 
         # Test the generated network reaction
-        dictionary = {'hydroperoxylvinoxy': Species().fromSMILES('[CH2]C(=O)OO'),
-                      'acetylperoxy': Species().fromSMILES('CC(=O)O[O]')}
+        dictionary = {'hydroperoxylvinoxy': Species().from_smiles('[CH2]C(=O)OO'),
+                      'acetylperoxy': Species().from_smiles('CC(=O)O[O]')}
         with open(os.path.join(self.directory, 'chem.inp'), 'r') as chem:
             reaction_list = readReactionsBlock(chem, dictionary)
         rxn = reaction_list[0]

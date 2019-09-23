@@ -62,7 +62,7 @@ from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Li
     StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-from rmgpy.molecule.element import Element, elementList
+from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 from rmgpy.species import Species
@@ -236,7 +236,7 @@ class Reaction:
         # set new degeneracy
         self._degeneracy = new
 
-    def toChemkin(self, speciesList=None, kinetics=True):
+    def to_chemkin(self, speciesList=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
         
@@ -250,12 +250,12 @@ class Reaction:
         else:
             return rmgpy.chemkin.writeReactionString(self)
 
-    def toCantera(self, speciesList=None, useChemkinIdentifier=False):
+    def to_cantera(self, speciesList=None, use_chemkin_identifier=False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
         with the appropriate reaction class.
 
-        If useChemkinIdentifier is set to False, the species label is used
+        If use_chemkin_identifier is set to False, the species label is used
         instead. Be sure that species' labels are unique when setting it False.
         """
         import cantera as ct
@@ -268,8 +268,8 @@ class Reaction:
         ct_reactants = {}
         ct_collider = {}
         for reactant in self.reactants:
-            if useChemkinIdentifier:
-                reactant_name = reactant.toChemkin()
+            if use_chemkin_identifier:
+                reactant_name = reactant.to_chemkin()
             else:
                 reactant_name = reactant.label
             if reactant_name in ct_reactants:
@@ -278,8 +278,8 @@ class Reaction:
                 ct_reactants[reactant_name] = 1
         ct_products = {}
         for product in self.products:
-            if useChemkinIdentifier:
-                product_name = product.toChemkin()
+            if use_chemkin_identifier:
+                product_name = product.to_chemkin()
             else:
                 product_name = product.label
             if product_name in ct_products:
@@ -287,7 +287,7 @@ class Reaction:
             else:
                 ct_products[product_name] = 1
         if self.specific_collider:  # add a specific collider if exists
-            ct_collider[self.specific_collider.toChemkin() if useChemkinIdentifier else self.specific_collider.label] = 1
+            ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
@@ -342,7 +342,7 @@ class Reaction:
         else:
             raise Exception('Cantera reaction cannot be created because there was no kinetics.')
 
-    def getURL(self):
+    def get_url(self):
         """
         Get a URL to search for this reaction in the rmg website.
         """
@@ -352,10 +352,10 @@ class Reaction:
 
         rxn_string = ''
         for i, species in enumerate(self.reactants):
-            adjlist = species.molecule[0].toAdjacencyList(removeH=False)
+            adjlist = species.molecule[0].to_adjacency_list(remove_h=False)
             rxn_string += "reactant{0}={1}__".format(i + 1, adjlist)
         for i, species in enumerate(self.products):
-            adjlist = species.molecule[0].toAdjacencyList(removeH=False)
+            adjlist = species.molecule[0].to_adjacency_list(remove_h=False)
             rxn_string += "product{0}={1}__".format(i + 1, adjlist)
 
         url = base_url + quote(rxn_string)
@@ -395,10 +395,10 @@ class Reaction:
         Return ``True`` if one or more reactants or products are surface species (or surface sites)
         """
         for spec in self.reactants:
-            if spec.containsSurfaceSite():
+            if spec.contains_surface_site():
                 return True
         for spec in self.products:
-            if spec.containsSurfaceSite():
+            if spec.contains_surface_site():
                 return True
         return False
 
@@ -436,8 +436,8 @@ class Reaction:
         else:
             return False
 
-    def isIsomorphic(self, other, eitherDirection=True, checkIdentical=False, checkOnlyLabel=False,
-                     checkTemplateRxnProducts=False, generateInitialMap=False, strict=True):
+    def is_isomorphic(self, other, either_direction=True, check_identical=False, check_only_label=False,
+                      check_template_rxn_products=False, generate_initial_map=False, strict=True):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -445,40 +445,40 @@ class Reaction:
         information.
 
         Args:
-            eitherDirection (bool, optional):          if ``False``,then the reaction direction must match.
-            checkIdentical (bool, optional):           if ``True``, check that atom ID's match (used for checking degeneracy)
-            checkOnlyLabel (bool, optional):           if ``True``, only check the string representation,
-                                                       ignoring molecular structure comparisons
-            checkTemplateRxnProducts (bool, optional): if ``True``, only check isomorphism of reaction products
-                                                       (used when we know the reactants are identical, i.e. in generating reactions)
-            generateInitialMap (bool, optional):       if ``True``, initialize map by pairing atoms with same labels
-            strict (bool, optional):                   if ``False``, perform isomorphism ignoring electrons
+            either_direction (bool, optional):            if ``False``,then the reaction direction must match.
+            check_identical (bool, optional):             if ``True``, check that atom ID's match (used for checking degeneracy)
+            check_only_label (bool, optional):            if ``True``, only check the string representation,
+                                                          ignoring molecular structure comparisons
+            check_template_rxn_products (bool, optional): if ``True``, only check isomorphism of reaction products
+                                                          (used when we know the reactants are identical, i.e. in generating reactions)
+            generate_initial_map (bool, optional):        if ``True``, initialize map by pairing atoms with same labels
+            strict (bool, optional):                      if ``False``, perform isomorphism ignoring electrons
         """
-        if checkTemplateRxnProducts:
+        if check_template_rxn_products:
             try:
                 species1 = self.products if self.is_forward else self.reactants
                 species2 = other.products if other.is_forward else other.reactants
             except AttributeError:
-                raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
+                raise TypeError('Only use check_template_rxn_products flag for TemplateReactions.')
 
             return same_species_lists(species1, species2,
-                                      check_identical=checkIdentical,
-                                      only_check_label=checkOnlyLabel,
-                                      generate_initial_map=generateInitialMap,
+                                      check_identical=check_identical,
+                                      only_check_label=check_only_label,
+                                      generate_initial_map=generate_initial_map,
                                       strict=strict)
 
         # Compare reactants to reactants
         forward_reactants_match = same_species_lists(self.reactants, other.reactants,
-                                                     check_identical=checkIdentical,
-                                                     only_check_label=checkOnlyLabel,
-                                                     generate_initial_map=generateInitialMap,
+                                                     check_identical=check_identical,
+                                                     only_check_label=check_only_label,
+                                                     generate_initial_map=generate_initial_map,
                                                      strict=strict)
 
         # Compare products to products
         forward_products_match = same_species_lists(self.products, other.products,
-                                                    check_identical=checkIdentical,
-                                                    only_check_label=checkOnlyLabel,
-                                                    generate_initial_map=generateInitialMap,
+                                                    check_identical=check_identical,
+                                                    only_check_label=check_only_label,
+                                                    generate_initial_map=generate_initial_map,
                                                     strict=strict)
 
         # Compare specific_collider to specific_collider
@@ -487,21 +487,21 @@ class Reaction:
         # Return now, if we can
         if forward_reactants_match and forward_products_match and collider_match:
             return True
-        if not eitherDirection:
+        if not either_direction:
             return False
 
         # Compare reactants to products
         reverse_reactants_match = same_species_lists(self.reactants, other.products,
-                                                     check_identical=checkIdentical,
-                                                     only_check_label=checkOnlyLabel,
-                                                     generate_initial_map=generateInitialMap,
+                                                     check_identical=check_identical,
+                                                     only_check_label=check_only_label,
+                                                     generate_initial_map=generate_initial_map,
                                                      strict=strict)
 
         # Compare products to reactants
         reverse_products_match = same_species_lists(self.products, other.reactants,
-                                                    check_identical=checkIdentical,
-                                                    only_check_label=checkOnlyLabel,
-                                                    generate_initial_map=generateInitialMap,
+                                                    check_identical=check_identical,
+                                                    only_check_label=check_only_label,
+                                                    generate_initial_map=generate_initial_map,
                                                     strict=strict)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
@@ -628,7 +628,7 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
-    def getRateCoefficient(self, T, P=0):
+    def get_rate_coefficient(self, T, P=0):
         """
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
@@ -666,7 +666,7 @@ class Reaction:
             rate_coefficient = self.kinetics.get_sticking_coefficient(T)
             adsorbate = None
             for r in self.reactants:
-                if r.containsSurfaceSite():
+                if r.contains_surface_site():
                     rate_coefficient /= surfaceSiteDensity
                 else:
                     if adsorbate is None:
@@ -676,7 +676,7 @@ class Reaction:
                                       "more than one adsorbate detected".format(self))
                         raise ReactionError("More than one adsorbate detected")
 
-            if adsorbate is None or adsorbate.containsSurfaceSite():
+            if adsorbate is None or adsorbate.contains_surface_site():
                 logging.error("Problem reaction: {0!s}".format(self))
                 raise ReactionError("Couldn't find the adsorbate!")
             molecular_weight_kg = adsorbate.molecularWeight.value_si
@@ -730,8 +730,8 @@ class Reaction:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         H298 = self.getEnthalpyOfReaction(298)
-        H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
-             - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
+        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
+             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
             Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.to_arrhenius(H298)
@@ -983,7 +983,7 @@ class Reaction:
 
         reactant_elements = {}
         product_elements = {}
-        for element in elementList:
+        for element in element_list:
             reactant_elements[element] = 0
             product_elements[element] = 0
 
@@ -1003,7 +1003,7 @@ class Reaction:
             for atom in molecule.atoms:
                 product_elements[atom.element] += 1
 
-        for element in elementList:
+        for element in element_list:
             if reactant_elements[element] != product_elements[element]:
                 return False
 
@@ -1205,11 +1205,11 @@ class Reaction:
             for reactant, product in self.pairs:
                 new_pair = []
                 for reactant0 in self.reactants:
-                    if reactant0.isIsomorphic(reactant):
+                    if reactant0.is_isomorphic(reactant):
                         new_pair.append(reactant0)
                         break
                 for product0 in self.products:
-                    if product0.isIsomorphic(product):
+                    if product0.is_isomorphic(product):
                         new_pair.append(product0)
                         break
                 new_pairs.append(new_pair)
@@ -1246,7 +1246,7 @@ class Reaction:
                 except ValueError:
                     continue
                 else:
-                    kf_list.append(self.getRateCoefficient(condition[0], condition[1]))
+                    kf_list.append(self.get_rate_coefficient(condition[0], condition[1]))
             if len(self.products) >= 2:
                 try:
                     collision_limit_r.append(self.calculate_coll_limit(temp=condition[0], reverse=True))
@@ -1288,9 +1288,9 @@ class Reaction:
         Returns the reduced mass of the products if reverse is ``True``
         """
         if reverse:
-            mass_list = [spc.molecule[0].getMolecularWeight() for spc in self.products]
+            mass_list = [spc.molecule[0].get_molecular_weight() for spc in self.products]
         else:
-            mass_list = [spc.molecule[0].getMolecularWeight() for spc in self.reactants]
+            mass_list = [spc.molecule[0].get_molecular_weight() for spc in self.reactants]
         reduced_mass = reduce((lambda x, y: x * y), mass_list) / sum(mass_list)
         return reduced_mass
 
@@ -1304,13 +1304,13 @@ class Reaction:
         epsilons = []
         if reverse:
             for spc in self.products:
-                trans = spc.getTransportData()
+                trans = spc.get_transport_data()
                 sigmas.append(trans.sigma.value_si)
                 epsilons.append(trans.epsilon.value_si)
             num_of_spcs = len(self.products)
         else:
             for spc in self.reactants:
-                trans = spc.getTransportData()
+                trans = spc.get_transport_data()
                 sigmas.append(trans.sigma.value_si)
                 epsilons.append(trans.epsilon.value_si)
             num_of_spcs = len(self.reactants)
@@ -1331,7 +1331,7 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
     Args:
         list1 (list):                          list of :class:`Species` or :class:`Molecule` objects
         list2 (list):                          list of :class:`Species` or :class:`Molecule` objects
-        check_identical (bool, optional):      if ``True``, use isIdentical comparison and compare atom IDs
+        check_identical (bool, optional):      if ``True``, use is_identical comparison and compare atom IDs
         only_check_label (bool, optional):     if ``True``, only compare the label attribute of each species
         generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
         strict (bool, optional):               if ``False``, perform isomorphism ignoring electrons
@@ -1345,9 +1345,9 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
-            return object1.isIdentical(object2, strict=_strict)
+            return object1.is_identical(object2, strict=_strict)
         else:
-            return object1.isIsomorphic(object2, generateInitialMap=_generate_initial_map, strict=_strict)
+            return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map, strict=_strict)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

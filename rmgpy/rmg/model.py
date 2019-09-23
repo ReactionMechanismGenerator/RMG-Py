@@ -96,7 +96,7 @@ class ReactionModel:
         unique_species = []
         for spec in other.species:
             for spec0 in final_model.species:
-                if spec.isIsomorphic(spec0):
+                if spec.is_isomorphic(spec0):
                     common_species[spec] = spec0
                     if spec0.label not in ['Ar', 'N2', 'Ne', 'He']:
                         if not spec0.thermo.isIdenticalTo(spec.thermo):
@@ -111,7 +111,7 @@ class ReactionModel:
         unique_reactions = []
         for rxn in other.reactions:
             for rxn0 in final_model.reactions:
-                if rxn.isIsomorphic(rxn0, eitherDirection=True):
+                if rxn.is_isomorphic(rxn0, either_direction=True):
                     common_reactions[rxn] = rxn0
                     if not rxn0.kinetics.is_identical_to(rxn.kinetics):
                         print('Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0)))
@@ -238,20 +238,20 @@ class CoreEdgeReactionModel:
 
         # First check cache and return if species is found
         for i, spec in enumerate(self.speciesCache):
-            if spec is not None and spec.isIsomorphic(molecule, strict=False):
+            if spec is not None and spec.is_isomorphic(molecule, strict=False):
                 self.speciesCache.pop(i)
                 self.speciesCache.insert(0, spec)
                 return spec
 
         # If not found in cache, check all species with matching formula
-        formula = molecule.getFormula()
+        formula = molecule.get_formula()
         try:
             species_list = self.speciesDict[formula]
         except KeyError:
             pass
         else:
             for spec in species_list:
-                if spec.isIsomorphic(molecule, strict=False):
+                if spec.is_isomorphic(molecule, strict=False):
                     self.speciesCache.pop()
                     self.speciesCache.insert(0, spec)
                     return spec
@@ -274,7 +274,7 @@ class CoreEdgeReactionModel:
         else:
             molecule = object
 
-        molecule.clearLabeledAtoms()
+        molecule.clear_labeled_atoms()
 
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
@@ -297,7 +297,7 @@ class CoreEdgeReactionModel:
 
         spec.creationIteration = self.iterationNum
         spec.generate_resonance_structures()
-        spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight() * 1000., "amu")
+        spec.molecularWeight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
 
         if generateThermo:
             self.generateThermo(spec)
@@ -305,10 +305,10 @@ class CoreEdgeReactionModel:
         # If the species still does not have a label, set initial label as the SMILES
         # This may change later after getting thermo in self.generateThermo()
         if not spec.label:
-            spec.label = spec.SMILES
+            spec.label = spec.smiles
         logging.debug('Creating new species {0}'.format(spec.label))
 
-        formula = molecule.getFormula()
+        formula = molecule.get_formula()
         if formula in self.speciesDict:
             self.speciesDict[formula].append(spec)
         else:
@@ -831,7 +831,7 @@ class CoreEdgeReactionModel:
                 logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
                 spc.label = spc.thermo.label
 
-        spc.generateEnergyTransferModel()
+        spc.generate_energy_transfer_model()
 
     def applyKineticsToReaction(self, reaction):
         """
@@ -1345,7 +1345,7 @@ class CoreEdgeReactionModel:
                         self.reactionDict[family][reactant1][reactant2].remove(tempRxnToBeDeleted)
 
         # remove from the global list of species, to free memory
-        formula = spec.molecule[0].getFormula()
+        formula = spec.molecule[0].get_formula()
         self.speciesDict[formula].remove(spec)
         if spec in self.speciesCache:
             self.speciesCache.remove(spec)
@@ -1772,10 +1772,10 @@ class CoreEdgeReactionModel:
                                   PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
                         dGrxn = reaction.getFreeEnergyOfReaction(300.)
-                        kf = reaction.getRateCoefficient(1000, 1e5)
-                        kr = reaction.getRateCoefficient(1000, 1e5) / reaction.getEquilibriumConstant(1000)
-                        kf2 = reaction2.getRateCoefficient(1000, 1e5) / reaction2.getEquilibriumConstant(1000)
-                        kr2 = reaction2.getRateCoefficient(1000, 1e5)
+                        kf = reaction.get_rate_coefficient(1000, 1e5)
+                        kr = reaction.get_rate_coefficient(1000, 1e5) / reaction.getEquilibriumConstant(1000)
+                        kf2 = reaction2.get_rate_coefficient(1000, 1e5) / reaction2.getEquilibriumConstant(1000)
+                        kr2 = reaction2.get_rate_coefficient(1000, 1e5)
                         if kf / kf2 < 0.5 or kf / kf2 > 2.0:
                             # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
                             # Warn about the ones that aren't close (but don't abort)

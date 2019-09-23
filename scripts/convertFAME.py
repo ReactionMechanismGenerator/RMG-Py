@@ -475,7 +475,7 @@ if __name__ == '__main__':
             if len(line.strip()) == 0:
                 if len(adjlist.strip()) > 0:
                     molecule = Molecule()
-                    molecule.fromAdjacencyList(adjlist)
+                    molecule.from_adjacency_list(adjlist)
                     moleculeDict[label] = molecule
                 adjlist = ''
                 label = ''

@@ -74,7 +74,7 @@ class PseudoSpecies(object):
     def __str__(self):
         return self.label
 
-    def isIsomorphic(self, other, generateInitialMap=False, strict=True):
+    def is_isomorphic(self, other, generate_initial_map=False, strict=True):
         return self.label.lower() == other.label.lower()
 
 
@@ -94,56 +94,56 @@ class TestReactionIsomorphism(unittest.TestCase):
 
     def test1to1(self):
         r1 = self.makeReaction('A=B')
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('a=B')))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('b=A')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('B=a'), eitherDirection=False))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('A=C')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('A=BB')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('a=B')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('b=A')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('B=a'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('A=C')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('A=BB')))
 
     def test1to2(self):
         r1 = self.makeReaction('A=BC')
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('a=Bc')))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('cb=a')))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('a=cb'), eitherDirection=False))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('bc=a'), eitherDirection=False))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('a=c')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=c')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('a=Bc')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('cb=a')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('a=cb'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('bc=a'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('a=c')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=c')))
 
     def test2to2(self):
         r1 = self.makeReaction('AB=CD')
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('ab=cd')))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('ab=dc'), eitherDirection=False))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('dc=ba')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('cd=ab'), eitherDirection=False))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=ab')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=cde')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('ab=cd')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('ab=dc'), either_direction=False))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('dc=ba')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('cd=ab'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=ab')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=cde')))
 
     def test2to3(self):
         r1 = self.makeReaction('AB=CDE')
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('ab=cde')))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('ba=edc'), eitherDirection=False))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('dec=ba')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('cde=ab'), eitherDirection=False))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=abc')))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('abe=cde')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('ab=cde')))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('ba=edc'), either_direction=False))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('dec=ba')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('cde=ab'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=abc')))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('abe=cde')))
 
     def test2to3_usingCheckOnlyLabel(self):
         r1 = self.makeReaction('AB=CDE')
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('AB=CDE'), checkOnlyLabel=True))
-        self.assertTrue(r1.isIsomorphic(self.makeReaction('BA=EDC'), eitherDirection=False, checkOnlyLabel=True))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('Ab=CDE'), checkOnlyLabel=True))
-        self.assertFalse(r1.isIsomorphic(self.makeReaction('BA=EDd'), eitherDirection=False, checkOnlyLabel=True))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('AB=CDE'), check_only_label=True))
+        self.assertTrue(r1.is_isomorphic(self.makeReaction('BA=EDC'), either_direction=False, check_only_label=True))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('Ab=CDE'), check_only_label=True))
+        self.assertFalse(r1.is_isomorphic(self.makeReaction('BA=EDd'), either_direction=False, check_only_label=True))
 
 
 class TestSurfaceReaction(unittest.TestCase):
     """Test surface reactions"""
 
     def setUp(self):
-        m_h2 = Molecule().fromSMILES("[H][H]")
-        m_x = Molecule().fromAdjacencyList("1 X u0 p0")
-        m_hx = Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
-        m_ch3 = Molecule().fromSMILES("[CH3]")
-        m_ch3x = Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        m_h2 = Molecule().from_smiles("[H][H]")
+        m_x = Molecule().from_adjacency_list("1 X u0 p0")
+        m_hx = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        m_ch3 = Molecule().from_smiles("[CH3]")
+        m_ch3x = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
 
         s_h2 = Species(
             molecule=[m_h2],
@@ -427,9 +427,9 @@ class TestReaction(unittest.TestCase):
             ),
         )
 
-        oxygen_atom = Species().fromSMILES('[O]')
-        so2 = Species().fromSMILES('O=S=O')
-        so3 = Species().fromSMILES('O=S(=O)=O')
+        oxygen_atom = Species().from_smiles('[O]')
+        so2 = Species().from_smiles('O=S=O')
+        so3 = Species().from_smiles('O=S(=O)=O')
 
         self.reaction3 = Reaction(
             reactants=[oxygen_atom, so2],
@@ -600,7 +600,7 @@ class TestReaction(unittest.TestCase):
         P = 1e5
         for T in Tlist:
             self.assertAlmostEqual(
-                self.reaction.getRateCoefficient(T, P) / self.reaction.kinetics.get_rate_coefficient(T), 1.0, 6)
+                self.reaction.get_rate_coefficient(T, P) / self.reaction.kinetics.get_rate_coefficient(T), 1.0, 6)
 
     def testGenerateReverseRateCoefficient(self):
         """
@@ -610,7 +610,7 @@ class TestReaction(unittest.TestCase):
         P = 1e5
         reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
         for T in Tlist:
-            kr0 = self.reaction2.getRateCoefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
+            kr0 = self.reaction2.get_rate_coefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
             kr = reverse_kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
 
@@ -635,8 +635,8 @@ class TestReaction(unittest.TestCase):
 
         rev_rxn.fixBarrierHeight()
         Ea = rev_rxn.kinetics.Ea.value_si
-        H0 = sum([spec.getThermoData().E0.value_si for spec in rxn.products]) \
-             - sum([spec.getThermoData().E0.value_si for spec in rxn.reactants])
+        H0 = sum([spec.get_thermo_data().E0.value_si for spec in rxn.products]) \
+             - sum([spec.get_thermo_data().E0.value_si for spec in rxn.reactants])
         self.assertAlmostEqual(Ea, -H0, 3)
 
         # test that Ea is forced to be positive if forcePositive is set to True
@@ -1292,7 +1292,7 @@ class TestReactionToCantera(unittest.TestCase):
             NASAPolynomial(coeffs=[3.54145, 0.00476788, -1.82149e-06, 3.28878e-10, -2.22547e-14, 16224, 1.6604],
                            Tmin=(1337.62, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary + radical(CH3)
-"""), molecule=[Molecule(SMILES="[CH3]")])
+"""), molecule=[Molecule(smiles="[CH3]")])
 
         ethane = Species(label="ethane", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.78033, -0.00324263, 5.52381e-05, -6.38581e-08, 2.28637e-11, -11620.3, 5.21034],
@@ -1300,7 +1300,7 @@ Thermo library: primaryThermoLibrary + radical(CH3)
             NASAPolynomial(coeffs=[4.58983, 0.0141508, -4.75962e-06, 8.60294e-10, -6.21717e-14, -12721.8, -3.61739],
                            Tmin=(954.51, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R)
-"""), molecule=[Molecule(SMILES="CC")])
+"""), molecule=[Molecule(smiles="CC")])
 
         co2 = Species(index=16, label="CO2", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.27861, 0.00274152, 7.16074e-06, -1.08027e-08, 4.14282e-12, -48470.3, 5.97937],
@@ -1308,7 +1308,7 @@ Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(
             NASAPolynomial(coeffs=[4.5461, 0.00291913, -1.15484e-06, 2.27654e-10, -1.7091e-14, -48980.4, -1.43275],
                            Tmin=(988.89, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo group additivity estimation: group(Cdd-OdOd) + other(R) + group(O2d-Cd) + other(R) + group(O2d-Cd) + other(R)
-"""), molecule=[Molecule(SMILES="O=C=O")])
+"""), molecule=[Molecule(smiles="O=C=O")])
 
         ch4 = Species(index=15, label="CH4", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[4.20541, -0.00535556, 2.51123e-05, -2.13762e-08, 5.97522e-12, -10161.9, -0.921275],
@@ -1316,7 +1316,7 @@ Thermo group additivity estimation: group(Cdd-OdOd) + other(R) + group(O2d-Cd) +
             NASAPolynomial(coeffs=[0.908272, 0.0114541, -4.57173e-06, 8.2919e-10, -5.66314e-14, -9719.98, 13.9931],
                            Tmin=(1084.12, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="C")])
+"""), molecule=[Molecule(smiles="C")])
 
         h2o = Species(index=27, label="H2O", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[4.05764, -0.000787933, 2.90876e-06, -1.47518e-09, 2.12838e-13, -30281.6, -0.311363],
@@ -1324,14 +1324,14 @@ Thermo library: primaryThermoLibrary
             NASAPolynomial(coeffs=[2.84325, 0.00275108, -7.8103e-07, 1.07243e-10, -5.79389e-15, -29958.6, 5.91041],
                            Tmin=(1130.24, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="O")])
+"""), molecule=[Molecule(smiles="O")])
 
         ar = Species(label="Ar", thermo=NASA(
             polynomials=[NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 4.37967], Tmin=(200, 'K'), Tmax=(1000, 'K')),
                          NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 4.37967], Tmin=(1000, 'K'),
                                         Tmax=(6000, 'K'))], Tmin=(200, 'K'), Tmax=(6000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="[Ar]")])
+"""), molecule=[Molecule(smiles="[Ar]")])
 
         h2 = Species(index=2, label="H2", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.43536, 0.00021271, -2.78625e-07, 3.40267e-10, -7.76031e-14, -1031.36, -3.90842],
@@ -1339,7 +1339,7 @@ Thermo library: primaryThermoLibrary
             NASAPolynomial(coeffs=[2.78816, 0.000587644, 1.59009e-07, -5.52736e-11, 4.34309e-15, -596.143, 0.112747],
                            Tmin=(1959.08, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="[H][H]")])
+"""), molecule=[Molecule(smiles="[H][H]")])
 
         h = Species(index=3, label="H", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[2.5, -1.91243e-12, 2.45329e-15, -1.02377e-18, 1.31369e-22, 25474.2, -0.444973],
@@ -1347,7 +1347,7 @@ Thermo library: primaryThermoLibrary
             NASAPolynomial(coeffs=[2.50167, -1.43051e-06, 4.6025e-10, -6.57826e-14, 3.52412e-18, 25472.7, -0.455578],
                            Tmin=(4563.27, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="[H]")])
+"""), molecule=[Molecule(smiles="[H]")])
 
         oh = Species(index=4, label="OH", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.51457, 2.92773e-05, -5.32163e-07, 1.01949e-09, -3.85945e-13, 3414.25, 2.10435],
@@ -1355,7 +1355,7 @@ Thermo library: primaryThermoLibrary
             NASAPolynomial(coeffs=[3.07194, 0.000604016, -1.39783e-08, -2.13446e-11, 2.48066e-15, 3579.39, 4.578],
                            Tmin=(1145.75, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="[OH]")])
+"""), molecule=[Molecule(smiles="[OH]")])
 
         ho2 = Species(index=5, label="HO2", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[4.04594, -0.00173464, 1.03766e-05, -1.02202e-08, 3.34908e-12, -986.754, 4.63581],
@@ -1363,7 +1363,7 @@ Thermo library: primaryThermoLibrary
             NASAPolynomial(coeffs=[3.21024, 0.00367942, -1.27701e-06, 2.18045e-10, -1.46338e-14, -910.369, 8.18291],
                            Tmin=(932.15, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) + group(O2s-OsH) + gauche(O2s(RR)) + other(R) + radical(HOOJ)
-"""), molecule=[Molecule(SMILES="[O]O")])
+"""), molecule=[Molecule(smiles="[O]O")])
 
         o2 = Species(index=6, label="O2", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.53732, -0.00121572, 5.3162e-06, -4.89446e-09, 1.45846e-12, -1038.59, 4.68368],
@@ -1371,7 +1371,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
             NASAPolynomial(coeffs=[3.15382, 0.00167804, -7.69974e-07, 1.51275e-10, -1.08782e-14, -1040.82, 6.16756],
                            Tmin=(1074.55, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="[O][O]")])
+"""), molecule=[Molecule(smiles="[O][O]")])
 
         co = Species(index=9, label="CO", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.66965, -0.00550953, 2.00538e-05, -2.08391e-08, 7.43738e-12, 1200.77, -12.4224],
@@ -1379,7 +1379,7 @@ Thermo library: primaryThermoLibrary
             NASAPolynomial(coeffs=[2.8813, 0.00231665, -4.40151e-07, 4.75633e-11, -2.78282e-15, 1173.45, -9.65831],
                            Tmin=(884.77, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo group additivity estimation: group(Ct-CtCs) + other(R) + group(O2s-CsCs) + other(R)
-"""), molecule=[Molecule(SMILES="[C-]#[O+]")])
+"""), molecule=[Molecule(smiles="[C-]#[O+]")])
 
         h2o2 = Species(index=7, label="H2O2", thermo=NASA(polynomials=[
             NASAPolynomial(coeffs=[3.73136, 0.00335071, 9.35033e-06, -1.521e-08, 6.41585e-12, -17721.2, 5.45911],
@@ -1387,7 +1387,7 @@ Thermo group additivity estimation: group(Ct-CtCs) + other(R) + group(O2s-CsCs) 
             NASAPolynomial(coeffs=[5.41579, 0.00261008, -4.39892e-07, 4.91087e-11, -3.35188e-15, -18303, -4.02248],
                            Tmin=(908.87, 'K'), Tmax=(5000, 'K'))], Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""
 Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) + group(O2s-OsH) + gauche(O2s(RR)) + other(R)
-"""), molecule=[Molecule(SMILES="OO")])
+"""), molecule=[Molecule(smiles="OO")])
 
         self.speciesList = [ch3, ethane, co2, ch4, h2o, ar, h2, h, oh, ho2, o2, co, h2o2]
 
@@ -1398,9 +1398,9 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                                  arrheniusLow=Arrhenius(A=(3.4e+41, 'cm^6/(mol^2*s)'), n=-7.03, Ea=(2.762, 'kcal/mol'),
                                                         T0=(1, 'K')), alpha=0.619, T3=(73.2, 'K'), T1=(1180, 'K'),
                                  T2=(10000, 'K'),
-                                 efficiencies={Molecule(SMILES="O=C=O"): 2.0, Molecule(SMILES="[H][H]"): 2.0,
-                                               Molecule(SMILES="O"): 6.0, Molecule(SMILES="[Ar]"): 0.7,
-                                               Molecule(SMILES="C"): 2.0, Molecule(SMILES="CC"): 3.0}))
+                                 efficiencies={Molecule(smiles="O=C=O"): 2.0, Molecule(smiles="[H][H]"): 2.0,
+                                               Molecule(smiles="O"): 6.0, Molecule(smiles="[Ar]"): 0.7,
+                                               Molecule(smiles="C"): 2.0, Molecule(smiles="CC"): 3.0}))
 
         self.ct_troe = ct.Reaction.fromCti('''falloff_reaction('CH3(13) + CH3(13) (+ M) <=> ethane (+ M)',
                  kf=[(6.770000e+16,'cm3/mol/s'), -1.18, (0.654,'kcal/mol')],
@@ -1538,10 +1538,10 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                                   kinetics=ThirdBody(
                                       arrheniusLow=Arrhenius(A=(1e+18, 'cm^6/(mol^2*s)'), n=-1, Ea=(0, 'kcal/mol'),
                                                              T0=(1, 'K')),
-                                      efficiencies={Molecule(SMILES="O=C=O"): 0.0, Molecule(SMILES="[H][H]"): 0.0,
-                                                    Molecule(SMILES="O"): 0.0,
-                                                    Molecule(SMILES="[Ar]"): 0.63, Molecule(SMILES="C"): 2.0,
-                                                    Molecule(SMILES="CC"): 3.0}))
+                                      efficiencies={Molecule(smiles="O=C=O"): 0.0, Molecule(smiles="[H][H]"): 0.0,
+                                                    Molecule(smiles="O"): 0.0,
+                                                    Molecule(smiles="[Ar]"): 0.63, Molecule(smiles="C"): 2.0,
+                                                    Molecule(smiles="CC"): 3.0}))
 
         self.ct_thirdBody = ct.Reaction.fromCti('''three_body_reaction('H(3) + H(3) + M <=> H2(2) + M', [(1.000000e+18,'cm6/mol2/s'), -1.0, (0.0,'kcal/mol')],
                     efficiencies='CO2(16):0.0 CH4(15):2.0 ethane:3.0 H2O(27):0.0 H2(2):0.0 Ar:0.63')''')
@@ -1552,10 +1552,10 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                                                               T0=(1, 'K')),
                                       arrheniusLow=Arrhenius(A=(6.02e+14, 'cm^6/(mol^2*s)'), n=0, Ea=(3, 'kcal/mol'),
                                                              T0=(1, 'K')),
-                                      efficiencies={Molecule(SMILES="O=C=O"): 3.5, Molecule(SMILES="[H][H]"): 2.0,
-                                                    Molecule(SMILES="O"): 6.0, Molecule(SMILES="[Ar]"): 0.5,
-                                                    Molecule(SMILES="C"): 2.0, Molecule(SMILES="CC"): 3.0,
-                                                    Molecule(SMILES="[O][O]"): 6.0}))
+                                      efficiencies={Molecule(smiles="O=C=O"): 3.5, Molecule(smiles="[H][H]"): 2.0,
+                                                    Molecule(smiles="O"): 6.0, Molecule(smiles="[Ar]"): 0.5,
+                                                    Molecule(smiles="C"): 2.0, Molecule(smiles="CC"): 3.0,
+                                                    Molecule(smiles="[O][O]"): 6.0}))
 
         self.ct_lindemann = ct.Reaction.fromCti('''falloff_reaction('H(3) + O2(6) (+ M) <=> HO2(5) (+ M)',
                  kf=[(1.800000e+10,'cm3/mol/s'), 0.0, (2.385,'kcal/mol')],
@@ -1570,7 +1570,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         rmg_objects = [self.arrheniusBi, self.arrheniusBi_irreversible, self.arrheniusMono, self.arrheniusTri]
 
         ct_objects = [self.ct_arrheniusBi, self.ct_arrheniusBi_irreversible, self.ct_arrheniusMono, self.ct_arrheniusTri]
-        converted_ct_objects = [obj.toCantera(self.speciesList, useChemkinIdentifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
@@ -1586,7 +1586,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         rmg_objects = [self.multiArrhenius]
         ct_objects = [self.ct_multiArrhenius]
-        converted_ct_objects = [obj.toCantera(self.speciesList, useChemkinIdentifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
@@ -1606,7 +1606,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         rmg_objects = [self.pdepArrhenius]
         ct_objects = [self.ct_pdepArrhenius]
-        converted_ct_objects = [obj.toCantera(self.speciesList, useChemkinIdentifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
@@ -1623,7 +1623,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
 
         rmg_objects = [self.multiPdepArrhenius]
         ct_objects = [self.ct_multiPdepArrhenius]
-        converted_ct_objects = [obj.toCantera(self.speciesList, useChemkinIdentifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
@@ -1641,7 +1641,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         Tests formation of cantera reactions with Chebyshev kinetics.
         """
-        ct_chebyshev = self.chebyshev.toCantera(self.speciesList, useChemkinIdentifier=True)
+        ct_chebyshev = self.chebyshev.to_cantera(self.speciesList, use_chemkin_identifier=True)
         self.assertEqual(type(ct_chebyshev), type(self.ct_chebyshev))
         self.assertEqual(repr(ct_chebyshev), repr(self.ct_chebyshev))
 
@@ -1655,13 +1655,13 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         Tests formation of cantera reactions with Falloff kinetics.
         """
-        ct_third_body = self.thirdBody.toCantera(self.speciesList, useChemkinIdentifier=True)
+        ct_third_body = self.thirdBody.to_cantera(self.speciesList, use_chemkin_identifier=True)
         self.assertEqual(type(ct_third_body), type(self.ct_thirdBody))
         self.assertEqual(repr(ct_third_body), repr(self.ct_thirdBody))
         self.assertEqual(str(ct_third_body.rate), str(self.ct_thirdBody.rate))
         self.assertEqual(ct_third_body.efficiencies, self.ct_thirdBody.efficiencies)
 
-        ct_lindemann = self.lindemann.toCantera(self.speciesList, useChemkinIdentifier=True)
+        ct_lindemann = self.lindemann.to_cantera(self.speciesList, use_chemkin_identifier=True)
         self.assertEqual(type(ct_lindemann), type(self.ct_lindemann))
         self.assertEqual(repr(ct_lindemann), repr(self.ct_lindemann))
         self.assertEqual(ct_lindemann.efficiencies, self.ct_lindemann.efficiencies)
@@ -1669,7 +1669,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         self.assertEqual(str(ct_lindemann.high_rate), str(self.ct_lindemann.high_rate))
         self.assertEqual(str(ct_lindemann.falloff), str(self.ct_lindemann.falloff))
 
-        ct_troe = self.troe.toCantera(self.speciesList, useChemkinIdentifier=True)
+        ct_troe = self.troe.to_cantera(self.speciesList, use_chemkin_identifier=True)
         self.assertEqual(type(ct_troe), type(self.ct_troe))
         self.assertEqual(repr(ct_troe), repr(self.ct_troe))
         self.assertEqual(ct_troe.efficiencies, self.ct_troe.efficiencies)

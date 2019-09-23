@@ -86,7 +86,7 @@ class TestPdep(unittest.TestCase):
             energyTransferModel=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
-        self.nC4H10O.fromSMILES('CCCCO')
+        self.nC4H10O.from_smiles('CCCCO')
 
         self.nC4H8 = Species(
             label='n-C4H8',
@@ -111,7 +111,7 @@ class TestPdep(unittest.TestCase):
             ),
         )
 
-        self.nC4H8.fromSMILES('CCC=C')
+        self.nC4H8.from_smiles('CCC=C')
 
         self.H2O = Species(
             label='H2O',
@@ -127,7 +127,7 @@ class TestPdep(unittest.TestCase):
             ),
         )
 
-        self.H2O.fromSMILES('O')
+        self.H2O.from_smiles('O')
 
         self.N2 = Species(
             label='N2',
@@ -136,7 +136,7 @@ class TestPdep(unittest.TestCase):
             energyTransferModel=None,
         )
 
-        self.N2.fromSMILES('N#N')
+        self.N2.from_smiles('N#N')
 
         logging.error('to TS')
 

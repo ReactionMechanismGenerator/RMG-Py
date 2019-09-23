@@ -289,17 +289,17 @@ class ChemkinTest(unittest.TestCase):
         """
         entry = """O2(4)+H(5)(+N2(5))<=>HO2(10)(+N2(5))                          4.651e+12 0.440     0.000"""
         species_dict = {}
-        s1 = Species().fromAdjacencyList("""O2(4)
+        s1 = Species().from_adjacency_list("""O2(4)
                                          multiplicity 3
                                          1 O u1 p2 c0 {2,S}
                                          2 O u1 p2 c0 {1,S}""")
-        s2 = Species().fromAdjacencyList("""H(5)
+        s2 = Species().from_adjacency_list("""H(5)
                                          multiplicity 2
                                          1 H u1 p0 c0""")
-        s3 = Species().fromAdjacencyList("""N2(5)
+        s3 = Species().from_adjacency_list("""N2(5)
                                          1 N u0 p1 c0 {2,T}
                                          2 N u0 p1 c0 {1,T}""")
-        s4 = Species().fromAdjacencyList("""HO2(10)
+        s4 = Species().from_adjacency_list("""HO2(10)
                                          multiplicity 2
                                          1 O u0 p2 c0 {2,S} {3,S}
                                          2 O u1 p2 c0 {1,S}
@@ -319,11 +319,11 @@ class ChemkinTest(unittest.TestCase):
         Test that duplicate reactions are handled correctly when
         loading a Chemkin file.
         """
-        s1 = Species().fromSMILES('CC')
-        s2 = Species().fromSMILES('[CH3]')
-        s3 = Species().fromSMILES('[OH]')
-        s4 = Species().fromSMILES('C[CH2]')
-        s5 = Species().fromSMILES('O')
+        s1 = Species().from_smiles('CC')
+        s2 = Species().from_smiles('[CH3]')
+        s3 = Species().from_smiles('[OH]')
+        s4 = Species().from_smiles('C[CH2]')
+        s5 = Species().from_smiles('O')
         r1 = Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius())
         r2 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
         r3 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
@@ -385,12 +385,12 @@ class ChemkinTest(unittest.TestCase):
 
     def test_mark_duplicate_reactions(self):
         """Test that we can properly mark duplicate reactions for Chemkin."""
-        s1 = Species().fromSMILES('CC')
-        s2 = Species().fromSMILES('[CH3]')
-        s3 = Species().fromSMILES('[OH]')
-        s4 = Species().fromSMILES('C[CH2]')
-        s5 = Species().fromSMILES('O')
-        s6 = Species().fromSMILES('[H]')
+        s1 = Species().from_smiles('CC')
+        s2 = Species().from_smiles('[CH3]')
+        s3 = Species().from_smiles('[OH]')
+        s4 = Species().from_smiles('C[CH2]')
+        s5 = Species().from_smiles('O')
+        s6 = Species().from_smiles('[H]')
 
         # Try initializing with duplicate=False
         reaction_list = [
@@ -432,9 +432,9 @@ class ChemkinTest(unittest.TestCase):
 class TestReadReactionComments(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        r = Species().fromSMILES('[CH3]')
+        r = Species().from_smiles('[CH3]')
         r.label = '[CH3]'
-        p = Species().fromSMILES('CC')
+        p = Species().from_smiles('CC')
         p.label = 'CC'
 
         cls.reaction = Reaction(reactants=[r, r],

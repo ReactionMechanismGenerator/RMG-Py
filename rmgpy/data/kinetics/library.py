@@ -302,7 +302,7 @@ class KineticsLibrary(Database):
                 # This means that if we find any duplicate reactions, it is an error
                 for entry in self.entries.values():
                     reaction = entry.item
-                    if reaction0 is not reaction and reaction0.isIsomorphic(reaction):
+                    if reaction0 is not reaction and reaction0.is_isomorphic(reaction):
                         # We found a duplicate reaction that wasn't marked!
                         # RMG requires all duplicate reactions to be marked, unlike CHEMKIN
                         if mark_duplicates:
@@ -334,7 +334,7 @@ class KineticsLibrary(Database):
                 reaction = entry.item
                 if reaction0 is reaction:
                     continue
-                if reaction0.isIsomorphic(reaction, eitherDirection=False):
+                if reaction0.is_isomorphic(reaction, either_direction=False):
                     if reaction0.reversible != reaction.reversible:
                         logging.debug("Reactions isomorphic but with different reversibilities.")
                         continue
@@ -516,13 +516,13 @@ class KineticsLibrary(Database):
                    allow_max_rate_violation=False,
                    ):
 
-        # reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
-        # if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
-        # if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
+        # reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant1)])]
+        # if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant2)]))
+        # if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant3)]))
         #
-        # products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
-        # if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
-        # if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
+        # products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product1)])]
+        # if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product2)]))
+        # if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product3)]))
 
         # Make a blank reaction
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
@@ -588,7 +588,7 @@ class KineticsLibrary(Database):
         # Add common bath gases (Ar, Ne, He, N2) if not already present
         for label, smiles in [('Ar', '[Ar]'), ('He', '[He]'), ('Ne', '[Ne]'), ('N2', 'N#N')]:
             if label not in species:
-                molecule = Molecule().fromSMILES(smiles)
+                molecule = Molecule().from_smiles(smiles)
                 spec = Species(label=label, molecule=[molecule])
                 species[label] = spec
 
@@ -660,14 +660,14 @@ class KineticsLibrary(Database):
         for entry in self.entries.values():
             if isinstance(entry.data, ThirdBody):
                 for molecule in entry.data.efficiencies:
-                    formula = molecule.getFormula()
+                    formula = molecule.get_formula()
                     if formula in ['He', 'Ar', 'N2', 'Ne']:
                         pass
                     else:
                         found = False
                         for species in species_dict.values():
                             for mol in species.molecule:
-                                if mol.isIsomorphic(molecule):
+                                if mol.is_isomorphic(molecule):
                                     found = True
                                     break
                         if not found:
@@ -681,7 +681,7 @@ class KineticsLibrary(Database):
         species_list.sort(key=lambda x: x.label)
         f = open(os.path.join(path, 'species.txt'), 'w')
         for species in species_list:
-            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=False) + "\n")
+            f.write(species.molecule[0].to_adjacency_list(label=species.label, remove_h=False) + "\n")
         f.close()
 
         # Save the high-pressure limit reactions
@@ -698,7 +698,7 @@ class KineticsLibrary(Database):
                 entry.item.duplicate = True
                 rate_list = kinetics.arrhenius[:]
             else:
-                if not kinetics.isPressureDependent():
+                if not kinetics.is_pressure_dependent():
                     rate_list.append(kinetics)
             for rate in rate_list:
                 # Write reaction equation
@@ -723,7 +723,7 @@ class KineticsLibrary(Database):
         f.write('Reactions:\n')
         for entry in entries:
             kinetics = entry.data
-            if not kinetics.isPressureDependent():
+            if not kinetics.is_pressure_dependent():
                 continue
             rate_list = []
             if isinstance(kinetics, MultiPDepArrhenius):
@@ -761,7 +761,7 @@ class KineticsLibrary(Database):
                                     mol_label = spec.label
                                     break
                             else:
-                                mol_label = molecule.getFormula().upper()
+                                mol_label = molecule.get_formula().upper()
                             eff_line += '{0}/{1:g}/  '.format(mol_label, efficiency)
                         f.write(eff_line.strip() + '\n')
                     if isinstance(rate, Lindemann):

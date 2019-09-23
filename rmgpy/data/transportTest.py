@@ -134,12 +134,12 @@ class TestTransportDatabase(unittest.TestCase):
                            ['GRI-Mech', 'PrimaryTransportLibrary'])
 
         self.speciesList = [
-            Species().fromSMILES('C'),
-            Species().fromSMILES('CCCC'),
-            Species().fromSMILES('O'),
-            Species().fromSMILES('[CH3]'),
-            Species().fromSMILES('[OH]'),
-            Species().fromSMILES('c1ccccc1'),
+            Species().from_smiles('C'),
+            Species().from_smiles('CCCC'),
+            Species().from_smiles('O'),
+            Species().from_smiles('[CH3]'),
+            Species().from_smiles('[OH]'),
+            Species().from_smiles('c1ccccc1'),
         ]
 
     def testJoback(self):
@@ -152,7 +152,7 @@ class TestTransportDatabase(unittest.TestCase):
 
         # values calculate from joback's estimations
         for name, smiles, sigma, epsilon, comment in self.testCases:
-            species = Species().fromSMILES(smiles)
+            species = Species().from_smiles(smiles)
             transport_data, blank, blank2 = self.database.get_transport_properties_via_group_estimates(species)
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
@@ -166,7 +166,7 @@ class TestTransportDatabase(unittest.TestCase):
     @work_in_progress
     def testJobackOnBenzeneBonds(self):
         """Test Joback doesn't crash on Cb desription of benzene"""
-        species = Species().fromAdjacencyList("""
+        species = Species().from_adjacency_list("""
                                               1  C u0 p0 {2,B} {6,B} {7,S}
                                               2  C u0 p0 {1,B} {3,B} {8,S}
                                               3  C u0 p0 {2,B} {4,B} {9,S}

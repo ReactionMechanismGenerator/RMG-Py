@@ -51,7 +51,7 @@ except DependencyError as e:
     else:
         raise
 
-mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
 
 class TestMopacMolPM3(unittest.TestCase):
@@ -205,7 +205,7 @@ class TestMopacMolPM7(unittest.TestCase):
         if not os.path.exists(qm.settings.fileStore):
             os.makedirs(qm.settings.fileStore)
 
-        mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+        mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
         self.qmmol1 = MopacMolPM7(mol1, qm.settings)
 
     def testGenerateThermoData(self):

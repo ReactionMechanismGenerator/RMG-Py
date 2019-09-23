@@ -162,7 +162,7 @@ cdef class LiquidReactor(ReactionSystem):
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
-            self.kf[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+            self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]

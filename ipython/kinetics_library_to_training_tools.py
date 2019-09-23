@@ -75,11 +75,11 @@ def generate_header_html(n, fam_rxn, lib_rxn, library_name, families):
     html += ['</tr><tr>']
     html += ['<th colspan="{0}">Reactant SMILES</th>'.format(half)]
     html += ['<td colspan="{0}">{1}</td>'.format(half, ' + '.join(
-        [reactant.molecule[0].toSMILES() for reactant in lib_rxn.reactants]))]
+        [reactant.molecule[0].to_smiles() for reactant in lib_rxn.reactants]))]
     html += ['</tr><tr>']
     html += ['<th colspan="{0}">Product SMILES</th>'.format(half)]
     html += ['<td colspan="{0}">{1}</td>'.format(half, ' + '.join(
-        [product.molecule[0].toSMILES() for product in lib_rxn.products]))]
+        [product.molecule[0].to_smiles() for product in lib_rxn.products]))]
     html += ['</tr>']
 
     return html
@@ -107,8 +107,8 @@ def generate_template_html(rxn, template):
         html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full / templateSize, b64encode(entry.item._repr_png_()))]
     html += ['</tr><tr>']
     if templateSize == 3:
-        merged_group = template[0].item.mergeGroups(template[1].item)
-        merged_group = merged_group.mergeGroups(template[2].item)
+        merged_group = template[0].item.merge_groups(template[1].item)
+        merged_group = merged_group.merge_groups(template[2].item)
         html += ['<td colspan="{0}">{1}</td>'.format(full, 'Merged Template')]
         html += ['</tr><tr>']
         html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full, b64encode(merged_group._repr_png_()))]
@@ -147,7 +147,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     num_aromatic_reactants = 0
                     reactants = fam_rxn.reactants if fam_rxn.is_forward else fam_rxn.products
                     for r in reactants:
-                        num_aromatic_reactants += r.molecule[0].isAromatic()
+                        num_aromatic_reactants += r.molecule[0].is_aromatic()
                     if num_aromatic_reactants > max_num_aromatic_reactants:
                         max_num_aromatic_reactants = num_aromatic_reactants
                         selected_rxns = [fam_rxn]

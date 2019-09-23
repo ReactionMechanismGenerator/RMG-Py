@@ -43,7 +43,7 @@ import rmgpy.constants as constants
 from rmgpy.chemkin import writeThermoEntry
 from rmgpy.exceptions import InputError
 from rmgpy.molecule import Molecule
-from rmgpy.molecule.util import retrieveElementCount
+from rmgpy.molecule.util import get_element_count
 from rmgpy.species import Species
 from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor
 from rmgpy.thermo.wilhoit import Wilhoit
@@ -170,8 +170,8 @@ class ThermoJob(object):
 
         with open(output_file, 'a') as f:
             f.write('# Thermodynamics for {0}:\n'.format(species.label))
-            H298 = species.getThermoData().getEnthalpy(298) / 4184.
-            S298 = species.getThermoData().getEntropy(298) / 4.184
+            H298 = species.get_thermo_data().getEnthalpy(298) / 4184.
+            S298 = species.get_thermo_data().getEntropy(298) / 4.184
             f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
             f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
             f.write('#    =========== =========== =========== =========== ===========\n')
@@ -180,16 +180,16 @@ class ThermoJob(object):
             f.write('#    =========== =========== =========== =========== ===========\n')
             for T in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
                 try:
-                    Cp = species.getThermoData().getHeatCapacity(T) / 4.184
-                    H = species.getThermoData().getEnthalpy(T) / 4184.
-                    S = species.getThermoData().getEntropy(T) / 4.184
-                    G = species.getThermoData().getFreeEnergy(T) / 4184.
+                    Cp = species.get_thermo_data().getHeatCapacity(T) / 4.184
+                    H = species.get_thermo_data().getEnthalpy(T) / 4184.
+                    S = species.get_thermo_data().getEntropy(T) / 4.184
+                    G = species.get_thermo_data().getFreeEnergy(T) / 4184.
                     f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
                 except ValueError:
                     logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species, T))
             f.write('#    =========== =========== =========== =========== ===========\n')
 
-            thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
+            thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.get_thermo_data())
             f.write('{0}\n\n'.format(prettify(thermo_string)))
 
     def write_chemkin(self, output_directory):
@@ -201,7 +201,7 @@ class ThermoJob(object):
         with open(os.path.join(output_directory, 'chem.inp'), 'a') as f:
             if isinstance(species, Species):
                 if species.molecule and isinstance(species.molecule[0], Molecule):
-                    element_counts = retrieveElementCount(species.molecule[0])
+                    element_counts = get_element_count(species.molecule[0])
                 else:
                     try:
                         element_counts = species.props['element_counts']
@@ -226,7 +226,7 @@ class ThermoJob(object):
                                 break
                 if not is_species_in_dict:
                     with open(spec_dict_path, 'a') as f:
-                        f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
+                        f.write(species.molecule[0].to_adjacency_list(remove_h=False, label=species.label))
                         f.write('\n')
         return chemkin_thermo_string
 
@@ -272,7 +272,7 @@ class ThermoJob(object):
         Glist1 = np.zeros_like(Tlist)
 
         conformer = self.species.conformer
-        thermo = self.species.getThermoData()
+        thermo = self.species.get_thermo_data()
         for i in range(Tlist.shape[0]):
             try:
                 Cplist[i] = conformer.getHeatCapacity(Tlist[i])

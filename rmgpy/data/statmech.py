@@ -57,12 +57,12 @@ def save_entry(f, entry):
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write(entry.item.to_adjacency_list(remove_h=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList())
+        f.write(entry.item.to_adjacency_list())
         f.write('""",\n')
     else:
         f.write('    group = "{0}",\n'.format(entry.item))
@@ -136,7 +136,7 @@ class StatmechDepository(Database):
                    shortDesc='',
                    longDesc='',
                    ):
-        item = Molecule().fromAdjacencyList(molecule)
+        item = Molecule().from_adjacency_list(molecule)
 
         self.entries[label] = Entry(
             index=index,
@@ -179,7 +179,7 @@ class StatmechLibrary(Database):
         self.entries[label] = Entry(
             index=index,
             label=label,
-            item=Molecule().fromAdjacencyList(molecule),
+            item=Molecule().from_adjacency_list(molecule),
             data=statmech,
             reference=reference,
             referenceType=referenceType,
@@ -236,7 +236,7 @@ class StatmechGroups(Database):
         ):
             item = make_logic_node(group)
         else:
-            item = Group().fromAdjacencyList(group)
+            item = Group().from_adjacency_list(group)
         self.entries[label] = Entry(
             index=index,
             label=label,
@@ -275,7 +275,7 @@ class StatmechGroups(Database):
         """
         count = 0
         if isinstance(self.dictionary[node], Group):
-            ismatch, mappings = molecule.findSubgraphIsomorphisms(self.dictionary[node])
+            ismatch, mappings = molecule.find_subgraph_isomorphisms(self.dictionary[node])
             count = len(mappings) if ismatch else 0
         elif isinstance(self.dictionary[node], LogicOr):
             for child in self.dictionary[node].components:
@@ -329,14 +329,14 @@ class StatmechGroups(Database):
         # Generate estimate of thermodynamics
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.isHydrogen(): continue
-            if molecule.isAtomInCycle(atom):
+            if atom.is_hydrogen(): continue
+            if molecule.is_atom_in_cycle(atom):
                 # Atom is in cycle
                 # Add each C-H bond to the ringCH group
                 # This is hardcoding of functional groups!
-                if atom.isCarbon():
+                if atom.is_carbon():
                     for atom2 in atom.edges:
-                        if atom2.isHydrogen():
+                        if atom2.is_hydrogen():
                             try:
                                 group_count[ring_ch] += 1
                             except KeyError:
@@ -365,14 +365,14 @@ class StatmechGroups(Database):
         # For closed-shell molecule the spin multiplicity is 1
         # For monoradicals the spin multiplicity is 2
         # For higher-order radicals the highest allowed spin multiplicity is assumed
-        conformer.spinMultiplicity = molecule.getRadicalCount() + 1
+        conformer.spinMultiplicity = molecule.get_radical_count() + 1
 
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:
             return conformer, None, None
 
-        linear = molecule.isLinear()
-        num_rotors = molecule.countInternalRotors()
+        linear = molecule.is_linear()
+        num_rotors = molecule.count_internal_rotors()
         num_vibrations = 3 * len(molecule.atoms) - (5 if linear else 6) - num_rotors
 
         # Get characteristic frequency groups and the associated frequencies
@@ -393,7 +393,7 @@ class StatmechGroups(Database):
                 num_vibrations = len(frequencies)
                 logging.warning('For {0}, more characteristic frequencies were generated than '
                                 'vibrational modes allowed. Removed {1:d} internal rotors to '
-                                'compensate.'.format(molecule.toSMILES(), difference))
+                                'compensate.'.format(molecule.to_smiles(), difference))
             # If that won't work, turn off functional groups until the problem is underspecified again
             else:
                 groups_removed = 0
@@ -413,12 +413,12 @@ class StatmechGroups(Database):
                 # Log warning
                 logging.warning('For {0}, more characteristic frequencies were generated than '
                                 'vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to '
-                                'compensate.'.format(molecule.toSMILES(), groups_removed, freqs_removed))
+                                'compensate.'.format(molecule.to_smiles(), groups_removed, freqs_removed))
                 # Regenerate characteristic frequencies
                 frequencies = []
                 for entry, count in group_count.items():
                     if count != 0:
-                        frequencies.extend(entry.data.generateFrequencies(count))
+                        frequencies.extend(entry.data.generate_frequencies(count))
 
         # Subtract out contributions to heat capacity from the group frequencies
         Tlist = np.arange(300.0, 1501.0, 100.0, np.float64)
@@ -464,7 +464,7 @@ class StatmechDatabase(object):
         self.depository = {}
         self.libraries = {}
         self.groups = {}
-        self.libraryOrder = []
+        self.library_order = []
         self.local_context = {
             'HarmonicOscillator': HarmonicOscillator,
             'LinearRotor': LinearRotor,
@@ -483,7 +483,7 @@ class StatmechDatabase(object):
             'depository': self.depository,
             'libraries': self.libraries,
             'groups': self.groups,
-            'library_order': self.libraryOrder,
+            'library_order': self.library_order,
         }
         return StatmechDatabase, (), d
 
@@ -494,7 +494,7 @@ class StatmechDatabase(object):
         self.depository = d['depository']
         self.libraries = d['libraries']
         self.groups = d['groups']
-        self.libraryOrder = d['library_order']
+        self.library_order = d['library_order']
 
     def load(self, path, libraries=None, depository=True):
         """
@@ -522,7 +522,7 @@ class StatmechDatabase(object):
         points to the top-level folder of the thermo database.
         """
         self.libraries = {}
-        self.libraryOrder = []
+        self.library_order = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 name, ext = os.path.splitext(f)
@@ -532,9 +532,9 @@ class StatmechDatabase(object):
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
-                    self.libraryOrder.append(library.label)
+                    self.library_order.append(library.label)
         if libraries is not None:
-            self.libraryOrder = libraries
+            self.library_order = libraries
 
     def load_groups(self, path):
         """
@@ -656,10 +656,10 @@ class StatmechDatabase(object):
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         """
-        logging.debug('Retrieving stat mech data for {}.'.format(molecule.toSMILES()))
+        logging.debug('Retrieving stat mech data for {}.'.format(molecule.to_smiles()))
         statmech_model = None
         # Check the libraries in order first; return the first successful match
-        for label in self.libraryOrder:
+        for label in self.library_order:
             statmech_model = self.get_statmech_data_from_library(molecule, self.libraries[label])
             if statmech_model:
                 break
@@ -677,7 +677,7 @@ class StatmechDatabase(object):
         items = []
         for name, depository in self.depository.items():
             for label, entry in depository.entries.items():
-                if molecule.isIsomorphic(entry.item):
+                if molecule.is_isomorphic(entry.item):
                     items.append((entry.data, self.depository[name], entry))
         return items
 
@@ -688,7 +688,7 @@ class StatmechDatabase(object):
         `library`. Returns ``None`` if no data was found.
         """
         for label, entry in library.entries.items():
-            if molecule.isIsomorphic(entry.item):
+            if molecule.is_isomorphic(entry.item):
                 return entry.data, library, entry
         return None
 

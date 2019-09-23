@@ -18,7 +18,7 @@ from rmgpy.data.base import LogicOr
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule import Group
-from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 
 
@@ -526,7 +526,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst = []
         # Go through all species to make sure they are nonidentical
         species_list = list(species_dict.values())
-        labeled_atoms = [species.molecule[0].getLabeledAtoms() for species in species_list]
+        labeled_atoms = [species.molecule[0].get_all_labeled_atoms() for species in species_list]
         for i in range(len(species_list)):
             for j in range(i + 1, len(species_list)):
                 initial_map = {}
@@ -538,7 +538,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 except KeyError:
                     # atom labels did not match, therefore not a match
                     continue
-                tst.append((species_list[i].molecule[0].isIsomorphic(species_list[j].molecule[0], initial_map),
+                tst.append((species_list[i].molecule[0].is_isomorphic(species_list[j].molecule[0], initial_map),
                             "Species {0} and species {1} in {2} database were found to be identical.".format(
                                 species_list[i].label, species_list[j].label, database.label)))
 
@@ -567,7 +567,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             k = entry.data
             rxn = entry.item
             molecularity = len(rxn.reactants)
-            surface_reactants = sum([1 for s in rxn.reactants if s.containsSurfaceSite()])
+            surface_reactants = sum([1 for s in rxn.reactants if s.contains_surface_site()])
             try:
 
                 if isinstance(k, rmgpy.kinetics.StickingCoefficient):
@@ -766,7 +766,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         """
         family = self.database.kinetics.families[family_name]
         target_label = ['Cd', 'CO', 'CS', 'Cdd']
-        target_atom_types = [atomTypes[x] for x in target_label]
+        target_atom_types = [ATOMTYPES[x] for x in target_label]
 
         # ignore product entries that get created from training reactions
         ignore = []
@@ -800,18 +800,18 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                             # Ignore ligands that are not double bonded
                             if any([abs(2 - order) < 1e-7 for order in bond.order]):
                                 for ligAtomType in ligand.atomType:
-                                    if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']):
+                                    if ligand.atomType[0].is_specific_case_of(ATOMTYPES['O']):
                                         correct_atom_list.append('CO')
-                                    elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']):
+                                    elif ligand.atomType[0].is_specific_case_of(ATOMTYPES['S']):
                                         correct_atom_list.append('CS')
 
                     # remove duplicates from correctAtom:
                     correct_atom_list = list(set(correct_atom_list))
                     for correctAtom in correct_atom_list:
-                        tst.append((atomTypes[correctAtom] in atom.atomType, """
+                        tst.append((ATOMTYPES[correctAtom] in atom.atomType, """
 In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
-{4}""".format(family_name, entry, correctAtom, index + 1, entry.item.toAdjacencyList())))
+{4}""".format(family_name, entry, correctAtom, index + 1, entry.item.to_adjacency_list())))
 
         boo = False
         for i in range(len(tst)):
@@ -857,7 +857,7 @@ The following adjList may have atoms in a different ordering than the input file
                     bonds_to_break.append(bond)
 
             for bond in bonds_to_break:
-                copy_group.removeBond(bond)
+                copy_group.remove_bond(bond)
 
             # split group into end and backbone fragment
             groups = copy_group.split()
@@ -916,7 +916,7 @@ The following adjList may have atoms in a different ordering than the input file
                         if not labels.issubset(present_labels):
                             c.append([end_group, entry])
                     # check D
-                    mid_atoms = [group.getLabeledAtom(x)[0] for x in family.boundaryAtoms]
+                    mid_atoms = [group.get_labeled_atoms(x)[0] for x in family.boundaryAtoms]
                     path_atoms = find_shortest_path(mid_atoms[0], mid_atoms[1])
                     for atom in path_atoms:
                         if not atom.label:
@@ -925,15 +925,15 @@ The following adjList may have atoms in a different ordering than the input file
                     # check E
                     for end_group, labels in end_labels.items():
                         end_from_backbone = getEndFromBackbone(entry, labels)
-                        present_labels = end_from_backbone.getLabeledAtoms()
+                        present_labels = end_from_backbone.get_all_labeled_atoms()
                         present_labels = set(present_labels.keys())
                         if labels == present_labels:
-                            if not end_group.item.isIdentical(end_from_backbone):
+                            if not end_group.item.is_identical(end_from_backbone):
                                 e.append([end_group, entry])
                         else:
                             raise Exception(
                                 "Group {0} has split into end group {1}, but does not match any root".format(
-                                    entry.label, end_from_backbone.toAdjacencyList()))
+                                    entry.label, end_from_backbone.to_adjacency_list()))
 
                 else:
                     present_labels = set([])
@@ -1018,7 +1018,7 @@ The following adjList may have atoms in a different ordering than the input file
             for backboneRoot in backbone_roots:
                 all_backbone_groups.extend(family.get_top_level_groups(backboneRoot))
             # list of numbered of labelled atoms for all_backbone_groups
-            backbone_sizes = [len(backbone.item.getLabeledAtoms()) for backbone in all_backbone_groups]
+            backbone_sizes = [len(backbone.item.get_all_labeled_atoms()) for backbone in all_backbone_groups]
 
             # pick a backbone that is two labelled atoms larger than the smallest
             if min(backbone_sizes) + 2 in backbone_sizes:
@@ -1043,19 +1043,19 @@ The following adjList may have atoms in a different ordering than the input file
                     root = entry
                 try:
                     if merges_necessary and root not in backbone_roots:  # we may need to merge
-                        merged_group = backbone_sample.item.mergeGroups(entry.item)
-                        sample_molecule = merged_group.makeSampleMolecule()
+                        merged_group = backbone_sample.item.merge_groups(entry.item)
+                        sample_molecule = merged_group.make_sample_molecule()
                     else:
-                        sample_molecule = entry.item.makeSampleMolecule()
+                        sample_molecule = entry.item.make_sample_molecule()
 
                     # test accessibility here
-                    atoms = sample_molecule.getLabeledAtoms()
+                    atoms = sample_molecule.get_all_labeled_atoms()
                     match = family.groups.descend_tree(sample_molecule, atoms, strict=True, root=root)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, root.label)))
                     if tst1[-1][0] is not None:
                         if merges_necessary and root not in backbone_roots:
                             backbone_msg = "\n\nBackbone Group Adjlist:\n" + backbone_sample.label + '\n'
-                            backbone_msg += backbone_sample.item.toAdjacencyList()
+                            backbone_msg += backbone_sample.item.to_adjacency_list()
                         else:
                             backbone_msg = ''
                         tst2.append((entry, [match] + family.groups.ancestors(match), """
@@ -1067,13 +1067,13 @@ Origin Group AdjList:
 {4}{5}
 
 Matched group AdjList:
-{6}""".format(family_name, entry.label, match.label, sample_molecule.toAdjacencyList(), entry.item.toAdjacencyList(),
-              backbone_msg, match.item.toAdjacencyList())))
+{6}""".format(family_name, entry.label, match.label, sample_molecule.to_adjacency_list(), entry.item.to_adjacency_list(),
+              backbone_msg, match.item.to_adjacency_list())))
 
                 except UnexpectedChargeError as e:
                     if merges_necessary and root not in backbone_roots:
                         backbone_msg = "\n\nBackbone Group Adjlist:\n" + backbone_sample.label + '\n'
-                        backbone_msg += backbone_sample.item.toAdjacencyList()
+                        backbone_msg += backbone_sample.item.to_adjacency_list()
                     else:
                         backbone_msg = ''
                     tst3.append((False, """
@@ -1082,7 +1082,7 @@ Sample molecule AdjList:
 {2}
 
 Origin Group AdjList:
-{3}{4}""".format(family_name, entry.label, e.graph.toAdjacencyList(), entry.item.toAdjacencyList(), backbone_msg)))
+{3}{4}""".format(family_name, entry.label, e.graph.to_adjacency_list(), entry.item.to_adjacency_list(), backbone_msg)))
 
                 except ImplicitBenzeneError:
                     skipped.append(entryName)
@@ -1255,7 +1255,7 @@ Origin Group AdjList:
         correctly according to their strict definitions
         """
         target_label = ['Cd', 'CO', 'CS', 'Cdd']
-        target_atom_types = [atomTypes[x] for x in target_label]
+        target_atom_types = [ATOMTYPES[x] for x in target_label]
         tst = []
         for entry_name, entry in group.entries.items():
             if isinstance(entry.item, Group):
@@ -1266,7 +1266,7 @@ Origin Group AdjList:
                     else:
                         # If Cd not found in atomTypes, go to next atom
                         continue
-                    # figure out what the correct atomType is
+                    # figure out what the correct atomtype is
                     correct_atom_list = []
                     num_of_d_bonds = sum(
                         [1 if x.order[0] is 'D' and len(x.order) == 1 else 0 for x in atom.bonds.values()])
@@ -1277,18 +1277,18 @@ Origin Group AdjList:
                             # Ignore ligands that are not double bonded
                             if any([abs(2 - order) < 1e-7 for order in bond.order]):
                                 for lig_atom_type in ligand.atomType:
-                                    if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']):
+                                    if ligand.atomType[0].is_specific_case_of(ATOMTYPES['O']):
                                         correct_atom_list.append('CO')
-                                    elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']):
+                                    elif ligand.atomType[0].is_specific_case_of(ATOMTYPES['S']):
                                         correct_atom_list.append('CS')
 
                     # remove duplicates from correctAtom:
                     correct_atom_list = list(set(correct_atom_list))
                     for correctAtom in correct_atom_list:
-                        tst.append((atomTypes[correctAtom] in atom.atomType, """
+                        tst.append((ATOMTYPES[correctAtom] in atom.atomType, """
 In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
-{4}""".format(group_name, entry, correctAtom, index + 1, entry.item.toAdjacencyList())))
+{4}""".format(group_name, entry, correctAtom, index + 1, entry.item.to_adjacency_list())))
 
         boo = False
         for i in range(len(tst)):
@@ -1313,21 +1313,21 @@ The following adjList may have atoms in a different ordering than the input file
             try:
                 if isinstance(entry.item, Group):
                     try:
-                        sample_molecule = entry.item.makeSampleMolecule()
+                        sample_molecule = entry.item.make_sample_molecule()
                     except:
                         logging.error("Problem making sample molecule for group {}\n{}".format(
-                            entryName, entry.item.toAdjacencyList()))
+                            entryName, entry.item.to_adjacency_list()))
                         raise
                     # for now ignore sample atoms that use nitrogen types
                     nitrogen = False
                     for atom in sample_molecule.atoms:
-                        if atom.isNitrogen():
+                        if atom.is_nitrogen():
                             nitrogen = True
                     if nitrogen:
                         skipped.append(entryName)
                         continue
 
-                    atoms = sample_molecule.getLabeledAtoms()
+                    atoms = sample_molecule.get_all_labeled_atoms()
                     match = group.descend_tree(sample_molecule, atoms, strict=True)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, group.top[0])))
                     tst2.append((entry, [match] + group.ancestors(match), """
@@ -1343,9 +1343,9 @@ Matched group AdjList:
 """.format(group_name,
            entry,
            match,
-           sample_molecule.toAdjacencyList(),
-           entry.item.toAdjacencyList(),
-           match.item.toAdjacencyList())))
+           sample_molecule.to_adjacency_list(),
+           entry.item.to_adjacency_list(),
+           match.item.to_adjacency_list())))
 
             except UnexpectedChargeError as e:
                 tst3.append((False, """
@@ -1354,7 +1354,7 @@ Sample molecule AdjList:
 {2}
 
 Origin Group AdjList:
-{3}""".format(group_name, entry.label, e.graph.toAdjacencyList(), entry.item.toAdjacencyList())))
+{3}""".format(group_name, entry.label, e.graph.to_adjacency_list(), entry.item.to_adjacency_list())))
 
             except ImplicitBenzeneError:
                 skipped.append(entryName)

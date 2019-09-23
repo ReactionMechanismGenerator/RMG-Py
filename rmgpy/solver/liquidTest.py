@@ -64,7 +64,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         self.CH4 = Species(
-            molecule=[Molecule().fromSMILES("C")],
+            molecule=[Molecule().from_smiles("C")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
                 Cpdata=([8.615, 9.687, 10.963, 12.301, 14.841, 16.976, 20.528], "cal/(mol*K)"),
@@ -72,7 +72,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 S298=(44.472, "cal/(mol*K)"))
         )
         self.CH3 = Species(
-            molecule=[Molecule().fromSMILES("[CH3]")],
+            molecule=[Molecule().from_smiles("[CH3]")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
                 Cpdata=([9.397, 10.123, 10.856, 11.571, 12.899, 14.055, 16.195], "cal/(mol*K)"),
@@ -80,7 +80,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 S298=(45.174, "cal/(mol*K)"))
         )
         self.C2H6 = Species(
-            molecule=[Molecule().fromSMILES("CC")],
+            molecule=[Molecule().from_smiles("CC")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
                 Cpdata=([12.684, 15.506, 18.326, 20.971, 25.500, 29.016, 34.595], "cal/(mol*K)"),
@@ -88,7 +88,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 S298=(54.799, "cal/(mol*K)"))
         )
         self.C2H5 = Species(
-            molecule=[Molecule().fromSMILES("C[CH2]")],
+            molecule=[Molecule().from_smiles("C[CH2]")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
                 Cpdata=([11.635, 13.744, 16.085, 18.246, 21.885, 24.676, 29.107], "cal/(mol*K)"),
@@ -97,7 +97,7 @@ class LiquidReactorCheck(unittest.TestCase):
         )
 
         self.H2 = Species(
-            molecule=[Molecule().fromSMILES("[H][H]")],
+            molecule=[Molecule().from_smiles("[H][H]")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
                 Cpdata=([6.89, 6.97, 6.99, 7.01, 7.08, 7.22, 7.72], "cal/(mol*K)"),
@@ -289,14 +289,14 @@ class LiquidReactorCheck(unittest.TestCase):
             # The forward finite difference is very unstable for reactions
             # 6 and 7. Use Jacobians calculated by hand instead.
             elif rxn_num == 6:
-                kforward = rxn.getRateCoefficient(self.T)
+                kforward = rxn.get_rate_coefficient(self.T)
                 kreverse = kforward / rxn.getEquilibriumConstant(self.T)
                 jacobian = jacobian_rxn6(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):
                         self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j]))
             elif rxn_num == 7:
-                kforward = rxn.getRateCoefficient(self.T)
+                kforward = rxn.get_rate_coefficient(self.T)
                 kreverse = kforward / rxn.getEquilibriumConstant(self.T)
                 jacobian = jacobian_rxn7(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
@@ -357,9 +357,9 @@ class LiquidReactorCheck(unittest.TestCase):
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
         for i in range(len(rxn_list)):
-            k0 = rxn_list[i].getRateCoefficient(self.T)
+            k0 = rxn_list[i].get_rate_coefficient(self.T)
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
-            dk = rxn_list[i].getRateCoefficient(self.T) - k0
+            dk = rxn_list[i].get_rate_coefficient(self.T) - k0
 
             rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
             rxn_system.initializeModel(core_species, core_reactions, edge_species, edge_reactions)

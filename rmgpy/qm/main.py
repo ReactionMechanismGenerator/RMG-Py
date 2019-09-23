@@ -233,15 +233,15 @@ class QMCalculator(object):
         """
         mol_list = []
         for spc in spc_list:
-            if spc.molecule[0].getRadicalCount() > self.settings.maxRadicalNumber:
+            if spc.molecule[0].get_radical_count() > self.settings.maxRadicalNumber:
                 for molecule in spc.molecule:
-                    if self.settings.onlyCyclics and molecule.isCyclic():
+                    if self.settings.onlyCyclics and molecule.is_cyclic():
                         saturated_mol = molecule.copy(deep=True)
                         saturated_mol.saturate_radicals()
                         if saturated_mol not in mol_list:
                             mol_list.append(saturated_mol)
             else:
-                if self.settings.onlyCyclics and spc.molecule[0].isCyclic():
+                if self.settings.onlyCyclics and spc.molecule[0].is_cyclic():
                     if spc.molecule[0] not in mol_list:
                         mol_list.append(spc.molecule[0])
         if mol_list:
@@ -269,7 +269,7 @@ def _write_QMfiles(quantumMechanics, mol):
     """
     If quantumMechanics is turned on thermo is calculated in parallel here.
     """
-    quantumMechanics.getThermoData(mol)
+    quantumMechanics.get_thermo_data(mol)
 
 
 def save(rmg):

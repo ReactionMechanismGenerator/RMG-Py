@@ -170,9 +170,9 @@ class Gaussian:
         # Compare the optimized geometry to the original molecule
         qm_data = self.parse()
         cclib_mol = Molecule()
-        cclib_mol.fromXYZ(qm_data.atomicNumbers, qm_data.atomCoords.value)
-        test_mol = self.molecule.toSingleBonds()
-        if not cclib_mol.isIsomorphic(test_mol):
+        cclib_mol.from_xyz(qm_data.atomicNumbers, qm_data.atomCoords.value)
+        test_mol = self.molecule.to_single_bonds()
+        if not cclib_mol.is_isomorphic(test_mol):
             logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
             return False
 
@@ -186,7 +186,7 @@ class Gaussian:
         parser = cclib.parser.Gaussian(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclib_data = parser.parse()
-        radical_number = sum([i.radicalElectrons for i in self.molecule.atoms])
+        radical_number = sum([i.radical_electrons for i in self.molecule.atoms])
         qm_data = parseCCLibData(cclib_data, radical_number + 1)
         return qm_data
 
@@ -218,7 +218,7 @@ class GaussianMol(QMMolecule, Gaussian):
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
 
         output = ['', self.geometry.uniqueIDlong, '']
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1)))
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.get_radical_count() + 1)))
 
         atom_count = 0
         with open(molfile) as molinput:
@@ -261,16 +261,16 @@ class GaussianMol(QMMolecule, Gaussian):
             for attempt in range(1, self.maxAttempts + 1):
                 self.writeInputFile(attempt)
                 logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts,
-                                                                                     self.molecule.toSMILES(),
+                                                                                     self.molecule.to_smiles(),
                                                                                      self.__class__.__name__))
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts,
-                                                                                       self.molecule.toAugmentedInChI()))
+                                                                                       self.molecule.to_augmented_inchi()))
                     source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt)
                     break
             else:
-                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.to_augmented_inchi()))
                 return None
         result = self.parse()  # parsed in cclib
         result.source = source

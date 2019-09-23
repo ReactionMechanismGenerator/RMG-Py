@@ -119,7 +119,7 @@ class CanteraCondition(object):
         # ConvertMolFrac to SMILES for keys for display
         pretty_mol_frac = {}
         for key, value in self.molFrac.items():
-            pretty_mol_frac[key.molecule[0].toSMILES()] = value
+            pretty_mol_frac[key.molecule[0].to_smiles()] = value
         string += 'Initial Mole Fractions: {0}'.format(pretty_mol_frac.__repr__())
         return string
 
@@ -253,14 +253,14 @@ class Cantera(object):
         Load a cantera Solution model from the job's own speciesList and reactionList attributes
         """
 
-        ct_species = [spec.toCantera(useChemkinIdentifier=True) for spec in self.speciesList]
+        ct_species = [spec.to_cantera(use_chemkin_identifier=True) for spec in self.speciesList]
 
         self.reactionMap = {}
         ct_reactions = []
         for rxn in self.reactionList:
             index = len(ct_reactions)
 
-            converted_reactions = rxn.toCantera(self.speciesList, useChemkinIdentifier=True)
+            converted_reactions = rxn.to_cantera(self.speciesList, use_chemkin_identifier=True)
 
             if isinstance(converted_reactions, list):
                 indices = list(range(index, index + len(converted_reactions)))
@@ -313,7 +313,7 @@ class Cantera(object):
         is generated directly from rmg objects and not from a chemkin file)
         """
         indices = self.reactionMap[rmgReactionIndex]
-        modified_ct_reactions = rmgReaction.toCantera(self.speciesList, useChemkinIdentifier=True)
+        modified_ct_reactions = rmgReaction.to_cantera(self.speciesList, use_chemkin_identifier=True)
         if not isinstance(modified_ct_reactions, list):
             modified_ct_reactions = [modified_ct_reactions]
 
@@ -326,7 +326,7 @@ class Cantera(object):
         `rmgSpecies` object, given the `rmgSpeciesIndex` which indicates the
         index at which this species appears in the `speciesList`
         """
-        modified_ct_species = rmgSpecies.toCantera(useChemkinIdentifier=useChemkinIdentifier)
+        modified_ct_species = rmgSpecies.to_cantera(use_chemkin_identifier=useChemkinIdentifier)
         ct_species = self.model.species(rmgSpeciesIndex)
         ct_species.thermo = modified_ct_species.thermo
 
@@ -366,7 +366,7 @@ class Cantera(object):
                 ReactionSensitivityPlot(xVar=time,
                                         yVar=reaction_sensitivity_data[j * num_ct_reactions:(j + 1) * num_ct_reactions],
                                         numReactions=topSensitiveReactions).barplot(
-                    os.path.join(self.outputDirectory, '{0}_{1}_sensitivity.png'.format(i + 1, species.toChemkin())))
+                    os.path.join(self.outputDirectory, '{0}_{1}_sensitivity.png'.format(i + 1, species.to_chemkin())))
 
     def simulate(self):
         """
@@ -465,7 +465,7 @@ class Cantera(object):
                     for index, species in enumerate(self.sensitiveSpecies):
                         for j in range(num_ct_reactions):
                             sensitivity_array[num_ct_reactions * index + j] = cantera_simulation.sensitivity(
-                                species.toChemkin(), j)
+                                species.to_chemkin(), j)
 
                             for i in range(len(mass_frac_sensitivity_array)):
                                 if i not in inert_index_list:
@@ -504,7 +504,7 @@ class Cantera(object):
             for index, species in enumerate(self.sensitiveSpecies):
                 for j in range(num_ct_reactions):
                     reaction_sensitivity_generic_data = GenericData(
-                        label='dln[{0}]/dln[k{1}]: {2}'.format(species.toChemkin(), j + 1, self.model.reactions()[j]),
+                        label='dln[{0}]/dln[k{1}]: {2}'.format(species.to_chemkin(), j + 1, self.model.reactions()[j]),
                         species=species,
                         reaction=self.model.reactions()[j],
                         data=sensitivity_data[:, num_ct_reactions * index + j],
@@ -534,10 +534,10 @@ def getRMGSpeciesFromUserSpecies(userList, RMGList):
         user_species.generate_resonance_structures()
 
         for rmgSpecies in RMGList:
-            if user_species.isIsomorphic(rmgSpecies):
+            if user_species.is_isomorphic(rmgSpecies):
                 if user_species in mapping:
                     raise KeyError("The Species with SMIlES {0} has appeared twice in the species list!".format(
-                        user_species.molecule[0].toSMILES()))
+                        user_species.molecule[0].to_smiles()))
                 mapping[user_species] = rmgSpecies
                 break
         else:

@@ -159,7 +159,7 @@ class RMGDatabase(object):
                 library_order.append((library, 'Reaction Library'))
 
         self.kinetics = KineticsDatabase()
-        self.kinetics.libraryOrder = library_order
+        self.kinetics.library_order = library_order
         self.kinetics.load(path,
                            families=kineticsFamilies,
                            libraries=kinetics_libraries,
@@ -188,7 +188,7 @@ class RMGDatabase(object):
         points to the top-level folder of the old RMG database.
         """
         self.thermo = ThermoDatabase()
-        self.thermo.loadOld(path)
+        self.thermo.load_old(path)
         self.transport = TransportDatabase()
         # self.transport.load_old(path)   #  Currently no load_old import function available for transport groups
         self.forbiddenStructures = ForbiddenStructures()
@@ -196,7 +196,7 @@ class RMGDatabase(object):
         self.kinetics = KineticsDatabase()
         self.kinetics.load_old(path)
         self.statmech = StatmechDatabase()
-        self.statmech.loadOld(path)
+        self.statmech.load_old(path)
         self.solvation = SolvationDatabase()
         # Not completely implemented
         # self.solvation.load_old(path)
@@ -215,7 +215,7 @@ class RMGDatabase(object):
         self.solvation.save(os.path.join(path, 'solvation'))
         self.transport.save(os.path.join(path, 'transport'))
 
-    def saveOld(self, path):
+    def save_old(self, path):
         """
         Save the old RMG database to the given `path` on disk.
         """

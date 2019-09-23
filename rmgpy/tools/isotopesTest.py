@@ -90,7 +90,7 @@ class IsotopesTest(unittest.TestCase):
         Test that isotope partitioning algorithm work with Reaction Objects.
         """
 
-        eth = Species().fromAdjacencyList("""
+        eth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -101,7 +101,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -112,7 +112,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        meth = Species().fromAdjacencyList("""
+        meth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
@@ -137,7 +137,7 @@ class IsotopesTest(unittest.TestCase):
         Test that isotope partitioning algorithm works with Reaction objects
         """
 
-        eth = Species().fromAdjacencyList("""
+        eth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -148,7 +148,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -159,7 +159,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        meth = Species().fromAdjacencyList("""
+        meth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
@@ -197,7 +197,7 @@ class IsotopesTest(unittest.TestCase):
         Test that remove isotope algorithm works with Reaction objects.
         """
 
-        eth = Species().fromAdjacencyList("""
+        eth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -208,7 +208,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -222,14 +222,14 @@ class IsotopesTest(unittest.TestCase):
         labeled_rxn = Reaction(reactants=[ethi], products=[ethi])
         stripped = remove_isotope(labeled_rxn)
 
-        self.assertTrue(unlabeled_rxn.isIsomorphic(stripped))
+        self.assertTrue(unlabeled_rxn.is_isomorphic(stripped))
 
     def testRemoveIsotopeForSpecies(self):
         """
         Test that remove isotope algorithm works with Species.
         """
 
-        eth = Species().fromAdjacencyList("""
+        eth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -240,7 +240,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -253,14 +253,14 @@ class IsotopesTest(unittest.TestCase):
 
         stripped = remove_isotope(ethi)
 
-        self.assertTrue(eth.isIsomorphic(stripped))
+        self.assertTrue(eth.is_isomorphic(stripped))
 
     def testInplaceRemoveIsotopeForReactions(self):
         """
         Test that removeIsotope and redoIsotope works with reactions
         """
 
-        eth = Species().fromAdjacencyList("""
+        eth = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -271,7 +271,7 @@ class IsotopesTest(unittest.TestCase):
 8 H u0 p0 c0 {2,S}
 """)
 
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -286,11 +286,11 @@ class IsotopesTest(unittest.TestCase):
         stored_labeled_rxn = labeled_rxn.copy()
         modified_atoms = remove_isotope(labeled_rxn, inplace=True)
 
-        self.assertTrue(unlabeled_rxn.isIsomorphic(labeled_rxn))
+        self.assertTrue(unlabeled_rxn.is_isomorphic(labeled_rxn))
 
         redo_isotope(modified_atoms)
 
-        self.assertTrue(stored_labeled_rxn.isIsomorphic(labeled_rxn))
+        self.assertTrue(stored_labeled_rxn.is_isomorphic(labeled_rxn))
 
     def testEnsureReactionDirection(self):
         """
@@ -299,16 +299,16 @@ class IsotopesTest(unittest.TestCase):
 
         # get reactions
 
-        methyl = Species().fromSMILES('[CH3]')
-        methyli = Species().fromAdjacencyList("""
+        methyl = Species().from_smiles('[CH3]')
+        methyli = Species().from_adjacency_list("""
 multiplicity 2
 1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 """)
-        methane = Species().fromSMILES('C')
-        methanei = Species().fromAdjacencyList("""
+        methane = Species().from_smiles('C')
+        methanei = Species().from_adjacency_list("""
 1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
@@ -316,8 +316,8 @@ multiplicity 2
 5 H u0 p0 c0 {1,S}
 """)
 
-        dipropyl = Species().fromSMILES('[CH2]C[CH2]')
-        dipropyli = Species().fromAdjacencyList("""
+        dipropyl = Species().from_smiles('[CH2]C[CH2]')
+        dipropyli = Species().from_adjacency_list("""
 multiplicity 3
 1 C u1 p0 c0 {2,S} {3,S} {4,S}
 2 H u0 p0 c0 {1,S}
@@ -330,8 +330,8 @@ multiplicity 3
 9 H u0 p0 c0 {4,S}
 """)
 
-        propyl = Species().fromSMILES('CC[CH2]')
-        propyli = Species().fromAdjacencyList("""
+        propyl = Species().from_smiles('CC[CH2]')
+        propyli = Species().from_adjacency_list("""
 multiplicity 2
 1  C u1 p0 c0 i13 {2,S} {3,S} {4,S}
 2  H u0 p0 c0 {1,S}
@@ -393,7 +393,7 @@ multiplicity 2
                             msg='ensureReactionDirection didnt flip the proper reactants and products')
 
             # ensure kinetics is correct
-            if any([dipropyli.isIsomorphic(reactant) for reactant in rxn.reactants]):
+            if any([dipropyli.is_isomorphic(reactant) for reactant in rxn.reactants]):
                 self.assertAlmostEqual(rxn.kinetics.A.value, 0.5,
                                        msg='The A value returned, {0}, is incorrect. '
                                            'Check the reactions degeneracy and how A.value is obtained. '
@@ -407,15 +407,15 @@ multiplicity 2
     def test_ensure_reaction_direction_with_multiple_TS(self):
         """Tests that ensure reaction direction can handle multiple transition states"""
         family = self.database.kinetics.families['intra_H_migration']
-        r = Molecule().fromSMILES("[CH2]CCC")
-        p = Molecule().fromSMILES("C[CH]CC")
+        r = Molecule().from_smiles("[CH2]CCC")
+        p = Molecule().from_smiles("C[CH]CC")
         rxn = TemplateReaction(reactants=[r], products=[p])
         family.add_atom_labels_for_reaction(reaction=rxn)
         rxn.template = family.get_reaction_template_labels(reaction=rxn)
         rxn.degeneracy = family.calculate_degeneracy(rxn)
         rxn.family = 'intra_H_migration'
         rxn.kinetics = Arrhenius(A=(1, 's^-1'))
-        ri = Molecule().fromAdjacencyList("""
+        ri = Molecule().from_adjacency_list("""
 multiplicity 2
 1  C u1 p0 c0 {2,S} {3,S} {4,S}
 2  H u0 p0 c0 {1,S}
@@ -431,7 +431,7 @@ multiplicity 2
 12 H u0 p0 c0 {6,S}
 13 H u0 p0 c0 {6,S}
 """)
-        pi = Molecule().fromAdjacencyList("""
+        pi = Molecule().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u1 p0 c0 i13 {1,S} {3,S} {4,S}
@@ -466,7 +466,7 @@ multiplicity 2
         """
         Test that compareIsotomers works on species objects
         """
-        ethii = Species().fromAdjacencyList("""
+        ethii = Species().from_adjacency_list("""
 1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -476,7 +476,7 @@ multiplicity 2
 7 H u0 p0 c0 {2,S}
 8 H u0 p0 c0 {2,S}
 """)
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -492,7 +492,7 @@ multiplicity 2
         """
         Test that compareIsotomers works on species objects
         """
-        ethii = Species().fromAdjacencyList("""
+        ethii = Species().from_adjacency_list("""
 1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -502,7 +502,7 @@ multiplicity 2
 7 H u0 p0 c0 {2,S}
 8 H u0 p0 c0 {2,S}
 """)
-        ethi = Species().fromAdjacencyList("""
+        ethi = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -523,7 +523,7 @@ multiplicity 2
         """
         Test that compareIsotomers fails on species objects
         """
-        ethane = Species().fromAdjacencyList("""
+        ethane = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
 3 H u0 p0 c0 {1,S}
@@ -533,7 +533,7 @@ multiplicity 2
 7 H u0 p0 c0 {2,S}
 8 H u0 p0 c0 {2,S}
 """)
-        ethenei = Species().fromAdjacencyList("""
+        ethenei = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,D} {3,S} {4,S}
 2 C u0 p0 c0 i13 {1,D} {6,S} {5,S}
 3 H u0 p0 c0 {1,S}
@@ -547,15 +547,15 @@ multiplicity 2
         """
         Test that compareIsotomers works on different reaction objects
         """
-        h = Species().fromAdjacencyList("""
+        h = Species().from_adjacency_list("""
 multiplicity 2
 1 H u1 p0 c0
 """)
-        h2 = Species().fromAdjacencyList("""
+        h2 = Species().from_adjacency_list("""
 1 H u0 p0 c0 {2,S}
 2 H u0 p0 c0 {1,S}
 """)
-        propanei = Species().fromAdjacencyList("""
+        propanei = Species().from_adjacency_list("""
 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
 3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
@@ -568,7 +568,7 @@ multiplicity 2
 10 H u0 p0 c0 {3,S}
 11 H u0 p0 c0 {3,S}
 """)
-        propane = Species().fromAdjacencyList("""
+        propane = Species().from_adjacency_list("""
 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
 3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
@@ -581,7 +581,7 @@ multiplicity 2
 10 H u0 p0 c0 {3,S}
 11 H u0 p0 c0 {3,S}
 """)
-        npropyli = Species().fromAdjacencyList("""
+        npropyli = Species().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
@@ -594,7 +594,7 @@ multiplicity 2
 9  H u0 p0 c0 {2,S}
 10 H u0 p0 c0 {2,S}
 """)
-        npropyl = Species().fromAdjacencyList("""
+        npropyl = Species().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
@@ -620,15 +620,15 @@ multiplicity 2
         """
         Test that compareIsotomers fails on different reaction objects
         """
-        h = Species().fromAdjacencyList("""
+        h = Species().from_adjacency_list("""
 multiplicity 2
 1 H u1 p0 c0
 """)
-        h2 = Species().fromAdjacencyList("""
+        h2 = Species().from_adjacency_list("""
 1 H u0 p0 c0 {2,S}
 2 H u0 p0 c0 {1,S}
 """)
-        propanei = Species().fromAdjacencyList("""
+        propanei = Species().from_adjacency_list("""
 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
 3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
@@ -641,7 +641,7 @@ multiplicity 2
 10 H u0 p0 c0 {3,S}
 11 H u0 p0 c0 {3,S}
 """)
-        propane = Species().fromAdjacencyList("""
+        propane = Species().from_adjacency_list("""
 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
 3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
@@ -654,7 +654,7 @@ multiplicity 2
 10 H u0 p0 c0 {3,S}
 11 H u0 p0 c0 {3,S}
 """)
-        npropyli = Species().fromAdjacencyList("""
+        npropyli = Species().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
@@ -688,7 +688,7 @@ multiplicity 2
         from rmgpy.thermo.nasa import NASA, NASAPolynomial
         from copy import deepcopy
         from rmgpy import constants
-        propanei = Species().fromAdjacencyList("""
+        propanei = Species().from_adjacency_list("""
 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
 3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
@@ -701,7 +701,7 @@ multiplicity 2
 10 H u0 p0 c0 {3,S}
 11 H u0 p0 c0 {3,S}
 """)
-        propane = Species().fromAdjacencyList("""
+        propane = Species().from_adjacency_list("""
 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
 3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
@@ -736,7 +736,7 @@ multiplicity 2
         """
         from rmgpy.thermo.nasa import NASAPolynomial, NASA
 
-        spc = Species().fromSMILES('CC')
+        spc = Species().from_smiles('CC')
 
         polynomial = NASAPolynomial(coeffs=[1., 1., 1., 1., 1., 1., 1.],
                                     Tmin=(200, 'K'), Tmax=(1600, 'K'), E0=(1., 'kJ/mol'),
@@ -762,7 +762,7 @@ multiplicity 2
         """
         ensures the Enriched method functions
         """
-        npropyl = Species().fromAdjacencyList("""
+        npropyl = Species().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
@@ -775,7 +775,7 @@ multiplicity 2
 9  H u0 p0 c0 {2,S}
 10 H u0 p0 c0 {2,S}
 """)
-        npropyli = Species().fromAdjacencyList("""
+        npropyli = Species().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u0 p0 c0 i13 {1,S} {3,S} {9,S} {10,S}
@@ -807,16 +807,16 @@ multiplicity 2
         """
         tests to ensure that get_labeled_reactants returns labeled reactants
         """
-        reactant_pair = [Species().fromSMILES("C"), Species().fromSMILES("[H]")]
-        product_pair = [Species().fromSMILES("[H][H]"), Species().fromSMILES("[CH3]")]
+        reactant_pair = [Species().from_smiles("C"), Species().from_smiles("[H]")]
+        product_pair = [Species().from_smiles("[H][H]"), Species().from_smiles("[CH3]")]
         rxn = TemplateReaction(reactants=reactant_pair,
                                products=product_pair,
                                family='H_Abstraction')
         labeled_reactants = get_labeled_reactants(rxn, self.family)
-        r1_labels = labeled_reactants[0].getLabeledAtoms()
+        r1_labels = labeled_reactants[0].get_all_labeled_atoms()
         self.assertIn("*1", list(r1_labels.keys()))
         self.assertIn("*2", list(r1_labels.keys()))
-        r2_labels = labeled_reactants[1].getLabeledAtoms()
+        r2_labels = labeled_reactants[1].get_all_labeled_atoms()
         self.assertIn("*3", list(r2_labels.keys()))
 
     def testGetReducedMass(self):
@@ -825,14 +825,14 @@ multiplicity 2
         """
         labels = ['*1', '*3']
         reactants = [
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 1 *1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 *2 H u0 p0 c0 {1,S}
 3    H u0 p0 c0 {1,S}
 4    H u0 p0 c0 {1,S}
 5    H u0 p0 c0 {1,S}
 """),
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 multiplicity 2
 1 *3 H u1 p0 c0
 """)]
@@ -845,14 +845,14 @@ multiplicity 2
         """
         labels = ['*1', '*3']
         reactants = [
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 1 *1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
 2 *2 H u0 p0 c0 {1,S}
 3    H u0 p0 c0 {1,S}
 4    H u0 p0 c0 {1,S}
 5    H u0 p0 c0 {1,S}
 """),
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 multiplicity 2
 1 *3 H u1 p0 c0
 """)]
@@ -860,30 +860,30 @@ multiplicity 2
         self.assertAlmostEqual(reduced_mass, 1 / (1 / 1.008 + 1 / (1.008 + 13.01)) / 1000, places=6)
 
     def testGetKineticIsotopeEffectSimple(self):
-        reactant_pair = [Species().fromSMILES("C"), Species().fromSMILES("[H]")]
-        product_pair = [Species().fromSMILES("[H][H]"), Species().fromSMILES("[CH3]")]
+        reactant_pair = [Species().from_smiles("C"), Species().from_smiles("[H]")]
+        product_pair = [Species().from_smiles("[H][H]"), Species().from_smiles("[CH3]")]
         rxn_unlabeled = TemplateReaction(reactants=reactant_pair,
                                          products=product_pair,
                                          family='H_Abstraction',
                                          kinetics=Arrhenius(A=(1e5, 'cm^3/(mol*s)'), Ea=(0, 'J/mol')))
         rxn_labeled = TemplateReaction(reactants=[
-            Species().fromAdjacencyList("""
+            Species().from_adjacency_list("""
 1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 """),
-            Species().fromAdjacencyList("""
+            Species().from_adjacency_list("""
 multiplicity 2
 1 H u1 p0 c0
 """)],
                                        products=[
-            Species().fromAdjacencyList("""
+            Species().from_adjacency_list("""
 1 H u0 p0 c0 {2,S}
 2 H u0 p0 c0 {1,S}
 """),
-            Species().fromAdjacencyList("""
+            Species().from_adjacency_list("""
 multiplicity 2
 1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
 2 H u0 p0 c0 {1,S}
@@ -901,35 +901,35 @@ multiplicity 2
         """
         shows that all isotope reactions are created with generateIsotopeReactions
         """
-        methyl = Species().fromSMILES('[CH3]')
-        methyli = Species().fromAdjacencyList("""
+        methyl = Species().from_smiles('[CH3]')
+        methyli = Species().from_adjacency_list("""
 multiplicity 2
 1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 """)
-        methane = Species().fromAdjacencyList("""
+        methane = Species().from_adjacency_list("""
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 """)
-        methanei = Species().fromAdjacencyList("""
+        methanei = Species().from_adjacency_list("""
 1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 """)
-        craigie = Species().fromAdjacencyList("""
+        craigie = Species().from_adjacency_list("""
 multiplicity 3
 1 C u2 p0 c0 {2,S} {3,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 """)
-        craigiei = Species().fromAdjacencyList("""
+        craigiei = Species().from_adjacency_list("""
 multiplicity 3
 1 C u2 p0 c0 i13 {2,S} {3,S}
 2 H u0 p0 c0 {1,S}
@@ -965,13 +965,13 @@ multiplicity 3
         with limits of two isotopes per molecule
         """
         max_number_labels = 1
-        methyl = Species().fromSMILES('[CH3]')
+        methyl = Species().from_smiles('[CH3]')
         methyl_isotopologues = [methyl] + generate_isotopomers(methyl, max_number_labels)
-        methane = Species().fromSMILES('C')
+        methane = Species().from_smiles('C')
         methane_isotopologues = [methane] + generate_isotopomers(methane, max_number_labels)
-        ethyl = Species().fromSMILES('C[CH2]')
+        ethyl = Species().from_smiles('C[CH2]')
         ethyl_isotopologues = [ethyl] + generate_isotopomers(ethyl, max_number_labels)
-        ethane = Species().fromSMILES('CC')
+        ethane = Species().from_smiles('CC')
         ethane_isotopologues = [ethane] + generate_isotopomers(ethane, max_number_labels)
 
         self.assertEqual(len(methyl_isotopologues), 2)

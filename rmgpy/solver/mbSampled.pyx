@@ -225,7 +225,7 @@ cdef class MBSampledReactor(ReactionSystem):
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
             Peff = self.calculate_effective_pressure(rxn)
-            self.kf[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
+            self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, Peff)
 
             if rxn.reversible:
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)

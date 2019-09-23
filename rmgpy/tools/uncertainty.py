@@ -346,11 +346,11 @@ class Uncertainty(object):
         """
 
         molecule = species.molecule[0]
-        assert molecule.isRadical(), "Method only valid for radicals."
+        assert molecule.is_radical(), "Method only valid for radicals."
         saturated_struct = molecule.copy(deep=True)
         saturated_struct.saturate_radicals()
         for otherSpecies in self.speciesList:
-            if otherSpecies.isIsomorphic(saturated_struct):
+            if otherSpecies.is_isomorphic(saturated_struct):
                 return otherSpecies, False
 
         # couldn't find saturated species in the model, try libraries
@@ -520,13 +520,13 @@ class Uncertainty(object):
                 if 'Library' in source:
                     pdG = gParamEngine.getPartialUncertaintyValue(source, 'Library', corrParam=source['Library'])
                     try:
-                        label = 'Library {}'.format(self.speciesList[source['Library']].toChemkin())
+                        label = 'Library {}'.format(self.speciesList[source['Library']].to_chemkin())
                     except IndexError:
-                        label = 'Library {}'.format(self.extraSpecies[source['Library'] - len(self.speciesList)].toChemkin())
+                        label = 'Library {}'.format(self.extraSpecies[source['Library'] - len(self.speciesList)].to_chemkin())
                     dG[label] = pdG
                 if 'QM' in source:
                     pdG = gParamEngine.getPartialUncertaintyValue(source, 'QM', corrParam=source['QM'])
-                    label = 'QM {}'.format(self.speciesList[source['QM']].toChemkin())
+                    label = 'QM {}'.format(self.speciesList[source['QM']].to_chemkin())
                     dG[label] = pdG
                 if 'GAV' in source:
                     for groupType, groupList in source['GAV'].items():
@@ -537,7 +537,7 @@ class Uncertainty(object):
                     # We also know if there is group additivity used, there will be uncorrelated estimation error
                     est_pdG = gParamEngine.getPartialUncertaintyValue(source, 'Estimation')
                     if est_pdG:
-                        label = 'Estimation {}'.format(species.toChemkin())
+                        label = 'Estimation {}'.format(species.to_chemkin())
                         dG[label] = est_pdG
                 self.thermoInputUncertainties.append(dG)
 
@@ -568,23 +568,23 @@ class Uncertainty(object):
                     # There is also estimation error if rate rules are used
                     est_dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Estimation')
                     if est_dplnk:
-                        label = 'Estimation {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
+                        label = 'Estimation {}'.format(reaction.to_chemkin(self.speciesList, kinetics=False))
                         dlnk[label] = est_dplnk
 
                 elif 'PDep' in source:
                     dplnk = kParamEngine.getPartialUncertaintyValue(source, 'PDep', source['PDep'])
-                    label = 'PDep {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
+                    label = 'PDep {}'.format(reaction.to_chemkin(self.speciesList, kinetics=False))
                     dlnk[label] = dplnk
 
                 elif 'Library' in source:
                     dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Library', source['Library'])
-                    label = 'Library {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
+                    label = 'Library {}'.format(reaction.to_chemkin(self.speciesList, kinetics=False))
                     dlnk[label] = dplnk
 
                 elif 'Training' in source:
                     dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Training', source['Training'])
                     family = source['Training'][0]
-                    label = 'Training {} {}'.format(family, reaction.toChemkin(self.speciesList, kinetics=False))
+                    label = 'Training {} {}'.format(family, reaction.to_chemkin(self.speciesList, kinetics=False))
                     dlnk[label] = dplnk
 
                 self.kineticInputUncertainties.append(dlnk)
@@ -668,7 +668,7 @@ class Uncertainty(object):
             for data in data_list:
                 if data.species:
                     for species in self.speciesList:
-                        if species.toChemkin() == data.species:
+                        if species.to_chemkin() == data.species:
                             index = self.speciesList.index(species)
                             break
                     else:
@@ -726,8 +726,8 @@ class Uncertainty(object):
                 except OSError as e:
                     raise OSError('Uncertainty output directory could not be created: {0}'.format(e.message))
 
-            r_path = os.path.join(folder, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
-            t_path = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            r_path = os.path.join(folder, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.to_chemkin()) + fileformat)
+            t_path = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sensSpecies.to_chemkin()) + fileformat)
             reaction_uncertainty = ReactionSensitivityPlot(xVar=time, yVar=reaction_data_list, numReactions=number).uncertaintyPlot(total_variance, filename=r_path)
             thermo_uncertainty = ThermoSensitivityPlot(xVar=time, yVar=thermo_data_list, numSpecies=number).uncertaintyPlot(total_variance, filename=t_path)
 

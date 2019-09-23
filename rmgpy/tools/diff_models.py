@@ -78,7 +78,7 @@ def compareModelKinetics(model1, model2):
     common_reactions = {}
     for rxn1 in model1.reactions:
         for rxn2 in model2.reactions:
-            if rxn1.isIsomorphic(rxn2):
+            if rxn1.is_isomorphic(rxn2):
                 common_reactions[rxn1] = rxn2
                 model2.reactions.remove(rxn2)
                 break
@@ -101,7 +101,7 @@ def compareModelKinetics(model1, model2):
     kinetics2 = []
     for rxn1, rxn2 in common_reactions.items():
         kinetics1.append(rxn1.get_rate_coefficient(T, P))
-        if rxn1.isIsomorphic(rxn2, eitherDirection=False):
+        if rxn1.is_isomorphic(rxn2, either_direction=False):
             kinetics2.append(rxn2.get_rate_coefficient(T, P))
         else:
             kinetics2.append(rxn2.get_rate_coefficient(T, P) / rxn2.getEquilibriumConstant(T))
@@ -143,7 +143,7 @@ def compareModelSpecies(model1, model2):
 
     for spec2 in model2.species:
         for spec1 in unique_species1[:]:  # make a copy so you don't remove from the list you are iterating over
-            if spec1.isIsomorphic(spec2):
+            if spec1.is_isomorphic(spec2):
                 common_species.append([spec1, spec2])
                 unique_species1.remove(spec1)
                 break
@@ -189,7 +189,7 @@ def compareModelReactions(model1, model2):
     unique_reactions2 = []
     for rxn1 in reaction_list1:
         for rxn2 in reaction_list2[:]:  # make a copy so you don't remove from the list you are iterating over
-            if rxn1.isIsomorphic(rxn2):
+            if rxn1.is_isomorphic(rxn2):
                 common_reactions.append([rxn1, rxn2])
                 # Remove reaction 2 from being chosen a second time.
                 # Let each reaction only appear only once in the diff comparison.
@@ -358,7 +358,7 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
         for spec1, spec2 in common_species:
             logging.info('    {0!s}'.format(spec1))
             if spec1.thermo and spec2.thermo:
-                spec1.molecule[0].getSymmetryNumber()
+                spec1.molecule[0].get_symmetry_number()
                 logging.info(
                     '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format(
                         spec1.thermo.getEnthalpy(300) / 4184.,

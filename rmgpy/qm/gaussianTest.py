@@ -42,7 +42,7 @@ from rmgpy.qm.main import QMCalculator
 executablePath = Gaussian.executablePath
 NO_GAUSSIAN = not os.path.exists(executablePath)
 
-mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
 
 class TestGaussianMolPM3(unittest.TestCase):

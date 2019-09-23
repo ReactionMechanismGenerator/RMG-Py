@@ -182,9 +182,9 @@ def fit_statmech_direct(Tlist, Cvlist, n_vib, n_rot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for '
-                        '{0}.'.format(molecule.toSMILES()))
+                        '{0}.'.format(molecule.to_smiles()))
     elif igo > 8:
-        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.to_smiles()))
     logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(n_vib, n_rot))
     logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
@@ -239,9 +239,9 @@ def fit_statmech_pseudo_rotors(Tlist, Cvlist, n_vib, n_rot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for '
-                        '{0}.'.format(molecule.toSMILES()))
+                        '{0}.'.format(molecule.to_smiles()))
     if igo > 8:
-        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.to_smiles()))
     logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(n_vib, n_rot))
     logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
@@ -300,9 +300,9 @@ def fit_statmech_pseudo(Tlist, Cvlist, n_vib, n_rot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for '
-                        '{0}.'.format(molecule.toSMILES()))
+                        '{0}.'.format(molecule.to_smiles()))
     if igo > 8:
-        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.to_smiles()))
     logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(n_vib, n_rot))
     logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 

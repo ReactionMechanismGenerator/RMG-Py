@@ -34,7 +34,7 @@ import re
 from rmgpy.molecule.molecule import Molecule
 
 
-def retrieveElementCount(obj):
+def get_element_count(obj):
     """Converts an (augmented) inchi or Molecule into a dictionary element -> count"""
     element_count = {}
 

@@ -141,7 +141,7 @@ class Geometry(object):
         """
         Import rmg molecule and create rdkit molecule with the same atom labeling.
         """
-        return self.molecule.toRDKitMol(removeHs=False, returnMapping=True)
+        return self.molecule.to_rdkit_mol(remove_h=False, return_mapping=True)
 
     def rd_embed(self, rdmol, numConfAttempts):
         """
@@ -173,7 +173,7 @@ class Geometry(object):
     def saveCoordinatesFromRDMol(self, rdmol, min_e_id, rdatom_idx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
-            point = rdmol.GetConformer(min_e_id).GetAtomPosition(atom.sortingLabel)
+            point = rdmol.GetConformer(min_e_id).GetAtomPosition(atom.sorting_label)
             atom.coords = np.array([point.x, point.y, point.z])
 
     def saveCoordinatesFromQMData(self, qmdata):
@@ -255,8 +255,8 @@ class QMMolecule(object):
         self.molecule = molecule
         self.settings = settings
 
-        self.uniqueID = self.molecule.toAugmentedInChIKey()
-        self.uniqueIDlong = self.molecule.toAugmentedInChI()
+        self.uniqueID = self.molecule.to_augmented_inchi_key()
+        self.uniqueIDlong = self.molecule.to_augmented_inchi()
 
     def getFilePath(self, extension, scratch=True):
         """
@@ -335,7 +335,7 @@ class QMMolecule(object):
         parser = self.getParser(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclib_data = parser.parse()
-        radical_number = self.molecule.getRadicalCount()
+        radical_number = self.molecule.get_radical_count()
         qm_data = parseCCLibData(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qm_data
 
@@ -372,8 +372,8 @@ class QMMolecule(object):
             return None
 
         self.calculateThermoData()
-        Cp0 = self.molecule.calculateCp0()
-        CpInf = self.molecule.calculateCpInf()
+        Cp0 = self.molecule.calculate_cp0()
+        CpInf = self.molecule.calculate_cpinf()
         self.thermo.Cp0 = (Cp0, "J/(mol*K)")
         self.thermo.CpInf = (CpInf, "J/(mol*K)")
         self.saveThermoData()
@@ -391,7 +391,7 @@ class QMMolecule(object):
             resultFile.write("thermoData = {0!r}\n".format(self.thermo))
             resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
             resultFile.write("qmData = {0!r}\n".format(self.qmData))
-            resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.toAdjacencyList(removeH=False)))
+            resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.to_adjacency_list(remove_h=False)))
 
     def loadThermoData(self):
         """
@@ -406,8 +406,8 @@ class QMMolecule(object):
             logging.error('The InChI in the thermo file {0} did not match the '
                           'current molecule {1}'.format(file_path, self.uniqueIDlong))
             return None
-        loaded_molecule = rmgpy.molecule.Molecule().fromAdjacencyList(local_context['adjacencyList'])
-        if not loaded_molecule.isIsomorphic(self.molecule):
+        loaded_molecule = rmgpy.molecule.Molecule().from_adjacency_list(local_context['adjacencyList'])
+        if not loaded_molecule.is_isomorphic(self.molecule):
             logging.error('The adjacencyList in thermo file {0} did not match the '
                           'current molecule {1}'.format(file_path, self.uniqueIDlong))
             return None
@@ -423,7 +423,7 @@ class QMMolecule(object):
         """
         Returns the augmented InChI from self.molecule 
         """
-        return self.molecule.toAugmentedInChIKey()
+        return self.molecule.to_augmented_inchi_key()
 
     def getMolFilePathForCalculation(self, attempt):
         """

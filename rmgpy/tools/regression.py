@@ -123,11 +123,11 @@ def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsLis
 
 
 def SMILES(string):
-    return Molecule().fromSMILES(string)
+    return Molecule().from_smiles(string)
 
 
 def adjacencyList(string):
-    return Molecule().fromAdjacencyList(string)
+    return Molecule().from_adjacency_list(string)
 
 
 def options(title='', tolerance=0.05):

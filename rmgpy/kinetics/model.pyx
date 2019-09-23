@@ -300,7 +300,7 @@ cdef class PDepKineticsModel(KineticsModel):
             for mol, eff in efficiencies.iteritems():
                 if isinstance(mol, str):
                     # Assume it is a SMILES string
-                    self.efficiencies[Molecule().fromSMILES(mol)] = eff
+                    self.efficiencies[Molecule().from_smiles(mol)] = eff
                 elif isinstance(mol, Molecule):
                     self.efficiencies[mol] = eff
                 else:
@@ -360,7 +360,7 @@ cdef class PDepKineticsModel(KineticsModel):
         eff_frac = 0.0
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
-                if spec.isIsomorphic(mol):
+                if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     frac = _fractions[i]
                     Peff += eff * frac
@@ -393,7 +393,7 @@ cdef class PDepKineticsModel(KineticsModel):
         all_efficiencies = np.ones(len(species), np.float64)
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
-                if spec.isIsomorphic(mol):
+                if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     # override default unity value to the actual efficiency of the collider
                     all_efficiencies[i] = eff
@@ -503,8 +503,8 @@ cdef class PDepKineticsModel(KineticsModel):
         efficiencies = {}
         for collider, efficiency in sorted(self.efficiencies.items(), key=lambda item: id(item[0])):
             for species in species_list:
-                if any([collider.isIsomorphic(molecule) for molecule in species.molecule]):
-                    efficiencies[species.toChemkin()] = efficiency
+                if any([collider.is_isomorphic(molecule) for molecule in species.molecule]):
+                    efficiencies[species.to_chemkin()] = efficiency
                     break
         return efficiencies
 

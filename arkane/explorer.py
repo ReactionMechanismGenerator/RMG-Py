@@ -141,7 +141,7 @@ class ExplorerJob(object):
 
         for spec in list(self.bathGas.keys()) + self.source:
             nspec, is_new = reaction_model.makeNewSpecies(spec, reactive=False)
-            flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
+            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec, reactEdge=False, unimolecularReact=flags,
                                    bimolecularReact=np.zeros((len(reaction_model.core.species),
                                                               len(reaction_model.core.species))))
@@ -154,12 +154,12 @@ class ExplorerJob(object):
 
         for spc in reaction_model.core.species:
             for i, item in enumerate(self.source):
-                if spc.isIsomorphic(item):
+                if spc.is_isomorphic(item):
                     self.source[i] = spc
 
         # react initial species
         if len(self.source) == 1:
-            flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
+            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
             biflags = np.zeros((len(reaction_model.core.species), len(reaction_model.core.species)))
         elif len(self.source) == 2:
             flags = np.array([False for s in reaction_model.core.species])
@@ -227,10 +227,10 @@ class ExplorerJob(object):
                         kchar = 0.0
                         for rxn in network.netReactions:  # reaction_model.core.reactions+reaction_model.edge.reactions:
                             if (set(rxn.reactants) == set(self.source)
-                                    and rxn.products[0].molecule[0].getFormula() == form):
+                                    and rxn.products[0].molecule[0].get_formula() == form):
                                 kchar += rxn.kinetics.get_rate_coefficient(T=temperature, P=pressure)
                             elif (set(rxn.products) == set(self.source)
-                                    and rxn.reactants[0].molecule[0].getFormula() == form):
+                                  and rxn.reactants[0].molecule[0].get_formula() == form):
                                 kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).get_rate_coefficient(
                                     T=temperature, P=pressure)
 
@@ -238,12 +238,12 @@ class ExplorerJob(object):
                             incomplete = True
                             spc = network.getMaximumLeakSpecies(T=temperature, P=pressure)
                             logging.info('adding new isomer {0} to network'.format(spc))
-                            flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
+                            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
                                                    bimolecularReact=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))
 
-                            flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
+                            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
                             reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
                                                    bimolecularReact=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))

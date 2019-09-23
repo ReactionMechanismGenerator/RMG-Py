@@ -72,8 +72,8 @@ cdef class Reaction:
     
     cpdef bint matchesSpecies(self, list reactants, list products=?)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?,
-                            bint checkTemplateRxnProducts=?, bint generateInitialMap=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Reaction other, bint either_direction=?, bint check_identical=?, bint check_only_label=?,
+                            bint check_template_rxn_products=?, bint generate_initial_map=?, bint strict=?) except -2
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
@@ -93,7 +93,7 @@ cdef class Reaction:
 
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
-    cpdef double getRateCoefficient(self, double T, double P=?)
+    cpdef double get_rate_coefficient(self, double T, double P=?)
 
     cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity) except -2
 

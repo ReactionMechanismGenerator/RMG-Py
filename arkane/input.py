@@ -233,13 +233,13 @@ def species(label, *args, **kwargs):
                 else:
                     spec.conformer.E0 = spec.thermo.E0
 
-        if spec.reactive and spec.thermo and not spec.hasStatMech() and structure is not None:
+        if spec.reactive and spec.thermo and not spec.has_statmech() and structure is not None:
             # generate stat mech info if it wasn't provided before
-            spec.generateStatMech()
+            spec.generate_statmech()
 
         if not energyTransferModel:
             # default to RMG's method of generating energyTransferModel
-            spec.generateEnergyTransferModel()
+            spec.generate_energy_transfer_model()
 
     return spec
 
@@ -522,17 +522,17 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
 
 def SMILES(smiles):
     """Make a Molecule object from SMILES"""
-    return Molecule().fromSMILES(smiles)
+    return Molecule().from_smiles(smiles)
 
 
 def adjacencyList(adj):
     """Make a Molecule object from an adjacency list"""
-    return Molecule().fromAdjacencyList(adj)
+    return Molecule().from_adjacency_list(adj)
 
 
 def InChI(inchi):
     """Make a Molecule object from InChI"""
-    return Molecule().fromInChI(inchi)
+    return Molecule().from_inchi(inchi)
 
 
 def loadNecessaryDatabases():

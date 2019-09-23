@@ -1258,7 +1258,7 @@ cdef class ReactionSystem(DASx):
                                 break
                     species_name = getSpeciesIdentifier(self.sensitiveSpecies[i])
                     headers = ['Time (s)']
-                    headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j+1, coreReactions[j].toChemkin(kinetics=False)) if j < num_core_reactions
+                    headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j + 1, coreReactions[j].to_chemkin(kinetics=False)) if j < num_core_reactions
                                     else 'dln[{0}]/dG[{1}]'.format(species_name, getSpeciesIdentifier(coreSpecies[j-num_core_reactions])) for j in reactions_above_threshold])
                     worksheet.writerow(headers)
 

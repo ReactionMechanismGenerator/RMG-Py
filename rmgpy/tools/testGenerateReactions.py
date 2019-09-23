@@ -78,12 +78,12 @@ class GenerateReactionsTest(unittest.TestCase):
 
         self.assertIsNotNone(rmg)
 
-        rxn_flagged = Reaction(reactants=[Molecule(SMILES='[CH]=O'), Molecule(SMILES='C=O')],
-                               products=[Molecule(SMILES='[CH2]OC=O')])
+        rxn_flagged = Reaction(reactants=[Molecule(smiles='[CH]=O'), Molecule(smiles='C=O')],
+                               products=[Molecule(smiles='[CH2]OC=O')])
 
         count = 0
         for reaction in rmg.reactionModel.core.reactions:
-            if reaction.isIsomorphic(rxn_flagged):
+            if reaction.is_isomorphic(rxn_flagged):
                 count += 1
 
         self.assertEquals(count, 1)
@@ -114,12 +114,12 @@ class GenerateReactionsTest(unittest.TestCase):
         self.assertIsNotNone(rmg)
 
         # Assert that the flagged reaction occurs
-        rxn_flagged = Reaction(reactants=[Molecule(SMILES='[CH]=O'), Molecule(SMILES='C=O')],
-                               products=[Molecule(SMILES='[CH2]OC=O')])
+        rxn_flagged = Reaction(reactants=[Molecule(smiles='[CH]=O'), Molecule(smiles='C=O')],
+                               products=[Molecule(smiles='[CH2]OC=O')])
 
         count = 0
         for reaction in rmg.reactionModel.core.reactions:
-            if reaction.isIsomorphic(rxn_flagged):
+            if reaction.is_isomorphic(rxn_flagged):
                 count += 1
 
         self.assertEquals(count, 1)

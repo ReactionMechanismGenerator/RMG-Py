@@ -159,7 +159,7 @@ def convertBindingEnergies(bindingEnergies):
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive',
                                                          label,
-                                                         structure.toSMILES()))
+                                                         structure.to_smiles()))
 
     if '+' in label:
         raise InputError('species {0} label cannot include a + sign'.format(label))
@@ -176,19 +176,19 @@ def species(label, structure, reactive=True):
 
 
 def SMARTS(string):
-    return Molecule().fromSMARTS(string)
+    return Molecule().from_smarts(string)
 
 
 def SMILES(string):
-    return Molecule().fromSMILES(string)
+    return Molecule().from_smiles(string)
 
 
 def InChI(string):
-    return Molecule().fromInChI(string)
+    return Molecule().from_inchi(string)
 
 
 def adjacencyList(string):
-    return Molecule().fromAdjacencyList(string)
+    return Molecule().from_adjacency_list(string)
 
 
 # Reaction systems
@@ -1037,7 +1037,7 @@ def saveInputFile(path, rmg):
         f.write('    reactive = {0},\n'.format(spcs.reactive))
         f.write('    structure = adjacencyList(\n')
         f.write('"""\n')
-        f.write(spcs.molecule[0].toAdjacencyList())
+        f.write(spcs.molecule[0].to_adjacency_list())
         f.write('"""),\n')
         f.write(')\n\n')
 

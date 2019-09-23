@@ -545,7 +545,7 @@ class RMG(util.Subject):
 
         # Also always add in a few bath gases (since RMG-Java does)
         for label, smiles in [('Ar', '[Ar]'), ('He', '[He]'), ('Ne', '[Ne]'), ('N2', 'N#N')]:
-            molecule = Molecule().fromSMILES(smiles)
+            molecule = Molecule().from_smiles(smiles)
             spec, is_new = self.reactionModel.makeNewSpecies(molecule, label=label, reactive=False)
             if is_new:
                 self.initialSpecies.append(spec)
@@ -586,9 +586,9 @@ class RMG(util.Subject):
             # Because no iterations have taken place, the only things in the edge are from reaction libraries
             all_inputted_species.extend(self.reactionModel.edge.species)
 
-            O2Singlet = Molecule().fromSMILES('O=O')
+            O2Singlet = Molecule().from_smiles('O=O')
             for spec in all_inputted_species:
-                if spec.isIsomorphic(O2Singlet):
+                if spec.is_isomorphic(O2Singlet):
                     raise ForbiddenStructureException("Species constraints forbids input species {0} RMG expects the "
                                                       "triplet form of oxygen for correct usage in reaction families. "
                                                       "Please change your input to SMILES='[O][O]' If you actually "
@@ -961,7 +961,7 @@ class RMG(util.Subject):
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
         try:
-            if any([s.containsSurfaceSite() for s in self.reactionModel.core.species]):
+            if any([s.contains_surface_site() for s in self.reactionModel.core.species]):
                 self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem-gas.inp'),
                                           surfaceFile=(
                                               os.path.join(self.outputDirectory, 'chemkin', 'chem-surface.inp')))
@@ -1167,22 +1167,22 @@ class RMG(util.Subject):
         for i, spc in enumerate(self.reactionModel.core.species):
             for j in range(i):
                 spc2 = self.reactionModel.core.species[j]
-                if spc.isIsomorphic(spc2):
+                if spc.is_isomorphic(spc2):
                     raise CoreError(
                         'Although the model has completed, species {0} is isomorphic to species {1} in the core. '
                         'Please open an issue on GitHub with the following output:'
-                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
+                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.to_adjacency_list(), spc2.to_adjacency_list())
                     )
 
         for i, spc in enumerate(self.reactionModel.edge.species):
             for j in range(i):
                 spc2 = self.reactionModel.edge.species[j]
-                if spc.isIsomorphic(spc2):
+                if spc.is_isomorphic(spc2):
                     logging.warning(
                         'Species {0} is isomorphic to species {1} in the edge. This does not affect '
                         'the generated model. If you would like to report this to help make RMG better '
                         'please open a GitHub issue with the following output:'
-                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
+                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.to_adjacency_list(), spc2.to_adjacency_list())
                     )
 
         # Check all core reactions (in both directions) for collision limit violation
@@ -1365,7 +1365,7 @@ class RMG(util.Subject):
                     f.create_dataset('trimolecularThreshold', data=self.trimolecularThreshold)
 
             # Save a map of species indices
-            spcs_map = [spc.molecule[0].toAdjacencyList() for spc in self.reactionModel.core.species]
+            spcs_map = [spc.molecule[0].to_adjacency_list() for spc in self.reactionModel.core.species]
 
             with open(os.path.join(filter_dir, 'species_map.yml'), 'w') as f:
                 yaml.dump(data=spcs_map, stream=f)
@@ -1409,7 +1409,7 @@ class RMG(util.Subject):
             old_labels.append(spec.label)
             duplicate_index = 1
             if '+' in spec.label:
-                L = spec.molecule[0].getFormula()
+                L = spec.molecule[0].get_formula()
             else:
                 L = spec.label
             potential_label = L
@@ -1529,7 +1529,7 @@ class RMG(util.Subject):
                     restart_species_list = yaml.safe_load(stream=f)
 
                 num_restart_spcs = len(restart_species_list)
-                restart_species_list = [Species().fromAdjacencyList(adj_list) for adj_list in restart_species_list]
+                restart_species_list = [Species().from_adjacency_list(adj_list) for adj_list in restart_species_list]
 
                 # Load in the restart filter tensors
                 with h5py.File(self.filtersPath, 'r') as f:
@@ -1570,7 +1570,7 @@ class RMG(util.Subject):
                 reordered_core_species = []
                 for spc in restart_species_list:
                     for j, oldCoreSpc in enumerate(self.reactionModel.core.species):
-                        if oldCoreSpc.isIsomorphic(spc, strict=False):
+                        if oldCoreSpc.is_isomorphic(spc, strict=False):
                             reordered_core_species.append(self.reactionModel.core.species.pop(j))
                             break
                     else:
@@ -1859,7 +1859,7 @@ class RMG(util.Subject):
                     while line != 'END':
 
                         if line == '' and label != '':
-                            species = Species(label=label, molecule=[Molecule().fromAdjacencyList(adjlist)])
+                            species = Species(label=label, molecule=[Molecule().from_adjacency_list(adjlist)])
                             self.initialSpecies.append(species)
                             species_dict[label] = species
                             concentration_list.append(concentrations)
@@ -1913,7 +1913,7 @@ class RMG(util.Subject):
                         else:
                             concentrations = [float(C) for C in tokens[2:]]
 
-                        species = Species(label=label, reactive=False, molecule=[Molecule().fromSMILES(smiles)])
+                        species = Species(label=label, reactive=False, molecule=[Molecule().from_smiles(smiles)])
                         self.initialSpecies.append(species)
                         species_dict[label] = species
                         concentration_list.append(concentrations)

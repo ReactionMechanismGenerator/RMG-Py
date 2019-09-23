@@ -49,7 +49,7 @@ cdef class Species:
     cdef public object energyTransferModel
     cdef public dict props
     cdef public str aug_inchi
-    cdef public float symmetryNumber
+    cdef public float symmetry_number
     cdef public bint isSolvent
     cdef public int creationIteration
     cdef public bint explicitlyAllowed
@@ -59,24 +59,25 @@ cdef class Species:
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     
-    cpdef bint isIsomorphic(self, other, bint generateInitialMap=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, other, bint generate_initial_map=?, bint strict=?) except -2
 
-    cpdef bint isIdentical(self, other, bint strict=?) except -2
+    cpdef bint is_identical(self, other, bint strict=?) except -2
 
     cpdef bint is_structure_in_list(self, list species_list) except -2
     
-    cpdef fromAdjacencyList(self, adjlist)
-    cpdef fromSMILES(self, smiles)
+    cpdef from_adjacency_list(self, adjlist)
+
+    cpdef from_smiles(self, smiles)
     
-    cpdef toAdjacencyList(self)
+    cpdef to_adjacency_list(self)
     
-    cpdef bint containsSurfaceSite(self) except -2
+    cpdef bint contains_surface_site(self) except -2
 
-    cpdef bint isSurfaceSite(self) except -2
+    cpdef bint is_surface_site(self) except -2
 
-    cpdef bint hasStatMech(self) except -2
+    cpdef bint has_statmech(self) except -2
 
-    cpdef bint hasThermo(self) except -2
+    cpdef bint has_thermo(self) except -2
 
     cpdef double getPartitionFunction(self, double T) except -1
 
@@ -92,9 +93,9 @@ cdef class Species:
 
     cpdef np.ndarray getDensityOfStates(self, np.ndarray Elist)
 
-    cpdef double calculateCp0(self) except -1
+    cpdef double calculate_cp0(self) except -1
 
-    cpdef double calculateCpInf(self) except -1
+    cpdef double calculate_cpinf(self) except -1
 
     cpdef bint has_reactive_molecule(self) except -1
 

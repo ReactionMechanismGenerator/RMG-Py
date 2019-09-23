@@ -96,13 +96,13 @@ class TestRMGWorkFlow(unittest.TestCase):
         """
 
         # react
-        spc = Species().fromSMILES("O=C[C]=C")
+        spc = Species().from_smiles("O=C[C]=C")
         spc.generate_resonance_structures()
         new_reactions = react_species((spc,))
 
         # try to pick out the target reaction 
-        mol_H = Molecule().fromSMILES("[H]")
-        mol_C3H2O = Molecule().fromSMILES("C=C=C=O")
+        mol_H = Molecule().from_smiles("[H]")
+        mol_C3H2O = Molecule().from_smiles("C=C=C=O")
 
         target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, new_reactions)
         self.assertEqual(len(target_rxns), 2)
@@ -131,15 +131,15 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         rmg_test = RMG()
         rmg_test.reactionModel = CoreEdgeReactionModel()
-        DPP = Species().fromSMILES('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
+        DPP = Species().from_smiles('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
         DPP.generate_resonance_structures()
-        formula = DPP.molecule[0].getFormula()
+        formula = DPP.molecule[0].get_formula()
         if formula in rmg_test.reactionModel.speciesDict:
             rmg_test.reactionModel.speciesDict[formula].append(DPP)
         else:
             rmg_test.reactionModel.speciesDict[formula] = [DPP]
 
-        mol_test = Molecule().fromAdjacencyList(
+        mol_test = Molecule().from_adjacency_list(
 """
 1     C u0 p0 c0 {2,S} {3,S} {16,S} {17,S}
 2     C u0 p0 c0 {1,S} {4,S} {18,S} {19,S}
@@ -184,9 +184,9 @@ def findTargetRxnsContaining(mol1, mol2, reactions):
         products = rxn.products
         rxn_specs = reactants + products
         for rxn_spec in rxn_specs:
-            if rxn_spec.isIsomorphic(mol1):
+            if rxn_spec.is_isomorphic(mol1):
                 for rxn_spec1 in rxn_specs:
-                    if rxn_spec1.isIsomorphic(mol2):
+                    if rxn_spec1.is_isomorphic(mol2):
                         target_rxns.append(rxn)
     return target_rxns
 

@@ -73,8 +73,8 @@ class TestReact(unittest.TestCase):
         """
         procnum = 1
 
-        spc_a = Species().fromSMILES('[OH]')
-        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spc_a = Species().from_smiles('[OH]')
+        spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
         spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
 
         reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
@@ -90,8 +90,8 @@ class TestReact(unittest.TestCase):
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
-        spc_a = Species().fromSMILES('[OH]')
-        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spc_a = Species().from_smiles('[OH]')
+        spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
         spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
 
         reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
@@ -109,10 +109,10 @@ class TestReact(unittest.TestCase):
         procnum = 1
 
         spcs = [
-            Species().fromSMILES('C=C'),
-            Species().fromSMILES('[CH3]'),
-            Species().fromSMILES('[OH]'),
-            Species().fromSMILES('CCCCCCCCCCC')
+            Species().from_smiles('C=C'),
+            Species().from_smiles('[CH3]'),
+            Species().from_smiles('[OH]'),
+            Species().from_smiles('CCCCCCCCCCC')
         ]
 
         n = len(spcs)
@@ -134,10 +134,10 @@ class TestReact(unittest.TestCase):
         procnum = 2
 
         spcs = [
-            Species().fromSMILES('C=C'),
-            Species().fromSMILES('[CH3]'),
-            Species().fromSMILES('[OH]'),
-            Species().fromSMILES('CCCCCCCCCCC')
+            Species().from_smiles('C=C'),
+            Species().from_smiles('[CH3]'),
+            Species().from_smiles('[OH]'),
+            Species().from_smiles('CCCCCCCCCCC')
         ]
 
         n = len(spcs)

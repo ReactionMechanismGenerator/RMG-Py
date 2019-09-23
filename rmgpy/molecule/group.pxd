@@ -33,11 +33,11 @@ from cpython cimport bool
 
 cdef class GroupAtom(Vertex):
 
-    cdef public list atomType
-    cdef public list radicalElectrons
+    cdef public list atomtype
+    cdef public list radical_electrons
     cdef public list charge
     cdef public str label
-    cdef public list lonePairs
+    cdef public list lone_pairs
 
     cdef public dict props
 
@@ -47,41 +47,41 @@ cdef class GroupAtom(Vertex):
 
     cpdef Vertex copy(self)
 
-    cpdef __changeBond(self, short order)
+    cpdef _change_bond(self, short order)
 
-    cpdef __formBond(self, float order)
+    cpdef _form_bond(self, float order)
 
-    cpdef __breakBond(self, float order)
+    cpdef _break_bond(self, float order)
 
-    cpdef __gainRadical(self, short radical)
+    cpdef _gain_radical(self, short radical)
 
-    cpdef __loseRadical(self, short radical)
+    cpdef _lose_radical(self, short radical)
     
-    cpdef __gainPair(self, short radical)
+    cpdef _gain_pair(self, short radical)
 
-    cpdef __losePair(self, short radical)
+    cpdef _lose_pair(self, short radical)
 
-    cpdef applyAction(self, list action)
+    cpdef apply_action(self, list action)
 
     cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
-    cpdef bint isSpecificCaseOf(self, Vertex other) except -2
+    cpdef bint is_specific_case_of(self, Vertex other) except -2
 
-    cpdef bint isSurfaceSite(self) except -2
+    cpdef bint is_surface_site(self) except -2
 
-    cpdef bint isOxygen(self)
+    cpdef bint is_oxygen(self)
 
-    cpdef bint isSulfur(self)
+    cpdef bint is_sulfur(self)
 
-    cpdef bint isNitrogen(self)
+    cpdef bint is_nitrogen(self)
 
-    cpdef bint isCarbon(self)
+    cpdef bint is_carbon(self)
 
-    cpdef list countBonds(self, wildcards = ?)
+    cpdef list count_bonds(self, wildcards = ?)
 
-    cpdef bint hasWildcards(self)
+    cpdef bint has_wildcards(self)
 
-    cpdef mol.Atom makeSampleAtom(self)
+    cpdef mol.Atom make_sample_atom(self)
 
 ################################################################################
 
@@ -92,31 +92,31 @@ cdef class GroupBond(Edge):
 
     cpdef Edge copy(self)
 
-    cpdef list getOrderStr(self)
+    cpdef list get_order_str(self)
     
-    cpdef setOrderStr(self, list newOrder)
+    cpdef set_order_str(self, list new_order)
     
-    cpdef list getOrderNum(self)
+    cpdef list get_order_num(self)
     
-    cpdef setOrderNum(self, list newOrder)
+    cpdef set_order_num(self, list new_order)
 
-    cpdef __changeBond(self, short order)
+    cpdef _change_bond(self, short order)
 
-    cpdef bint isSingle(self, bint wildcards = ?) except -2
+    cpdef bint is_single(self, bint wildcards = ?) except -2
 
-    cpdef bint isDouble(self, bint wildcards = ?) except -2
+    cpdef bint is_double(self, bint wildcards = ?) except -2
 
-    cpdef bint isTriple(self, bint wildcards = ?) except -2
+    cpdef bint is_triple(self, bint wildcards = ?) except -2
 
-    cpdef bint isBenzene(self, bint wildcards = ?) except -2
+    cpdef bint is_benzene(self, bint wildcards = ?) except -2
 
-    cpdef applyAction(self, list action)
+    cpdef apply_action(self, list action)
 
     cpdef bint equivalent(self, Edge other) except -2
 
-    cpdef bint isSpecificCaseOf(self, Edge other) except -2
+    cpdef bint is_specific_case_of(self, Edge other) except -2
 
-    cpdef makeBond(self, mol.Molecule molecule, mol.Atom atom1, mol.Atom atom2)
+    cpdef make_bond(self, mol.Molecule molecule, mol.Atom atom1, mol.Atom atom2)
 
 ################################################################################
 
@@ -130,84 +130,84 @@ cdef class Group(Graph):
     cdef public dict elementCount
     cdef public short radicalCount
 
-    cpdef addAtom(self, GroupAtom atom)
+    cpdef add_atom(self, GroupAtom atom)
 
-    cpdef addBond(self, GroupBond bond)
+    cpdef add_bond(self, GroupBond bond)
 
-    cpdef dict getBonds(self, GroupAtom atom)
+    cpdef dict get_bonds(self, GroupAtom atom)
 
-    cpdef GroupBond getBond(self, GroupAtom atom1, GroupAtom atom2)
+    cpdef GroupBond get_bond(self, GroupAtom atom1, GroupAtom atom2)
 
-    cpdef bint hasAtom(self, GroupAtom atom)
+    cpdef bint has_atom(self, GroupAtom atom)
 
-    cpdef bint hasBond(self, GroupAtom atom1, GroupAtom atom2)
+    cpdef bint has_bond(self, GroupAtom atom1, GroupAtom atom2)
 
-    cpdef removeAtom(self, GroupAtom atom)
+    cpdef remove_atom(self, GroupAtom atom)
 
-    cpdef removeBond(self, GroupBond bond)
+    cpdef remove_bond(self, GroupBond bond)
 
-    cpdef removeVanDerWaalsBonds(self)
+    cpdef remove_van_der_waals_bonds(self)
 
-    cpdef sortAtoms(self)
+    cpdef sort_atoms(self)
 
-    cpdef list sortByConnectivity(self, list atomList)
+    cpdef list sort_by_connectivity(self, list atom_list)
 
     cpdef Graph copy(self, bint deep=?)
 
-    cpdef clearLabeledAtoms(self)
+    cpdef clear_labeled_atoms(self)
 
-    cpdef bint containsLabeledAtom(self, str label)
+    cpdef bint contains_labeled_atom(self, str label)
 
-    cpdef list getLabeledAtom(self, str label)
+    cpdef list get_labeled_atoms(self, str label)
 
-    cpdef dict getLabeledAtoms(self)
+    cpdef dict get_all_labeled_atoms(self)
 
     cpdef dict get_element_count(self)
 
-    cpdef fromAdjacencyList(self, str adjlist)
+    cpdef from_adjacency_list(self, str adjlist)
 
-    cpdef toAdjacencyList(self, str label=?)
+    cpdef to_adjacency_list(self, str label=?)
     
-    cpdef updateFingerprint(self)
+    cpdef update_fingerprint(self)
 
     cpdef update_charge(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
+    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
+    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?)
     
-    cpdef bint isIdentical(self, Graph other, bint saveOrder=?)
+    cpdef bint is_identical(self, Graph other, bint save_order=?)
 
-    cpdef bint isSurfaceSite(self) except -2
+    cpdef bint is_surface_site(self) except -2
     
-    cpdef bint containsSurfaceSite(self) except -2
+    cpdef bint contains_surface_site(self) except -2
 
-    cpdef bint isAromaticRing(self)
+    cpdef bint is_aromatic_ring(self)
 
-    cpdef bint standardizeAtomType(self)
+    cpdef bint standardize_atomtype(self)
 
-    cpdef bint addExplicitLigands(self)
+    cpdef bint add_explicit_ligands(self)
 
-    cpdef GroupAtom createAndConnectAtom(self, list atomtype, GroupAtom connectingAtom, list bondOrders)
+    cpdef GroupAtom create_and_connect_atom(self, list atomtype, GroupAtom connecting_atom, list bond_orders)
 
-    cpdef bint standardizeGroup(self)
+    cpdef bint standardize_group(self)
 
-    cpdef Group addImplicitAtomsFromAtomType(self)
+    cpdef Group add_implicit_atoms_from_atomtype(self)
 
-    cpdef pickWildcards(self)
+    cpdef pick_wildcards(self)
 
-    cpdef mol.Molecule makeSampleMolecule(self)
+    cpdef mol.Molecule make_sample_molecule(self)
 
-    cpdef tuple classifyBenzeneCarbons(self, dict partners=?)
+    cpdef tuple classify_benzene_carbons(self, dict partners=?)
 
-    cpdef Group addImplicitBenzene(self)
+    cpdef Group add_implicit_benzene(self)
 
-    cpdef bint isBenzeneExplicit(self)
+    cpdef bint is_benzene_explicit(self)
 
-    cpdef Group mergeGroups(self, Group other, bint keepIdenticalLabels=?)
+    cpdef Group merge_groups(self, Group other, bint keep_identical_labels=?)
 
-    cpdef resetRingMembership(self)
+    cpdef reset_ring_membership(self)

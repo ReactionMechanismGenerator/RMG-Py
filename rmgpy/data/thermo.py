@@ -71,12 +71,12 @@ def save_entry(f, entry):
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write(entry.item.to_adjacency_list(remove_h=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList())
+        f.write(entry.item.to_adjacency_list())
         f.write('""",\n')
     else:
         f.write('    group = "{0}",\n'.format(entry.item))
@@ -326,7 +326,7 @@ def is_aromatic_ring(submol):
     for ring_atom in submol.atoms:
         for bonded_atom, bond in ring_atom.edges.items():
             if bonded_atom in submol.atoms:
-                if not bond.isBenzene():
+                if not bond.is_benzene():
                     return False
     return True
 
@@ -337,7 +337,7 @@ def is_bicyclic(polyring):
     returns True if it's a bicyclic, False otherwise
     """
     submol, _ = convert_ring_to_sub_molecule(polyring)
-    sssr = submol.getSmallestSetOfSmallestRings()
+    sssr = submol.get_smallest_set_of_smallest_rings()
 
     return len(sssr) == 2
 
@@ -350,11 +350,11 @@ def find_aromatic_bonds_from_sub_molecule(submol):
 
     aromatic_bonds = []
     for atom in submol.atoms:
-        bonds = submol.getBonds(atom)
+        bonds = submol.get_bonds(atom)
         for atom_j in bonds:
             if atom_j in submol.atoms:
                 bond = bonds[atom_j]
-                if bond.isBenzene():
+                if bond.is_benzene():
                     aromatic_bonds.append(bond)
     return set(aromatic_bonds)
 
@@ -365,7 +365,7 @@ def convert_ring_to_sub_molecule(ring):
     submolecule with newly deep copied atoms
 
     Outputted submolecules may have incomplete valence and may cause errors with some Molecule.methods(), such
-    as updateAtomTypes() or update(). In the future we may consider using groups for the sub-molecules.
+    as update_atomtypes() or update(). In the future we may consider using groups for the sub-molecules.
     """
 
     atoms_mapping = {}
@@ -377,11 +377,11 @@ def convert_ring_to_sub_molecule(ring):
     for atom in ring:
         for bonded_atom, bond in atom.edges.items():
             if bonded_atom in ring:
-                if not mol0.hasBond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
-                    mol0.addBond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond.order))
+                if not mol0.has_bond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
+                    mol0.add_bond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond.order))
 
-    mol0.updateMultiplicity()
-    mol0.updateConnectivityValues()
+    mol0.update_multiplicity()
+    mol0.update_connectivity_values()
     return mol0, atoms_mapping
 
 
@@ -403,17 +403,17 @@ def combine_two_rings_into_sub_molecule(ring1, ring2):
     for atom in ring1:
         for bonded_atom, bond in atom.edges.items():
             if bonded_atom in ring1:
-                if not mol0.hasBond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
-                    mol0.addBond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond.order))
+                if not mol0.has_bond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
+                    mol0.add_bond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond.order))
 
     for atom in ring2:
         for bonded_atom, bond in atom.edges.items():
             if bonded_atom in ring2:
-                if not mol0.hasBond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
-                    mol0.addBond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond.order))
+                if not mol0.has_bond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
+                    mol0.add_bond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond.order))
 
-    mol0.updateMultiplicity()
-    mol0.updateConnectivityValues()
+    mol0.update_multiplicity()
+    mol0.update_connectivity_values()
 
     return mol0, atoms_mapping
 
@@ -457,8 +457,8 @@ def is_ring_partial_matched(ring, matched_group):
         return True
     else:
         submol_ring, _ = convert_ring_to_sub_molecule(ring)
-        sssr = submol_ring.getSmallestSetOfSmallestRings()
-        sssr_grp = matched_group.getSmallestSetOfSmallestRings()
+        sssr = submol_ring.get_smallest_set_of_smallest_rings()
+        sssr_grp = matched_group.get_smallest_set_of_smallest_rings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
         else:
@@ -474,7 +474,7 @@ def bicyclic_decomposition_for_polyring(polyring):
     """
 
     submol, _ = convert_ring_to_sub_molecule(polyring)
-    sssr = submol.getDeterministicSmallestSetOfSmallestRings()
+    sssr = submol.get_deterministic_sssr()
 
     ring_pair_with_common_atoms_list = []
     ring_occurances_dict = {}
@@ -510,11 +510,11 @@ def bicyclic_decomposition_for_polyring(polyring):
         elif not is_a_aromatic and not is_b_aromatic:
             aromatic_bonds_in_a = find_aromatic_bonds_from_sub_molecule(submol_a)
             for aromaticBond_inA in aromatic_bonds_in_a:
-                aromaticBond_inA.setOrderNum(1)
+                aromaticBond_inA.set_order_num(1)
 
             aromatic_bonds_in_b = find_aromatic_bonds_from_sub_molecule(submol_b)
             for aromaticBond_inB in aromatic_bonds_in_b:
-                aromaticBond_inB.setOrderNum(1)
+                aromaticBond_inB.set_order_num(1)
         elif is_a_aromatic:
             aromatic_bonds_in_b = find_aromatic_bonds_from_sub_molecule(submol_b)
             for aromaticBond_inB in aromatic_bonds_in_b:
@@ -522,19 +522,19 @@ def bicyclic_decomposition_for_polyring(polyring):
                 # If so, preserve the B bond status, otherwise change to single bond order
                 if ((aromaticBond_inB.atom1 in submol_a.atoms) and
                         (aromaticBond_inB.atom2 in submol_a.atoms) and
-                        (submol_a.hasBond(aromaticBond_inB.atom1, aromaticBond_inB.atom2))):
+                        (submol_a.has_bond(aromaticBond_inB.atom1, aromaticBond_inB.atom2))):
                     pass
                 else:
-                    aromaticBond_inB.setOrderNum(1)
+                    aromaticBond_inB.set_order_num(1)
         else:
             aromatic_bonds_in_a = find_aromatic_bonds_from_sub_molecule(submol_a)
             for aromaticBond_inA in aromatic_bonds_in_a:
                 if ((aromaticBond_inA.atom1 in submol_b.atoms) and
                         (aromaticBond_inA.atom2 in submol_b.atoms) and
-                        (submol_b.hasBond(aromaticBond_inA.atom1, aromaticBond_inA.atom2))):
+                        (submol_b.has_bond(aromaticBond_inA.atom1, aromaticBond_inA.atom2))):
                     pass
                 else:
-                    aromaticBond_inA.setOrderNum(1)
+                    aromaticBond_inA.set_order_num(1)
         merged_ring.saturate_unfilled_valence(update=True)
         bicyclics_merged_from_ring_pair.append(merged_ring)
 
@@ -546,7 +546,7 @@ def split_bicyclic_into_single_rings(bicyclic_submol):
     Splits a given bicyclic submolecule into two individual single 
     ring submolecules (a list of `Molecule`s ).
     """
-    sssr = bicyclic_submol.getDeterministicSmallestSetOfSmallestRings()
+    sssr = bicyclic_submol.get_deterministic_sssr()
 
     return [convert_ring_to_sub_molecule(sssr[0])[0],
             convert_ring_to_sub_molecule(sssr[1])[0]]
@@ -568,18 +568,18 @@ def saturate_ring_bonds(ring_submol):
     for atom in ring_submol.atoms:
         for bonded_atom, bond in atom.edges.items():
             if bonded_atom in ring_submol.atoms:
-                if bond.order > 1.0 and not bond.isBenzene():
+                if bond.order > 1.0 and not bond.is_benzene():
                     already_saturated = False
-                if not mol0.hasBond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
+                if not mol0.has_bond(atoms_mapping[atom], atoms_mapping[bonded_atom]):
                     bond_order = 1.0
-                    if bond.isBenzene():
+                    if bond.is_benzene():
                         bond_order = 1.5
-                    mol0.addBond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond_order))
+                    mol0.add_bond(Bond(atoms_mapping[atom], atoms_mapping[bonded_atom], order=bond_order))
 
     mol0.saturate_unfilled_valence()
-    mol0.updateAtomTypes()
-    mol0.updateMultiplicity()
-    mol0.updateConnectivityValues()
+    mol0.update_atomtypes()
+    mol0.update_multiplicity()
+    mol0.update_connectivity_values()
     return mol0, already_saturated
 
 
@@ -598,7 +598,7 @@ class ThermoDepository(Database):
         entry = Entry(
             index=index,
             label=label,
-            item=Molecule().fromAdjacencyList(molecule),
+            item=Molecule().from_adjacency_list(molecule),
             data=thermo,
             reference=reference,
             referenceType=referenceType,
@@ -638,7 +638,7 @@ class ThermoLibrary(Database):
                    rank=None,
                    ):
 
-        molecule = Molecule().fromAdjacencyList(molecule)
+        molecule = Molecule().from_adjacency_list(molecule)
 
         # Internal checks for adding entry to the thermo library
         if label in list(self.entries.keys()):
@@ -646,7 +646,7 @@ class ThermoLibrary(Database):
                                 'Please correct your library.'.format(label, self.name))
 
         for entry in self.entries.values():
-            if molecule.isIsomorphic(entry.item):
+            if molecule.is_isomorphic(entry.item):
                 if molecule.multiplicity == entry.item.multiplicity:
                     raise DatabaseError('Adjacency list and multiplicity of {0} matches that of '
                                         'existing molecule {1} in thermo library {2}. Please '
@@ -713,7 +713,7 @@ class ThermoGroups(Database):
                 group[0:8].upper() == 'NOT AND{'):
             item = make_logic_node(group)
         else:
-            item = Group().fromAdjacencyList(group)
+            item = Group().from_adjacency_list(group)
         self.entries[label] = Entry(
             index=index,
             label=label,
@@ -1060,7 +1060,7 @@ class ThermoDatabase(object):
         """
         if allowed is None:
             allowed = ['C', 'H', 'O', 'S']
-        allowed_elements = [rmgpy.molecule.element.getElement(label) for label in allowed]
+        allowed_elements = [rmgpy.molecule.element.get_element(label) for label in allowed]
         for library in self.libraries.values():
             logging.info("Removing hetoroatoms from thermo library '{0}'".format(library.name))
             to_delete = []
@@ -1186,11 +1186,11 @@ class ThermoDatabase(object):
                 raise RuntimeError("thermo0 should be a tuple (thermo_data, library, entry), not {0}".format(thermo0))
             thermo0 = thermo0[0]
 
-            if species.containsSurfaceSite():
+            if species.contains_surface_site():
                 thermo0 = self.correct_binding_energy(thermo0, species)
             return thermo0
 
-        if species.containsSurfaceSite():
+        if species.contains_surface_site():
             thermo0 = self.get_thermo_data_for_surface_species(species)
             thermo0 = self.correct_binding_energy(thermo0, species)
             return thermo0
@@ -1209,13 +1209,13 @@ class ThermoDatabase(object):
 
         if quantum_mechanics:
             original_molecule = species.molecule[0]
-            if quantum_mechanics.settings.onlyCyclics and not original_molecule.isCyclic():
+            if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
                 pass
             else:  # try a QM calculation
-                if original_molecule.getRadicalCount() > quantum_mechanics.settings.maxRadicalNumber:
+                if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
                     # Too many radicals for direct calculation: use HBI.
                     logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
-                        original_molecule.getRadicalCount(),
+                        original_molecule.get_radical_count(),
                         species.label,
                         quantum_mechanics.settings.maxRadicalNumber,
                     ))
@@ -1223,13 +1223,13 @@ class ThermoDatabase(object):
                     # Need to estimate thermo via each resonance isomer
                     thermo = []
                     for molecule in species.molecule:
-                        molecule.clearLabeledAtoms()
+                        molecule.clear_labeled_atoms()
                         # Try to see if the saturated molecule can be found in the libraries
                         tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
                         priority = 1
                         if tdata is None:
                             # Then attempt quantum mechanics job on the saturated molecule
-                            tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.getThermoData)
+                            tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
                             priority = 2
                         if tdata is None:
                             # Fall back to group additivity
@@ -1243,14 +1243,14 @@ class ThermoDatabase(object):
                         thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
                         for i, therm in enumerate(thermo):
                             logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                          "".format(i + 1, therm[2].toSMILES(), therm[1]))
+                                          "".format(i + 1, therm[2].to_smiles(), therm[1]))
                         # Save resonance isomers reordered by their thermo
                         species.molecule = [item[2] for item in thermo]
                         original_molecule = species.molecule[0]
                     thermo0 = thermo[0][3]
 
                     # update entropy by symmetry correction
-                    thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+                    thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
 
                 else:  # Not too many radicals: do a direct calculation.
                     thermo0 = quantum_mechanics.getThermoData(original_molecule)  # returns None if it fails
@@ -1263,17 +1263,17 @@ class ThermoDatabase(object):
                     break
             else:
                 for mol in species.molecule:
-                    logging.info(mol.toAdjacencyList())
+                    logging.info(mol.to_adjacency_list())
                     logging.info('reactive = {0}'.format(mol.reactive))
                     logging.info('\n')
                 raise ValueError('Could not process a species with no reactive structures')
-            if original_molecule.getRadicalCount() > 0:
+            if original_molecule.get_radical_count() > 0:
                 # If the molecule is a radical, check if any of the saturated forms are in the libraries
                 # first and perform an HBI correction on them
                 thermo = []
                 for molecule in species.molecule:
                     if molecule.reactive:
-                        molecule.clearLabeledAtoms()
+                        molecule.clear_labeled_atoms()
                         # First see if the saturated molecule is in the libaries
                         tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
                         if tdata:
@@ -1287,10 +1287,10 @@ class ThermoDatabase(object):
                     for i, therm in enumerate(thermo):
                         if therm[1].reactive:
                             logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                          "".format(i + 1, therm[1].toSMILES(), therm[0]))
+                                          "".format(i + 1, therm[1].to_smiles(), therm[0]))
                         else:
                             logging.debug("Non-reactive resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                          "".format(i + 1, therm[1].toSMILES(), therm[0]))
+                                          "".format(i + 1, therm[1].to_smiles(), therm[0]))
                     # Save resonance isomers reordered by their thermo
                     new_mol_list = [item[1] for item in thermo]
                     if len(new_mol_list) < len(species.molecule):
@@ -1305,7 +1305,7 @@ class ThermoDatabase(object):
                 # `self.get_thermo_data_from_ml`.
                 if (ml_estimator is not None
                         and all(a.element.number in {1, 6, 7, 8} for a in species.molecule[0].atoms)
-                        and species.molecule[0].getSingletCarbeneCount() == 0):
+                        and species.molecule[0].get_singlet_carbene_count() == 0):
                     thermo0 = self.get_thermo_data_from_ml(species,
                                                            ml_estimator,
                                                            ml_settings)
@@ -1315,7 +1315,7 @@ class ThermoDatabase(object):
                 thermo0 = self.get_thermo_data_from_groups(species)
 
             # Update entropy by symmetry correction (not included in trained ML model)
-            thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+            thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
 
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
         find_cp0_and_cpinf(species, thermo0)
@@ -1375,7 +1375,7 @@ class ThermoDatabase(object):
         # only want/need to do one resonance structure
         surface_sites = []
         for atom in molecule.atoms:
-            if atom.isSurfaceSite():
+            if atom.is_surface_site():
                 surface_sites.append(atom)
         normalized_bonds = {'C': 0., 'O': 0., 'N': 0., 'H': 0.}
         max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1.}
@@ -1388,13 +1388,13 @@ class ThermoDatabase(object):
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
                 bonded_atom = list(site.bonds.keys())[0]
                 bond = site.bonds[bonded_atom]
-                if bond.isSingle():
+                if bond.is_single():
                     bond_order = 1.
-                elif bond.isDouble():
+                elif bond.is_double():
                     bond_order = 2.
-                elif bond.isTriple():
+                elif bond.is_triple():
                     bond_order = 3.
-                elif bond.isQuadruple():
+                elif bond.is_quadruple():
                     bond_order = 4.
                 else:
                     raise NotImplementedError("Unsupported bond order {0} for binding energy "
@@ -1424,7 +1424,7 @@ class ThermoDatabase(object):
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
         """
 
-        if species.isSurfaceSite():
+        if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
         logging.debug(("Trying to generate thermo for surface species"
@@ -1435,7 +1435,7 @@ class ThermoDatabase(object):
         dummy_molecule = molecule.copy(deep=True)
         sites_to_remove = []
         for atom in dummy_molecule.atoms:
-            if atom.isSurfaceSite():
+            if atom.is_surface_site():
                 sites_to_remove.append(atom)
         for site in sites_to_remove:
             numbonds = len(site.bonds)
@@ -1446,27 +1446,27 @@ class ThermoDatabase(object):
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
                 bonded_atom = list(site.bonds.keys())[0]
                 bond = site.bonds[bonded_atom]
-                dummy_molecule.removeBond(bond)
-                if bond.isSingle():
-                    bonded_atom.incrementRadical()
-                elif bond.isDouble():
-                    bonded_atom.incrementRadical()
-                    bonded_atom.incrementRadical()
-                elif bond.isTriple():
-                    bonded_atom.incrementRadical()
-                    bonded_atom.incrementLonePairs()
-                elif bond.isQuadruple():
-                    bonded_atom.incrementRadical()
-                    bonded_atom.incrementRadical()
-                    bonded_atom.incrementLonePairs()
+                dummy_molecule.remove_bond(bond)
+                if bond.is_single():
+                    bonded_atom.increment_radical()
+                elif bond.is_double():
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_radical()
+                elif bond.is_triple():
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_lone_pairs()
+                elif bond.is_quadruple():
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_lone_pairs()
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
 
-            dummy_molecule.removeAtom(site)
+            dummy_molecule.remove_atom(site)
         dummy_molecule.update()
 
-        logging.debug("Before removing from surface:\n" + molecule.toAdjacencyList())
-        logging.debug("After removing from surface:\n" + dummy_molecule.toAdjacencyList())
+        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
+        logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
 
         dummy_species = Species()
         dummy_species.molecule.append(dummy_molecule)
@@ -1493,7 +1493,7 @@ class ThermoDatabase(object):
         except KeyError:
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
-            logging.error(molecule.toAdjacencyList())
+            logging.error(molecule.to_adjacency_list())
             raise
 
         # (group_additivity=True means it appends the comments)
@@ -1594,10 +1594,10 @@ class ThermoDatabase(object):
         # Make it a tuple
         # Distinguish surface species, as orignial get_thermo_data_from_groups does
         # not work for surface sites or surface species
-        if species.isSurfaceSite():
+        if species.is_surface_site():
             # Cannot estimate thermo of vacant site. Thermo stores in library
             pass
-        elif species.containsSurfaceSite():
+        elif species.contains_surface_site():
             try:
                 # Estimate thermo of surface species based on modfied GA method
                 data = (self.get_thermo_data_for_surface_species(species), None, None)
@@ -1614,7 +1614,7 @@ class ThermoDatabase(object):
                 pass
             else:
                 # update group activity for symmetry
-                data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+                data[0].S298.value_si -= constants.R * math.log(species.get_symmetry_number())
                 thermo_data_list.append(data)
         # Return all of the resulting thermo parameters
         return thermo_data_list
@@ -1630,12 +1630,12 @@ class ThermoDatabase(object):
         items = []
         for entry in self.depository['stable'].entries.values():
             for molecule in species.molecule:
-                if molecule.isIsomorphic(entry.item):
+                if molecule.is_isomorphic(entry.item):
                     items.append((deepcopy(entry.data), self.depository['stable'], entry))
                     break
         for entry in self.depository['radical'].entries.values():
             for molecule in species.molecule:
-                if molecule.isIsomorphic(entry.item):
+                if molecule.is_isomorphic(entry.item):
                     items.append((deepcopy(entry.data), self.depository['radical'], entry))
                     break
         return items
@@ -1654,7 +1654,7 @@ class ThermoDatabase(object):
         match = None
         for entry in library.entries.values():
             for molecule in species.molecule:
-                if molecule.isIsomorphic(entry.item) and entry.data is not None:
+                if molecule.is_isomorphic(entry.item) and entry.data is not None:
                     thermo_data = deepcopy(entry.data)
                     thermo_data.label = entry.label
                     find_cp0_and_cpinf(species, thermo_data)
@@ -1684,8 +1684,8 @@ class ThermoDatabase(object):
         """
         thermo = []
         for molecule in species.molecule:
-            molecule.clearLabeledAtoms()
-            molecule.updateAtomTypes()
+            molecule.clear_labeled_atoms()
+            molecule.update_atomtypes()
             tdata = self.estimate_thermo_via_group_additivity(molecule)
             thermo.append(tdata)
 
@@ -1734,15 +1734,15 @@ class ThermoDatabase(object):
             return None
         if not (min_nitrogen <= element_count.get('N', 0) <= max_nitrogen):
             return None
-        if ml_settings['only_heterocyclics'] and not molecule.isHeterocyclic():
+        if ml_settings['only_heterocyclics'] and not molecule.is_heterocyclic():
             return None
-        if ml_settings['only_cyclics'] and not molecule.isCyclic():
+        if ml_settings['only_cyclics'] and not molecule.is_cyclic():
             return None
         min_cycle_overlap = ml_settings['min_cycle_overlap']
-        if min_cycle_overlap > 0 and molecule.getMaxCycleOverlap() < min_cycle_overlap:
+        if min_cycle_overlap > 0 and molecule.get_max_cycle_overlap() < min_cycle_overlap:
             return None
 
-        if molecule.isRadical():
+        if molecule.is_radical():
             thermo = [self.estimate_radical_thermo_via_hbi(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
             H298 = np.array([tdata.H298.value_si for tdata in thermo])
             indices = H298.argsort()
@@ -1773,7 +1773,7 @@ class ThermoDatabase(object):
         """
         if len(species.molecule) > 1:
             # Go further only if there is more than one isomer
-            if species.molecule[0].isCyclic():
+            if species.molecule[0].is_cyclic():
                 # Special treatment for cyclic compounds
                 entries = []
                 for thermo in thermo_data_list:
@@ -1808,7 +1808,7 @@ class ThermoDatabase(object):
         No entropy is included in the returning term.
         This should be done later by the calling function.
         """
-        if not molecule.isRadical():
+        if not molecule.is_radical():
             raise ValueError("Method only valid for radicals.")
 
         saturated_struct = molecule.copy(deep=True)
@@ -1843,7 +1843,7 @@ class ThermoDatabase(object):
                 or isinstance(stable_thermo_estimator.__self__, MLEstimator)):
             # remove the symmetry contribution to the entropy of the saturated molecule
             # assumes that the thermo data comes from QMTP or from a thermolibrary
-            thermo_data_sat.S298.value_si += constants.R * math.log(saturated_struct.getSymmetryNumber())
+            thermo_data_sat.S298.value_si += constants.R * math.log(saturated_struct.get_symmetry_number())
 
         thermo_data = thermo_data_sat
 
@@ -1853,22 +1853,22 @@ class ThermoDatabase(object):
         for atom in added:
             # Remove the added hydrogen atoms and bond and restore the radical
             for H, bond in added[atom]:
-                saturated_struct.removeBond(bond)
-                saturated_struct.removeAtom(H)
-                atom.incrementRadical()
+                saturated_struct.remove_bond(bond)
+                saturated_struct.remove_atom(H)
+                atom.increment_radical()
             saturated_struct.update()
             try:
                 self._add_group_thermo_data(thermo_data, self.groups['radical'], saturated_struct, {'*': atom})
             except KeyError:
                 logging.error("Couldn't find in radical thermo database:")
                 logging.error(molecule)
-                logging.error(molecule.toAdjacencyList())
+                logging.error(molecule.to_adjacency_list())
                 raise
             # Re-saturate
             for H, bond in added[atom]:
-                saturated_struct.addAtom(H)
-                saturated_struct.addBond(bond)
-                atom.decrementRadical()
+                saturated_struct.add_atom(H)
+                saturated_struct.add_bond(bond)
+                atom.decrement_radical()
             # Subtract the enthalpy of the added hydrogens
             for H, bond in added[atom]:
                 thermo_data.H298.value_si -= 52.103 * 4184
@@ -1876,8 +1876,8 @@ class ThermoDatabase(object):
         # Remove all of the interactions of the saturated structure. Then add the interactions of the radical.
         # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
         # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
-        if saturated_struct.isCyclic():
-            sssr = saturated_struct.getSmallestSetOfSmallestRings()
+        if saturated_struct.is_cyclic():
+            sssr = saturated_struct.get_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -1885,7 +1885,7 @@ class ThermoDatabase(object):
                                                        saturated_struct, {'*1': atomPair[0], '*2': atomPair[1]})
                     except KeyError:
                         pass
-            sssr = molecule.getSmallestSetOfSmallestRings()
+            sssr = molecule.get_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -1912,9 +1912,9 @@ class ThermoDatabase(object):
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the thermo wrong
-        molecule.sortAtoms()
+        molecule.sort_atoms()
 
-        if molecule.isRadical():
+        if molecule.is_radical():
             thermo_data = self.estimate_radical_thermo_via_hbi(molecule, self.compute_group_additivity_thermo)
         else:
             thermo_data = self.compute_group_additivity_thermo(molecule)
@@ -1931,11 +1931,11 @@ class ThermoDatabase(object):
         This should be done later by the calling function.
         """
 
-        assert not molecule.isRadical(), "This method is only for saturated non-radical species."
+        assert not molecule.is_radical(), "This method is only for saturated non-radical species."
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the thermo wrong
-        molecule.sortAtoms()
+        molecule.sort_atoms()
 
         # Create the ThermoData object
         thermo_data = ThermoData(
@@ -1945,28 +1945,28 @@ class ThermoDatabase(object):
             S298=(0.0, "J/(mol*K)"),
         )
 
-        cyclic = molecule.isCyclic()
+        cyclic = molecule.is_cyclic()
         # Generate estimate of thermodynamics
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.isNonHydrogen():
+            if atom.is_non_hydrogen():
                 # Get initial thermo estimate from main group database
                 try:
                     self._add_group_thermo_data(thermo_data, self.groups['group'], molecule, {'*': atom})
                 except KeyError:
                     logging.error("Couldn't find in main thermo database:")
                     logging.error(molecule)
-                    logging.error(molecule.toAdjacencyList())
+                    logging.error(molecule.to_adjacency_list())
                     raise
                 # Correct for gauche and 1,5- interactions
                 # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
                 # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
                 # Currently we only have gauche(1,4) and 1,5 interactions in that file. 
-                # If you want to add more corrections for longer distance, please call getNthNeighbor() method accordingly.
+                # If you want to add more corrections for longer distance, please call get_nth_neighbor() method accordingly.
                 # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
-                if not molecule.isAtomInCycle(atom):
-                    for atom_2 in molecule.getNthNeighbor([atom], [1, 2]):
-                        if not molecule.isAtomInCycle(atom_2):
+                if not molecule.is_atom_in_cycle(atom):
+                    for atom_2 in molecule.get_nth_neighbor([atom], [1, 2]):
+                        if not molecule.is_atom_in_cycle(atom_2):
                             # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
                             # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
                             try:
@@ -1992,7 +1992,7 @@ class ThermoDatabase(object):
         # In my opinion, it's cleaner to do it in the current way.
         # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
         if cyclic:
-            sssr = molecule.getSmallestSetOfSmallestRings()
+            sssr = molecule.get_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -2005,7 +2005,7 @@ class ThermoDatabase(object):
         # each ring one time
 
         if cyclic:
-            monorings, polyrings = molecule.getDisparateRings()
+            monorings, polyrings = molecule.get_disparate_cycles()
             for ring in monorings:
                 # Make a temporary structure containing only the atoms in the ring
                 # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
@@ -2015,7 +2015,7 @@ class ThermoDatabase(object):
                     logging.error("Couldn't find a match in the monocyclic ring database even though "
                                   "monocyclic rings were found.")
                     logging.error(molecule)
-                    logging.error(molecule.toAdjacencyList())
+                    logging.error(molecule.to_adjacency_list())
                     raise
             for polyring in polyrings:
                 # Make a temporary structure containing only the atoms in the ring
@@ -2026,7 +2026,7 @@ class ThermoDatabase(object):
                     logging.error("Couldn't find a match in the polycyclic ring database even though "
                                   "polycyclic rings were found.")
                     logging.error(molecule)
-                    logging.error(molecule.toAdjacencyList())
+                    logging.error(molecule.to_adjacency_list())
                     raise
 
         return thermo_data
@@ -2103,7 +2103,7 @@ class ThermoDatabase(object):
                 if not is_aromatic_ring(submol):
                     aromatic_bonds = find_aromatic_bonds_from_sub_molecule(submol)
                     for aromaticBond in aromatic_bonds:
-                        aromaticBond.setOrderNum(1)
+                        aromaticBond.set_order_num(1)
 
                     submol.saturate_unfilled_valence()
                     single_ring_thermodata = self._add_ring_correction_thermo_data_from_tree(
@@ -2159,7 +2159,7 @@ class ThermoDatabase(object):
             if not is_aromatic_ring(submol):
                 aromatic_bonds = find_aromatic_bonds_from_sub_molecule(submol)
                 for aromatic_bond in aromatic_bonds:
-                    aromatic_bond.setOrderNum(1)
+                    aromatic_bond.set_order_num(1)
 
                 submol.saturate_unfilled_valence()
                 single_ring_thermo_data = self._add_ring_correction_thermo_data_from_tree(
@@ -2178,7 +2178,7 @@ class ThermoDatabase(object):
             if not is_aromatic_ring(submol):
                 aromatic_bonds = find_aromatic_bonds_from_sub_molecule(submol)
                 for aromatic_bond in aromatic_bonds:
-                    aromatic_bond.setOrderNum(1)
+                    aromatic_bond.set_order_num(1)
 
                 submol.saturate_unfilled_valence()
                 single_ring_thermo_data = self._add_ring_correction_thermo_data_from_tree(
@@ -2551,7 +2551,7 @@ class ThermoCentralDatabaseInterface(object):
         cyclic, 
         its thermo is estimated by GAV and no exact match/use heuristics
         """
-        if not species.molecule[0].isCyclic():
+        if not species.molecule[0].is_cyclic():
             return False
 
         gav_keywords = 'Thermo group additivity estimation'
@@ -2580,7 +2580,7 @@ class ThermoCentralDatabaseInterface(object):
 
         # prepare registration entry
         try:
-            aug_inchi = species.getAugmentedInChI()
+            aug_inchi = species.get_augmented_inchi()
 
             # check if it's registered before or
             # already have available data in results_table
@@ -2590,11 +2590,11 @@ class ThermoCentralDatabaseInterface(object):
             if len(registered_entries) + len(finished_entries) > 0:
                 return
 
-            smiles_input = species.molecule[0].toSMILES()
+            smiles_input = species.molecule[0].to_smiles()
             status = 'pending'
             species_registration_entry = {'aug_inchi': aug_inchi,
                                           'SMILES_input': smiles_input,
-                                          'radical_number': species.molecule[0].getRadicalCount(),
+                                          'radical_number': species.molecule[0].get_radical_count(),
                                           'status': status,
                                           'user': self.username,
                                           'application': self.application,
@@ -2604,7 +2604,7 @@ class ThermoCentralDatabaseInterface(object):
             registration_table.insert(species_registration_entry)
 
         except ValueError:
-            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
+            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.to_adjacency_list()))
 
 
 def find_cp0_and_cpinf(species, heat_capacity):
@@ -2612,8 +2612,8 @@ def find_cp0_and_cpinf(species, heat_capacity):
     Calculate the Cp0 and CpInf values, and add them to the HeatCapacityModel object.
     """
     if heat_capacity.Cp0 is None:
-        cp_0 = species.calculateCp0()
+        cp_0 = species.calculate_cp0()
         heat_capacity.Cp0 = (cp_0, "J/(mol*K)")
     if heat_capacity.CpInf is None:
-        cp_inf = species.calculateCpInf()
+        cp_inf = species.calculate_cpinf()
         heat_capacity.CpInf = (cp_inf, "J/(mol*K)")

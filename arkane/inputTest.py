@@ -74,7 +74,7 @@ class InputTest(unittest.TestCase):
 
         spc0 = species(label0, **kwargs)
         self.assertEqual(spc0.label, 'CH2O')
-        self.assertEqual(spc0.SMILES, 'C=O')
+        self.assertEqual(spc0.smiles, 'C=O')
         self.assertAlmostEqual(spc0.conformer.E0.value_si, 120038.96)
         self.assertEqual(spc0.conformer.spinMultiplicity, 1)
         self.assertEqual(spc0.conformer.opticalIsomers, 1)
@@ -95,8 +95,8 @@ class InputTest(unittest.TestCase):
                   "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, 'kJ/mol'), T0=(300, 'K'), n=0.85)}
         spc0 = species(label0, **kwargs)
         self.assertEqual(spc0.label, label0)
-        self.assertEqual(spc0.SMILES, '[H]')
-        self.assertTrue(spc0.hasStatMech())
+        self.assertEqual(spc0.smiles, '[H]')
+        self.assertTrue(spc0.has_statmech())
         self.assertEqual(spc0.thermo, kwargs['thermo'])
 
     def test_species_polyatomic_NASA_polynomial(self):
@@ -116,7 +116,7 @@ class InputTest(unittest.TestCase):
                   "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, 'kJ/mol'), T0=(300, 'K'), n=0.85)}
         spc0 = species(label0, **kwargs)
         self.assertEqual(spc0.label, label0)
-        self.assertTrue(spc0.hasStatMech())
+        self.assertTrue(spc0.has_statmech())
         self.assertEqual(spc0.thermo, kwargs['thermo'])
 
     def test_transitionState(self):

@@ -51,7 +51,7 @@ class TestThermo(unittest.TestCase):
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
-        spc = Species().fromSMILES('CCO')
+        spc = Species().from_smiles('CCO')
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
         spc.conformer = log.loadConformer()[0]
         coords, numbers, masses = log.loadGeometry()

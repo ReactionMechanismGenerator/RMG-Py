@@ -47,8 +47,8 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
-from rmgpy.molecule.element import getElement
-from rmgpy.molecule.util import retrieveElementCount
+from rmgpy.molecule.element import get_element
+from rmgpy.molecule.util import get_element_count
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
@@ -788,17 +788,17 @@ def loadSpeciesDictionary(path):
     """
     species_dict = {}
 
-    inerts = [Species().fromSMILES(inert) for inert in ('[He]', '[Ne]', 'N#N', '[Ar]')]
+    inerts = [Species().from_smiles(inert) for inert in ('[He]', '[Ne]', 'N#N', '[Ar]')]
     with open(path, 'r') as f:
         adjlist = ''
         for line in f:
             if line.strip() == '' and adjlist.strip() != '':
                 # Finish this adjacency list
-                species = Species().fromAdjacencyList(adjlist)
+                species = Species().from_adjacency_list(adjlist)
                 species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:
-                    if inert.isIsomorphic(species):
+                    if inert.is_isomorphic(species):
                         species.reactive = False
                         break
                 species_dict[label] = species
@@ -812,11 +812,11 @@ def loadSpeciesDictionary(path):
                 adjlist += line
         else:  #reach end of file
             if adjlist.strip() != '':
-                species = Species().fromAdjacencyList(adjlist)
+                species = Species().from_adjacency_list(adjlist)
                 species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:
-                    if inert.isIsomorphic(species):
+                    if inert.is_isomorphic(species):
                         species.reactive = False
                         break
                 species_dict[label] = species
@@ -1172,7 +1172,7 @@ def readThermoBlock(f, speciesDict):
                 thermo_block = ''
                 line = f.readline()
                 continue
-            elif speciesDict[label].hasThermo():
+            elif speciesDict[label].has_thermo():
                 logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
                 thermo_block = ''
                 line = f.readline()
@@ -1430,7 +1430,7 @@ def getSpeciesIdentifier(species):
             # try the chemical formula if the species label is not present
             if len(species.molecule) > 0:
                 # Try the chemical formula
-                return '{0}'.format(species.molecule[0].getFormula())
+                return '{0}'.format(species.molecule[0].get_formula())
     else:
 
         # Index present - the index will be included in the identifier
@@ -1446,7 +1446,7 @@ def getSpeciesIdentifier(species):
         # Next try the chemical formula
         if len(species.molecule) > 0:
             # Try the chemical formula
-            name = '{0}({1:d})'.format(species.molecule[0].getFormula(), species.index)
+            name = '{0}({1:d})'.format(species.molecule[0].get_formula(), species.index)
             if len(name) <= 10:
                 if 'obs' in label:
                     # For MBSampledReactor, keep observed species tag
@@ -1482,7 +1482,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
     model, and you must use the seven-coefficient forms for each.
     """
 
-    thermo = species.getThermoData()
+    thermo = species.get_thermo_data()
 
     if not isinstance(thermo, NASA):
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": '
@@ -1496,7 +1496,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
 
     # Determine the number of each type of element in the molecule
     if elementCounts is None:
-        elementCounts = retrieveElementCount(species.molecule[0])
+        elementCounts = get_element_count(species.molecule[0])
 
     string = ''
     # Write thermo comments
@@ -1517,7 +1517,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
         for key, count in elementCounts.items():
             if isinstance(key, tuple):
                 symbol, isotope = key
-                chemkin_name = getElement(symbol, isotope=isotope).chemkinName
+                chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
             else:
                 chemkin_name = key
             string += '{0!s:<2}{1:>3d}'.format(chemkin_name, count)
@@ -1534,7 +1534,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
         for key, count in elementCounts.items():
             if isinstance(key, tuple):
                 symbol, isotope = key
-                chemkin_name = getElement(symbol, isotope=isotope).chemkinName
+                chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
             else:
                 chemkin_name = key
             string += '{0!s:<2}{1:>3d}'.format(chemkin_name, count)
@@ -1789,7 +1789,7 @@ def writeKineticsEntry(reaction, speciesList, verbose=True, javaLibrary=False, c
         # Write collider efficiencies
         for collider, efficiency in sorted(list(kinetics.efficiencies.items()), key=lambda item: id(item[0])):
             for species in speciesList:
-                if any([collider.isIsomorphic(molecule) for molecule in species.molecule]):
+                if any([collider.is_isomorphic(molecule) for molecule in species.molecule]):
                     string += '{0!s}/{1:<4.2f}/ '.format(getSpeciesIdentifier(species), efficiency)
                     break
         string += '\n'
@@ -1938,10 +1938,10 @@ def saveSpeciesDictionary(path, species, oldStyle=False):
         for spec in species:
             if oldStyle:
                 try:
-                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec),
-                                                             removeH=True, oldStyle=True))
+                    f.write(spec.molecule[0].to_adjacency_list(label=getSpeciesIdentifier(spec),
+                                                               remove_h=True, old_style=True))
                 except:
-                    new_adjlist = spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False)
+                    new_adjlist = spec.molecule[0].to_adjacency_list(label=getSpeciesIdentifier(spec), remove_h=False)
                     f.write("// Couldn't save {0} in old RMG-Java syntax, but here it is in "
                             "newer RMG-Py syntax:".format(getSpeciesIdentifier(spec)))
                     f.write("\n// " + "\n// ".join(new_adjlist.splitlines()) + '\n')
@@ -1949,7 +1949,7 @@ def saveSpeciesDictionary(path, species, oldStyle=False):
                 try:
                     for mol in spec.molecule:
                         if mol.reactive:
-                            f.write(mol.toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                            f.write(mol.to_adjacency_list(label=getSpeciesIdentifier(spec), remove_h=False))
                             break
                     else:
                         raise ValueError('No reactive structures were found for species '
@@ -1989,7 +1989,7 @@ def saveTransportFile(path, species):
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format(
             'Name', 'Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot', 'Source'))
         for spec in species:
-            transport_data = spec.getTransportData()
+            transport_data = spec.get_transport_data()
             if not transport_data:
                 missing_data = True
             else:
@@ -2182,7 +2182,7 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
         species_list = reactionModel.core.species + reactionModel.outputSpeciesList
         rxn_list = reactionModel.core.reactions + reactionModel.outputReactionList
 
-    if any([s.containsSurfaceSite() for s in reactionModel.core.species]):
+    if any([s.contains_surface_site() for s in reactionModel.core.species]):
         # it's a surface model
         root, ext = os.path.splitext(path)
         gas_path = root + '-gas' + ext
@@ -2197,7 +2197,7 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
         gas_rxn_list = []
 
         for s in species_list:
-            if s.containsSurfaceSite():
+            if s.contains_surface_site():
                 surface_species_list.append(s)
             else:
                 gas_species_list.append(s)
@@ -2233,7 +2233,7 @@ def saveChemkinFiles(rmg):
     """
 
     # todo: make this an attribute or method of reactionModel
-    is_surface_model = any([s.containsSurfaceSite() for s in rmg.reactionModel.core.species])
+    is_surface_model = any([s.contains_surface_site() for s in rmg.reactionModel.core.species])
 
     logging.info('Saving current model core to Chemkin file...')
     this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin',
@@ -2307,8 +2307,8 @@ def writeElementsSection(f):
     for el in elements:
         if isinstance(el, tuple):
             symbol, isotope = el
-            chemkin_name = getElement(symbol, isotope=isotope).chemkinName
-            mass = 1000 * getElement(symbol, isotope=isotope).mass
+            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
+            mass = 1000 * get_element(symbol, isotope=isotope).mass
             s += '\t{0} /{1:.3f}/\n'.format(chemkin_name, mass)
         else:
             s += '\t' + el + '\n'

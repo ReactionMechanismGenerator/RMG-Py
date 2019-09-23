@@ -53,7 +53,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.drawer = MoleculeDrawer()
-        self.molecule = Molecule(SMILES='CC(=O)CC')
+        self.molecule = Molecule(smiles='CC(=O)CC')
 
     def testDrawPNG(self):
         """
@@ -98,7 +98,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = 'test_molecule.pdf'
         if os.path.exists(path):
             os.unlink(path)
-        polycycle = Molecule(SMILES="C123CC4CC1COCC2CCC34")
+        polycycle = Molecule(smiles="C123CC4CC1COCC2CCC34")
         surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', target=path)
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
@@ -118,8 +118,8 @@ class TestMoleculeDrawer(unittest.TestCase):
 
     def testDrawNonStandardBonds(self):
 
-        spec = Species().fromSMILES('[CH2]C=C[CH2]')
-        hybrid = spec.getResonanceHybrid()
+        spec = Species().from_smiles('[CH2]C=C[CH2]')
+        hybrid = spec.get_resonance_hybrid()
         try:
             from cairocffi import PDFSurface
         except ImportError:

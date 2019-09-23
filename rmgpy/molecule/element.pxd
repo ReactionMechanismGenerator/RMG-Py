@@ -31,8 +31,8 @@ cdef class Element:
     cdef public str name
     cdef public str symbol
     cdef public float mass
-    cdef public float covRadius
+    cdef public float cov_radius
     cdef public int isotope
-    cdef public str chemkinName
+    cdef public str chemkin_name
 
-cpdef Element getElement(value, int isotope=?)
+cpdef Element get_element(value, int isotope=?)

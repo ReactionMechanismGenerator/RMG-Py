@@ -50,7 +50,7 @@ import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.molecule as mm
 import rmgpy.molecule.util as util
 from rmgpy.exceptions import DependencyError
-from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
+from rmgpy.molecule.converter import to_rdkit_mol, from_rdkit_mol, to_ob_mol, from_ob_mol
 
 # constants
 
@@ -137,7 +137,7 @@ RADICAL_LOOKUPS = {
 }
 
 
-def toInChI(mol, backend='rdkit-first', aug_level=0):
+def to_inchi(mol, backend='rdkit-first', aug_level=0):
     """
     Convert a molecular structure to an InChI string.
     For aug_level=0, generates the canonical InChI.
@@ -156,14 +156,14 @@ def toInChI(mol, backend='rdkit-first', aug_level=0):
         return _write(mol, 'inchi', backend)
 
     elif aug_level == 1:
-        inchi = toInChI(mol, backend=backend)
+        inchi = to_inchi(mol, backend=backend)
 
         mlayer = '/mult{0}'.format(mol.multiplicity) if mol.multiplicity != 0 else ''
 
         return inchi + mlayer
 
     elif aug_level == 2:
-        inchi = toInChI(mol, backend=backend)
+        inchi = to_inchi(mol, backend=backend)
 
         ulayer, player = inchiutil.create_augmented_layers(mol)
 
@@ -173,7 +173,7 @@ def toInChI(mol, backend='rdkit-first', aug_level=0):
         raise ValueError("Implemented values for aug_level are 0, 1, or 2.")
 
 
-def toInChIKey(mol, backend='rdkit-first', aug_level=0):
+def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
     """
     Convert a molecular structure to an InChI Key string.
     For aug_level=0, generates the canonical InChI.
@@ -192,14 +192,14 @@ def toInChIKey(mol, backend='rdkit-first', aug_level=0):
         return _write(mol, 'inchikey', backend)
 
     elif aug_level == 1:
-        key = toInChIKey(mol, backend=backend)
+        key = to_inchi_key(mol, backend=backend)
 
         mlayer = '-mult{0}'.format(mol.multiplicity) if mol.multiplicity != 0 else ''
 
         return key + mlayer
 
     elif aug_level == 2:
-        key = toInChIKey(mol, backend=backend)
+        key = to_inchi_key(mol, backend=backend)
 
         ulayer, player = inchiutil.create_augmented_layers(mol)
 
@@ -209,7 +209,7 @@ def toInChIKey(mol, backend='rdkit-first', aug_level=0):
         raise ValueError("Implemented values for aug_level are 0, 1, or 2.")
 
 
-def toSMARTS(mol, backend='rdkit'):
+def to_smarts(mol, backend='rdkit'):
     """
     Convert a molecular structure to an SMARTS string. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -218,7 +218,7 @@ def toSMARTS(mol, backend='rdkit'):
     return _write(mol, 'sma', backend)
 
 
-def toSMILES(mol, backend='default'):
+def to_smiles(mol, backend='default'):
     """
     Convert a molecular structure to an SMILES string.
 
@@ -236,14 +236,14 @@ def toSMILES(mol, backend='default'):
     # Dictionary lookups are O(1) so this should be fast.
     # The dictionary is defined at the top of this file.
     try:
-        if mol.isRadical():
-            output = RADICAL_LOOKUPS[mol.getFormula()]
+        if mol.is_radical():
+            output = RADICAL_LOOKUPS[mol.get_formula()]
         else:
-            output = MOLECULE_LOOKUPS[mol.getFormula()]
+            output = MOLECULE_LOOKUPS[mol.get_formula()]
     except KeyError:
         if backend == 'default':
             for atom in mol.atoms:
-                if atom.isNitrogen() or atom.isSulfur():
+                if atom.is_nitrogen() or atom.is_sulfur():
                     return _write(mol, 'smi', backend='openbabel')
             return _write(mol, 'smi', backend='rdkit')
         else:
@@ -252,7 +252,7 @@ def toSMILES(mol, backend='default'):
         return output
 
 
-def fromInChI(mol, inchistr, backend='try-all'):
+def from_inchi(mol, inchistr, backend='try-all'):
     """
     Convert an InChI string `inchistr` to a molecular structure. Uses
     a user-specified backend for conversion, currently supporting
@@ -264,7 +264,7 @@ def fromInChI(mol, inchistr, backend='try-all'):
         return _read(mol, inchiutil.INCHI_PREFIX + '/' + inchistr, 'inchi', backend)
 
 
-def fromAugmentedInChI(mol, aug_inchi):
+def from_augmented_inchi(mol, aug_inchi):
     """
     Creates a Molecule object from the augmented inchi.
 
@@ -282,18 +282,18 @@ def fromAugmentedInChI(mol, aug_inchi):
     if not isinstance(aug_inchi, inchiutil.AugmentedInChI):
         aug_inchi = inchiutil.AugmentedInChI(aug_inchi)
 
-    mol = fromInChI(mol, aug_inchi.inchi)
+    mol = from_inchi(mol, aug_inchi.inchi)
 
     mol.multiplicity = len(aug_inchi.u_indices) + 1 if aug_inchi.u_indices else 1
 
     inchiutil.fix_molecule(mol, aug_inchi)
 
-    mol.updateAtomTypes()
+    mol.update_atomtypes()
 
     return mol
 
 
-def fromSMARTS(mol, smartsstr, backend='rdkit'):
+def from_smarts(mol, smartsstr, backend='rdkit'):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -302,7 +302,7 @@ def fromSMARTS(mol, smartsstr, backend='rdkit'):
     return _read(mol, smartsstr, 'sma', backend)
 
 
-def fromSMILES(mol, smilesstr, backend='try-all'):
+def from_smiles(mol, smilesstr, backend='try-all'):
     """
     Convert a SMILES string `smilesstr` to a molecular structure. Uses
     a user-specified backend for conversion, currently supporting
@@ -333,7 +333,7 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
     if isinstance(input_object, str):
         # We are converting from a string identifier to a molecule
         if identifier_type == 'inchi':
-            rdkitmol = Chem.inchi.MolFromInchi(input_object, removeHs=False)
+            rdkitmol = Chem.inchi.MolFromInchi(input_object, remove_h=False)
         elif identifier_type == 'sma':
             rdkitmol = Chem.MolFromSmarts(input_object)
         elif identifier_type == 'smi':
@@ -344,22 +344,22 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
             raise ValueError("Could not interpret the identifier {0!r}".format(input_object))
         if mol is None:
             mol = mm.Molecule()
-        output = fromRDKitMol(mol, rdkitmol)
+        output = from_rdkit_mol(mol, rdkitmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a molecule to a string identifier
         if identifier_type == 'smi':
-            rdkitmol = toRDKitMol(input_object, sanitize=False)
+            rdkitmol = to_rdkit_mol(input_object, sanitize=False)
         else:
-            rdkitmol = toRDKitMol(input_object, sanitize=True)
+            rdkitmol = to_rdkit_mol(input_object, sanitize=True)
         if identifier_type == 'inchi':
             output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         elif identifier_type == 'inchikey':
-            inchi = toInChI(input_object)
+            inchi = to_inchi(input_object)
             output = Chem.inchi.InchiToInchiKey(inchi)
         elif identifier_type == 'sma':
             output = Chem.MolToSmarts(rdkitmol)
         elif identifier_type == 'smi':
-            if input_object.isAromatic():
+            if input_object.is_aromatic():
                 output = Chem.MolToSmiles(rdkitmol)
             else:
                 output = Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
@@ -397,7 +397,7 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
         obmol.AssignSpinMultiplicity(True)
         if mol is None:
             mol = mm.Molecule()
-        output = fromOBMol(mol, obmol)
+        output = from_ob_mol(mol, obmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a Molecule to a string identifier
         if identifier_type == 'inchi':
@@ -413,7 +413,7 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
             ob_conversion.AddOption('i')
         else:
             raise ValueError('Unexpected identifier type {0}.'.format(identifier_type))
-        obmol = toOBMol(input_object)
+        obmol = to_ob_mol(input_object)
         output = ob_conversion.WriteString(obmol).strip()
     else:
         raise ValueError('Unexpected input format. Should be a Molecule or a string.')
@@ -432,13 +432,13 @@ def _lookup(mol, identifier, identifier_type):
     if identifier_type.lower() == 'inchi':
         try:
             smi = INCHI_LOOKUPS[identifier.split('/', 1)[1]]
-            return mol.fromSMILES(smi)
+            return mol.from_smiles(smi)
         except KeyError:
             return None
     elif identifier_type.lower() == 'smi':
         try:
             adjList = SMILES_LOOKUPS[identifier]
-            return mol.fromAdjacencyList(adjList)
+            return mol.from_adjacency_list(adjList)
         except KeyError:
             return None
 
@@ -454,8 +454,8 @@ def _check_output(mol, identifier):
 
     # Check that the InChI element count matches the molecule
     if 'InChI=1' in identifier:
-        inchi_elementcount = util.retrieveElementCount(identifier)
-        mol_elementcount = util.retrieveElementCount(mol)
+        inchi_elementcount = util.get_element_count(identifier)
+        mol_elementcount = util.get_element_count(mol)
         conditions.append(inchi_elementcount == mol_elementcount)
 
     return all(conditions)
@@ -480,7 +480,7 @@ def _read(mol, identifier, identifier_type, backend):
 
     if _lookup(mol, identifier, identifier_type) is not None:
         if _check_output(mol, identifier):
-            mol.updateAtomTypes()
+            mol.update_atomtypes()
             return mol
 
     for option in _get_backend_list(backend):
@@ -492,7 +492,7 @@ def _read(mol, identifier, identifier_type, backend):
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         if _check_output(mol, identifier):
-            mol.updateAtomTypes()
+            mol.update_atomtypes()
             return mol
         else:
             logging.debug('Backend {0} is not able to parse identifier {1}'.format(option, identifier))
@@ -530,7 +530,7 @@ def _write(mol, identifier_type, backend):
             return output
         else:
             logging.debug('Backend {0} is not able to generate {1} for this molecule:\n'
-                          '{2}'.format(option, identifier_type, mol.toAdjacencyList()))
+                          '{2}'.format(option, identifier_type, mol.to_adjacency_list()))
 
     raise ValueError("Unable to generate identifier type {0} with backend {1}.".format(identifier_type, backend))
 

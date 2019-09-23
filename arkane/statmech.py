@@ -242,11 +242,11 @@ class StatMechJob(object):
                 self.species.transportData = self.arkane_species.transport_data
                 self.species.energyTransferModel = self.arkane_species.energy_transfer_model
                 if self.arkane_species.adjacency_list is not None:
-                    self.species.molecule = [Molecule().fromAdjacencyList(adjlist=self.arkane_species.adjacency_list)]
+                    self.species.molecule = [Molecule().from_adjacency_list(adjlist=self.arkane_species.adjacency_list)]
                 elif self.arkane_species.inchi is not None:
-                    self.species.molecule = [Molecule().fromInChI(inchistr=self.arkane_species.inchi)]
+                    self.species.molecule = [Molecule().from_inchi(inchistr=self.arkane_species.inchi)]
                 elif self.arkane_species.smiles is not None:
-                    self.species.molecule = [Molecule().fromSMILES(smilesstr=self.arkane_species.smiles)]
+                    self.species.molecule = [Molecule().from_smiles(smilesstr=self.arkane_species.smiles)]
             return
 
         logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))

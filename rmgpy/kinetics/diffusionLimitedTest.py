@@ -70,7 +70,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(298, 'K'), Tmax=(5000, 'K'), Cp0=(33.2579, 'J/(mol*K)'), CpInf=(577.856, 'J/(mol*K)'),
                 comment="""Thermo library: JetSurF0.2"""),
-            molecule=[Molecule(SMILES="[CH2]CCCCCCC")]
+            molecule=[Molecule(smiles="[CH2]CCCCCCC")]
         )
         octyl_sec = Species(
             label="",
@@ -85,7 +85,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(298, 'K'), Tmax=(5000, 'K'), Cp0=(33.2579, 'J/(mol*K)'), CpInf=(577.856, 'J/(mol*K)'),
                 comment="""Thermo library: JetSurF0.2"""),
-            molecule=[Molecule(SMILES="CC[CH]CCCCC")]
+            molecule=[Molecule(smiles="CC[CH]CCCCC")]
         )
         ethane = Species(
             label="",
@@ -95,7 +95,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 H298=(12.549, 'kcal/mol'),
                 S298=(52.379, 'cal/(mol*K)'),
                 Cp0=(33.2579, 'J/(mol*K)'), CpInf=(133.032, 'J/(mol*K)'), comment="""Thermo library: CH"""),
-            molecule=[Molecule(SMILES="C=C")]
+            molecule=[Molecule(smiles="C=C")]
         )
         decyl = Species(
             label="",
@@ -110,7 +110,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(298, 'K'), Tmax=(5000, 'K'), Cp0=(33.2579, 'J/(mol*K)'), CpInf=(719.202, 'J/(mol*K)'),
                 comment="""Thermo library: JetSurF0.2"""),
-            molecule=[Molecule(SMILES="[CH2]CCCCCCCCC")]
+            molecule=[Molecule(smiles="[CH2]CCCCCCCCC")]
         )
         acetone = Species(
             label="",
@@ -125,7 +125,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-232.025, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(232.805, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)C")]
+            molecule=[Molecule(smiles="CC(=O)C")]
         )
         peracetic_acid = Species(
             label="",
@@ -140,7 +140,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-349.698, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(199.547, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)OO")]
+            molecule=[Molecule(smiles="CC(=O)OO")]
         )
         acetic_acid = Species(
             label="",
@@ -155,7 +155,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-448.245, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(182.918, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)O")]
+            molecule=[Molecule(smiles="CC(=O)O")]
         )
         criegee = Species(
             label="",
@@ -170,7 +170,7 @@ class TestDiffusionLimited(unittest.TestCase):
                 ],
                 Tmin=(10, 'K'), Tmax=(3000, 'K'), E0=(-648.47, 'kJ/mol'), Cp0=(33.2579, 'J/(mol*K)'),
                 CpInf=(457.296, 'J/(mol*K)')),
-            molecule=[Molecule(SMILES="CC(=O)OOC(C)(O)C")]
+            molecule=[Molecule(smiles="CC(=O)OOC(C)(O)C")]
         )
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))

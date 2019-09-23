@@ -121,14 +121,14 @@ cdef class Configuration(object):
         Return ``True`` if all species in the configuration have statistical
         mechanics parameters, or ``False`` otherwise.
         """
-        return all([spec.hasStatMech() for spec in self.species])
+        return all([spec.has_statmech() for spec in self.species])
 
     cpdef bint hasThermo(self) except -2:
         """
         Return ``True`` if all species in the configuration have thermodynamics
         parameters, or ``False`` otherwise.
         """
-        return all([spec.hasThermo() for spec in self.species])
+        return all([spec.has_thermo() for spec in self.species])
     
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
@@ -182,18 +182,18 @@ cdef class Configuration(object):
         cdef double sigma, epsilon, mu, gas_concentration, frac, tred, omega22
 
         assert self.isUnimolecular()
-        assert isinstance(self.species[0].getTransportData(), TransportData)
+        assert isinstance(self.species[0].get_transport_data(), TransportData)
         for spec, frac in bathGas.items():
-            assert isinstance(spec.getTransportData(), TransportData)
+            assert isinstance(spec.get_transport_data(), TransportData)
 
         bath_gas_sigma, bath_gas_epsilon, bath_gas_mw = 0.0, 1.0, 0.0
         for spec, frac in bathGas.items():
-            bath_gas_sigma += spec.getTransportData().sigma.value_si * frac
-            bath_gas_epsilon *= spec.getTransportData().epsilon.value_si ** frac
+            bath_gas_sigma += spec.get_transport_data().sigma.value_si * frac
+            bath_gas_epsilon *= spec.get_transport_data().epsilon.value_si ** frac
             bath_gas_mw += spec.molecularWeight.value_si * frac
 
-        sigma = 0.5 * (self.species[0].getTransportData().sigma.value_si + bath_gas_sigma)
-        epsilon = sqrt((self.species[0].getTransportData().epsilon.value_si * bath_gas_epsilon))
+        sigma = 0.5 * (self.species[0].get_transport_data().sigma.value_si + bath_gas_sigma)
+        epsilon = sqrt((self.species[0].get_transport_data().epsilon.value_si * bath_gas_epsilon))
         mu = 1.0 / (1.0 / self.species[0].molecularWeight.value_si + 1.0 / bath_gas_mw)
         gas_concentration = P / constants.kB / T
 
@@ -252,7 +252,7 @@ cdef class Configuration(object):
                 linear = False
                 for species in self.species:
                     for molecule in species.molecule:
-                        if molecule.isLinear(): 
+                        if molecule.is_linear():
                             linear = True
                             break
                 if linear:

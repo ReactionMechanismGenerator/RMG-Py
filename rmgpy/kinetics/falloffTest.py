@@ -127,7 +127,7 @@ class TestThirdBody(unittest.TestCase):
         species = [Species(molecule=[mol]) for mol in self.thirdBody.efficiencies.keys()]
         for mol, eff in self.thirdBody.efficiencies.items():
             for spec in species:
-                if spec.isIsomorphic(mol):
+                if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     break
             fractions = np.zeros(len(species))
@@ -140,9 +140,9 @@ class TestThirdBody(unittest.TestCase):
         fractions[1] = 0.5
         eff = 0
         for mol in self.thirdBody.efficiencies.keys():
-            if species[0].isIsomorphic(mol):
+            if species[0].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
-            if species[1].isIsomorphic(mol):
+            if species[1].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
         Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
@@ -151,7 +151,7 @@ class TestThirdBody(unittest.TestCase):
         species = [mol.copy(deep=True) for mol in self.thirdBody.efficiencies.keys()]
         for mol, eff in self.thirdBody.efficiencies.items():
             for spec in species:
-                if spec.isIsomorphic(mol):
+                if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     break
             fractions = np.zeros(len(species))
@@ -161,9 +161,9 @@ class TestThirdBody(unittest.TestCase):
         # Also test a mixture of bath gases
         eff = 0
         for mol in self.thirdBody.efficiencies.keys():
-            if species[0].isIsomorphic(mol):
+            if species[0].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
-            if species[1].isIsomorphic(mol):
+            if species[1].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
 
         fractions = np.zeros(len(species))
@@ -184,13 +184,13 @@ class TestThirdBody(unittest.TestCase):
         Test the get_effective_collider_efficiencies() method
         """
         # Create list of molecules
-        molecules = [Molecule(SMILES=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
+        molecules = [Molecule(smiles=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
         method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
         efficiencies = np.array([3, 2, 3, 6, 0.7, 1.5, 2])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
         # Use a smaller list of molecules
-        molecules = [Molecule(SMILES=smiles) for smiles in ["C", "CC", "[Ar]"]]
+        molecules = [Molecule(smiles=smiles) for smiles in ["C", "CC", "[Ar]"]]
         method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
         efficiencies = np.array([3, 3, 0.7])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
@@ -237,10 +237,10 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         efficiencies = {}
         for mol, eff in self.thirdBody.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in thirdBody.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
 
@@ -271,10 +271,10 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         efficiencies = {}
         for mol, eff in self.thirdBody.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in thirdBody.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
 
@@ -428,10 +428,10 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         efficiencies = {}
         for mol, eff in self.lindemann.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in lindemann.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
 
@@ -470,10 +470,10 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         efficiencies = {}
         for mol, eff in self.lindemann.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in lindemann.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
 
@@ -666,10 +666,10 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
         efficiencies = {}
         for mol, eff in self.troe.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in troe.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
 
@@ -715,10 +715,10 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
         efficiencies = {}
         for mol, eff in self.troe.efficiencies.items():
-            efficiencies[mol.toSMILES()] = eff
+            efficiencies[mol.to_smiles()] = eff
         pickled_efficiencies = {}
         for mol, eff in troe.efficiencies.items():
-            pickled_efficiencies[mol.toSMILES()] = eff
+            pickled_efficiencies[mol.to_smiles()] = eff
         self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
 

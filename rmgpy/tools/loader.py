@@ -88,7 +88,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
             for species in species_list:
                 if '_obs' not in species.label and species.reactive:
                     for constant_species in reactionSystem.constantSpeciesList:
-                        if species.isIsomorphic(constant_species):
+                        if species.is_isomorphic(constant_species):
                             break
                     else:
                         for species2 in species_list:
@@ -105,7 +105,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     species_dict = {}
     for spec0 in rmg.initialSpecies:
         for species in species_list:
-            if species.isIsomorphic(spec0):
+            if species.is_isomorphic(spec0):
                 species_dict[spec0] = species
                 break
 
@@ -191,19 +191,19 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages
     # those as a special case
     for species in species_list:
         if species.label == 'Ar':
-            species.molecule = [Molecule().fromSMILES('[Ar]')]
+            species.molecule = [Molecule().from_smiles('[Ar]')]
         elif species.label == 'Ne':
-            species.molecule = [Molecule().fromSMILES('[Ne]')]
+            species.molecule = [Molecule().from_smiles('[Ne]')]
         elif species.label == 'He':
-            species.molecule = [Molecule().fromSMILES('[He]')]
+            species.molecule = [Molecule().from_smiles('[He]')]
         elif species.label == 'N2':
-            species.molecule = [Molecule().fromSMILES('N#N')]
+            species.molecule = [Molecule().from_smiles('N#N')]
 
     # Map species in input file to corresponding species in Chemkin file
     species_dict = {}
     for spec0 in rmg.initialSpecies:
         for species in species_list:
-            if species.isIsomorphic(spec0):
+            if species.is_isomorphic(spec0):
                 species_dict[spec0] = species
                 break
 

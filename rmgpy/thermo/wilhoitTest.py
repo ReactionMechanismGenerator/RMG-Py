@@ -336,8 +336,8 @@ class TestWilhoit(unittest.TestCase):
         database.load_thermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
         database.load_solvation(os.path.join(settings['database.directory'], 'solvation'))
 
-        spc = Species().fromSMILES('CC')
-        spc.getThermoData()
+        spc = Species().from_smiles('CC')
+        spc.get_thermo_data()
 
         T = 1350.  # not 298K!
 

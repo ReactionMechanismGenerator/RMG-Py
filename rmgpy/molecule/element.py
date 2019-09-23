@@ -35,7 +35,7 @@ class.
 
 Element objects for each chemical element (1-112) have also been declared as
 module-level variables, using each element's symbol as its variable name. The
-:meth:`getElement` method can also be used to retrieve the :class:`Element`
+:meth:`get_element` method can also be used to retrieve the :class:`Element`
 object associated with an atomic number or symbol. Generally applications will
 want to use these objects, both to conserve memory and to make for easy
 comparisons.
@@ -65,29 +65,29 @@ class Element(object):
     `mass`        ``float``       The mass of the element in kg/mol
     `covRadius`   ``float``       Covalent bond radius in Angstrom
     `isotope`     ``int``         The isotope integer of the element
-    `chemkinName` ``str``         The chemkin compatible representation of the element
+    `chemkin_name` ``str``         The chemkin compatible representation of the element
     ============= =============== ================================================
 
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
     """
 
-    def __init__(self, number, symbol, name, mass, isotope=-1, chemkinName=None):
+    def __init__(self, number, symbol, name, mass, isotope=-1, chemkin_name=None):
         self.number = number
         self.symbol = symbol
         self.name = name
         self.mass = mass
         self.isotope = isotope
-        self.chemkinName = chemkinName or self.name
+        self.chemkin_name = chemkin_name or self.name
         if symbol == 'X':
-            self.covRadius = 0
+            self.cov_radius = 0
         else:
             try:
-                self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
+                self.cov_radius = _rdkit_periodic_table.GetRcovalent(symbol)
             except RuntimeError:
                 import logging
                 logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
-                self.covRadius = 0
+                self.cov_radius = 0
 
     def __str__(self):
         """
@@ -136,7 +136,7 @@ class PeriodicSystem(object):
 ################################################################################
 
 
-def getElement(value, isotope=-1):
+def get_element(value, isotope=-1):
     """
     Return the :class:`Element` object corresponding to the given parameter
     `value`. If an integer is provided, the value is treated as the atomic
@@ -147,7 +147,7 @@ def getElement(value, isotope=-1):
     if isinstance(value, int):
         # The parameter is an integer; assume this is the atomic number
         number = value
-        for element in elementList:
+        for element in element_list:
             if element.number == number and element.isotope == isotope:
                 return element
         # If we reach this point that means we did not find an appropriate element,
@@ -156,7 +156,7 @@ def getElement(value, isotope=-1):
     elif isinstance(value, str):
         # The parameter is a string; assume this is the element symbol
         symbol = value
-        for element in elementList:
+        for element in element_list:
             if element.symbol == symbol and element.isotope == isotope:
                 return element
         # If we reach this point that means we did not find an appropriate element,
@@ -310,7 +310,7 @@ Rg = Element(111, 'Rg', 'roentgenium'   , 0.272)
 Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
-elementList = [
+element_list = [
     X,
     H, D, T, He,
     Li, Be, B, C, C13, N, O, O18, F, Ne,
@@ -330,30 +330,30 @@ elementList = [
 # (C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced
 # if a sourced value becomes available
 # (C,C,2.5) is C#C - (CbenzeneC - C-C)
-BDE_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si']  # elements supported by BDE
-BDEDict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
-           ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
-           ('H', 'S', 1): (363.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
-           ('C', 'C', 1): (346.0, 'kJ/mol'), ('C', 'C', 2): (602.0, 'kJ/mol'),
-           ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
-           ('C', 'N', 1): (305.0, 'kJ/mol'), ('C', 'N', 2): (615.0, 'kJ/mol'),
-           ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
-           ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
-           ('C', 'S', 1): (272.0, 'kJ/mol'), ('C', 'S', 2): (573.0, 'kJ/mol'),
-           ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('Si', 'Si', 1): (222.0, 'kJ/mol'),
-           ('Si', 'N', 1): (355.0, 'kJ/mol'), ('Si', 'O', 1): (452.0, 'kJ/mol'),
-           ('Si', 'S', 1): (293.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
-           ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
-           ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
-           ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'Cl', 1): (313.0, 'kJ/mol'),
-           ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
-           ('S', 'O', 2): (522.0, 'kJ/mol'), ('S', 'S', 1): (226.0, 'kJ/mol'),
-           ('S', 'S', 2): (425.0, 'kJ/mol'), ('S', 'Cl', 1): (255.0, 'kJ/mol'),
-           ('Cl', 'Cl', 1): (240.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
-           ('O', 'S', 1): (265.0, 'kJ/mol'), ('C', 'C', 2.5): (663.0, 'kJ/mol')}
+bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si']  # elements supported by BDE
+bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
+            ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
+            ('H', 'S', 1): (363.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
+            ('C', 'C', 1): (346.0, 'kJ/mol'), ('C', 'C', 2): (602.0, 'kJ/mol'),
+            ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
+            ('C', 'N', 1): (305.0, 'kJ/mol'), ('C', 'N', 2): (615.0, 'kJ/mol'),
+            ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
+            ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
+            ('C', 'S', 1): (272.0, 'kJ/mol'), ('C', 'S', 2): (573.0, 'kJ/mol'),
+            ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('Si', 'Si', 1): (222.0, 'kJ/mol'),
+            ('Si', 'N', 1): (355.0, 'kJ/mol'), ('Si', 'O', 1): (452.0, 'kJ/mol'),
+            ('Si', 'S', 1): (293.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
+            ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
+            ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
+            ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'Cl', 1): (313.0, 'kJ/mol'),
+            ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
+            ('S', 'O', 2): (522.0, 'kJ/mol'), ('S', 'S', 1): (226.0, 'kJ/mol'),
+            ('S', 'S', 2): (425.0, 'kJ/mol'), ('S', 'Cl', 1): (255.0, 'kJ/mol'),
+            ('Cl', 'Cl', 1): (240.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
+            ('O', 'S', 1): (265.0, 'kJ/mol'), ('C', 'C', 2.5): (663.0, 'kJ/mol')}
 
-BDEs = {}
-for key, value in BDEDict.items():
+bdes = {}
+for key, value in bde_dict.items():
     q = Quantity(value).value_si
-    BDEs[(key[0], key[1], key[2])] = q
-    BDEs[(key[1], key[0], key[2])] = q
+    bdes[(key[0], key[1], key[2])] = q
+    bdes[(key[1], key[0], key[2])] = q
