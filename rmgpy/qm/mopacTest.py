@@ -78,7 +78,7 @@ class TestMopacMolPM3(unittest.TestCase):
 
         self.qmmol1 = MopacMolPM3(mol1, qm.settings)
 
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for MOPAC PM3
         """
@@ -98,7 +98,7 @@ class TestMopacMolPM3(unittest.TestCase):
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1)  # to 1 decimal place
 
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous MOPAC PM3 run.
         
@@ -142,7 +142,7 @@ class TestMopacMolPM6(unittest.TestCase):
 
         self.qmmol1 = MopacMolPM6(mol1, qm.settings)
 
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for MOPAC PM6
         """
@@ -163,7 +163,7 @@ class TestMopacMolPM6(unittest.TestCase):
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.4270, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1)  # to 1 decimal place
 
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous MOPAC PM6 run.
         
@@ -208,7 +208,7 @@ class TestMopacMolPM7(unittest.TestCase):
         mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
         self.qmmol1 = MopacMolPM7(mol1, qm.settings)
 
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for MOPAC PM7
         """
@@ -229,7 +229,7 @@ class TestMopacMolPM7(unittest.TestCase):
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.9863, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
 
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous MOPAC PM7 run.
         

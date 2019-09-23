@@ -62,7 +62,7 @@ class TestQMSettings(unittest.TestCase):
 
         self.settings2 = QMSettings()
 
-    def testCheckAllSet(self):
+    def test_check_all_set(self):
         """
         Test that check_all_set() works correctly.
         """
@@ -144,7 +144,7 @@ class TestQMCalculator(unittest.TestCase):
 
         self.qmmol2 = QMCalculator(fileStore=self.fileStore)
 
-    def testSetDefaultOutputDirectory(self):
+    def test_set_default_output_directory(self):
         """
         Test that set_default_output_directory() works correctly.
         """
@@ -180,7 +180,7 @@ class TestQMCalculator(unittest.TestCase):
         self.assertIsNotNone(self.gauss1.settings.scratchDirectory)
         self.assertIsNotNone(self.gauss2.settings.scratchDirectory)
 
-    def testInitialize(self):
+    def test_initialize(self):
         """
         Test that initialize() works correctly.
         """
@@ -204,7 +204,7 @@ class TestQMCalculator(unittest.TestCase):
         except Exception:
             self.fail("initialize() raised Exception. Output file paths not correctly set.")
 
-    def testGetThermoData(self):
+    def test_get_thermo_data(self):
         """
         Test that get_thermo_data() fails when expected.
         """
@@ -222,7 +222,7 @@ class TestQMCalculator(unittest.TestCase):
 
     @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
     @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
-    def testGetThermoDataMopac(self):
+    def test_get_thermo_data_mopac(self):
         """
         Test that Mocpac get_thermo_data() works correctly.
         """
@@ -258,7 +258,7 @@ class TestQMCalculator(unittest.TestCase):
         self.assertAlmostEqual(thermo3.S298.value_si, 336.3330406, 1)  # to 1 decimal place
 
     @unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
-    def testGetThermoDataGaussian(self):
+    def test_get_thermo_data_gaussian(self):
         """
         Test that Gaussian get_thermo_data() works correctly.
         """
@@ -287,7 +287,7 @@ class TestQMCalculator(unittest.TestCase):
 
     @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
     @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
-    def testRunJobs(self):
+    def test_run_jobs(self):
         """Test that run_jobs() works properly."""
         qm = QMCalculator(software='mopac',
                           method='pm3',

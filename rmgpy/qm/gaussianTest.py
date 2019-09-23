@@ -68,7 +68,7 @@ class TestGaussianMolPM3(unittest.TestCase):
 
         self.qmmol1 = GaussianMolPM3(mol1, qm.settings)
 
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly on gaussian PM3.
         """
@@ -85,7 +85,7 @@ class TestGaussianMolPM3(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous gaussian PM3 run.
 
@@ -126,7 +126,7 @@ class TestGaussianMolPM6(unittest.TestCase):
         self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
     @unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
-    def testGenerateThermoData(self):
+    def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for gaussian PM6.
         """
@@ -144,7 +144,7 @@ class TestGaussianMolPM6(unittest.TestCase):
             self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
     @unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
-    def testLoadThermoData(self):
+    def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous gaussian PM6 run.
 
