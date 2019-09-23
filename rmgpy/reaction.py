@@ -58,7 +58,7 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
-    PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, \
+    PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
     StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -232,7 +232,7 @@ class Reaction:
                     'Multiplied by reaction path degeneracy {}'.format(float(new)))
             elif self.kinetics.comment:
                 self.kinetics.comment += 'Multiplied by reaction path degeneracy {}'.format(float(new))
-            self.kinetics.changeRate(degeneracy_ratio)
+            self.kinetics.change_rate(degeneracy_ratio)
         # set new degeneracy
         self._degeneracy = new
 
@@ -335,7 +335,7 @@ class Reaction:
                 ct_reaction.duplicate = self.duplicate
                 ct_reaction.ID = str(self.index)
 
-            self.kinetics.setCanteraKinetics(ct_reaction, speciesList)
+            self.kinetics.set_cantera_kinetics(ct_reaction, speciesList)
 
             return ct_reaction
 
@@ -642,11 +642,11 @@ class Reaction:
             try:
                 k = self.k_effective_cache[T]
             except KeyError:
-                k = diffusionLimiter.getEffectiveRate(self, T)
+                k = diffusionLimiter.get_effective_rate(self, T)
                 self.k_effective_cache[T] = k
             return k
         else:
-            return self.kinetics.getRateCoefficient(T, P)
+            return self.kinetics.get_rate_coefficient(T, P)
 
     def getSurfaceRateCoefficient(self, T, surfaceSiteDensity):
         """
@@ -663,7 +663,7 @@ class Reaction:
             raise ReactionError("This is not a surface reaction!")
 
         if isinstance(self.kinetics, StickingCoefficient):
-            rate_coefficient = self.kinetics.getStickingCoefficient(T)
+            rate_coefficient = self.kinetics.get_sticking_coefficient(T)
             adsorbate = None
             for r in self.reactants:
                 if r.containsSurfaceSite():
@@ -687,7 +687,7 @@ class Reaction:
             return rate_coefficient
 
         if isinstance(self.kinetics, SurfaceArrhenius):
-            return self.kinetics.getRateCoefficient(T, P=0)
+            return self.kinetics.get_rate_coefficient(T, P=0)
 
         raise NotImplementedError("Can't getSurfaceRateCoefficient for kinetics type {!r}".format(type(self.kinetics)))
 
@@ -702,11 +702,11 @@ class Reaction:
         try:
             k = self.k_effective_cache[T]
         except KeyError:
-            k = diffusionLimiter.getEffectiveRate(self, T)
+            k = diffusionLimiter.get_effective_rate(self, T)
             self.k_effective_cache[T] = k
 
         # calculate diffusion factor
-        diffusion_factor = k / self.kinetics.getRateCoefficient(T, P=0)
+        diffusion_factor = k / self.kinetics.get_rate_coefficient(T, P=0)
         # update preexponential factor
         self.kinetics.A = self.kinetics.A * diffusion_factor
         # Add a comment to self.kinetics.comment
@@ -734,7 +734,7 @@ class Reaction:
              - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
             Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
-            self.kinetics = self.kinetics.toArrhenius(H298)
+            self.kinetics = self.kinetics.to_arrhenius(H298)
             if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
                 # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
                 Ea = min(0.0, Ea)  # (the lowest we want it to be)
@@ -756,7 +756,7 @@ class Reaction:
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
                 self.kinetics.Ea.value_si / 1000., self))
             self.kinetics.Ea.value_si = 0
-        if self.kinetics.isPressureDependent() and self.network_kinetics is not None:
+        if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
             Ea = self.network_kinetics.Ea.value_si
             if H0 >= 0 and Ea < H0:
                 self.network_kinetics.Ea.value_si = H0
@@ -788,9 +788,9 @@ class Reaction:
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
-            klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+            klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
         kr = Arrhenius()
-        kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
+        kr.fit_to_data(Tlist, klist, reverseUnits, kf.T0.value_si)
         return kr
 
     def generateReverseRateCoefficient(self, network_kinetics=False, Tmin=None, Tmax=None):
@@ -816,7 +816,7 @@ class Reaction:
         )
 
         # Get the units for the reverse rate coefficient
-        kunits = getRateCoefficientUnitsFromReactionOrder(len(self.products))
+        kunits = get_rate_coefficient_units_from_reaction_order(len(self.products))
 
         kf = self.kinetics
         if isinstance(kf, KineticsData):
@@ -824,7 +824,7 @@ class Reaction:
             Tlist = kf.Tdata.value_si
             klist = np.zeros_like(Tlist)
             for i in range(len(Tlist)):
-                klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+                klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
 
             kr = KineticsData(Tdata=(Tlist, "K"), kdata=(klist, kunits), Tmin=(np.min(Tlist), "K"),
                               Tmax=(np.max(Tlist), "K"))
@@ -843,7 +843,7 @@ class Reaction:
             K = np.zeros((len(Tlist), len(Plist)), np.float64)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
-                    K[Tindex, Pindex] = kf.getRateCoefficient(T, P) / self.getEquilibriumConstant(T)
+                    K[Tindex, Pindex] = kf.get_rate_coefficient(T, P) / self.getEquilibriumConstant(T)
             kr = Chebyshev()
             kr.fitToData(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value,
                          kf.Pmax.value)
@@ -878,7 +878,7 @@ class Reaction:
             return kr
 
         elif isinstance(kf, ThirdBody):
-            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
             krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = ThirdBody(krLow, *parameters[1:])
@@ -886,7 +886,7 @@ class Reaction:
 
         elif isinstance(kf, Lindemann):
             krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
-            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
             krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = Lindemann(krHigh, krLow, *parameters[2:])
@@ -894,7 +894,7 @@ class Reaction:
 
         elif isinstance(kf, Troe):
             krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
-            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
             krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = Troe(krHigh, krLow, *parameters[2:])
@@ -1229,7 +1229,7 @@ class Reaction:
         conditions = [[t_min, p_min]]
         if t_min != t_max:
             conditions.append([t_max, p_min])
-        if self.kinetics.isPressureDependent() and p_max != p_min:
+        if self.kinetics.is_pressure_dependent() and p_max != p_min:
             conditions.append([t_min, p_max])
             if t_min != t_max:
                 conditions.append([t_max, p_max])
@@ -1253,7 +1253,7 @@ class Reaction:
                 except ValueError:
                     continue
                 else:
-                    kr_list.append(self.generateReverseRateCoefficient().getRateCoefficient(condition[0], condition[1]))
+                    kr_list.append(self.generateReverseRateCoefficient().get_rate_coefficient(condition[0], condition[1]))
         if len(self.reactants) >= 2:
             for i, k in enumerate(kf_list):
                 if k > collision_limit_f[i]:

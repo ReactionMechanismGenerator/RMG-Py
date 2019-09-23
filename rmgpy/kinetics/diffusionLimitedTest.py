@@ -185,9 +185,9 @@ class TestDiffusionLimited(unittest.TestCase):
                                         products=[criegee, acetic_acid])
         self.tri_bi_reaction.kinetics = Arrhenius(A=(1.07543e-11, 'cm^6/(mol^2*s)'), n=5.47295, Ea=(-38.5379, 'kJ/mol'))
         self.intrinsic_rates = {
-            self.uni_reaction: self.uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
-            self.bi_uni_reaction: self.bi_uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
-            self.tri_bi_reaction: self.tri_bi_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
+            self.uni_reaction: self.uni_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
+            self.bi_uni_reaction: self.bi_uni_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
+            self.tri_bi_reaction: self.tri_bi_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
         }
 
     def tearDown(self):
@@ -198,7 +198,7 @@ class TestDiffusionLimited(unittest.TestCase):
         Tests that the effective rate is the same as the intrinsic rate for
         unimiolecular reactions.
         """
-        effective_rate = diffusionLimiter.getEffectiveRate(self.uni_reaction, self.T)
+        effective_rate = diffusionLimiter.get_effective_rate(self.uni_reaction, self.T)
         self.assertEqual(effective_rate, self.intrinsic_rates[self.uni_reaction])
 
     def testGetEffectiveRate2to1(self):
@@ -206,7 +206,7 @@ class TestDiffusionLimited(unittest.TestCase):
         Tests that the effective rate is limited in the forward direction for
         a 2 -> 1 reaction
         """
-        effective_rate = diffusionLimiter.getEffectiveRate(self.bi_uni_reaction, self.T)
+        effective_rate = diffusionLimiter.get_effective_rate(self.bi_uni_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.bi_uni_reaction])
 
@@ -214,7 +214,7 @@ class TestDiffusionLimited(unittest.TestCase):
         """
         Tests that the effective rate is limited for a 3 -> 2 reaction
         """
-        effective_rate = diffusionLimiter.getEffectiveRate(self.tri_bi_reaction, self.T)
+        effective_rate = diffusionLimiter.get_effective_rate(self.tri_bi_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.tri_bi_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.tri_bi_reaction])
 

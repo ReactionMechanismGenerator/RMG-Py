@@ -692,7 +692,7 @@ class Network(object):
             else:
                 # ILT was used to compute k(E), so use high-P kinetics to compute k(T)
                 logging.debug('Using high pressure rate coefficient rate for Expected kf')
-                kf_expected = rxn.kinetics.getRateCoefficient(temperature) if rxn.network_kinetics is None else \
+                kf_expected = rxn.kinetics.get_rate_coefficient(temperature) if rxn.network_kinetics is None else \
                     rxn.network_kinetics.getRateCoefficient(temperature)
 
             # Determine the expected value of the equilibrium constant (Kc)

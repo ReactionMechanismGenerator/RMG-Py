@@ -119,14 +119,14 @@ class TestChebyshev(unittest.TestCase):
 
     def test_isPressureDependent(self):
         """
-        Test the Chebyshev.isPressureDependent() method.
+        Test the Chebyshev.is_pressure_dependent() method.
         
         """
-        self.assertTrue(self.chebyshev.isPressureDependent())
+        self.assertTrue(self.chebyshev.is_pressure_dependent())
 
     def test_getRateCoefficient(self):
         """
-        Test the Chebyshev.getRateCoefficient() method.
+        Test the Chebyshev.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -138,12 +138,12 @@ class TestChebyshev(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.chebyshev.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.chebyshev.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact / Kexp[t, p], 1.0, 4, '{0} != {1} within 4 places'.format(Kexp[t, p], Kact))
 
     def test_fitToData(self):
         """
-        Test the Chebyshev.fitToData() method.
+        Test the Chebyshev.fit_to_data() method.
         """
         Tdata = np.array(
             [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000])
@@ -153,17 +153,17 @@ class TestChebyshev(unittest.TestCase):
         kdata = np.zeros((nT, nP))
         for t in range(nT):
             for p in range(nP):
-                kdata[t, p] = self.chebyshev.getRateCoefficient(Tdata[t], Pdata[p]) * 1e6
-        chebyshev = Chebyshev().fitToData(Tdata, Pdata, kdata, kunits="cm^3/(mol*s)", degreeT=6, degreeP=4, Tmin=300,
+                kdata[t, p] = self.chebyshev.get_rate_coefficient(Tdata[t], Pdata[p]) * 1e6
+        chebyshev = Chebyshev().fit_to_data(Tdata, Pdata, kdata, kunits="cm^3/(mol*s)", degreeT=6, degreeP=4, Tmin=300,
                                           Tmax=2000, Pmin=0.1, Pmax=10.)
         for t in range(nT):
             for p in range(nP):
-                kfit = chebyshev.getRateCoefficient(Tdata[t], Pdata[p]) * 1e6
+                kfit = chebyshev.get_rate_coefficient(Tdata[t], Pdata[p]) * 1e6
                 self.assertAlmostEqual(kfit, kdata[t, p], delta=1e-4 * kdata[t, p])
 
     def test_fitToData2(self):
         """
-        Test the Chebyshev.fitToData() method throws error without enough degrees of freedom.
+        Test the Chebyshev.fit_to_data() method throws error without enough degrees of freedom.
         
         Here only 3 temperatures are given, but the polynomial desired has 6 parameters.
         """
@@ -174,9 +174,9 @@ class TestChebyshev(unittest.TestCase):
         kdata = np.zeros((nT, nP))
         for t in range(nT):
             for p in range(nP):
-                kdata[t, p] = self.chebyshev.getRateCoefficient(Tdata[t], Pdata[p])
+                kdata[t, p] = self.chebyshev.get_rate_coefficient(Tdata[t], Pdata[p])
         with self.assertRaises(KineticsError):
-            Chebyshev().fitToData(Tdata, Pdata, kdata, kunits="cm^3/(mol*s)", degreeT=12, degreeP=8, Tmin=300,
+            Chebyshev().fit_to_data(Tdata, Pdata, kdata, kunits="cm^3/(mol*s)", degreeT=12, degreeP=8, Tmin=300,
                                   Tmax=2000, Pmin=0.1, Pmax=10.)
 
     def test_pickle(self):
@@ -231,13 +231,13 @@ class TestChebyshev(unittest.TestCase):
 
     def test_changeRate(self):
         """
-        Test the Chebyshev.changeRate() method.
+        Test the Chebyshev.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.chebyshev.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.chebyshev.changeRate(2)
+        k0list = np.array([self.chebyshev.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.chebyshev.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.chebyshev.getRateCoefficient(T, 1e5)
+            kact = self.chebyshev.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 

@@ -73,7 +73,7 @@ cdef class Wigner(TunnelingModel):
         """
         return (Wigner, (self.frequency,))
 
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000:
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
         """
         Calculate and return the value of the Wigner tunneling correction for
         the reaction at the temperature `T` in K.
@@ -83,7 +83,7 @@ cdef class Wigner(TunnelingModel):
         factor = constants.h * frequency / (constants.kB * T)
         return 1.0 + factor * factor / 24.0
 
-    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist):
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Raises :class:`NotImplementedError`, as the Wigner tunneling model
         does not have a well-defined energy-dependent tunneling function. 
@@ -151,7 +151,7 @@ cdef class Eckart(TunnelingModel):
         def __set__(self, value):
             self._E0_prod = quantity.Energy(value)
 
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000:
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
         """
         Calculate and return the value of the Eckart tunneling correction for
         the reaction at the temperature `T` in K.
@@ -189,7 +189,7 @@ cdef class Eckart(TunnelingModel):
         # Evaluate microcanonical tunneling function kappa(E)
         dE = 100.
         Elist = np.arange(E0, E0 + 2. * (E0_TS - E0) + 40. * constants.R * T, dE)
-        kappaE = self.calculateTunnelingFunction(Elist)
+        kappaE = self.calculate_tunneling_function(Elist)
 
         # Integrate to get kappa(T)
         kappa = exp(dV1 * beta) * np.sum(kappaE * np.exp(-beta * (Elist - E0))) * dE * beta
@@ -199,7 +199,7 @@ cdef class Eckart(TunnelingModel):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist):
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Calculate and return the value of the Eckart tunneling function for
         the reaction at the energies `Elist` in J/mol.

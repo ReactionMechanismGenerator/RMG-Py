@@ -189,8 +189,8 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([newKinetics.getRateCoefficient(t) for t in tlist]))
-                    oldklist = np.log10(np.array([oldKinetics.getRateCoefficient(t) for t in tlist]))
+                    newklist = np.log10(np.array([newKinetics.get_rate_coefficient(t) for t in tlist]))
+                    oldklist = np.log10(np.array([oldKinetics.get_rate_coefficient(t) for t in tlist]))
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
@@ -260,10 +260,10 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([newKinetics.getRateCoefficient(t) for t in tlist]))
+                    newklist = np.log10(np.array([newKinetics.get_rate_coefficient(t) for t in tlist]))
                     oldklist = []
                     for kinetics in oldKinetics:
-                        oldklist.append(np.log10(np.array([kinetics.getRateCoefficient(t) for t in tlist])))
+                        oldklist.append(np.log10(np.array([kinetics.get_rate_coefficient(t) for t in tlist])))
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')

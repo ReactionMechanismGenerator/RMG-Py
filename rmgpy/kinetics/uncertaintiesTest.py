@@ -49,5 +49,5 @@ class TestUncertainties(unittest.TestCase):
         Test RateUncertainty constructed from factor
         """
         unc = RateUncertainty(mu=0.3, var=0.6, Tref=1000.0, N=1, correlation="ab")
-        u = unc.getExpectedLogUncertainty()
+        u = unc.get_expected_log_uncertainty()
         self.assertAlmostEqual(u, 0.3 + np.sqrt(0.6 * 2.0 / np.pi))

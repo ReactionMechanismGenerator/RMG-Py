@@ -34,8 +34,8 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.model` module.
 
 import unittest
 
-from rmgpy.kinetics.model import getReactionOrderFromRateCoefficientUnits, \
-                                 getRateCoefficientUnitsFromReactionOrder
+from rmgpy.kinetics.model import get_reaction_order_from_rate_coefficient_units, \
+                                 get_rate_coefficient_units_from_reaction_order
 
 ################################################################################
 
@@ -50,62 +50,62 @@ class TestOrder(unittest.TestCase):
         Test the conversion of zeroth-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(0, getReactionOrderFromRateCoefficientUnits('mol/(m^3*s)'))
-        self.assertEqual(0, getReactionOrderFromRateCoefficientUnits('mol/(cm^3*s)'))
-        self.assertEqual(0, getReactionOrderFromRateCoefficientUnits('molecule/(m^3*s)'))
-        self.assertEqual(0, getReactionOrderFromRateCoefficientUnits('molecule/(cm^3*s)'))
+        self.assertEqual(0, get_reaction_order_from_rate_coefficient_units('mol/(m^3*s)'))
+        self.assertEqual(0, get_reaction_order_from_rate_coefficient_units('mol/(cm^3*s)'))
+        self.assertEqual(0, get_reaction_order_from_rate_coefficient_units('molecule/(m^3*s)'))
+        self.assertEqual(0, get_reaction_order_from_rate_coefficient_units('molecule/(cm^3*s)'))
         
     def test_toOrder_first(self):
         """
         Test the conversion of first-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(1, getReactionOrderFromRateCoefficientUnits('s^-1'))
+        self.assertEqual(1, get_reaction_order_from_rate_coefficient_units('s^-1'))
         
     def test_toOrder_second(self):
         """
         Test the conversion of second-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(2, getReactionOrderFromRateCoefficientUnits('m^3/(mol*s)'))
-        self.assertEqual(2, getReactionOrderFromRateCoefficientUnits('cm^3/(mol*s)'))
-        self.assertEqual(2, getReactionOrderFromRateCoefficientUnits('m^3/(molecule*s)'))
-        self.assertEqual(2, getReactionOrderFromRateCoefficientUnits('cm^3/(molecule*s)'))
+        self.assertEqual(2, get_reaction_order_from_rate_coefficient_units('m^3/(mol*s)'))
+        self.assertEqual(2, get_reaction_order_from_rate_coefficient_units('cm^3/(mol*s)'))
+        self.assertEqual(2, get_reaction_order_from_rate_coefficient_units('m^3/(molecule*s)'))
+        self.assertEqual(2, get_reaction_order_from_rate_coefficient_units('cm^3/(molecule*s)'))
         
     def test_toOrder_third(self):
         """
         Test the conversion of third-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(3, getReactionOrderFromRateCoefficientUnits('m^6/(mol^2*s)'))
-        self.assertEqual(3, getReactionOrderFromRateCoefficientUnits('cm^6/(mol^2*s)'))
-        self.assertEqual(3, getReactionOrderFromRateCoefficientUnits('m^6/(molecule^2*s)'))
-        self.assertEqual(3, getReactionOrderFromRateCoefficientUnits('cm^6/(molecule^2*s)'))
+        self.assertEqual(3, get_reaction_order_from_rate_coefficient_units('m^6/(mol^2*s)'))
+        self.assertEqual(3, get_reaction_order_from_rate_coefficient_units('cm^6/(mol^2*s)'))
+        self.assertEqual(3, get_reaction_order_from_rate_coefficient_units('m^6/(molecule^2*s)'))
+        self.assertEqual(3, get_reaction_order_from_rate_coefficient_units('cm^6/(molecule^2*s)'))
         
     def test_toUnits_zeroth(self):
         """
         Test the conversion of a reaction order of zero to rate coefficient
         units.
         """
-        self.assertEqual('mol/(m^3*s)', getRateCoefficientUnitsFromReactionOrder(0))
+        self.assertEqual('mol/(m^3*s)', get_rate_coefficient_units_from_reaction_order(0))
         
     def test_toUnits_first(self):
         """
         Test the conversion of a reaction order of one to rate coefficient
         units.
         """
-        self.assertEqual('s^-1', getRateCoefficientUnitsFromReactionOrder(1))
+        self.assertEqual('s^-1', get_rate_coefficient_units_from_reaction_order(1))
         
     def test_toUnits_second(self):
         """
         Test the conversion of a reaction order of two to rate coefficient
         units.
         """
-        self.assertEqual('m^3/(mol*s)', getRateCoefficientUnitsFromReactionOrder(2))
+        self.assertEqual('m^3/(mol*s)', get_rate_coefficient_units_from_reaction_order(2))
         
     def test_toUnits_third(self):
         """
         Test the conversion of a reaction order of three to rate coefficient
         units.
         """
-        self.assertEqual('m^6/(mol^2*s)', getRateCoefficientUnitsFromReactionOrder(3))
+        self.assertEqual('m^6/(mol^2*s)', get_rate_coefficient_units_from_reaction_order(3))

@@ -282,12 +282,12 @@ cdef class SimpleReactor(ReactionSystem):
         self.specificColliderSpecies = []
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
-            if rxn.kinetics.isPressureDependent():
+            if rxn.kinetics.is_pressure_dependent():
                 if rxn.kinetics.efficiencies:
                     j = self.reactionIndex[rxn]
                     pdep_collider_reaction_indices.append(j)
                     self.pdepColliderKinetics.append(rxn.kinetics)
-                    collider_efficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
+                    collider_efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(coreSpecies))
                 if rxn.specific_collider:
                     pdep_specific_collider_reaction_indices.append(self.reactionIndex[rxn])
                     self.pdepSpecificColliderKinetics.append(rxn.kinetics)
@@ -370,7 +370,7 @@ cdef class SimpleReactor(ReactionSystem):
                 # Calculate effective pressure
                 Peff = P * np.sum(collider_efficiencies[i] * y_core_species / np.sum(y_core_species))
                 j = pdep_collider_reaction_indices[i]
-                kf[j] = pdep_collider_kinetics[i].getRateCoefficient(T, Peff)
+                kf[j] = pdep_collider_kinetics[i].get_rate_coefficient(T, Peff)
                 kr[j] = kf[j] / equilibrium_constants[j]
         if self.pdepSpecificColliderReactionIndices.shape[0] != 0:
             T = self.T.value_si
@@ -383,7 +383,7 @@ cdef class SimpleReactor(ReactionSystem):
                 # Calculate effective pressure
                 Peff = P * y[self.speciesIndex[specific_collider_species[i]]] / np.sum(y_core_species)
                 j = pdep_specific_collider_reaction_indices[i]
-                kf[j] = pdep_specific_collider_kinetics[i].getRateCoefficient(T, Peff)
+                kf[j] = pdep_specific_collider_kinetics[i].get_rate_coefficient(T, Peff)
                 kr[j] = kf[j] / equilibrium_constants[j]
 
         inet = self.networkIndices

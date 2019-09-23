@@ -594,13 +594,13 @@ class TestReaction(unittest.TestCase):
 
     def testRateCoefficient(self):
         """
-        Test the Reaction.getRateCoefficient() method.
+        Test the Reaction.get_rate_coefficient() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
             self.assertAlmostEqual(
-                self.reaction.getRateCoefficient(T, P) / self.reaction.kinetics.getRateCoefficient(T), 1.0, 6)
+                self.reaction.getRateCoefficient(T, P) / self.reaction.kinetics.get_rate_coefficient(T), 1.0, 6)
 
     def testGenerateReverseRateCoefficient(self):
         """
@@ -611,7 +611,7 @@ class TestReaction(unittest.TestCase):
         reverse_kinetics = self.reaction2.generateReverseRateCoefficient()
         for T in Tlist:
             kr0 = self.reaction2.getRateCoefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
-            kr = reverse_kinetics.getRateCoefficient(T)
+            kr = reverse_kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
 
     def testFixBarrierHeight(self):
@@ -695,8 +695,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     @work_in_progress
@@ -726,8 +726,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientPDepArrhenius(self):
@@ -786,8 +786,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientPDepMultiArrhenius(self):
@@ -846,8 +846,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientMultiArrhenius(self):
@@ -903,8 +903,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientMultiPDepArrhenius(self):
@@ -999,8 +999,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientThirdBody(self):
@@ -1045,8 +1045,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientLindemann(self):
@@ -1098,8 +1098,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientTroe(self):
@@ -1159,8 +1159,8 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            korig = original_kinetics.getRateCoefficient(T, P)
-            krevrev = reverse_reverse_kinetics.getRateCoefficient(T, P)
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testTSTCalculation(self):
@@ -1170,8 +1170,8 @@ class TestReaction(unittest.TestCase):
         """
         Tlist = 1000.0 / numpy.arange(0.4, 3.35, 0.01)
         klist = numpy.array([self.reaction.calculateTSTRateCoefficient(T) for T in Tlist])
-        arrhenius = Arrhenius().fitToData(Tlist, klist, kunits='m^3/(mol*s)')
-        klist2 = numpy.array([arrhenius.getRateCoefficient(T) for T in Tlist])
+        arrhenius = Arrhenius().fit_to_data(Tlist, klist, kunits='m^3/(mol*s)')
+        klist2 = numpy.array([arrhenius.get_rate_coefficient(T) for T in Tlist])
 
         # Check that the correct Arrhenius parameters are returned
         self.assertAlmostEqual(arrhenius.A.value_si, 2265.2488, delta=1e-2)

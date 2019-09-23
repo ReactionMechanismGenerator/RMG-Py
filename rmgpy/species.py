@@ -995,7 +995,7 @@ class TransitionState(object):
         factor for the reaction at the given temperature `T` in K.
         """
         if self.tunneling is not None:
-            return self.tunneling.calculateTunnelingFactor(T)
+            return self.tunneling.calculate_tunneling_factor(T)
         else:
             # Return unity
             return 1.0
@@ -1006,7 +1006,7 @@ class TransitionState(object):
         correction for the reaction at the given energies `Elist` in J/mol.
         """
         if self.tunneling is not None:
-            return self.tunneling.calculateTunnelingFunction(Elist)
+            return self.tunneling.calculate_tunneling_function(Elist)
         else:
             # Return step function
             kappa = np.ones_like(Elist)

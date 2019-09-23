@@ -121,7 +121,7 @@ cdef class StickingCoefficient(KineticsModel):
         def __set__(self, value):
             self._T0 = quantity.Temperature(value)
 
-    cpdef double getStickingCoefficient(self, double T) except -1:
+    cpdef double get_sticking_coefficient(self, double T) except -1:
         """
         Return the sticking coefficient (dimensionless) at temperature `T` in K. 
         """
@@ -135,8 +135,8 @@ cdef class StickingCoefficient(KineticsModel):
             raise ValueError("Sticking coefficients cannot be negative, check your preexponential factor.")
         return min(stickingCoefficient, 1.0)
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
-                    np.ndarray weights=None, bint threeParams=True):
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
+                    np.ndarray weights=None, bint three_params=True):
         """
         Fit Arrhenius parameters to a set of sticking coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in
@@ -147,9 +147,9 @@ cdef class StickingCoefficient(KineticsModel):
         import scipy.stats
 
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
-        if len(Tlist) < 3 + threeParams:
+        if len(Tlist) < 3 + three_params:
             raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
-        if threeParams:
+        if three_params:
             A = np.zeros((len(Tlist), 3), np.float64)
             A[:, 0] = np.ones_like(Tlist)
             A[:, 1] = np.log(Tlist / T0)
@@ -170,7 +170,7 @@ cdef class StickingCoefficient(KineticsModel):
         cov = residues[0] / (count - 3) * np.linalg.inv(np.dot(A.T, A))
         t = scipy.stats.t.ppf(0.975, count - 3)
 
-        if not threeParams:
+        if not three_params:
             x = np.array([x[0], 0, x[1]])
             cov = np.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
 
@@ -189,7 +189,7 @@ cdef class StickingCoefficient(KineticsModel):
 
         return self
 
-    cpdef changeT0(self, double T0):
+    cpdef change_t0(self, double T0):
         """
         Changes the reference temperature used in the exponent to `T0` in K, 
         and adjusts the preexponential factor accordingly.
@@ -197,23 +197,23 @@ cdef class StickingCoefficient(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics, StickingCoefficient):
+        if not isinstance(other_kinetics, StickingCoefficient):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-                or not self.Ea.equals(otherKinetics.Ea) or not self.T0.equals(otherKinetics.T0)):
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.Ea.equals(other_kinetics.Ea) or not self.T0.equals(other_kinetics.T0)):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
         """
@@ -302,20 +302,20 @@ cdef class StickingCoefficientBEP(KineticsModel):
         def __set__(self, value):
             self._E0 = quantity.Energy(value)
 
-    cpdef double getStickingCoefficient(self, double T, double dHrxn=0.0) except -1:
+    cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the sticking coefficient (dimensionless) at
         temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
         """
         cdef double A, n, Ea, stickingCoefficient
-        Ea = self.getActivationEnergy(dHrxn)
+        Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
         stickingCoefficient = A * T ** n * exp(-Ea / (constants.R * T))
         assert 0 <= stickingCoefficient
         return min(stickingCoefficient, 1.0)
 
-    cpdef double getActivationEnergy(self, double dHrxn) except -1:
+    cpdef double get_activation_energy(self, double dHrxn) except -1:
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
@@ -329,7 +329,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
                 Ea = dHrxn
         return Ea
 
-    cpdef StickingCoefficient toArrhenius(self, double dHrxn):
+    cpdef StickingCoefficient to_arrhenius(self, double dHrxn):
         """
         Return an :class:`StickingCoefficient` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -339,40 +339,40 @@ cdef class StickingCoefficientBEP(KineticsModel):
         return StickingCoefficient(
             A=self.A,
             n=self.n,
-            Ea=(self.getActivationEnergy(dHrxn) * 0.001, "kJ/mol"),
+            Ea=(self.get_activation_energy(dHrxn) * 0.001, "kJ/mol"),
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,
             comment=self.comment,
         )
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match type, temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's StickingCoefficient.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics, StickingCoefficientBEP):
+        if not isinstance(other_kinetics, StickingCoefficientBEP):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-                or not self.alpha.equals(otherKinetics.alpha) or not self.E0.equals(otherKinetics.E0)):
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.alpha.equals(other_kinetics.alpha) or not self.E0.equals(other_kinetics.E0)):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes A factor by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
 
-    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+    def set_cantera_kinetics(self, ct_reaction, species_list=[]):
         """
         Sets a cantera ElementaryReaction() object in an Arrhenius form.
         """
-        raise NotImplementedError('setCanteraKinetics() is not implemented for StickingCoefficientBEP class kinetics.')
+        raise NotImplementedError('set_cantera_kinetics() is not implemented for StickingCoefficientBEP class kinetics.')
 
 ################################################################################
 
@@ -488,7 +488,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         return (SurfaceArrheniusBEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                                       self.comment))
 
-    cpdef SurfaceArrhenius toArrhenius(self, double dHrxn):
+    cpdef SurfaceArrhenius to_arrhenius(self, double dHrxn):
         """
         Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -500,7 +500,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         return SurfaceArrhenius(
             A=self.A,
             n=self.n,
-            Ea=(self.getActivationEnergy(dHrxn) * 0.001, "kJ/mol"),
+            Ea=(self.get_activation_energy(dHrxn) * 0.001, "kJ/mol"),
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,

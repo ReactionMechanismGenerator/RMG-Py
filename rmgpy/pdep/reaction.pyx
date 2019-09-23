@@ -207,7 +207,7 @@ def applyRRKMTheory(transitionState,
     conf.calculateDensityOfStates(Elist - Elist[0], activeJRotor=active_j_rotor)
 
     # Compute tunneling function
-    kappa = transitionState.calculateTunnelingFunction(Elist)
+    kappa = transitionState.calculate_tunneling_function(Elist)
 
     # Convolve with transition state density of states to get new transition
     # state sum of states that includes tunneling

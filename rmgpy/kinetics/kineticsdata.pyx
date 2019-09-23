@@ -95,7 +95,7 @@ cdef class KineticsData(KineticsModel):
         def __set__(self, value):
             self._kdata = quantity.RateCoefficient(value)
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K. 
@@ -126,15 +126,15 @@ cdef class KineticsData(KineticsModel):
                     break
         return k
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
         """
-        if not isinstance(otherKinetics, KineticsData):
+        if not isinstance(other_kinetics, KineticsData):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if not self.Tdata.equals(otherKinetics.Tdata) or not self.kdata.equals(otherKinetics.kdata):
+        if not self.Tdata.equals(other_kinetics.Tdata) or not self.kdata.equals(other_kinetics.kdata):
             return False
         return True
 
@@ -208,7 +208,7 @@ cdef class PDepKineticsData(PDepKineticsModel):
         def __set__(self, value):
             self._kdata = quantity.RateCoefficient(value)
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa. 
@@ -220,7 +220,7 @@ cdef class PDepKineticsData(PDepKineticsModel):
         cdef int i, j, M, N
 
         if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent PDepKineticsData.getRateCoefficient().')
+            raise ValueError('No pressure specified to pressure-dependent PDepKineticsData.get_rate_coefficient().')
 
         Tdata = self._Tdata.value_si
         Pdata = self._Pdata.value_si
@@ -259,16 +259,16 @@ cdef class PDepKineticsData(PDepKineticsModel):
 
         return k
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
         """
-        if not isinstance(otherKinetics, KineticsData):
+        if not isinstance(other_kinetics, KineticsData):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if (not self.Tdata.equals(otherKinetics.Tdata) or
-                not self.Pdata.equals(otherKinetics.Pdata) or
-                not self.kdata.equals(otherKinetics.kdata)):
+        if (not self.Tdata.equals(other_kinetics.Tdata) or
+                not self.Pdata.equals(other_kinetics.Pdata) or
+                not self.kdata.equals(other_kinetics.kdata)):
             return False
         return True

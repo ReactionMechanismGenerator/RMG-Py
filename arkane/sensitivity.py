@@ -71,10 +71,10 @@ class KineticsSensitivity(object):
         self.output_directory = output_directory
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
-        self.f_rates = [self.job.reaction.kinetics.getRateCoefficient(condition.value_si)
+        self.f_rates = [self.job.reaction.kinetics.get_rate_coefficient(condition.value_si)
                         for condition in self.conditions]
         kr = self.job.reaction.generateReverseRateCoefficient()
-        self.r_rates = [kr.getRateCoefficient(condition.value_si) for condition in self.conditions]
+        self.r_rates = [kr.get_rate_coefficient(condition.value_si) for condition in self.conditions]
         self.f_sa_rates = {}
         self.r_sa_rates = {}
         self.f_sa_coefficients = {}
@@ -90,10 +90,10 @@ class KineticsSensitivity(object):
                         self.job.reaction.transition_state]:
             self.perturb(species)
             self.job.execute(outputFile=None, plot=False)  # run the perturbed job
-            self.f_sa_rates[species] = [self.job.reaction.kinetics.getRateCoefficient(condition.value_si)
+            self.f_sa_rates[species] = [self.job.reaction.kinetics.get_rate_coefficient(condition.value_si)
                                         for condition in self.conditions]
             kr = self.job.reaction.generateReverseRateCoefficient()
-            self.r_sa_rates[species] = [kr.getRateCoefficient(condition.value_si)
+            self.r_sa_rates[species] = [kr.get_rate_coefficient(condition.value_si)
                                         for condition in self.conditions]
             self.unperturb(species)
             # Calculate the sensitivity coefficients according to dln(r) / dln(E0) = (E0 * dr) / (r * dE0)
@@ -248,8 +248,8 @@ class PDepSensitivity(object):
         for rxn in self.job.network.netReactions:
             self.rates[str(rxn)] = []
             for condition in self.conditions:
-                self.rates[str(rxn)].append(rxn.kinetics.getRateCoefficient(condition[0].value_si,
-                                                                            condition[1].value_si))
+                self.rates[str(rxn)].append(rxn.kinetics.get_rate_coefficient(condition[0].value_si,
+                                                                              condition[1].value_si))
         self.sa_rates = {}
         self.sa_coefficients = {}
         for rxn in self.job.network.netReactions:
@@ -280,7 +280,7 @@ class PDepSensitivity(object):
             self.job.execute(outputFile=None, plot=False, print_summary=False)  # run the perturbed job
             self.unperturb(entry)
             for rxn in self.job.network.netReactions:
-                self.sa_rates[str(rxn)][entry] = [rxn.kinetics.getRateCoefficient(
+                self.sa_rates[str(rxn)][entry] = [rxn.kinetics.get_rate_coefficient(
                     condition[0].value_si, condition[1].value_si) for condition in self.conditions]
                 self.sa_coefficients[str(rxn)][entry] = [((self.sa_rates[str(rxn)][entry][i]
                                                            - self.rates[str(rxn)][i])) /

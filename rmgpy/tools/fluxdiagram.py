@@ -515,7 +515,7 @@ def loadChemkinOutput(outputFile, reactionModel):
                 core_species_concentrations.append([molefrac * total_concentration for molefrac in molefractions])
                 core_rates = []
                 for reaction in core_reactions:
-                    rate = reaction.getRateCoefficient(T.value_si, P.value_si)
+                    rate = reaction.get_rate_coefficient(T.value_si, P.value_si)
                     for reactant in reaction.reactants:
                         rate *= molefractions[species_list.index(reactant)] * total_concentration
                     core_rates.append(rate)

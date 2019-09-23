@@ -243,7 +243,7 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
                             frozenset(unfiltered_rxns[rxn_index5].template):
                         # apply kinetics to new reaction & modify for degeneracy
                         unfiltered_rxns[rxn_index5].kinetics = deepcopy(isotopeless_kinetics)
-                        unfiltered_rxns[rxn_index5].kinetics.changeRate(
+                        unfiltered_rxns[rxn_index5].kinetics.change_rate(
                             unfiltered_rxns[rxn_index5].degeneracy / isotopeless_degeneracy)
                         rxn_index5 += 1
                         break
@@ -596,7 +596,7 @@ def apply_kinetic_isotope_effect_simple(rxn_clusters, kinetics_database):
         for reaction in cluster[:-1]:
             labeled_reactants = get_labeled_reactants(reaction, family)
             reduced_mass = get_reduced_mass(labeled_reactants, labels, three_member_ts)
-            reaction.kinetics.changeRate(math.sqrt(base_reduced_mass / reduced_mass))
+            reaction.kinetics.change_rate(math.sqrt(base_reduced_mass / reduced_mass))
 
 
 def get_labeled_reactants(reaction, family):

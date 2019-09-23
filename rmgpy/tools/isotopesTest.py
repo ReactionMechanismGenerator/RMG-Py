@@ -459,8 +459,8 @@ multiplicity 2
         self.assertIn('R2Hall', rxn_cluster[0].template)
         self.assertIn('R2Hall', rxn_cluster[1].template)
 
-        self.assertAlmostEqual(rxn_cluster[0].kinetics.getRateCoefficient(298),
-                               rxn_cluster[1].kinetics.getRateCoefficient(298))
+        self.assertAlmostEqual(rxn_cluster[0].kinetics.get_rate_coefficient(298),
+                               rxn_cluster[1].kinetics.get_rate_coefficient(298))
 
     def testCompareIsotopomersWorksOnSpecies(self):
         """
@@ -954,8 +954,8 @@ multiplicity 3
             self.assertEqual(rxn.template, reaction.template)
             degeneracies_found.add(rxn.degeneracy)
             self.assertIsNotNone(rxn.kinetics, 'kinetics not obtained for reaction {}.'.format(rxn))
-            self.assertAlmostEqual(reaction.kinetics.getRateCoefficient(298),
-                                   rxn.kinetics.getRateCoefficient(298) * reaction.degeneracy / rxn.degeneracy)
+            self.assertAlmostEqual(reaction.kinetics.get_rate_coefficient(298),
+                                   rxn.kinetics.get_rate_coefficient(298) * reaction.degeneracy / rxn.degeneracy)
 
         self.assertEqual(degeneracies_found, set([3]))
 
@@ -999,7 +999,7 @@ multiplicity 3
             self.assertEqual(rxn.template, reaction.template)
             degeneracies_found.add(rxn.degeneracy)
             self.assertIsNotNone(rxn.kinetics, 'kinetics not obtained for reaction {}.'.format(rxn))
-            self.assertAlmostEqual(reaction.kinetics.getRateCoefficient(298),
-                                   rxn.kinetics.getRateCoefficient(298) * reaction.degeneracy / rxn.degeneracy)
+            self.assertAlmostEqual(reaction.kinetics.get_rate_coefficient(298),
+                                   rxn.kinetics.get_rate_coefficient(298) * reaction.degeneracy / rxn.degeneracy)
 
         self.assertEqual(degeneracies_found, set([4]))

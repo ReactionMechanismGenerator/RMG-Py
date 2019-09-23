@@ -182,7 +182,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
         for rxn1, rxn2 in commonReactions:
             logger.info('    {0!s}'.format(rxn1))
             if rxn1.kinetics and rxn2.kinetics:
-                if not rxn1.kinetics.isSimilarTo(rxn2.kinetics):
+                if not rxn1.kinetics.is_similar_to(rxn2.kinetics):
                     error = True
                     logger.error('')
                     logger.error('Non-identical kinetics!')
@@ -226,14 +226,14 @@ def printRates(rxn):
     logger.error("{0:7}|{1:7.2f}|{2:7.2f}|{3:7.2f}|{4:7.2f}|{5:7.2f}|{6:7.2f}|{7:7.2f}|{8:7.2f}"
         .format(
         'k(T): ',
-        math.log10(rxn.kinetics.getRateCoefficient(300, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(400, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(500, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(600, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(800, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(1000, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(1500, 1e5)),
-        math.log10(rxn.kinetics.getRateCoefficient(2000, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(300, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(400, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(500, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(600, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(800, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(1000, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(1500, 1e5)),
+        math.log10(rxn.kinetics.get_rate_coefficient(2000, 1e5)),
     ))
 
 

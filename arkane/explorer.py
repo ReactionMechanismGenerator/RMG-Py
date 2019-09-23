@@ -228,10 +228,10 @@ class ExplorerJob(object):
                         for rxn in network.netReactions:  # reaction_model.core.reactions+reaction_model.edge.reactions:
                             if (set(rxn.reactants) == set(self.source)
                                     and rxn.products[0].molecule[0].getFormula() == form):
-                                kchar += rxn.kinetics.getRateCoefficient(T=temperature, P=pressure)
+                                kchar += rxn.kinetics.get_rate_coefficient(T=temperature, P=pressure)
                             elif (set(rxn.products) == set(self.source)
                                     and rxn.reactants[0].molecule[0].getFormula() == form):
-                                kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).getRateCoefficient(
+                                kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).get_rate_coefficient(
                                     T=temperature, P=pressure)
 
                         if network.getLeakCoefficient(T=temperature, P=pressure) > self.explore_tol * kchar:

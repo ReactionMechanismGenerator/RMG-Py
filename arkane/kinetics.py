@@ -183,7 +183,7 @@ class KineticsJob(object):
         self.Kequnits = {2: 'mol^2/cm^6', 1: 'mol/cm^3', 0: '       ', -1: 'cm^3/mol', -2: 'cm^6/mol^2'}[
             len(self.reaction.products) - len(self.reaction.reactants)]
         self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
-        self.reaction.kinetics = Arrhenius().fitToData(self.Tlist.value_si, klist, kunits=self.kunits)
+        self.reaction.kinetics = Arrhenius().fit_to_data(self.Tlist.value_si, klist, kunits=self.kunits)
         self.reaction.elementary_high_p = True
 
     def write_output(self, output_directory):
@@ -229,7 +229,7 @@ class KineticsJob(object):
                     k = reaction.calculateTSTRateCoefficient(T) * factor
                     kappa = k / k0
                 except (SpeciesError, ZeroDivisionError):
-                    k = reaction.getRateCoefficient(T)
+                    k = reaction.get_rate_coefficient(T)
                     kappa = 0
                     logging.info("The species in reaction {0} do not have adequate information for TST, "
                                  "using default kinetics values.".format(reaction))
@@ -265,8 +265,8 @@ class KineticsJob(object):
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
-            kinetics0rev = Arrhenius().fitToData(t_list, np.array(k0revs), kunits=self.krunits)
-            kineticsrev = Arrhenius().fitToData(t_list, np.array(krevs), kunits=self.krunits)
+            kinetics0rev = Arrhenius().fit_to_data(t_list, np.array(k0revs), kunits=self.krunits)
+            kineticsrev = Arrhenius().fit_to_data(t_list, np.array(krevs), kunits=self.krunits)
 
             f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
             f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
@@ -333,7 +333,7 @@ class KineticsJob(object):
         klist2 = np.zeros_like(t_list)
         for i in range(len(t_list)):
             klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
-            klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
+            klist2[i] = self.reaction.kinetics.get_rate_coefficient(t_list[i])
 
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order - 1)

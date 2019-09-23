@@ -35,11 +35,11 @@ cdef class ThirdBody(PDepKineticsModel):
     
     cdef public Arrhenius arrheniusLow
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 
 ################################################################################
 
@@ -48,11 +48,11 @@ cdef class Lindemann(PDepKineticsModel):
     cdef public Arrhenius arrheniusHigh
     cdef public Arrhenius arrheniusLow
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 
 ################################################################################
 
@@ -63,8 +63,8 @@ cdef class Troe(PDepKineticsModel):
     cdef public double alpha
     cdef public ScalarQuantity _T1, _T2, _T3
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)

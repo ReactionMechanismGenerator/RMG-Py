@@ -124,7 +124,7 @@ cdef class Arrhenius(KineticsModel):
         def __set__(self, value):
             self._T0 = quantity.Temperature(value)
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K.
@@ -136,7 +136,7 @@ cdef class Arrhenius(KineticsModel):
         T0 = self._T0.value_si
         return A * (T / T0) ** n * exp(-Ea / (constants.R * T))
 
-    cpdef changeT0(self, double T0):
+    cpdef change_t0(self, double T0):
         """
         Changes the reference temperature used in the exponent to `T0` in K,
         and adjusts the preexponential factor accordingly.
@@ -144,8 +144,8 @@ cdef class Arrhenius(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, np.ndarray weights=None,
-                    bint threeParams=True):
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, np.ndarray weights=None,
+                      bint three_params=True):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in
@@ -156,9 +156,9 @@ cdef class Arrhenius(KineticsModel):
         import scipy.stats
 
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
-        if len(Tlist) < 3 + threeParams:
+        if len(Tlist) < 3 + three_params:
             raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
-        if threeParams:
+        if three_params:
             A = np.zeros((len(Tlist), 3), np.float64)
             A[:, 0] = np.ones_like(Tlist)
             A[:, 1] = np.log(Tlist / T0)
@@ -179,7 +179,7 @@ cdef class Arrhenius(KineticsModel):
         cov = residues[0] / (count - 3) * np.linalg.inv(np.dot(A.T, A))
         t = scipy.stats.t.ppf(0.975, count - 3)
 
-        if not threeParams:
+        if not three_params:
             x = np.array([x[0], 0, x[1]])
             cov = np.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
 
@@ -198,29 +198,29 @@ cdef class Arrhenius(KineticsModel):
 
         return self
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics, Arrhenius):
+        if not isinstance(other_kinetics, Arrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-                or not self.Ea.equals(otherKinetics.Ea) or not self.T0.equals(otherKinetics.T0)):
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.Ea.equals(other_kinetics.Ea) or not self.T0.equals(other_kinetics.T0)):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
 
-    def toCanteraKinetics(self):
+    def to_cantera_kinetics(self):
         """
         Converts the Arrhenius object to a cantera Arrhenius object
 
@@ -229,17 +229,17 @@ cdef class Arrhenius(KineticsModel):
 
         import cantera as ct
 
-        rateUnitsDimensionality = {'1/s': 0,
-                                   's^-1': 0,
-                                   'm^3/(mol*s)': 1,
-                                   'm^6/(mol^2*s)': 2,
-                                   'cm^3/(mol*s)': 1,
-                                   'cm^6/(mol^2*s)': 2,
-                                   'm^3/(molecule*s)': 1,
-                                   'm^6/(molecule^2*s)': 2,
-                                   'cm^3/(molecule*s)': 1,
-                                   'cm^6/(molecule^2*s)': 2,
-                                   }
+        rate_units_dimensionality = {'1/s': 0,
+                                     's^-1': 0,
+                                     'm^3/(mol*s)': 1,
+                                     'm^6/(mol^2*s)': 2,
+                                     'cm^3/(mol*s)': 1,
+                                     'cm^6/(mol^2*s)': 2,
+                                     'm^3/(molecule*s)': 1,
+                                     'm^6/(molecule^2*s)': 2,
+                                     'cm^3/(molecule*s)': 1,
+                                     'cm^6/(molecule^2*s)': 2,
+                                     }
 
         if self._T0.value_si != 1:
             A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
@@ -247,7 +247,7 @@ cdef class Arrhenius(KineticsModel):
             A = self._A.value_si
 
         try:
-            A *= 1000 ** rateUnitsDimensionality[self._A.units]
+            A *= 1000 ** rate_units_dimensionality[self._A.units]
         except KeyError:
             raise Exception('Arrhenius A-factor units {0} not found among accepted units for converting to '
                             'Cantera Arrhenius object.'.format(self._A.units))
@@ -256,18 +256,18 @@ cdef class Arrhenius(KineticsModel):
         E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
         return ct.Arrhenius(A, b, E)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Passes in a cantera ElementaryReaction() object and sets its
         rate to a Cantera Arrhenius() object.
         """
         import cantera as ct
-        assert isinstance(ctReaction, ct.ElementaryReaction), "Must be a Cantera ElementaryReaction object"
+        assert isinstance(ct_reaction, ct.ElementaryReaction), "Must be a Cantera ElementaryReaction object"
 
         # Set the rate parameter to a cantera Arrhenius object
-        ctReaction.rate = self.toCanteraKinetics()
+        ct_reaction.rate = self.to_cantera_kinetics()
 
-    cpdef ArrheniusEP toArrheniusEP(self, double alpha=0.0, double dHrxn=0.0):
+    cpdef ArrheniusEP to_arrhenius_ep(self, double alpha=0.0, double dHrxn=0.0):
         """
         Converts an Arrhenius object to ArrheniusEP
 
@@ -276,9 +276,9 @@ cdef class Arrhenius(KineticsModel):
         """
 
         if bool(alpha) ^ bool(dHrxn):
-            raise Exception('If you set alpha or dHrxn in toArrheniusEP, '
+            raise Exception('If you set alpha or dHrxn in to_arrhenius_ep, '
                             'you need to set the other value to non-zero.')
-        self.changeT0(1)
+        self.change_t0(1)
         aep = ArrheniusEP(A=self.A,
                           n=self.n,
                           alpha=alpha,
@@ -374,19 +374,19 @@ cdef class ArrheniusEP(KineticsModel):
         def __set__(self, value):
             self._E0 = quantity.Energy(value)
 
-    cpdef double getRateCoefficient(self, double T, double dHrxn=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
         in J/mol.
         """
         cdef double A, n, Ea
-        Ea = self.getActivationEnergy(dHrxn)
+        Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
         return A * T ** n * exp(-Ea / (constants.R * T))
 
-    cpdef double getActivationEnergy(self, double dHrxn) except -1:
+    cpdef double get_activation_energy(self, double dHrxn) except -1:
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
@@ -400,7 +400,7 @@ cdef class ArrheniusEP(KineticsModel):
                 Ea = dHrxn
         return Ea
 
-    cpdef Arrhenius toArrhenius(self, double dHrxn):
+    cpdef Arrhenius to_arrhenius(self, double dHrxn):
         """
         Return an :class:`Arrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -408,7 +408,7 @@ cdef class ArrheniusEP(KineticsModel):
         return Arrhenius(
             A=self.A,
             n=self.n,
-            Ea=(self.getActivationEnergy(dHrxn) * 0.001, "kJ/mol"),
+            Ea=(self.get_activation_energy(dHrxn) * 0.001, "kJ/mol"),
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,
@@ -418,34 +418,34 @@ cdef class ArrheniusEP(KineticsModel):
             comment=self.comment,
         )
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics, ArrheniusEP):
+        if not isinstance(other_kinetics, ArrheniusEP):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-                or not self.alpha.equals(otherKinetics.alpha) or not self.E0.equals(otherKinetics.E0)):
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.alpha.equals(other_kinetics.alpha) or not self.E0.equals(other_kinetics.E0)):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes A factor by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets a cantera ElementaryReaction() object with the modified Arrhenius object
         converted to an Arrhenius form.
         """
-        raise NotImplementedError('setCanteraKinetics() is not implemented for ArrheniusEP class kinetics.')
+        raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusEP class kinetics.')
 
 ################################################################################
 
@@ -532,19 +532,19 @@ cdef class ArrheniusBM(KineticsModel):
         def __set__(self, value):
             self._E0 = quantity.Energy(value)
 
-    cpdef double getRateCoefficient(self, double T, double dHrxn=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
         in J/mol.
         """
         cdef double A, n, Ea
-        Ea = self.getActivationEnergy(dHrxn)
+        Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
         return A * T ** n * exp(-Ea / (constants.R * T))
 
-    cpdef double getActivationEnergy(self, double dHrxn) except -1:
+    cpdef double get_activation_energy(self, double dHrxn) except -1:
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
@@ -560,7 +560,7 @@ cdef class ArrheniusBM(KineticsModel):
             Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
             return (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
 
-    cpdef Arrhenius toArrhenius(self, double dHrxn):
+    cpdef Arrhenius to_arrhenius(self, double dHrxn):
         """
         Return an :class:`Arrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -568,7 +568,7 @@ cdef class ArrheniusBM(KineticsModel):
         return Arrhenius(
             A=self.A,
             n=self.n,
-            Ea=(self.getActivationEnergy(dHrxn) * 0.001, "kJ/mol"),
+            Ea=(self.get_activation_energy(dHrxn) * 0.001, "kJ/mol"),
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,
@@ -576,7 +576,7 @@ cdef class ArrheniusBM(KineticsModel):
             comment=self.comment,
         )
 
-    def fitToReactions(self, rxns, w0=None, recipe=None, Ts=None):
+    def fit_to_reactions(self, rxns, w0=None, recipe=None, Ts=None):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
@@ -587,7 +587,7 @@ cdef class ArrheniusBM(KineticsModel):
             Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
         if w0 is None:
             #estimate w0
-            w0s = getw0s(recipe, rxns)
+            w0s = get_w0s(recipe, rxns)
             w0 = sum(w0s) / len(w0s)
 
         # define optimization function
@@ -657,34 +657,34 @@ cdef class ArrheniusBM(KineticsModel):
 
         return self
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
         range if it's Arrhenius.) Otherwise returns ``False``.
         """
-        if not isinstance(otherKinetics, ArrheniusBM):
+        if not isinstance(other_kinetics, ArrheniusBM):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
-                or not self.w0.equals(otherKinetics.w0) or not self.E0.equals(otherKinetics.E0)):
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.w0.equals(other_kinetics.w0) or not self.E0.equals(other_kinetics.E0)):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes A factor by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets a cantera ElementaryReaction() object with the modified Arrhenius object
         converted to an Arrhenius form.
         """
-        raise NotImplementedError('setCanteraKinetics() is not implemented for ArrheniusBM class kinetics.')
+        raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusBM class kinetics.')
 
 ################################################################################
 
@@ -746,7 +746,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         def __set__(self, value):
             self._pressures = quantity.Pressure(value)
 
-    cdef getAdjacentExpressions(self, double P):
+    cdef get_adjacent_expressions(self, double P):
         """
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
@@ -765,7 +765,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
                 ihigh = i
         return pressures[ilow], pressures[ihigh], self.arrhenius[ilow], self.arrhenius[ihigh]
 
-    cpdef double getRateCoefficient(self, double T, double P=0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and pressure `P` in Pa.
@@ -775,78 +775,78 @@ cdef class PDepArrhenius(PDepKineticsModel):
         cdef int j
 
         if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent PDepArrhenius.getRateCoefficient().')
+            raise ValueError('No pressure specified to pressure-dependent PDepArrhenius.get_rate_coefficient().')
 
         k = 0.0
-        Plow, Phigh, alow, ahigh = self.getAdjacentExpressions(P)
+        Plow, Phigh, alow, ahigh = self.get_adjacent_expressions(P)
         if Plow == Phigh:
-            k = alow.getRateCoefficient(T)
+            k = alow.get_rate_coefficient(T)
         else:
-            klow = alow.getRateCoefficient(T)
-            khigh = ahigh.getRateCoefficient(T)
+            klow = alow.get_rate_coefficient(T)
+            khigh = ahigh.get_rate_coefficient(T)
             if klow == khigh == 0.0: return 0.0
             k = klow * 10 ** (log10(P / Plow) / log10(Phigh / Plow) * log10(khigh / klow))
         return k
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=1):
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=1):
         """
         Fit the pressure-dependent Arrhenius model to a matrix of rate
         coefficient data `K` with units of `kunits` corresponding to a set of
         temperatures `Tlist` in K and pressures `Plist` in Pa. An Arrhenius
-        model is fit cpdef changeRate(self, double factor)at each pressure.
+        model is fit cpdef change_rate(self, double factor)at each pressure.
         """
         cdef int i
         self.pressures = (Plist * 1e-5, "bar")
         self.arrhenius = []
         for i in range(len(Plist)):
-            arrhenius = Arrhenius().fitToData(Tlist, K[:, i], kunits, T0)
+            arrhenius = Arrhenius().fit_to_data(Tlist, K[:, i], kunits, T0)
             self.arrhenius.append(arrhenius)
         return self
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
         reaction must be matched and equal to that in the other PDepArrhenius model
         in the same order.  Otherwise returns ``False``
         """
-        if not isinstance(otherKinetics, PDepArrhenius):
+        if not isinstance(other_kinetics, PDepArrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if len(self.arrhenius) != len(otherKinetics.arrhenius):
+        if len(self.arrhenius) != len(other_kinetics.arrhenius):
             return False
-        if not self.pressures.equals(otherKinetics.pressures):
+        if not self.pressures.equals(other_kinetics.pressures):
             return False
         for index in range(len(self.arrhenius)):
-            if not self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+            if not self.arrhenius[index].is_identical_to(other_kinetics.arrhenius[index]):
                 return False
-        if self.highPlimit and not self.highPlimit.equals(otherKinetics.highPlimit):
+        if self.highPlimit and not self.highPlimit.equals(other_kinetics.highPlimit):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
         for kin in self.arrhenius:
-            kin.changeRate(factor)
+            kin.change_rate(factor)
         if self.highPlimit is not None:
-            self.highPlimit.changeRate(factor)
+            self.highPlimit.change_rate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets a Cantera PlogReaction()'s `rates` attribute with
         A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]
         """
         import cantera as ct
         import copy
-        assert isinstance(ctReaction, ct.PlogReaction), "Must be a Cantera PlogReaction object"
+        assert isinstance(ct_reaction, ct.PlogReaction), "Must be a Cantera PlogReaction object"
 
         pressures = copy.deepcopy(self._pressures.value_si)
-        ctArrhenius = [arr.toCanteraKinetics() for arr in self.arrhenius]
+        ctArrhenius = [arr.to_cantera_kinetics() for arr in self.arrhenius]
 
-        ctReaction.rates = list(zip(pressures, ctArrhenius))
+        ct_reaction.rates = list(zip(pressures, ctArrhenius))
 
 ################################################################################
 
@@ -892,7 +892,7 @@ cdef class MultiArrhenius(KineticsModel):
         """
         return (MultiArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K.
@@ -901,29 +901,29 @@ cdef class MultiArrhenius(KineticsModel):
         cdef Arrhenius arrh
         k = 0.0
         for arrh in self.arrhenius:
-            k += arrh.getRateCoefficient(T)
+            k += arrh.get_rate_coefficient(T)
         return k
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
         reaction must be matched and equal to that in the other MultiArrhenius model
         in the same order.  Otherwise returns ``False``
         """
-        if not isinstance(otherKinetics, MultiArrhenius):
+        if not isinstance(other_kinetics, MultiArrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if len(self.arrhenius) != len(otherKinetics.arrhenius):
+        if len(self.arrhenius) != len(other_kinetics.arrhenius):
             return False
 
         for index in range(len(self.arrhenius)):
-            if not self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+            if not self.arrhenius[index].is_identical_to(other_kinetics.arrhenius[index]):
                 return False
 
         return True
 
-    cpdef Arrhenius toArrhenius(self, double Tmin=-1, double Tmax=-1):
+    cpdef Arrhenius to_arrhenius(self, double Tmin=-1, double Tmax=-1):
         """
         Return an :class:`Arrhenius` instance of the kinetics model
 
@@ -942,29 +942,29 @@ cdef class MultiArrhenius(KineticsModel):
         if Tmax == -1: Tmax = self.Tmax.value_si
         kunits = str(quantity.pq.Quantity(1.0, self.arrhenius[0].A.units).simplified).split()[-1]  # is this the best way to get the units returned by k??
         Tlist = np.logspace(log10(Tmin), log10(Tmax), num=25)
-        klist = np.array(list(map(self.getRateCoefficient, Tlist)), np.float64)
-        arrh = Arrhenius().fitToData(Tlist, klist, kunits)
+        klist = np.array(list(map(self.get_rate_coefficient, Tlist)), np.float64)
+        arrh = Arrhenius().fit_to_data(Tlist, klist, kunits)
         arrh.comment = "Fitted to Multiple Arrhenius kinetics over range {Tmin}-{Tmax} K. {comment}".format(
             Tmin=Tmin, Tmax=Tmax, comment=self.comment)
         return arrh
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Change kinetics rate by a multiple ``factor``.
         """
         for kin in self.arrhenius:
-            kin.changeRate(factor)
+            kin.change_rate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the kinetic rates for a list of cantera `Reaction` objects
-        Here, ctReaction must be a list rather than a single cantera reaction.
+        Here, ct_reaction must be a list rather than a single cantera reaction.
         """
-        if len(ctReaction) != len(self.arrhenius):
+        if len(ct_reaction) != len(self.arrhenius):
             raise Exception('The number of Cantera Reaction objects does not match the number of Arrhenius objects')
 
         for i, arr in enumerate(self.arrhenius):
-            arr.setCanteraKinetics(ctReaction[i], speciesList)
+            arr.set_cantera_kinetics(ct_reaction[i], species_list)
 
 ################################################################################
 
@@ -1011,7 +1011,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         """
         return (MultiPDepArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and pressure `P` in Pa.
@@ -1023,52 +1023,52 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         cdef int i
 
         if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.getRateCoefficient().')
+            raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.get_rate_coefficient().')
 
         k = 0
         for arrh in self.arrhenius:
-            k += arrh.getRateCoefficient(T, P)
+            k += arrh.get_rate_coefficient(T, P)
 
         return k
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
         reaction must be matched and equal to that in the other MultiArrhenius model
         in the same order.  Otherwise returns ``False``
         """
-        if not isinstance(otherKinetics, MultiPDepArrhenius):
+        if not isinstance(other_kinetics, MultiPDepArrhenius):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if len(self.arrhenius) != len(otherKinetics.arrhenius):
+        if len(self.arrhenius) != len(other_kinetics.arrhenius):
             return False
 
         for index in range(len(self.arrhenius)):
-            if not self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+            if not self.arrhenius[index].is_identical_to(other_kinetics.arrhenius[index]):
                 return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Change kinetic rate by a multiple ``factor``.
         """
         for kin in self.arrhenius:
-            kin.changeRate(factor)
+            kin.change_rate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the PLOG kinetics for multiple cantera `Reaction` objects, provided in a list.
-        ctReaction is a list of cantera reaction objects.
+        ct_reaction is a list of cantera reaction objects.
         """
-        if len(ctReaction) != len(self.arrhenius):
+        if len(ct_reaction) != len(self.arrhenius):
             raise Exception('The number of Cantera Reaction objects does not match the number of PdepArrhenius objects')
 
         for i, arr in enumerate(self.arrhenius):
-            arr.setCanteraKinetics(ctReaction[i], speciesList)
+            arr.set_cantera_kinetics(ct_reaction[i], species_list)
 
-def getw0(actions, rxn):
+def get_w0(actions, rxn):
     """
     calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
     and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
@@ -1121,5 +1121,5 @@ def getw0(actions, rxn):
                 wb += abs(bdediff)
     return (wf + wb) / 2.0
 
-def getw0s(actions, rxns):
-    return [getw0(actions, rxn) for rxn in rxns]
+def get_w0s(actions, rxns):
+    return [get_w0(actions, rxn) for rxn in rxns]

@@ -43,23 +43,23 @@ class DiffusionLimited(object):
         # default is false, enabled if there is a solvent
         self.enabled = False
 
-    def enable(self, solventData, solvationDatabase, comment=''):
+    def enable(self, solvent_data, solvation_database, comment=''):
         # diffusionLimiter is enabled if a solvent has been added to the RMG object.
         logging.info("Enabling diffusion-limited kinetics...")
         diffusionLimiter.enabled = True
-        diffusionLimiter.database = solvationDatabase
-        diffusionLimiter.solventData = solventData
+        diffusionLimiter.database = solvation_database
+        diffusionLimiter.solvent_data = solvent_data
 
     def disable(self):
         "Turn it off. Mostly useful for unit testing teardown"
         diffusionLimiter.enabled = False
         del diffusionLimiter.database
-        del diffusionLimiter.solventData
+        del diffusionLimiter.solvent_data
 
-    def getSolventViscosity(self, T):
-        return self.solventData.get_solvent_viscosity(T)
+    def get_solvent_viscosity(self, T):
+        return self.solvent_data.get_solvent_viscosity(T)
 
-    def getEffectiveRate(self, reaction, T):
+    def get_effective_rate(self, reaction, T):
         """
         Returns the effective rate of reaction, accounting for diffusion.
         For 1<=>2 and 1<=>3 reactions, the reverse rate is limited.
@@ -69,7 +69,7 @@ class DiffusionLimited(object):
         intrinsic_kinetics = reaction.kinetics
         reactants = len(reaction.reactants)
         products = len(reaction.products)
-        k_forward = intrinsic_kinetics.getRateCoefficient(T, P=100e5)
+        k_forward = intrinsic_kinetics.get_rate_coefficient(T, P=100e5)
         Keq = reaction.getEquilibriumConstant(T)  # Kc
         k_reverse = k_forward / Keq
         k_eff = k_forward
@@ -78,31 +78,31 @@ class DiffusionLimited(object):
             if products == 1:
                 k_eff = k_forward
             else:  # 2 or 3 products; reverse rate is limited
-                k_diff = self.getDiffusionLimit(T, reaction, forward=False)
+                k_diff = self.get_diffusion_limit(T, reaction, forward=False)
                 k_eff_reverse = k_reverse * k_diff / (k_reverse + k_diff)
                 k_eff = k_eff_reverse * Keq
         else:  # 2 or 3 reactants
             if products == 1:
-                k_diff = self.getDiffusionLimit(T, reaction, forward=True)
+                k_diff = self.get_diffusion_limit(T, reaction, forward=True)
                 k_eff = k_forward * k_diff / (k_forward + k_diff)
             else:  # 2 or 3 products
-                kf_diff = self.getDiffusionLimit(T, reaction, forward=True)
-                krev_diff = self.getDiffusionLimit(T, reaction, forward=False)
+                kf_diff = self.get_diffusion_limit(T, reaction, forward=True)
+                krev_diff = self.get_diffusion_limit(T, reaction, forward=False)
                 kff = k_forward * kf_diff / (k_forward + kf_diff)
                 krevr = k_reverse * krev_diff / (k_reverse + krev_diff)
                 kfr = Keq * krevr
                 k_eff = min(kff, kfr)
         return k_eff
 
-    def getDiffusionFactor(self, reaction, T):
+    def get_diffusion_factor(self, reaction, T):
         """
         Return the diffusion factor of the specified reaction
         This is the ratio of k_eff to k_intrinsic, which is between 0 and 1.
         It is 1.0 if diffusion has no effect.
         """
-        return self.getEffectiveRate(reaction, T) / reaction.kinetics.getRateCoefficient(T, P=0)
+        return self.get_effective_rate(reaction, T) / reaction.kinetics.get_rate_coefficient(T, P=0)
 
-    def getDiffusionLimit(self, T, reaction, forward=True):
+    def get_diffusion_limit(self, T, reaction, forward=True):
         """
         Return the diffusive limit on the rate coefficient, k_diff.
 
@@ -121,10 +121,10 @@ class DiffusionLimited(object):
         radii = 0.0
         diffusivities = []
         for spec in reacting:
-            soluteData = self.database.get_solute_data(spec)
+            solute_data = self.database.get_solute_data(spec)
             # calculate radius with the McGowan volume and assuming sphere
-            radius = ((75 * soluteData.V / constants.pi / constants.Na) ** (1. / 3)) / 100  # m
-            diff = soluteData.get_stokes_diffusivity(T, self.getSolventViscosity(T))
+            radius = ((75 * solute_data.V / constants.pi / constants.Na) ** (1. / 3)) / 100  # m
+            diff = solute_data.get_stokes_diffusivity(T, self.get_solvent_viscosity(T))
             radii += radius  # m
             diffusivities.append(diff)  # m^2/s
 

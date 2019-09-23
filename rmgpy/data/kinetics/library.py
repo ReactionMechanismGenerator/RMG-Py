@@ -199,9 +199,9 @@ class LibraryReaction(Reaction):
                         t_list = np.insert(t_list, -1, [int(self.kinetics.Tmax.value_si)])
                     k_list = []
                     for t in t_list:
-                        k_list.append(self.kinetics.getRateCoefficient(t, self.kinetics.Pmax.value_si))
+                        k_list.append(self.kinetics.get_rate_coefficient(t, self.kinetics.Pmax.value_si))
                     k_list = np.array(k_list)
-                    self.network_kinetics = Arrhenius().fitToData(Tlist=t_list, klist=k_list, kunits=kunits)
+                    self.network_kinetics = Arrhenius().fit_to_data(Tlist=t_list, klist=k_list, kunits=kunits)
                     return True
             logging.info("NOT processing reaction {0} in a pressure-dependent reaction network.\n"
                          "Although it is marked with the `elementary_high_p=True` flag,"
@@ -349,7 +349,7 @@ class KineticsLibrary(Database):
                 kinetics_list.append(kinetics)
                 Tmin = kinetics.Tmin
                 Tmax = kinetics.Tmax
-                if kinetics.isPressureDependent():
+                if kinetics.is_pressure_dependent():
                     Pmin = kinetics.Pmin
                     Pmax = kinetics.Pmax
                 else:

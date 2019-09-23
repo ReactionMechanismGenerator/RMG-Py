@@ -63,12 +63,12 @@ class TestWigner(unittest.TestCase):
 
     def test_calculateTunnelingFactor(self):
         """
-        Test the Wigner.calculateTunnelingFactor() method.
+        Test the Wigner.calculate_tunneling_factor() method.
         """
         Tlist = np.array([300, 500, 1000, 1500, 2000])
         kexplist = np.array([4.90263, 2.40495, 1.35124, 1.15611, 1.08781])
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.tunneling.calculateTunnelingFactor(T)
+            kact = self.tunneling.calculate_tunneling_factor(T)
             self.assertAlmostEqual(kexp, kact, 4)
 
     def test_pickle(self):
@@ -142,12 +142,12 @@ class TestEckart(unittest.TestCase):
 
     def test_calculateTunnelingFactor(self):
         """
-        Test the Eckart.calculateTunnelingFactor() method.
+        Test the Eckart.calculate_tunneling_factor() method.
         """
         Tlist = np.array([300, 500, 1000, 1500, 2000])
         kexplist = np.array([1623051., 7.69349, 1.46551, 1.18111, 1.09858])
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.tunneling.calculateTunnelingFactor(T)
+            kact = self.tunneling.calculate_tunneling_factor(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-3 * kexp)
 
     def test_pickle(self):

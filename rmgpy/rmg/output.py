@@ -485,7 +485,7 @@ $(document).ready(function() {
 </tr>
 <tr class="kinetics {{ rxn.get_source()|csssafe }} hide_kinetics">
     <td></td>
-    <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
+    <td colspan="4">{{ rxn.kinetics.to_html() }}</td>
 </tr>
 <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
@@ -1147,13 +1147,13 @@ $(document).ready(function() {
 </tr>
 
 
-{% if rxn1.kinetics.isIdenticalTo(rxn2.kinetics) %}
+{% if rxn1.kinetics.is_identical_to(rxn2.kinetics) %}
 
  <tr width=100%>
      <td colspan="4" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL KINETICS WERE FOUND FOR THIS REACTION.</font></div>
 
 </tr>
-{% elif rxn1.kinetics.isSimilarTo(rxn2.kinetics) %}
+{% elif rxn1.kinetics.is_similar_to(rxn2.kinetics) %}
 
  <tr width=100%>
      <td colspan="4" valign="top" width=50%><div align="center"><font color="green">SIMILAR KINETICS WERE FOUND FOR THIS REACTION.</font></div>
@@ -1182,8 +1182,8 @@ $(document).ready(function() {
 {% if not rxn2.duplicate %}
 
 <P><b>Fitted Reverse Kinetics:</b>
-{% if not rxn2.kinetics.isPressureDependent() %}
-{{rxn2.generateReverseRateCoefficient().toHTML() }}
+{% if not rxn2.kinetics.is_pressure_dependent() %}
+{{rxn2.generateReverseRateCoefficient().to_html() }}
 {% else %} Pressure dependent
 {% endif %}
 {% endif %}
@@ -1196,9 +1196,9 @@ $(document).ready(function() {
 <tr width=100% class="kinetics">
      <td colspan="2" valign="top" width=50%>
      
-     {{ rxn1.kinetics.toHTML() }}</td>
+     {{ rxn1.kinetics.to_html() }}</td>
      <td colspan="2" valign="top" width=50%>
-     {{ rxn2.kinetics.toHTML() }}</td>
+     {{ rxn2.kinetics.to_html() }}</td>
 </tr>
 
 <tr width=100% class="energy">
@@ -1245,7 +1245,7 @@ $(document).ready(function() {
     </tr>
     <tr class="kinetics {{ rxn.get_source()|csssafe }}">
         <td></td>
-        <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
+        <td colspan="4">{{ rxn.kinetics.to_html() }}</td>
     </tr>
     <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>
@@ -1279,7 +1279,7 @@ $(document).ready(function() {
     </tr>
     <tr class="kinetics {{ rxn.get_source()|csssafe }}">
         <td></td>
-        <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
+        <td colspan="4">{{ rxn.kinetics.to_html() }}</td>
     </tr>
     <tr class="energy {{ rxn.get_source()|csssafe }} hide_energy">
     <td></td>

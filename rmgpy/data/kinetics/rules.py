@@ -80,7 +80,7 @@ class KineticsRules(Database):
                    ):
 
         if isinstance(kinetics, Arrhenius):
-            kinetics = kinetics.toArrheniusEP()
+            kinetics = kinetics.to_arrhenius_ep()
         entry = Entry(
             index=index,
             label=label,

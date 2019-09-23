@@ -245,7 +245,7 @@ class KineticsGroups(Database):
 
         # Also include reaction-path degeneracy
 
-        kinetics.changeRate(degeneracy)
+        kinetics.change_rate(degeneracy)
 
         kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
 

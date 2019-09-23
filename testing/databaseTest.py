@@ -709,7 +709,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if entry.item.isSurfaceReaction():
                 # Don't check surface reactions
                 continue
-            k = entry.data.getRateCoefficient(T, P)
+            k = entry.data.get_rate_coefficient(T, P)
             rxn = entry.item
             if k < 0:
                 boo = True

@@ -131,7 +131,7 @@ cdef class Chebyshev(PDepKineticsModel):
                 T1 = T
             return T
 
-    cdef double getReducedTemperature(self, double T) except -1000:
+    cdef double get_reduced_temperature(self, double T) except -1000:
         """
         Return the reduced temperature corresponding to the given temperature
         `T` in K. This maps the inverse of the temperature onto the domain 
@@ -142,7 +142,7 @@ cdef class Chebyshev(PDepKineticsModel):
         Tmax = self._Tmax.value_si
         return (2.0 / T - 1.0 / Tmin - 1.0 / Tmax) / (1.0 / Tmax - 1.0 / Tmin)
 
-    cdef double getReducedPressure(self, double P) except -1000:
+    cdef double get_reduced_pressure(self, double P) except -1000:
         """
         Return the reduced pressure corresponding to the given pressure
         `P` in Pa. This maps the logarithm of the pressure onto the domain 
@@ -153,7 +153,7 @@ cdef class Chebyshev(PDepKineticsModel):
         Pmax = self._Pmax.value_si
         return (2.0 * log10(P) - log10(Pmin) - log10(Pmax)) / (log10(Pmax) - log10(Pmin))
 
-    cpdef double getRateCoefficient(self, double T, double P=0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa by 
@@ -164,19 +164,19 @@ cdef class Chebyshev(PDepKineticsModel):
         cdef int i, j, t, p
 
         if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent Chebyshev.getRateCoefficient().')
+            raise ValueError('No pressure specified to pressure-dependent Chebyshev.get_rate_coefficient().')
 
         coeffs = self._coeffs.value_si
 
         k = 0.0
-        Tred = self.getReducedTemperature(T)
-        Pred = self.getReducedPressure(P)
+        Tred = self.get_reduced_temperature(T)
+        Pred = self.get_reduced_pressure(P)
         for t in range(self.degreeT):
             for p in range(self.degreeP):
                 k += coeffs[t, p] * self.chebyshev(t, Tred) * self.chebyshev(p, Pred)
         return 10.0 ** k
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K,
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K,
                     str kunits, int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax):
         """
         Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
@@ -208,8 +208,8 @@ cdef class Chebyshev(PDepKineticsModel):
         self.Pmax = (Pmax * 1e-5, "bar")
 
         # Calculate reduced temperatures and pressures
-        Tred = [self.getReducedTemperature(T) for T in Tlist]
-        Pred = [self.getReducedPressure(P) for P in Plist]
+        Tred = [self.get_reduced_temperature(T) for T in Tlist]
+        Pred = [self.get_reduced_pressure(P) for P in Plist]
 
         K = quantity.RateCoefficient(K, kunits).value_si
 
@@ -240,29 +240,29 @@ cdef class Chebyshev(PDepKineticsModel):
 
         return self
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, Chebyshev):
+        if not isinstance(other_kinetics, Chebyshev):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if self.degreeT != otherKinetics.degreeT or self.degreeP != otherKinetics.degreeP:
+        if self.degreeT != other_kinetics.degreeT or self.degreeP != other_kinetics.degreeP:
             return False
-        if self.kunits != otherKinetics.kunits or (self.coeffs != otherKinetics.coeffs).any():
+        if self.kunits != other_kinetics.kunits or (self.coeffs != other_kinetics.coeffs).any():
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """ 
         Changes kinetics rates by a multiple ``factor``.
         """
         self.coeffs.value_si[0, 0] += log10(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the kinetics parameters for a Cantera ChebyshevReaction() object
         Uses set_parameters(self,Tmin,Tmax,Pmin,Pmax,coeffs)
@@ -270,7 +270,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ctReaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+        assert isinstance(ct_reaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
 
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
@@ -296,4 +296,4 @@ cdef class Chebyshev(PDepKineticsModel):
         except:
             raise Exception('Chebyshev units {0} not found among accepted units for converting to '
                             'Cantera Chebyshev object.'.format(self.kunits))
-        ctReaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)
+        ct_reaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)

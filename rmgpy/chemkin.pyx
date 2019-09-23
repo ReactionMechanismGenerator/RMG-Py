@@ -696,7 +696,7 @@ def readReactionComments(reaction, comments, read=True):
             reaction.degeneracy = degen
             # undo the kinetic manipulation caused by setting degneracy
             if reaction.kinetics:
-                reaction.kinetics.changeRate(1. / degen)
+                reaction.kinetics.change_rate(1. / degen)
             # do not add comment because setting degeneracy does so already
             reaction.kinetics.comment += "\n"
 
@@ -1040,7 +1040,7 @@ cpdef _process_duplicate_reactions(list reactionList):
                         raise ChemkinError('Mixed kinetics for duplicate reaction {0}.'.format(reaction))
 
                     duplicate_reactions_to_remove.append(reaction2)
-                elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
+                elif reaction1.kinetics.is_pressure_dependent() == reaction2.kinetics.is_pressure_dependent():
                     # If both reactions are pressure-independent or both are pressure-dependent, then they need
                     # duplicate tags. Chemkin treates pdep and non-pdep reactions as different, so those are okay
                     raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
@@ -1586,7 +1586,7 @@ def writeReactionString(reaction, javaLibrary = False):
         warnings.warn("Writing RMG-Java format is no longer supported and may be"
                       " removed in version 2.3.", DeprecationWarning)
         third_body = ''
-        if kinetics.isPressureDependent():
+        if kinetics.is_pressure_dependent():
             if (isinstance(kinetics, _kinetics.ThirdBody) and
                     not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe))):
                 third_body = ' + M'
@@ -1606,7 +1606,7 @@ def writeReactionString(reaction, javaLibrary = False):
 
     else:
         third_body = ''
-        if kinetics.isPressureDependent():
+        if kinetics.is_pressure_dependent():
             if (isinstance(kinetics, _kinetics.ThirdBody) and
                     not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe))):
                 third_body = '+M'
@@ -1888,7 +1888,7 @@ def markDuplicateReaction(test_reaction, reaction_list):
         opposite_dir_match = (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products)
         if (same_dir_match or opposite_dir_match) and (reaction1.specific_collider == reaction2.specific_collider):
             if reaction1.duplicate and reaction2.duplicate:
-                if reaction1.kinetics.isPressureDependent() != reaction2.kinetics.isPressureDependent():
+                if reaction1.kinetics.is_pressure_dependent() != reaction2.kinetics.is_pressure_dependent():
                     # Reactions with mixed pressure dependence do not need to be marked duplicate in Chemkin
                     logging.warning('Marked reaction {0} as not duplicate because of mixed pressure dependence '
                                     'for saving to Chemkin file.'.format(reaction1))
@@ -1901,7 +1901,7 @@ def markDuplicateReaction(test_reaction, reaction_list):
                     reaction1.duplicate = False
                     reaction2.duplicate = False
             else:
-                if (reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent()
+                if (reaction1.kinetics.is_pressure_dependent() == reaction2.kinetics.is_pressure_dependent()
                         and ((reaction1.reversible and reaction2.reversible)
                              or (same_dir_match and not reaction1.reversible and not reaction2.reversible))):
                     # Only mark as duplicate if both reactions are pressure dependent or both are
@@ -2156,7 +2156,7 @@ def saveJavaKineticsLibrary(path, species, reactions):
     f2.write('\n')
 
     for rxn in reactions:
-        if rxn.kinetics.isPressureDependent():
+        if rxn.kinetics.is_pressure_dependent():
             f2.write(writeKineticsEntry(rxn, speciesList=species, verbose=False, javaLibrary=True))
             f2.write('\n')
         else:

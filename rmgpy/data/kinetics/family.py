@@ -1145,15 +1145,15 @@ class KineticsFamily(Database):
 
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
-            data.changeT0(1)
+            data.change_t0(1)
 
             if type(data) is Arrhenius:
                 # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
-                data = data.toArrheniusEP()
+                data = data.to_arrhenius_ep()
             elif isinstance(data, StickingCoefficient):
                 data = StickingCoefficientBEP(
                     # todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP
-                    #  analogous to Arrhenius.toArrheniusEP
+                    #  analogous to Arrhenius.to_arrhenius_ep
                     A=deepcopy(data.A),
                     n=deepcopy(data.n),
                     alpha=0,
@@ -1164,7 +1164,7 @@ class KineticsFamily(Database):
             elif isinstance(data, SurfaceArrhenius):
                 data = SurfaceArrheniusBEP(
                     # todo: perhaps make a method SurfaceArrhenius.toSurfaceArrheniusBEP
-                    #  analogous to Arrhenius.toArrheniusEP
+                    #  analogous to Arrhenius.to_arrhenius_ep
                     A=deepcopy(data.A),
                     n=deepcopy(data.n),
                     alpha=0,
@@ -1203,7 +1203,7 @@ class KineticsFamily(Database):
 
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
-            data.changeT0(1)
+            data.change_t0(1)
             # Estimate the thermo for the reactants and products
             # training_set=True used later to does not allow species to match a liquid phase library
             # and get corrected thermo which will affect reverse rate calculation
@@ -1244,7 +1244,7 @@ class KineticsFamily(Database):
                 label=';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                               products=[]),
-                data=data.toArrheniusEP(),
+                data=data.to_arrhenius_ep(),
                 rank=entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
@@ -3220,7 +3220,7 @@ class KineticsFamily(Database):
         until they reach max_batch_size reactions
         A list of lists of reactions containing the batches is returned
         """
-        ks = np.array([rxn.kinetics.getRateCoefficient(T=T) for rxn in rxns])
+        ks = np.array([rxn.kinetics.get_rate_coefficient(T=T) for rxn in rxns])
         inds = np.argsort(ks)
         outlier_num = int(outlier_fraction * len(ks) / 2)
         if outlier_num == 0:
@@ -3426,7 +3426,7 @@ class KineticsFamily(Database):
         for i, kinetics in enumerate(kinetics_list):
             if kinetics is not None:
                 entry = entries[i]
-                std = kinetics.uncertainty.getExpectedLogUncertainty() / 0.398  # expected uncertainty is std * 0.398
+                std = kinetics.uncertainty.get_expected_log_uncertainty() / 0.398  # expected uncertainty is std * 0.398
                 st = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i]), entry.label)
                 st += "\nTotal Standard Deviation in ln(k): {0}".format(std)
                 new_entry = Entry(
@@ -3479,7 +3479,7 @@ class KineticsFamily(Database):
 
             for rxn in rxns_test:
 
-                krxn = rxn.kinetics.getRateCoefficient(T)
+                krxn = rxn.kinetics.get_rate_coefficient(T)
 
                 entry = self.get_root_template()[0]
 
@@ -3506,9 +3506,9 @@ class KineticsFamily(Database):
                 L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
                 if L != []:
-                    kinetics = ArrheniusBM().fitToReactions(L, recipe=self.forwardRecipe.actions)
-                    kinetics = kinetics.toArrhenius(rxn.getEnthalpyOfReaction(T))
-                    k = kinetics.getRateCoefficient(T)
+                    kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forwardRecipe.actions)
+                    kinetics = kinetics.to_arrhenius(rxn.getEnthalpyOfReaction(T))
+                    k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
                 else:
                     raise ValueError('only one piece of kinetics information in the tree?')
@@ -3544,7 +3544,7 @@ class KineticsFamily(Database):
 
             for rxn in rxns_test:
 
-                krxn = rxn.kinetics.getRateCoefficient(T)
+                krxn = rxn.kinetics.get_rate_coefficient(T)
 
                 template_labels = self.get_reaction_template_labels(rxn)
                 template = self.retrieve_template(template_labels)
@@ -4341,15 +4341,15 @@ def _make_rule(rr):
         rxn.rank = ranks[i]
     rxns = np.array(rxns)
     if n > 0:
-        kin = ArrheniusBM().fitToReactions(rxns, recipe=recipe)
+        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
         if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, correlation=label)
         else:
             dlnks = np.array([
                 np.log(
-                    ArrheniusBM().fitToReactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
-                    .toArrhenius(rxn.getEnthalpyOfReaction(Tref))
-                    .getRateCoefficient(T=Tref) / rxn.getRateCoefficient(T=Tref)
+                    ArrheniusBM().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
+                    .to_arrhenius(rxn.getEnthalpyOfReaction(Tref))
+                    .get_rate_coefficient(T=Tref) / rxn.getRateCoefficient(T=Tref)
                 ) for i, rxn in enumerate(rxns)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
             varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2

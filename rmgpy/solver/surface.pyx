@@ -220,7 +220,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                                             self.surfaceSiteDensity.value_si
                                                             ))
             else:
-                if not warned and rxn.kinetics.isPressureDependent():
+                if not warned and rxn.kinetics.is_pressure_dependent():
                     logging.warning("Pressure may be varying, but using initial pressure to evaluate k(T,P) expressions!")
                     warned = True
                 self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)

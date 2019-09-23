@@ -113,13 +113,13 @@ class TestThirdBody(unittest.TestCase):
 
     def test_isPressureDependent(self):
         """
-        Test the ThirdBody.isPressureDependent() method.
+        Test the ThirdBody.is_pressure_dependent() method.
         """
-        self.assertTrue(self.thirdBody.isPressureDependent())
+        self.assertTrue(self.thirdBody.is_pressure_dependent())
 
     def test_getEffectivePressure(self):
         """
-        Test the ThirdBody.getEffectivePressure() method.
+        Test the ThirdBody.get_effective_pressure() method.
         """
         P = 1.0
         # Test that each pure bath gas gives the correct effective pressure
@@ -132,7 +132,7 @@ class TestThirdBody(unittest.TestCase):
                     break
             fractions = np.zeros(len(species))
             fractions[i] = 1.0
-            Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+            Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
             self.assertAlmostEqual(P * eff, Peff)
         # Also test a mixture of bath gases
         fractions = np.zeros(len(species))
@@ -144,7 +144,7 @@ class TestThirdBody(unittest.TestCase):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
             if species[1].isIsomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
-        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
         # Test the same thing, only with a list of species that are Molecule objects
@@ -156,7 +156,7 @@ class TestThirdBody(unittest.TestCase):
                     break
             fractions = np.zeros(len(species))
             fractions[i] = 1.0
-            Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+            Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
             self.assertAlmostEqual(P * eff, Peff)
         # Also test a mixture of bath gases
         eff = 0
@@ -169,35 +169,35 @@ class TestThirdBody(unittest.TestCase):
         fractions = np.zeros(len(species))
         fractions[0] = 0.5
         fractions[1] = 0.5
-        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
         # Here, test a non-normalized set of fractions (they are still 50% of each)
         fractions = np.zeros(len(species))
         fractions[0] = 0.7
         fractions[1] = 0.7
-        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
     def test_getEffectiveColliderEfficiencies(self):
         """
-        Test the getEffectiveColliderEfficiencies() method
+        Test the get_effective_collider_efficiencies() method
         """
         # Create list of molecules
         molecules = [Molecule(SMILES=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
-        method_efficiencies = self.thirdBody.getEffectiveColliderEfficiencies(molecules)
+        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
         efficiencies = np.array([3, 2, 3, 6, 0.7, 1.5, 2])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
         # Use a smaller list of molecules
         molecules = [Molecule(SMILES=smiles) for smiles in ["C", "CC", "[Ar]"]]
-        method_efficiencies = self.thirdBody.getEffectiveColliderEfficiencies(molecules)
+        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
         efficiencies = np.array([3, 3, 0.7])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
     def test_getRateCoefficient(self):
         """
-        Test the ThirdBody.getRateCoefficient() method.
+        Test the ThirdBody.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -209,7 +209,7 @@ class TestThirdBody(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.thirdBody.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.thirdBody.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact, Kexp[t, p], delta=1e-4 * Kexp[t, p])
 
     def test_pickle(self):
@@ -280,13 +280,13 @@ class TestThirdBody(unittest.TestCase):
 
     def test_changeRate(self):
         """
-        Test the ThirdBody.changeRate() method.
+        Test the ThirdBody.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.thirdBody.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.thirdBody.changeRate(2)
+        k0list = np.array([self.thirdBody.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.thirdBody.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.thirdBody.getRateCoefficient(T, 1e5)
+            kact = self.thirdBody.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -374,13 +374,13 @@ class TestLindemann(unittest.TestCase):
 
     def test_isPressureDependent(self):
         """
-        Test the Lindemann.isPressureDependent() method.
+        Test the Lindemann.is_pressure_dependent() method.
         """
-        self.assertTrue(self.lindemann.isPressureDependent())
+        self.assertTrue(self.lindemann.is_pressure_dependent())
 
     def test_getRateCoefficient(self):
         """
-        Test the Lindemann.getRateCoefficient() method.
+        Test the Lindemann.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -392,7 +392,7 @@ class TestLindemann(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.lindemann.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.lindemann.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact, Kexp[t, p], delta=1e-4 * Kexp[t, p])
 
     def test_pickle(self):
@@ -479,13 +479,13 @@ class TestLindemann(unittest.TestCase):
 
     def test_changeRate(self):
         """
-        Test the Lindemann.changeRate() method.
+        Test the Lindemann.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.lindemann.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.lindemann.changeRate(2)
+        k0list = np.array([self.lindemann.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.lindemann.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.lindemann.getRateCoefficient(T, 1e5)
+            kact = self.lindemann.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 
@@ -605,13 +605,13 @@ class TestTroe(unittest.TestCase):
 
     def test_isPressureDependent(self):
         """
-        Test the Troe.isPressureDependent() method.
+        Test the Troe.is_pressure_dependent() method.
         """
-        self.assertTrue(self.troe.isPressureDependent())
+        self.assertTrue(self.troe.is_pressure_dependent())
 
     def test_getRateCoefficient(self):
         """
-        Test the Troe.getRateCoefficient() method.
+        Test the Troe.get_rate_coefficient() method.
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
@@ -623,7 +623,7 @@ class TestTroe(unittest.TestCase):
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
-                Kact = self.troe.getRateCoefficient(Tlist[t], Plist[p])
+                Kact = self.troe.get_rate_coefficient(Tlist[t], Plist[p])
                 self.assertAlmostEqual(Kact, Kexp[t, p], delta=1e-4 * Kexp[t, p])
 
     def test_pickle(self):
@@ -724,13 +724,13 @@ class TestTroe(unittest.TestCase):
 
     def test_changeRate(self):
         """
-        Test the Troe.changeRate() method.
+        Test the Troe.change_rate() method.
         """
         Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
-        k0list = np.array([self.troe.getRateCoefficient(T, 1e5) for T in Tlist])
-        self.troe.changeRate(2)
+        k0list = np.array([self.troe.get_rate_coefficient(T, 1e5) for T in Tlist])
+        self.troe.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
-            kact = self.troe.getRateCoefficient(T, 1e5)
+            kact = self.troe.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
 

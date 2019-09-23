@@ -193,15 +193,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered '
                                                   'in PDepNetwork #{1:d} while evaluating leak flux.'.format(rxn, self.index))
             if rxn.products is self.source:
-                k = rxn.getRateCoefficient(T, P) / rxn.getEquilibriumConstant(T)
+                k = rxn.get_rate_coefficient(T, P) / rxn.getEquilibriumConstant(T)
             else:
-                k = rxn.getRateCoefficient(T, P)
+                k = rxn.get_rate_coefficient(T, P)
         else:
             # The network has at least one included isomer, so we can calculate
             # the leak flux normally
             for rxn in self.netReactions:
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                    k += rxn.getRateCoefficient(T, P)
+                    k += rxn.get_rate_coefficient(T, P)
         return k
 
     def getMaximumLeakSpecies(self, T, P):
@@ -225,7 +225,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         else:
             for rxn in self.netReactions:
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                    k = rxn.getRateCoefficient(T, P)
+                    k = rxn.get_rate_coefficient(T, P)
                     if max_species is None or k > max_k:
                         max_species = rxn.products[0]
                         max_k = k
@@ -254,7 +254,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         else:
             for rxn in self.netReactions:
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
-                    ratios[rxn.products[0]] = rxn.getRateCoefficient(T, P)
+                    ratios[rxn.products[0]] = rxn.get_rate_coefficient(T, P)
 
         kleak = sum(ratios.values())
         for spec in ratios:
@@ -367,11 +367,11 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 val2 = 0.0
                 if rxn.reactants[0] in isomer_spcs:
                     ind = isomer_spcs.index(rxn.reactants[0])
-                    kf = rxn.getRateCoefficient(T, P)
+                    kf = rxn.get_rate_coefficient(T, P)
                     val = kf * c[ind]
                 if rxn.products[0] in isomer_spcs:
                     ind2 = isomer_spcs.index(rxn.products[0])
-                    kr = rxn.getRateCoefficient(T, P) / rxn.getEquilibriumConstant(T)
+                    kr = rxn.get_rate_coefficient(T, P) / rxn.getEquilibriumConstant(T)
                     val2 = kr * c[ind2]
 
                 if max(val, val2) < tol:
@@ -381,7 +381,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         else:
             logging.warning("Falling back flux reduction from Steady State analysis to rate coefficient analysis")
-            ks = np.array([rxn.getRateCoefficient(T, P) for rxn in self.netReactions])
+            ks = np.array([rxn.get_rate_coefficient(T, P) for rxn in self.netReactions])
             frs = ks / ks.sum()
             inds = [i for i in range(len(frs)) if frs[i] < tol]
             filtered_prod = [self.netReactions[i].products for i in inds]
@@ -402,13 +402,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for rxn in self.netReactions:
             if rxn.reactants[0] in isomer_spcs:
                 ind = isomer_spcs.index(rxn.reactants[0])
-                kf = rxn.getRateCoefficient(T, P)
+                kf = rxn.get_rate_coefficient(T, P)
                 A[ind, ind] -= kf
             else:
                 ind = None
             if rxn.products[0] in isomer_spcs:
                 ind2 = isomer_spcs.index(rxn.products[0])
-                kr = rxn.getRateCoefficient(T, P) / rxn.getEquilibriumConstant(T)
+                kr = rxn.get_rate_coefficient(T, P) / rxn.getEquilibriumConstant(T)
                 A[ind2, ind2] -= kr
             else:
                 ind2 = None
@@ -419,10 +419,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
             if bimolecular:
                 if rxn.reactants[0] == self.source:
-                    kf = rxn.getRateCoefficient(T, P)
+                    kf = rxn.get_rate_coefficient(T, P)
                     b[ind2] += kf
                 elif rxn.products[0] == self.source:
-                    kr = rxn.getRateCoefficient(T, P) / rxn.getEquilibriumConstant(T)
+                    kr = rxn.get_rate_coefficient(T, P) / rxn.getEquilibriumConstant(T)
                     b[ind] += kr
 
         if not bimolecular:
@@ -746,7 +746,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             if rxn.kinetics is None and rxn.reverse.kinetics is None:
                 raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered in '
                                               'PDepNetwork #{1:d}.'.format(rxn, self.index))
-            elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent() and rxn.network_kinetics is None:
+            elif rxn.kinetics is not None and rxn.kinetics.is_pressure_dependent() and rxn.network_kinetics is None:
                 raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction {0} in '
                                               'PDepNetwork #{1:d}.'.format(rxn, self.index))
 
@@ -798,8 +798,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     kunits = 'm^6/(mol^2*s)'
                 else:
                     kunits = ''
-                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.value_si,
-                                                     klist=rxn.kinetics.kdata.value_si, kunits=kunits)
+                rxn.kinetics = Arrhenius().fit_to_data(Tlist=rxn.kinetics.Tdata.value_si,
+                                                       klist=rxn.kinetics.kdata.value_si, kunits=kunits)
             elif isinstance(rxn.kinetics, MultiArrhenius):
                 logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(rxn=rxn))
                 rxn.kinetics = rxn.kinetics.toArrhenius(Tmin=Tmin, Tmax=Tmax)
@@ -916,9 +916,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         continue
                     if pathReaction.reactants == net_reaction.reactants and pathReaction.products == net_reaction.products:
                         if pathReaction.network_kinetics is not None:
-                            kinf = pathReaction.network_kinetics.getRateCoefficient(Tlist[t])
+                            kinf = pathReaction.network_kinetics.get_rate_coefficient(Tlist[t])
                         else:
-                            kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t])
+                            kinf = pathReaction.kinetics.get_rate_coefficient(Tlist[t])
                         if K[t, p, i, j] > 2 * kinf:  # To allow for a small discretization error
                             logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, '
                                             '{3:g} bar'.format(net_reaction, K[t, p, i, j] / kinf, Tlist[t], Plist[p] / 1e5))
@@ -926,10 +926,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         break
                     elif pathReaction.products == net_reaction.reactants and pathReaction.reactants == net_reaction.products:
                         if pathReaction.network_kinetics is not None:
-                            kinf = pathReaction.network_kinetics.getRateCoefficient(
+                            kinf = pathReaction.network_kinetics.get_rate_coefficient(
                                 Tlist[t]) / pathReaction.getEquilibriumConstant(Tlist[t])
                         else:
-                            kinf = pathReaction.kinetics.getRateCoefficient(
+                            kinf = pathReaction.kinetics.get_rate_coefficient(
                                 Tlist[t]) / pathReaction.getEquilibriumConstant(Tlist[t])
                         if K[t, p, i, j] > 2 * kinf:  # To allow for a small discretization error
                             logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, '

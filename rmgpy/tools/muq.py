@@ -299,7 +299,7 @@ class ReactorModPiece(ModPiece):
         factor = randomInput * uncertaintyFactor
 
         # The rate is loguniform in k
-        rxn.kinetics.changeRate(10 ** factor)
+        rxn.kinetics.change_rate(10 ** factor)
         self.cantera.modifyReactionKinetics(reactionIndex, rxn)
 
     def scaleToThermo(self, randomInput, uncertaintyFactor, speciesIndex):

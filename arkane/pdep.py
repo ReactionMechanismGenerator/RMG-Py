@@ -588,7 +588,7 @@ class PressureDependenceJob(object):
                 if reaction.kinetics is not None:
                     for t in range(Tcount):
                         for p in range(Pcount):
-                            K2[t, p] = reaction.kinetics.getRateCoefficient(Tlist[t], Plist[p])
+                            K2[t, p] = reaction.kinetics.get_rate_coefficient(Tlist[t], Plist[p])
 
                 K = self.K[:, :, prod, reac].copy()
                 order = len(reaction.reactants)

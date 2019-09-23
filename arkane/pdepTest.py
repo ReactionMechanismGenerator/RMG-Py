@@ -105,7 +105,7 @@ class ArkaneTest(unittest.TestCase):
             reaction_list = readReactionsBlock(chem, dictionary)
         rxn = reaction_list[0]
         self.assertIsInstance(rxn.kinetics, Chebyshev)
-        self.assertAlmostEquals(rxn.kinetics.getRateCoefficient(1000.0, 1.0), 88.88253229631246)
+        self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246)
 
         files = [f for f in os.listdir(os.path.join(self.directory, 'sensitivity', ''))
                  if os.path.isfile(os.path.join(self.directory, 'sensitivity', f))]

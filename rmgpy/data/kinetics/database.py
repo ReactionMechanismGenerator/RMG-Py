@@ -659,13 +659,13 @@ and immediately used in input files without any additional changes.
                 T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
                 k_data = np.zeros_like(T_data)
                 for i in range(T_data.shape[0]):
-                    k_data[i] = entry.data.getRateCoefficient(T_data[i]) / reaction.getEquilibriumConstant(T_data[i])
+                    k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.getEquilibriumConstant(T_data[i])
                 try:
                     k_units = ('s^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)')[len(reverse[0].reactants) - 1]
                 except IndexError:
                     raise NotImplementedError('Cannot reverse reactions with {} products'.format(
                         len(reverse[0].reactants)))
-                kinetics = Arrhenius().fitToData(T_data, k_data, k_units, T0=1.0)
+                kinetics = Arrhenius().fit_to_data(T_data, k_data, k_units, T0=1.0)
                 kinetics.Tmin = entry.data.Tmin
                 kinetics.Tmax = entry.data.Tmax
                 kinetics.Pmin = entry.data.Pmin
@@ -815,5 +815,5 @@ and immediately used in input files without any additional changes.
 
                 h298 = rxn_copy.getEnthalpyOfReaction(298)
                 if isinstance(kinetics, (ArrheniusEP, ArrheniusBM)):
-                    kinetics = kinetics.toArrhenius(h298)
+                    kinetics = kinetics.to_arrhenius(h298)
                 return kinetics

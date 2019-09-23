@@ -39,17 +39,17 @@ cdef class Arrhenius(KineticsModel):
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef changeT0(self, double T0)
+    cpdef change_t0(self, double T0)
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint threeParams=?)
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 
-    cpdef ArrheniusEP toArrheniusEP(self, double alpha=?, double dHrxn=?)
+    cpdef ArrheniusEP to_arrhenius_ep(self, double alpha=?, double dHrxn=?)
 
 ################################################################################
 
@@ -60,15 +60,15 @@ cdef class ArrheniusEP(KineticsModel):
     cdef public ScalarQuantity _alpha
     cdef public ScalarQuantity _E0
     
-    cpdef double getRateCoefficient(self, double T, double dHrxn=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double dHrxn=?) except -1
 
-    cpdef double getActivationEnergy(self, double dHrxn) except -1
+    cpdef double get_activation_energy(self, double dHrxn) except -1
     
-    cpdef Arrhenius toArrhenius(self, double dHrxn)
+    cpdef Arrhenius to_arrhenius(self, double dHrxn)
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 ################################################################################
 
 cdef class ArrheniusBM(KineticsModel):
@@ -78,15 +78,15 @@ cdef class ArrheniusBM(KineticsModel):
     cdef public ScalarQuantity _w0
     cdef public ScalarQuantity _E0
     
-    cpdef double getRateCoefficient(self, double T, double dHrxn=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double dHrxn=?) except -1
 
-    cpdef double getActivationEnergy(self, double dHrxn) except -1
+    cpdef double get_activation_energy(self, double dHrxn) except -1
     
-    cpdef Arrhenius toArrhenius(self, double dHrxn)
+    cpdef Arrhenius to_arrhenius(self, double dHrxn)
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 ################################################################################
 
 cdef class PDepArrhenius(PDepKineticsModel):
@@ -94,15 +94,15 @@ cdef class PDepArrhenius(PDepKineticsModel):
     cdef public ArrayQuantity _pressures
     cdef public list arrhenius
     
-    cdef getAdjacentExpressions(self, double P)
+    cdef get_adjacent_expressions(self, double P)
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
     
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=?)
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=?)
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 
 ################################################################################
 
@@ -110,13 +110,13 @@ cdef class MultiArrhenius(KineticsModel):
     
     cdef public list arrhenius
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef Arrhenius toArrhenius(self, double Tmin=?, double Tmax=?)
+    cpdef Arrhenius to_arrhenius(self, double Tmin=?, double Tmax=?)
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 
 ################################################################################
 
@@ -124,8 +124,8 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
     
     cdef public list arrhenius
     
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)

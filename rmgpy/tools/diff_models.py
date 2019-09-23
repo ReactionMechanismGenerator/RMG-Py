@@ -100,11 +100,11 @@ def compareModelKinetics(model1, model2):
     kinetics1 = []
     kinetics2 = []
     for rxn1, rxn2 in common_reactions.items():
-        kinetics1.append(rxn1.getRateCoefficient(T, P))
+        kinetics1.append(rxn1.get_rate_coefficient(T, P))
         if rxn1.isIsomorphic(rxn2, eitherDirection=False):
-            kinetics2.append(rxn2.getRateCoefficient(T, P))
+            kinetics2.append(rxn2.get_rate_coefficient(T, P))
         else:
-            kinetics2.append(rxn2.getRateCoefficient(T, P) / rxn2.getEquilibriumConstant(T))
+            kinetics2.append(rxn2.get_rate_coefficient(T, P) / rxn2.getEquilibriumConstant(T))
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     plt.loglog(kinetics1, kinetics2, 'o', picker=5)
     xlim = plt.xlim()
@@ -261,7 +261,7 @@ def identicalThermo(species_pair):
 
 
 def identicalKinetics(reaction_pair):
-    return reaction_pair[0].kinetics.isIdenticalTo(reaction_pair[1].kinetics)
+    return reaction_pair[0].kinetics.is_identical_to(reaction_pair[1].kinetics)
 
 
 ################################################################################
@@ -395,24 +395,24 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
             logging.info('    {0!s}'.format(rxn1))
             if rxn1.kinetics and rxn2.kinetics:
                 logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn1.kinetics.getRateCoefficient(300, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(400, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(500, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(600, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(800, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(1000, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(1500, 1e5)),
-                    math.log10(rxn1.kinetics.getRateCoefficient(2000, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(300, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(400, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(500, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(600, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(800, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(1000, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(1500, 1e5)),
+                    math.log10(rxn1.kinetics.get_rate_coefficient(2000, 1e5)),
                 ))
                 logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn2.kinetics.getRateCoefficient(300, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(400, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(500, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(600, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(800, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(1000, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(1500, 1e5)),
-                    math.log10(rxn2.kinetics.getRateCoefficient(2000, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(300, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(400, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(500, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(600, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(800, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(1000, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(1500, 1e5)),
+                    math.log10(rxn2.kinetics.get_rate_coefficient(2000, 1e5)),
                 ))
         logging.info('{0:d} reactions were only found in the first model:'.format(len(unique_reactions1)))
         for rxn in unique_reactions1:

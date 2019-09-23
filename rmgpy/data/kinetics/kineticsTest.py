@@ -482,8 +482,8 @@ class TestReactionDegeneracy(unittest.TestCase):
                       str(pp_kinetics_list) + str(pb_kinetics_list))
 
         # test that the kinetics are correct
-        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300) * 2,
-                               pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertAlmostEqual(pp_kinetics_list[0][0].get_rate_coefficient(300) * 2,
+                               pb_kinetics_list[0][0].get_rate_coefficient(300))
 
     def test_identical_reactants_have_similar_kinetics(self):
         """
@@ -532,8 +532,8 @@ class TestReactionDegeneracy(unittest.TestCase):
                       str(bb_kinetics_list) + str(bp_kinetics_list))
 
         # test that the kinetics are correct
-        self.assertAlmostEqual(bb_kinetics_list[0][0].getRateCoefficient(300),
-                               bp_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertAlmostEqual(bb_kinetics_list[0][0].get_rate_coefficient(300),
+                               bp_kinetics_list[0][0].get_rate_coefficient(300))
 
     def test_reaction_degeneracy_independent_of_generatereactions_direction(self):
         """

@@ -87,49 +87,49 @@ cdef class ThirdBody(PDepKineticsModel):
         return (ThirdBody, (self.arrheniusLow, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.efficiencies, self.comment))
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
         Pa. If you wish to consider collision efficiencies, then you should
-        first use :meth:`getEffectivePressure()` to compute the effective
+        first use :meth:`get_effective_pressure()` to compute the effective
         pressure, and pass that value as the pressure to this method.
         """
         cdef double C, k0
 
         C = P / constants.R / T  # bath gas concentration in mol/m^3
-        k0 = self.arrheniusLow.getRateCoefficient(T)
+        k0 = self.arrheniusLow.get_rate_coefficient(T)
 
         return k0 * C
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, ThirdBody):
+        if not isinstance(other_kinetics, ThirdBody):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if not self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+        if not self.arrheniusLow.is_identical_to(other_kinetics.arrheniusLow):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
-        self.arrheniusLow.changeRate(factor)
+        self.arrheniusLow.change_rate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the kinetics and efficiencies for a cantera `ThreeBodyReaction` object
         """
         import cantera as ct
-        assert isinstance(ctReaction, ct.ThreeBodyReaction), "Must be a Cantera ThreeBodyReaction object"
-        ctReaction.efficiencies = PDepKineticsModel.getCanteraEfficiencies(self, speciesList)
-        self.arrheniusLow.setCanteraKinetics(ctReaction, speciesList)
+        assert isinstance(ct_reaction, ct.ThreeBodyReaction), "Must be a Cantera ThreeBodyReaction object"
+        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        self.arrheniusLow.set_cantera_kinetics(ct_reaction, species_list)
 
 ################################################################################
 
@@ -182,57 +182,57 @@ cdef class Lindemann(PDepKineticsModel):
         return (Lindemann, (self.arrheniusHigh, self.arrheniusLow, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.efficiencies, self.comment))
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
         Pa. If you wish to consider collision efficiencies, then you should
-        first use :meth:`getEffectivePressure()` to compute the effective
+        first use :meth:`get_effective_pressure()` to compute the effective
         pressure, and pass that value as the pressure to this method.
         """
         cdef double C, k0, kinf, Pr
 
         C = P / constants.R / T  # bath gas concentration in mol/m^3
-        k0 = self.arrheniusLow.getRateCoefficient(T)
-        kinf = self.arrheniusHigh.getRateCoefficient(T)
+        k0 = self.arrheniusLow.get_rate_coefficient(T)
+        kinf = self.arrheniusHigh.get_rate_coefficient(T)
         Pr = k0 * C / kinf
 
         return kinf * (Pr / (1 + Pr))
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, Lindemann):
+        if not isinstance(other_kinetics, Lindemann):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if not self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+        if not self.arrheniusLow.is_identical_to(other_kinetics.arrheniusLow):
             return False
-        if not self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
+        if not self.arrheniusHigh.is_identical_to(other_kinetics.arrheniusHigh):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
-        self.arrheniusLow.changeRate(factor)
-        self.arrheniusHigh.changeRate(factor)
+        self.arrheniusLow.change_rate(factor)
+        self.arrheniusHigh.change_rate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the efficiencies and kinetics for a cantera reaction.
         """
         import cantera as ct
-        assert isinstance(ctReaction, ct.FalloffReaction), "Must be a Cantera FalloffReaction object"
+        assert isinstance(ct_reaction, ct.FalloffReaction), "Must be a Cantera FalloffReaction object"
 
-        ctReaction.efficiencies = PDepKineticsModel.getCanteraEfficiencies(self, speciesList)
-        ctReaction.high_rate = self.arrheniusHigh.toCanteraKinetics()
-        ctReaction.low_rate = self.arrheniusLow.toCanteraKinetics()
-        ctReaction.falloff = ct.Falloff()
+        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.high_rate = self.arrheniusHigh.to_cantera_kinetics()
+        ct_reaction.low_rate = self.arrheniusLow.to_cantera_kinetics()
+        ct_reaction.falloff = ct.Falloff()
 
 ################################################################################
 
@@ -319,12 +319,12 @@ cdef class Troe(PDepKineticsModel):
         def __set__(self, value):
             self._T3 = quantity.Temperature(value)
 
-    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
         Pa. If you wish to consider collision efficiencies, then you should
-        first use :meth:`getEffectivePressure()` to compute the effective
+        first use :meth:`get_effective_pressure()` to compute the effective
         pressure, and pass that value as the pressure to this method.
         """
         cdef double C, k0, kinf, Pr
@@ -332,8 +332,8 @@ cdef class Troe(PDepKineticsModel):
         cdef double alpha, T1, T2, T3
 
         C = P / constants.R / T  # bath gas concentration in mol/m^3
-        k0 = self.arrheniusLow.getRateCoefficient(T)
-        kinf = self.arrheniusHigh.getRateCoefficient(T)
+        k0 = self.arrheniusLow.get_rate_coefficient(T)
+        kinf = self.arrheniusHigh.get_rate_coefficient(T)
         Pr = k0 * C / kinf
 
         alpha = self.alpha
@@ -353,50 +353,50 @@ cdef class Troe(PDepKineticsModel):
 
         return kinf * (Pr / (1 + Pr)) * F
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, Troe):
+        if not isinstance(other_kinetics, Troe):
             return False
-        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if not self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+        if not self.arrheniusLow.is_identical_to(other_kinetics.arrheniusLow):
             return False
-        if not self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
+        if not self.arrheniusHigh.is_identical_to(other_kinetics.arrheniusHigh):
             return False
-        if not self.alpha == otherKinetics.alpha:
+        if not self.alpha == other_kinetics.alpha:
             return False
-        if not self.T1.equals(otherKinetics.T1):
+        if not self.T1.equals(other_kinetics.T1):
             return False
-        if not self.T3.equals(otherKinetics.T3):
+        if not self.T3.equals(other_kinetics.T3):
             return False
-        if self.T2 is not None and not self.T2.equals(otherKinetics.T2):
+        if self.T2 is not None and not self.T2.equals(other_kinetics.T2):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
-        self.arrheniusLow.changeRate(factor)
-        self.arrheniusHigh.changeRate(factor)
+        self.arrheniusLow.change_rate(factor)
+        self.arrheniusHigh.change_rate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the efficiencies, kinetics, and troe falloff parameters
         for a cantera FalloffReaction.
         """
         import cantera as ct
 
-        assert isinstance(ctReaction, ct.FalloffReaction), "Must be a Cantera FalloffReaction object"
-        ctReaction.efficiencies = PDepKineticsModel.getCanteraEfficiencies(self, speciesList)
-        ctReaction.high_rate = self.arrheniusHigh.toCanteraKinetics()
-        ctReaction.low_rate = self.arrheniusLow.toCanteraKinetics()
+        assert isinstance(ct_reaction, ct.FalloffReaction), "Must be a Cantera FalloffReaction object"
+        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.high_rate = self.arrheniusHigh.to_cantera_kinetics()
+        ct_reaction.low_rate = self.arrheniusLow.to_cantera_kinetics()
         A = self.alpha
         T3 = self.T3.value_si
         T1 = self.T1.value_si
         T2 = self.T2.value_si
-        ctReaction.falloff = ct.TroeFalloff(params=[A, T3, T1, T2])
+        ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1, T2])

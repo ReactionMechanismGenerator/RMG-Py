@@ -113,7 +113,7 @@ class ReactionModel:
             for rxn0 in final_model.reactions:
                 if rxn.isIsomorphic(rxn0, eitherDirection=True):
                     common_reactions[rxn] = rxn0
-                    if not rxn0.kinetics.isIdenticalTo(rxn.kinetics):
+                    if not rxn0.kinetics.is_identical_to(rxn.kinetics):
                         print('Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0)))
                     break
             else:

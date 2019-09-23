@@ -40,15 +40,15 @@ cdef class StickingCoefficient(KineticsModel):
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
     
-    cpdef double getStickingCoefficient(self, double T) except -1
+    cpdef double get_sticking_coefficient(self, double T) except -1
 
-    cpdef changeT0(self, double T0)
+    cpdef change_t0(self, double T0)
 
-    cpdef fitToData(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint threeParams=?)
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
-    cpdef changeRate(self, double factor)
+    cpdef change_rate(self, double factor)
 
 cdef class StickingCoefficientBEP(KineticsModel):
 
@@ -57,11 +57,11 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cdef public ScalarQuantity _alpha
     cdef public ScalarQuantity _E0
     
-    cpdef double getStickingCoefficient(self, double T, double dHrxn=?) except -1
-    cpdef double getActivationEnergy(self, double dHrxn) except -1
-    cpdef StickingCoefficient toArrhenius(self, double dHrxn)
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
-    cpdef changeRate(self, double factor)
+    cpdef double get_sticking_coefficient(self, double T, double dHrxn=?) except -1
+    cpdef double get_activation_energy(self, double dHrxn) except -1
+    cpdef StickingCoefficient to_arrhenius(self, double dHrxn)
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+    cpdef change_rate(self, double factor)
 
 ################################################################################
 cdef class SurfaceArrhenius(Arrhenius):
