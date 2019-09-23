@@ -86,7 +86,7 @@ class AugmentedInChITest(unittest.TestCase):
         self.assertTrue(not aug_inchi1 != aug_inchi2)
 
     @work_in_progress
-    def testReduce(self):
+    def test_reduce(self):
         import pickle
 
         aug_inchi = AugmentedInChI('InChI=1S/foo/u1,3')
@@ -118,7 +118,7 @@ class ComposeTest(unittest.TestCase):
 
 class Parse_H_LayerTest(unittest.TestCase):
 
-    def test_OCO(self):
+    def test_oco(self):
         smi = 'O=C-O'
         inchi = Molecule().from_smiles(smi).to_inchi()
         mobile_hs = _parse_h_layer(inchi)
@@ -134,13 +134,13 @@ class Parse_E_LayerTest(unittest.TestCase):
         e_layer = _parse_e_layer(auxinfo)
         self.assertFalse(e_layer)
 
-    def test_C8H22(self):
+    def test_c8h22(self):
         auxinfo = "AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;"
         e_layer = _parse_e_layer(auxinfo)
         expected = [[1, 2], [3, 4], [5, 6], [7, 8]]
         self.assertTrue(e_layer == expected)
 
-    def test_C7H17(self):
+    def test_c7h17(self):
         auxinfo = "AuxInfo=1/0/N:3,5,7,2,4,6,1/E:(1,2,3)(4,5,6)/rA:7CCCCCCC/rB:s1;d2;s1;d4;s1;d6;/rC:;;;;;;;"
         e_layer = _parse_e_layer(auxinfo)
         expected = [[1, 2, 3], [4, 5, 6]]
@@ -148,7 +148,7 @@ class Parse_E_LayerTest(unittest.TestCase):
 
 
 class ParseNLayerTest(unittest.TestCase):
-    def test_OCCC(self):
+    def test_occc(self):
         auxinfo = "AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;"
         n_layer = _parse_n_layer(auxinfo)
         expected = [4, 3, 2, 1]
@@ -191,7 +191,7 @@ class DecomposeTest(unittest.TestCase):
 
 
 class CreateULayerTest(unittest.TestCase):
-    def testC4H6(self):
+    def test_c4h6(self):
         """
         Test that 3-butene-1,2-diyl biradical is always resulting in the
         same u-layer, regardless of the original order.
@@ -236,36 +236,36 @@ class CreateULayerTest(unittest.TestCase):
 
 
 class ExpectedLonePairsTest(unittest.TestCase):
-    def test_SingletCarbon(self):
+    def test_singlet_carbon(self):
         mol = Molecule(atoms=[Atom(element='C', lone_pairs=1)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertTrue(unexpected)
 
-    def test_NormalCarbon(self):
+    def test_normal_carbon(self):
         mol = Molecule(atoms=[Atom(element='C', lone_pairs=0)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertFalse(unexpected)
 
-    def test_NormalOxygen(self):
+    def test_normal_oxygen(self):
         mol = Molecule(atoms=[Atom(element='O', lone_pairs=2)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertFalse(unexpected)
 
-    def test_Oxygen_3LP(self):
+    def test_oxygen_3_lone_pairs(self):
         mol = Molecule(atoms=[Atom(element='O', lone_pairs=3)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertTrue(unexpected)
 
 
 class CreateAugmentedLayersTest(unittest.TestCase):
-    def test_Methane(self):
+    def test_methane(self):
         smi = 'C'
         mol = Molecule().from_smiles(smi)
         ulayer, player = create_augmented_layers(mol)
         self.assertTrue(not ulayer)
         self.assertTrue(not player)
 
-    def test_SingletMethylene(self):
+    def test_singlet_methylene(self):
         adjlist = """
 multiplicity 1
 1 C u0 p1 c0 {2,S} {3,S}
@@ -277,7 +277,7 @@ multiplicity 1
         self.assertTrue(not ulayer)
         self.assertEquals(P_LAYER_PREFIX + '1', player)
 
-    def test_TripletMethylene(self):
+    def test_triplet_methylene(self):
         adjlist = """
 multiplicity 3
 1 C u2 p0 c0 {2,S} {3,S}
@@ -290,7 +290,7 @@ multiplicity 3
         self.assertTrue(not player)
 
     @work_in_progress
-    def test_Nitrate(self):
+    def test_nitrate(self):
         """
         Test that N atom in the p-layer has correct symbol.
         """
@@ -309,7 +309,7 @@ multiplicity 3
 
 class ResetLonePairsTest(unittest.TestCase):
 
-    def test_Methane(self):
+    def test_methane(self):
         smi = 'C'
         mol = Molecule().from_smiles(smi)
         p_indices = []
@@ -319,7 +319,7 @@ class ResetLonePairsTest(unittest.TestCase):
         for at in mol.atoms:
             self.assertEquals(at.lone_pairs, 0)
 
-    def test_SingletMethylene(self):
+    def test_singlet_methylene(self):
         adjlist = """
 multiplicity 1
 1 C u0 p1 c0 {2,S} {3,S}

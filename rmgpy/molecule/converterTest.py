@@ -41,7 +41,7 @@ from rmgpy.molecule.molecule import Molecule
 
 class RDKitTest(unittest.TestCase):
 
-    def testDebugger(self):
+    def test_debugger(self):
         """Test the debug_rdkit_mol(rdmol) function doesn't crash
 
         We can't really test it in the unit testing framework, because

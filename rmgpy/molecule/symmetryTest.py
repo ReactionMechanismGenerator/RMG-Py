@@ -47,7 +47,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
     given Molecule object.
     """
 
-    def testAtomSymmetryNumberMethane(self):
+    def test_atom_symmetry_number_methane(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on CH4
         """
@@ -58,7 +58,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertEqual(symmetry_number, 12)
 
-    def testAtomSymmetryNumberMethyl(self):
+    def test_atom_symmetry_number_methyl(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on [CH3]
         """
@@ -69,7 +69,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertEqual(symmetry_number, 6)
 
-    def testAtomSymmetryNumberEthane(self):
+    def test_atom_symmetry_number_ethane(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on CC
         """
@@ -80,7 +80,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertEqual(symmetry_number, 9)
 
-    def testAtomSymmetryNumberEthanewithDeuteriumTritium(self):
+    def test_atom_symmetry_number_ethane_with_deuterium_tritium(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on CC(D)(T)
 
@@ -106,7 +106,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertAlmostEqual(symmetry_number, 1.5)
 
-    def testAtomSymmetryNumberWithTwoChiralCenters(self):
+    def test_atom_symmetry_number_with_two_chiral_centers(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on [CH2]CC([CH2])C(C)C=C
 
@@ -147,7 +147,7 @@ multiplicity 3
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertAlmostEqual(symmetry_number, 3)
 
-    def testAtomSymmetryNumberPropane(self):
+    def test_atom_symmetry_number_propane(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on CCC
         """
@@ -158,7 +158,7 @@ multiplicity 3
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertEqual(symmetry_number, 18)
 
-    def testAtomSymmetryNumberIsobutane(self):
+    def test_atom_symmetry_number_isobutane(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on CC(C)C
         """
@@ -169,7 +169,7 @@ multiplicity 3
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertEqual(symmetry_number, 81)
 
-    def testBondSymmetryNumberEthane(self):
+    def test_bond_symmetry_number_ethane(self):
         """
         Test the Molecule.calculate_bond_symmetry_number() on CC
         """
@@ -181,7 +181,7 @@ multiplicity 3
                     symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
 
-    def testBondSymmetryNumberPropane(self):
+    def test_bond_symmetry_number_propane(self):
         """
         Test the Molecule.calculate_bond_symmetry_number() on CCC
         """
@@ -193,7 +193,7 @@ multiplicity 3
                     symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 1)
 
-    def testBondSymmetryNumberButane(self):
+    def test_bond_symmetry_number_butane(self):
         """
         Test the Molecule.calculate_bond_symmetry_number() on CCCC
         """
@@ -205,7 +205,7 @@ multiplicity 3
                     symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
 
-    def testBondSymmetryNumberEthylene(self):
+    def test_bond_symmetry_number_ethylene(self):
         """
         Test the Molecule.calculate_bond_symmetry_number() on C=C
         """
@@ -217,7 +217,7 @@ multiplicity 3
                     symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
 
-    def testBondSymmetryNumberAcetylene(self):
+    def test_bond_symmetry_number_acetylene(self):
         """
         Test the Molecule.calculate_bond_symmetry_number() on C#C
         """
@@ -229,63 +229,63 @@ multiplicity 3
                     symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 2)
 
-    def testAxisSymmetryNumberEthylene(self):
+    def test_axis_symmetry_number_ethylene(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C
         """
         molecule = Molecule().from_smiles('C=C')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryNumberPropadiene(self):
+    def test_axis_symmetry_number_propadiene(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C
         """
         molecule = Molecule().from_smiles('C=C=C')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryNumberButatriene(self):
+    def test_axis_symmetry_number_butatriene(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C=C
         """
         molecule = Molecule().from_smiles('C=C=C=C')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryNumberButatrienyl(self):
+    def test_axis_symmetry_number_butatrienyl(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C=[CH]
         """
         molecule = Molecule().from_smiles('C=C=C=[CH]')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testAxisSymmetryNumberPropadienyl(self):
+    def test_axis_symmetry_number_propadienyl(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=[C]
         """
         molecule = Molecule().from_smiles('C=C=[C]')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryNumber12Butadienyl(self):
+    def test_axis_symmetry_number_12_butadienyl(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on CC=C=[C]
         """
         molecule = Molecule().from_smiles('CC=C=[C]')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testAxisSymmetryNumber12Hexadienyl(self):
+    def test_axis_symmetry_number_12_hexadienyl(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=CCCC
         """
         molecule = Molecule().from_smiles('C=C=CCCC')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testAxisSymmetryNumber1(self):
+    def test_axis_symmetry_number1(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on CC(C)=C=C(CC)CC
         """
         molecule = Molecule().from_smiles('CC(C)=C=C(CC)CC')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryNumber2(self):
+    def test_axis_symmetry_number2(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)
         """
@@ -293,49 +293,49 @@ multiplicity 3
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
     @work_in_progress
-    def testAxisSymmetryNumber3(self):
+    def test_axis_symmetry_number3(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=[C]C(C)(C)[C]=C=C
         """
         molecule = Molecule().from_smiles('C=C=[C]C(C)(C)[C]=C=C')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 4)
 
-    def testAxisSymmetryNumber4(self):
+    def test_axis_symmetry_number4(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C=O
         """
         molecule = Molecule().from_smiles('C=C=C=O')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryNumber5(self):
+    def test_axis_symmetry_number5(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on CC=C=C=O
         """
         molecule = Molecule().from_smiles('CC=C=C=O')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testAxisSymmetryNumber6(self):
+    def test_axis_symmetry_number6(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C=N
         """
         molecule = Molecule().from_smiles('C=C=C=N')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testAxisSymmetryNumber7(self):
+    def test_axis_symmetry_number7(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=C=[N]
         """
         molecule = Molecule().from_smiles('C=C=C=[N]')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 2)
 
-    def testAxisSymmetryOxygenSinglet(self):
+    def test_axis_symmetry_oxygen_singlet(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on O=O
         """
         molecule = Molecule().from_smiles('O=O')
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testCyclicSymmetryNumberCyclohexane(self):
+    def test_cyclic_symmetry_number_cyclohexane(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on C1CCCCC1
         """
@@ -343,7 +343,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 12)
 
-    def testCyclicSymmetryNumberCyclohexanone(self):
+    def test_cyclic_symmetry_number_cyclohexanone(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on C1CCCCC1=O
         """
@@ -351,7 +351,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 2)
 
-    def testCyclicSymmetryNumberCyclohexan_tri_one(self):
+    def test_cyclic_symmetry_number_cyclohexan_tri_one(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on C1CCC(=O)C(=O)C1=O
         """
@@ -359,7 +359,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 2)
 
-    def testTotalSymmetryNumberBenzene(self):
+    def test_total_symmetry_number_benzene(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on c1ccccc1
         """
@@ -368,7 +368,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 12)
 
-    def testTotalSymmetryNumberbute_di_yl(self):
+    def test_total_symmetry_numberbute_di_yl(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on [CH2][CH]C=C
         """
@@ -376,7 +376,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 2)
 
-    def testTotalSymmetryNumberAllyl(self):
+    def test_total_symmetry_number_allyl(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on Allyl, [CH2]C=C
         """
@@ -385,7 +385,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 2)
 
-    def testTotalSymmetryNumberPentenyl(self):
+    def test_total_symmetry_number_pentenyl(self):
         """
         Test the Species.getSymmetryNumer() for C[CH]C=CC
         and ensures that it is differet than the molecule object
@@ -395,7 +395,7 @@ multiplicity 3
         self.assertEqual(symmetry_number, 18,
                          'the symmetry number for C[CH]C=CC is 18, but RMG returned {}'.format(symmetry_number))
 
-    def testSpeciesSymmetryNumberIsNotMoleculeSymmetryNumber(self):
+    def test_species_symmetry_number_is_not_molecule_symmetry_number(self):
         """
         Tests that the species symmetry number can be different from the molecule symmetry number
 
@@ -406,7 +406,7 @@ multiplicity 3
         species = Species(molecule=[molecule])
         self.assertEqual(molecule.get_symmetry_number() * 2, species.get_symmetry_number())
 
-    def testAxisSymmetryNumberAllyl(self):
+    def test_axis_symmetry_number_allyl(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on [CH2]C=C
         """
@@ -414,7 +414,7 @@ multiplicity 3
         molecule = spc.get_resonance_hybrid()
         self.assertEqual(calculate_axis_symmetry_number(molecule), 1)
 
-    def testMiddleCarbonAtomSymmetryNumberAllylUsingResonanceHybrid(self):
+    def test_middle_carbon_atom_symmetry_number_allyl_using_resonance_hybrid(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() for the middle carbon
         on [CH2]C=C using the resonance hybrid structure
@@ -431,7 +431,7 @@ multiplicity 3
                     self.assertEqual(symmetry_number, 2)
                     pass
 
-    def testEdgeCarbonAtomSymmetryNumberAllyl(self):
+    def test_edge_carbon_atom_symmetry_number_allyl(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() for the edge carbons
         on [CH2]C=C
@@ -446,7 +446,7 @@ multiplicity 3
                     symmetry_number = calculate_atom_symmetry_number(molecule, atom)
                     self.assertEqual(symmetry_number, 1)
 
-    def testEdgeCarbonAtomSymmetryNumberAllylUsingResonanceHybrid(self):
+    def test_edge_carbon_atom_symmetry_number_allyl_using_resonance_hybrid(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() for the edge carbons
         on [CH2]C=C
@@ -462,7 +462,7 @@ multiplicity 3
                     symmetry_number = calculate_atom_symmetry_number(resonance_hybrid, atom)
                     self.assertEqual(symmetry_number, 1)
 
-    def testAtomSymmetryNumberAllyl(self):
+    def test_atom_symmetry_number_allyl(self):
         """
         Test the Molecule.calculate_atom_symmetry_number() on [CH2]C=C
         """
@@ -474,7 +474,7 @@ multiplicity 3
                 symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
         self.assertEqual(symmetry_number, 2)
 
-    def testBondSymmetryNumberAllyl(self):
+    def test_bond_symmetry_number_allyl(self):
         """
         Test the Molecule.calculate_bond_symmetry_number() on [CH2]C=C
         """
@@ -487,7 +487,7 @@ multiplicity 3
                     symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
         self.assertEqual(symmetry_number, 1)
 
-    def testTotalSymmetryNumberToluene(self):
+    def test_total_symmetry_number_toluene(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on c1ccccc1C
         """
@@ -496,7 +496,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 6)
 
-    def testTotalSymmetryNumberSpecialCyclic(self):
+    def test_total_symmetry_number_special_cyclic(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) from issue # 332
         """
@@ -505,7 +505,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 12)
 
-    def testTotalSymmetryNumberChlorobenzene(self):
+    def test_total_symmetry_number_chlorobenzene(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on c1ccccc1Cl
         """
@@ -514,7 +514,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 2)
 
-    def testTotalSymmetryNumberPhenoxyKecle(self):
+    def test_total_symmetry_number_phenoxy_kecle(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on c1ccccc1[O]
         using kecle structure
@@ -524,7 +524,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 2)
 
-    def testTotalSymmetryNumberPhenoxyBenzene(self):
+    def test_total_symmetry_number_phenoxy_benzene(self):
         """
         Test symmetry on c1ccccc1[O] using phenoxy benzene structure
         """
@@ -533,7 +533,7 @@ multiplicity 3
         symmetry_number = aromatic_molecule.get_symmetry_number()
         self.assertEqual(symmetry_number, 2)
 
-    def testTotalSymmetryNumber12Dimethylbenzene(self):
+    def test_total_symmetry_number12_dimethylbenzene(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on Cc1ccccc1C
         """
@@ -542,7 +542,7 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 18)
 
-    def testTotalSymmetryNumber14Dimethylbenzene(self):
+    def test_total_symmetry_number14_dimethylbenzene(self):
         """
         Test the Species.get_symmetry_number() (total symmetry) on Cc1ccc(C)cc1
         """
@@ -551,111 +551,111 @@ multiplicity 3
         symmetry_number = species.get_symmetry_number()
         self.assertEqual(symmetry_number, 36)
 
-    def testTotalSymmetryNumberEthane(self):
+    def test_total_symmetry_number_ethane(self):
         """
         Test the Molecule.calculate_symmetry_number() on CC
         """
         self.assertEqual(Species().from_smiles('CC').get_symmetry_number(), 18)
 
-    def testTotalSymmetryNumber1(self):
+    def test_total_symmetry_number1(self):
         """
         Test the Molecule.calculate_symmetry_number() on C=C=[C]C(C)(C)[C]=C=C
         """
         self.assertEqual(Species().from_smiles('C=C=[C]C(C)(C)[C]=C=C').get_symmetry_number(), 18)
 
     @work_in_progress
-    def testTotalSymmetryNumber2(self):
+    def test_total_symmetry_number2(self):
         """
         Test the Molecule.calculate_symmetry_number() on C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC
         """
         self.assertEqual(Species().from_smiles(
             'C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').get_symmetry_number(), '36?')
 
-    def testSymmetryNumberHydroxyl(self):
+    def test_symmetry_number_hydroxyl(self):
         """
         Test the Molecule.calculate_symmetry_number() on [OH]
         """
         self.assertEqual(Species().from_smiles('[OH]').get_symmetry_number(), 1)
 
-    def testSymmetryNumberOxygen(self):
+    def test_symmetry_number_oxygen(self):
         """
         Test the Molecule.calculate_symmetry_number() on O=O
         """
         self.assertEqual(Species().from_smiles('O=O').get_symmetry_number(), 2)
 
-    def testSymmetryNumberDicarbon(self):
+    def test_symmetry_number_dicarbon(self):
         """
         Test the Molecule.calculate_symmetry_number() on [C]#[C]
         """
         self.assertEqual(Species().from_smiles('[C]#[C]').get_symmetry_number(), 2)
 
-    def testSymmetryNumberHydrogen(self):
+    def test_symmetry_number_hydrogen(self):
         """
         Test the Molecule.calculate_symmetry_number() on [H][H]
         """
         self.assertEqual(Species().from_smiles('[H][H]').get_symmetry_number(), 2)
 
-    def testSymmetryNumberAcetylene(self):
+    def test_symmetry_number_acetylene(self):
         """
         Test the Molecule.calculate_symmetry_number() on C#C
         """
         self.assertEqual(Species().from_smiles('C#C').get_symmetry_number(), 2)
 
-    def testSymmetryNumberButadiyne(self):
+    def test_symmetry_number_butadiyne(self):
         """
         Test the Molecule.calculate_symmetry_number() on C#CC#C
         """
         self.assertEqual(Species().from_smiles('C#CC#C').get_symmetry_number(), 2)
 
-    def testSymmetryNumberMethane(self):
+    def test_symmetry_number_methane(self):
         """
         Test the Molecule.calculate_symmetry_number() on CH4
         """
         self.assertEqual(Species().from_smiles('C').get_symmetry_number(), 12)
 
-    def testSymmetryNumberFormaldehyde(self):
+    def test_symmetry_number_formaldehyde(self):
         """
         Test the Molecule.calculate_symmetry_number() on C=O
         """
         self.assertEqual(Species().from_smiles('C=O').get_symmetry_number(), 2)
 
-    def testSymmetryNumberMethyl(self):
+    def test_symmetry_number_methyl(self):
         """
         Test the Molecule.calculate_symmetry_number() on [CH3]
         """
         self.assertEqual(Species().from_smiles('[CH3]').get_symmetry_number(), 6)
 
-    def testSymmetryNumberWater(self):
+    def test_symmetry_number_water(self):
         """
         Test the Molecule.calculate_symmetry_number() on H2O
         """
         self.assertEqual(Species().from_smiles('O').get_symmetry_number(), 2)
 
-    def testSymmetryNumberEthylene(self):
+    def test_symmetry_number_ethylene(self):
         """
         Test the Molecule.calculate_symmetry_number() on C=C
         """
         self.assertEqual(Species().from_smiles('C=C').get_symmetry_number(), 4)
 
-    def testSymmetryNumberEthenyl(self):
+    def test_symmetry_number_ethenyl(self):
         """
         Test the Molecule.calculate_symmetry_number() on C=[CH].
         """
         self.assertEqual(Species().from_smiles('C=[CH]').get_symmetry_number(), 1)
 
-    def testSymmetryNumberCyclic(self):
+    def test_symmetry_number_cyclic(self):
         """
         Test the Molecule.calculate_symmetry_number() on C1=C=C=1
         """
         self.assertEqual(Species().from_smiles('C1=C=C=1').get_symmetry_number(), 6)
 
-    def test_symmetry_number_S1_total(self):
+    def test_symmetry_number__s1_total(self):
         """
         Test the Molecule.calculate_symmetry_number() on [CH]1CCC1CC1CC1
         """
         self.assertEqual(Species().from_smiles('[CH]1CCC1CC1CC1').get_symmetry_number(), 1)
 
-    def testCyclicSymmetryNumberS1(self):
+    def test_cyclic_symmetry_number_s1(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on [CH]1CCC1CC1CC1
         """
@@ -663,7 +663,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 1)
 
-    def testCyclicSymmetryNumberMethylCycloPropane(self):
+    def test_cyclic_symmetry_number_methyl_cyclo_propane(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on CC1CC1
         """
@@ -671,7 +671,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 1)
 
-    def testCyclicSymmetryNumberMethylCycloPropene(self):
+    def test_cyclic_symmetry_number_methyl_cyclo_propene(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on C=C1CC1
         """
@@ -679,7 +679,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 2)
 
-    def testCyclicSymmetryNumberMethylCycloButene(self):
+    def test_cyclic_symmetry_number_methyl_cyclo_butene(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on C=C1CCC1
         """
@@ -687,7 +687,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 2)
 
-    def testCyclicSymmetryNumberMethylCycloButane(self):
+    def test_cyclic_symmetry_number_methyl_cyclo_butane(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on CC1CCC1
         """
@@ -695,7 +695,7 @@ multiplicity 3
         symmetry_number = calculate_cyclic_symmetry_number(molecule)
         self.assertEqual(symmetry_number, 1)
 
-    def testCyclicSymmetryNumberDiMethylCycloButane(self):
+    def test_cyclic_symmetry_number_di_methyl_cyclo_butane(self):
         """
         Test the Molecule.calculate_cyclic_symmetry_number() on CC1CC(C)C1
         """

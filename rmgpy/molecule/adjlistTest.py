@@ -49,7 +49,7 @@ class TestGroupAdjLists(unittest.TestCase):
     def setUp(self):
         pass
 
-    def testFromOldAdjacencyList1(self):
+    def test_from_old_adjacency_list1(self):
         """
         adjlist: Test the Group.from_adjacency_list() method on an old style adjacency list.
         """
@@ -84,7 +84,7 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(bond12.order == [1, 2])
         self.assertTrue(bond13.is_single())
 
-    def testFromAdjacencyList(self):
+    def test_from_adjacency_list(self):
         """
         adjlist: Test the Group.from_adjacency_list() method.
         """
@@ -119,7 +119,7 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(bond12.order == [1, 2])
         self.assertTrue(bond13.is_single())
 
-    def testFromAdjacencyList_multiplicity(self):
+    def test_from_adjacency_list_multiplicity(self):
         gp = Group().from_adjacency_list(
             """
             multiplicity [1]
@@ -129,7 +129,7 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertEqual(len(gp.multiplicity), 1)
         self.assertEqual(gp.multiplicity[0], 1)
 
-    def testFromAdjacencyList_multiplicity_list(self):
+    def test_from_adjacency_list_multiplicity_list(self):
         gp = Group().from_adjacency_list(
             """
             multiplicity [ 1, 3, 5 ]
@@ -141,7 +141,7 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertEqual(gp.multiplicity[1], 3)
         self.assertEqual(gp.multiplicity[2], 5)
 
-    def testToAdjacencyList(self):
+    def test_to_adjacency_list(self):
         """
         adjlist: Test the Group.to_adjacency_list() method.
         """
@@ -155,7 +155,7 @@ class TestGroupAdjLists(unittest.TestCase):
 
         self.assertEqual(adjlist.strip(), adjlist2.strip())
 
-    def testAtomProps(self):
+    def test_atom_props(self):
         """Test that the atom props attribute can be properly read and written."""
         adjlist = """
 1 *1 R!H u1 r0 {2,S}
@@ -182,7 +182,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
     def setUp(self):
         pass
 
-    def testFromAdjacencyList1(self):
+    def test_from_adjacency_list1(self):
         """
         adjlist: Test the Molecule.from_adjacency_list() method 1.
         """
@@ -236,7 +236,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond23.is_single())
         self.assertTrue(bond24.is_double())
 
-    def testFromAdjacencyList2(self):
+    def test_from_adjacency_list2(self):
         """
         adjlist: Test the Molecule.from_adjacency_list() method 2.
         """
@@ -290,7 +290,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond23.is_single())
         self.assertTrue(bond24.is_double())
 
-    def testFromAdjacencyList3(self):
+    def test_from_adjacency_list3(self):
         """
         adjlist: Test the Molecule.from_adjacency_list() method 3.
         """
@@ -344,7 +344,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond23.is_single())
         self.assertTrue(bond24.is_double())
 
-    def testFromAdjacencyList4(self):
+    def test_from_adjacency_list4(self):
         """
         adjlist: Test the Molecule.from_adjacency_list() method 4.
         """
@@ -396,7 +396,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond23.is_single())
         self.assertTrue(bond24.is_double())
 
-    def testFromAdjacencyList5(self):
+    def test_from_adjacency_list5(self):
         """
         adjlist: Test if from_adjacency_list works when saturateH is turned on
         and test molecule is fused aromatics.
@@ -444,7 +444,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond13.is_benzene())
         self.assertTrue(bond7_11.is_single())
 
-    def testVariousSpinAdjlists(self):
+    def test_various_spin_adjlists(self):
         """
         adjlist: Test that molecules with old or intermediate adjacency list formats containing unusual 
         spin states can get converted to the proper new adjlist format.
@@ -530,7 +530,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         mol_4v_new = Molecule().from_adjacency_list(adjlist_4v_new)
         self.assertTrue(mol_4v.is_isomorphic(mol_4v_new))
 
-    def testWildcardAdjlists(self):
+    def test_wildcard_adjlists(self):
         """
         adjlist: Test that molecule adjlists containing wildcards raise an InvalidAdjacencyListError.
         """
@@ -549,7 +549,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         with self.assertRaises(InvalidAdjacencyListError):
             Molecule().from_adjacency_list(wildcard_adjlist4)
 
-    def testIncorrectAdjlists(self):
+    def test_incorrect_adjlists(self):
         """
         adjlist: Test that improperly formed adjlists raise an InvalidAdjacencyListError.
         """
@@ -559,7 +559,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         with self.assertRaises(InvalidAdjacencyListError):
             Molecule().from_adjacency_list(adjlist1)
 
-    def testHelium(self):
+    def test_helium(self):
         """
         adjlist: Test that the adjlist reading and writing works with Helium.
         """
@@ -591,7 +591,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertEqual(mol.to_smiles(), smiles)
         self.assertEqual(mol.to_inchi(), 'InChI=1S/He')
 
-    def testToAdjacencyList(self):
+    def test_to_adjacency_list(self):
         """
         adjlist: Test the Molecule.to_adjacency_list() method.
         """
@@ -619,7 +619,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         new_molecule = Molecule().from_adjacency_list(adjlist_1)
         self.assertTrue(molecule.is_isomorphic(new_molecule))
 
-    def testToAdjacencyListForNonIntegerBonds(self):
+    def test_to_adjacency_list_for_non_integer_bonds(self):
         """
         Test the adjacency list can be created for molecules with bond orders
         that don't fit into single, double, triple, or benzene
@@ -637,7 +637,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertIn('{1,0.5}', adjlist)
 
     @work_in_progress
-    def testFromAdjacencyListForNonIntegerBonds(self):
+    def test_from_adjacency_list_for_non_integer_bonds(self):
         """
         Test molecule can be created from the adjacency list for molecules with bond orders
         that don't fit into single, double, triple, or benzene.
@@ -658,7 +658,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         bond = next(iter(atom0.bonds.values()))
         self.assertAlmostEqual(bond[0].get_order_num(), 0.5)
 
-    def testFromIntermediateAdjacencyList1(self):
+    def test_from_intermediate_adjacency_list1(self):
         """
         Test we can read an intermediate style adjacency list with implicit hydrogens 1
         """
@@ -668,7 +668,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule = Molecule().from_adjacency_list(adjlist, saturate_h=True)
         self.assertEqual(molecule.get_formula(), 'H2O')
 
-    def testFromOldAdjacencyList1(self):
+    def test_from_old_adjacency_list1(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 1
         """
@@ -678,7 +678,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule = Molecule().from_adjacency_list(adjlist)
         self.assertEqual(molecule.get_formula(), 'H2O')
 
-    def testFromOldAdjacencyList2(self):
+    def test_from_old_adjacency_list2(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 2
         """
@@ -694,7 +694,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule_new = Molecule().from_adjacency_list(adjlist_new)
         self.assertTrue(molecule.is_isomorphic(molecule_new))
 
-    def testFromOldAdjacencyList3(self):
+    def test_from_old_adjacency_list3(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 3
         """
@@ -712,7 +712,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule_new = Molecule().from_adjacency_list(adjlist_new)
         self.assertTrue(molecule.is_isomorphic(molecule_new))
 
-    def testFromOldAdjacencyList4(self):
+    def test_from_old_adjacency_list4(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 4
         """
@@ -727,7 +727,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(molecule.is_isomorphic(molecule_new))
 
     @work_in_progress
-    def testFromOldAdjacencyList5(self):
+    def test_from_old_adjacency_list5(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 5
         """
@@ -746,7 +746,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         # (I don't think any adjlists are actually formed this way.)  
         # Currently 'adjlist' will fail when the Molecule is determined to be non-neurtral in net charge.
 
-    def testFromOldAdjacencyList6(self):
+    def test_from_old_adjacency_list6(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 1
         """
@@ -760,7 +760,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule_new = Molecule().from_adjacency_list(adjlist_new)
         self.assertTrue(molecule.is_isomorphic(molecule_new))
 
-    def testAdjacencyList(self):
+    def test_adjacency_list(self):
         """
         adjlist: Check the adjacency list read/write functions for a full molecule.
         """
@@ -796,7 +796,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         adjlist4 = molecule3.to_adjacency_list()
         self.assertEquals(adjlist3.strip(), adjlist4.strip())
 
-    def testGroupAdjacencyList(self):
+    def test_group_adjacency_list(self):
         """
         adjlist: Check the adjacency list read/write functions for a full molecule.
         """
@@ -809,7 +809,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """)
         self.assertEqual(adjlist, group.to_adjacency_list())
 
-    def testToOldAjacencyList(self):
+    def test_to_old_ajacency_list(self):
         """
         adjlist: Check that we can convert back to old style adjacency list
         """

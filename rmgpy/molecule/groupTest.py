@@ -49,7 +49,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         self.atom = GroupAtom(atomtype=[ATOMTYPES['Cd']], radical_electrons=[1], charge=[0], label='*1', lone_pairs=[0])
 
-    def testApplyActionBreakBond(self):
+    def test_apply_action_break_bond(self):
         """
         Test the GroupAtom.apply_action() method for a BREAK_BOND action.
         """
@@ -70,7 +70,7 @@ class TestGroupAtom(unittest.TestCase):
             except ActionError:
                 self.assertEqual(len(atomtype.break_bond), 0)
 
-    def testApplyActionFormBond(self):
+    def test_apply_action_form_bond(self):
         """
         Test the GroupAtom.apply_action() method for a FORM_BOND action.
         """
@@ -90,7 +90,7 @@ class TestGroupAtom(unittest.TestCase):
             except ActionError:
                 self.assertEqual(len(atomtype.form_bond), 0)
 
-    def testApplyActionIncrementBond(self):
+    def test_apply_action_increment_bond(self):
         """
         Test the GroupAtom.apply_action() method for a CHANGE_BOND action.
         """
@@ -110,7 +110,7 @@ class TestGroupAtom(unittest.TestCase):
             except ActionError:
                 self.assertEqual(len(atomtype.increment_bond), 0)
 
-    def testApplyActionDecrementBond(self):
+    def test_apply_action_decrement_bond(self):
         """
         Test the GroupAtom.apply_action() method for a CHANGE_BOND action.
         """
@@ -130,7 +130,7 @@ class TestGroupAtom(unittest.TestCase):
             except ActionError:
                 self.assertEqual(len(atomtype.decrement_bond), 0)
 
-    def testApplyActionGainRadical(self):
+    def test_apply_action_gain_radical(self):
         """
         Test the GroupAtom.apply_action() method for a GAIN_RADICAL action.
         """
@@ -160,7 +160,7 @@ class TestGroupAtom(unittest.TestCase):
         atom1.apply_action(action)
         self.assertListEqual(atom1.radical_electrons, [1, 2, 3, 4])
 
-    def testApplyActionLoseRadical(self):
+    def test_apply_action_lose_radical(self):
         """
         Test the GroupAtom.apply_action() method for a LOSE_RADICAL action.
         """
@@ -190,7 +190,7 @@ class TestGroupAtom(unittest.TestCase):
         atom1.apply_action(action)
         self.assertListEqual(atom1.radical_electrons, [0, 1, 2, 3])
 
-    def testApplyActionGainPair(self):
+    def test_apply_action_gain_pair(self):
         """
         Test the GroupAtom.apply_action() method for a GAIN_PAIR action when lone_pairs is either specified or not.
         """
@@ -233,7 +233,7 @@ class TestGroupAtom(unittest.TestCase):
             except ActionError:
                 self.assertEqual(len(atomtype.increment_lone_pair), 0)
 
-    def testApplyActionLosePair(self):
+    def test_apply_action_lose_pair(self):
         """
         Test the GroupAtom.apply_action() method for a LOSE_PAIR action when lone_pairs is either specified or not.
         """
@@ -276,7 +276,7 @@ class TestGroupAtom(unittest.TestCase):
             except ActionError:
                 self.assertEqual(len(atomtype.decrement_lone_pair), 0)
 
-    def testEquivalent(self):
+    def test_equivalent(self):
         """
         Test the GroupAtom.equivalent() method.
         """
@@ -307,7 +307,7 @@ class TestGroupAtom(unittest.TestCase):
                             self.assertFalse(atom1.equivalent(atom3),
                                              '{0!s} is equivalent to {1!s}'.format(atom3, atom1))
 
-    def testIsSpecificCaseOf(self):
+    def test_is_specific_case_of(self):
         """
         Test the GroupAtom.is_specific_case_of() method.
         """
@@ -335,7 +335,7 @@ class TestGroupAtom(unittest.TestCase):
                     self.assertFalse(atom1gen.is_specific_case_of(atom2),
                                      '{0!s} is a specific case of {1!s}'.format(atom1gen, atom2))
 
-    def testCopy(self):
+    def test_copy(self):
         """
         Test the GroupAtom.copy() method.
         """
@@ -347,7 +347,7 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(self.atom.label, atom.label)
         self.assertEqual(self.atom.lone_pairs, atom.lone_pairs)
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a GroupAtom object can be successfully pickled and
         unpickled with no loss of information.
@@ -361,7 +361,7 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(self.atom.label, atom.label)
         self.assertEqual(self.atom.lone_pairs, atom.lone_pairs)
 
-    def testCountBonds(self):
+    def test_count_bonds(self):
         """
         Tests the count_bonds function
         """
@@ -382,7 +382,7 @@ class TestGroupAtom(unittest.TestCase):
         self.assertListEqual([1, 1, 0, 1, 0, 0, 0, 0], test.atoms[2].count_bonds())
         self.assertListEqual([0, 0, 0, 0, 0, 0, 1, 0], test.atoms[5].count_bonds())
 
-    def testHasWildcards(self):
+    def test_has_wildcards(self):
         """
         Tests the GroupAtom.has_wildcards() method
         """
@@ -399,7 +399,7 @@ class TestGroupAtom(unittest.TestCase):
             self.assertTrue(atom.has_wildcards(),
                             'GroupAtom with index {0} should have wildcards, but does not'.format(index))
 
-    def testMakeSampleAtom(self):
+    def test_make_sample_atom(self):
         """
         Tests the GroupAtom.make_sample_atom() method
         """
@@ -425,14 +425,14 @@ class TestGroupBond(unittest.TestCase):
         self.bond = GroupBond(None, None, order=[2])
         self.orderList = [[1], [2], [3], [1.5], [1, 2], [2, 1], [2, 3], [1, 2, 3]]  # todo : unit tests for vdw
 
-    def testGetOrderStr(self):
+    def test_get_order_str(self):
         """
         test the Bond.get_order_str() method
         """
         bond = GroupBond(None, None, order=[1, 2, 3, 1.5])
         self.assertEqual(bond.get_order_str(), ['S', 'D', 'T', 'B'])
 
-    def testSetOrderStr(self):
+    def test_set_order_str(self):
         """
         test the Bond.set_order_str() method
         """
@@ -440,13 +440,13 @@ class TestGroupBond(unittest.TestCase):
         self.bond.set_order_str(["B", 'T'])
         self.assertEqual(set(self.bond.order), {3, 1.5})
 
-    def testGetOrderNum(self):
+    def test_get_order_num(self):
         """
         test the Bond.get_order_num() method
         """
         self.assertEqual(self.bond.get_order_num(), [2])
 
-    def testSetOrderNum(self):
+    def test_set_order_num(self):
         """
         test the Bond.set_order_num() method
         """
@@ -454,7 +454,7 @@ class TestGroupBond(unittest.TestCase):
         self.bond.set_order_num([3, 1, 2])
         self.assertEqual(self.bond.get_order_str(), ['T', 'S', 'D'])
 
-    def testIsSingle(self):
+    def test_is_single(self):
         """
         test the Bond.is_single() method
         """
@@ -466,7 +466,7 @@ class TestGroupBond(unittest.TestCase):
         self.assertFalse(self.bond.is_single(wildcards=False))
         self.assertTrue(self.bond.is_single(wildcards=True))
 
-    def testIsDouble(self):
+    def test_is_double(self):
         """
         test the Bond.is_double() method
         """
@@ -478,7 +478,7 @@ class TestGroupBond(unittest.TestCase):
         self.assertFalse(self.bond.is_double(wildcards=False))
         self.assertTrue(self.bond.is_double(wildcards=True))
 
-    def testIsTriple(self):
+    def test_is_triple(self):
         """
         test the Bond.is_triple() method
         """
@@ -490,7 +490,7 @@ class TestGroupBond(unittest.TestCase):
         self.assertFalse(self.bond.is_triple(wildcards=False))
         self.assertTrue(self.bond.is_triple(wildcards=True))
 
-    def testIsBenzene(self):
+    def test_is_benzene(self):
         """
         test the Bond.is_benzene() method
         """
@@ -502,7 +502,7 @@ class TestGroupBond(unittest.TestCase):
         self.assertFalse(self.bond.is_benzene(wildcards=False))
         self.assertTrue(self.bond.is_benzene(wildcards=True))
 
-    def testApplyActionBreakBond(self):
+    def test_apply_action_break_bond(self):
         """
         Test the GroupBond.apply_action() method for a BREAK_BOND action.
         """
@@ -516,7 +516,7 @@ class TestGroupBond(unittest.TestCase):
             except ActionError:
                 pass
 
-    def testApplyActionFormBond(self):
+    def test_apply_action_form_bond(self):
         """
         Test the GroupBond.apply_action() method for a FORM_BOND action.
 
@@ -533,7 +533,7 @@ class TestGroupBond(unittest.TestCase):
             except ActionError:
                 pass
 
-    def testApplyActionIncrementBond(self):
+    def test_apply_action_increment_bond(self):
         """
         Test the GroupBond.apply_action() method for a CHANGE_BOND action.
         """
@@ -546,7 +546,7 @@ class TestGroupBond(unittest.TestCase):
             except ActionError:
                 self.assertTrue(3 in order0 or 1.5 in order0)
 
-    def testApplyActionDecrementBond(self):
+    def test_apply_action_decrement_bond(self):
         """
         Test the GroupBond.apply_action() method for a CHANGE_BOND action.
         """
@@ -559,7 +559,7 @@ class TestGroupBond(unittest.TestCase):
             except ActionError:
                 self.assertTrue(1 in order0 or 1.5 in order0)
 
-    def testApplyActionGainRadical(self):
+    def test_apply_action_gain_radical(self):
         """
         Test the GroupBond.apply_action() method for a GAIN_RADICAL action.
         """
@@ -573,7 +573,7 @@ class TestGroupBond(unittest.TestCase):
             except ActionError:
                 pass
 
-    def testApplyActionLoseRadical(self):
+    def test_apply_action_lose_radical(self):
         """
         Test the GroupBond.apply_action() method for a LOSE_RADICAL action.
         """
@@ -587,7 +587,7 @@ class TestGroupBond(unittest.TestCase):
             except ActionError:
                 pass
 
-    def testEquivalent(self):
+    def test_equivalent(self):
         """
         Test the GroupBond.equivalent() method.
         """
@@ -602,7 +602,7 @@ class TestGroupBond(unittest.TestCase):
                     self.assertFalse(bond1.equivalent(bond2))
                     self.assertFalse(bond2.equivalent(bond1))
 
-    def testIsSpecificCaseOf(self):
+    def test_is_specific_case_of(self):
         """
         Test the GroupBond.is_specific_case_of() method.
         """
@@ -615,7 +615,7 @@ class TestGroupBond(unittest.TestCase):
                 else:
                     self.assertFalse(bond1.is_specific_case_of(bond2))
 
-    def testCopy(self):
+    def test_copy(self):
         """
         Test the GroupBond.copy() method.
         """
@@ -623,7 +623,7 @@ class TestGroupBond(unittest.TestCase):
         self.assertEqual(len(self.bond.order), len(bond.order))
         self.assertEqual(self.bond.order, bond.order)
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a GroupBond object can be successfully pickled and
         unpickled with no loss of information.
@@ -649,7 +649,7 @@ class TestGroup(unittest.TestCase):
 """
         self.group = Group().from_adjacency_list(self.adjlist)
 
-    def testClearLabeledAtoms(self):
+    def test_clear_labeled_atoms(self):
         """
         Test the Group.clear_labeled_atoms() method.
         """
@@ -657,7 +657,7 @@ class TestGroup(unittest.TestCase):
         for atom in self.group.atoms:
             self.assertEqual(atom.label, '')
 
-    def testContainsLabeledAtom(self):
+    def test_contains_labeled_atom(self):
         """
         Test the Group.contains_labeled_atom() method.
         """
@@ -669,7 +669,7 @@ class TestGroup(unittest.TestCase):
         self.assertFalse(self.group.contains_labeled_atom('*5'))
         self.assertFalse(self.group.contains_labeled_atom('*6'))
 
-    def testContainsSurfaceSite(self):
+    def test_contains_surface_site(self):
         """
         Test the Group.contains_surface_site() method.
         """
@@ -680,7 +680,7 @@ class TestGroup(unittest.TestCase):
 """)
         self.assertTrue(surface_group.contains_surface_site())
 
-    def testIsSurfaceSite(self):
+    def test_is_surface_site(self):
         """
         Test the Group.is_surface_site() method.
         """
@@ -693,7 +693,7 @@ class TestGroup(unittest.TestCase):
         surface_site = Group().from_adjacency_list("1 *1 X u0")
         self.assertTrue(surface_site.is_surface_site())
 
-    def testGetLabeledAtom(self):
+    def test_get_labeled_atom(self):
         """
         Test the Group.get_labeled_atoms() method.
         """
@@ -706,7 +706,7 @@ class TestGroup(unittest.TestCase):
         except ValueError:
             pass
 
-    def testGetLabeledAtoms(self):
+    def test_get_labeled_atoms(self):
         """
         Test the Group.get_all_labeled_atoms() method.
         """
@@ -719,7 +719,7 @@ class TestGroup(unittest.TestCase):
                 self.assertFalse(atom.label in labeled)
                 self.assertFalse(atom in list(labeled.values()))
 
-    def testFromAdjacencyList(self):
+    def test_from_adjacency_list(self):
         """
         Test the Group.from_adjacency_list() method.
         """
@@ -747,14 +747,14 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(bond12.order == [1, 2])
         self.assertTrue(bond13.is_single())
 
-    def testToAdjacencyList(self):
+    def test_to_adjacency_list(self):
         """
         Test the Group.to_adjacency_list() method.
         """
         adjlist = self.group.to_adjacency_list()
         self.assertEqual(adjlist.strip(), self.adjlist.strip(), adjlist)
 
-    def testIsIsomorphic(self):
+    def test_is_isomorphic(self):
         """
         Test the Group.is_isomorphic() method.
         """
@@ -767,7 +767,7 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.is_isomorphic(group))
         self.assertTrue(group.is_isomorphic(self.group))
 
-    def testFindIsomorphism(self):
+    def test_find_isomorphism(self):
         """
         Test the Group.find_isomorphism() method.
         """
@@ -791,7 +791,7 @@ class TestGroup(unittest.TestCase):
                 bond2 = atom2.bonds[atom4]
                 self.assertTrue(bond1.equivalent(bond2))
 
-    def testIsSubgraphIsomorphic(self):
+    def test_is_subgraph_isomorphic(self):
         """
         Test the Group.is_subgraph_isomorphic() method.
         """
@@ -802,7 +802,7 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.is_subgraph_isomorphic(group))
         self.assertFalse(group.is_isomorphic(self.group))
 
-    def testFindSubgraphIsomorphisms(self):
+    def test_find_subgraph_isomorphisms(self):
         """
         Test the Group.find_subgraph_isomorphisms() method.
         """
@@ -817,7 +817,7 @@ class TestGroup(unittest.TestCase):
             self.assertTrue(atom2 in group.atoms)
             self.assertTrue(atom1.equivalent(atom2))
 
-    def testGenerateExtensions(self):
+    def test_generate_extensions(self):
         """
         test that appropriate group extensions are being generated
         """
@@ -852,7 +852,7 @@ class TestGroup(unittest.TestCase):
             boos = [ext.is_identical(v) and ext.is_subgraph_isomorphic(v, generate_initial_map=True) for ext in extensions]
             self.assertTrue(any(boos), 'generated extensions did not match expected extensions')
 
-    def testGeneratedExtensionsSubgraphs(self):
+    def test_generated_extensions_subgraphs(self):
         test_grp = Group().from_adjacency_list("""
 1 *2 C u0 {2,[S,D]} 
 2 *1 C u[0,1] {1,[S,D]} {3,S}
@@ -864,7 +864,7 @@ class TestGroup(unittest.TestCase):
         for ext in extensions:
             self.assertTrue(ext.is_subgraph_isomorphic(test_grp, generate_initial_map=True))
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a Group object can be successfully pickled and
         unpickled with no loss of information.
@@ -879,7 +879,7 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.is_isomorphic(group))
         self.assertTrue(group.is_isomorphic(self.group))
 
-    def testCreateAndConnectAtom(self):
+    def test_create_and_connect_atom(self):
         """
         Tests create_and_connect_atom method
         """
@@ -913,7 +913,7 @@ class TestGroup(unittest.TestCase):
         new_atom = group2.create_and_connect_atom(atomtypes=["Cs", "Cd"], connecting_atom=atom1, bond_orders=["S", "D"])
         self.assertTrue(group2.is_isomorphic(answer2))
 
-    def testAddImplicitAtomsFromAtomType(self):
+    def test_add_implicit_atoms_from_atom_type(self):
         """
         test Group.add_implicit_atoms_from_atomtype() method
         """
@@ -994,7 +994,7 @@ class TestGroup(unittest.TestCase):
         new_group = group9.add_implicit_atoms_from_atomtype()
         self.assertTrue(group10.is_isomorphic(new_group))
 
-    def testClassifyBenzeneCarbons(self):
+    def test_classify_benzene_carbons(self):
         """
         Tests the method classifyingBenzeneCarbons
         """
@@ -1070,7 +1070,7 @@ class TestGroup(unittest.TestCase):
         self.assertIn(atom1, connectedCbfs[atom2])
         self.assertIn(atom1, connectedCbfs[atom3])
 
-    def testSortByConnectivity(self):
+    def test_sort_by_connectivity(self):
         """
         Tests sort_by_connectivity method
         """
@@ -1097,7 +1097,7 @@ class TestGroup(unittest.TestCase):
         ordered_atoms = group2.sort_by_connectivity(group2.atoms)
         self.assertEquals([x.label for x in ordered_atoms], ["*1", "*3", "*4", "*2", "*5"])
 
-    def testAddImplicitBenzene(self):
+    def test_add_implicit_benzene(self):
         """
         Test the Group.add_implicit_benzene method
         """
@@ -1255,7 +1255,7 @@ class TestGroup(unittest.TestCase):
         group7 = group7.add_implicit_benzene()
         self.assertTrue(benzene_group.is_isomorphic(group7))
 
-    def testPickWildcards(self):
+    def test_pick_wildcards(self):
         """
         Test the Group.pickWildCards function
         """
@@ -1286,7 +1286,7 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(atoms[1].bonds[atoms[2]].is_double)
         self.assertTrue(atoms[0].bonds[atoms[3]].is_double)
 
-    def testMakeSampleMolecule(self):
+    def test_make_sample_molecule(self):
         """
         Test the Group.make_sample_molecule method
         """
@@ -1342,7 +1342,7 @@ class TestGroup(unittest.TestCase):
         answer_smiles = '[NH3+][CH2]'
         self.assertTrue(perform_samp_mole_comparison(adjlist, answer_smiles))
 
-    def testIsBenzeneExplicit(self):
+    def test_is_benzene_explicit(self):
         """
         Test the Group.is_benzene_explicit method
         """
@@ -1376,7 +1376,7 @@ class TestGroup(unittest.TestCase):
         result = group._repr_png_()
         self.assertIsNotNone(result)
 
-    def testDrawGroup(self):
+    def test_draw_group(self):
         """Test that the draw method returns the expected pydot graph."""
         adjlist = """
 1 *1 [C,Cd,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
@@ -1416,7 +1416,7 @@ graph G {
         result = group.draw('canon')
         self.assertEqual(b''.join(result.split()), b''.join(expected.split()))
 
-    def testMergeGroups(self):
+    def test_merge_groups(self):
         """
         Test the merge_groups() function
         """

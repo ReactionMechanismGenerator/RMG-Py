@@ -52,7 +52,7 @@ class TestElement(unittest.TestCase):
         self.element = rmgpy.molecule.element.C
         self.element_x = rmgpy.molecule.element.X
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that an Element object can be successfully pickled and
         unpickled with no loss of information.
@@ -64,7 +64,7 @@ class TestElement(unittest.TestCase):
         self.assertEqual(self.element.name, element.name)
         self.assertEqual(self.element.mass, element.mass)
 
-    def testOutput(self):
+    def test_output(self):
         """
         Test that we can reconstruct an Element object from its repr()
         output with no loss of information.
@@ -78,7 +78,7 @@ class TestElement(unittest.TestCase):
         self.assertEqual(self.element.name, element.name)
         self.assertEqual(self.element.mass, element.mass)
 
-    def testGetElement(self):
+    def test_get_element(self):
         """
         Test the rmgpy.elements.get_element() method.
         """
@@ -87,14 +87,14 @@ class TestElement(unittest.TestCase):
         self.assertTrue(rmgpy.molecule.element.get_element(0) is self.element_x)
         self.assertTrue(rmgpy.molecule.element.get_element('X') is self.element_x)
 
-    def testGetElementIsotope(self):
+    def test_get_element_isotope(self):
         """
         Test that the rmgpy.elements.get_element() method works for isotopes.
         """
         self.assertTrue(isinstance(rmgpy.molecule.element.get_element('C', isotope=13), Element))
         self.assertTrue(isinstance(rmgpy.molecule.element.get_element(6, isotope=13), Element))
 
-    def testChemkinName(self):
+    def test_chemkin_name(self):
         """
         Test that retrieving the chemkin name of an element works.
         """

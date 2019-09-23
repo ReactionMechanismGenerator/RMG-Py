@@ -55,7 +55,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         self.drawer = MoleculeDrawer()
         self.molecule = Molecule(smiles='CC(=O)CC')
 
-    def testDrawPNG(self):
+    def test_draw_png(self):
         """
         Test we can create PNG files from molecules.
         """
@@ -71,7 +71,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         os.unlink(path)
         self.assertIsInstance(surface, ImageSurface)
 
-    def testDrawPDF(self):
+    def test_draw_pdf(self):
         """
         Test we can create PDF files from molecules.
         """
@@ -87,7 +87,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         self.assertGreater(width, height)
         os.unlink(path)
 
-    def testDrawPolycycle(self):
+    def test_draw_polycycle(self):
         """
         Test we can draw a polycyclic molecule
         """
@@ -104,7 +104,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         self.assertGreater(width, height)
         os.unlink(path)
 
-    def testDrawPDFwithoutFile(self):
+    def test_draw_pdf_without_file(self):
         """
         Test we can create PDF surface without a temporary file (newer versions of PyCairo?)
         """
@@ -116,7 +116,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
 
-    def testDrawNonStandardBonds(self):
+    def test_draw_non_standard_bonds(self):
 
         spec = Species().from_smiles('[CH2]C=C[CH2]')
         hybrid = spec.get_resonance_hybrid()

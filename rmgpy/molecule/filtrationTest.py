@@ -73,7 +73,7 @@ class FiltrationTest(unittest.TestCase):
         self.assertEqual(len(filtered_list), 1)
         self.assertTrue(all([atom.charge == 0 for atom in filtered_list[0].vertices]))
 
-    def penalty_for_O4tc_test(self):
+    def penalty_for_o4tc_test(self):
         """Test that an O4tc atomtype with octet 8 gets penalized in the electronegativity heuristic"""
         adj = """
         1 S u0 p1 c0 {2,S} {3,T}

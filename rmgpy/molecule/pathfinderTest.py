@@ -114,14 +114,14 @@ class FindButadieneTest(unittest.TestCase):
         path = find_butadiene(start, end)
         self.assertIsNone(path)
 
-    def test_Benzene(self):
+    def test_benzene(self):
         mol = Molecule().from_smiles("C1=CC=CC=C1")  # benzene
 
         start, end = mol.atoms[0], mol.atoms[5]
         path = find_butadiene(start, end)
         self.assertIsNotNone(path)
 
-    def test_C4H4(self):
+    def test_c4h4(self):
         mol = Molecule().from_smiles("C=C=C=C")  # C4H4
 
         start, end = mol.atoms[0], mol.atoms[3]
@@ -130,7 +130,7 @@ class FindButadieneTest(unittest.TestCase):
 
 
 class FindAllylEndWithChargeTest(unittest.TestCase):
-    def test_C2H2O3(self):
+    def test_c2h2o3(self):
         adjlist = """
 1 C u0 p0 c0 {5,D} {6,S} {7,S}
 2 C u0 p0 c0 {3,D} {4,S} {5,S}
@@ -149,7 +149,7 @@ class FindAllylEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [[3, 2, 4], [3, 2, 5]]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C3H2(self):
+    def test_c3h2(self):
         inchi = "InChI=1S/C3H2/c1-3-2/h1-2H"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[0]
@@ -159,7 +159,7 @@ class FindAllylEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [1, 3, 2]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C3H4(self):
+    def test_c3h4(self):
         inchi = "InChI=1S/C3H4/c1-3-2/h1,3H,2H2"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[0]
@@ -169,7 +169,7 @@ class FindAllylEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [1, 3, 2]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C3H2O3(self):
+    def test_c3h2o3(self):
         adjlist = """
 1 C u0 p0 c0 {2,D} {7,S} {8,S}
 2 C u0 p0 c0 {1,D} {3,D}
@@ -190,7 +190,7 @@ class FindAllylEndWithChargeTest(unittest.TestCase):
         expected_idx_paths = [[2, 3, 4], [2, 3, 6]]
         self.assertEquals(idx_paths, expected_idx_paths)
 
-    def test_C3H4O4(self):
+    def test_c3h4o4(self):
         inchi = "InChI=1S/C3H4O4/c4-3(5)1-2-7-6/h1-3,6H"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[6]
@@ -200,7 +200,7 @@ class FindAllylEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [7, 2, 1]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C5H6O(self):
+    def test_c5h6o(self):
         inchi = "InChI=1S/C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[1]
@@ -212,7 +212,7 @@ class FindAllylEndWithChargeTest(unittest.TestCase):
 
 
 class FindButadieneEndWithChargeTest(unittest.TestCase):
-    def test_CO(self):
+    def test_co(self):
         adjlist = """
 1 C u0 p1 c-1 {2,T}
 2 O u0 p1 c+1 {1,T}
@@ -226,7 +226,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [1, 2]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C2H2O3(self):
+    def test_c2h2o3(self):
         adjlist = """
 1 C u0 p0 c0 {5,D} {6,S} {7,S}
 2 C u0 p0 c0 {3,D} {4,S} {5,S}
@@ -245,7 +245,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [1, 5]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C3H2O3(self):
+    def test_c3h2o3(self):
         adjlist = """
 1 C u0 p0 c0 {2,D} {7,S} {8,S}
 2 C u0 p0 c0 {1,D} {3,D}
@@ -265,7 +265,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [5, 6]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C4H6O(self):
+    def test_c4h6o(self):
         adjlist = """
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
 2  C u0 p1 c-1 {1,S} {3,S} {9,S}
@@ -288,7 +288,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [4, 5]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C5H6O_2(self):
+    def test_c5h6o2(self):
         adjlist = """
 1  C u0 p1 c-1 {5,S} {7,S} {8,S}
 2  C u0 p0 c0 {3,D} {4,S} {9,S}
@@ -312,7 +312,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [3, 2, 4, 6]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C6H6O4(self):
+    def test_c6h6o4(self):
         inchi = "InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[0]
@@ -322,7 +322,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [1, 2, 4, 9]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_C6H6O6(self):
+    def test_c6h6o6(self):
         inchi = "InChI=1S/C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[2]
@@ -335,7 +335,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
 
 class ShortestPathTest(unittest.TestCase):
 
-    def test_CCC(self):
+    def test_ccc(self):
         smi = 'CCC'
         mol = Molecule().from_smiles(smi)
         start = mol.atoms[0]
@@ -344,7 +344,7 @@ class ShortestPathTest(unittest.TestCase):
         path = find_shortest_path(start, end)
         self.assertEquals(len(path), 3)
 
-    def test_Cyclohexane(self):
+    def test_cyclohexane(self):
         smi = 'C1CCCCC1'
         mol = Molecule().from_smiles(smi)
         start = mol.atoms[0]
@@ -417,37 +417,37 @@ class FindLonePairMultipleBondPathsTest(unittest.TestCase):
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[2])
         self.assertTrue(paths)
 
-    def test_NH2CHO(self):
+    def test_nh2cho(self):
         smiles = 'NC=O'
         mol = Molecule().from_smiles(smiles)
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
         self.assertTrue(paths)
 
-    def test_N2Oa(self):
+    def test_n2oa(self):
         smiles = "[N-]=[N+]=O"
         mol = Molecule().from_smiles(smiles)
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
         self.assertTrue(paths)
 
-    def test_N2Ob(self):
+    def test_n2ob(self):
         smiles = "N#[N+][O-]"
         mol = Molecule().from_smiles(smiles)
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[2])
         self.assertTrue(paths)
 
-    def test_HN3(self):
+    def test_hn3(self):
         smiles = "[NH-][N+]#N"
         mol = Molecule().from_smiles(smiles)
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
         self.assertTrue(paths)
 
-    def test_SN2(self):
+    def test_sn2(self):
         smiles = "OS(O)=[N+]=[N-]"
         mol = Molecule().from_smiles(smiles)
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[2])
         self.assertTrue(paths)
 
-    def test_H2NNOO(self):
+    def test_h2nnoo(self):
         smiles = "N[N+]([O-])=O"
         mol = Molecule().from_smiles(smiles)
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
@@ -459,19 +459,19 @@ class FindAdjLonePairRadicalDelocalizationPaths(unittest.TestCase):
     test the find_lone_pair_radical_delocalization_paths method
     """
 
-    def test_NO2a(self):
+    def test_no2a(self):
         smiles = "[O]N=O"
         mol = Molecule().from_smiles(smiles)
         paths = find_adj_lone_pair_radical_delocalization_paths(mol.atoms[0])
         self.assertTrue(paths)
 
-    def test_NO2b(self):
+    def test_no2b(self):
         smiles = "[O-][N+]=O"
         mol = Molecule().from_smiles(smiles)
         paths = find_adj_lone_pair_radical_delocalization_paths(mol.atoms[1])
         self.assertTrue(paths)
 
-    def test_HOSO(self):
+    def test_hoso(self):
         smiles = "[O]SO"
         mol = Molecule().from_smiles(smiles)
         paths = find_adj_lone_pair_radical_delocalization_paths(mol.atoms[0])
@@ -491,7 +491,7 @@ class FindAdjLonePairMultipleBondDelocalizationPaths(unittest.TestCase):
     test the find_lone_pair_multiple_bond_delocalization_paths method
     """
 
-    def test_SHO3(self):
+    def test_sho3(self):
         smiles = "O=[SH](=O)[O]"
         mol = Molecule().from_smiles(smiles)
         paths = find_adj_lone_pair_multiple_bond_delocalization_paths(mol.atoms[0])
@@ -503,13 +503,13 @@ class FindAdjLonePairRadicalMultipleBondDelocalizationPaths(unittest.TestCase):
     test the find_lone_pair_radical_multiple_bond_delocalization_paths method
     """
 
-    def test_NS(self):
+    def test_ns(self):
         smiles = "N#[S]"
         mol = Molecule().from_smiles(smiles)
         paths = find_adj_lone_pair_radical_multiple_bond_delocalization_paths(mol.atoms[1])
         self.assertTrue(paths)
 
-    def test_HSO3(self):
+    def test_hso3(self):
         smiles = "O[S](=O)=O"
         mol = Molecule().from_smiles(smiles)
         paths = find_adj_lone_pair_radical_multiple_bond_delocalization_paths(mol.atoms[1])
@@ -521,7 +521,7 @@ class FindN5dcRadicalDelocalizationPaths(unittest.TestCase):
     test the find_N5dc_radical_delocalization_paths method
     """
 
-    def test_HNNOO(self):
+    def test_hnnoo(self):
         smiles = "N=[N+]([O])([O-])"
         mol = Molecule().from_smiles(smiles)
         paths = find_N5dc_radical_delocalization_paths(mol.atoms[1])

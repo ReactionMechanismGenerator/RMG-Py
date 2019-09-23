@@ -52,7 +52,7 @@ class TestAtomType(unittest.TestCase):
         """
         self.atomtype = rmgpy.molecule.atomtype.ATOMTYPES['Cd']
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that an AtomType object can be successfully pickled and
         unpickled with no loss of information.
@@ -85,7 +85,7 @@ class TestAtomType(unittest.TestCase):
         for item1, item2 in zip(self.atomtype.decrement_radical, atom_type.decrement_radical):
             self.assertEqual(item1.label, item2.label)
 
-    def testOutput(self):
+    def test_output(self):
         """
         Test that we can reconstruct an AtomType object from its repr()
         with no loss of information.
@@ -97,19 +97,19 @@ class TestAtomType(unittest.TestCase):
         atomtype = namespace['atomtype']
         self.assertTrue(self.atomtype.equivalent(atomtype))
 
-    def testEquivalent(self):
+    def test_equivalent(self):
         """
         Test the AtomType.equivalent() method.
         """
         self.assertTrue(self.atomtype.equivalent(rmgpy.molecule.atomtype.ATOMTYPES['Cd']))
 
-    def testIsSpecficCaseOf(self):
+    def test_is_specfic_case_of(self):
         """
         Test the AtomType.is_specific_case_of() method.
         """
         self.assertTrue(self.atomtype.is_specific_case_of(rmgpy.molecule.atomtype.ATOMTYPES['C']))
 
-    def testSetActions(self):
+    def test_set_actions(self):
         """
         Test the AtomType.set_actions() method.
         """
@@ -512,13 +512,13 @@ class TestGetAtomType(unittest.TestCase):
         else:
             return atom_type.label
 
-    def testHydrogenType(self):
+    def test_hydrogen_type(self):
         """
         Test that get_atomtype() returns the hydrogen atom type.
         """
         self.assertEqual(self.atom_type(self.mol3, 0), 'H')
 
-    def testCarbonTypes(self):
+    def test_carbon_types(self):
         """
         Test that get_atomtype() returns appropriate carbon atom types.
         """
@@ -540,7 +540,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol20, 0), 'C2tc')
         self.assertEqual(self.atom_type(self.mol29, 0), 'C2tc')  # todo: add in a ciq unit test?
 
-    def testNitrogenTypes(self):
+    def test_nitrogen_types(self):
         """
         Test that get_atomtype() returns appropriate nitrogen atom types.
         """
@@ -563,7 +563,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol18, 0), 'N5b')
         # self.assertEqual(self.atomtype(self.mol72, 0), 'N5bd')  # aromatic nitrogen currently doesn't work well in RMG. See RMG-Py #982
 
-    def testOxygenTypes(self):
+    def test_oxygen_types(self):
         """
         Test that get_atomtype() returns appropriate oxygen atom types.
         """
@@ -578,7 +578,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol20, 1), 'O4tc')
         # self.assertEqual(self.atomtype(self.mol71, 0), 'O4b')  # aromatic oxygen currently doesn't work well in RMG. See RMG-Py #982
 
-    def testSiliconTypes(self):
+    def test_silicon_types(self):
         """
         Test that get_atomtype() returns appropriate silicon atom types.
         """
@@ -588,7 +588,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol4, 4), 'Sidd')
         self.assertEqual(self.atom_type(self.mol4, 7), 'Sit')  # todo: add in Siq unit test?
 
-    def testSulfurTypes(self):
+    def test_sulfur_types(self):
         """
         Test that get_atomtype() returns appropriate sulfur atom types.
         """
@@ -622,25 +622,25 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol37, 1), 'S6tt')
         self.assertEqual(self.atom_type(self.mol70, 0), 'S6tdc')
 
-    def testChlorineTypes(self):
+    def test_chlorine_types(self):
         """
         Test that get_atomtype() returns appropriate chlorine atom types.
         """
         self.assertEqual(self.atom_type(self.mol73, 1), 'Cl1s')
 
-    def testIodineTypes(self):
+    def test_iodine_types(self):
         """
         Test that get_atomtype() returns appropriate iodine atom types.
         """
         self.assertEqual(self.atom_type(self.mol74, 1), 'I1s')
 
-    def testFluorineTypes(self):
+    def test_fluorine_types(self):
         """
         Test that get_atomtype() returns appropriate fluorine atom types.
         """
         self.assertEqual(self.atom_type(self.mol75, 1), 'F1s')
 
-    def testOtherTypes(self):
+    def test_other_types(self):
         """
         Test that get_atomtype() returns appropriate types for other misc inerts.
         """
@@ -648,14 +648,14 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol7, 0), 'He')
         self.assertEqual(self.atom_type(self.mol8, 0), 'Ne')
 
-    def testOccupiedSurfaceAtomType(self):
+    def test_occupied_surface_atom_type(self):
         """
         Test that get_atomtype() works for occupied surface sites and for regular atoms in the complex.
         """
         self.assertEqual(self.atom_type(self.mol76, 0), 'H')
         self.assertEqual(self.atom_type(self.mol76, 1), 'Xo')
 
-    def testVacantSurfaceSiteAtomType(self):
+    def test_vacant_surface_site_atom_type(self):
         """
         Test that get_atomtype() works for vacant surface sites and for regular atoms in the complex.
         """
