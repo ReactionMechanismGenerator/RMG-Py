@@ -114,13 +114,13 @@ class TestTransportData(unittest.TestCase):
 
     def test_getCollisionFrequency(self):
         """
-        Test the LennardJones.getCollisionFrequency() method.
+        Test the LennardJones.get_collision_frequency() method.
         """
         T = 1000
         P = 1.0e5
         M = P / constants.R / T
         mu = 1.0
-        omega = self.transport.getCollisionFrequency(T, M, mu)
+        omega = self.transport.get_collision_frequency(T, M, mu)
         self.assertAlmostEqual(omega / 1.17737e10, 1.0, 4)
 
     def test_pickle(self):
@@ -160,7 +160,7 @@ class TestTransportData(unittest.TestCase):
         transport = TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
                                   dipoleMoment=(2, 'De'), polarizability=(1, 'angstrom^3'),
                                   rotrelaxcollnum=15.0, comment="""GRI-Mech""")
-        rmg_ct_transport = transport.toCantera()
+        rmg_ct_transport = transport.to_cantera()
         import cantera as ct
         ct_species = ct.Species.fromCti("""species(name=u'Ar',
         atoms='Ar:1',

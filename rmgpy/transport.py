@@ -105,7 +105,7 @@ class TransportData(RMGObject):
         return (TransportData, (self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment,
                                 self.polarizability, self.rotrelaxcollnum, self.comment))
 
-    def getCollisionFrequency(self, T, M, mu):
+    def get_collision_frequency(self, T, M, mu):
         """
         Return the value of the Lennard-Jones collision frequency in Hz at the
         given temperature `T` in K for colliders with the given concentration
@@ -122,7 +122,7 @@ class TransportData(RMGObject):
         mu *= constants.amu
         return omega22 * np.sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma * sigma * M
 
-    def toCantera(self):
+    def to_cantera(self):
         """
         Returns a Cantera GasTransportData object.
     

@@ -152,10 +152,10 @@ class ThermoJob(object):
             wilhoit.H0 = (H298 - wilhoit.get_enthalpy(298.15), "J/mol")
             wilhoit.S0 = (S298 - wilhoit.get_entropy(298.15), "J/(mol*K)")
         else:
-            wilhoit.fitToData(Tlist, Cplist, Cp0, CpInf, H298, S298, B0=500.0)
+            wilhoit.fit_to_data(Tlist, Cplist, Cp0, CpInf, H298, S298, B0=500.0)
 
         if self.thermoClass.lower() == 'nasa':
-            species.thermo = wilhoit.toNASA(Tmin=10.0, Tmax=3000.0, Tint=500.0)
+            species.thermo = wilhoit.to_nasa(Tmin=10.0, Tmax=3000.0, Tint=500.0)
         else:
             species.thermo = wilhoit
 

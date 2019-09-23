@@ -257,7 +257,7 @@ def kineticsDiff(reaction):
 
 
 def identicalThermo(species_pair):
-    return species_pair[0].thermo.isIdenticalTo(species_pair[1].thermo)
+    return species_pair[0].thermo.is_identical_to(species_pair[1].thermo)
 
 
 def identicalKinetics(reaction_pair):

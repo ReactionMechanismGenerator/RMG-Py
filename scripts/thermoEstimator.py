@@ -77,7 +77,7 @@ def runThermoEstimator(inputFile, library_flag):
                 index=len(library.entries) + 1,
                 label=species.label,
                 molecule=species.molecule[0].to_adjacency_list(),
-                thermo=species.get_thermo_data().toThermoData(),
+                thermo=species.get_thermo_data().to_thermo_data(),
                 shortDesc=species.get_thermo_data().comment,
             )
         library.save(os.path.join(rmg.outputDirectory, 'ThermoLibrary.py'))

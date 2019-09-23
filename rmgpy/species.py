@@ -405,14 +405,14 @@ class Species(object):
             ct_species = ct.Species(self.label, element_dict)
         if self.thermo:
             try:
-                ct_species.thermo = self.thermo.toCantera()
+                ct_species.thermo = self.thermo.to_cantera()
             except Exception:
                 logging.error('Could not convert thermo to create Cantera Species object. '
                               'Check that thermo is a NASA polynomial.')
                 raise
 
         if self.transportData:
-            ct_species.transport = self.transportData.toCantera()
+            ct_species.transport = self.transportData.to_cantera()
 
         return ct_species
 
@@ -764,7 +764,7 @@ class Species(object):
         """
         Generate molecular degree of freedom data for the species. You must
         have already provided a thermodynamics model using e.g.
-        :meth:`generateThermoData()`.
+        :meth:`generate_thermo_data()`.
         """
         logging.debug("Generating statmech for species {}".format(self.label))
         from rmgpy.data.rmg import get_db
@@ -801,7 +801,7 @@ class Species(object):
                 # set Cp0 and CpInf
                 from rmgpy.data.thermo import find_cp0_and_cpinf
                 find_cp0_and_cpinf(self, self.thermo)
-            self.conformer.E0 = self.get_thermo_data().toWilhoit().E0
+            self.conformer.E0 = self.get_thermo_data().to_wilhoit().E0
 
     def generate_energy_transfer_model(self):
         """

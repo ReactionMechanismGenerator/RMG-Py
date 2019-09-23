@@ -98,7 +98,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a Wilhoit model to a NASA model.
         """
         wilhoit = self.wilhoit
-        nasa = wilhoit.toNASA(Tmin=10, Tmax=3000, Tint=1000)
+        nasa = wilhoit.to_nasa(Tmin=10, Tmax=3000, Tint=1000)
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
@@ -117,7 +117,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a Wilhoit model to a ThermoData model.
         """
         wilhoit = self.wilhoit
-        thermodata = wilhoit.toThermoData()
+        thermodata = wilhoit.to_thermo_data()
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
@@ -137,7 +137,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a NASA model to a Wilhoit model.
         """
         nasa = self.nasa
-        wilhoit = nasa.toWilhoit()
+        wilhoit = nasa.to_wilhoit()
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
@@ -156,7 +156,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a NASA model to a ThermoData model.
         """
         nasa = self.nasa
-        thermodata = nasa.toThermoData()
+        thermodata = nasa.to_thermo_data()
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
             cp_thermodata = thermodata.get_heat_capacity(T)
@@ -176,7 +176,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a ThermoData model to a Wilhoit model.
         """
         thermodata = self.thermodata
-        wilhoit = thermodata.toWilhoit()
+        wilhoit = thermodata.to_wilhoit()
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
@@ -196,7 +196,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a ThermoData model to a NASA model.
         """
         thermodata = self.thermodata
-        nasa = thermodata.toNASA(Tmin=10, Tmax=3000, Tint=1000)
+        nasa = thermodata.to_nasa(Tmin=10, Tmax=3000, Tint=1000)
         Tlist = np.array([300, 400, 500, 600, 800, 1000, 1500])
         for T in Tlist:
             cp_thermodata = thermodata.get_heat_capacity(T)
@@ -216,8 +216,8 @@ class TestConverter(unittest.TestCase):
         Test round-trip conversion from Wilhoit to NASA and back
         """
         wilhoit1 = self.wilhoit
-        nasa = wilhoit1.toNASA(Tmin=10, Tmax=3000, Tint=1000)
-        wilhoit2 = nasa.toWilhoit()
+        nasa = wilhoit1.to_nasa(Tmin=10, Tmax=3000, Tint=1000)
+        wilhoit2 = nasa.to_wilhoit()
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
             cp_1 = wilhoit1.get_heat_capacity(T)
@@ -236,8 +236,8 @@ class TestConverter(unittest.TestCase):
         Test round-trip conversion from Wilhoit to ThermoData and back
         """
         wilhoit1 = self.wilhoit
-        thermodata = wilhoit1.toThermoData()
-        wilhoit2 = thermodata.toWilhoit()
+        thermodata = wilhoit1.to_thermo_data()
+        wilhoit2 = thermodata.to_wilhoit()
         Tlist = np.arange(10, 3000, 10)
         for T in Tlist:
             cp_1 = wilhoit1.get_heat_capacity(T)

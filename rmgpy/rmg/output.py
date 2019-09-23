@@ -963,11 +963,11 @@ $(document).ready(function() {
     </td></tr>
     
     {% if spec1.thermo and spec2.thermo %}
-    {% if spec1.thermo.isIdenticalTo(spec2.thermo) %}
+    {% if spec1.thermo.is_identical_to(spec2.thermo) %}
     <tr width=100%>
          <td colspan="2" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL THERMO WAS FOUND FOR THIS SPECIES.</font></div>
     </tr>
-    {% elif spec1.thermo.isSimilarTo(spec2.thermo) %}
+    {% elif spec1.thermo.is_similar_to(spec2.thermo) %}
     <tr width=100%>
          <td colspan="2" valign="top" width=50%><div align="center"><font color="green">SIMILAR THERMO WAS FOUND FOR THIS SPECIES.</font></div>
     </tr>

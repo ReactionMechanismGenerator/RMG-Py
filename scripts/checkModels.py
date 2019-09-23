@@ -137,7 +137,7 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
         for spec1, spec2 in commonSpecies:
             logger.info('    {0!s}'.format(spec1))
             if spec1.thermo and spec2.thermo:
-                if not spec1.thermo.isSimilarTo(spec2.thermo):
+                if not spec1.thermo.is_similar_to(spec2.thermo):
                     error = True
                     logger.error('')
                     logger.error('Non-identical thermo!')

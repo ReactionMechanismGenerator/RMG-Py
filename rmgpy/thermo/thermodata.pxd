@@ -47,6 +47,6 @@ cdef class ThermoData(HeatCapacityModel):
 
     cpdef double get_free_energy(self, double T) except 1000000000
 
-    cpdef Wilhoit toWilhoit(self, object B=?)
+    cpdef Wilhoit to_wilhoit(self, object B=?)
 
-    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)

@@ -345,7 +345,7 @@ cdef class ThermoData(HeatCapacityModel):
 
         return self.get_enthalpy(T) - T * self.get_entropy(T)
 
-    cpdef Wilhoit toWilhoit(self, B=None):
+    cpdef Wilhoit to_wilhoit(self, B=None):
         """
         Convert the Benson model to a Wilhoit model. For the conversion to
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
@@ -366,11 +366,11 @@ cdef class ThermoData(HeatCapacityModel):
         
         
         if B:
-            return Wilhoit(label=self.label,comment=self.comment).fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
+            return Wilhoit(label=self.label,comment=self.comment).fit_to_data_for_constant_b(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
         else:
-            return Wilhoit(label=self.label,comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+            return Wilhoit(label=self.label,comment=self.comment).fit_to_data(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
-    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
+    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """
         Convert the object to a :class:`NASA` object. You must specify the
         minimum and maximum temperatures of the fit `Tmin` and `Tmax` in K, as
@@ -403,4 +403,4 @@ cdef class ThermoData(HeatCapacityModel):
         Returns the fitted :class:`NASA` object containing the two fitted
         :class:`NASAPolynomial` objects.
         """
-        return self.toWilhoit().toNASA(Tmin, Tmax, Tint, fixedTint, weighting, continuity)
+        return self.to_wilhoit().to_nasa(Tmin, Tmax, Tint, fixedTint, weighting, continuity)

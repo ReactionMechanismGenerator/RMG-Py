@@ -143,12 +143,12 @@ class TestThermoData(unittest.TestCase):
 
     def test_isTemperatureValid(self):
         """
-        Test the ThermoData.isTemperatureValid() method.
+        Test the ThermoData.is_temperature_valid() method.
         """
         Tdata = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
         valid_data = [True, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
-            valid0 = self.thermodata.isTemperatureValid(T)
+            valid0 = self.thermodata.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
     def test_getHeatCapacity(self):

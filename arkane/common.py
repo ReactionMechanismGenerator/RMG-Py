@@ -180,8 +180,8 @@ class ArkaneSpecies(RMGObject):
             if species.thermo is not None:
                 self.thermo = species.thermo.as_dict()
                 data = species.get_thermo_data()
-                h298 = data.getEnthalpy(298) / 4184.
-                s298 = data.getEntropy(298) / 4.184
+                h298 = data.get_enthalpy(298) / 4184.
+                s298 = data.get_entropy(298) / 4.184
                 temperatures = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
                 cp = []
                 for t in temperatures:

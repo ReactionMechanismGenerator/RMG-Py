@@ -1403,7 +1403,7 @@ class ThermoDatabase(object):
                 normalized_bonds[bonded_atom.symbol] += bond_order / max_bond_order[bonded_atom.symbol]
 
         if not isinstance(thermo, ThermoData):
-            thermo = thermo.toThermoData()
+            thermo = thermo.to_thermo_data()
             find_cp0_and_cpinf(species, thermo)
 
         # now edit the adsorptionThermo using LSR
@@ -1837,7 +1837,7 @@ class ThermoDatabase(object):
 
         # Convert to ThermoData object if necessary in order to add and subtract from enthalpy and entropy values
         if not isinstance(thermo_data_sat, ThermoData):
-            thermo_data_sat = thermo_data_sat.toThermoData()
+            thermo_data_sat = thermo_data_sat.to_thermo_data()
 
         if not (stable_thermo_estimator == self.compute_group_additivity_thermo
                 or isinstance(stable_thermo_estimator.__self__, MLEstimator)):

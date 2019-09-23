@@ -227,7 +227,7 @@ def species(label, *args, **kwargs):
                              ' RMG-Database...'.format(spec.label))
                 spec.thermo = db.get_thermo_data(spec)
                 if spec.thermo.E0 is None:
-                    th = spec.thermo.toWilhoit()
+                    th = spec.thermo.to_wilhoit()
                     spec.conformer.E0 = th.E0
                     spec.thermo.E0 = th.E0
                 else:

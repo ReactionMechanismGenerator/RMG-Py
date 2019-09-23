@@ -804,7 +804,7 @@ and immediately used in input files without any additional changes.
                     # Need wilhoit to do this
                     if not isinstance(spc.thermo, Wilhoit):
                         find_cp0_and_cpinf(spc, spc.thermo)
-                        wilhoit = spc.thermo.toWilhoit()
+                        wilhoit = spc.thermo.to_wilhoit()
                         spc.thermo = wilhoit
 
                 rxn_copy.kinetics = kinetics

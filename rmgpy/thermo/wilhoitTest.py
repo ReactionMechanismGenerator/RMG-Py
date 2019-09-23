@@ -169,12 +169,12 @@ class TestWilhoit(unittest.TestCase):
 
     def test_isTemperatureValid(self):
         """
-        Test the Wilhoit.isTemperatureValid() method.
+        Test the Wilhoit.is_temperature_valid() method.
         """
         Tdata = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
         valid_data = [False, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
-            valid0 = self.wilhoit.isTemperatureValid(T)
+            valid0 = self.wilhoit.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
     def test_getHeatCapacity(self):
@@ -282,7 +282,7 @@ class TestWilhoit(unittest.TestCase):
 
     def test_fitToData(self):
         """
-        Test the Wilhoit.fitToData() method.
+        Test the Wilhoit.fit_to_data() method.
         """
         h298 = self.wilhoit.get_enthalpy(298)
         s298 = self.wilhoit.get_entropy(298)
@@ -294,7 +294,7 @@ class TestWilhoit(unittest.TestCase):
         cp_inf = self.CpInf * constants.R
 
         # Fit the Wilhoit polynomial to the data
-        wilhoit = Wilhoit().fitToData(Tdata, cp_data, cp_0, cp_inf, h298, s298)
+        wilhoit = Wilhoit().fit_to_data(Tdata, cp_data, cp_0, cp_inf, h298, s298)
 
         # Check that the fit reproduces the input data
         for T in Tdata:
@@ -345,7 +345,7 @@ class TestWilhoit(unittest.TestCase):
         nasa = spc.thermo
         s_nasa = nasa.get_entropy(T)
 
-        nasa_to_wh = nasa.toWilhoit()
+        nasa_to_wh = nasa.to_wilhoit()
         s_nasa_to_wh = nasa_to_wh.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_nasa_to_wh, -1)
@@ -354,17 +354,17 @@ class TestWilhoit(unittest.TestCase):
         # wilhoit to nasa conversion done in nasaTest.py
 
         # thermo data to wilhoit:
-        td = nasa.toThermoData()
+        td = nasa.to_thermo_data()
         s_td = td.get_entropy(T)
 
-        wilhoit = td.toWilhoit(B=1000.)
+        wilhoit = td.to_wilhoit(B=1000.)
         s_wh = wilhoit.get_entropy(T)
 
         self.assertAlmostEqual(s_td, s_wh, -1)
         self.assertEqual(td.comment, wilhoit.comment)
 
         # wilhoit back to thermodata
-        td = wilhoit.toThermoData()
+        td = wilhoit.to_thermo_data()
         s_td = td.get_entropy(T)
 
         self.assertAlmostEqual(s_td, s_wh, -1)

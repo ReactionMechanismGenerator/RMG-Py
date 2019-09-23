@@ -116,7 +116,7 @@ cdef class HeatCapacityModel(RMGObject):
         def __set__(self, value):
             self._CpInf = quantity.HeatCapacity(value)
 
-    cpdef bint isTemperatureValid(self, double T) except -2:
+    cpdef bint is_temperature_valid(self, double T) except -2:
         """
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the thermodynamic data, or ``False`` if not. If
@@ -154,7 +154,7 @@ cdef class HeatCapacityModel(RMGObject):
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.get_free_energy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef bint isSimilarTo(self, HeatCapacityModel other) except -2:
+    cpdef bint is_similar_to(self, HeatCapacityModel other) except -2:
         """
         Returns ``True`` if `self` and `other` report similar thermo values
         for heat capacity, enthalpy, entropy, and free energy over a wide
@@ -176,7 +176,7 @@ cdef class HeatCapacityModel(RMGObject):
 
         return True
 
-    cpdef bint isIdenticalTo(self, HeatCapacityModel other) except -2:
+    cpdef bint is_identical_to(self, HeatCapacityModel other) except -2:
         """
         Returns ``True`` if `self` and `other` report very similar thermo values
         for heat capacity, enthalpy, entropy, and free energy over a wide

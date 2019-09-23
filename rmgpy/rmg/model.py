@@ -99,7 +99,7 @@ class ReactionModel:
                 if spec.is_isomorphic(spec0):
                     common_species[spec] = spec0
                     if spec0.label not in ['Ar', 'N2', 'Ne', 'He']:
-                        if not spec0.thermo.isIdenticalTo(spec.thermo):
+                        if not spec0.thermo.is_identical_to(spec.thermo):
                             print('Species {0} thermo from model 1 did not match that of model 2.'.format(spec.label))
 
                     break

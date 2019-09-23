@@ -797,12 +797,12 @@ class TestCyclicThermo(unittest.TestCase):
         """
         Test that get_ring_groups_from_comments method works for fused polycyclics.
         """
-        from rmgpy.thermo.thermoengine import generateThermoData
+        from rmgpy.thermo.thermoengine import generate_thermo_data
 
         smi = 'C12C(C3CCC2C3)C4CCC1C4'  # two norbornane rings fused together
         spc = Species().from_smiles(smi)
 
-        spc.thermo = generateThermoData(spc)
+        spc.thermo = generate_thermo_data(spc)
 
         self.database.get_ring_groups_from_comments(spc.thermo)
 

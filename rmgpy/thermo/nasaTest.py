@@ -130,12 +130,12 @@ class TestNASA(unittest.TestCase):
 
     def test_isTemperatureValid(self):
         """
-        Test the NASA.isTemperatureValid() method.
+        Test the NASA.is_temperature_valid() method.
         """
         Tdata = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
         valid_data = [False, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
-            valid0 = self.nasa.isTemperatureValid(T)
+            valid0 = self.nasa.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
     def test_getHeatCapacity(self):
@@ -249,7 +249,7 @@ class TestNASA(unittest.TestCase):
         """
         Test that conversion to a Cantera NasaPoly2 object works
         """
-        nasapoly2 = self.nasa.toCantera()
+        nasapoly2 = self.nasa.to_cantera()
         # NasaPoly2 units use J/kmol rather than J/mol
         self.assertAlmostEqual(self.nasa.get_enthalpy(900), nasapoly2.h(900) / 1000, 1)
         self.assertAlmostEqual(self.nasa.get_entropy(700), nasapoly2.s(700) / 1000, 1)
@@ -277,22 +277,22 @@ class TestNASA(unittest.TestCase):
         nasa = spc.thermo
         s_nasa = nasa.get_entropy(T)
 
-        td = nasa.toThermoData()
+        td = nasa.to_thermo_data()
         s_td = td.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(td.comment, nasa.comment)
 
         # thermodata to nasa
-        nasa = td.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        nasa = td.to_nasa(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         s_nasa = nasa.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)
         self.assertEqual(td.comment, nasa.comment)
 
         # wilhoit to nasa
-        wilhoit = nasa.toWilhoit()
-        nasa = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        wilhoit = nasa.to_wilhoit()
+        nasa = wilhoit.to_nasa(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         s_nasa = nasa.get_entropy(T)
 
         self.assertAlmostEqual(s_nasa, s_td, -1)

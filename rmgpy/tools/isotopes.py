@@ -55,7 +55,7 @@ from rmgpy.molecule.element import get_element
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.species import Species
-from rmgpy.thermo.thermoengine import processThermoData
+from rmgpy.thermo.thermoengine import process_thermo_data
 from rmgpy.tools.loader import loadRMGJob
 
 
@@ -83,7 +83,7 @@ def initialize_isotope_model(rmg, isotopes):
                 rmg.initialSpecies.append(spec)
     logging.info("isotope: Adding standard species into the model")
     for spec in rmg.initialSpecies:
-        spec.thermo = processThermoData(spec, spec.thermo)
+        spec.thermo = process_thermo_data(spec, spec.thermo)
         if not spec.reactive:
             rmg.reactionModel.enlarge(spec)
     for spec in rmg.initialSpecies:
@@ -536,7 +536,7 @@ def correct_entropy(isotopomer, isotopeless):
 
     # apply correction to entropy at 298K
     delta_s = s_isotopomer - s_isotopeless
-    nasa = nasa.changeBaseEntropy(delta_s)
+    nasa = nasa.change_base_entropy(delta_s)
 
     # put the corrected thermo back as a species attribute:
     isotopomer.thermo = nasa
