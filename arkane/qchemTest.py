@@ -77,12 +77,12 @@ class QChemTest(unittest.TestCase):
         """
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'npropyl.out'))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 24)
-        self.assertEqual(conformer.modes[2]._frequencies.getValue()[5], 881.79)
+        self.assertEqual(len(conformer.modes[2]._frequencies.value), 24)
+        self.assertEqual(conformer.modes[2]._frequencies.value[5], 881.79)
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'co.out'))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 1)
-        self.assertEqual(conformer.modes[2]._frequencies.getValue(), 2253.16)
+        self.assertEqual(len(conformer.modes[2]._frequencies.value), 1)
+        self.assertEqual(conformer.modes[2]._frequencies.value, 2253.16)
 
     def test_load_npropyl_modes_from_qchem_log(self):
         """

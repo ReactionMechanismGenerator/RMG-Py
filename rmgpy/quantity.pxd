@@ -49,14 +49,11 @@ cdef class Units(RMGObject):
 cdef class ScalarQuantity(Units):
 
     cdef public double value_si
-    cdef        str _uncertaintyType
+    cdef        str _uncertainty_type
     cdef public double uncertainty_si
 
     cpdef dict as_dict(self)
 
-    cpdef str getUncertaintyType(self)
-    cpdef     setUncertaintyType(self, str v)
-    
     cpdef bint is_uncertainty_additive(self) except -2
 
     cpdef bint is_uncertainty_multiplicative(self) except -2
@@ -68,13 +65,10 @@ cdef class ScalarQuantity(Units):
 cdef class ArrayQuantity(Units):
 
     cdef public np.ndarray value_si
-    cdef public str _uncertaintyType
+    cdef public str _uncertainty_type
     cdef public np.ndarray uncertainty_si
 
     cpdef dict as_dict(self)
-
-    cpdef str getUncertaintyType(self)
-    cpdef     setUncertaintyType(self, str v)
 
     cpdef bint is_uncertainty_additive(self) except -2
 

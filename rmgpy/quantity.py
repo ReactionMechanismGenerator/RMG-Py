@@ -238,18 +238,19 @@ class ScalarQuantity(Units):
         """
         return ScalarQuantity(self.value, self.units, self.uncertainty, self.uncertainty_type)
 
-    def getValue(self):
+    @property
+    def value(self):
         """
         The numeric value of the quantity, in the given units
         """
         return self.value_si * self.get_conversion_factor_from_si()
 
-    def setValue(self, v):
+    @value.setter
+    def value(self, v):
         self.value_si = float(v) * self.get_conversion_factor_to_si()
 
-    value = property(getValue, setValue)
-
-    def getUncertainty(self):
+    @property
+    def uncertainty(self):
         """
         The numeric value of the uncertainty, in the given units if additive, or no units if multiplicative.
         """
@@ -258,29 +259,28 @@ class ScalarQuantity(Units):
         else:
             return self.uncertainty_si
 
-    def setUncertainty(self, v):
+    @uncertainty.setter
+    def uncertainty(self, v):
         if self.is_uncertainty_additive():
             self.uncertainty_si = float(v) * self.get_conversion_factor_to_si()
         else:
             self.uncertainty_si = float(v)
 
-    uncertainty = property(getUncertainty, setUncertainty)
-
-    def getUncertaintyType(self):
+    @property
+    def uncertainty_type(self):
         """
         The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
         """
-        return self._uncertaintyType
+        return self._uncertainty_type
 
-    def setUncertaintyType(self, v):
+    @uncertainty_type.setter
+    def uncertainty_type(self, v):
         """
         Check the uncertainty type is valid, then set it.
         """
         if v not in ['+|-', '*|/']:
             raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
-        self._uncertaintyType = v
-
-    uncertainty_type = property(getUncertaintyType, setUncertaintyType)
+        self._uncertainty_type = v
 
     def equals(self, quantity):
         """
@@ -325,14 +325,14 @@ class ScalarQuantity(Units):
         Return ``True`` if the uncertainty is specified in additive format
         and ``False`` otherwise.
         """
-        return self._uncertaintyType == '+|-'
+        return self.uncertainty_type == '+|-'
 
     def is_uncertainty_multiplicative(self):
         """
         Return ``True`` if the uncertainty is specified in multiplicative 
         format and ``False`` otherwise.
         """
-        return self._uncertaintyType == '*|/'
+        return self.uncertainty_type == '*|/'
 
 
 ################################################################################
@@ -471,21 +471,22 @@ class ArrayQuantity(Units):
         """
         return ArrayQuantity(self.value.copy(), self.units, self.uncertainty.copy(), self.uncertainty_type)
 
-    def getValue(self):
+    @property
+    def value(self):
         """
         The numeric value of the array quantity, in the given units.
         """
         return self.value_si * self.get_conversion_factor_from_si()
 
-    def setValue(self, v):
+    @value.setter
+    def value(self, v):
         if isinstance(v, float):
             self.value_si = np.array([v]) * self.get_conversion_factor_to_si()
         else:
             self.value_si = np.array(v) * self.get_conversion_factor_to_si()
 
-    value = property(getValue, setValue)
-
-    def getUncertainty(self):
+    @property
+    def uncertainty(self):
         """
         The numeric value of the uncertainty, in the given units if additive, or no units if multiplicative.
         """
@@ -494,21 +495,22 @@ class ArrayQuantity(Units):
         else:
             return self.uncertainty_si
 
-    def setUncertainty(self, v):
+    @uncertainty.setter
+    def uncertainty(self, v):
         if self.is_uncertainty_additive():
             self.uncertainty_si = np.array(v) * self.get_conversion_factor_to_si()
         else:
             self.uncertainty_si = np.array(v)
 
-    uncertainty = property(getUncertainty, setUncertainty)
-
-    def getUncertaintyType(self):
+    @property
+    def uncertainty_type(self):
         """
         The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
         """
-        return self._uncertaintyType
+        return self._uncertainty_type
 
-    def setUncertaintyType(self, v):
+    @uncertainty_type.setter
+    def uncertainty_type(self, v):
         """
         Check the uncertainty type is valid, then set it.
         
@@ -517,9 +519,7 @@ class ArrayQuantity(Units):
         """
         if v not in ['+|-', '*|/']:
             raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
-        self._uncertaintyType = v
-
-    uncertainty_type = property(getUncertaintyType, setUncertaintyType)
+        self._uncertainty_type = v
 
     def equals(self, quantity):
         """

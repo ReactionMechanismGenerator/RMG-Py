@@ -1031,16 +1031,16 @@ def save_input_file(path, rmg):
     for system in rmg.reaction_systems:
         if rmg.solvent:
             f.write('liquidReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(), system.T.units))
+            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
-                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.getValue(), conc.units))
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
         else:
             f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(), system.T.units))
+            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValue(), system.P.units))
+            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
             f.write('    initialMoleFractions={\n')
             for spcs, molfrac in system.initial_mole_fractions.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
@@ -1050,7 +1050,7 @@ def save_input_file(path, rmg):
         conversions = ''
         for term in system.termination:
             if isinstance(term, TerminationTime):
-                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValue(), term.time.units))
+                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
 
             else:
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
@@ -1096,18 +1096,18 @@ def save_input_file(path, rmg):
     if rmg.pressure_dependence:
         f.write('pressureDependence(\n')
         f.write('    method = {0!r},\n'.format(rmg.pressure_dependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.grain_size.getValue(),
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.grain_size.value,
                                                                    rmg.pressure_dependence.grain_size.units))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.grain_count))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
-            rmg.pressure_dependence.Tmin.getValue(),
-            rmg.pressure_dependence.Tmax.getValue(),
+            rmg.pressure_dependence.Tmin.value,
+            rmg.pressure_dependence.Tmax.value,
             rmg.pressure_dependence.Tmax.units,
             rmg.pressure_dependence.Tcount,
         ))
         f.write('    pressures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
-            rmg.pressure_dependence.Pmin.getValue(),
-            rmg.pressure_dependence.Pmax.getValue(),
+            rmg.pressure_dependence.Pmin.value,
+            rmg.pressure_dependence.Pmax.value,
             rmg.pressure_dependence.Pmax.units,
             rmg.pressure_dependence.Pcount,
         ))

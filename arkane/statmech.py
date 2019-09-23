@@ -782,7 +782,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             n_rotors += 1
 
     mass = conformer.mass.value_si
-    coordinates = conformer.coordinates.getValue()
+    coordinates = conformer.coordinates.value
     if linear is None:
         linear = is_linear(coordinates)
         if linear:
