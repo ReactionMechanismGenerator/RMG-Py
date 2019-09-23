@@ -83,7 +83,7 @@ class TestReactionIsomorphism(unittest.TestCase):
     Contains unit tests of the isomorphism testing of the  Reaction class.
     """
 
-    def makeReaction(self, reaction_string):
+    def make_reaction(self, reaction_string):
         """"
         Make a Reaction (containing PseudoSpecies) of from a string like 'Ab=CD'
         """
@@ -93,46 +93,46 @@ class TestReactionIsomorphism(unittest.TestCase):
         return Reaction(reactants=reactants, products=products)
 
     def test1to1(self):
-        r1 = self.makeReaction('A=B')
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('a=B')))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('b=A')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('B=a'), either_direction=False))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('A=C')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('A=BB')))
+        r1 = self.make_reaction('A=B')
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('a=B')))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('b=A')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('B=a'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('A=C')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('A=BB')))
 
     def test1to2(self):
-        r1 = self.makeReaction('A=BC')
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('a=Bc')))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('cb=a')))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('a=cb'), either_direction=False))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('bc=a'), either_direction=False))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('a=c')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=c')))
+        r1 = self.make_reaction('A=BC')
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('a=Bc')))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('cb=a')))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('a=cb'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('bc=a'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('a=c')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('ab=c')))
 
     def test2to2(self):
-        r1 = self.makeReaction('AB=CD')
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('ab=cd')))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('ab=dc'), either_direction=False))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('dc=ba')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('cd=ab'), either_direction=False))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=ab')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=cde')))
+        r1 = self.make_reaction('AB=CD')
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('ab=cd')))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('ab=dc'), either_direction=False))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('dc=ba')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('cd=ab'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('ab=ab')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('ab=cde')))
 
     def test2to3(self):
-        r1 = self.makeReaction('AB=CDE')
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('ab=cde')))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('ba=edc'), either_direction=False))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('dec=ba')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('cde=ab'), either_direction=False))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('ab=abc')))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('abe=cde')))
+        r1 = self.make_reaction('AB=CDE')
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('ab=cde')))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('ba=edc'), either_direction=False))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('dec=ba')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('cde=ab'), either_direction=False))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('ab=abc')))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('abe=cde')))
 
-    def test2to3_usingCheckOnlyLabel(self):
-        r1 = self.makeReaction('AB=CDE')
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('AB=CDE'), check_only_label=True))
-        self.assertTrue(r1.is_isomorphic(self.makeReaction('BA=EDC'), either_direction=False, check_only_label=True))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('Ab=CDE'), check_only_label=True))
-        self.assertFalse(r1.is_isomorphic(self.makeReaction('BA=EDd'), either_direction=False, check_only_label=True))
+    def test2to3_using_check_only_label(self):
+        r1 = self.make_reaction('AB=CDE')
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('AB=CDE'), check_only_label=True))
+        self.assertTrue(r1.is_isomorphic(self.make_reaction('BA=EDC'), either_direction=False, check_only_label=True))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('Ab=CDE'), check_only_label=True))
+        self.assertFalse(r1.is_isomorphic(self.make_reaction('BA=EDd'), either_direction=False, check_only_label=True))
 
 
 class TestSurfaceReaction(unittest.TestCase):
@@ -224,15 +224,15 @@ class TestSurfaceReaction(unittest.TestCase):
                                       comment="""Approximate rate""")
         )
 
-    def testIsSurfaceReactionSpecies(self):
+    def test_is_surface_reaction_species(self):
         """Test is_surface_reaction for reaction based on Species """
         self.assertTrue(self.rxn1s.is_surface_reaction())
 
-    def testIsSurfaceReactionMolecules(self):
+    def test_is_surface_reaction_molecules(self):
         """Test is_surface_reaction for reaction based on Molecules """
         self.assertTrue(self.rxn1m.is_surface_reaction())
 
-    def testMethylAdsorptionSurfaceArrhenius(self):
+    def test_methyl_adsorption_surface_arrhenius(self):
         """Test the CH3 adsorption rate given by SurfaceArrhenius"""
         T = 800
         surface_site_density = Quantity(2.72e-9, 'mol/cm^2').value_si
@@ -242,7 +242,7 @@ class TestSurfaceReaction(unittest.TestCase):
                                numpy.log10(target),
                                places=0)
 
-    def testMethylAdsorptionStickingCoefficient(self):
+    def test_methyl_adsorption_sticking_coefficient(self):
         """Test the CH3 adsorption rate given by StickingCoefficient"""
 
         # First, check the molecular weight is in units we expect
@@ -436,7 +436,7 @@ class TestReaction(unittest.TestCase):
             products=[so3],
             kinetics=Arrhenius(A=(3.7e+11, 'cm^3/(mol*s)'), n=0, Ea=(1689, 'cal/mol'), T0=(1, 'K')))
 
-    def testIsIsomerization(self):
+    def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.
         """
@@ -449,7 +449,7 @@ class TestReaction(unittest.TestCase):
         self.assertFalse(dissociation.is_isomerization())
         self.assertFalse(bimolecular.is_isomerization())
 
-    def testIsAssociation(self):
+    def test_is_association(self):
         """
         Test the Reaction.is_association() method.
         """
@@ -462,7 +462,7 @@ class TestReaction(unittest.TestCase):
         self.assertFalse(dissociation.is_association())
         self.assertFalse(bimolecular.is_association())
 
-    def testIsDissociation(self):
+    def test_is_dissociation(self):
         """
         Test the Reaction.is_dissociation() method.
         """
@@ -475,7 +475,7 @@ class TestReaction(unittest.TestCase):
         self.assertTrue(dissociation.is_dissociation())
         self.assertFalse(bimolecular.is_dissociation())
 
-    def testHasTemplate(self):
+    def test_has_template(self):
         """
         Test the Reaction.has_template() method.
         """
@@ -507,7 +507,7 @@ class TestReaction(unittest.TestCase):
         self.assertTrue(self.reaction2.has_template(reactants, products))
         self.assertTrue(self.reaction2.has_template(products, reactants))
 
-    def testEnthalpyOfReaction(self):
+    def test_enthalpy_of_reaction(self):
         """
         Test the Reaction.get_enthalpy_of_reaction() method.
         """
@@ -519,7 +519,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Hlist[i] / 1000., Hlist0[i] / 1000., 2)
 
-    def testEntropyOfReaction(self):
+    def test_entropy_of_reaction(self):
         """
         Test the Reaction.get_entropy_of_reaction() method.
         """
@@ -531,7 +531,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Slist[i], Slist0[i], 2)
 
-    def testFreeEnergyOfReaction(self):
+    def test_free_energy_of_reaction(self):
         """
         Test the Reaction.get_free_energy_of_reaction() method.
         """
@@ -543,7 +543,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Glist[i] / 1000., Glist0[i] / 1000., 2)
 
-    def testEquilibriumConstantKa(self):
+    def test_equilibrium_constant_ka(self):
         """
         Test the Reaction.get_equilibrium_constant() method.
         """
@@ -555,7 +555,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kalist[i] / Kalist0[i], 1.0, 4)
 
-    def testEquilibriumConstantKc(self):
+    def test_equilibrium_constant_kc(self):
         """
         Test the Reaction.get_equilibrium_constant() method.
         """
@@ -567,7 +567,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
 
-    def testEquilibriumConstantKp(self):
+    def test_equilibrium_constant_kp(self):
         """
         Test the Reaction.get_equilibrium_constant() method.
         """
@@ -579,7 +579,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kplist[i] / Kplist0[i], 1.0, 4)
 
-    def testStoichiometricCoefficient(self):
+    def test_stoichiometric_coefficient(self):
         """
         Test the Reaction.get_stoichiometric_coefficient() method.
         """
@@ -592,7 +592,7 @@ class TestReaction(unittest.TestCase):
         for product in self.reaction2.products:
             self.assertEqual(self.reaction.get_stoichiometric_coefficient(product), 0)
 
-    def testRateCoefficient(self):
+    def test_rate_coefficient(self):
         """
         Test the Reaction.get_rate_coefficient() method.
         """
@@ -602,7 +602,7 @@ class TestReaction(unittest.TestCase):
             self.assertAlmostEqual(
                 self.reaction.get_rate_coefficient(T, P) / self.reaction.kinetics.get_rate_coefficient(T), 1.0, 6)
 
-    def testGenerateReverseRateCoefficient(self):
+    def test_generate_reverse_rate_coefficient(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method.
         """
@@ -614,7 +614,7 @@ class TestReaction(unittest.TestCase):
             kr = reverse_kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
 
-    def testFixBarrierHeight(self):
+    def test_fix_barrier_height(self):
         """
         Test that fix_barrier_height:
             1) raises Ea to match endothermicity of reaction
@@ -670,7 +670,7 @@ class TestReaction(unittest.TestCase):
             else:
                 self.assertTrue(Ea == E0 + H298)
 
-    def testGenerateReverseRateCoefficientArrhenius(self):
+    def test_generate_reverse_rate_coefficient_arrhenius(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the Arrhenius format.
         """
@@ -700,7 +700,7 @@ class TestReaction(unittest.TestCase):
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     @work_in_progress
-    def testGenerateReverseRateCoefficientArrheniusEP(self):
+    def test_generate_reverse_rate_coefficient_arrhenius_ep(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the ArrheniusEP format.
         """
@@ -730,7 +730,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientPDepArrhenius(self):
+    def test_generate_reverse_rate_coefficient_pdep_arrhenius(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the PDepArrhenius format.
         """
@@ -790,7 +790,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientPDepMultiArrhenius(self):
+    def test_generate_reverse_rate_coefficient_pdep_multi_arrhenius(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the PDepArrhenius format with MultiArrhenius rates.
         """
@@ -850,7 +850,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientMultiArrhenius(self):
+    def test_generate_reverse_rate_coefficient_multi_arrhenius(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the MultiArrhenius format.
         """
@@ -907,7 +907,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientMultiPDepArrhenius(self):
+    def test_generate_reverse_rate_coefficient_multi_pdep_arrhenius(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the MultiPDepArrhenius format.
         """
@@ -1003,7 +1003,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientThirdBody(self):
+    def test_generate_reverse_rate_coefficient_third_body(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the ThirdBody format.
         """
@@ -1049,7 +1049,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientLindemann(self):
+    def test_generate_reverse_rate_coefficient_lindemann(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the Lindemann format.
         """
@@ -1102,7 +1102,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testGenerateReverseRateCoefficientTroe(self):
+    def test_generate_reverse_rate_coefficient_troe(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the Troe format.
         """
@@ -1163,7 +1163,7 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
-    def testTSTCalculation(self):
+    def test_tst_calculation(self):
         """
         A test of the transition state theory k(T) calculation function,
         using the reaction H + C2H4 -> C2H5.
@@ -1181,7 +1181,7 @@ class TestReaction(unittest.TestCase):
         for i in range(len(Tlist)):
             self.assertAlmostEqual(klist[i], klist2[i], delta=5e-2 * klist[i])
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a Reaction object can be successfully pickled and
         unpickled with no loss of information.
@@ -1213,7 +1213,7 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)
 
-    def testOutput(self):
+    def test_output(self):
         """
         Test that a Reaction object can be successfully reconstructed
         from its repr() output with no loss of information.
@@ -1247,7 +1247,7 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)
 
-    def testDegeneracyUpdatesRate(self):
+    def test_degeneracy_updates_rate(self):
         """
         This method tests that a change in degeneracy will result in a modified rate constant
         """
@@ -1257,7 +1257,7 @@ class TestReaction(unittest.TestCase):
         self.reaction.degeneracy *= degeneracyFactor
         self.assertAlmostEqual(self.reaction.kinetics.A.value_si, degeneracyFactor * prefactor)
 
-    def testDegeneracyUpdatesKineticsComment(self):
+    def test_degeneracy_updates_kinetics_comment(self):
         """
         This method tests that a change in degeneracy will result in a modified rate constant
         """
@@ -1266,7 +1266,7 @@ class TestReaction(unittest.TestCase):
         self.reaction.degeneracy = newDegeneracy
         self.assertIn('Multiplied by reaction path degeneracy 8.0', self.reaction.kinetics.comment)
 
-    def testSulfurReactionPairs(self):
+    def test_sulfur_reaction_pairs(self):
         """
         This method tests that reaction pairs are being generated for sulfur species
         """
@@ -1562,7 +1562,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                  kf0=[(6.020000e+14,'cm6/mol2/s'), 0.0, (3.0,'kcal/mol')],
                  efficiencies='CO2(16):3.5 CH4(15):2.0 ethane:3.0 H2O(27):6.0 O2(6):6.0 H2(2):2.0 Ar:0.5')''')
 
-    def testArrhenius(self):
+    def test_arrhenius(self):
         """
         Tests formation of cantera reactions with Arrhenius or kinetics.
         """
@@ -1580,7 +1580,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
             # Check that the Arrhenius string is identical
             self.assertEqual(str(converted_obj.rate), str(ct_obj.rate))
 
-    def testMultiArrhenius(self):
+    def test_multi_arrhenius(self):
         """
         Tests formation of cantera reactions with MultiArrhenius kinetics.
         """
@@ -1600,7 +1600,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                 # Check that the Arrhenius rates are identical
                 self.assertEqual(str(converted_rxn.rate), str(ct_rxn.rate))
 
-    def testPDepArrhenius(self):
+    def test_pdep_arrhenius(self):
         """
         Tests formation of cantera reactions with PDepArrhenius kinetics.
         """
@@ -1616,7 +1616,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
             # Check that the Arrhenius rates are identical
             self.assertEqual(str(converted_obj.rates), str(ct_obj.rates))
 
-    def testMultiPdepArrhenius(self):
+    def test_multi_pdep_arrhenius(self):
         """
         Tests formation of cantera reactions with MultiPDepArrhenius kinetics.
         """
@@ -1637,7 +1637,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                 # Check that the Arrhenius rates are identical
                 self.assertEqual(str(converted_rxn.rates), str(ct_rxn.rates))
 
-    def testChebyshev(self):
+    def test_chebyshev(self):
         """
         Tests formation of cantera reactions with Chebyshev kinetics.
         """
@@ -1651,7 +1651,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         self.assertEqual(ct_chebyshev.Pmin, self.ct_chebyshev.Pmin)
         self.assertTrue((ct_chebyshev.coeffs == self.ct_chebyshev.coeffs).all())
 
-    def testFalloff(self):
+    def test_falloff(self):
         """
         Tests formation of cantera reactions with Falloff kinetics.
         """

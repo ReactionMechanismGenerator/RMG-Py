@@ -50,7 +50,7 @@ from rmgpy.transport import TransportData
 
 class ChemkinTest(unittest.TestCase):
     @mock.patch('rmgpy.chemkin.logging')
-    def test_readThermoEntry_BadElementCount(self, mock_logging):
+    def test_read_thermo_entry_bad_element_count(self, mock_logging):
         """
         Test that invalid element count logs the appropriate warning.
 
@@ -72,7 +72,7 @@ class ChemkinTest(unittest.TestCase):
             "Trouble reading line 'C2H6                    H   XC   X          L   100.000  5000.000  827.28      1' element segment 'H   X'")
 
     @mock.patch('rmgpy.chemkin.logging')
-    def test_readThermoEntry_NotGasPhase(self, mock_logging):
+    def test_read_thermo_entry_not_gas_phase(self, mock_logging):
         """
         Test that non gas phase data logs the appropriate warning.
 
@@ -95,7 +95,7 @@ class ChemkinTest(unittest.TestCase):
         self.assertIsNone(thermo)
 
     @mock.patch('rmgpy.chemkin.logging')
-    def test_readThermoEntry_NotFloat(self, mock_logging):
+    def test_read_thermo_entry_not_float(self, mock_logging):
         """
         Test that non-float parameters log the appropriate warning.
 
@@ -117,7 +117,7 @@ class ChemkinTest(unittest.TestCase):
         self.assertIsNone(formula)
         self.assertIsNone(thermo)
 
-    def test_readThermoEntry_NoTRange(self):
+    def test_read_thermo_entry_no_temperature_range(self):
         """Test that missing temperature range can be handled for thermo entry."""
         entry = """C2H6                    H   6C   2          G                                  1
  2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
@@ -130,7 +130,7 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(formula, {'H': 6, 'C': 2})
         self.assertTrue(isinstance(thermo, NASA))
 
-    def testReadAndWriteAndReadTemplateReactionFamilyForMinimalExample(self):
+    def test_read_and_write_and_read_template_reaction_family_for_minimal_example(self):
         """
         This example tests if family and templates info can be correctly
         parsed from comments like '!Template reaction: R_Recombination'.
@@ -177,7 +177,7 @@ class ChemkinTest(unittest.TestCase):
         os.remove(chemkin_save_path)
         os.remove(dictionary_save_path)
 
-    def testReadAndWriteTemplateReactionFamilyForPDDExample(self):
+    def test_read_and_write_template_reaction_family_for_pdd_example(self):
         """
         This example is mainly to ensure comments like
         '! Kinetics were estimated in this direction instead
@@ -213,7 +213,7 @@ class ChemkinTest(unittest.TestCase):
         os.remove(chemkin_save_path)
         os.remove(dictionary_save_path)
 
-    def testTransportDataReadAndWrite(self):
+    def test_transport_data_read_and_write(self):
         """
         Test that we can write to chemkin and recreate the same transport object
         """
@@ -234,7 +234,7 @@ class ChemkinTest(unittest.TestCase):
 
         os.remove(temp_transport_path)
 
-    def testUseChemkinNames(self):
+    def test_use_chemkin_names(self):
         """
         Test that the official chemkin names are used as labels for the created Species objects.
         """
@@ -261,7 +261,7 @@ class ChemkinTest(unittest.TestCase):
         for spc, label in zip(species, expected):
             self.assertEqual(spc.label, label)
 
-    def testReactantN2IsReactiveAndGetsRightSpeciesIdentifier(self):
+    def test_reactant_n2_is_reactive_and_gets_right_species_identifier(self):
         """
         Test that after loading chemkin files, species such as N2, which is in the default
         inert list of RMG, should be treated as reactive species and given right species
@@ -282,7 +282,7 @@ class ChemkinTest(unittest.TestCase):
 
         self.assertEqual(get_species_identifier(n2), 'N2(35)')
 
-    def testReadSpecificCollider(self):
+    def test_read_specific_collider(self):
         """
         Test that a Chemkin reaction with a specific species as a third body collider can be properly read
         even if the species name contains parenthesis
@@ -548,7 +548,7 @@ class TestReadReactionComments(unittest.TestCase):
                                1]
         cls.expected_lines = [4, 4, 5, 5, 5, 5, 4, 6, 5, 6]
 
-    def testReadReactionCommentsTemplate(self):
+    def test_read_reaction_comments_template(self):
         """
         Test that the template is picked up from reading reaction comments.
         """
@@ -564,7 +564,7 @@ class TestReadReactionComments(unittest.TestCase):
             else:
                 self.assertFalse(new_rxn.template)
 
-    def testReadReactionCommentsFamily(self):
+    def test_read_reaction_comments_family(self):
         """
         Test that the family is picked up from reading reaction comments.
         """
@@ -573,7 +573,7 @@ class TestReadReactionComments(unittest.TestCase):
 
             self.assertEqual(new_rxn.family, self.family_list[index], 'wrong reaction family stored')
 
-    def testReadReactionCommentsDegeneracy(self):
+    def test_read_reaction_comments_degeneracy(self):
         """
         Test that the degeneracy is picked up from reading reaction comments.
 
@@ -597,7 +597,7 @@ class TestReadReactionComments(unittest.TestCase):
             else:
                 self.assertTrue('Multiplied by reaction path degeneracy' not in new_rxn.kinetics.comment)
 
-    def testRemoveLineBreaks(self):
+    def test_remove_line_breaks(self):
         """
         tests that _remove_line_breaks functions properly
         """

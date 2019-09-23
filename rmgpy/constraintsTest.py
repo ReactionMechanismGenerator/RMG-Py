@@ -76,7 +76,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         rmgpy.rmg.input.rmg = None
 
     @mock.patch('rmgpy.constraints.logging')
-    def testConstraintsNotLoaded(self, mock_logging):
+    def test_constraints_not_loaded(self, mock_logging):
         """
         Test what happens when constraints are not loaded.
         """
@@ -92,7 +92,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         # Restore module level rmg variable in rmgpy.rmg.input
         rmgpy.rmg.input.rmg = self.rmg
 
-    def testSpeciesInput(self):
+    def test_species_input(self):
         """
         Test that fails_species_constraints can handle a Species object.
         """
@@ -100,7 +100,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
 
         self.assertFalse(fails_species_constraints(spc))
 
-    def testExplicitlyAllowedMolecules(self):
+    def test_explicitly_allowed_molecules(self):
         """
         Test that we can explicitly allow molecules in species constraints.
         """
@@ -110,7 +110,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         self.rmg.species_constraints['explicitlyAllowedMolecules'] = [Molecule(smiles='CCCC')]
         self.assertFalse(fails_species_constraints(mol))
 
-    def testCarbonConstraint(self):
+    def test_carbon_constraint(self):
         """
         Test that we can constrain the max number of carbon atoms.
         """
@@ -120,7 +120,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='CCC')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testOxygenConstraint(self):
+    def test_oxygen_constraint(self):
         """
         Test that we can constrain the max number of oxygen atoms.
         """
@@ -130,7 +130,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='OC=O')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testNitrogenConstraint(self):
+    def test_nitrogen_constraint(self):
         """
         Test that we can constrain the max number of nitrogen atoms.
         """
@@ -140,7 +140,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='NCN')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testSiliconConstraint(self):
+    def test_silicon_constraint(self):
         """
         Test that we can constrain the max number of silicon atoms.
         """
@@ -150,7 +150,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='[SiH3][SiH3]')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testSulfurConstraint(self):
+    def test_sulfur_constraint(self):
         """
         Test that we can constrain the max number of sulfur atoms.
         """
@@ -160,7 +160,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='SCS')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testHeavyConstraint(self):
+    def test_heavy_constraint(self):
         """
         Test that we can constrain the max number of heavy atoms.
         """
@@ -170,7 +170,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='CCN=O')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testRadicalConstraint(self):
+    def test_radical_constraint(self):
         """
         Test that we can constrain the max number of radical electrons.
         """
@@ -180,7 +180,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         mol2 = Molecule(smiles='[CH2][CH][CH2]')
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testCarbeneConstraint(self):
+    def test_carbene_constraint(self):
         """
         Test that we can constrain the max number of singlet carbenes.
         """
@@ -199,7 +199,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
 """)
         self.assertTrue(fails_species_constraints(mol2))
 
-    def testCarbeneRadicalConstraint(self):
+    def test_carbene_radical_constraint(self):
         """
         Test that we can constrain the max number of radical electrons with a carbene.
         """

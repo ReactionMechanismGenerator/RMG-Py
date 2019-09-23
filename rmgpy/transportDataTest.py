@@ -70,7 +70,7 @@ class TestTransportData(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_shapeIndex(self):
+    def test_shape_index(self):
         """
         Test that the TransportData shapeIndex property was properly set.
         """
@@ -88,7 +88,7 @@ class TestTransportData(unittest.TestCase):
         """
         self.assertAlmostEqual(self.transport.sigma.value_si * 1e10, self.sigma.value_si * 1e10, 6)
 
-    def test_dipoleMoment(self):
+    def test_dipole_moment(self):
         """
         Test that the TransportData dipoleMoment property was properly set.
         """
@@ -112,7 +112,7 @@ class TestTransportData(unittest.TestCase):
         """
         self.assertEqual(self.transport.comment, self.comment)
 
-    def test_getCollisionFrequency(self):
+    def test_get_collision_frequency(self):
         """
         Test the LennardJones.get_collision_frequency() method.
         """
@@ -153,7 +153,7 @@ class TestTransportData(unittest.TestCase):
         self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
         self.assertEqual(self.transport.comment, transport.comment)
 
-    def test_toCantera(self):
+    def test_to_cantera(self):
         """
         Test that the Cantera GasTransportData creation is successful.
         """

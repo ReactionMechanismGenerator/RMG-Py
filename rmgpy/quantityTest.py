@@ -136,7 +136,7 @@ class TestEnergy(unittest.TestCase):
     Contains unit tests of the Energy unit type object.
     """
 
-    def test_J(self):
+    def test_joule(self):
         """
         Test the creation of an energy quantity with units of J.
         """
@@ -146,7 +146,7 @@ class TestEnergy(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_Jpermol(self):
+    def test_joule_per_mol(self):
         """
         Test the creation of an energy quantity with units of J/mol.
         """
@@ -174,7 +174,7 @@ class TestEnergy(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 4.184, delta=1e-6)
         self.assertEqual(q.units, "cal/mol")
 
-    def test_kJ(self):
+    def test_kj(self):
         """
         Test the creation of an energy quantity with units of kJ.
         """
@@ -184,7 +184,7 @@ class TestEnergy(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_kJpermol(self):
+    def test_kj_per_mol(self):
         """
         Test the creation of an energy quantity with units of kJ/mol.
         """
@@ -203,7 +203,7 @@ class TestEnergy(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_kcalpermol(self):
+    def test_kcal_per_mol(self):
         """
         Test the creation of an energy quantity with units of kcal/mol.
         """
@@ -212,7 +212,7 @@ class TestEnergy(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 4184., delta=1e-6)
         self.assertEqual(q.units, "kcal/mol")
 
-    def test_Kelvin(self):
+    def test_kelvin(self):
         """
         Test the creation of an energy quantity with units of K (not really an energy!).
         """
@@ -228,7 +228,7 @@ class TestDipoleMoment(unittest.TestCase):
     Contains unit tests of the DipoleMoment unit type object.
     """
 
-    def test_Ctimesm(self):
+    def test_coulomb_meter(self):
         """
         Test the creation of a dipole moment quantity with units of C*m.
         """
@@ -237,7 +237,7 @@ class TestDipoleMoment(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1.0, 6)
         self.assertEqual(q.units, "C*m")
 
-    def test_D(self):
+    def test_debye(self):
         """
         Test the creation of a dipole moment quantity with units of J/mol.
         """
@@ -290,7 +290,7 @@ class TestForce(unittest.TestCase):
     Contains unit tests of the Force unit type object.
     """
 
-    def test_N(self):
+    def test_newton(self):
         """
         Test the creation of an force quantity with units of N.
         """
@@ -327,7 +327,7 @@ class TestFrequency(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1. / (constants.c * 100.), delta=1e-17)
         self.assertEqual(q.units, "cm^-1")
 
-    def test_K(self):
+    def test_k(self):
         """
         Test the creation of a frequency quantity with units of K.
         """
@@ -336,7 +336,7 @@ class TestFrequency(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, constants.kB / (constants.h * constants.c * 100.), delta=1e-6)
         self.assertEqual(q.units, "cm^-1")
 
-    def test_eV(self):
+    def test_ev(self):
         """
         Test the creation of a frequency quantity with units of eV.
         """
@@ -345,7 +345,7 @@ class TestFrequency(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, constants.e / (constants.h * constants.c * 100.), delta=1e-2)
         self.assertEqual(q.units, "cm^-1")
 
-    def test_Hz(self):
+    def test_hz(self):
         """
         Test the creation of a frequency quantity with units of Hz.
         """
@@ -354,7 +354,7 @@ class TestFrequency(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1. / (constants.c * 100.), delta=1e-17)
         self.assertEqual(q.units, "cm^-1")
 
-    def test_kHz(self):
+    def test_khz(self):
         """
         Test the creation of a frequency quantity with units of kHz.
         """
@@ -363,7 +363,7 @@ class TestFrequency(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1e3 / (constants.c * 100.), delta=1e-14)
         self.assertEqual(q.units, "cm^-1")
 
-    def test_MHz(self):
+    def test_mhz(self):
         """
         Test the creation of a frequency quantity with units of MHz.
         """
@@ -372,7 +372,7 @@ class TestFrequency(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1e6 / (constants.c * 100.), delta=1e-11)
         self.assertEqual(q.units, "cm^-1")
 
-    def test_GHz(self):
+    def test_ghz(self):
         """
         Test the creation of a frequency quantity with units of GHz.
         """
@@ -389,7 +389,7 @@ class TestHeatCapacity(unittest.TestCase):
     Contains unit tests of the HeatCapacity unit type object.
     """
 
-    def test_JperK(self):
+    def test_joule_per_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of J/K.
         """
@@ -399,7 +399,7 @@ class TestHeatCapacity(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_JpermolperK(self):
+    def test_joule_per_mol_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of J/(mol*K).
         """
@@ -408,7 +408,7 @@ class TestHeatCapacity(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "J/(mol*K)")
 
-    def test_calperK(self):
+    def test_cal_per_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of cal/K.
         """
@@ -418,7 +418,7 @@ class TestHeatCapacity(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_calpermolperK(self):
+    def test_cal_per_mol_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of cal/(mol*K).
         """
@@ -427,7 +427,7 @@ class TestHeatCapacity(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 4.184, delta=1e-6)
         self.assertEqual(q.units, "cal/(mol*K)")
 
-    def test_kJperK(self):
+    def test_kj_per_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of kJ/K.
         """
@@ -437,7 +437,7 @@ class TestHeatCapacity(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_kJpermolperK(self):
+    def test_kj_per_mol_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of kJ/(mol*K).
         """
@@ -446,7 +446,7 @@ class TestHeatCapacity(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1000., delta=1e-6)
         self.assertEqual(q.units, "kJ/(mol*K)")
 
-    def test_kcalperK(self):
+    def test_kcal_per_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of kcal/K.
         """
@@ -456,7 +456,7 @@ class TestHeatCapacity(unittest.TestCase):
         except quantity.QuantityError:
             pass
 
-    def test_kcalpermolperK(self):
+    def test_kcal_per_mol_kelvin(self):
         """
         Test the creation of a heat capacity quantity with units of kcal/(mol*K).
         """
@@ -635,7 +635,7 @@ class TestPower(unittest.TestCase):
     Contains unit tests of the Power unit type object.
     """
 
-    def test_W(self):
+    def test_w(self):
         """
         Test the creation of a power quantity with units of W.
         """
@@ -652,7 +652,7 @@ class TestPressure(unittest.TestCase):
     Contains unit tests of the Pressure unit type object.
     """
 
-    def test_Pa(self):
+    def test_pa(self):
         """
         Test the creation of a pressure quantity with units of Pa.
         """
@@ -819,7 +819,7 @@ class TestTemperature(unittest.TestCase):
     Contains unit tests of the Temperature unit type object.
     """
 
-    def test_K(self):
+    def test_k(self):
         """
         Test the creation of a temperature quantity with units of K.
         """
@@ -828,21 +828,21 @@ class TestTemperature(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "K")
 
-    def test_degC(self):
+    def test_deg_c(self):
         """
         Test the creation of a temperature quantity with units of degrees C.
         """
         with self.assertRaises(NotImplementedError):
             quantity.Temperature(1.0, "degC")
 
-    def test_degF(self):
+    def test_deg_f(self):
         """
         Test the creation of a temperature quantity with units of degrees F.
         """
         with self.assertRaises(NotImplementedError):
             quantity.Temperature(1.0, "degF")
 
-    def test_degR(self):
+    def test_deg_r(self):
         """
         Test the creation of a temperature quantity with units of degrees R.
         """
@@ -972,7 +972,7 @@ class TestVolume(unittest.TestCase):
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^3")
 
-    def test_L(self):
+    def test_liters(self):
         """
         Test the creation of an volume quantity with units of L.
         """

@@ -99,7 +99,7 @@ class TestSpecies(unittest.TestCase):
             12 H u0 p0 c0 {6,S}
             """)
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a Species object can be pickled and unpickled.
         
@@ -126,7 +126,7 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
 
-    def testOutput(self):
+    def test_output(self):
         """
         Test that a Species object can be reconstructed from its repr().
         
@@ -204,7 +204,7 @@ class TestSpecies(unittest.TestCase):
         # Test set behavior
         self.assertEqual(len({spc1, spc2, spc3, spc4}), 4)
 
-    def testToAdjacencyList(self):
+    def test_to_adjacency_list(self):
         """
         Test that to_adjacency_list() works as expected.
         """
@@ -213,7 +213,7 @@ class TestSpecies(unittest.TestCase):
             string.startswith(self.species.molecule[0].to_adjacency_list(label=self.species.label, remove_h=False)),
             string)
 
-    def testSpeciesProps(self):
+    def test_species_props(self):
         """
         Test a key-value pair is added to the props attribute of Species.
         """
@@ -221,7 +221,7 @@ class TestSpecies(unittest.TestCase):
         self.assertIsInstance(self.species.props, dict)
         self.assertEquals(self.species.props['foo'], 'bar')
 
-    def testSpeciesProps_object_attribute(self):
+    def test_species_props_object_attribute(self):
         """
         Test that Species's props dictionaries are independent of each other.
         
@@ -236,14 +236,14 @@ class TestSpecies(unittest.TestCase):
         self.assertDictEqual(spc2.props, {})
         self.assertDictEqual(spc3.props, {'foo': 'bla'})
 
-    def testResonanceIsomersGenerated(self):
+    def test_resonance_isomers_generated(self):
         """Test that 1-penten-3-yl makes 2-penten-1-yl resonance isomer"""
         spec = Species().from_smiles('C=C[CH]CC')
         spec.generate_resonance_structures()
         self.assertEquals(len(spec.molecule), 2)
         self.assertEquals(spec.molecule[1].to_smiles(), "[CH2]C=CCC")
 
-    def testResonaceIsomersRepresented(self):
+    def test_resonace_isomers_represented(self):
         """Test that both resonance forms of 1-penten-3-yl are printed by __repr__"""
         spec = Species().from_smiles('C=C[CH]CC')
         spec.generate_resonance_structures()
@@ -317,7 +317,7 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(spc5_correct.is_isomorphic(spc5_nonrepresentative, strict=False))
         self.assertTrue(spc6_correct.is_isomorphic(spc6_nonrepresentative, strict=False))
 
-    def testGetResonanceHybrid(self):
+    def test_get_resonance_hybrid(self):
         """
         Tests that get_resonance_hybrid returns an isomorphic structure
         which has intermediate bond orders.
@@ -347,7 +347,7 @@ class TestSpecies(unittest.TestCase):
             self.assertTrue(any([bond.is_order(expected_order) for bond in bonds]),
                             'No bond of order {} found'.format(expected_order))
 
-    def testCopy(self):
+    def test_copy(self):
         """Test that we can make a copy of a Species object."""
 
         spc_cp = self.species.copy()
@@ -360,7 +360,7 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.species.molecularWeight.equals(spc_cp.molecularWeight))
         self.assertEquals(self.species.reactive, spc_cp.reactive)
 
-    def testCantera(self):
+    def test_cantera(self):
         """
         Test that a Cantera Species object is created correctly.
         """
@@ -401,7 +401,7 @@ Thermo library: primaryThermoLibrary
         self.assertEqual(type(rmg_ct_species.thermo), type(ct_species.thermo))
         self.assertEqual(type(rmg_ct_species.transport), type(ct_species.transport))
 
-    def testGetTransportData(self):
+    def test_get_transport_data(self):
         """
         Test that transport data can be retrieved correctly via the get_transport_data method.
         """
