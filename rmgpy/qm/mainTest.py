@@ -64,15 +64,15 @@ class TestQMSettings(unittest.TestCase):
 
     def testCheckAllSet(self):
         """
-        Test that checkAllSet() works correctly.
+        Test that check_all_set() works correctly.
         """
         try:
-            self.settings1.checkAllSet()
+            self.settings1.check_all_set()
         except AssertionError:
-            self.fail("checkAllSet() raised unexpected AssertionError.")
+            self.fail("check_all_set() raised unexpected AssertionError.")
 
         with self.assertRaises(AssertionError):
-            self.settings2.checkAllSet()
+            self.settings2.check_all_set()
 
 
 class TestQMCalculator(unittest.TestCase):
@@ -146,7 +146,7 @@ class TestQMCalculator(unittest.TestCase):
 
     def testSetDefaultOutputDirectory(self):
         """
-        Test that setDefaultOutputDirectory() works correctly.
+        Test that set_default_output_directory() works correctly.
         """
         self.assertIsNotNone(self.mop1.settings.fileStore)
         self.assertIsNotNone(self.mop3.settings.fileStore)
@@ -163,11 +163,11 @@ class TestQMCalculator(unittest.TestCase):
 
         # Now set the default directories for those not set
         outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-        self.mop1.setDefaultOutputDirectory(outputDirectory)
-        self.mop2.setDefaultOutputDirectory(outputDirectory)
-        self.mop3.setDefaultOutputDirectory(outputDirectory)
-        self.gauss1.setDefaultOutputDirectory(outputDirectory)
-        self.gauss2.setDefaultOutputDirectory(outputDirectory)
+        self.mop1.set_default_output_directory(outputDirectory)
+        self.mop2.set_default_output_directory(outputDirectory)
+        self.mop3.set_default_output_directory(outputDirectory)
+        self.gauss1.set_default_output_directory(outputDirectory)
+        self.gauss2.set_default_output_directory(outputDirectory)
 
         self.assertIsNotNone(self.mop1.settings.fileStore)
         self.assertIsNotNone(self.mop2.settings.fileStore)
@@ -187,11 +187,11 @@ class TestQMCalculator(unittest.TestCase):
 
         # Now set the default directories for those not set
         outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-        self.mop1.setDefaultOutputDirectory(outputDirectory)
-        self.mop2.setDefaultOutputDirectory(outputDirectory)
-        self.mop3.setDefaultOutputDirectory(outputDirectory)
-        self.gauss1.setDefaultOutputDirectory(outputDirectory)
-        self.gauss2.setDefaultOutputDirectory(outputDirectory)
+        self.mop1.set_default_output_directory(outputDirectory)
+        self.mop2.set_default_output_directory(outputDirectory)
+        self.mop3.set_default_output_directory(outputDirectory)
+        self.gauss1.set_default_output_directory(outputDirectory)
+        self.gauss2.set_default_output_directory(outputDirectory)
 
         try:
             self.mop1.initialize()
@@ -209,9 +209,9 @@ class TestQMCalculator(unittest.TestCase):
         Test that get_thermo_data() fails when expected.
         """
         output_directory = os.path.join(self.mop4.settings.fileStore, '..', '..')
-        self.mop4.setDefaultOutputDirectory(output_directory)
-        self.gauss3.setDefaultOutputDirectory(output_directory)
-        self.molpro1.setDefaultOutputDirectory(output_directory)
+        self.mop4.set_default_output_directory(output_directory)
+        self.gauss3.set_default_output_directory(output_directory)
+        self.molpro1.set_default_output_directory(output_directory)
 
         mol = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
@@ -227,9 +227,9 @@ class TestQMCalculator(unittest.TestCase):
         Test that Mocpac get_thermo_data() works correctly.
         """
         output_directory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-        self.mop1.setDefaultOutputDirectory(output_directory)
-        self.mop2.setDefaultOutputDirectory(output_directory)
-        self.mop3.setDefaultOutputDirectory(output_directory)
+        self.mop1.set_default_output_directory(output_directory)
+        self.mop2.set_default_output_directory(output_directory)
+        self.mop3.set_default_output_directory(output_directory)
 
         mol = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
@@ -263,8 +263,8 @@ class TestQMCalculator(unittest.TestCase):
         Test that Gaussian get_thermo_data() works correctly.
         """
         output_directory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-        self.gauss1.setDefaultOutputDirectory(output_directory)
-        self.gauss2.setDefaultOutputDirectory(output_directory)
+        self.gauss1.set_default_output_directory(output_directory)
+        self.gauss2.set_default_output_directory(output_directory)
 
         mol = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
@@ -288,7 +288,7 @@ class TestQMCalculator(unittest.TestCase):
     @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
     @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def testRunJobs(self):
-        """Test that runJobs() works properly."""
+        """Test that run_jobs() works properly."""
         qm = QMCalculator(software='mopac',
                           method='pm3',
                           fileStore=self.fileStore,
@@ -296,13 +296,13 @@ class TestQMCalculator(unittest.TestCase):
                           maxRadicalNumber=0,
                           )
         output_directory = os.path.join(qm.settings.fileStore, '..', '..')
-        qm.setDefaultOutputDirectory(output_directory)
+        qm.set_default_output_directory(output_directory)
 
         spc1 = Species().from_smiles('c1ccccc1')
         spc2 = Species().from_smiles('CC1C=CC=CC=1')
         spc_list = [spc1, spc2]
 
-        qm.runJobs(spc_list, procnum=1)
+        qm.run_jobs(spc_list, procnum=1)
 
 
 ################################################################################

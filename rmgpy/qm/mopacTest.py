@@ -42,7 +42,7 @@ from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
 
 NO_MOPAC = NO_LICENCE = False
 try:
-    Mopac().testReady()
+    Mopac().test_ready()
 except DependencyError as e:
     if "Couldn't find MOPAC executable" in str(e):
         NO_MOPAC = NO_LICENCE = True
@@ -80,15 +80,15 @@ class TestMopacMolPM3(unittest.TestCase):
 
     def testGenerateThermoData(self):
         """
-        Test that generateThermoData() works correctly for MOPAC PM3
+        Test that generate_thermo_data() works correctly for MOPAC PM3
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
-        self.assertTrue(self.qmmol1.verifyOutputFile())
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
+        self.assertTrue(self.qmmol1.verify_output_file())
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
@@ -100,13 +100,13 @@ class TestMopacMolPM3(unittest.TestCase):
 
     def testLoadThermoData(self):
         """
-        Test that generateThermoData() can load thermo from the previous MOPAC PM3 run.
+        Test that generate_thermo_data() can load thermo from the previous MOPAC PM3 run.
         
         Check that it loaded, and the values are the same as above.
         """
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -144,15 +144,15 @@ class TestMopacMolPM6(unittest.TestCase):
 
     def testGenerateThermoData(self):
         """
-        Test that generateThermoData() works correctly for MOPAC PM6
+        Test that generate_thermo_data() works correctly for MOPAC PM6
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
-        self.assertTrue(self.qmmol1.verifyOutputFile())
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
+        self.assertTrue(self.qmmol1.verify_output_file())
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -165,13 +165,13 @@ class TestMopacMolPM6(unittest.TestCase):
 
     def testLoadThermoData(self):
         """
-        Test that generateThermoData() can load thermo from the previous MOPAC PM6 run.
+        Test that generate_thermo_data() can load thermo from the previous MOPAC PM6 run.
         
         Check that it loaded, and the values are the same as above.
         """
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -210,15 +210,15 @@ class TestMopacMolPM7(unittest.TestCase):
 
     def testGenerateThermoData(self):
         """
-        Test that generateThermoData() works correctly for MOPAC PM7
+        Test that generate_thermo_data() works correctly for MOPAC PM7
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
-        self.assertTrue(self.qmmol1.verifyOutputFile())
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
+        self.assertTrue(self.qmmol1.verify_output_file())
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
@@ -231,13 +231,13 @@ class TestMopacMolPM7(unittest.TestCase):
 
     def testLoadThermoData(self):
         """
-        Test that generateThermoData() can load thermo from the previous MOPAC PM7 run.
+        Test that generate_thermo_data() can load thermo from the previous MOPAC PM7 run.
         
         Check that it loaded, and the values are the same as above.
         """
 
-        self.qmmol1.generateThermoData()
-        result = self.qmmol1.qmData
+        self.qmmol1.generate_thermo_data()
+        result = self.qmmol1.qm_data
 
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)

@@ -814,7 +814,7 @@ class CoreEdgeReactionModel:
         quantumMechanics = getInput('quantumMechanics')
 
         if quantumMechanics:
-            quantumMechanics.runJobs(self.newSpeciesList, procnum=procnum)
+            quantumMechanics.run_jobs(self.newSpeciesList, procnum=procnum)
 
         # Serial thermo calculation for other methods
         for spc in self.newSpeciesList:

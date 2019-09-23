@@ -48,7 +48,7 @@ import rmgpy.qm.symmetry as symmetry
 import rmgpy.quantity
 import rmgpy.statmech
 import rmgpy.thermo
-from rmgpy.qm.qmdata import parseCCLibData
+from rmgpy.qm.qmdata import parse_cclib_data
 from rmgpy.thermo import ThermoData
 
 
@@ -99,7 +99,7 @@ class Geometry(object):
             logging.info("Creating scratch directory %s for qm files." % os.path.abspath(self.scratchDirectory))
             os.makedirs(self.scratchDirectory)
 
-    def getFilePath(self, extension, scratch=True):
+    def get_file_path(self, extension, scratch=True):
         """
         Returns the path to the file with the given extension.
         
@@ -112,15 +112,15 @@ class Geometry(object):
             self.uniqueID + extension
         )
 
-    def getCrudeMolFilePath(self):
-        "Returns the path of the crude mol file."
-        return self.getFilePath('.crude.mol')
+    def get_crude_mol_file_path(self):
+        """Returns the path of the crude mol file."""
+        return self.get_file_path('.crude.mol')
 
-    def getRefinedMolFilePath(self):
-        "Returns the path the the refined mol file."
-        return self.getFilePath('.refined.mol')
+    def get_refined_mol_file_path(self):
+        """Returns the path the the refined mol file."""
+        return self.get_file_path('.refined.mol')
 
-    def generateRDKitGeometries(self):
+    def generate_rdkit_geometries(self):
         """
         Use RDKit to guess geometry.
 
@@ -135,7 +135,7 @@ class Geometry(object):
             dist_geom_attempts = 5 * (atoms - 3)  # number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
 
         rdmol, min_e_id = self.rd_embed(rdmol, dist_geom_attempts)
-        self.saveCoordinatesFromRDMol(rdmol, min_e_id, rdatom_idx)
+        self.save_coordinates_from_rdmol(rdmol, min_e_id, rdatom_idx)
 
     def rd_build(self):
         """
@@ -143,11 +143,11 @@ class Geometry(object):
         """
         return self.molecule.to_rdkit_mol(remove_h=False, return_mapping=True)
 
-    def rd_embed(self, rdmol, numConfAttempts):
+    def rd_embed(self, rdmol, num_conf_attempts):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts, randomSeed=1)
+        AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, randomSeed=1)
 
         energy = 0.0
         min_e_id = 0
@@ -162,28 +162,28 @@ class Geometry(object):
                 min_e_id = i
                 min_e = energy
 
-        with open(self.getCrudeMolFilePath(), 'w') as out_3d_crude:
+        with open(self.get_crude_mol_file_path(), 'w') as out_3d_crude:
             out_3d_crude.write(Chem.MolToMolBlock(crude, confId=min_e_id))
 
-        with open(self.getRefinedMolFilePath(), 'w') as out_3d:
+        with open(self.get_refined_mol_file_path(), 'w') as out_3d:
             out_3d.write(Chem.MolToMolBlock(rdmol, confId=min_e_id))
 
         return rdmol, min_e_id
 
-    def saveCoordinatesFromRDMol(self, rdmol, min_e_id, rdatom_idx):
+    def save_coordinates_from_rdmol(self, rdmol, min_e_id, rdatom_idx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
             point = rdmol.GetConformer(min_e_id).GetAtomPosition(atom.sorting_label)
             atom.coords = np.array([point.x, point.y, point.z])
 
-    def saveCoordinatesFromQMData(self, qmdata):
+    def save_coordinates_from_qm_data(self, qmdata):
         """
         Save geometry info from QMData (eg CCLibData)
         """
         raise NotImplementedError
 
 
-def loadThermoDataFile(filePath):
+def load_thermo_data_file(file_path):
     """
     Load the specified thermo data file and return the dictionary of its contents.
     
@@ -191,11 +191,11 @@ def loadThermoDataFile(filePath):
     
     Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
     """
-    if not os.path.exists(filePath):
+    if not os.path.exists(file_path):
         return None
     try:
-        with open(filePath) as resultFile:
-            logging.info('Reading existing thermo file {0}'.format(filePath))
+        with open(file_path) as resultFile:
+            logging.info('Reading existing thermo file {0}'.format(file_path))
             global_context = {'__builtins__': None}
             local_context = {
                 '__builtins__': None,
@@ -209,20 +209,20 @@ def loadThermoDataFile(filePath):
             }
             exec(resultFile.read(), global_context, local_context)
     except IOError:
-        logging.info("Couldn't read thermo file {0}".format(filePath))
+        logging.info("Couldn't read thermo file {0}".format(file_path))
         return None
     except (NameError, TypeError, SyntaxError) as e:
-        logging.error('The thermo file "{0}" was invalid:'.format(filePath))
+        logging.error('The thermo file "{0}" was invalid:'.format(file_path))
         logging.exception(e)
         return None
     if 'InChI' not in local_context:
-        logging.error('The thermo file "{0}" did not contain an InChI.'.format(filePath))
+        logging.error('The thermo file "{0}" did not contain an InChI.'.format(file_path))
         return None
     if 'adjacencyList' not in local_context:
-        logging.error('The thermo file "{0}" did not contain adjacencyList.'.format(filePath))
+        logging.error('The thermo file "{0}" did not contain adjacencyList.'.format(file_path))
         return None
     if 'thermoData' not in local_context:
-        logging.error('The thermo file "{0}" did not contain thermoData.'.format(filePath))
+        logging.error('The thermo file "{0}" did not contain thermoData.'.format(file_path))
         return None
     return local_context
 
@@ -236,7 +236,7 @@ class QMMolecule(object):
     
      * outputFileExtension
      * inputFileExtension
-     * generateQMData() ...and whatever else is needed to make this method work.
+     * generate_qm_data() ...and whatever else is needed to make this method work.
      
     The attributes are:
     
@@ -258,7 +258,7 @@ class QMMolecule(object):
         self.uniqueID = self.molecule.to_augmented_inchi_key()
         self.uniqueIDlong = self.molecule.to_augmented_inchi()
 
-    def getFilePath(self, extension, scratch=True):
+    def get_file_path(self, extension, scratch=True):
         """
         Returns the path to the file with the given extension.
         
@@ -273,43 +273,43 @@ class QMMolecule(object):
         )
 
     @property
-    def outputFilePath(self):
+    def output_file_path(self):
         """Get the output file name."""
-        return self.getFilePath(self.outputFileExtension)
+        return self.get_file_path(self.outputFileExtension)
 
     @property
-    def inputFilePath(self):
+    def input_file_path(self):
         """Get the input file name."""
-        return self.getFilePath(self.inputFileExtension)
+        return self.get_file_path(self.inputFileExtension)
 
-    def getThermoFilePath(self):
-        "Returns the path the thermo data file."
-        return self.getFilePath('.thermo', scratch=False)
+    def get_thermo_file_path(self):
+        """Returns the path the thermo data file."""
+        return self.get_file_path('.thermo', scratch=False)
 
     @property
-    def scriptAttempts(self):
-        "The number of attempts with different script keywords"
+    def script_attempts(self):
+        """The number of attempts with different script keywords"""
         return len(self.keywords)
 
     @property
-    def maxAttempts(self):
-        "The total number of attempts to try"
+    def max_attempts(self):
+        """The total number of attempts to try"""
         return 2 * len(self.keywords)
 
     def initialize(self):
         """
         Do any startup tasks.
         """
-        self.checkReady()
+        self.check_ready()
 
-    def checkReady(self):
+    def check_ready(self):
         """
         Check that it's ready to run calculations.
         """
-        self.settings.checkAllSet()
-        self.checkPaths()
+        self.settings.check_all_set()
+        self.check_paths()
 
-    def checkPaths(self):
+    def check_paths(self):
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
@@ -320,33 +320,33 @@ class QMMolecule(object):
                 logging.info("Creating directory %s for QM files." % os.path.abspath(path))
                 os.makedirs(path)
 
-    def createGeometry(self):
+    def create_geometry(self):
         """
         Creates self.geometry with RDKit geometries
         """
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries()
+        self.geometry.generate_rdkit_geometries()
         return self.geometry
 
     def parse(self):
         """
         Parses the results of the Mopac calculation, and returns a QMData object.
         """
-        parser = self.getParser(self.outputFilePath)
+        parser = self.get_parser(self.output_file_path)
         parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclib_data = parser.parse()
         radical_number = self.molecule.get_radical_count()
-        qm_data = parseCCLibData(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
+        qm_data = parse_cclib_data(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qm_data
 
-    def generateQMData(self):
+    def generate_qm_data(self):
         """
         Calculate the QM data somehow and return a CCLibData object, or None if it fails.
         """
         raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
         return qmdata.QMData() or None
 
-    def generateThermoData(self):
+    def generate_thermo_data(self):
         """
         Generate Thermo Data via a QM calc. 
         
@@ -355,50 +355,50 @@ class QMMolecule(object):
         self.initialize()
 
         # First, see if we already have it.
-        if self.loadThermoData():
+        if self.load_thermo_data():
             return self.thermo
 
         # If not, generate the QM data
-        self.qmData = self.generateQMData()
+        self.qm_data = self.generate_qm_data()
 
         # If that fails, give up and return None.
-        if self.qmData is None:
+        if self.qm_data is None:
             return None
 
-        self.determinePointGroup()
+        self.determine_point_group()
 
         # If that fails, give up and return None.
-        if self.pointGroup is None:
+        if self.point_group is None:
             return None
 
-        self.calculateThermoData()
+        self.calculate_thermo_data()
         Cp0 = self.molecule.calculate_cp0()
         CpInf = self.molecule.calculate_cpinf()
         self.thermo.Cp0 = (Cp0, "J/(mol*K)")
         self.thermo.CpInf = (CpInf, "J/(mol*K)")
-        self.saveThermoData()
+        self.save_thermo_data()
         return self.thermo
 
-    def saveThermoData(self):
+    def save_thermo_data(self):
         """
         Save the generated thermo data.
         """
         self.thermo.H298.units = 'kcal/mol'
         self.thermo.S298.units = 'cal/mol/K'
         self.thermo.Cpdata.units = 'cal/mol/K'
-        with open(self.getThermoFilePath(), 'w') as resultFile:
+        with open(self.get_thermo_file_path(), 'w') as resultFile:
             resultFile.write('InChI = "{0!s}"\n'.format(self.uniqueIDlong))
             resultFile.write("thermoData = {0!r}\n".format(self.thermo))
-            resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
-            resultFile.write("qmData = {0!r}\n".format(self.qmData))
+            resultFile.write("pointGroup = {0!r}\n".format(self.point_group))
+            resultFile.write("qmData = {0!r}\n".format(self.qm_data))
             resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.to_adjacency_list(remove_h=False)))
 
-    def loadThermoData(self):
+    def load_thermo_data(self):
         """
         Try loading a thermo data from a previous run.
         """
-        file_path = self.getThermoFilePath()
-        local_context = loadThermoDataFile(file_path)
+        file_path = self.get_thermo_file_path()
+        local_context = load_thermo_data_file(file_path)
         if local_context is None:
             # file does not exist or is invalid
             return None
@@ -415,89 +415,89 @@ class QMMolecule(object):
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
         self.thermo = thermo
 
-        self.pointGroup = symmetry.pointGroupDictionary[local_context['pointGroup'].pointGroup]  # point to the one in the module level dictionary with the same name
-        self.qmData = local_context['qmData']
+        self.point_group = symmetry.point_group_dictionary[local_context['pointGroup'].point_group]  # point to the one in the module level dictionary with the same name
+        self.qm_data = local_context['qmData']
         return thermo
 
-    def getInChiKeyAug(self):
+    def get_augmented_inchi_key(self):
         """
         Returns the augmented InChI from self.molecule 
         """
         return self.molecule.to_augmented_inchi_key()
 
-    def getMolFilePathForCalculation(self, attempt):
+    def get_mol_file_path_for_calculation(self, attempt):
         """
         Get the path to the MOL file of the geometry to use for calculation `attempt`.
         
-        If attempt <= self.scriptAttempts then we use the refined coordinates,
+        If attempt <= self.script_attempts then we use the refined coordinates,
         then we start to use the crude coordinates.
         """
-        if attempt <= self.scriptAttempts:  # use UFF-refined coordinates
-            return self.geometry.getRefinedMolFilePath()
+        if attempt <= self.script_attempts:  # use UFF-refined coordinates
+            return self.geometry.get_refined_mol_file_path()
         else:
-            return self.geometry.getCrudeMolFilePath()
+            return self.geometry.get_crude_mol_file_path()
 
-    def determinePointGroup(self):
+    def determine_point_group(self):
         """
         Determine point group using the SYMMETRY Program
         
-        Stores the resulting :class:`PointGroup` in self.pointGroup
+        Stores the resulting :class:`PointGroup` in self.point_group
         """
-        assert self.qmData, "Need QM Data first in order to calculate point group."
-        pgc = symmetry.PointGroupCalculator(self.settings, self.uniqueID, self.qmData)
-        self.pointGroup = pgc.calculate()
+        assert self.qm_data, "Need QM Data first in order to calculate point group."
+        pgc = symmetry.PointGroupCalculator(self.settings, self.uniqueID, self.qm_data)
+        self.point_group = pgc.calculate()
 
-    def calculateChiralityCorrection(self):
+    def calculate_chirality_correction(self):
         """
         Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.
         """
-        if self.pointGroup.chiral:
+        if self.point_group.chiral:
             return rmgpy.quantity.constants.R * math.log(2)
         else:
             return 0.
 
-    def calculateThermoData(self):
+    def calculate_thermo_data(self):
         """
         Calculate the thermodynamic properties.
         
         Stores and returns a ThermoData object as self.thermo.
-        self.qmData and self.pointGroup need to be generated before this method is called.
+        self.qm_data and self.point_group need to be generated before this method is called.
         """
-        assert self.qmData, "Need QM Data first in order to calculate thermo."
-        assert self.pointGroup, "Need Point Group first in order to calculate thermo."
+        assert self.qm_data, "Need QM Data first in order to calculate thermo."
+        assert self.point_group, "Need Point Group first in order to calculate thermo."
 
-        trans = rmgpy.statmech.IdealGasTranslation(mass=self.qmData.molecularMass)
-        if self.pointGroup.linear:
+        trans = rmgpy.statmech.IdealGasTranslation(mass=self.qm_data.molecularMass)
+        if self.point_group.linear:
             # there should only be one rotational constant for a linear rotor
-            rotational_constant = rmgpy.quantity.Frequency(max(self.qmData.rotationalConstants.value),
-                                                           self.qmData.rotationalConstants.units)
+            rotational_constant = rmgpy.quantity.Frequency(max(self.qm_data.rotationalConstants.value),
+                                                           self.qm_data.rotationalConstants.units)
             rot = rmgpy.statmech.LinearRotor(
                 rotationalConstant=rotational_constant,
-                symmetry=self.pointGroup.symmetryNumber,
+                symmetry=self.point_group.symmetry_number,
             )
         else:
             rot = rmgpy.statmech.NonlinearRotor(
-                rotationalConstant=self.qmData.rotationalConstants,
-                symmetry=self.pointGroup.symmetryNumber,
+                rotationalConstant=self.qm_data.rotationalConstants,
+                symmetry=self.point_group.symmetry_number,
             )
         # @todo: should we worry about spherical top rotors?
-        vib = rmgpy.statmech.HarmonicOscillator(frequencies=self.qmData.frequencies)
+        vib = rmgpy.statmech.HarmonicOscillator(frequencies=self.qm_data.frequencies)
 
         # @todo: We need to extract or calculate E0 somehow from the qmdata
         E0 = (0, "kJ/mol")
         self.statesmodel = rmgpy.statmech.Conformer(E0=E0,
                                                     modes=[trans, rot, vib],
-                                                    spin_multiplicity=self.qmData.groundStateDegeneracy)
+                                                    spin_multiplicity=self.qm_data.groundStateDegeneracy)
 
         # we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
         # SI units are J/mol, but converted to kJ/mol for generating the thermo.
-        Hf298 = self.qmData.energy.value_si / 1000
+        Hf298 = self.qm_data.energy.value_si / 1000
 
         S298 = self.statesmodel.get_entropy(298.0)
         Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
         Cp = [self.statesmodel.get_heat_capacity(T) for T in Tdata]
-        S298 = S298 + self.calculateChiralityCorrection()
-        comment = self.qmData.source or "QM calculation of some sort."
+        S298 = S298 + self.calculate_chirality_correction()
+        comment = self.qm_data.source or "QM calculation of some sort."
 
         thermo = ThermoData(
             Tdata=(Tdata, "K"),

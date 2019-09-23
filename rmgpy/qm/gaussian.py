@@ -39,7 +39,7 @@ import cclib
 
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.molecule import QMMolecule
-from rmgpy.qm.qmdata import parseCCLibData
+from rmgpy.qm.qmdata import parse_cclib_data
 
 
 class Gaussian:
@@ -87,20 +87,20 @@ class Gaussian:
         'Normal termination of Gaussian'
     ]
 
-    def testReady(self):
+    def test_ready(self):
         if not os.path.exists(self.executablePath):
             raise Exception("Couldn't find Gaussian executable at {0}. "
                             "Try setting your GAUSS_EXEDIR environment variable.".format(self.executablePath))
 
     def run(self):
-        self.testReady()
+        self.test_ready()
         # submits the input file to Gaussian
-        process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
+        process = Popen([self.executablePath, self.input_file_path, self.output_file_path])
         process.communicate()  # necessary to wait for executable termination!
 
-        return self.verifyOutputFile()
+        return self.verify_output_file()
 
-    def verifyOutputFile(self):
+    def verify_output_file(self):
         """
         Check's that an output file exists and was successful.
         
@@ -117,8 +117,8 @@ class Gaussian:
         If any of the above criteria is not matched, False will be returned.
         If all are satisfied, it will return True.
         """
-        if not os.path.exists(self.outputFilePath):
-            logging.info("Output file {0} does not exist.".format(self.outputFilePath))
+        if not os.path.exists(self.output_file_path):
+            logging.info("Output file {0} does not exist.".format(self.output_file_path))
             return False
 
         inchi_match = False  # flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if inchi_found is also 1
@@ -127,7 +127,7 @@ class Gaussian:
         # Initialize dictionary with "False"s 
         success_keys_found = dict([(key, False) for key in self.successKeys])
 
-        with open(self.outputFilePath) as outputFile:
+        with open(self.output_file_path) as outputFile:
             for line in outputFile:
                 line = line.strip()
 
@@ -160,7 +160,7 @@ class Gaussian:
             return False
 
         if not inchi_found:
-            logging.error("No InChI was found in the Gaussian output file {0}".format(self.outputFilePath))
+            logging.error("No InChI was found in the Gaussian output file {0}".format(self.output_file_path))
             return False
 
         if not inchi_match:
@@ -173,21 +173,21 @@ class Gaussian:
         cclib_mol.from_xyz(qm_data.atomicNumbers, qm_data.atomCoords.value)
         test_mol = self.molecule.to_single_bonds()
         if not cclib_mol.is_isomorphic(test_mol):
-            logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+            logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.output_file_path))
             return False
 
-        logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
+        logging.info("Successful {1} quantum result in {0}".format(self.output_file_path, self.__class__.__name__))
         return True
 
     def parse(self):
         """
         Parses the results of the Gaussian calculation, and returns a QMData object.
         """
-        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser = cclib.parser.Gaussian(self.output_file_path)
         parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclib_data = parser.parse()
         radical_number = sum([i.radical_electrons for i in self.molecule.atoms])
-        qm_data = parseCCLibData(cclib_data, radical_number + 1)
+        qm_data = parse_cclib_data(cclib_data, radical_number + 1)
         return qm_data
 
 
@@ -198,23 +198,23 @@ class GaussianMol(QMMolecule, Gaussian):
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
 
-    def inputFileKeywords(self, attempt):
+    def input_file_keywords(self, attempt):
         """
         Return the top keywords for attempt number `attempt`.
     
         NB. `attempt` begins at 1, not 0.
         """
-        assert attempt <= self.maxAttempts
-        if attempt > self.scriptAttempts:
-            attempt -= self.scriptAttempts
+        assert attempt <= self.max_attempts
+        if attempt > self.script_attempts:
+            attempt -= self.script_attempts
         return self.keywords[attempt - 1]
 
-    def writeInputFile(self, attempt):
+    def write_input_file(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attempt`.
         """
-        molfile = self.getMolFilePathForCalculation(attempt)
+        molfile = self.get_mol_file_path_for_calculation(attempt)
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
 
         output = ['', self.geometry.uniqueIDlong, '']
@@ -232,8 +232,8 @@ class GaussianMol(QMMolecule, Gaussian):
         output.append('')
         input_string = '\n'.join(output)
 
-        top_keys = self.inputFileKeywords(attempt)
-        with open(self.inputFilePath, 'w') as gaussian_file:
+        top_keys = self.input_file_keywords(attempt)
+        with open(self.input_file_path, 'w') as gaussian_file:
             gaussian_file.write(top_keys)
             gaussian_file.write('\n')
             gaussian_file.write(input_string)
@@ -243,7 +243,7 @@ class GaussianMol(QMMolecule, Gaussian):
                 raise NotImplementedError("Not sure what should be here, if anything.")
                 # gaussian_file.write(polar_keys)
 
-    def generateQMData(self):
+    def generate_qm_data(self):
         """
         Calculate the QM data and return a QMData object.
         """
@@ -252,20 +252,20 @@ class GaussianMol(QMMolecule, Gaussian):
             if atom.charge != 0:
                 return None
 
-        if self.verifyOutputFile():
+        if self.verify_output_file():
             logging.info("Found a successful output file already; using that.")
             source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
-            self.createGeometry()
+            self.create_geometry()
             success = False
-            for attempt in range(1, self.maxAttempts + 1):
-                self.writeInputFile(attempt)
-                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts,
+            for attempt in range(1, self.max_attempts + 1):
+                self.write_input_file(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.max_attempts,
                                                                                      self.molecule.to_smiles(),
                                                                                      self.__class__.__name__))
                 success = self.run()
                 if success:
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts,
+                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.max_attempts,
                                                                                        self.molecule.to_augmented_inchi()))
                     source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt)
                     break
@@ -276,11 +276,11 @@ class GaussianMol(QMMolecule, Gaussian):
         result.source = source
         return result  # a CCLibData object
 
-    def getParser(self, outputFile):
+    def get_parser(self, output_file):
         """
         Returns the appropriate cclib parser.
         """
-        return cclib.parser.Gaussian(outputFile)
+        return cclib.parser.Gaussian(output_file)
 
 
 class GaussianMolPM3(GaussianMol):

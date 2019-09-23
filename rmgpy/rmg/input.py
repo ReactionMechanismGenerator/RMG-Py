@@ -936,7 +936,7 @@ def readInputFile(path, rmg0):
         reactionSystem.convertInitialKeysToSpeciesObjects(speciesDict)
 
     if rmg.quantumMechanics:
-        rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
+        rmg.quantumMechanics.set_default_output_directory(rmg.outputDirectory)
         rmg.quantumMechanics.initialize()
 
     logging.info('')
@@ -995,7 +995,7 @@ def readThermoInputFile(path, rmg0):
         f.close()
 
     if rmg.quantumMechanics:
-        rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
+        rmg.quantumMechanics.set_default_output_directory(rmg.outputDirectory)
         rmg.quantumMechanics.initialize()
 
     logging.info('')

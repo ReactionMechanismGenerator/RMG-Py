@@ -63,9 +63,9 @@ class QMData(object):
         self.frequencies = Frequency(frequencies)
         self.source = source
 
-        self.testValid()
+        self.test_valid()
 
-    def testValid(self):
+    def test_valid(self):
         assert self.groundStateDegeneracy > 0
 
     def __repr__(self):
@@ -87,36 +87,36 @@ class QMData(object):
         return 'QMData({0!s})'.format(string)
 
 
-def parseCCLibData(cclibData, groundStateDegeneracy):
+def parse_cclib_data(cclib_data, ground_state_degeneracy):
     """
     Parses a CCLib data object and returns QMData object.
     """
     try:
-        numberOfAtoms = cclibData.natom
-        molecularMass = (cclibData.molmass, 'amu')
-        energy = (cclibData.scfenergies[-1], 'eV/molecule')
-        atomicNumbers = cclibData.atomnos
-        rotationalConstants = ([i * 1e9 for i in cclibData.rotcons[-1]], 'hertz')
-        atomCoords = (cclibData.atomcoords[-1], 'angstrom')
-        frequencies = (cclibData.vibfreqs, 'cm^-1')
+        number_of_atoms = cclib_data.natom
+        molecular_mass = (cclib_data.molmass, 'amu')
+        energy = (cclib_data.scfenergies[-1], 'eV/molecule')
+        atomic_numbers = cclib_data.atomnos
+        rotational_constants = ([i * 1e9 for i in cclib_data.rotcons[-1]], 'hertz')
+        atom_coords = (cclib_data.atomcoords[-1], 'angstrom')
+        frequencies = (cclib_data.vibfreqs, 'cm^-1')
 
     except AttributeError:
-        logging.error("The passed in cclibData has these attributes: {0!r}".format(cclibData._attrlist))
+        logging.error("The passed in cclibData has these attributes: {0!r}".format(cclib_data._attrlist))
         raise
 
-    if hasattr(cclibData, 'stericenergy'):
-        stericEnergy = (cclibData.stericenergy, 'eV/molecule')
+    if hasattr(cclib_data, 'stericenergy'):
+        stericEnergy = (cclib_data.stericenergy, 'eV/molecule')
     else:
         stericEnergy = None
 
     return QMData(
-        groundStateDegeneracy=groundStateDegeneracy,
-        numberOfAtoms=numberOfAtoms,
+        groundStateDegeneracy=ground_state_degeneracy,
+        numberOfAtoms=number_of_atoms,
         stericEnergy=stericEnergy,
-        molecularMass=molecularMass,
+        molecularMass=molecular_mass,
         energy=energy,
-        atomicNumbers=atomicNumbers,
-        rotationalConstants=rotationalConstants,
-        atomCoords=atomCoords,
+        atomicNumbers=atomic_numbers,
+        rotationalConstants=rotational_constants,
+        atomCoords=atom_coords,
         frequencies=frequencies
     )

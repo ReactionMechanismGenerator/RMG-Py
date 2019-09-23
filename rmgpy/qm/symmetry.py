@@ -49,24 +49,24 @@ class PointGroup(object):
      * linear 
     """
 
-    def __init__(self, pointGroup, symmetryNumber, chiral):
+    def __init__(self, point_group, symmetry_number, chiral):
 
-        self.pointGroup = pointGroup
-        self.symmetryNumber = symmetryNumber
+        self.point_group = point_group
+        self.symmetry_number = symmetry_number
         self.chiral = chiral
 
         # determine linearity from 3D-geometry; changed to correctly consider linear ketene radical case
-        if self.pointGroup in ["Cinfv", "Dinfh"]:
+        if self.point_group in ["Cinfv", "Dinfh"]:
             self.linear = True
         else:
             self.linear = False
 
     def __repr__(self):
-        return 'PointGroup("{0}", symmetryNumber={1}, chiral={2})'.format(self.pointGroup, self.symmetryNumber,
-                                                                          self.chiral)
+        return 'PointGroup("{0}", symmetry_number={1}, chiral={2})'.format(self.point_group, self.symmetry_number,
+                                                                           self.chiral)
 
 
-def makePointGroupDictionary():
+def make_point_group_dictionary():
     """
     A function to make and fill the point group dictionary.
     
@@ -146,7 +146,7 @@ def makePointGroupDictionary():
 
 
 #: A dictionary of PointGroup objects, stored as a module level variable.
-pointGroupDictionary = makePointGroupDictionary()
+point_group_dictionary = make_point_group_dictionary()
 
 
 class PointGroupCalculator(object):
@@ -201,8 +201,8 @@ class SymmetryJob(object):
         self.pointGroupFound = False
 
     @property
-    def inputFilePath(self):
-        "The input file's path"
+    def input_file_path(self):
+        """The input file's path"""
         return os.path.join(self.settings.scratchDirectory, self.uniqueID + self.inputFileExtension)
 
     def parse(self, output):
@@ -236,7 +236,7 @@ class SymmetryJob(object):
             logging.error(stderr)
         return stdout.decode('utf-8')
 
-    def writeInputFile(self):
+    def write_input_file(self):
         """
         Write the input file for the SYMMETRY program.
         """
@@ -248,10 +248,10 @@ class SymmetryJob(object):
                                     str(coords_in_angstrom[i][1]),
                                     str(coords_in_angstrom[i][2])
                                     )) + "\n"
-        with open(self.inputFilePath, 'w') as input_file:
+        with open(self.input_file_path, 'w') as input_file:
             input_file.write(geom)
         input_file.close()
-        logging.info("Symmetry input file written to {0}".format(self.inputFilePath))
+        logging.info("Symmetry input file written to {0}".format(self.input_file_path))
         return input_file
 
     def calculate(self):
@@ -261,7 +261,7 @@ class SymmetryJob(object):
         This writes the input file, then tries several times to run 'symmetry'
         with different parameters, until a point group is found and returned.
         """
-        self.writeInputFile()
+        self.write_input_file()
 
         # continue trying to generate symmetry group until too many no. of attempts or until a point group is found:
         for attempt, arguments in enumerate(self.argumentsList):
@@ -270,16 +270,16 @@ class SymmetryJob(object):
             """
             command = [self.settings.symmetryPath]
             command.extend(arguments)
-            command.append(self.inputFilePath)
+            command.append(self.input_file_path)
 
             # call the program and read the result
             output = self.run(command)
             # parse the output to get a point group name
             point_group_name = self.parse(output)
 
-            if point_group_name in pointGroupDictionary:
+            if point_group_name in point_group_dictionary:
                 self.pointGroupFound = True
-                return pointGroupDictionary[point_group_name]
+                return point_group_dictionary[point_group_name]
             else:
                 logging.info("Attempt number {0} did not identify a recognized "
                              "point group ({1}).".format(attempt, point_group_name))

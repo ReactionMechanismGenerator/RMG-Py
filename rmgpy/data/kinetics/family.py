@@ -1217,7 +1217,7 @@ class KineticsFamily(Database):
                 from rmgpy.rmg.input import getInput
                 quantum_mechanics = getInput('quantumMechanics')
                 if quantum_mechanics:
-                    quantum_mechanics.runJobs(item.reactants + item.products, procnum=procnum)
+                    quantum_mechanics.run_jobs(item.reactants + item.products, procnum=procnum)
 
             for reactant in item.reactants:
                 # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
