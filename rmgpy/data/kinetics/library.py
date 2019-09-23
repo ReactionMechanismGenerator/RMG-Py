@@ -626,9 +626,9 @@ class KineticsLibrary(Database):
         """
         from rmgpy.chemkin import read_reactions_block
         f = open(path, 'r')
-        reactionList = read_reactions_block(f, species_dict=species)
+        reaction_list = read_reactions_block(f, species_dict=species)
         f.close()
-        return reactionList
+        return reaction_list
 
     def save_old(self, path):
         """

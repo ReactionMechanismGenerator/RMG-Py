@@ -783,7 +783,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             # ignore LogicOr groups
             if isinstance(entry.item, Group):
                 for index, atom in enumerate(entry.item.atoms):
-                    for atomtype1 in atom.atomType:
+                    for atomtype1 in atom.atomtype:
                         if atomtype1 in target_atom_types:
                             break
                     # If Cd not found in atomTypes, go to next atom
@@ -799,16 +799,16 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                         for ligand, bond in atom.bonds.items():
                             # Ignore ligands that are not double bonded
                             if any([abs(2 - order) < 1e-7 for order in bond.order]):
-                                for ligAtomType in ligand.atomType:
-                                    if ligand.atomType[0].is_specific_case_of(ATOMTYPES['O']):
+                                for ligAtomType in ligand.atomtype:
+                                    if ligand.atomtype[0].is_specific_case_of(ATOMTYPES['O']):
                                         correct_atom_list.append('CO')
-                                    elif ligand.atomType[0].is_specific_case_of(ATOMTYPES['S']):
+                                    elif ligand.atomtype[0].is_specific_case_of(ATOMTYPES['S']):
                                         correct_atom_list.append('CS')
 
                     # remove duplicates from correctAtom:
                     correct_atom_list = list(set(correct_atom_list))
                     for correctAtom in correct_atom_list:
-                        tst.append((ATOMTYPES[correctAtom] in atom.atomType, """
+                        tst.append((ATOMTYPES[correctAtom] in atom.atomtype, """
 In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
 {4}""".format(family_name, entry, correctAtom, index + 1, entry.item.to_adjacency_list())))
@@ -1260,7 +1260,7 @@ Origin Group AdjList:
         for entry_name, entry in group.entries.items():
             if isinstance(entry.item, Group):
                 for index, atom in enumerate(entry.item.atoms):
-                    for atomtype1 in atom.atomType:
+                    for atomtype1 in atom.atomtype:
                         if atomtype1 in target_atom_types:
                             break
                     else:
@@ -1276,16 +1276,16 @@ Origin Group AdjList:
                         for ligand, bond in atom.bonds.items():
                             # Ignore ligands that are not double bonded
                             if any([abs(2 - order) < 1e-7 for order in bond.order]):
-                                for lig_atom_type in ligand.atomType:
-                                    if ligand.atomType[0].is_specific_case_of(ATOMTYPES['O']):
+                                for lig_atom_type in ligand.atomtype:
+                                    if ligand.atomtype[0].is_specific_case_of(ATOMTYPES['O']):
                                         correct_atom_list.append('CO')
-                                    elif ligand.atomType[0].is_specific_case_of(ATOMTYPES['S']):
+                                    elif ligand.atomtype[0].is_specific_case_of(ATOMTYPES['S']):
                                         correct_atom_list.append('CS')
 
                     # remove duplicates from correctAtom:
                     correct_atom_list = list(set(correct_atom_list))
                     for correctAtom in correct_atom_list:
-                        tst.append((ATOMTYPES[correctAtom] in atom.atomType, """
+                        tst.append((ATOMTYPES[correctAtom] in atom.atomtype, """
 In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
 {4}""".format(group_name, entry, correctAtom, index + 1, entry.item.to_adjacency_list())))

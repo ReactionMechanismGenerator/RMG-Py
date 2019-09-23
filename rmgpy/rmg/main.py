@@ -247,7 +247,7 @@ class RMG(util.Subject):
         if not self.output_directory:
             self.output_directory = os.path.dirname(path)
         if self.pressure_dependence:
-            self.pressure_dependence.outputFile = self.output_directory
+            self.pressure_dependence.output_file = self.output_directory
             self.reaction_model.pressure_dependence = self.pressure_dependence
         if self.solvent:
             self.reaction_model.solvent_name = self.solvent
@@ -287,14 +287,14 @@ class RMG(util.Subject):
                     assert (reaction_system.T.value_si < self.pressure_dependence.Tmax.value_si), "Reaction system T is above pressure_dependence range."
                     assert (reaction_system.T.value_si > self.pressure_dependence.Tmin.value_si), "Reaction system T is below pressure_dependence range."
                 else:
-                    assert (reaction_system.T_range[1].value_si < self.pressure_dependence.Tmax.value_si), "Reaction system T is above pressure_dependence range."
-                    assert (reaction_system.T_range[0].value_si > self.pressure_dependence.Tmin.value_si), "Reaction system T is below pressure_dependence range."
+                    assert (reaction_system.Trange[1].value_si < self.pressure_dependence.Tmax.value_si), "Reaction system T is above pressure_dependence range."
+                    assert (reaction_system.Trange[0].value_si > self.pressure_dependence.Tmin.value_si), "Reaction system T is below pressure_dependence range."
                 if reaction_system.P:
                     assert (reaction_system.P.value_si < self.pressure_dependence.Pmax.value_si), "Reaction system P is above pressure_dependence range."
                     assert (reaction_system.P.value_si > self.pressure_dependence.Pmin.value_si), "Reaction system P is below pressure_dependence range."
                 else:
-                    assert (reaction_system.P_range[1].value_si < self.pressure_dependence.Pmax.value_si), "Reaction system P is above pressure_dependence range."
-                    assert (reaction_system.P_range[0].value_si > self.pressure_dependence.Pmin.value_si), "Reaction system P is below pressure_dependence range."
+                    assert (reaction_system.Prange[1].value_si < self.pressure_dependence.Pmax.value_si), "Reaction system P is above pressure_dependence range."
+                    assert (reaction_system.Prange[0].value_si > self.pressure_dependence.Pmin.value_si), "Reaction system P is below pressure_dependence range."
 
             assert any([not s.reactive for s in reaction_system.initial_mole_fractions.keys()]), \
                 "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
@@ -345,12 +345,9 @@ class RMG(util.Subject):
 
     def save_input(self, path=None):
         """
-        Save an RMG job to the input file located at `path`, or
-        from the `outputFile` attribute if not given as a parameter.
+        Save an RMG job to the input file located at `path`.
         """
         from rmgpy.rmg.input import save_input_file
-        if path is None:
-            path = self.outputFile
         save_input_file(path, self)
 
     def load_database(self):
@@ -659,11 +656,11 @@ class RMG(util.Subject):
         self.done = False
 
         # determine min and max values for T and P (don't determine P values for liquid reactors)
-        self.Tmin = min([x.T_range[0].value_si if x.T_range else x.T.value_si for x in self.reaction_systems])
-        self.Tmax = max([x.T_range[1].value_si if x.T_range else x.T.value_si for x in self.reaction_systems])
+        self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
+        self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
         try:
-            self.Pmin = min([x.P_range[0].value_si if x.P_range else x.P.value_si for x in self.reaction_systems])
-            self.Pmax = max([x.P_range[1].value_si if x.P_range else x.P.value_si for x in self.reaction_systems])
+            self.Pmin = min([x.Prange[0].value_si if x.Prange else x.P.value_si for x in self.reaction_systems])
+            self.Pmax = max([x.Prange[1].value_si if x.Prange else x.P.value_si for x in self.reaction_systems])
         except AttributeError:
             # For LiquidReactor, Pmin and Pmax remain with the default value of `None`
             pass
@@ -1050,10 +1047,10 @@ class RMG(util.Subject):
             if self.uncertainty['correlated']: correlation.append(True)
 
             # Set up Uncertainty object
-            uncertainty = Uncertainty(outputDirectory=self.output_directory)
+            uncertainty = Uncertainty(output_directory=self.output_directory)
             uncertainty.database = self.database
             uncertainty.species_list, uncertainty.reaction_list = self.reaction_model.core.species, self.reaction_model.core.reactions
-            uncertainty.extractSourcesFromModel()
+            uncertainty.extract_sources_from_model()
 
             # Reload reaction families with verbose comments if necessary
             if not self.verbose_comments:
@@ -1068,14 +1065,14 @@ class RMG(util.Subject):
                 self.species_constraints = speciesConstraintsCopy
 
             for correlated in correlation:
-                uncertainty.assignParameterUncertainties(correlated=correlated)
+                uncertainty.assign_parameter_uncertainties(correlated=correlated)
 
                 for index, reaction_system in enumerate(self.reaction_systems):
                     if reaction_system.sensitive_species and reaction_system.sens_conditions:
                         logging.info('Conducting {0}correlated local uncertainty analysis for '
                                      'reaction system {1}...\n'.format('un' if not correlated else '', index + 1))
-                        results = uncertainty.localAnalysis(reaction_system.sensitive_species,
-                                                            reactionSystemIndex=index,
+                        results = uncertainty.local_analysis(reaction_system.sensitive_species,
+                                                            reaction_system_index=index,
                                                             correlated=correlated,
                                                             number=self.uncertainty['localnum'])
                         logging.info('Local uncertainty analysis results for reaction system {0}:\n'.format(index + 1))
@@ -1095,18 +1092,18 @@ class RMG(util.Subject):
                                 time_criteria = self.uncertainty['time']
                             Tlist = ([reaction_system.sens_conditions['T']], 'K')
                             Plist = ([reaction_system.sens_conditions['P']], 'Pa')
-                            molFracList = [reaction_system.sens_conditions.copy()]
-                            del molFracList[0]['T']
-                            del molFracList[0]['P']
+                            mol_frac_list = [reaction_system.sens_conditions.copy()]
+                            del mol_frac_list[0]['T']
+                            del mol_frac_list[0]['P']
 
                             # Set up Cantera reactor
-                            job = Cantera(speciesList=uncertainty.species_list, reactionList=uncertainty.reaction_list,
-                                          outputDirectory=os.path.join(self.output_directory, 'global_uncertainty'))
+                            job = Cantera(species_list=uncertainty.species_list, reaction_list=uncertainty.reaction_list,
+                                          output_directory=os.path.join(self.output_directory, 'global_uncertainty'))
                             job.load_model()
                             job.generate_conditions(
-                                reactorTypeList=['IdealGasConstPressureTemperatureReactor'],
-                                reactionTimeList=time_criteria,
-                                molFracList=molFracList,
+                                reactor_type_list=['IdealGasConstPressureTemperatureReactor'],
+                                reaction_time_list=time_criteria,
+                                mol_frac_list=mol_frac_list,
                                 Tlist=Tlist,
                                 Plist=Plist,
                             )
@@ -1139,9 +1136,9 @@ class RMG(util.Subject):
                                 cantera=job,
                                 outputSpeciesList=reaction_system.sensitive_species,
                                 kParams=k_params,
-                                kUncertainty=uncertainty.kineticInputUncertainties,
+                                kUncertainty=uncertainty.kinetic_input_uncertainties,
                                 gParams=g_params,
-                                gUncertainty=uncertainty.thermoInputUncertainties,
+                                gUncertainty=uncertainty.thermo_input_uncertainties,
                                 correlated=correlated,
                                 logx=self.uncertainty['logx'],
                             )
@@ -1483,13 +1480,13 @@ class RMG(util.Subject):
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
 
-    def generate_cantera_files(self, chemkinFile, **kwargs):
+    def generate_cantera_files(self, chemkin_file, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
         and save it in the cantera directory
         """
-        transport_file = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
-        file_name = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
+        transport_file = os.path.join(os.path.dirname(chemkin_file), 'tran.dat')
+        file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + '.cti'
         out_name = os.path.join(self.output_directory, 'cantera', file_name)
         if 'surfaceFile' in kwargs:
             out_name = out_name.replace('-gas.', '.')
@@ -1503,12 +1500,12 @@ class RMG(util.Subject):
             os.remove(out_name)
         parser = ck2cti.Parser()
         try:
-            parser.convertMech(chemkinFile, transportFile=transport_file, outName=out_name, quiet=True, permissive=True,
+            parser.convertMech(chemkin_file, transportFile=transport_file, outName=out_name, quiet=True, permissive=True,
                                **kwargs)
         except ck2cti.InputParseError:
             logging.exception("Error converting to Cantera format.")
             logging.info("Trying again without transport data file.")
-            parser.convertMech(chemkinFile, outName=out_name, quiet=True, permissive=True, **kwargs)
+            parser.convertMech(chemkin_file, outName=out_name, quiet=True, permissive=True, **kwargs)
 
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
@@ -2081,12 +2078,12 @@ class RMG_Memory(object):
     def __init__(self, reaction_system, bspc):
         self.Ranges = dict()
 
-        if hasattr(reaction_system, 'T_range') and isinstance(reaction_system.T_range, list):
-            T_range = reaction_system.T_range
-            self.Ranges['T'] = [T.value_si for T in T_range]
-        if hasattr(reaction_system, 'P_range') and isinstance(reaction_system.P_range, list):
-            P_range = reaction_system.P_range
-            self.Ranges['P'] = [np.log(P.value_si) for P in P_range]
+        if hasattr(reaction_system, 'Trange') and isinstance(reaction_system.Trange, list):
+            Trange = reaction_system.Trange
+            self.Ranges['T'] = [T.value_si for T in Trange]
+        if hasattr(reaction_system, 'Prange') and isinstance(reaction_system.Prange, list):
+            Prange = reaction_system.Prange
+            self.Ranges['P'] = [np.log(P.value_si) for P in Prange]
         if hasattr(reaction_system, 'initial_mole_fractions'):
             if bspc:
                 self.initial_mole_fractions = deepcopy(reaction_system.initial_mole_fractions)

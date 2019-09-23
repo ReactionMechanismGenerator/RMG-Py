@@ -143,15 +143,15 @@ class Gaussian:
                 if line.startswith("InChI="):
                     log_file_inchi = line  # output files should take up to 240 characters of the name in the input file
                     inchi_found = True
-                    if self.uniqueIDlong in log_file_inchi:
+                    if self.unique_id_long in log_file_inchi:
                         inchi_match = True
-                    elif self.uniqueIDlong.startswith(log_file_inchi):
+                    elif self.unique_id_long.startswith(log_file_inchi):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
                         inchi_match = True
                     else:
                         logging.warning("InChI in log file ({0}) didn't match that in geometry "
-                                        "({1}).".format(log_file_inchi, self.geometry.uniqueIDlong))
-                        if self.geometry.uniqueIDlong.startswith(log_file_inchi):
+                                        "({1}).".format(log_file_inchi, self.geometry.unique_id_long))
+                        if self.geometry.unique_id_long.startswith(log_file_inchi):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
                             inchi_match = True
         # Check that ALL 'success' keywords were found in the file.
@@ -217,7 +217,7 @@ class GaussianMol(QMMolecule, Gaussian):
         molfile = self.get_mol_file_path_for_calculation(attempt)
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
 
-        output = ['', self.geometry.uniqueIDlong, '']
+        output = ['', self.geometry.unique_id_long, '']
         output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.get_radical_count() + 1)))
 
         atom_count = 0

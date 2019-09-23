@@ -64,23 +64,23 @@ class Geometry(object):
     Attribute           Type                    Description
     =================== ======================= ====================================
     `settings`          :class:`QMSettings`     Settings for QM calculations
-    `uniqueID`          ``str``                 A short ID such as an augmented InChI Key
+    `unique_id`          ``str``                 A short ID such as an augmented InChI Key
     `molecule`          :class:`Molecule`       RMG Molecule object
-    `uniqueIDlong`      ``str``                 A long, truly unique ID such as an augmented InChI
+    `unique_id_long`      ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
     
     """
 
-    def __init__(self, settings, uniqueID, molecule, uniqueIDlong=None):
+    def __init__(self, settings, unique_id, molecule, unique_id_long=None):
         self.settings = settings
         #: A short unique ID such as an augmented InChI Key.
-        self.uniqueID = uniqueID
+        self.unique_id = unique_id
         self.molecule = molecule
-        if uniqueIDlong is None:
-            self.uniqueIDlong = uniqueID
+        if unique_id_long is None:
+            self.unique_id_long = unique_id
         else:
             #: Long, truly unique, ID, such as the augmented InChI.
-            self.uniqueIDlong = uniqueIDlong
+            self.unique_id_long = unique_id_long
 
         # ToDo: why do we copy self.settings.fileStore into self.fileStore ?
         # (and same for .scratchDirectory)
@@ -109,7 +109,7 @@ class Geometry(object):
         """
         return os.path.join(
             self.settings.scratchDirectory if scratch else self.settings.fileStore,
-            self.uniqueID + extension
+            self.unique_id + extension
         )
 
     def get_crude_mol_file_path(self):
@@ -194,7 +194,7 @@ def load_thermo_data_file(file_path):
     if not os.path.exists(file_path):
         return None
     try:
-        with open(file_path) as resultFile:
+        with open(file_path) as result_file:
             logging.info('Reading existing thermo file {0}'.format(file_path))
             global_context = {'__builtins__': None}
             local_context = {
@@ -207,7 +207,7 @@ def load_thermo_data_file(file_path):
                 'array': np.array,
                 'int32': np.int32,
             }
-            exec(resultFile.read(), global_context, local_context)
+            exec(result_file.read(), global_context, local_context)
     except IOError:
         logging.info("Couldn't read thermo file {0}".format(file_path))
         return None
@@ -245,8 +245,8 @@ class QMMolecule(object):
     =================== ======================= ====================================
     `molecule`          :class:`Molecule`       RMG Molecule object
     `settings`          :class:`QMSettings`     Settings for QM calculations
-    `uniqueID`          ``str``                 A short ID such as an augmented InChI Key
-    `uniqueIDlong`      ``str``                 A long, truly unique ID such as an augmented InChI
+    `unique_id`         ``str``                 A short ID such as an augmented InChI Key
+    `unique_id_long`    ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
     
     """
@@ -255,8 +255,8 @@ class QMMolecule(object):
         self.molecule = molecule
         self.settings = settings
 
-        self.uniqueID = self.molecule.to_augmented_inchi_key()
-        self.uniqueIDlong = self.molecule.to_augmented_inchi()
+        self.unique_id = self.molecule.to_augmented_inchi_key()
+        self.unique_id_long = self.molecule.to_augmented_inchi()
 
     def get_file_path(self, extension, scratch=True):
         """
@@ -269,7 +269,7 @@ class QMMolecule(object):
         # ToDo: this is duplicated in Geometry class. Should be refactored.
         return os.path.join(
             self.settings.scratchDirectory if scratch else self.settings.fileStore,
-            self.uniqueID + extension
+            self.unique_id + extension
         )
 
     @property
@@ -324,7 +324,7 @@ class QMMolecule(object):
         """
         Creates self.geometry with RDKit geometries
         """
-        self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
+        self.geometry = Geometry(self.settings, self.unique_id, self.molecule, unique_id_long=self.unique_id_long)
         self.geometry.generate_rdkit_geometries()
         return self.geometry
 
@@ -386,12 +386,12 @@ class QMMolecule(object):
         self.thermo.H298.units = 'kcal/mol'
         self.thermo.S298.units = 'cal/mol/K'
         self.thermo.Cpdata.units = 'cal/mol/K'
-        with open(self.get_thermo_file_path(), 'w') as resultFile:
-            resultFile.write('InChI = "{0!s}"\n'.format(self.uniqueIDlong))
-            resultFile.write("thermoData = {0!r}\n".format(self.thermo))
-            resultFile.write("pointGroup = {0!r}\n".format(self.point_group))
-            resultFile.write("qmData = {0!r}\n".format(self.qm_data))
-            resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.to_adjacency_list(remove_h=False)))
+        with open(self.get_thermo_file_path(), 'w') as result_file:
+            result_file.write('InChI = "{0!s}"\n'.format(self.unique_id_long))
+            result_file.write("thermoData = {0!r}\n".format(self.thermo))
+            result_file.write("pointGroup = {0!r}\n".format(self.point_group))
+            result_file.write("qmData = {0!r}\n".format(self.qm_data))
+            result_file.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.to_adjacency_list(remove_h=False)))
 
     def load_thermo_data(self):
         """
@@ -402,14 +402,14 @@ class QMMolecule(object):
         if local_context is None:
             # file does not exist or is invalid
             return None
-        if local_context['InChI'] != self.uniqueIDlong:
+        if local_context['InChI'] != self.unique_id_long:
             logging.error('The InChI in the thermo file {0} did not match the '
-                          'current molecule {1}'.format(file_path, self.uniqueIDlong))
+                          'current molecule {1}'.format(file_path, self.unique_id_long))
             return None
         loaded_molecule = rmgpy.molecule.Molecule().from_adjacency_list(local_context['adjacencyList'])
         if not loaded_molecule.is_isomorphic(self.molecule):
             logging.error('The adjacencyList in thermo file {0} did not match the '
-                          'current molecule {1}'.format(file_path, self.uniqueIDlong))
+                          'current molecule {1}'.format(file_path, self.unique_id_long))
             return None
         thermo = local_context['thermoData']
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
@@ -444,7 +444,7 @@ class QMMolecule(object):
         Stores the resulting :class:`PointGroup` in self.point_group
         """
         assert self.qm_data, "Need QM Data first in order to calculate point group."
-        pgc = symmetry.PointGroupCalculator(self.settings, self.uniqueID, self.qm_data)
+        pgc = symmetry.PointGroupCalculator(self.settings, self.unique_id, self.qm_data)
         self.point_group = pgc.calculate()
 
     def calculate_chirality_correction(self):

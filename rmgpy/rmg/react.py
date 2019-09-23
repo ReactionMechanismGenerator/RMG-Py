@@ -97,7 +97,7 @@ def react_species(species_tuple, only_families=None):
     return reactions
 
 
-def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None, procnum=1):
+def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecular_react, trimolecular_react=None, procnum=1):
     """
     Reacts the core species list via uni-, bi-, and trimolecular reactions.
 
@@ -106,10 +106,10 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
 
     Args:
         core_spc_list (list): list of all core species
-        numOldCoreSpecies (int): current number of core species in the model
-        unimolecularReact (np.ndarray): reaction filter flags indicating which species to react unimolecularly
-        bimolecularReact (np.ndarray): reaction filter flags indicating which species to react bimolecularly
-        trimolecularReact (np.ndarray, optional): reaction filter flags indicating which species to react trimolecularly
+        num_old_core_species (int): current number of core species in the model
+        unimolecular_react (np.ndarray): reaction filter flags indicating which species to react unimolecularly
+        bimolecular_react (np.ndarray): reaction filter flags indicating which species to react bimolecularly
+        trimolecular_react (np.ndarray, optional): reaction filter flags indicating which species to react trimolecularly
         procnum (int, optional): number of processors used for reaction generation
 
     Returns:
@@ -118,22 +118,22 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
     """
     # Select reactive species that can undergo unimolecular reactions:
     spc_tuples = [(core_spc_list[i],)
-                  for i in range(numOldCoreSpecies) if (unimolecularReact[i] and core_spc_list[i].reactive)]
+                  for i in range(num_old_core_species) if (unimolecular_react[i] and core_spc_list[i].reactive)]
 
-    for i in range(numOldCoreSpecies):
-        for j in range(i, numOldCoreSpecies):
+    for i in range(num_old_core_species):
+        for j in range(i, num_old_core_species):
             # Find reactions involving the species that are bimolecular.
             # This includes a species reacting with itself (if its own concentration is high enough).
-            if bimolecularReact[i, j]:
+            if bimolecular_react[i, j]:
                 if core_spc_list[i].reactive and core_spc_list[j].reactive:
                     spc_tuples.append((core_spc_list[i], core_spc_list[j]))
 
-    if trimolecularReact is not None:
-        for i in range(numOldCoreSpecies):
-            for j in range(i, numOldCoreSpecies):
-                for k in range(j, numOldCoreSpecies):
+    if trimolecular_react is not None:
+        for i in range(num_old_core_species):
+            for j in range(i, num_old_core_species):
+                for k in range(j, num_old_core_species):
                     # Find reactions involving the species that are trimolecular.
-                    if trimolecularReact[i, j, k]:
+                    if trimolecular_react[i, j, k]:
                         if core_spc_list[i].reactive and core_spc_list[j].reactive and core_spc_list[k].reactive:
                             spc_tuples.append((core_spc_list[i], core_spc_list[j], core_spc_list[k]))
 

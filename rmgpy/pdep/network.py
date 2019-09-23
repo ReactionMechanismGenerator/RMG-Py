@@ -79,7 +79,7 @@ class Network(object):
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
     ----------------------- ----------------------------------------------------
     `eqRatios`              An array containing concentration of each isomer and reactant channel present at equilibrium
-    `collFreq`              An array of the frequency of collision between
+    `coll_freq`              An array of the frequency of collision between
     `Mcoll`                 Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer
     `dens_states`           3D np array of stable configurations, number of grains, and number of J
     ======================= ====================================================
@@ -861,7 +861,7 @@ class Network(object):
             m_coll[i, :, :, :, :] = coll_freq[i] * isomer.generate_collision_matrix(self.T, self.dens_states[i, :, :],
                                                                                     self.e_list, self.j_list)
 
-        self.collFreq = coll_freq
+        self.coll_freq = coll_freq
         self.Mcoll = m_coll
 
         return m_coll

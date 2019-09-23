@@ -391,7 +391,7 @@ class Species(object):
         import cantera as ct
 
         # Determine the number of each type of element in the molecule
-        element_dict = {}  # elementCounts = [0,0,0,0]
+        element_dict = {}  # element_counts = [0,0,0,0]
         for atom in self.molecule[0].atoms:
             # The atom itself
             symbol = atom.element.symbol

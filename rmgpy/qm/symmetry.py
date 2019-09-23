@@ -43,8 +43,8 @@ class PointGroup(object):
     
     Attributes are:
     
-     * pointGroup
-     * symmetryNumber
+     * point_group
+     * symmetry_number
      * chiral
      * linear 
     """
@@ -73,7 +73,7 @@ def make_point_group_dictionary():
     This will be stored once as a module level variable.
     """
     point_group_dictionary = dict()
-    for (pointGroup, symmetryNumber, chiral) in [
+    for (point_group, symmetry_number, chiral) in [
         ("C1", 1, True),
         ("Cs", 1, False),
         ("Ci", 1, False),
@@ -141,7 +141,7 @@ def make_point_group_dictionary():
         ("Ih", 60, False),
         ("Kh", 1, False),
     ]:
-        point_group_dictionary[pointGroup] = PointGroup(pointGroup, symmetryNumber, chiral)
+        point_group_dictionary[point_group] = PointGroup(point_group, symmetry_number, chiral)
     return point_group_dictionary
 
 
@@ -156,10 +156,10 @@ class PointGroupCalculator(object):
     Will point to a specific algorithm, like SYMMETRY that is able to do this.
     """
 
-    def __init__(self, settings, uniqueID, qmData):
-        self.uniqueID = uniqueID
-        self.qmData = qmData  # QMDdata object that contains 3D coords of molecule used in symmetry calculation
-        self.calculator = SymmetryJob(settings, uniqueID, qmData)
+    def __init__(self, settings, unique_id, qm_data):
+        self.unique_id = unique_id
+        self.qm_data = qm_data  # QMDdata object that contains 3D coords of molecule used in symmetry calculation
+        self.calculator = SymmetryJob(settings, unique_id, qm_data)
 
     def calculate(self):
         return self.calculator.calculate()
@@ -191,19 +191,19 @@ class SymmetryJob(object):
 
     inputFileExtension = '.symm'
 
-    def __init__(self, settings, uniqueID, qmData):
+    def __init__(self, settings, unique_id, qm_data):
         self.settings = settings
-        self.uniqueID = uniqueID
+        self.unique_id = unique_id
 
         "The object that holds information from a previous QM Job on 3D coords, molecule etc..."
-        self.qmData = qmData
-        self.attemptNumber = 1
-        self.pointGroupFound = False
+        self.qm_data = qm_data
+        self.attempt_number = 1
+        self.point_group_found = False
 
     @property
     def input_file_path(self):
         """The input file's path"""
-        return os.path.join(self.settings.scratchDirectory, self.uniqueID + self.inputFileExtension)
+        return os.path.join(self.settings.scratchDirectory, self.unique_id + self.inputFileExtension)
 
     def parse(self, output):
         """
@@ -240,10 +240,10 @@ class SymmetryJob(object):
         """
         Write the input file for the SYMMETRY program.
         """
-        geom = str(self.qmData.numberOfAtoms) + "\n"
-        coords_in_angstrom = self.qmData.atomCoords.value_si * 1e10
-        for i in range(self.qmData.numberOfAtoms):
-            geom = geom + " ".join((str(self.qmData.atomicNumbers[i]),
+        geom = str(self.qm_data.numberOfAtoms) + "\n"
+        coords_in_angstrom = self.qm_data.atomCoords.value_si * 1e10
+        for i in range(self.qm_data.numberOfAtoms):
+            geom = geom + " ".join((str(self.qm_data.atomicNumbers[i]),
                                     str(coords_in_angstrom[i][0]),
                                     str(coords_in_angstrom[i][1]),
                                     str(coords_in_angstrom[i][2])
@@ -278,7 +278,7 @@ class SymmetryJob(object):
             point_group_name = self.parse(output)
 
             if point_group_name in point_group_dictionary:
-                self.pointGroupFound = True
+                self.point_group_found = True
                 return point_group_dictionary[point_group_name]
             else:
                 logging.info("Attempt number {0} did not identify a recognized "

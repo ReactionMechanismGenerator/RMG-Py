@@ -76,7 +76,7 @@ class FluxDiagramTest(unittest.TestCase):
         input_file = os.path.join(folder, 'input_liquid.py')
         chemkin_file = os.path.join(folder, 'chemkin', 'chem.inp')
         dict_file = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
-        create_flux_diagram(input_file, chemkin_file, dict_file, diffusionLimited=False)
+        create_flux_diagram(input_file, chemkin_file, dict_file, diffusion_limited=False)
 
         outputdir = os.path.join(folder, 'flux')
         simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')

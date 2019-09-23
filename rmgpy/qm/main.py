@@ -267,16 +267,16 @@ def _write_qm_files_star(args):
 
 def _write_qm_files(quantum_mechanics, mol):
     """
-    If quantumMechanics is turned on thermo is calculated in parallel here.
+    If quantum_mechanics is turned on thermo is calculated in parallel here.
     """
     quantum_mechanics.get_thermo_data(mol)
 
 
 def save(rmg):
     # Save the QM thermo to a library if QM was turned on
-    if rmg.quantumMechanics:
+    if rmg.quantum_mechanics:
         logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
-        rmg.quantumMechanics.database.save(os.path.join(rmg.outputDirectory, 'qmThermoLibrary.py'))
+        rmg.quantum_mechanics.database.save(os.path.join(rmg.output_directory, 'qmThermoLibrary.py'))
 
 
 class QMDatabaseWriter(object):

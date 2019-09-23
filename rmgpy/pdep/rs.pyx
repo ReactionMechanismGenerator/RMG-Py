@@ -59,16 +59,16 @@ cpdef apply_reservoir_state_method(network):
     temperature = network.T
     e_list = network.e_list
     j_list = network.j_list
-    dens_states = network.densStates
+    dens_states = network.dens_states
     m_coll = network.Mcoll
     k_ij = network.Kij
     f_im = network.Fim
     g_nj = network.Gnj
-    n_isom = network.Nisom
-    n_reac = network.Nreac
-    n_prod = network.Nprod
-    n_grains = network.Ngrains
-    n_j = network.NJ
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = network.n_grains
+    n_j = network.n_j
 
     beta = 1. / (constants.R * temperature)  # [=] mol/kJ
 

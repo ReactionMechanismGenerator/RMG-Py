@@ -1702,7 +1702,7 @@ class CoreEdgeReactionModel:
                 self.network_list.append(network)
 
         # Add the path reaction to that network
-        network.addPathReaction(newReaction)
+        network.add_path_reaction(newReaction)
 
     def update_unimolecular_reaction_networks(self):
         """

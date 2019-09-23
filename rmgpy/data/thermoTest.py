@@ -73,7 +73,7 @@ class TestThermoDatabaseLoading(unittest.TestCase):
         path = os.path.join(settings['database.directory'], 'thermo')
 
         with self.assertRaises(Exception):
-            database.loadLibraries(os.path.join(path, 'libraries'), libraries)
+            database.load_libraries(os.path.join(path, 'libraries'), libraries)
 
 
 class TestThermoDatabase(unittest.TestCase):

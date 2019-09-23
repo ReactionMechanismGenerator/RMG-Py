@@ -50,7 +50,7 @@ from rmgpy.util import make_output_subdirectory
 
 def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"):
     if dictionary_path:
-        spcs, rxns = load_chemkin_file(chemkin_path, dictionaryPath=dictionary_path)
+        spcs, rxns = load_chemkin_file(chemkin_path, dictionary_path=dictionary_path)
     else:
         spcs, rxns = load_chemkin_file(chemkin_path)
     write_yml(spcs, rxns, path=output)
@@ -129,19 +129,19 @@ def obj_to_dict(obj, spcs, label="solvent"):
         result_dict["type"] = "ThirdBody"
         result_dict["arr"] = obj_to_dict(obj.arrheniusLow, spcs)
         result_dict["efficiencies"] = {spcs[i].label: float(val)
-                                       for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
+                                       for i, val in enumerate(obj.get_effective_collider_efficiencies(spcs)) if val != 1}
     elif isinstance(obj, Lindemann):
         result_dict["type"] = "Lindemann"
         result_dict["arrhigh"] = obj_to_dict(obj.arrheniusHigh, spcs)
         result_dict["arrlow"] = obj_to_dict(obj.arrheniusLow, spcs)
         result_dict["efficiencies"] = {spcs[i].label: float(val)
-                                       for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
+                                       for i, val in enumerate(obj.get_effective_collider_efficiencies(spcs)) if val != 1}
     elif isinstance(obj, Troe):
         result_dict["type"] = "Troe"
         result_dict["arrhigh"] = obj_to_dict(obj.arrheniusHigh, spcs)
         result_dict["arrlow"] = obj_to_dict(obj.arrheniusLow, spcs)
         result_dict["efficiencies"] = {spcs[i].label: float(val)
-                                       for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
+                                       for i, val in enumerate(obj.get_effective_collider_efficiencies(spcs)) if val != 1}
         result_dict["a"] = obj.alpha
         result_dict["T1"] = obj.T1.value_si
         if obj.T2:
@@ -214,5 +214,5 @@ class RMSWriter(object):
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        write_yml(rmg.reactionModel.core.species, rmg.reactionModel.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
-                  path=os.path.join(self.output_directory, 'rms', 'chem{}.rms').format(len(rmg.reactionModel.core.species)))
+        write_yml(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
+                  path=os.path.join(self.output_directory, 'rms', 'chem{}.rms').format(len(rmg.reaction_model.core.species)))

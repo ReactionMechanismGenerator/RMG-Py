@@ -191,16 +191,16 @@ class Mopac(object):
                 if "InChI=" in line:
                     log_file_inchi = line  # output files should take up to 240 characters of the name in the input file
                     inchi_found = True
-                    if self.uniqueIDlong in log_file_inchi:
+                    if self.unique_id_long in log_file_inchi:
                         pass
-                    elif self.uniqueIDlong.startswith(log_file_inchi):
+                    elif self.unique_id_long.startswith(log_file_inchi):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
 
                     else:
                         logging.warning("InChI in log file ({0}) didn't match that in geometry "
-                                        "({1}).".format(log_file_inchi, self.uniqueIDlong))
+                                        "({1}).".format(log_file_inchi, self.unique_id_long))
                         # Use only up to first 80 characters to match due to MOPAC bug which deletes 81st character of InChI string
-                        if self.uniqueIDlong.startswith(log_file_inchi[:80]):
+                        if self.unique_id_long.startswith(log_file_inchi[:80]):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
 
         # Check that ALL 'success' keywords were found in the file.
@@ -256,7 +256,7 @@ class MopacMol(QMMolecule, Mopac):
         molfile = self.get_mol_file_path_for_calculation(attempt)
         atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
 
-        output = [self.geometry.uniqueIDlong, '']
+        output = [self.geometry.unique_id_long, '']
 
         atom_count = 0
         with open(molfile) as molinput:

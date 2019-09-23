@@ -2181,8 +2181,8 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
         species_list = reaction_model.core.species + reaction_model.edge.species
         rxn_list = reaction_model.core.reactions + reaction_model.edge.reactions
     else:
-        species_list = reaction_model.core.species + reaction_model.outputSpeciesList
-        rxn_list = reaction_model.core.reactions + reaction_model.outputReactionList
+        species_list = reaction_model.core.species + reaction_model.output_species_list
+        rxn_list = reaction_model.core.reactions + reaction_model.output_reaction_list
 
     if any([s.contains_surface_site() for s in reaction_model.core.species]):
         # it's a surface model
@@ -2212,11 +2212,11 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
         # We should already have marked everything as duplicates by now so use check_for_duplicates=False
         save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False, check_for_duplicates=False)
         save_chemkin_surface_file(surface_path, surface_species_list, surface_rxn_list, verbose=False,
-                                  check_for_duplicates=False, surface_site_density=reaction_model.surfaceSiteDensity)
+                                  check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
         logging.info('Saving annotated version of Chemkin files...')
         save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True, check_for_duplicates=False)
         save_chemkin_surface_file(surface_verbose_path, surface_species_list, surface_rxn_list, verbose=True,
-                                  check_for_duplicates=False, surface_site_density=reaction_model.surfaceSiteDensity)
+                                  check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
 
     else:
         # Gas phase only
@@ -2235,16 +2235,16 @@ def save_chemkin_files(rmg):
     """
 
     # todo: make this an attribute or method of reactionModel
-    is_surface_model = any([s.contains_surface_site() for s in rmg.reactionModel.core.species])
+    is_surface_model = any([s.contains_surface_site() for s in rmg.reaction_model.core.species])
 
     logging.info('Saving current model core to Chemkin file...')
-    this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin',
-                                     'chem{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
-    latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem.inp')
-    latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
-    latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin', 'species_dictionary.txt')
-    latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
-    save_chemkin(rmg.reactionModel,
+    this_chemkin_path = os.path.join(rmg.output_directory, 'chemkin',
+                                     'chem{0:04d}.inp'.format(len(rmg.reaction_model.core.species)))
+    latest_chemkin_path = os.path.join(rmg.output_directory, 'chemkin', 'chem.inp')
+    latest_chemkin_verbose_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_annotated.inp')
+    latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_dictionary.txt')
+    latest_transport_path = os.path.join(rmg.output_directory, 'chemkin', 'tran.dat')
+    save_chemkin(rmg.reaction_model,
                  this_chemkin_path,
                  latest_chemkin_verbose_path,
                  latest_dictionary_path,
@@ -2269,13 +2269,13 @@ def save_chemkin_files(rmg):
 
     if rmg.save_edge_species:
         logging.info('Saving current model core and edge to Chemkin file...')
-        this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin',
-                                         'chem_edge{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
-        latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge.inp')
-        latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
-        latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin', 'species_edge_dictionary.txt')
+        this_chemkin_path = os.path.join(rmg.output_directory, 'chemkin',
+                                         'chem_edge{0:04d}.inp'.format(len(rmg.reaction_model.core.species)))
+        latest_chemkin_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_edge_dictionary.txt')
         latest_transport_path = None
-        save_chemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path,
+        save_chemkin(rmg.reaction_model, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path,
                      latest_transport_path, rmg.save_edge_species)
 
         if is_surface_model:

@@ -497,16 +497,16 @@ class StatMechJob(object):
                     logging.info("Calculating energy levels for 2D-HR, may take a while...")
                     rotor = HinderedRotor2D(name='r' + str(j), torsigma1=symmetry1, torsigma2=symmetry2,
                                             symmetry=symmetry,
-                                            calcPath=os.path.join(directory, scandir), pivots1=pivots1, pivots2=pivots2,
+                                            calc_path=os.path.join(directory, scandir), pivots1=pivots1, pivots2=pivots2,
                                             top1=top1, top2=top2)
                     rotor.run()
                     conformer.modes.append(rotor)
                     rotor_count += 2
                 elif len(q) == 5 and isinstance(q[1][0], list):
                     scandir, pivots, tops, sigmas, semiclassical = q
-                    rotor = HinderedRotorClassicalND(pivots, tops, sigmas, calcPath=os.path.join(directory, scandir),
+                    rotor = HinderedRotorClassicalND(pivots, tops, sigmas, calc_path=os.path.join(directory, scandir),
                                                      conformer=conformer, F=F,
-                                                     semiclassical=semiclassical, isLinear=linear, isTS=is_ts)
+                                                     semiclassical=semiclassical, is_linear=linear, is_ts=is_ts)
                     rotor.run()
                     conformer.modes.append(rotor)
                     rotor_count += len(pivots)

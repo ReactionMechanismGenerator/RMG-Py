@@ -559,8 +559,8 @@ class PressureDependenceJob(object):
         import matplotlib.cm
         cm = matplotlib.cm.jet
 
-        n_reac = self.network.Nisom + self.network.Nreac
-        n_prod = n_reac + self.network.Nprod
+        n_reac = self.network.n_isom + self.network.n_reac
+        n_prod = n_reac + self.network.n_prod
         Tlist = self.Tlist.value_si
         Plist = self.Plist.value_si
         Tcount = Tlist.shape[0]

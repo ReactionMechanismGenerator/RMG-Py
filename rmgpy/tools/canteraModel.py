@@ -355,17 +355,17 @@ class Cantera(object):
             species_data = [data for data in data_list if data.species not in inert_list]
 
             # plot
-            GenericPlot(xVar=time, yVar=T_data).plot(
+            GenericPlot(x_var=time, y_var=T_data).plot(
                 os.path.join(self.output_directory, '{0}_temperature.png'.format(i + 1)))
-            GenericPlot(xVar=time, yVar=P_data).plot(
+            GenericPlot(x_var=time, y_var=P_data).plot(
                 os.path.join(self.output_directory, '{0}_pressure.png'.format(i + 1)))
-            SimulationPlot(xVar=time, yVar=species_data, numSpecies=top_species, ylabel='Mole Fraction').plot(
+            SimulationPlot(x_var=time, y_var=species_data, num_species=top_species, ylabel='Mole Fraction').plot(
                 os.path.join(self.output_directory, '{0}_mole_fractions.png'.format(i + 1)))
 
             for j, species in enumerate(self.sensitive_species):
-                ReactionSensitivityPlot(xVar=time,
-                                        yVar=reaction_sensitivity_data[j * num_ct_reactions:(j + 1) * num_ct_reactions],
-                                        numReactions=top_sensitive_reactions).barplot(
+                ReactionSensitivityPlot(x_var=time,
+                                        y_var=reaction_sensitivity_data[j * num_ct_reactions:(j + 1) * num_ct_reactions],
+                                        num_reactions=top_sensitive_reactions).barplot(
                     os.path.join(self.output_directory, '{0}_{1}_sensitivity.png'.format(i + 1, species.to_chemkin())))
 
     def simulate(self):

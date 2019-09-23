@@ -681,7 +681,7 @@ class TestEnlarge(unittest.TestCase):
             maximumAtoms=10,
         )
 
-        cls.rmg.output_directory = cls.rmg.pressure_dependence.outputFile = cls.dirname
+        cls.rmg.output_directory = cls.rmg.pressure_dependence.output_file = cls.dirname
 
         cls.rmg.database = RMGDatabase()
         cls.rmg.database.load(

@@ -1477,7 +1477,7 @@ class ThermoDatabase(object):
         logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
         if not isinstance(thermo, ThermoData):
-            thermo = thermo.toThermoData()
+            thermo = thermo.to_thermo_data()
             find_cp0_and_cpinf(species, thermo)
 
         # Get the adsorption energy

@@ -205,8 +205,8 @@ cdef class ReactionSystem(DASx):
             surface_reactions = []
 
         if conditions:
-            is_conc = hasattr(self, 'initialConcentrations')
-            is_surf = hasattr(self, 'initialGasMoleFractions')
+            is_conc = hasattr(self, 'initial_concentrations')
+            is_surf = hasattr(self, 'initial_gas_mole_fractions')
             # ToDo: I think this block is incompatible with surface.pyx catalyst reactors
             keys = conditions.keys()
             if 'T' in keys and hasattr(self, 'T'):

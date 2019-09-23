@@ -65,11 +65,11 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     dens_states = network.dens_states
     g_nj = network.Gnj
     eq_ratios = network.eq_ratios
-    n_isom = network.Nisom
-    n_reac = network.Nreac
-    n_prod = network.Nprod
-    n_grains = network.Ngrains
-    n_j = network.NJ
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = network.n_grains
+    n_j = network.n_j
     
     n_grains = len(e_list)
     n_chem = n_isom + n_reac

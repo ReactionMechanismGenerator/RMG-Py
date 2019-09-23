@@ -55,8 +55,8 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public double V
     cdef public bint constant_volume
 
-    cdef public list T_range
-    cdef public list P_range
+    cdef public list Trange
+    cdef public list Prange
     cdef public int n_sims
     cdef public dict sens_conditions
 
@@ -86,7 +86,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                 sensitivity_threshold)
 
         if isinstance(T, list):
-            self.T_range = [Quantity(t) for t in T]
+            self.Trange = [Quantity(t) for t in T]
         else:
             self.T = Quantity(T)
         if isinstance(P_initial, list):
@@ -320,12 +320,12 @@ cdef class SurfaceReactor(ReactionSystem):
         # Set the maximum unimolecular rate to be kB*T/h
         unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
         # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
-        bimolecular_threshold_rate_constant = model_settings.filterThreshold
+        bimolecular_threshold_rate_constant = model_settings.filter_threshold
         # Maximum trimolecular rate constants are approximately three
         # orders of magnitude smaller (accounting for the unit
         # conversion from m^3/mol/s to m^6/mol^2/s) based on
         # extending the Smoluchowski equation to three molecules
-        trimolecular_threshold_rate_constant = model_settings.filterThreshold / 1e3
+        trimolecular_threshold_rate_constant = model_settings.filter_threshold / 1e3
         return (unimolecular_threshold_rate_constant,
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)

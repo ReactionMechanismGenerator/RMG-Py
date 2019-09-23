@@ -1389,7 +1389,7 @@ Thermo group additivity estimation: group(Ct-CtCs) + other(R) + group(O2s-CsCs) 
 Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) + group(O2s-OsH) + gauche(O2s(RR)) + other(R)
 """), molecule=[Molecule(smiles="OO")])
 
-        self.speciesList = [ch3, ethane, co2, ch4, h2o, ar, h2, h, oh, ho2, o2, co, h2o2]
+        self.species_list = [ch3, ethane, co2, ch4, h2o, ar, h2, h, oh, ho2, o2, co, h2o2]
 
         self.troe = Reaction(index=1, reactants=[ch3, ch3], products=[ethane],
                              kinetics=Troe(
@@ -1570,7 +1570,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         rmg_objects = [self.arrheniusBi, self.arrheniusBi_irreversible, self.arrheniusMono, self.arrheniusTri]
 
         ct_objects = [self.ct_arrheniusBi, self.ct_arrheniusBi_irreversible, self.ct_arrheniusMono, self.ct_arrheniusTri]
-        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
@@ -1586,7 +1586,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         rmg_objects = [self.multiArrhenius]
         ct_objects = [self.ct_multiArrhenius]
-        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
@@ -1606,7 +1606,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         rmg_objects = [self.pdepArrhenius]
         ct_objects = [self.ct_pdepArrhenius]
-        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
@@ -1623,7 +1623,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
 
         rmg_objects = [self.multiPdepArrhenius]
         ct_objects = [self.ct_multiPdepArrhenius]
-        converted_ct_objects = [obj.to_cantera(self.speciesList, use_chemkin_identifier=True) for obj in rmg_objects]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
@@ -1641,7 +1641,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         Tests formation of cantera reactions with Chebyshev kinetics.
         """
-        ct_chebyshev = self.chebyshev.to_cantera(self.speciesList, use_chemkin_identifier=True)
+        ct_chebyshev = self.chebyshev.to_cantera(self.species_list, use_chemkin_identifier=True)
         self.assertEqual(type(ct_chebyshev), type(self.ct_chebyshev))
         self.assertEqual(repr(ct_chebyshev), repr(self.ct_chebyshev))
 
@@ -1655,13 +1655,13 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         """
         Tests formation of cantera reactions with Falloff kinetics.
         """
-        ct_third_body = self.thirdBody.to_cantera(self.speciesList, use_chemkin_identifier=True)
+        ct_third_body = self.thirdBody.to_cantera(self.species_list, use_chemkin_identifier=True)
         self.assertEqual(type(ct_third_body), type(self.ct_thirdBody))
         self.assertEqual(repr(ct_third_body), repr(self.ct_thirdBody))
         self.assertEqual(str(ct_third_body.rate), str(self.ct_thirdBody.rate))
         self.assertEqual(ct_third_body.efficiencies, self.ct_thirdBody.efficiencies)
 
-        ct_lindemann = self.lindemann.to_cantera(self.speciesList, use_chemkin_identifier=True)
+        ct_lindemann = self.lindemann.to_cantera(self.species_list, use_chemkin_identifier=True)
         self.assertEqual(type(ct_lindemann), type(self.ct_lindemann))
         self.assertEqual(repr(ct_lindemann), repr(self.ct_lindemann))
         self.assertEqual(ct_lindemann.efficiencies, self.ct_lindemann.efficiencies)
@@ -1669,7 +1669,7 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         self.assertEqual(str(ct_lindemann.high_rate), str(self.ct_lindemann.high_rate))
         self.assertEqual(str(ct_lindemann.falloff), str(self.ct_lindemann.falloff))
 
-        ct_troe = self.troe.to_cantera(self.speciesList, use_chemkin_identifier=True)
+        ct_troe = self.troe.to_cantera(self.species_list, use_chemkin_identifier=True)
         self.assertEqual(type(ct_troe), type(self.ct_troe))
         self.assertEqual(repr(ct_troe), repr(self.ct_troe))
         self.assertEqual(ct_troe.efficiencies, self.ct_troe.efficiencies)

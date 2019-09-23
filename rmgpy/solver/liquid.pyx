@@ -58,7 +58,7 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public list const_spc_names
     cdef public list const_spc_indices
     cdef public dict initial_concentrations
-    cdef public list T_range
+    cdef public list Trange
     cdef public int n_sims
     cdef public dict sens_conditions
 
@@ -70,7 +70,7 @@ cdef class LiquidReactor(ReactionSystem):
         if type(T) != list:
             self.T = Quantity(T)
         else:
-            self.T_range = [Quantity(t) for t in T]
+            self.Trange = [Quantity(t) for t in T]
 
         self.P = Quantity(100000., 'kPa')  # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initial_concentrations = initial_concentrations  # should be passed in SI
