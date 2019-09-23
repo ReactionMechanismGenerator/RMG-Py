@@ -89,13 +89,13 @@ class TestWilhoit(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def test_Cp0(self):
+    def test_cp0(self):
         """
         Test that the Wilhoit Cp0 property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Cp0.value_si / constants.R, self.Cp0, 6)
 
-    def test_CpInf(self):
+    def test_cp_inf(self):
         """
         Test that the Wilhoit CpInf property was properly set.
         """
@@ -125,37 +125,37 @@ class TestWilhoit(unittest.TestCase):
         """
         self.assertAlmostEqual(self.wilhoit.a3, self.a3, 6)
 
-    def test_B(self):
+    def test_b(self):
         """
         Test that the Wilhoit B property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.B.value_si, self.B, 6)
 
-    def test_H0(self):
+    def test_h0(self):
         """
         Test that the Wilhoit H0 property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.H0.value_si / constants.R, self.H0, 6)
 
-    def test_S0(self):
+    def test_s0(self):
         """
         Test that the Wilhoit S0 property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.S0.value_si / constants.R, self.S0, 6)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the Wilhoit Tmin property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the Wilhoit Tmax property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Tmax.value_si, self.Tmax, 6)
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K
         """
@@ -167,7 +167,7 @@ class TestWilhoit(unittest.TestCase):
         """
         self.assertEqual(self.wilhoit.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the Wilhoit.is_temperature_valid() method.
         """
@@ -177,7 +177,7 @@ class TestWilhoit(unittest.TestCase):
             valid0 = self.wilhoit.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getHeatCapacity(self):
+    def test_get_heat_capacity(self):
         """
         Test the Wilhoit.get_heat_capacity() method.
         """
@@ -188,7 +188,7 @@ class TestWilhoit(unittest.TestCase):
             cp_act = self.wilhoit.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp / cp_act, 1.0, 3, '{0} != {1} within 3 places'.format(cp_exp, cp_act))
 
-    def test_getEnthalpy(self):
+    def test_get_enthalpy(self):
         """
         Test the Wilhoit.get_enthalpy() method.
         """
@@ -199,7 +199,7 @@ class TestWilhoit(unittest.TestCase):
             h_act = self.wilhoit.get_enthalpy(T)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 3, '{0} != {1}'.format(h_exp, h_act))
 
-    def test_getEntropy(self):
+    def test_get_entropy(self):
         """
         Test the Wilhoit.get_entropy() method.
         """
@@ -210,7 +210,7 @@ class TestWilhoit(unittest.TestCase):
             s_act = self.wilhoit.get_entropy(T)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4, '{0} != {1}'.format(s_exp, s_act))
 
-    def test_getFreeEnergy(self):
+    def test_get_free_energy(self):
         """
         Test the Wilhoit.get_free_energy() method.
         """
@@ -280,7 +280,7 @@ class TestWilhoit(unittest.TestCase):
         self.assertEqual(self.wilhoit.E0.units, wilhoit.E0.units)
         self.assertEqual(self.wilhoit.comment, wilhoit.comment)
 
-    def test_fitToData(self):
+    def test_fit_to_data(self):
         """
         Test the Wilhoit.fit_to_data() method.
         """
@@ -322,7 +322,7 @@ class TestWilhoit(unittest.TestCase):
         self.assertAlmostEqual(wilhoit.H0.value_si, self.wilhoit.H0.value_si, 0)
         self.assertAlmostEqual(wilhoit.S0.value_si, self.wilhoit.S0.value_si, 2)
 
-    def testToWilhoit(self):
+    def test_to_wilhoit(self):
         """
         Test if the entropy computed from other thermo implementations is close to what Wilhoit computes.
         """
@@ -370,7 +370,7 @@ class TestWilhoit(unittest.TestCase):
         self.assertAlmostEqual(s_td, s_wh, -1)
         self.assertEqual(td.comment, wilhoit.comment)
 
-    def testWilhoitAsDict(self):
+    def test_wilhoit_as_dict(self):
         """
         Test that a Wilhoit object can be converted to a dictionary representation properly
         """
@@ -391,7 +391,7 @@ class TestWilhoit(unittest.TestCase):
                                         'class': 'Wilhoit'}
                          )
 
-    def testMakeWilhoit(self):
+    def test_make_wilhoit(self):
         """
         Test that a Wilhoit object can be created from a dictionary representation
         """

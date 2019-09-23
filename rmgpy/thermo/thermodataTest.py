@@ -77,7 +77,7 @@ class TestThermoData(unittest.TestCase):
             comment=self.comment,
         )
 
-    def test_Tdata(self):
+    def test_temperature_data(self):
         """
         Test that the ThermoData Tdata property was properly set.
         """
@@ -85,7 +85,7 @@ class TestThermoData(unittest.TestCase):
         for T, T0 in zip(self.thermodata.Tdata.value_si, self.Tdata):
             self.assertAlmostEqual(T, T0, 4)
 
-    def test_Cpdata(self):
+    def test_cp_data(self):
         """
         Test that the ThermoData Cpdata property was properly set.
         """
@@ -93,55 +93,55 @@ class TestThermoData(unittest.TestCase):
         for Cp, Cp0 in zip(self.thermodata.Cpdata.value_si / constants.R, self.Cpdata):
             self.assertAlmostEqual(Cp, Cp0, 4)
 
-    def test_H298(self):
+    def test_h298(self):
         """
         Test that the ThermoData H298 property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.H298.value_si / constants.R / 298., self.H298, 4)
 
-    def test_S298(self):
+    def test_s298(self):
         """
         Test that the ThermoData S298 property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.S298.value_si / constants.R, self.S298, 4)
 
-    def test_Cp0(self):
+    def test_cp0(self):
         """
         Test that the ThermoData Cp0 property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.Cp0.value_si / constants.R, self.Cp0, 4)
 
-    def test_CpInf(self):
+    def test_cp_inf(self):
         """
         Test that the ThermoData CpInf property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.CpInf.value_si / constants.R, self.CpInf, 4)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the ThermoData Tmin property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.Tmin.value_si, self.Tmin, 6)
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the ThermoData Tmax property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.Tmax.value_si, self.Tmax, 6)
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the ThermoData E0 property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.E0.value_si, self.E0, 6)
 
-    def test_Comment(self):
+    def test_comment(self):
         """
         Test that the ThermoData comment property was properly set.
         """
         self.assertEqual(self.thermodata.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the ThermoData.is_temperature_valid() method.
         """
@@ -151,7 +151,7 @@ class TestThermoData(unittest.TestCase):
             valid0 = self.thermodata.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getHeatCapacity(self):
+    def test_get_heat_capacity(self):
         """
         Test the ThermoData.get_heat_capacity() method.
         """
@@ -162,7 +162,7 @@ class TestThermoData(unittest.TestCase):
             cp_act = self.thermodata.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp, cp_act, 2)
 
-    def test_getEnthalpy(self):
+    def test_get_enthalpy(self):
         """
         Test the ThermoData.get_enthalpy() method.
         """
@@ -173,7 +173,7 @@ class TestThermoData(unittest.TestCase):
             h_act = self.thermodata.get_enthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e0)
 
-    def test_getEntropy(self):
+    def test_get_entropy(self):
         """
         Test the ThermoData.get_entropy() method.
         """
@@ -184,7 +184,7 @@ class TestThermoData(unittest.TestCase):
             s_act = self.thermodata.get_entropy(T)
             self.assertAlmostEqual(s_exp, s_act, 3)
 
-    def test_getFreeEnergy(self):
+    def test_get_free_energy(self):
         """
         Test the ThermoData.get_free_energy() method.
         """

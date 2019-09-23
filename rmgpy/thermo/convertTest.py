@@ -93,7 +93,7 @@ class TestConverter(unittest.TestCase):
             comment='C2H6',
         )
 
-    def test_convert_Wilhoit_to_NASA(self):
+    def test_convert_wilhoit_to_nasa(self):
         """
         Test the conversion of a Wilhoit model to a NASA model.
         """
@@ -112,7 +112,7 @@ class TestConverter(unittest.TestCase):
             self.assertAlmostEqual(s_nasa, s_wilhoit, delta=1e0)
         self.assertAlmostEqual(wilhoit.E0.value_si, nasa.E0.value_si, delta=1e1)
 
-    def test_convert_Wilhoit_to_ThermoData(self):
+    def test_convert_wilhoit_to_thermo_data(self):
         """
         Test the conversion of a Wilhoit model to a ThermoData model.
         """
@@ -132,7 +132,7 @@ class TestConverter(unittest.TestCase):
         self.assertAlmostEqual(s_thermodata, s_wilhoit, 4)
         self.assertAlmostEqual(wilhoit.E0.value_si, thermodata.E0.value_si, delta=1e1)
 
-    def test_convert_NASA_to_Wilhoit(self):
+    def test_convert_nasa_to_wilhoit(self):
         """
         Test the conversion of a NASA model to a Wilhoit model.
         """
@@ -151,7 +151,7 @@ class TestConverter(unittest.TestCase):
             self.assertAlmostEqual(s_nasa, s_wilhoit, delta=1e0)
         self.assertAlmostEqual(nasa.E0.value_si, wilhoit.E0.value_si, delta=2e1)
 
-    def test_convert_NASA_to_ThermoData(self):
+    def test_convert_nasa_to_thermo_data(self):
         """
         Test the conversion of a NASA model to a ThermoData model.
         """
@@ -171,7 +171,7 @@ class TestConverter(unittest.TestCase):
         self.assertAlmostEqual(s_nasa, s_thermodata, 4)
         self.assertAlmostEqual(nasa.E0.value_si, thermodata.E0.value_si, delta=1e1)
 
-    def test_convert_ThermoData_to_Wilhoit(self):
+    def test_convert_thermo_data_to_wilhoit(self):
         """
         Test the conversion of a ThermoData model to a Wilhoit model.
         """
@@ -191,7 +191,7 @@ class TestConverter(unittest.TestCase):
         self.assertAlmostEqual(s_thermodata, s_wilhoit, 3)
         self.assertAlmostEqual(thermodata.E0.value_si, wilhoit.E0.value_si, delta=1e1)
 
-    def test_convert_ThermoData_to_NASA(self):
+    def test_convert_thermo_data_to_nasa(self):
         """
         Test the conversion of a ThermoData model to a NASA model.
         """
@@ -211,7 +211,7 @@ class TestConverter(unittest.TestCase):
         self.assertAlmostEqual(s_nasa, s_thermodata, delta=1e0)
         self.assertAlmostEqual(thermodata.E0.value_si, nasa.E0.value_si, delta=1e1)
 
-    def test_Wilhoit_NASA_Wilhoit(self):
+    def test_wilhoit_nasa_wilhoit(self):
         """
         Test round-trip conversion from Wilhoit to NASA and back
         """
@@ -231,7 +231,7 @@ class TestConverter(unittest.TestCase):
             self.assertAlmostEqual(s_1, s_2, delta=1e0)
         self.assertAlmostEqual(wilhoit1.E0.value_si, wilhoit2.E0.value_si, delta=1e1)
 
-    def test_Wilhoit_ThermoData_Wilhoit(self):
+    def test_wilhoit_thermo_data_wilhoit(self):
         """
         Test round-trip conversion from Wilhoit to ThermoData and back
         """

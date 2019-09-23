@@ -81,7 +81,7 @@ class TestNASA(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def test_polyLow(self):
+    def test_poly_low(self):
         """
         Test that the NASA low-temperature polynomial was properly set.
         """
@@ -91,7 +91,7 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.poly1.Tmin.value_si, self.Tmin)
         self.assertEqual(self.nasa.poly1.Tmax.value_si, self.Tint)
 
-    def test_polyHigh(self):
+    def test_poly_high(self):
         """
         Test that the NASA high-temperature polynomial was properly set.
         """
@@ -101,34 +101,34 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.poly2.Tmin.value_si, self.Tint)
         self.assertEqual(self.nasa.poly2.Tmax.value_si, self.Tmax)
 
-    def test_Tmin(self):
+    def test_temperature_min(self):
         """
         Test that the NASA Tmin property was properly set.
         """
         self.assertAlmostEqual(self.nasa.Tmin.value_si / self.Tmin, 1.0, 6,
                                '{0} != {1} within 6 places'.format(self.nasa.Tmin, self.Tmin))
 
-    def test_Tmax(self):
+    def test_temperature_max(self):
         """
         Test that the NASA Tmax property was properly set.
         """
         self.assertAlmostEqual(self.nasa.Tmax.value_si / self.Tmax, 1.0, 6,
                                '{0} != {1} within 6 places'.format(self.nasa.Tmax, self.Tmax))
 
-    def test_E0(self):
+    def test_e0(self):
         """
         Test that the NASA E0 property was properly set.
         """
         self.assertAlmostEqual(self.nasa.E0.value_si / self.E0, 1.0, 6,
                                '{0} != {1} within 6 places'.format(self.nasa.Tmax, self.Tmax))
 
-    def test_Comment(self):
+    def test_comment(self):
         """
         Test that the NASA comment property was properly set.
         """
         self.assertEqual(self.nasa.comment, self.comment)
 
-    def test_isTemperatureValid(self):
+    def test_is_temperature_valid(self):
         """
         Test the NASA.is_temperature_valid() method.
         """
@@ -138,7 +138,7 @@ class TestNASA(unittest.TestCase):
             valid0 = self.nasa.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
-    def test_getHeatCapacity(self):
+    def test_get_heat_capacity(self):
         """
         Test the NASA.get_heat_capacity() method.
         """
@@ -149,7 +149,7 @@ class TestNASA(unittest.TestCase):
             cp_act = self.nasa.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp / cp_act, 1.0, 4, '{0} != {1}'.format(cp_exp, cp_act))
 
-    def test_getEnthalpy(self):
+    def test_get_enthalpy(self):
         """
         Test the NASA.get_enthalpy() method.
         """
@@ -160,7 +160,7 @@ class TestNASA(unittest.TestCase):
             h_act = self.nasa.get_enthalpy(T)
             self.assertAlmostEqual(h_exp / h_act, 1.0, 3, '{0} != {1}'.format(h_exp, h_act))
 
-    def test_getEntropy(self):
+    def test_get_entropy(self):
         """
         Test the NASA.get_entropy() method.
         """
@@ -171,7 +171,7 @@ class TestNASA(unittest.TestCase):
             s_act = self.nasa.get_entropy(T)
             self.assertAlmostEqual(s_exp / s_act, 1.0, 4, '{0} != {1}'.format(s_exp, s_act))
 
-    def test_getFreeEnergy(self):
+    def test_get_free_energy(self):
         """
         Test the NASA.get_free_energy() method.
         """
@@ -245,7 +245,7 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.E0.units, nasa.E0.units)
         self.assertEqual(self.nasa.comment, nasa.comment)
 
-    def test_toCantera(self):
+    def test_to_cantera(self):
         """
         Test that conversion to a Cantera NasaPoly2 object works
         """
@@ -254,7 +254,7 @@ class TestNASA(unittest.TestCase):
         self.assertAlmostEqual(self.nasa.get_enthalpy(900), nasapoly2.h(900) / 1000, 1)
         self.assertAlmostEqual(self.nasa.get_entropy(700), nasapoly2.s(700) / 1000, 1)
 
-    def testToNASA(self):
+    def test_to_nasa(self):
         """
         Test if the entropy computed from other thermo implementations is close to what NASA computes.
         """
