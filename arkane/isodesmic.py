@@ -58,6 +58,52 @@ from rmgpy.quantity import ScalarQuantity
 from rmgpy.molecule.graph import getVertexConnectivityValue
 import logging
 
+def descriptor_to_group(descriptor,constraint_class=5):
+
+    from rmgpy.molecule import Group, GroupAtom, GroupBond
+    from rmgpy.molecule import atomTypes
+
+    atom_numbers = {1:'H',6:'C',7:'N',8:'O',9:'F',17:'Cl',35:'Br'}
+
+    bond_char = {1:'S',2:'D',3:'T'}
+
+    number_of_atoms = len(descriptor) - 4
+    descriptor_dict = {}
+    base_atom_number = descriptor[0]
+    base_atom_lone_pairs = descriptor[1]
+    base_atom_charge = descriptor[2]
+    base_atom_rads = descriptor[3]
+    descriptor_dict[0] = (atom_numbers[base_atom_number],base_atom_rads,base_atom_lone_pairs,base_atom_charge)
+    for i in range(4,len(descriptor)):
+        atom_symbol = atom_numbers[descriptor[i][0]]
+        atom_rads = descriptor[i][1]
+        atom_lps = descriptor[i][2]
+        atom_charge = descriptor[i][3]
+        atom_bond = descriptor[i][4]
+        descriptor_dict[i-3] = (atom_symbol,atom_rads,atom_lps,atom_charge,atom_bond)
+
+    group_atoms = []
+    group_bonds = []
+    for index,info in descriptor_dict.items():
+        group_atom = GroupAtom()
+        group_atom.atomType.append(atomTypes[info[0]])
+        group_atom.radicalElectrons.append(info[1])
+        group_atom.lonePairs.append(info[2])
+        group_atom.charge.append(info[3])
+        group_atom.label = str(index)
+        if index != 0:
+            bond = GroupBond(group_atoms[0],group_atom,[bond_char[info[-1]]])
+            group_bonds.append(bond)
+        group_atom.bonds[0] = info[3]
+        group_atoms.append(group_atom)
+
+    g = Group()
+    for atom in group_atoms: g.addAtom(atom)
+    for bond in group_bonds: g.addBond(bond)
+    g.clearLabeledAtoms()
+
+    return g
+
 class ErrorCancelingSpecies(object):
     """Class for target and known (benchmark) species participating in an error canceling reaction"""
 
