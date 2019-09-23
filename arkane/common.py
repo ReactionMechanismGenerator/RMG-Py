@@ -235,7 +235,9 @@ class ArkaneSpecies(RMGObject):
         else:
             logging.info('Loading statistical mechanics parameters from {0} file...'.format(yml_file))
         with open(path, 'r') as f:
-            data = yaml.safe_load(stream=f)
+            content = f.read()
+        content = replace_yaml_syntax(content, label)
+        data = yaml.safe_load(stream=content)
         if label:
             # First, warn the user if the label doesn't match
             try:
@@ -307,7 +309,35 @@ class ArkaneSpecies(RMGObject):
         logging.debug("Parsed all YAML objects")
 
 
-################################################################################
+def replace_yaml_syntax(content, label=None):
+    """
+    PEP8 compliant changes to RMG objects could be backward incompatible with Arkane's YAML files.
+    Search for knows phrases which were replace, and fix the format on the fly.
+
+    Args:
+        content (str): The content of an Arkane YAML file.
+
+    Returns:
+        str: The modified content to be processed via yaml.safe_load().
+    """
+    syntax_correction_dict = {'spinMultiplicity': 'spin_multiplicity',
+                              'opticalIsomers': 'optical_isomers',
+                              }
+    replaced_keys = list()
+    for key, value in syntax_correction_dict.items():
+        if key in content:
+            content = content.replace(key, value)
+            replaced_keys.append(key)
+    label = ' for species {0}'.format(label) if label is not None else ''
+    if replaced_keys:
+        logging.info('\nThe loaded YAML file{0} seems to be from an older version of RMG/Arkane.\n'
+                     'Some keywords will be automatically replaced before loading objects from this file.'.format(label))
+    for key in replaced_keys:
+        logging.info('Replacing keyword "{key}" with "{value}" in the Arkane YAML file.'.format(
+            key=key, value=syntax_correction_dict[key]))
+    if replaced_keys:
+        logging.info('\n')
+    return content
 
 
 def is_pdep(job_list):
