@@ -1320,6 +1320,13 @@ class Reaction:
         mean_epsilons = reduce((lambda x, y: x * y), epsilons) ** (1 / len(epsilons))
         return mean_sigmas, mean_epsilons
 
+    def generate_high_p_limit_kinetics(self):
+        """
+        Used for incorporating library reactions with pressure-dependent kinetics in PDep networks.
+        Only implemented for LibraryReaction
+        """
+        raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
+
 
 def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False,
                        strict=True):
