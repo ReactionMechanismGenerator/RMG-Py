@@ -135,3 +135,19 @@ def timefn(fn):
         return result
 
     return measure_time
+
+
+def as_list(item, default=None):
+    """
+    Wrap the given item in a list if it is not None and not already a list.
+
+    Args:
+        item: the item to be put in a list
+        default (optional): a default value to return if the item is None
+    """
+    if isinstance(item, list):
+        return item
+    elif item is None:
+        return default
+    else:
+        return [item]
