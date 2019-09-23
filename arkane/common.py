@@ -185,7 +185,7 @@ class ArkaneSpecies(RMGObject):
                 temperatures = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
                 cp = []
                 for t in temperatures:
-                    cp.append(data.getHeatCapacity(t) / 4.184)
+                    cp.append(data.get_heat_capacity(t) / 4.184)
 
                 self.thermo_data = ThermoData(H298=(h298, 'kcal/mol'),
                                               S298=(s298, 'cal/(mol*K)'),

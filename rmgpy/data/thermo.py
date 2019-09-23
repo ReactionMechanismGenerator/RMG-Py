@@ -1253,7 +1253,7 @@ class ThermoDatabase(object):
                     thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
 
                 else:  # Not too many radicals: do a direct calculation.
-                    thermo0 = quantum_mechanics.getThermoData(original_molecule)  # returns None if it fails
+                    thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
 
         if thermo0 is None:
             # First try finding stable species in libraries and using HBI

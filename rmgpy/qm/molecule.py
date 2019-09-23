@@ -485,7 +485,7 @@ class QMMolecule(object):
 
         # @todo: We need to extract or calculate E0 somehow from the qmdata
         E0 = (0, "kJ/mol")
-        self.statesmodel = rmgpy.statmech.Conformer(e0=E0,
+        self.statesmodel = rmgpy.statmech.Conformer(E0=E0,
                                                     modes=[trans, rot, vib],
                                                     spin_multiplicity=self.qmData.groundStateDegeneracy)
 

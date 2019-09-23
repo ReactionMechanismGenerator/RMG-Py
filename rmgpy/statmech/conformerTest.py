@@ -55,7 +55,7 @@ class TestConformer(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.ethylene = Conformer(
-            e0=(0.0, "kJ/mol"),
+            E0=(0.0, "kJ/mol"),
             modes=[
                 IdealGasTranslation(mass=(28.03, "amu")),
                 NonlinearRotor(inertia=([3.41526, 16.6498, 20.065], "amu*angstrom^2"), symmetry=4),
@@ -66,7 +66,7 @@ class TestConformer(unittest.TestCase):
             optical_isomers=1,
         )
         self.oxygen = Conformer(
-            e0=(0.0, "kJ/mol"),
+            E0=(0.0, "kJ/mol"),
             modes=[
                 IdealGasTranslation(mass=(31.99, "amu")),
                 LinearRotor(inertia=(11.6056, "amu*angstrom^2"), symmetry=2),
@@ -91,7 +91,7 @@ class TestConformer(unittest.TestCase):
         self.mass = np.array([12, 1.007825, 1.007825, 1.007825, 12, 1.007825, 1.007825, 1.007825])
         self.E0 = -93.5097
         self.conformer = Conformer(
-            e0=(self.E0, "kJ/mol"),
+            E0=(self.E0, "kJ/mol"),
             modes=[
                 IdealGasTranslation(mass=(30.0469, "amu")),
                 NonlinearRotor(inertia=([6.27071, 25.3832, 25.3833], "amu*angstrom^2"), symmetry=6),

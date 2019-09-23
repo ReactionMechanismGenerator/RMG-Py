@@ -216,9 +216,9 @@ class TestQMCalculator(unittest.TestCase):
         mol = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 
         with self.assertRaises(Exception):
-            self.mop4.getThermoData(mol)
-            self.gauss3.getThermoData(mol)
-            self.molpro1.getThermoData(mol)
+            self.mop4.get_thermo_data(mol)
+            self.gauss3.get_thermo_data(mol)
+            self.molpro1.get_thermo_data(mol)
 
     @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
     @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
@@ -242,9 +242,9 @@ class TestQMCalculator(unittest.TestCase):
         for directory in (self.mop3.settings.fileStore, self.mop3.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        thermo1 = self.mop1.getThermoData(mol)
-        thermo2 = self.mop2.getThermoData(mol)
-        thermo3 = self.mop3.getThermoData(mol)
+        thermo1 = self.mop1.get_thermo_data(mol)
+        thermo2 = self.mop2.get_thermo_data(mol)
+        thermo3 = self.mop3.get_thermo_data(mol)
 
         self.assertTrue(thermo1.comment.startswith('QM MopacMolPM3'))
         self.assertTrue(thermo2.comment.startswith('QM MopacMolPM6'))
@@ -274,8 +274,8 @@ class TestQMCalculator(unittest.TestCase):
         for directory in (self.gauss1.settings.fileStore, self.gauss2.settings.scratchDirectory):
             shutil.rmtree(directory, ignore_errors=True)
 
-        thermo1 = self.gauss1.getThermoData(mol)
-        thermo2 = self.gauss2.getThermoData(mol)
+        thermo1 = self.gauss1.get_thermo_data(mol)
+        thermo2 = self.gauss2.get_thermo_data(mol)
 
         self.assertTrue(thermo1.comment.startswith('QM GaussianMolPM3'))
         self.assertTrue(thermo2.comment.startswith('QM GaussianMolPM6'))

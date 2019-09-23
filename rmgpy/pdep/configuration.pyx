@@ -75,7 +75,7 @@ cdef class Configuration(object):
         string += ')'
         return string
 
-    property e0:
+    property E0:
         """The ground-state energy of the configuration in J/mol."""
         def __get__(self):
             return sum([float(spec.conformer.E0.value_si) for spec in self.species])
@@ -318,7 +318,7 @@ cdef class Configuration(object):
                         dens_states = mode.get_density_of_states(self.e_list, dens_states)
                 self.dens_states = dens_states
                 for spec in self.species:
-                    self.dens_states *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                    self.dens_states *= spec.conformer.spin_multiplicity * spec.conformer.optical_isomers
 
             else:
                 # Since the evaluation of quantum hindered rotors is slow, it is
@@ -339,8 +339,8 @@ cdef class Configuration(object):
                 self.dens_states, self.sum_states = get_density_of_states_forst(self.e_list, log_q)
 
                 for spec in self.species:
-                    self.dens_states *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
-                    self.sum_states *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                    self.dens_states *= spec.conformer.spin_multiplicity * spec.conformer.optical_isomers
+                    self.sum_states *= spec.conformer.spin_multiplicity * spec.conformer.optical_isomers
         if self.dens_states is None:
             raise ValueError("Species {} has no active modes".format(species.label))
 
@@ -353,7 +353,7 @@ cdef class Configuration(object):
         total angular momentum quantum numbers `j_list`.
         """
         cdef np.ndarray[np.float64_t,ndim=2] dens_states
-        cdef double e0, de0, b1, b2, e, d_j
+        cdef double E0, de0, b1, b2, e, d_j
         cdef int r0, r, s, t, n_grains, n_j, j, j1, j2
         cdef list b_list
 
@@ -363,7 +363,7 @@ cdef class Configuration(object):
                 break
         f = scipy.interpolate.InterpolatedUnivariateSpline(self.e_list[r:], np.log(self.dens_states[r:]))
 
-        e0 = self.e0
+        E0 = self.E0
         n_grains = e_list.shape[0]
         d_e = e_list[1] - e_list[0]
         d_e0 = self.e_list[1] - self.e_list[0]
@@ -371,9 +371,9 @@ cdef class Configuration(object):
         if self.active_j_rotor:
             dens_states = np.zeros((n_grains,1))
             for r0 in range(n_grains):
-                if e_list[r0] >= e0: break
+                if e_list[r0] >= E0: break
             for r in range(r0, n_grains):
-                dens_states[r, 0] = f(e_list[r] - e0)
+                dens_states[r, 0] = f(e_list[r] - E0)
             dens_states[r0:, 0] = np.exp(dens_states[r0:, 0])
         else:
             assert j_list is not None
@@ -387,14 +387,14 @@ cdef class Configuration(object):
                 b_list.append(float(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
-                if e_list[r0] >= e0: break
+                if e_list[r0] >= E0: break
 
             if len(b_list) == 1:
                 b1 = b_list[0] * 11.962  # cm^-1 to J/mol
                 for r in range(r0, n_grains):
                     for s in range(n_j):
                         j1 = j_list[s]
-                        e = e_list[r] - e0 - b1 * j1 * (j1 + 1)
+                        e = e_list[r] - E0 - b1 * j1 * (j1 + 1)
                         if e < 0: break
                         dens_states[r,s] = (2 * j1 + 1) * exp(f(e)) * d_j
 
@@ -407,7 +407,7 @@ cdef class Configuration(object):
                         for t in range(s + 1):
                             j1 = j_list[t]
                             j2 = j - j1
-                            e = e_list[r] - e0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
+                            e = e_list[r] - E0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
                             if e > 0:
                                 dens_states[r, s] += (2 * j1 + 1) * (2 * j2 + 2) * exp(f(e)) * d_j * d_j
 
@@ -422,7 +422,7 @@ cdef class Configuration(object):
         total angular momentum quantum numbers `j_list`.
         """
         cdef np.ndarray[np.float64_t,ndim=2] sum_states
-        cdef double e0, b1, b2, d_j
+        cdef double E0, b1, b2, d_j
         cdef int r0, r, s, n_grains, n_j, j1, j2
 
         import scipy.interpolate
@@ -431,16 +431,16 @@ cdef class Configuration(object):
                 break
         f = scipy.interpolate.InterpolatedUnivariateSpline(self.e_list[r:], np.log(self.sum_states[r:]))
 
-        e0 = self.e0
+        E0 = self.E0
         n_grains = len(e_list)
 
         if self.active_j_rotor:
             sum_states = np.zeros((n_grains,1))
             for r0 in range(n_grains):
-                if e_list[r0] >= e0:
+                if e_list[r0] >= E0:
                     break
             for r in range(r0, n_grains):
-                sum_states[r, 0] = f(e_list[r] - e0)
+                sum_states[r, 0] = f(e_list[r] - E0)
             sum_states[r0:, 0] = np.exp(sum_states[r0:, 0])
         else:
             assert j_list is not None
@@ -454,7 +454,7 @@ cdef class Configuration(object):
                 b_list.append(float(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
-                if e_list[r0] >= e0:
+                if e_list[r0] >= E0:
                     break
 
             if len(b_list) == 1:
@@ -462,7 +462,7 @@ cdef class Configuration(object):
                 for r in range(r0, n_grains):
                     for s in range(n_j):
                         j1 = j_list[s]
-                        e = e_list[r] - e0 - b1 * j1 * (j1 + 1)
+                        e = e_list[r] - E0 - b1 * j1 * (j1 + 1)
                         if e < 0:
                             break
                         sum_states[r,s] = (2 * j1 + 1) * exp(f(e)) * d_j
@@ -476,7 +476,7 @@ cdef class Configuration(object):
                         for t in range(s + 1):
                             j1 = j_list[t]
                             j2 = j - j1
-                            e = e_list[r] - e0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
+                            e = e_list[r] - E0 - b1 * j1 * (j1 + 1) - b2 * j2 * (j2 + 1)
                             if e > 0:
                                 sum_states[r, s] += (2 * j1 + 1) * (2 * j2 + 1) * exp(f(e)) * d_j * d_j
 

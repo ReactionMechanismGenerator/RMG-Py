@@ -58,7 +58,7 @@ class TestPdep(unittest.TestCase):
         self.nC4H10O = Species(
             label='n-C4H10O',
             conformer=Conformer(
-                e0=(-317.807, 'kJ/mol'),
+                E0=(-317.807, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(74.07, "g/mol")),
                     NonlinearRotor(inertia=([41.5091, 215.751, 233.258], "amu*angstrom^2"), symmetry=1),
@@ -91,7 +91,7 @@ class TestPdep(unittest.TestCase):
         self.nC4H8 = Species(
             label='n-C4H8',
             conformer=Conformer(
-                e0=(-17.8832, 'kJ/mol'),
+                E0=(-17.8832, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(56.06, "g/mol")),
                     NonlinearRotor(inertia=([22.2748, 122.4, 125.198], "amu*angstrom^2"), symmetry=1),
@@ -116,7 +116,7 @@ class TestPdep(unittest.TestCase):
         self.H2O = Species(
             label='H2O',
             conformer=Conformer(
-                e0=(-269.598, 'kJ/mol'),
+                E0=(-269.598, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(18.01, "g/mol")),
                     NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),
@@ -143,7 +143,7 @@ class TestPdep(unittest.TestCase):
         self.TS = TransitionState(
             label='TS',
             conformer=Conformer(
-                e0=(-42.4373, "kJ/mol"),
+                E0=(-42.4373, "kJ/mol"),
                 modes=[
                     IdealGasTranslation(mass=(74.07, "g/mol")),
                     NonlinearRotor(inertia=([40.518, 232.666, 246.092], "u*angstrom**2"), symmetry=1, quantum=False),
@@ -189,7 +189,7 @@ class TestPdep(unittest.TestCase):
     def test_energy_filter(self):
         rxns = self.pdepnetwork.get_energy_filtered_reactions(1000.0, 0.0)
         self.assertEquals(len(rxns), 1)
-        self.assertEquals(rxns[0], self.pdepnetwork.pathReactions[0])
+        self.assertEquals(rxns[0], self.pdepnetwork.path_reactions[0])
 
     def test_flux_filter(self):
         prods = self.pdepnetwork.get_rate_filtered_products(1000.0, 100000.0, 1.0)

@@ -201,7 +201,7 @@ def apply_rrkm_theory(transition_state,
     k0 = np.zeros((n_grains,n_j))
     k = np.zeros_like(k0)
     d_e = e_list[1] - e_list[0]
-    e0_ts = transition_state.conformer.e0.value_si
+    e0_ts = transition_state.conformer.E0.value_si
 
     conf = Configuration(transition_state)
     conf.calculate_density_of_states(e_list - e_list[0], active_j_rotor=active_j_rotor)
@@ -214,16 +214,16 @@ def apply_rrkm_theory(transition_state,
     conf.sum_states = convolve(conf.dens_states, kappa)
     conf.e_list += e_list[0] - e0_ts
 
-    e0 = None
+    E0 = None
     for r in range(n_grains):
         if conf.sum_states[r] > 0:
-            e0 = conf.e_list[r]
+            E0 = conf.e_list[r]
             break
-    if e0 is None:
+    if E0 is None:
         raise ValueError, "Could not find a positive sum of states for {0}".format(conf)
-    conf.e_list -= e0
+    conf.e_list -= E0
 
-    sum_states = conf.map_sum_of_states(e_list - e0, j_list)
+    sum_states = conf.map_sum_of_states(e_list - E0, j_list)
 
     # Generate k(E) using RRKM formula (with tunneling)
     d_e /= constants.h * constants.Na  # J/mol -> s^-1
@@ -246,7 +246,7 @@ def apply_inverse_laplace_transform_method(transition_state,
     """
     Calculate the microcanonical rate coefficient for a reaction using the
     inverse Laplace transform method, where `kinetics` is the high pressure 
-    limit rate coefficient, `e0` is the ground-state energy of the transition
+    limit rate coefficient, `E0` is the ground-state energy of the transition
     state, `e_list` is the array of energies in kJ/mol at which to evaluate the
     microcanonial rate, and `dens_states` is the density of states of the
     reactant. The temperature `T` in K is not required, and is only used when
@@ -257,7 +257,7 @@ def apply_inverse_laplace_transform_method(transition_state,
     cdef np.ndarray[np.float64_t,ndim=1] phi0, phi
     cdef int n_grains, n_j
     cdef bint active_j_rotor
-    cdef double d_e, gas_constant, freq_factor, n, e_a, m0, rem, e0, num, energy, n_crit
+    cdef double d_e, gas_constant, freq_factor, n, e_a, m0, rem, E0, num, energy, n_crit
     cdef int r, s, m
 
     n_grains = e_list.shape[0]
@@ -265,7 +265,7 @@ def apply_inverse_laplace_transform_method(transition_state,
     k = np.zeros((n_grains,n_j))
     d_e = e_list[1] - e_list[0]
     gas_constant = constants.R
-    e0 = transition_state.conformer.e0.value_si
+    E0 = transition_state.conformer.E0.value_si
 
     n = kinetics.n.value_si
     freq_factor = kinetics.A.value_si / (kinetics.T0.value_si ** n)
@@ -299,12 +299,12 @@ def apply_inverse_laplace_transform_method(transition_state,
             if rem == 0:
                 for s in range(n_j):
                     for r in range(m, n_grains):
-                        if e_list[r] > e0 and dens_states[r, s] != 0:
+                        if e_list[r] > E0 and dens_states[r, s] != 0:
                             k[r, s] = freq_factor * dens_states[r - m, s] / dens_states[r, s]
             else:
                 for s in range(n_j):
                     for r in range(m + 1, n_grains):
-                        if e_list[r] > e0 and dens_states[r, s] != 0 \
+                        if e_list[r] > E0 and dens_states[r, s] != 0 \
                                 and abs(dens_states[r - m, s]) > 1e-12 \
                                 and abs(dens_states[r - m - 1, s]) > 1e-12:
                             num = dens_states[r - m, s] * (dens_states[r - m - 1, s] / dens_states[r - m, s]) \

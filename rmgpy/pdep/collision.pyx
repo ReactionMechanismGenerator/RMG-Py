@@ -237,12 +237,12 @@ cdef class SingleExponentialDown(RMGObject):
                                        np.ndarray[np.float64_t,ndim=1] e_list,
                                        np.ndarray[np.int_t,ndim=1] j_list,
                                        np.ndarray[np.float64_t,ndim=2] dens_states,
-                                       double e0, double e_reac):
+                                       double E0, double e_reac):
         """
         Calculate an efficiency factor for collisions, particularly useful for the
         modified strong collision method. The collisions involve the given 
         `species` with density of states `dens_states` corresponding to energies
-        e_list` in J/mol, ground-state energy `e0` in kJ/mol, and first
+        e_list` in J/mol, ground-state energy `E0` in kJ/mol, and first
         reactive energy `e_reac` in kJ/mol. The collisions occur at temperature `T`
         in K and are described by the average energy transferred in a deactivating
         collision `d_e_down` in kJ/mol. The algorithm here is implemented as
@@ -260,8 +260,8 @@ cdef class SingleExponentialDown(RMGObject):
     
         # Ensure that the barrier height is sufficiently above the ground state
         # Otherwise invalid efficiencies are observed
-        if e_reac - e0 < 100:
-            e_reac = e0 + 100
+        if e_reac - E0 < 100:
+            e_reac = E0 + 100
     
         d_e_down = self.get_alpha(T)
     

@@ -522,25 +522,25 @@ class Species(object):
                             'no thermo or statmech data available.'.format(self.label))
         return G
 
-    def get_sum_of_states(self, Elist):
+    def get_sum_of_states(self, e_list):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol.
         """
         if self.has_statmech():
-            return self.conformer.get_sum_of_states(Elist)
+            return self.conformer.get_sum_of_states(e_list)
         else:
             raise Exception('Unable to calculate sum of states for species {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def get_density_of_states(self, Elist):
+    def get_density_of_states(self, e_list):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `e_list` in J/mol above the ground state.
         """
         if self.has_statmech():
             try:
-                return self.conformer.get_density_of_states(Elist)
+                return self.conformer.get_density_of_states(e_list)
             except StatmechError:
                 logging.error('StatmechError raised for species {0}'.format(self.label))
                 raise
@@ -781,12 +781,12 @@ class Species(object):
         if self.conformer is None:
             self.conformer = Conformer()
 
-        if self.conformer.e0 is None:
+        if self.conformer.E0 is None:
             self.set_e0_with_thermo()
 
         self.conformer.modes = conformer.modes
-        self.conformer.spin_multiplicity = conformer.spinMultiplicity
-        if self.conformer.e0 is None or not self.has_statmech():
+        self.conformer.spin_multiplicity = conformer.spin_multiplicity
+        if self.conformer.E0 is None or not self.has_statmech():
             logging.error('The conformer in question is {}'.format(self.conformer))
             raise StatmechError('Species {0} does not have stat mech after generate_statmech called'.format(self.label))
 
@@ -907,8 +907,8 @@ class TransitionState(object):
         cython.declare(Cp=cython.double)
         Cp = 0.0
 
-        if self.getThermoData() is not None:
-            Cp = self.getThermoData().get_heat_capacity(T)
+        if self.get_thermo_data() is not None:
+            Cp = self.get_thermo_data().get_heat_capacity(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             Cp = self.conformer.get_heat_capacity(T)
         else:
@@ -924,8 +924,8 @@ class TransitionState(object):
         cython.declare(H=cython.double)
         H = 0.0
 
-        if self.getThermoData() is not None:
-            H = self.getThermoData().get_enthalpy(T)
+        if self.get_thermo_data() is not None:
+            H = self.get_thermo_data().get_enthalpy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             H = self.conformer.get_enthalpy(T)
         else:
@@ -941,8 +941,8 @@ class TransitionState(object):
         cython.declare(S=cython.double)
         S = 0.0
 
-        if self.getThermoData() is not None:
-            S = self.getThermoData().get_entropy(T)
+        if self.get_thermo_data() is not None:
+            S = self.get_thermo_data().get_entropy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             S = self.conformer.get_entropy(T)
         else:
@@ -958,8 +958,8 @@ class TransitionState(object):
         cython.declare(G=cython.double)
         G = 0.0
 
-        if self.getThermoData() is not None:
-            G = self.getThermoData().get_free_energy(T)
+        if self.get_thermo_data() is not None:
+            G = self.get_thermo_data().get_free_energy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             G = self.conformer.get_free_energy(T)
         else:
@@ -967,29 +967,29 @@ class TransitionState(object):
                             'no thermo or statmech data available.'.format(self.label))
         return G
 
-    def get_sum_of_states(self, Elist):
+    def get_sum_of_states(self, e_list):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol.
         """
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            return self.conformer.get_sum_of_states(Elist)
+            return self.conformer.get_sum_of_states(e_list)
         else:
             raise Exception('Unable to calculate sum of states for transition state {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def get_density_of_states(self, Elist):
+    def get_density_of_states(self, e_list):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `e_list` in J/mol above the ground state.
         """
         if self.conformer is not None and len(self.conformer.modes) > 0:
-            return self.conformer.get_density_of_states(Elist)
+            return self.conformer.get_density_of_states(e_list)
         else:
             raise Exception('Unable to calculate density of states for transition state {0!r}: '
                             'no statmech data available.'.format(self.label))
 
-    def calculateTunnelingFactor(self, T):
+    def calculate_tunneling_factor(self, T):
         """
         Calculate and return the value of the canonical tunneling correction 
         factor for the reaction at the given temperature `T` in K.
@@ -1000,19 +1000,19 @@ class TransitionState(object):
             # Return unity
             return 1.0
 
-    def calculateTunnelingFunction(self, Elist):
+    def calculate_tunneling_function(self, e_list):
         """
         Calculate and return the value of the microcanonical tunneling 
         correction for the reaction at the given energies `e_list` in J/mol.
         """
         if self.tunneling is not None:
-            return self.tunneling.calculate_tunneling_function(Elist)
+            return self.tunneling.calculate_tunneling_function(e_list)
         else:
             # Return step function
-            kappa = np.ones_like(Elist)
+            kappa = np.ones_like(e_list)
             E0 = float(self.conformer.E0.value_si)
-            for r in range(Elist.shape[0]):
-                if Elist[r] >= E0:
+            for r in range(e_list.shape[0]):
+                if e_list[r] >= E0:
                     break
                 kappa[r] = 0.0
             return kappa

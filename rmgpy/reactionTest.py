@@ -270,7 +270,7 @@ class TestReaction(unittest.TestCase):
         ethylene = Species(
             label='C2H4',
             conformer=Conformer(
-                e0=(44.7127, 'kJ/mol'),
+                E0=(44.7127, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(28.0313, 'amu'),
@@ -298,7 +298,7 @@ class TestReaction(unittest.TestCase):
         hydrogen = Species(
             label='H',
             conformer=Conformer(
-                e0=(211.794, 'kJ/mol'),
+                E0=(211.794, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(1.00783, 'amu'),
@@ -312,7 +312,7 @@ class TestReaction(unittest.TestCase):
         ethyl = Species(
             label='C2H5',
             conformer=Conformer(
-                e0=(111.603, 'kJ/mol'),
+                E0=(111.603, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(29.0391, 'amu'),
@@ -346,7 +346,7 @@ class TestReaction(unittest.TestCase):
         TS = TransitionState(
             label='TS',
             conformer=Conformer(
-                e0=(266.694, 'kJ/mol'),
+                E0=(266.694, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(
                         mass=(29.0391, 'amu'),

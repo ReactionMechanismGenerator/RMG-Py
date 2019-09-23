@@ -181,11 +181,11 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         unimolecular isomers.
         """
         k = 0.0
-        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+        if len(self.net_reactions) == 0 and len(self.path_reactions) == 1:
             # The network is of the form A + B -> C* (with C* nonincluded)
             # For this special case we use the high-pressure limit k(T) to
             # ensure that we're estimating the total leak flux
-            rxn = self.pathReactions[0]
+            rxn = self.path_reactions[0]
             if rxn.kinetics is None:
                 if rxn.reverse.kinetics is not None:
                     rxn = rxn.reverse
@@ -199,7 +199,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         else:
             # The network has at least one included isomer, so we can calculate
             # the leak flux normally
-            for rxn in self.netReactions:
+            for rxn in self.net_reactions:
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
                     k += rxn.get_rate_coefficient(T, P)
         return k
@@ -213,9 +213,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Choose species with maximum leak flux
         max_k = 0.0
         max_species = None
-        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
+        if len(self.net_reactions) == 0 and len(self.path_reactions) == 1:
             max_k = self.getLeakCoefficient(T, P)
-            rxn = self.pathReactions[0]
+            rxn = self.path_reactions[0]
             if rxn.products == self.source:
                 assert len(rxn.reactants) == 1
                 max_species = rxn.reactants[0]
@@ -223,7 +223,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 assert len(rxn.products) == 1
                 max_species = rxn.products[0]
         else:
-            for rxn in self.netReactions:
+            for rxn in self.net_reactions:
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
                     k = rxn.get_rate_coefficient(T, P)
                     if max_species is None or k > max_k:
@@ -242,8 +242,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         keys and the fraction of the total leak coefficient as the values.
         """
         ratios = {}
-        if len(self.netReactions) == 0 and len(self.pathReactions) == 1:
-            rxn = self.pathReactions[0]
+        if len(self.net_reactions) == 0 and len(self.path_reactions) == 1:
+            rxn = self.path_reactions[0]
             assert rxn.reactants == self.source or rxn.products == self.source
             if rxn.products == self.source:
                 assert len(rxn.reactants) == 1
@@ -252,7 +252,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 assert len(rxn.products) == 1
                 ratios[rxn.products[0]] = 1.0
         else:
-            for rxn in self.netReactions:
+            for rxn in self.net_reactions:
                 if len(rxn.products) == 1 and rxn.products[0] not in self.explored:
                     ratios[rxn.products[0]] = rxn.get_rate_coefficient(T, P)
 
@@ -309,7 +309,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
         # Add this reaction to that network if not already present
         found = False
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             if newReaction.reactants == rxn.reactants and newReaction.products == rxn.products:
                 found = True
                 break
@@ -317,7 +317,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 found = True
                 break
         if not found:
-            self.pathReactions.append(newReaction)
+            self.path_reactions.append(newReaction)
             self.invalidate()
 
     def get_energy_filtered_reactions(self, T, tol):
@@ -330,7 +330,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             if len(conf.species) == len(self.source):
                 if len(self.source) == 1:
                     if self.source[0].is_isomorphic(conf.species[0]):
-                        E0source = conf.e0
+                        E0source = conf.E0
                         break
                 elif len(self.source) == 2:
                     boo00 = self.source[0].is_isomorphic(conf.species[0])
@@ -339,13 +339,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         boo10 = self.source[1].is_isomorphic(conf.species[0])
                         boo11 = self.source[1].is_isomorphic(conf.species[1])
                         if (boo00 and boo11) or (boo01 and boo10):
-                            E0source = conf.e0
+                            E0source = conf.E0
                             break
         else:
             raise ValueError('No isomer, product or reactant channel is isomorphic to the source')
 
         filtered_rxns = []
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             E0 = rxn.transition_state.conformer.E0.value_si
             if E0 - E0source > dE:
                 filtered_rxns.append(rxn)
@@ -362,7 +362,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         isomer_spcs = [iso.species[0] for iso in self.isomers]
         filtered_prod = []
         if c is not None:
-            for rxn in self.netReactions:
+            for rxn in self.net_reactions:
                 val = 0.0
                 val2 = 0.0
                 if rxn.reactants[0] in isomer_spcs:
@@ -381,10 +381,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         else:
             logging.warning("Falling back flux reduction from Steady State analysis to rate coefficient analysis")
-            ks = np.array([rxn.get_rate_coefficient(T, P) for rxn in self.netReactions])
+            ks = np.array([rxn.get_rate_coefficient(T, P) for rxn in self.net_reactions])
             frs = ks / ks.sum()
             inds = [i for i in range(len(frs)) if frs[i] < tol]
-            filtered_prod = [self.netReactions[i].products for i in inds]
+            filtered_prod = [self.net_reactions[i].products for i in inds]
             return filtered_prod
 
     def solve_SS_network(self, T, P):
@@ -399,7 +399,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         isomer_spcs = [iso.species[0] for iso in self.isomers]
 
-        for rxn in self.netReactions:
+        for rxn in self.net_reactions:
             if rxn.reactants[0] in isomer_spcs:
                 ind = isomer_spcs.index(rxn.reactants[0])
                 kf = rxn.get_rate_coefficient(T, P)
@@ -466,7 +466,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         incomplete = True
         while incomplete:
             s = len(kept_reactions)
-            for rxn in self.pathReactions:
+            for rxn in self.path_reactions:
                 if not rxn in kept_reactions:
                     if rxn.reactants in kept_products:
                         kept_products.append(rxn.products)
@@ -478,19 +478,19 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             incomplete = s != len(kept_reactions)
 
         logging.info('Removing disconnected items')
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             if rxn not in kept_reactions:
                 logging.info('Removing rxn: {}'.format(rxn))
-                self.pathReactions.remove(rxn)
+                self.path_reactions.remove(rxn)
 
         nrxns = []
-        for nrxn in self.netReactions:
+        for nrxn in self.net_reactions:
             if nrxn.products not in kept_products or nrxn.reactants not in kept_products:
                 logging.info('Removing net rxn: {}'.format(nrxn))
             else:
                 logging.info('Keeping net rxn: {}'.format(nrxn))
                 nrxns.append(nrxn)
-        self.netReactions = nrxns
+        self.net_reactions = nrxns
 
         prods = []
         for prod in self.products:
@@ -533,7 +533,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
         if rxns:
             for rxn in rxns:
-                self.pathReactions.remove(rxn)
+                self.path_reactions.remove(rxn)
 
         if prods:
             isomers = [x.species[0] for x in self.isomers]
@@ -542,23 +542,23 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 prod = [x for x in prod]
                 if prod[0] in isomers:  # skip isomers
                     continue
-                for rxn in self.pathReactions:
+                for rxn in self.path_reactions:
                     if rxn.products == prod or rxn.reactants == prod:
-                        self.pathReactions.remove(rxn)
+                        self.path_reactions.remove(rxn)
 
             prodspc = [x[0] for x in prods]
             for prod in prods:
                 prod = [x for x in prod]
                 if prod[0] in isomers:  # deal with isomers
-                    for rxn in self.pathReactions:
+                    for rxn in self.path_reactions:
                         if rxn.reactants == prod and rxn.products[0] not in isomers and rxn.products[0] not in prodspc:
                             break
                         if rxn.products == prod and rxn.reactants[0] not in isomers and rxn.reactants not in prodspc:
                             break
                     else:
-                        for rxn in self.pathReactions:
+                        for rxn in self.path_reactions:
                             if rxn.reactants == prod or rxn.products == prod:
-                                self.pathReactions.remove(rxn)
+                                self.path_reactions.remove(rxn)
 
         self.remove_disconnected_reactions()
 
@@ -566,7 +566,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         self.invalidate()
 
-        assert self.pathReactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
+        assert self.path_reactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
 
         reactionModel.updateUnimolecularReactionNetworks()
 
@@ -615,30 +615,30 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             self.products.remove(products)
 
         # Merge path reactions
-        for reaction in other.pathReactions:
+        for reaction in other.path_reactions:
             found = False
-            for rxn in self.pathReactions:
+            for rxn in self.path_reactions:
                 if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
                     # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
                     # I am not sure which is appropriate 
                     found = True
                     break
             if not found:
-                self.pathReactions.append(reaction)
+                self.path_reactions.append(reaction)
 
         # Also merge net reactions (so that when we update the network in the
         # future, we update the existing net reactions rather than making new ones)
         # Q: What to do when a net reaction exists in both networks being merged?
-        for reaction in other.netReactions:
+        for reaction in other.net_reactions:
             found = False
-            for rxn in self.netReactions:
+            for rxn in self.net_reactions:
                 if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
                     # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
                     # I am not sure which is appropriate 
                     found = True
                     break
             if not found:
-                self.netReactions.append(reaction)
+                self.net_reactions.append(reaction)
 
         # Mark this network as invalid
         self.valid = False
@@ -666,7 +666,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             reactants.append(self.source)
 
         # Iterate over path reactions and make sure each set of reactants and products is classified
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             # Sort bimolecular configurations so that we always encounter them in the
             # same order
             # The actual order doesn't matter, as long as it is consistent
@@ -742,7 +742,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.updateConfigurations(reactionModel)
 
         # Make sure we have high-P kinetics for all path reactions
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             if rxn.kinetics is None and rxn.reverse.kinetics is None:
                 raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered in '
                                               'PDepNetwork #{1:d}.'.format(rxn, self.index))
@@ -770,7 +770,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     spec.generate_statmech()
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
-        for reaction in self.pathReactions:
+        for reaction in self.path_reactions:
             for spec in reaction.reactants:
                 if not spec.has_statmech():
                     spec.generate_statmech()
@@ -780,13 +780,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for products in self.products:
             for spec in products.species:
                 if spec.conformer is None:
-                    spec.conformer = Conformer(e0=spec.get_thermo_data().E0)
+                    spec.conformer = Conformer(E0=spec.get_thermo_data().E0)
 
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
         # Note that we need Arrhenius kinetics in order to do this
-        for rxn in self.pathReactions:
+        for rxn in self.path_reactions:
             if rxn.kinetics is None:
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has no kinetics!'.format(rxn, self.index))
             elif isinstance(rxn.kinetics, KineticsData):
@@ -808,10 +808,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                 'type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
             rxn.fix_barrier_height(force_positive=True)
             if rxn.network_kinetics is None:
-                E0 = sum([spec.conformer.e0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
             else:
-                E0 = sum([spec.conformer.e0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
-            rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(e0=(E0 * 0.001, "kJ/mol")))
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
+            rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
 
         # Set collision model
         bath_gas = [spec for spec in reactionModel.core.species if not spec.reactive]
@@ -848,7 +848,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             if i != j:
                 # Find the path reaction
                 net_reaction = None
-                for r in self.netReactions:
+                for r in self.net_reactions:
                     if r.has_template(configurations[j], configurations[i]):
                         net_reaction = r
                 # If net reaction does not already exist, make a new one
@@ -860,7 +860,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         kinetics=None
                     )
                     net_reaction = reactionModel.makeNewPDepReaction(net_reaction)
-                    self.netReactions.append(net_reaction)
+                    self.net_reactions.append(net_reaction)
 
                     # Place the net reaction in the core or edge if necessary
                     # Note that leak reactions are not placed in the edge
@@ -905,7 +905,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 # limit
                 t = 0
                 p = len(Plist) - 1
-                for pathReaction in self.pathReactions:
+                for pathReaction in self.path_reactions:
                     if pathReaction.is_isomerization():
                         # Don't check isomerization reactions, since their
                         # k(T,P) values potentially contain both direct and

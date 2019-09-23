@@ -196,7 +196,7 @@ def species(label, *args, **kwargs):
 
         if structure:
             spec.molecule = [structure]
-        spec.conformer = Conformer(e0=E0, modes=modes, spin_multiplicity=spinMultiplicity, optical_isomers=opticalIsomers)
+        spec.conformer = Conformer(E0=E0, modes=modes, spin_multiplicity=spinMultiplicity, optical_isomers=opticalIsomers)
         if molecularWeight is not None:
             spec.molecularWeight = molecularWeight
         elif spec.molecularWeight is None and is_pdep(jobList):
@@ -210,7 +210,7 @@ def species(label, *args, **kwargs):
         spec.thermo = thermo
         spec.reactive = reactive
 
-        if spec.reactive and path is None and spec.thermo is None and spec.conformer.e0 is None:
+        if spec.reactive and path is None and spec.thermo is None and spec.conformer.E0 is None:
             if not spec.molecule:
                 raise InputError('Neither thermo, E0, species file path, nor structure specified, cannot estimate'
                                  ' thermo properties of species {0}'.format(spec.label))
@@ -228,10 +228,10 @@ def species(label, *args, **kwargs):
                 spec.thermo = db.get_thermo_data(spec)
                 if spec.thermo.E0 is None:
                     th = spec.thermo.toWilhoit()
-                    spec.conformer.e0 = th.E0
+                    spec.conformer.E0 = th.E0
                     spec.thermo.E0 = th.E0
                 else:
-                    spec.conformer.e0 = spec.thermo.E0
+                    spec.conformer.E0 = spec.thermo.E0
 
         if spec.reactive and spec.thermo and not spec.has_statmech() and structure is not None:
             # generate stat mech info if it wasn't provided before
@@ -280,7 +280,7 @@ def transitionState(label, *args, **kwargs):
             else:
                 raise TypeError('transition_state() got an unexpected keyword argument {0!r}.'.format(key))
 
-        ts.conformer = Conformer(e0=E0, modes=modes, spin_multiplicity=spinMultiplicity, optical_isomers=opticalIsomers)
+        ts.conformer = Conformer(E0=E0, modes=modes, spin_multiplicity=spinMultiplicity, optical_isomers=opticalIsomers)
         ts.frequency = frequency
     else:
         if len(args) == 0 and len(kwargs) == 0:

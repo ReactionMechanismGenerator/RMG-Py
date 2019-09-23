@@ -89,9 +89,9 @@ cdef class Species:
 
     cpdef double get_free_energy(self, double T) except 100000000
 
-    cpdef np.ndarray get_sum_of_states(self, np.ndarray Elist)
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list)
 
-    cpdef np.ndarray get_density_of_states(self, np.ndarray Elist)
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list)
 
     cpdef double calculate_cp0(self) except -1
 
@@ -123,10 +123,10 @@ cdef class TransitionState:
 
     cpdef double get_free_energy(self, double T) except 100000000
 
-    cpdef np.ndarray get_sum_of_states(self, np.ndarray Elist)
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list)
 
-    cpdef np.ndarray get_density_of_states(self, np.ndarray Elist)
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list)
     
-    cpdef double calculateTunnelingFactor(self, double T) except -1
+    cpdef double calculate_tunneling_factor(self, double T) except -1
     
-    cpdef np.ndarray calculateTunnelingFunction(self, np.ndarray Elist)
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray e_list)

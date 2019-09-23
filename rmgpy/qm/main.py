@@ -197,7 +197,7 @@ class QMCalculator(object):
                     logging.warning("Checking it already exists...")
                     assert os.path.exists(path), "Path {0} still doesn't exist?".format(path)
 
-    def getThermoData(self, molecule):
+    def get_thermo_data(self, molecule):
         """
         Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
         

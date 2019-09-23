@@ -66,7 +66,7 @@ class TestSpecies(unittest.TestCase):
                 Tmax=(2000.0, 'K'),
             ),
             conformer=Conformer(
-                e0=(0.0, 'kJ/mol'),
+                E0=(0.0, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(28.03, 'amu')),
                     NonlinearRotor(inertia=([5.6952e-47, 2.7758e-46, 3.3454e-46], 'kg*m^2'), symmetry=1),

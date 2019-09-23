@@ -61,7 +61,7 @@ class TestNetwork(unittest.TestCase):
         self.nC4H10O = Species(
             label='n-C4H10O',
             conformer=Conformer(
-                e0=(-317.807, 'kJ/mol'),
+                E0=(-317.807, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(74.07, "g/mol")),
                     NonlinearRotor(inertia=([41.5091, 215.751, 233.258], "amu*angstrom^2"), symmetry=1),
@@ -92,7 +92,7 @@ class TestNetwork(unittest.TestCase):
         self.nC4H8 = Species(
             label='n-C4H8',
             conformer=Conformer(
-                e0=(-17.8832, 'kJ/mol'),
+                E0=(-17.8832, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(56.06, "g/mol")),
                     NonlinearRotor(inertia=([22.2748, 122.4, 125.198], "amu*angstrom^2"), symmetry=1),
@@ -116,7 +116,7 @@ class TestNetwork(unittest.TestCase):
         self.H2O = Species(
             label='H2O',
             conformer=Conformer(
-                e0=(-269.598, 'kJ/mol'),
+                E0=(-269.598, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(18.01, "g/mol")),
                     NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),
@@ -137,7 +137,7 @@ class TestNetwork(unittest.TestCase):
         self.TS = TransitionState(
             label='TS',
             conformer=Conformer(
-                e0=(-42.4373, "kJ/mol"),
+                E0=(-42.4373, "kJ/mol"),
                 modes=[
                     IdealGasTranslation(mass=(74.07, "g/mol")),
                     NonlinearRotor(inertia=([40.518, 232.666, 246.092], "u*angstrom**2"), symmetry=1, quantum=False),
@@ -185,40 +185,40 @@ class TestNetwork(unittest.TestCase):
         Test that the network `isomers` property was properly set.
         """
         self.assertEqual(1, len(self.network.isomers))
-        self.assertEqual(1, self.network.Nisom)
+        self.assertEqual(1, self.network.n_isom)
 
     def test_reactants(self):
         """
         Test that the network `reactants` property was properly set.
         """
         self.assertEqual(0, len(self.network.reactants))
-        self.assertEqual(0, self.network.Nreac)
+        self.assertEqual(0, self.network.n_reac)
 
     def test_products(self):
         """
         Test that the network `products` property was properly set.
         """
         self.assertEqual(1, len(self.network.products))
-        self.assertEqual(1, self.network.Nprod)
+        self.assertEqual(1, self.network.n_prod)
 
     def test_pathReactions(self):
         """
         Test that the network `path_reactions` property was properly set.
         """
-        self.assertEqual(1, len(self.network.pathReactions))
+        self.assertEqual(1, len(self.network.path_reactions))
 
     def test_bathGas(self):
         """
         Test that the network `bath_gas` property was properly set.
         """
-        self.assertEqual(1, len(self.network.bathGas))
-        self.assertTrue(self.N2 in self.network.bathGas)
+        self.assertEqual(1, len(self.network.bath_gas))
+        self.assertTrue(self.N2 in self.network.bath_gas)
 
     def test_netReactions(self):
         """
         Test that the network `net_reactions` property was properly set.
         """
-        self.assertEqual(0, len(self.network.netReactions))
+        self.assertEqual(0, len(self.network.net_reactions))
 
     def test_repr(self):
         """

@@ -59,7 +59,7 @@ class TestConfiguration(unittest.TestCase):
         self.nC4H10O = Species(
             label='n-C4H10O',
             conformer=Conformer(
-                e0=(-317.807, 'kJ/mol'),
+                E0=(-317.807, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(74.07, "g/mol")),
                     NonlinearRotor(inertia=([41.5091, 215.751, 233.258], "amu*angstrom^2"), symmetry=1),
@@ -90,7 +90,7 @@ class TestConfiguration(unittest.TestCase):
         self.nC4H8 = Species(
             label='n-C4H8',
             conformer=Conformer(
-                e0=(-17.8832, 'kJ/mol'),
+                E0=(-17.8832, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(56.06, "g/mol")),
                     NonlinearRotor(inertia=([22.2748, 122.4, 125.198], "amu*angstrom^2"), symmetry=1),
@@ -114,7 +114,7 @@ class TestConfiguration(unittest.TestCase):
         self.H2O = Species(
             label='H2O',
             conformer=Conformer(
-                e0=(-269.598, 'kJ/mol'),
+                E0=(-269.598, 'kJ/mol'),
                 modes=[
                     IdealGasTranslation(mass=(18.01, "g/mol")),
                     NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),

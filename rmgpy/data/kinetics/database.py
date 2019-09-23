@@ -768,17 +768,17 @@ and immediately used in input files without any additional changes.
                 log_a = 0
                 n = 0
                 alpha = 0
-                e0 = 0
+                E0 = 0
                 for rule_entry, weight in rules:
                     log_a += np.log10(rule_entry.data.A.value_si) * weight
                     n += rule_entry.data.n.value_si * weight
                     alpha += rule_entry.data.alpha.value_si * weight
-                    e0 += rule_entry.data.E0.value_si * weight
+                    E0 += rule_entry.data.E0.value_si * weight
                 for rule_entry, training_entry, weight in training:
                     log_a += np.log10(rule_entry.data.A.value_si) * weight
                     n += rule_entry.data.n.value_si * weight
                     alpha += rule_entry.data.alpha.value_si * weight
-                    e0 += rule_entry.data.E0.value_si * weight
+                    E0 += rule_entry.data.E0.value_si * weight
 
                 a_units = rule_entry.data.A.units
                 if a_units == 'cm^3/(mol*s)' or a_units == 'cm^3/(molecule*s)' or a_units == 'm^3/(molecule*s)':
@@ -793,7 +793,7 @@ and immediately used in input files without any additional changes.
                     A=(degeneracy * 10 ** log_a, a_units),
                     n=n,
                     alpha=alpha,
-                    E0=(e0 * 0.001, "kJ/mol"),
+                    E0=(E0 * 0.001, "kJ/mol"),
                 )
             else:
                 raise ValueError("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")

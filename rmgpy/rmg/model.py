@@ -1167,7 +1167,7 @@ class CoreEdgeReactionModel:
         """
         networks_to_delete = []
         for network in self.networkList:
-            if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+            if len(network.path_reactions) == 0 and len(network.net_reactions) == 0:
                 networks_to_delete.append(network)
 
         if len(networks_to_delete) > 0:
@@ -1310,19 +1310,19 @@ class CoreEdgeReactionModel:
             for network in self.networkList:
                 # Delete all path reactions involving the species
                 rxn_list = []
-                for rxn in network.pathReactions:
+                for rxn in network.path_reactions:
                     if spec in rxn.reactants or spec in rxn.products:
                         rxn_list.append(rxn)
                 if len(rxn_list) > 0:
                     for rxn in rxn_list:
-                        network.pathReactions.remove(rxn)
+                        network.path_reactions.remove(rxn)
                     # Delete all net reactions involving the species
                     rxn_list = []
-                    for rxn in network.netReactions:
+                    for rxn in network.net_reactions:
                         if spec in rxn.reactants or spec in rxn.products:
                             rxn_list.append(rxn)
                     for rxn in rxn_list:
-                        network.netReactions.remove(rxn)
+                        network.net_reactions.remove(rxn)
 
                     # Recompute the isomers, reactants, and products for this network
                     network.updateConfigurations(self)

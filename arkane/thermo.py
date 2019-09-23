@@ -123,9 +123,9 @@ class ThermoJob(object):
         S298 = 0.0
         conformer = self.species.conformer
         for i in range(Tlist.shape[0]):
-            Cplist[i] += conformer.getHeatCapacity(Tlist[i])
-        H298 += conformer.getEnthalpy(298.) + conformer.e0.value_si
-        S298 += conformer.getEntropy(298.)
+            Cplist[i] += conformer.get_heat_capacity(Tlist[i])
+        H298 += conformer.get_enthalpy(298.) + conformer.E0.value_si
+        S298 += conformer.get_entropy(298.)
 
         if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
             # Monatomic species
@@ -149,8 +149,8 @@ class ThermoJob(object):
             wilhoit.B = (500., "K")
             wilhoit.H0 = (0.0, "J/mol")
             wilhoit.S0 = (0.0, "J/(mol*K)")
-            wilhoit.H0 = (H298 - wilhoit.getEnthalpy(298.15), "J/mol")
-            wilhoit.S0 = (S298 - wilhoit.getEntropy(298.15), "J/(mol*K)")
+            wilhoit.H0 = (H298 - wilhoit.get_enthalpy(298.15), "J/mol")
+            wilhoit.S0 = (S298 - wilhoit.get_entropy(298.15), "J/(mol*K)")
         else:
             wilhoit.fitToData(Tlist, Cplist, Cp0, CpInf, H298, S298, B0=500.0)
 
@@ -170,8 +170,8 @@ class ThermoJob(object):
 
         with open(output_file, 'a') as f:
             f.write('# Thermodynamics for {0}:\n'.format(species.label))
-            H298 = species.get_thermo_data().getEnthalpy(298) / 4184.
-            S298 = species.get_thermo_data().getEntropy(298) / 4.184
+            H298 = species.get_thermo_data().get_enthalpy(298) / 4184.
+            S298 = species.get_thermo_data().get_entropy(298) / 4.184
             f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
             f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
             f.write('#    =========== =========== =========== =========== ===========\n')
@@ -180,10 +180,10 @@ class ThermoJob(object):
             f.write('#    =========== =========== =========== =========== ===========\n')
             for T in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
                 try:
-                    Cp = species.get_thermo_data().getHeatCapacity(T) / 4.184
-                    H = species.get_thermo_data().getEnthalpy(T) / 4184.
-                    S = species.get_thermo_data().getEntropy(T) / 4.184
-                    G = species.get_thermo_data().getFreeEnergy(T) / 4184.
+                    Cp = species.get_thermo_data().get_heat_capacity(T) / 4.184
+                    H = species.get_thermo_data().get_enthalpy(T) / 4184.
+                    S = species.get_thermo_data().get_entropy(T) / 4.184
+                    G = species.get_thermo_data().get_free_energy(T) / 4184.
                     f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
                 except ValueError:
                     logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species, T))
@@ -275,14 +275,14 @@ class ThermoJob(object):
         thermo = self.species.get_thermo_data()
         for i in range(Tlist.shape[0]):
             try:
-                Cplist[i] = conformer.getHeatCapacity(Tlist[i])
-                Slist[i] = conformer.getEntropy(Tlist[i])
-                Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.e0.value_si) * 0.001
+                Cplist[i] = conformer.get_heat_capacity(Tlist[i])
+                Slist[i] = conformer.get_entropy(Tlist[i])
+                Hlist[i] = (conformer.get_enthalpy(Tlist[i]) + conformer.E0.value_si) * 0.001
                 Glist[i] = Hlist[i] - Tlist[i] * Slist[i] * 0.001
-                Cplist1[i] = thermo.getHeatCapacity(Tlist[i])
-                Slist1[i] = thermo.getEntropy(Tlist[i])
-                Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
-                Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
+                Cplist1[i] = thermo.get_heat_capacity(Tlist[i])
+                Slist1[i] = thermo.get_entropy(Tlist[i])
+                Hlist1[i] = thermo.get_enthalpy(Tlist[i]) * 0.001
+                Glist1[i] = thermo.get_free_energy(Tlist[i]) * 0.001
             except (ValueError, AttributeError):
                 continue
 

@@ -75,7 +75,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA, solventName=''):
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
         spc.conformer = Conformer()
-    spc.conformer.e0 = wilhoit.E0
+    spc.conformer.E0 = wilhoit.E0
 
     # Convert to desired thermo class
     if thermoClass is Wilhoit:

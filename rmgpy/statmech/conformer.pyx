@@ -58,7 +58,7 @@ cdef class Conformer(RMGObject):
     ==================== ========================================================
     Attribute            Description
     ==================== ========================================================
-    `e0`                 The ground-state energy (including zero-point energy) of the conformer
+    `E0`                 The ground-state energy (including zero-point energy) of the conformer
     `modes`              A list of the molecular degrees of freedom
     `spin_multiplicity`  The degeneracy of the electronic ground state
     `optical_isomers`    The number of optical isomers
@@ -71,9 +71,9 @@ cdef class Conformer(RMGObject):
     molecular system.    
     """
 
-    def __init__(self, e0=None, modes=None, spin_multiplicity=1, optical_isomers=1, number=None, mass=None,
+    def __init__(self, E0=None, modes=None, spin_multiplicity=1, optical_isomers=1, number=None, mass=None,
                  coordinates=None):
-        self.e0 = e0
+        self.E0 = E0
         self.modes = modes or []
         self.spin_multiplicity = spin_multiplicity
         self.optical_isomers = optical_isomers
@@ -86,7 +86,7 @@ cdef class Conformer(RMGObject):
         Return a string representation that can be used to reconstruct the
         Conformer object.
         """
-        result = 'Conformer(e0={0!r}, modes={1!r}'.format(self.e0, self.modes)
+        result = 'Conformer(E0={0!r}, modes={1!r}'.format(self.E0, self.modes)
         if self.spin_multiplicity != 1:
             result += ', spin_multiplicity={0:d}'.format(self.spin_multiplicity)
         if self.optical_isomers != 1:
@@ -98,10 +98,10 @@ cdef class Conformer(RMGObject):
         """
         A helper function used when pickling a Conformer object.
         """
-        return (Conformer, (self.e0, self.modes, self.spin_multiplicity, self.optical_isomers, self.number, self.mass,
+        return (Conformer, (self.E0, self.modes, self.spin_multiplicity, self.optical_isomers, self.number, self.mass,
                             self.coordinates))
 
-    property e0:
+    property E0:
         """The ground-state energy (including zero-point energy) of the conformer."""
         def __get__(self):
             return self._E0

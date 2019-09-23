@@ -105,9 +105,9 @@ class MolproTest(unittest.TestCase):
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         t_list = np.array([298.15], np.float64)
 
-        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 9.175364e7, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 1.00005557e5, delta=1e-2)
-        self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.9734989e0, delta=1e-4)
+        self.assertAlmostEqual(trans.get_partition_function(t_list), 9.175364e7, delta=1e1)
+        self.assertAlmostEqual(rot.get_partition_function(t_list), 1.00005557e5, delta=1e-2)
+        self.assertAlmostEqual(vib.get_partition_function(t_list), 1.9734989e0, delta=1e-4)
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -768.275662, 4)
         self.assertEqual(conformer.spin_multiplicity, 1)

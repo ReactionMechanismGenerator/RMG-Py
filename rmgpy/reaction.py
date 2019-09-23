@@ -730,13 +730,13 @@ class Reaction:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().e0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().e0.value_si for spec in self.reactants])
+        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
+             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
-            Ea = self.kinetics.e0.value_si  # temporarily using Ea to store the intrinsic barrier height e0
+            Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.to_arrhenius(H298)
             if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
-                # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic e0
+                # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
                 Ea = min(0.0, Ea)  # (the lowest we want it to be)
                 self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
                     self.kinetics.Ea.value_si / 1000., Ea / 1000.)
@@ -924,15 +924,15 @@ class Reaction:
         """
         # Determine TST rate constant at each temperature
         Qreac = 1.0
-        e0 = 0.0
+        E0 = 0.0
         for spec in self.reactants:
             logging.debug('    Calculating Partition function for ' + spec.label)
             Qreac *= spec.get_partition_function(T) / (constants.R * T / 101325.)
-            e0 -= spec.conformer.e0.value_si
+            E0 -= spec.conformer.E0.value_si
         logging.debug('    Calculating Partition function for ' + self.transition_state.label)
         Qts = self.transition_state.get_partition_function(T) / (constants.R * T / 101325.)
-        e0 += self.transition_state.conformer.e0.value_si
-        k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-e0 / constants.R / T)
+        E0 += self.transition_state.conformer.E0.value_si
+        k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
 
         # Apply tunneling correction
         k *= self.transition_state.calculate_tunneling_factor(T)

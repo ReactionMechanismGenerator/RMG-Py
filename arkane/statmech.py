@@ -466,7 +466,7 @@ class StatMechJob(object):
             logging.debug('         Scaled ZPE (0 K) = {0:g} kcal/mol'.format(zpe / 4184.))
             logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
 
-        conformer.e0 = (e0 * 0.001, "kJ/mol")
+        conformer.E0 = (e0 * 0.001, "kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
@@ -676,7 +676,7 @@ class StatMechJob(object):
 
         result = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spin_multiplicity={3:d}, opticalIsomers={4:d}'.format(
             self.species.label,
-            conformer.e0,
+            conformer.E0,
             conformer.modes,
             conformer.spin_multiplicity,
             conformer.optical_isomers,

@@ -44,7 +44,7 @@ from rmgpy.exceptions import ModifiedStrongCollisionError
 cpdef apply_modified_strong_collision_method(network, str efficiency_model='default'):
     """A method for applying the Modified Strong Collision approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
-    cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, e0, e_reac
+    cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, E0, e_reac
     cdef np.ndarray[np.float64_t,ndim=2] a_mat, b, k, x
     cdef np.ndarray[np.float64_t,ndim=3] dens_states
     cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
@@ -60,7 +60,7 @@ cpdef apply_modified_strong_collision_method(network, str efficiency_model='defa
     k_ij = network.Kij
     f_im = network.Fim
     g_nj = network.Gnj
-    e0 = network.E0
+    E0 = network.E0
     n_isom = network.Nisom
     n_reac = network.Nreac
     n_prod = network.Nprod
@@ -97,7 +97,7 @@ cpdef apply_modified_strong_collision_method(network, str efficiency_model='defa
     if efficiency_model == 'default':
         for i in range(n_isom):
             coll_eff[i] = network.isomers[i].species[0].energyTransferModel.calculate_collision_efficiency(
-                temperature, e_list, j_list, dens_states[i, :, :], e0[i], e_reac[i])
+                temperature, e_list, j_list, dens_states[i, :, :], E0[i], e_reac[i])
     elif efficiency_model == 'none':
         pass
     else:

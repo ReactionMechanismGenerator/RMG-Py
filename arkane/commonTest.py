@@ -90,8 +90,8 @@ class TestArkaneJob(unittest.TestCase):
         cls.Nisom = len(network.isomers)
         cls.Nreac = len(network.reactants)
         cls.Nprod = len(network.products)
-        cls.Npath = len(network.pathReactions)
-        cls.PathReaction2 = network.pathReactions[2]
+        cls.Npath = len(network.path_reactions)
+        cls.PathReaction2 = network.path_reactions[2]
         cls.TminValue = pdepjob.Tmin.value
         cls.Tmaxvalue = pdepjob.Tmax.value
         cls.TmaxUnits = pdepjob.Tmax.units

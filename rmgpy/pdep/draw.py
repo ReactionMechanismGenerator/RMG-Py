@@ -98,29 +98,29 @@ class NetworkDrawer:
         e0_max = e0_min
 
         for isomer in self.network.isomers[1:]:
-            e0 = isomer.E0
-            if e0 < e0_min:
-                e0_min = e0
-            if e0 > e0_max:
-                e0_max = e0
+            E0 = isomer.E0
+            if E0 < e0_min:
+                e0_min = E0
+            if E0 > e0_max:
+                e0_max = E0
         for reactant in self.network.reactants:
-            e0 = reactant.E0
-            if e0 < e0_min:
-                e0_min = e0
-            if e0 > e0_max:
-                e0_max = e0
+            E0 = reactant.E0
+            if E0 < e0_min:
+                e0_min = E0
+            if E0 > e0_max:
+                e0_max = E0
         for product in self.network.products:
-            e0 = product.E0
-            if e0 < e0_min:
-                e0_min = e0
-            if e0 > e0_max:
-                e0_max = e0
-        for rxn in self.network.pathReactions:
-            e0 = rxn.transition_state.conformer.E0.value_si
-            if e0 < e0_min:
-                e0_min = e0
-            if e0 > e0_max:
-                e0_max = e0
+            E0 = product.E0
+            if E0 < e0_min:
+                e0_min = E0
+            if E0 > e0_max:
+                e0_max = E0
+        for rxn in self.network.path_reactions:
+            E0 = rxn.transition_state.conformer.E0.value_si
+            if E0 < e0_min:
+                e0_min = E0
+            if E0 > e0_max:
+                e0_max = E0
 
         return e0_min, e0_max
 
@@ -310,8 +310,8 @@ class NetworkDrawer:
             well = wells[i]
             rect = label_rects[i]
             this_well_width = max(well_width, rect[2])
-            e0 = 0.001 * well.E0
-            y = y_e0 - e0 * e_slope
+            E0 = 0.001 * well.E0
+            y = y_e0 - E0 * e_slope
             coordinates[i] = [x + 0.5 * this_well_width, y]
             x += this_well_width + well_spacing
         width = x + padding - well_spacing
@@ -412,7 +412,7 @@ class NetworkDrawer:
         # cr.restore()
 
         # Draw path reactions
-        for rxn in network.pathReactions:
+        for rxn in network.path_reactions:
             for reac in range(len(wells)):
                 if wells[reac].species == rxn.reactants:
                     break
@@ -457,8 +457,8 @@ class NetworkDrawer:
                 cr.line_to(x0 + ts_width / 2.0, y0)
                 cr.stroke()
                 # Add background and text for energy
-                e0 = "{0:.1f}".format(e0_ts * 1000. * e_mult)
-                extents = cr.text_extents(e0)
+                E0 = "{0:.1f}".format(e0_ts * 1000. * e_mult)
+                extents = cr.text_extents(E0)
                 x = x0 - extents[2] / 2.0
                 y = y0 - 6.0
                 cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -466,7 +466,7 @@ class NetworkDrawer:
                 cr.fill()
                 cr.move_to(x, y)
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                cr.show_text(e0)
+                cr.show_text(E0)
                 # Draw Bezier curve connecting reactants and products through TS
                 cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
                 cr.set_line_width(1.0)
@@ -494,9 +494,9 @@ class NetworkDrawer:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
-            e0 = well.E0 * 0.001 - e0_offset
-            e0 = "{0:.1f}".format(e0 * 1000. * e_mult)
-            extents = cr.text_extents(e0)
+            E0 = well.E0 * 0.001 - e0_offset
+            E0 = "{0:.1f}".format(E0 * 1000. * e_mult)
+            extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0
             y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -504,7 +504,7 @@ class NetworkDrawer:
             cr.fill()
             cr.move_to(x, y)
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-            cr.show_text(e0)
+            cr.show_text(E0)
             # Draw background and text for label
             x = x0 - 0.5 * label_rects[i][2]
             y = y0 + 6

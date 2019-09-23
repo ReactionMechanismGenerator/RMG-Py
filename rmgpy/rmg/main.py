@@ -2341,13 +2341,13 @@ def makeProfileGraph(stats_file):
     if options.root:
         root_id = profile.getFunctionId(options.root)
         if not root_id:
-            sys.stderr.write('root node ' + options.root + ' not found (might already be pruned : try -e0 -n0 flags)\n')
+            sys.stderr.write('root node ' + options.root + ' not found (might already be pruned : try -E0 -n0 flags)\n')
             sys.exit(1)
         profile.prune_root(root_id)
     if options.leaf:
         leaf_id = profile.getFunctionId(options.leaf)
         if not leaf_id:
-            sys.stderr.write('leaf node ' + options.leaf + ' not found (maybe already pruned : try -e0 -n0 flags)\n')
+            sys.stderr.write('leaf node ' + options.leaf + ' not found (maybe already pruned : try -E0 -n0 flags)\n')
             sys.exit(1)
         profile.prune_leaf(leaf_id)
 

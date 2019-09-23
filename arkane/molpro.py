@@ -266,7 +266,7 @@ class MolproLog(Log):
                 # Read the next line in the file
                 line = f.readline()
 
-        return Conformer(e0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spinMultiplicity,
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spinMultiplicity,
                          optical_isomers=opticalIsomers), unscaled_frequencies
 
     def loadEnergy(self, zpe_scale_factor=1.):

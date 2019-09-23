@@ -249,14 +249,14 @@ class PressureDependenceJob(object):
         """Execute a PressureDependenceJob"""
         for config in self.network.isomers + self.network.reactants + self.network.products:
             for spec in config.species:
-                if spec.conformer.e0 is None:
+                if spec.conformer.E0 is None:
                     raise AttributeError('species {0} is missing energy for its conformer'.format(spec.label))
 
         # set transition state Energy if not set previously using same method as RMG pdep
         for reaction in self.network.pathReactions:
             transition_state = reaction.transition_state
-            if transition_state.conformer and transition_state.conformer.e0 is None:
-                transition_state.conformer.e0 = (sum([spec.conformer.e0.value_si for spec in reaction.reactants])
+            if transition_state.conformer and transition_state.conformer.E0 is None:
+                transition_state.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants])
                                                  + reaction.kinetics.Ea.value_si, 'J/mol')
                 logging.info('Approximated transitions state E0 for reaction {3} from kinetics '
                              'A={0}, n={1}, Ea={2} J/mol'.format(reaction.kinetics.A.value_si,
@@ -343,10 +343,10 @@ class PressureDependenceJob(object):
                 tunneling.frequency = (reaction.transition_state.frequency.value_si, "cm^-1")
             elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
                 tunneling.frequency = (reaction.transition_state.frequency.value_si, "cm^-1")
-                tunneling.E0_reac = (sum([reactant.conformer.e0.value_si
+                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
                                           for reactant in reaction.reactants]) * 0.001, "kJ/mol")
-                tunneling.E0_TS = (reaction.transition_state.conformer.e0.value_si * 0.001, "kJ/mol")
-                tunneling.E0_prod = (sum([product.conformer.e0.value_si
+                tunneling.E0_TS = (reaction.transition_state.conformer.E0.value_si * 0.001, "kJ/mol")
+                tunneling.E0_prod = (sum([product.conformer.E0.value_si
                                           for product in reaction.products]) * 0.001, "kJ/mol")
             elif tunneling is not None:
                 if tunneling.frequency is not None:
@@ -675,8 +675,8 @@ class PressureDependenceJob(object):
                 if len(spec.molecule) > 0:
                     f.write('    structure = SMILES({0!r}),\n'.format(spec.molecule[0].to_smiles()))
                 if spec.conformer is not None:
-                    if spec.conformer.e0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(spec.conformer.e0))
+                    if spec.conformer.E0 is not None:
+                        f.write('    E0 = {0!r},\n'.format(spec.conformer.E0))
                     if len(spec.conformer.modes) > 0:
                         f.write('    modes = [\n')
                         for mode in spec.conformer.modes:
@@ -700,8 +700,8 @@ class PressureDependenceJob(object):
                 f.write('transitionState(\n')
                 f.write('    label = {0!r},\n'.format(ts.label))
                 if ts.conformer is not None:
-                    if ts.conformer.e0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(ts.conformer.e0))
+                    if ts.conformer.E0 is not None:
+                        f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
                     if len(ts.conformer.modes) > 0:
                         f.write('    modes = [\n')
                         for mode in ts.conformer.modes:

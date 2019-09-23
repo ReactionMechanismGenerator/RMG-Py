@@ -305,7 +305,7 @@ class TestNASA(unittest.TestCase):
         Test that NASA.as_dict functions properly with all attributes
         """
         nasa_dict = self.nasa.as_dict()
-        self.assertEqual(nasa_dict['e0']['value'], self.E0)
+        self.assertEqual(nasa_dict['E0']['value'], self.E0)
         self.assertEqual(nasa_dict['Tmin']['value'], self.Tmin)
         self.assertEqual(nasa_dict['Tmax']['value'], self.Tmax)
         self.assertEqual(nasa_dict['comment'], self.comment)

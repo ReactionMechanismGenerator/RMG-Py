@@ -312,7 +312,7 @@ class Atom(Vertex):
         attributes of the copy will not affect the original.
         """
         cython.declare(a=Atom)
-        # a = Atom(self.element, self.radical_electrons, self.spinMultiplicity, self.charge, self.label)
+        # a = Atom(self.element, self.radical_electrons, self.spin_multiplicity, self.charge, self.label)
         a = Atom.__new__(Atom)
         a.edges = {}
         a.reset_connectivity_values()

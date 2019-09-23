@@ -73,7 +73,7 @@ class Network(object):
     ----------------------- ----------------------------------------------------
     `grain_size`            Maximum size of separation between energies
     `grain_count`           Minimum number of descrete energies separated
-    `e0`                    A list of ground state energies of isomers, reactants, and products
+    `E0`                    A list of ground state energies of isomers, reactants, and products
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
@@ -89,7 +89,7 @@ class Network(object):
     def __init__(self, label='', isomers=None, reactants=None, products=None,
                  path_reactions=None, bath_gas=None, net_reactions=None, T=0.0, P=0.0,
                  e_list=None, j_list=None, n_grains=0, n_j=0, active_k_rotor=True,
-                 active_j_rotor=True, grain_size=0.0, grain_count=0, e0=None):
+                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None):
         """
         To initialize a Network object for running a pressure dependent job,
         only label, isomers, reactants, products path_reactions and bath_gas are useful,
@@ -122,7 +122,7 @@ class Network(object):
 
         self.grain_size = grain_size
         self.grain_count = grain_count
-        self.e0 = e0
+        self.E0 = E0
 
         self.valid = False
 
@@ -145,7 +145,7 @@ class Network(object):
         string += 'active_j_rotor="{0}", '.format(self.active_j_rotor)
         if self.grain_size != 0.0: string += 'grain_size="{0}", '.format(self.grain_size)
         if self.grain_count != 0: string += 'grain_count="{0}", '.format(self.grain_count)
-        if self.e0 is not None: string += 'e0="{0}", '.format(self.e0)
+        if self.E0 is not None: string += 'E0="{0}", '.format(self.E0)
         string += ')'
         return string
 
@@ -221,13 +221,13 @@ class Network(object):
         self.n_j = 0
 
         # Calculate ground-state energies
-        self.e0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float64)
+        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float64)
         for i in range(self.n_isom):
-            self.e0[i] = self.isomers[i].e0
+            self.E0[i] = self.isomers[i].E0
         for n in range(self.n_reac):
-            self.e0[n + self.n_isom] = self.reactants[n].e0
+            self.E0[n + self.n_isom] = self.reactants[n].E0
         for n in range(self.n_prod):
-            self.e0[n + self.n_isom + self.n_reac] = self.products[n].e0
+            self.E0[n + self.n_isom + self.n_reac] = self.products[n].E0
 
         # Calculate densities of states
         self.active_j_rotor = active_j_rotor
@@ -332,7 +332,7 @@ class Network(object):
         n_reac = self.n_reac
         n_proc = self.n_prod
 
-        e0 = self.e0
+        E0 = self.E0
         grain_size = self.grain_size
         grain_count = self.grain_count
 
@@ -459,14 +459,14 @@ class Network(object):
             raise NetworkError('Must provide either grain_size or n_grains parameter to Network.determineEnergyGrains().')
 
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
-        e_min = np.min(self.e0)
+        e_min = np.min(self.E0)
         e_min = math.floor(e_min)  # Round to nearest whole number
 
         # Use the highest energy on the PES as the initial guess for Emax0
-        e_max = np.max(self.e0)
+        e_max = np.max(self.E0)
         for rxn in self.path_reactions:
-            e0 = float(rxn.transition_state.conformer.e0.value_si)
-            if e0 > e_max: e_max = e0
+            E0 = float(rxn.transition_state.conformer.E0.value_si)
+            if E0 > e_max: e_max = E0
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
         # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
@@ -1072,17 +1072,17 @@ class Network(object):
         logging.log(level, '-' * (len(self.label) + 20))
         logging.log(level, 'Isomers:')
         for isomer in self.isomers:
-            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(isomer, isomer.e0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(isomer, isomer.E0 * 0.001))
         logging.log(level, 'Reactant channels:')
         for reactants in self.reactants:
-            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(reactants, reactants.e0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(reactants, reactants.E0 * 0.001))
         logging.log(level, 'Product channels:')
         for products in self.products:
-            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(products, products.e0 * 0.001))
+            logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(products, products.E0 * 0.001))
         logging.log(level, 'Path reactions:')
         for rxn in self.path_reactions:
             logging.log(level, '    {0!s:<48} {1:12g} kJ/mol'.format(
-                rxn, float(rxn.transition_state.conformer.e0.value_si * 0.001)))
+                rxn, float(rxn.transition_state.conformer.E0.value_si * 0.001)))
         logging.log(level, 'Net reactions:')
         for rxn in self.net_reactions:
             logging.log(level, '    {0!s:<48}'.format(rxn))
