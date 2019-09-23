@@ -35,7 +35,7 @@ import os.path
 import cantera as ct
 import numpy as np
 
-from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.chemkin import get_species_identifier
 from rmgpy.quantity import Quantity
 from rmgpy.tools.data import GenericData
 from rmgpy.tools.plot import GenericPlot, SimulationPlot, ReactionSensitivityPlot
@@ -375,7 +375,7 @@ class Cantera(object):
             for each reactor condition
         """
         # Get all the cantera names for the species
-        species_names_list = [getSpeciesIdentifier(species) for species in self.speciesList]
+        species_names_list = [get_species_identifier(species) for species in self.speciesList]
         inert_index_list = [self.speciesList.index(species) for species in self.speciesList if species.index == -1]
 
         all_data = []
@@ -384,7 +384,7 @@ class Cantera(object):
             # First translate the molFrac from species objects to species names
             new_mol_frac = {}
             for key, value in condition.molFrac.items():
-                newkey = getSpeciesIdentifier(key)
+                newkey = get_species_identifier(key)
                 new_mol_frac[newkey] = value
 
             # Set Cantera simulation conditions

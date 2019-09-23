@@ -246,9 +246,9 @@ class Reaction:
         """
         import rmgpy.chemkin
         if kinetics:
-            return rmgpy.chemkin.writeKineticsEntry(self, species_list)
+            return rmgpy.chemkin.write_kinetics_entry(self, species_list)
         else:
-            return rmgpy.chemkin.writeReactionString(self)
+            return rmgpy.chemkin.write_reaction_string(self)
 
     def to_cantera(self, species_list=None, use_chemkin_identifier=False):
         """

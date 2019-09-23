@@ -33,9 +33,9 @@ import mock
 import os
 
 import rmgpy
-from rmgpy.chemkin import getSpeciesIdentifier, loadChemkinFile, loadTransportFile, markDuplicateReactions, \
-    readKineticsEntry, readReactionComments, readThermoEntry, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
-from rmgpy.chemkin import _removeLineBreaks, _process_duplicate_reactions
+from rmgpy.chemkin import get_species_identifier, load_chemkin_file, load_transport_file, mark_duplicate_reactions, \
+    read_kinetics_entry, read_reaction_comments, read_thermo_entry, save_chemkin_file, save_species_dictionary, save_transport_file
+from rmgpy.chemkin import _remove_line_breaks, _process_duplicate_reactions
 from rmgpy.data.kinetics import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.kinetics.arrhenius import Arrhenius, MultiArrhenius
@@ -66,7 +66,7 @@ class ChemkinTest(unittest.TestCase):
                 -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
                 """
         with self.assertRaises(ValueError):
-            readThermoEntry(entry)
+            read_thermo_entry(entry)
 
         mock_logging.info.assert_called_with(
             "Trouble reading line 'C2H6                    H   XC   X          L   100.000  5000.000  827.28      1' element segment 'H   X'")
@@ -87,7 +87,7 @@ class ChemkinTest(unittest.TestCase):
                 -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
                 -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
                 """
-        species, thermo, formula = readThermoEntry(entry)
+        species, thermo, formula = read_thermo_entry(entry)
 
         mock_logging.warning.assert_called_with("Was expecting gas phase thermo data for C2H6. Skipping thermo data.")
         self.assertEqual(species, 'C2H6')
@@ -110,7 +110,7 @@ class ChemkinTest(unittest.TestCase):
 -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
 -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
 """
-        species, thermo, formula = readThermoEntry(entry)
+        species, thermo, formula = read_thermo_entry(entry)
 
         mock_logging.warning.assert_called_with("could not convert string to float: 'X.44813916E+00'")
         self.assertEqual(species, 'C2H6')
@@ -124,7 +124,7 @@ class ChemkinTest(unittest.TestCase):
 -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
 -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
 """
-        species, thermo, formula = readThermoEntry(entry, Tmin=100.0, Tint=827.28, Tmax=5000.0)
+        species, thermo, formula = read_thermo_entry(entry, Tmin=100.0, Tint=827.28, Tmax=5000.0)
 
         self.assertEqual(species, 'C2H6')
         self.assertEqual(formula, {'H': 6, 'C': 2})
@@ -141,7 +141,7 @@ class ChemkinTest(unittest.TestCase):
         dictionary_path = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
         # read original chemkin file
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path)
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
         # ensure correct reading
         reaction1 = reactions[0]
@@ -150,18 +150,18 @@ class ChemkinTest(unittest.TestCase):
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
         self.assertEqual(frozenset('C/H3/Cs\H3;C_methyl'.split(';')), frozenset(reaction2.template))
-        # saveChemkinFile
+        # save_chemkin_file
         chemkin_save_path = os.path.join(folder, 'minimal', 'chem_new.inp')
         dictionary_save_path = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
 
-        saveChemkinFile(chemkin_save_path, species, reactions, verbose=True, checkForDuplicates=True)
-        saveSpeciesDictionary(dictionary_save_path, species, oldStyle=False)
+        save_chemkin_file(chemkin_save_path, species, reactions, verbose=True, check_for_duplicates=True)
+        save_species_dictionary(dictionary_save_path, species, old_style=False)
 
         self.assertTrue(os.path.isfile(chemkin_save_path))
         self.assertTrue(os.path.isfile(dictionary_save_path))
 
         # read newly written chemkin file to make sure the entire cycle works
-        _, reactions2 = loadChemkinFile(chemkin_save_path, dictionary_save_path)
+        _, reactions2 = load_chemkin_file(chemkin_save_path, dictionary_save_path)
 
         reaction1_new = reactions2[0]
         self.assertEqual(reaction1_new.family, reaction1_new.family)
@@ -190,8 +190,8 @@ class ChemkinTest(unittest.TestCase):
         chemkin_path = os.path.join(folder, 'pdd', 'chem.inp')
         dictionary_path = os.path.join(folder, 'pdd', 'species_dictionary.txt')
 
-        # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path)
+        # load_chemkin_file
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
         reaction1 = reactions[0]
         self.assertEqual(reaction1.family, "H_Abstraction")
@@ -199,12 +199,12 @@ class ChemkinTest(unittest.TestCase):
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
 
-        # saveChemkinFile
+        # save_chemkin_file
         chemkin_save_path = os.path.join(folder, 'minimal', 'chem_new.inp')
         dictionary_save_path = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
 
-        saveChemkinFile(chemkin_save_path, species, reactions, verbose=False, checkForDuplicates=False)
-        saveSpeciesDictionary(dictionary_save_path, species, oldStyle=False)
+        save_chemkin_file(chemkin_save_path, species, reactions, verbose=False, check_for_duplicates=False)
+        save_species_dictionary(dictionary_save_path, species, old_style=False)
 
         self.assertTrue(os.path.isfile(chemkin_save_path))
         self.assertTrue(os.path.isfile(dictionary_save_path))
@@ -227,9 +227,9 @@ class ChemkinTest(unittest.TestCase):
 
         temp_transport_path = os.path.join(folder, 'tran_temp.dat')
 
-        saveTransportFile(temp_transport_path, [Ar])
+        save_transport_file(temp_transport_path, [Ar])
         species_dict = {'Ar': Ar_write}
-        loadTransportFile(temp_transport_path, species_dict)
+        load_transport_file(temp_transport_path, species_dict)
         self.assertEqual(repr(Ar), repr(Ar_write))
 
         os.remove(temp_transport_path)
@@ -244,8 +244,8 @@ class ChemkinTest(unittest.TestCase):
         chemkin_path = os.path.join(folder, 'minimal', 'chem.inp')
         dictionary_path = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
-        # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path, useChemkinNames=True)
+        # load_chemkin_file
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, useChemkinNames=True)
 
         expected = [
             'Ar',
@@ -272,15 +272,15 @@ class ChemkinTest(unittest.TestCase):
         chemkin_path = os.path.join(folder, 'NC', 'chem.inp')
         dictionary_path = os.path.join(folder, 'NC', 'species_dictionary.txt')
 
-        # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path, useChemkinNames=True)
+        # load_chemkin_file
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, useChemkinNames=True)
 
         for n2 in species:
             if n2.label == 'N2':
                 break
         self.assertTrue(n2.reactive)
 
-        self.assertEqual(getSpeciesIdentifier(n2), 'N2(35)')
+        self.assertEqual(get_species_identifier(n2), 'N2(35)')
 
     def testReadSpecificCollider(self):
         """
@@ -310,7 +310,7 @@ class ChemkinTest(unittest.TestCase):
         species_dict['HO2(10)'] = s4
         A_units = ['', 's^-1', 'cm^3/(mol*s)', 'cm^6/(mol^2*s)', 'cm^9/(mol^3*s)']
         E_units = 'kcal/mol'
-        reaction = readKineticsEntry(entry, species_dict, A_units, E_units)
+        reaction = read_kinetics_entry(entry, species_dict, A_units, E_units)
 
         self.assertEqual(reaction.specific_collider.label, 'N2(5)')
 
@@ -406,7 +406,7 @@ class ChemkinTest(unittest.TestCase):
 
         expected_flags = [True, True, False, False, True, True, False, False]
 
-        markDuplicateReactions(reaction_list)
+        mark_duplicate_reactions(reaction_list)
         duplicate_flags = [rxn.duplicate for rxn in reaction_list]
 
         self.assertEqual(duplicate_flags, expected_flags)
@@ -423,7 +423,7 @@ class ChemkinTest(unittest.TestCase):
             Reaction(reactants=[s3, s6], products=[s5], duplicate=True, kinetics=Arrhenius(), reversible=False),
         ]
 
-        markDuplicateReactions(reaction_list)
+        mark_duplicate_reactions(reaction_list)
         duplicate_flags = [rxn.duplicate for rxn in reaction_list]
 
         self.assertEqual(duplicate_flags, expected_flags)
@@ -553,7 +553,7 @@ class TestReadReactionComments(unittest.TestCase):
         Test that the template is picked up from reading reaction comments.
         """
         for index, comment in enumerate(self.comments_list):
-            new_rxn = readReactionComments(self.reaction, comment)
+            new_rxn = read_reaction_comments(self.reaction, comment)
 
             # only check template if meant to find one
             if self.template_list[index]:
@@ -569,7 +569,7 @@ class TestReadReactionComments(unittest.TestCase):
         Test that the family is picked up from reading reaction comments.
         """
         for index, comment in enumerate(self.comments_list):
-            new_rxn = readReactionComments(self.reaction, comment)
+            new_rxn = read_reaction_comments(self.reaction, comment)
 
             self.assertEqual(new_rxn.family, self.family_list[index], 'wrong reaction family stored')
 
@@ -583,7 +583,7 @@ class TestReadReactionComments(unittest.TestCase):
             # Clear any leftover kinetics comments
             self.reaction.kinetics.comment = ''
             previous_rate = self.reaction.kinetics.A.value_si
-            new_rxn = readReactionComments(self.reaction, comment)
+            new_rxn = read_reaction_comments(self.reaction, comment)
             new_rate = new_rxn.kinetics.A.value_si
 
             self.assertEqual(new_rxn.degeneracy, self.degeneracy_list[index], 'wrong degeneracy was stored')
@@ -599,10 +599,10 @@ class TestReadReactionComments(unittest.TestCase):
 
     def testRemoveLineBreaks(self):
         """
-        tests that _removeLineBreaks functions properly
+        tests that _remove_line_breaks functions properly
         """
         for index, comment in enumerate(self.comments_list):
-            new_comment = _removeLineBreaks(comment)
+            new_comment = _remove_line_breaks(comment)
             new_comment_lines = len(new_comment.strip().splitlines())
             self.assertEqual(new_comment_lines, self.expected_lines[index],
                              'Found {} more lines than expected for comment \n\n""{}""\n\n which converted to \n\n""{}""'.format(

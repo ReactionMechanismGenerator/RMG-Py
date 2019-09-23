@@ -36,7 +36,7 @@ by reading in files.
 import os.path
 import warnings
 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.solver.base import TerminationConversion
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
@@ -77,8 +77,8 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'chemkin', 'species_dictionary.txt')
-    species_list, reaction_list = loadChemkinFile(chemkinFile, speciesDict,
-                                                  useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
+    species_list, reaction_list = load_chemkin_file(chemkinFile, speciesDict,
+                                                    useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
 
     # Created "observed" versions of all reactive species that are not explicitly
     # identified as  "constant" species
@@ -184,8 +184,8 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'RMG_Dictionary.txt')
-    species_list, reaction_list = loadChemkinFile(chemkinFile, speciesDict,
-                                                  useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
+    species_list, reaction_list = load_chemkin_file(chemkinFile, speciesDict,
+                                                    useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
 
     # Bath gas species don't appear in RMG-Java species dictionary, so handle
     # those as a special case

@@ -35,7 +35,7 @@ Reaction Mechanism Simulator (RMS)
 import os
 import yaml
 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
@@ -45,137 +45,142 @@ from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
 from rmgpy.kinetics.surface import StickingCoefficient
-from rmgpy.util import makeOutputSubdirectory
+from rmgpy.util import make_output_subdirectory
 
 
-def convertChemkin2yml(chemkinPath, spcDictPath=None, output="chem.rms"):
-    if spcDictPath:
-        spcs,rxns = loadChemkinFile(chemkinPath, dictionaryPath=spcDictPath)
+def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"):
+    if dictionary_path:
+        spcs, rxns = load_chemkin_file(chemkin_path, dictionaryPath=dictionary_path)
     else:
-        spcs,rxns = loadChemkinFile(chemkinPath)
-    writeyml(spcs, rxns, path=output)
+        spcs, rxns = load_chemkin_file(chemkin_path)
+    write_yml(spcs, rxns, path=output)
 
 
-def writeyml(spcs, rxns, solvent=None, solventData=None, path="chem.yml"):
-    D = getMechDict(spcs, rxns, solvent=solvent, solventData=solventData)
+def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+    result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
     with open(path, 'w') as f:
-        yaml.dump(D, stream=f)
+        yaml.dump(result_dict, stream=f)
 
 
-def getMechDict(spcs, rxns, solvent='solvent', solventData=None):
-    D = dict()
-    D["Units"] = dict()
-    D["Phases"] = [dict()]
-    D["Phases"][0]["name"] = "phase"
-    D["Phases"][0]["Species"] = [obj2dict(x, spcs) for x in spcs]
-    D["Reactions"] = [obj2dict(x, spcs) for x in rxns]
-    if solventData:
-        D["Solvents"] = [obj2dict(solventData, spcs, label=solvent)]
-    return D
+def get_mech_dict(spcs, rxns, solvent='solvent', solvent_data=None):
+    result_dict = dict()
+    result_dict["Units"] = dict()
+    result_dict["Phases"] = [dict()]
+    result_dict["Phases"][0]["name"] = "phase"
+    result_dict["Phases"][0]["Species"] = [obj_to_dict(x, spcs) for x in spcs]
+    result_dict["Reactions"] = [obj_to_dict(x, spcs) for x in rxns]
+    if solvent_data:
+        result_dict["Solvents"] = [obj_to_dict(solvent_data, spcs, label=solvent)]
+    return result_dict
 
 
-def getRadicals(spc):
+def get_radicals(spc):
     if spc.molecule[0].to_smiles() == "[O][O]":  # treat oxygen as stable to improve radical analysis
         return 0
     else:
         return spc.molecule[0].multiplicity-1
 
 
-def obj2dict(obj, spcs, label="solvent"):
-    D = dict()
+def obj_to_dict(obj, spcs, label="solvent"):
+    result_dict = dict()
     if isinstance(obj, Species):
-        D["name"] = obj.label
-        D["type"] = "Species"
-        D["smiles"] = obj.molecule[0].to_smiles()
-        D["thermo"] = obj2dict(obj.thermo, spcs)
-        D["radicalelectrons"] = getRadicals(obj)
+        result_dict["name"] = obj.label
+        result_dict["type"] = "Species"
+        result_dict["smiles"] = obj.molecule[0].to_smiles()
+        result_dict["thermo"] = obj_to_dict(obj.thermo, spcs)
+        result_dict["radicalelectrons"] = get_radicals(obj)
     elif isinstance(obj, NASA):
-        D["polys"] = [obj2dict(k, spcs) for k in obj.polynomials]
-        D["type"] = "NASA"
+        result_dict["polys"] = [obj_to_dict(k, spcs) for k in obj.polynomials]
+        result_dict["type"] = "NASA"
     elif isinstance(obj, NASAPolynomial):
-        D["type"] = "NASApolynomial"
-        D["coefs"] = obj.coeffs.tolist()
-        D["Tmax"] = obj.Tmax.value_si
-        D["Tmin"] = obj.Tmin.value_si
+        result_dict["type"] = "NASApolynomial"
+        result_dict["coefs"] = obj.coeffs.tolist()
+        result_dict["Tmax"] = obj.Tmax.value_si
+        result_dict["Tmin"] = obj.Tmin.value_si
     elif isinstance(obj, Reaction):
-        D["reactants"] = [x.label for x in obj.reactants]
-        D["products"] = [x.label for x in obj.products]
-        D["kinetics"] = obj2dict(obj.kinetics, spcs)
-        D["type"] = "ElementaryReaction"
-        D["radicalchange"] = sum([getRadicals(x) for x in obj.products]) - sum([getRadicals(x) for x in obj.reactants])
+        result_dict["reactants"] = [x.label for x in obj.reactants]
+        result_dict["products"] = [x.label for x in obj.products]
+        result_dict["kinetics"] = obj_to_dict(obj.kinetics, spcs)
+        result_dict["type"] = "ElementaryReaction"
+        result_dict["radicalchange"] = sum([get_radicals(x) for x in obj.products]) - \
+                                       sum([get_radicals(x) for x in obj.reactants])
     elif isinstance(obj, Arrhenius):
-        D["type"] = "Arrhenius"
-        D["A"] = obj.A.value_si
-        D["Ea"] = obj.Ea.value_si
-        D["n"] = obj.n.value_si
+        result_dict["type"] = "Arrhenius"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
     elif isinstance(obj, StickingCoefficient):
-        D["type"] = "StickingCoefficient"
-        D["A"] = obj.A.value_si
-        D["Ea"] = obj.Ea.value_si
-        D["n"] = obj.n.value_si
-        D["T0"] = obj.T0.value_si
+        result_dict["type"] = "StickingCoefficient"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["T0"] = obj.T0.value_si
     elif isinstance(obj, PDepArrhenius):
-        D["type"] = "PdepArrhenius"
-        D["Ps"] = obj.pressures.value_si.tolist()
-        D["arrs"] = [obj2dict(x, spcs) for x in obj.arrhenius]
+        result_dict["type"] = "PdepArrhenius"
+        result_dict["Ps"] = obj.pressures.value_si.tolist()
+        result_dict["arrs"] = [obj_to_dict(x, spcs) for x in obj.arrhenius]
     elif isinstance(obj, MultiArrhenius):
-        D["type"] = "MultiArrhenius"
-        D["arrs"] = [obj2dict(x, spcs) for x in obj.arrhenius]
+        result_dict["type"] = "MultiArrhenius"
+        result_dict["arrs"] = [obj_to_dict(x, spcs) for x in obj.arrhenius]
     elif isinstance(obj, MultiPDepArrhenius):
-        D["type"] = "MultiPdepArrhenius"
-        D["parrs"] = [obj2dict(x, spcs) for x in obj.arrhenius]
+        result_dict["type"] = "MultiPdepArrhenius"
+        result_dict["parrs"] = [obj_to_dict(x, spcs) for x in obj.arrhenius]
     elif isinstance(obj, ThirdBody):
-        D["type"] = "ThirdBody"
-        D["arr"] = obj2dict(obj.arrheniusLow, spcs)
-        D["efficiencies"] = {spcs[i].label: float(val) for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
+        result_dict["type"] = "ThirdBody"
+        result_dict["arr"] = obj_to_dict(obj.arrheniusLow, spcs)
+        result_dict["efficiencies"] = {spcs[i].label: float(val)
+                                       for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
     elif isinstance(obj, Lindemann):
-        D["type"] = "Lindemann"
-        D["arrhigh"] = obj2dict(obj.arrheniusHigh, spcs)
-        D["arrlow"] = obj2dict(obj.arrheniusLow, spcs)
-        D["efficiencies"] = {spcs[i].label: float(val) for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
+        result_dict["type"] = "Lindemann"
+        result_dict["arrhigh"] = obj_to_dict(obj.arrheniusHigh, spcs)
+        result_dict["arrlow"] = obj_to_dict(obj.arrheniusLow, spcs)
+        result_dict["efficiencies"] = {spcs[i].label: float(val)
+                                       for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
     elif isinstance(obj, Troe):
-        D["type"] = "Troe"
-        D["arrhigh"] = obj2dict(obj.arrheniusHigh, spcs)
-        D["arrlow"] = obj2dict(obj.arrheniusLow, spcs)
-        D["efficiencies"] = {spcs[i].label: float(val) for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
-        D["a"] = obj.alpha
-        D["T1"] = obj.T1.value_si
+        result_dict["type"] = "Troe"
+        result_dict["arrhigh"] = obj_to_dict(obj.arrheniusHigh, spcs)
+        result_dict["arrlow"] = obj_to_dict(obj.arrheniusLow, spcs)
+        result_dict["efficiencies"] = {spcs[i].label: float(val)
+                                       for i, val in enumerate(obj.getEffectiveColliderEfficiencies(spcs)) if val != 1}
+        result_dict["a"] = obj.alpha
+        result_dict["T1"] = obj.T1.value_si
         if obj.T2:
-            D["T2"] = obj.T2.value_si
+            result_dict["T2"] = obj.T2.value_si
         else:
-            D["T2"] = 0.0
-        D["T3"] = obj.T3.value_si
+            result_dict["T2"] = 0.0
+        result_dict["T3"] = obj.T3.value_si
     elif isinstance(obj, Chebyshev):
-        D["type"] = "Chebyshev"
-        D["coefs"] = obj.coeffs.value_si.tolist()
-        D["Tmin"] = obj.Tmin.value_si
-        D["Tmax"] = obj.Tmax.value_si
-        D["Pmin"] = obj.Pmin.value_si
-        D["Pmax"] = obj.Pmax.value_si
+        result_dict["type"] = "Chebyshev"
+        result_dict["coefs"] = obj.coeffs.value_si.tolist()
+        result_dict["Tmin"] = obj.Tmin.value_si
+        result_dict["Tmax"] = obj.Tmax.value_si
+        result_dict["Pmin"] = obj.Pmin.value_si
+        result_dict["Pmax"] = obj.Pmax.value_si
     elif isinstance(obj, Wilhoit):
-        D["type"] = "Wilhoit"
-        D["coefs"] = [obj.a0, obj.a1, obj.a2, obj.a3]
-        D["Cp0"] = obj.Cp0.value_si
-        D["Cpinf"] = obj.CpInf.value_si
-        D["H0"] = obj.H0.value_si
-        D["S0"] = obj.S0.value_si
-        D["B"] = obj.B.value_si
+        result_dict["type"] = "Wilhoit"
+        result_dict["coefs"] = [obj.a0, obj.a1, obj.a2, obj.a3]
+        result_dict["Cp0"] = obj.Cp0.value_si
+        result_dict["Cpinf"] = obj.CpInf.value_si
+        result_dict["H0"] = obj.H0.value_si
+        result_dict["S0"] = obj.S0.value_si
+        result_dict["B"] = obj.B.value_si
     elif isinstance(obj, SolventData):
-        D["type"] = "Solvent"
-        D["name"] = label
-        dsub = dict()
-        dsub["type"] = "RiedelViscosity"
-        dsub["A"] = float(obj.A)
-        dsub["B"] = float(obj.B)
-        dsub["C"] = float(obj.C)
-        dsub["D"] = float(obj.D)
-        dsub["E"] = float(obj.E)
-        D["mu"] = dsub
+        result_dict["type"] = "Solvent"
+        result_dict["name"] = label
+        viscosity = dict()
+        viscosity["type"] = "RiedelViscosity"
+        viscosity["A"] = float(obj.A)
+        viscosity["B"] = float(obj.B)
+        viscosity["C"] = float(obj.C)
+        viscosity["D"] = float(obj.D)
+        viscosity["E"] = float(obj.E)
+        result_dict["mu"] = viscosity
     elif obj is None:
         return None
     else:
-        raise ValueError("Object of type {} does not have a defined conversion to ReactionMechanismSimulator format".format(type(obj)))
-    return D
+        raise ValueError("Object of type {} does not have a defined conversion to "
+                         "ReactionMechanismSimulator format".format(type(obj)))
+    return result_dict
 
 
 class RMSWriter(object):
@@ -200,14 +205,14 @@ class RMSWriter(object):
     rmg.detach(listener)
 
     """
-    def __init__(self, outputDirectory=''):
+    def __init__(self, output_directory=''):
         super(RMSWriter, self).__init__()
-        self.outputDirectory = outputDirectory
-        makeOutputSubdirectory(outputDirectory, 'rms')
+        self.output_directory = output_directory
+        make_output_subdirectory(output_directory, 'rms')
 
     def update(self, rmg):
-        solventData = None
+        solvent_data = None
         if rmg.solvent:
-            solventData = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        writeyml(rmg.reactionModel.core.species, rmg.reactionModel.core.reactions, solvent=rmg.solvent, solventData=solventData,
-                 path=os.path.join(self.outputDirectory, 'rms', 'chem{}.rms').format(len(rmg.reactionModel.core.species)))
+            solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
+        write_yml(rmg.reactionModel.core.species, rmg.reactionModel.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
+                  path=os.path.join(self.output_directory, 'rms', 'chem{}.rms').format(len(rmg.reactionModel.core.species)))

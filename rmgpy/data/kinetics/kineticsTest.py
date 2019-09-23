@@ -36,7 +36,7 @@ import numpy as np
 
 from external.wip import work_in_progress
 from rmgpy import settings
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
 from rmgpy.data.kinetics.common import save_entry, find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.data.kinetics.database import KineticsDatabase
@@ -633,7 +633,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         cls.database = database
 
     def testParseKinetics(self):
-        species, reactions = loadChemkinFile(
+        species, reactions = load_chemkin_file(
             os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
             os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
         )
@@ -726,7 +726,7 @@ class TestKinetics(unittest.TestCase):
         global database
         cls.database = database
 
-        cls.species, cls.reactions = loadChemkinFile(
+        cls.species, cls.reactions = load_chemkin_file(
             os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
             os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
         )

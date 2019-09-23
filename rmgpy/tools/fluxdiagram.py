@@ -539,7 +539,7 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
                       readStates=False, diffusionLimited=True, checkDuplicates=True):
     """
     Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
-    a speciesDict txt file, plus an optional chemkinOutput file.
+    a species_dict txt file, plus an optional chemkinOutput file.
     """
 
     if java == True:

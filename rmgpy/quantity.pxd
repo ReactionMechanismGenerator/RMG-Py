@@ -38,11 +38,11 @@ cdef class Units(RMGObject):
 
     cdef public str units
 
-    cpdef double getConversionFactorToSI(self) except -1
+    cpdef double get_conversion_factor_to_si(self) except -1
 
-    cpdef double getConversionFactorFromSI(self) except -1
+    cpdef double get_conversion_factor_from_si(self) except -1
 
-    cpdef double getConversionFactorFromSItoCmMolS(self) except -1
+    cpdef double get_conversion_factor_from_si_to_cm_mol_s(self) except -1
     
 ################################################################################
 
@@ -57,9 +57,9 @@ cdef class ScalarQuantity(Units):
     cpdef str getUncertaintyType(self)
     cpdef     setUncertaintyType(self, str v)
     
-    cpdef bint isUncertaintyAdditive(self) except -2
+    cpdef bint is_uncertainty_additive(self) except -2
 
-    cpdef bint isUncertaintyMultiplicative(self) except -2
+    cpdef bint is_uncertainty_multiplicative(self) except -2
     
     cpdef ScalarQuantity copy(self)
 
@@ -76,8 +76,8 @@ cdef class ArrayQuantity(Units):
     cpdef str getUncertaintyType(self)
     cpdef     setUncertaintyType(self, str v)
 
-    cpdef bint isUncertaintyAdditive(self) except -2
+    cpdef bint is_uncertainty_additive(self) except -2
 
-    cpdef bint isUncertaintyMultiplicative(self) except -2
+    cpdef bint is_uncertainty_multiplicative(self) except -2
     
     cpdef ArrayQuantity copy(self)

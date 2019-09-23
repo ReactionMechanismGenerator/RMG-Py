@@ -484,7 +484,7 @@ class KineticsGroups(Database):
                     entry.data = KineticsData(Tdata=(Tdata, "K"), kdata=(group_values[entry], kunits))
                     if not any(np.isnan(np.array(group_uncertainties[entry]))):
                         entry.data.kdata.uncertainties = np.array(group_uncertainties[entry])
-                        entry.data.kdata.uncertaintyType = '*|/'
+                        entry.data.kdata.uncertainty_type = '*|/'
                     entry.shortDesc = "Group additive kinetics."
                     entry.longDesc = "Fitted to {0} rates.\n".format(group_counts[entry])
                     entry.longDesc += "\n".join(group_comments[entry])

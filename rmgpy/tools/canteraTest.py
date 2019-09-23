@@ -90,14 +90,14 @@ class RMGToCanteraTest(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        from rmgpy.chemkin import loadChemkinFile
+        from rmgpy.chemkin import load_chemkin_file
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/various_kinetics')
 
         chemkin_path = os.path.join(folder, 'chem_annotated.inp')
         dictionary_path = os.path.join(folder, 'species_dictionary.txt')
         transport_path = os.path.join(folder, 'tran.dat')
 
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path, transport_path)
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, transport_path)
 
         self.rmg_ctSpecies = [spec.to_cantera(use_chemkin_identifier=True) for spec in species]
         self.rmg_ctReactions = []

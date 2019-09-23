@@ -38,9 +38,9 @@ import os.path
 import re
 import textwrap
 
-from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.chemkin import get_species_identifier
 from rmgpy.exceptions import OutputError
-from rmgpy.util import makeOutputSubdirectory
+from rmgpy.util import make_output_subdirectory
 
 
 ################################################################################
@@ -96,7 +96,7 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
                 logging.error("{0} species could not be drawn because it did not contain a molecular structure. "
-                              "Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                              "Please recheck your files.".format(get_species_identifier(spec)))
                 raise
         # spec.thermo.comment=
         # Text wrap the thermo comments
@@ -429,8 +429,8 @@ $(document).ready(function() {
 
  </td>
     
-    <td class="structure" valign="top"><a href={{ spec.molecule[0].get_url() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
-    <td class="label" valign="top">{{ getSpeciesIdentifier(spec) }}</td>
+    <td class="structure" valign="top"><a href={{ spec.molecule[0].get_url() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ get_species_identifier(spec) }}" title="{{ get_species_identifier(spec) }}"></a></td>
+    <td class="label" valign="top">{{ get_species_identifier(spec) }}</td>
     <td class="SMILES" valign="top">{{ spec.molecule[0].to_smiles() }}</td>
     
   <td class="MW" valign="top">{{ "%.2f"|format(spec.molecule[0].get_molecular_weight() * 1000) }}</td>
@@ -478,9 +478,9 @@ $(document).ready(function() {
 <tbody class="reaction">
 <tr class="{{ rxn.get_source()|csssafe }} rxnStart">
     <td class="index"><a href="{{ rxn.get_url() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}" {% if reactant.contains_surface_site() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].get_url() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ get_species_identifier(reactant) }}" title="{{ get_species_identifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].get_molecular_weight() * 1000) }}" {% if reactant.contains_surface_site() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].get_url() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].get_molecular_weight() * 1000) }}" {% if product.contains_surface_site() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].get_url() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ get_species_identifier(product) }}" title="{{ get_species_identifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].get_molecular_weight() * 1000) }}" {% if product.contains_surface_site() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="family">{{ rxn.get_source() }}</td>
 </tr>
 <tr class="kinetics {{ rxn.get_source()|csssafe }} hide_kinetics">
@@ -510,7 +510,7 @@ $(document).ready(function() {
 
     f = open(path, 'w')
     f.write(template.render(title=title, species=species, reactions=reactions, families=families,
-                            familyCount=familyCount, getSpeciesIdentifier=getSpeciesIdentifier, textwrap=textwrap))
+                            familyCount=familyCount, get_species_identifier=get_species_identifier, textwrap=textwrap))
     f.close()
 
 
@@ -567,7 +567,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                 MoleculeDrawer().draw(spec1.molecule[0], 'png', fstr)
             except IndexError:
                 raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
-                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec1)))
+                                  'Please recheck your files.'.format(get_species_identifier(spec1)))
 
         fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec2))
         if not os.path.exists(fstr):
@@ -576,7 +576,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             except IndexError:
                 raise OutputError(
                     '{0} species could not be drawn because it did not contain a molecular structure. Please recheck '
-                    'your files.'.format(getSpeciesIdentifier(spec2)))
+                    'your files.'.format(get_species_identifier(spec2)))
 
     for spec in speciesList1:
         match = re_index.search(spec.label)
@@ -590,7 +590,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
                 raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
-                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+                                  'Please recheck your files.'.format(get_species_identifier(spec)))
 
     for spec in speciesList2:
         match = re_index.search(spec.label)
@@ -604,7 +604,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
                 raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
-                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+                                  'Please recheck your files.'.format(get_species_identifier(spec)))
 
     # Add pictures for species that may not have different thermo but are in reactions with different kinetics
     all_rxns = [rxnTuple[0] for rxnTuple in commonReactions] + uniqueReactions1 + uniqueReactions2
@@ -628,7 +628,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
                 raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. '
-                                  'Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+                                  'Please recheck your files.'.format(get_species_identifier(spec)))
 
     family_count1 = {}
     family_count2 = {}
@@ -890,7 +890,7 @@ $(document).ready(function() {
     <td width="50%">
     <table width="80%">
     <tr><td width="20%" valign="top">{{ spec1.index }}. </td>
-        <td width="20%"  valign="top">{{getSpeciesIdentifier(spec1)}}</td>
+        <td width="20%"  valign="top">{{get_species_identifier(spec1)}}</td>
         <td width="80%"  valign="top">
         {% if spec1.thermo %}
             <table width="80%"  class="thermo" valign="top"> 
@@ -928,7 +928,7 @@ $(document).ready(function() {
         <td width="50%">
         <table width="80%" class="thermo" valign="top">
     <tr><td width="20%"  valign="top">{{ spec2.index }}. </td>
-        <td width="20%"  valign="top">{{getSpeciesIdentifier(spec2)}}</td>
+        <td width="20%"  valign="top">{{get_species_identifier(spec2)}}</td>
         <td width="80%"  valign="top">
         
         {% if spec2.thermo %}
@@ -992,8 +992,8 @@ $(document).ready(function() {
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
-        <td class="structure"><a href="{{ spec.molecule[0].get_url() }}"><img src="species1/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
-        <td class="label">{{ getSpeciesIdentifier(spec) }}</td>
+        <td class="structure"><a href="{{ spec.molecule[0].get_url() }}"><img src="species1/{{ spec|replace('#','%23') }}.png" alt="{{ get_species_identifier(spec) }}" title="{{ get_species_identifier(spec) }}"></a></td>
+        <td class="label">{{ get_species_identifier(spec) }}</td>
         <td>{{spec.molecule[0].to_smiles()}}</td>
         <td>{{ "%.2f"|format(spec.molecule[0].get_molecular_weight() * 1000) }}</td>
     </tr>
@@ -1041,8 +1041,8 @@ $(document).ready(function() {
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
-        <td class="structure"><a href="{{ spec.molecule[0].get_url() }}"><img src="species2/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
-        <td class="label">{{ getSpeciesIdentifier(spec) }}</td>
+        <td class="structure"><a href="{{ spec.molecule[0].get_url() }}"><img src="species2/{{ spec|replace('#','%23') }}.png" alt="{{ get_species_identifier(spec) }}" title="{{ get_species_identifier(spec) }}"></a></td>
+        <td class="label">{{ get_species_identifier(spec) }}</td>
         <td>{{spec.molecule[0].to_smiles()}}</td>
         <td>{{ "%.2f"|format(spec.molecule[0].get_molecular_weight() * 1000) }}</td>
     </tr>
@@ -1313,7 +1313,7 @@ $(document).ready(function() {
                             families1=families1, families2=families2, familyCount1=family_count1,
                             familyCount2=family_count2, families_union=set(families1 + families2),
                             speciesList=speciesList,
-                            getSpeciesIdentifier=getSpeciesIdentifier, textwrap=textwrap))
+                            get_species_identifier=get_species_identifier, textwrap=textwrap))
     f.close()
 
 
@@ -1353,7 +1353,7 @@ class OutputHTMLWriter(object):
 
     def __init__(self, outputDirectory=''):
         super(OutputHTMLWriter, self).__init__()
-        makeOutputSubdirectory(outputDirectory, 'species')
+        make_output_subdirectory(outputDirectory, 'species')
 
     def update(self, rmg):
         saveOutput(rmg)

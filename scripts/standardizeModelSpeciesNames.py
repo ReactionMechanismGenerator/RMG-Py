@@ -43,7 +43,7 @@ from __future__ import print_function
 
 import argparse
 
-from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary
+from rmgpy.chemkin import load_chemkin_file, save_chemkin_file, save_species_dictionary
 from rmgpy.rmg.model import ReactionModel
 
 ################################################################################
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     for chemkin, speciesPath, transportPath in inputModelFiles:
         print('Loading model #{0:d}...'.format(len(models) + 1))
         model = ReactionModel()
-        model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
+        model.species, model.reactions = load_chemkin_file(chemkin, speciesPath, transportPath=transportPath)
         models.append(model)
 
     allSpecies = []
@@ -109,7 +109,7 @@ if __name__ == '__main__':
             species.index = allSpecies[index].index
 
         # Resave the models    
-        saveChemkinFile('chem{0}.inp'.format(i + 1), model.species, model.reactions)
-        saveSpeciesDictionary('species_dictionary{0}.txt'.format(i + 1), model.species)
+        save_chemkin_file('chem{0}.inp'.format(i + 1), model.species, model.reactions)
+        save_species_dictionary('species_dictionary{0}.txt'.format(i + 1), model.species)
 
     print('Saving of new models with consistent names is complete!')

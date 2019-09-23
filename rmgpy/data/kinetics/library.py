@@ -624,9 +624,9 @@ class KineticsLibrary(Database):
         dependent kinetics information is ignored unless the kinetics database
         is a seed mechanism.
         """
-        from rmgpy.chemkin import readReactionsBlock
+        from rmgpy.chemkin import read_reactions_block
         f = open(path, 'r')
-        reactionList = readReactionsBlock(f, speciesDict=species)
+        reactionList = read_reactions_block(f, species_dict=species)
         f.close()
         return reactionList
 
@@ -648,7 +648,7 @@ class KineticsLibrary(Database):
                 arrhenius.A.value_si,
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4.184,
-                '*' if arrhenius.A.isUncertaintyMultiplicative() else '',
+                '*' if arrhenius.A.is_uncertainty_multiplicative() else '',
                 arrhenius.A.uncertainty,
                 arrhenius.n.uncertainty,
                 arrhenius.Ea.uncertainty / 4.184,

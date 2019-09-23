@@ -41,7 +41,7 @@ import os.path
 import numpy as np
 
 import rmgpy.quantity as quantity
-from rmgpy.chemkin import writeKineticsEntry
+from rmgpy.chemkin import write_kinetics_entry
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
@@ -505,7 +505,7 @@ class PressureDependenceJob(object):
                     duplicate = True
 
                 # write chemkin output.
-                string = writeKineticsEntry(reaction, speciesList=None, verbose=False, commented=duplicate)
+                string = write_kinetics_entry(reaction, species_list=None, verbose=False, commented=duplicate)
                 f_chemkin.write('{0}\n'.format(string))
 
                 # write to 'output.py'

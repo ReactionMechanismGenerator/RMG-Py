@@ -33,7 +33,7 @@ import logging
 from rmgpy.species import Species
 
 
-def failsSpeciesConstraints(species):
+def fails_species_constraints(species):
     """
     Pass in either a `Species` or `Molecule` object and checks whether it passes 
     the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.

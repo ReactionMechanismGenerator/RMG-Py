@@ -124,7 +124,7 @@ class TestRMGWorkFlow(unittest.TestCase):
     def testCheckForExistingSpeciesForBiAromatics(self):
         """
         Test RMG checkForExistingSpecies can correctly check isomorphism for biaromatics. 
-        In this test, DPP is a species already stored in rmg speciesDict, mol_test is a newly
+        In this test, DPP is a species already stored in rmg species_dict, mol_test is a newly
         created molecule which has one kekulized benzene ring and one double_bond-single_bond
         benzene ring.
         """

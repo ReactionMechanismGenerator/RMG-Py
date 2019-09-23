@@ -113,12 +113,12 @@ class Subject(object):
                 observer.update(self)
 
 
-def makeOutputSubdirectory(outputDirectory, folder):
+def make_output_subdirectory(output_directory, folder):
     """
     Create a subdirectory `folder` in the output directory. If the folder
     already exists (e.g. from a previous job) its contents are deleted.
     """
-    dirname = os.path.join(outputDirectory, folder)
+    dirname = os.path.join(output_directory, folder)
     if os.path.exists(dirname):
         # The directory already exists, so delete it (and all its content!)
         shutil.rmtree(dirname)

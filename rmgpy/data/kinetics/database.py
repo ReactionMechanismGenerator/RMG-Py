@@ -689,7 +689,7 @@ and immediately used in input files without any additional changes.
         """
         `reaction`: A reaction object containing kinetics data and kinetics data comments.  
             Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
-            as loaded from the rmgpy.chemkin.loadChemkinFile function
+            as loaded from the rmgpy.chemkin.load_chemkin_file function
         
         Parses the verbose string of comments from the thermo data of the species object,
         and extracts the thermo sources.

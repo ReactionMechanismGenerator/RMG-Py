@@ -34,7 +34,7 @@ import unittest
 
 from rmgpy.rmg.model import CoreEdgeReactionModel, ReactionModel
 from rmgpy.rmg.output import saveOutputHTML
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 
 
 ###################################################
@@ -51,8 +51,8 @@ class TestOutput(unittest.TestCase):
         chemkin_path = os.path.join(folder, 'eg6', 'chem_annotated.inp')
         dictionary_path = os.path.join(folder, 'eg6', 'species_dictionary.txt')
 
-        # loadChemkinFile
-        species, reactions = loadChemkinFile(chemkin_path, dictionary_path)
+        # load_chemkin_file
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
         # convert it into a reaction model:
         core = ReactionModel(species, reactions)

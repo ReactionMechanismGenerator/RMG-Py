@@ -40,7 +40,7 @@ import string
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.chemkin import writeThermoEntry
+from rmgpy.chemkin import write_thermo_entry
 from rmgpy.exceptions import InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import get_element_count
@@ -209,7 +209,7 @@ class ThermoJob(object):
                         element_counts = self.element_count_from_conformer()
             else:
                 element_counts = {'C': 0, 'H': 0}
-            chemkin_thermo_string = writeThermoEntry(species, elementCounts=element_counts, verbose=True)
+            chemkin_thermo_string = write_thermo_entry(species, element_counts=element_counts, verbose=True)
             f.write('{0}\n'.format(chemkin_thermo_string))
 
         # write species dictionary

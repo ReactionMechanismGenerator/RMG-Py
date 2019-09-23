@@ -36,7 +36,7 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
@@ -293,7 +293,7 @@ class SimpleReactorCheck(unittest.TestCase):
         """
         chem_file = os.path.join(os.path.dirname(__file__), 'files', 'collider_model', 'chem.inp')
         dictionary_file = os.path.join(os.path.dirname(__file__), 'files', 'collider_model', 'species_dictionary.txt')
-        species_list, reaction_list = loadChemkinFile(chem_file, dictionary_file)
+        species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
 
         smiles_dict = {'H': '[H]', 'HO2': '[O]O', 'O2': '[O][O]', 'Ar': '[Ar]', 'N2': 'N#N', 'CO2': 'O=C=O',
                        'CH3': '[CH3]', 'CH4': 'C'}
@@ -364,7 +364,7 @@ class SimpleReactorCheck(unittest.TestCase):
         chem_file = os.path.join(os.path.dirname(__file__), 'files', 'specific_collider_model', 'chem.inp')
         dictionary_file = os.path.join(os.path.dirname(__file__), 'files', 'specific_collider_model',
                                        'species_dictionary.txt')
-        species_list, reaction_list = loadChemkinFile(chem_file, dictionary_file)
+        species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
 
         smiles_dict = {'Ar': '[Ar]', 'N2(1)': 'N#N', 'O2': '[O][O]', 'H': '[H]', 'CH3': '[CH3]', 'CH4': 'C'}
         species_dict = {}

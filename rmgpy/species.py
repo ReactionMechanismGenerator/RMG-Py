@@ -377,8 +377,8 @@ class Species(object):
         """
         Return the chemkin-formatted string for this species.
         """
-        from rmgpy.chemkin import getSpeciesIdentifier
-        return getSpeciesIdentifier(self)
+        from rmgpy.chemkin import get_species_identifier
+        return get_species_identifier(self)
 
     def to_cantera(self, use_chemkin_identifier=False):
         """

@@ -49,7 +49,7 @@ def simulate(rmg, diffusionLimited=True):
     diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
     otherwise they will not be in a liquid reactor
     """
-    util.makeOutputSubdirectory(rmg.outputDirectory, 'solver')
+    util.make_output_subdirectory(rmg.outputDirectory, 'solver')
 
     for index, reactionSystem in enumerate(rmg.reactionSystems):
 

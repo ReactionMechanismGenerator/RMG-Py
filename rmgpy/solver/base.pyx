@@ -52,7 +52,7 @@ else:
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
-from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
@@ -769,7 +769,7 @@ cdef class ReactionSystem(DASx):
                         return False, True, invalid_objects, surfaceSpecies, surfaceReactions, self.t, conversion
                     else:
                         logging.error('Model Resurrection has failed')
-                        logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
+                        logging.error("Core species names: {!r}".format([get_species_identifier(s) for s in coreSpecies]))
                         logging.error("Core species moles: {!r}".format(self.y[:num_core_species]))
                         logging.error("Volume: {!r}".format(self.V))
                         logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
@@ -1256,10 +1256,10 @@ cdef class ReactionSystem(DASx):
                             if abs(norm_sens_array[i][k][j]) > self.sensitivityThreshold:
                                 reactions_above_threshold.append(j)
                                 break
-                    species_name = getSpeciesIdentifier(self.sensitiveSpecies[i])
+                    species_name = get_species_identifier(self.sensitiveSpecies[i])
                     headers = ['Time (s)']
                     headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j + 1, coreReactions[j].to_chemkin(kinetics=False)) if j < num_core_reactions
-                                    else 'dln[{0}]/dG[{1}]'.format(species_name, getSpeciesIdentifier(coreSpecies[j-num_core_reactions])) for j in reactions_above_threshold])
+                                    else 'dln[{0}]/dG[{1}]'.format(species_name, get_species_identifier(coreSpecies[j - num_core_reactions])) for j in reactions_above_threshold])
                     worksheet.writerow(headers)
 
                     for k in range(len(time_array)):

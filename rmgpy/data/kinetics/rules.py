@@ -366,7 +366,7 @@ class KineticsRules(Database):
                 entry.data.alpha.value_si,
                 entry.data.E0.value_si / 4184.
             ))
-            if entry.data.A.isUncertaintyMultiplicative():
+            if entry.data.A.is_uncertainty_multiplicative():
                 flib.write('*{0:<6g} '.format(entry.data.A.uncertainty_si))
             else:
                 flib.write('{0:<7g} '.format(entry.data.A.uncertainty_si * factor))

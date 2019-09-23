@@ -40,7 +40,7 @@ except ImportError:
     logging.warning('Optional package dependency "xlwt" not loaded. Some output features will not work.')
     xlwt = None
 
-from rmgpy.util import makeOutputSubdirectory
+from rmgpy.util import make_output_subdirectory
 
 
 class ExecutionStatsWriter(object):
@@ -73,7 +73,7 @@ class ExecutionStatsWriter(object):
 
     def __init__(self, outputDirectory):
         super(ExecutionStatsWriter, self).__init__()
-        makeOutputSubdirectory(outputDirectory, 'plot')
+        make_output_subdirectory(outputDirectory, 'plot')
 
         # RMG execution statistics
         self.coreSpeciesCount = []
@@ -111,13 +111,13 @@ class ExecutionStatsWriter(object):
             logging.info('    Memory used: memory usage was unable to be logged')
             self.memoryUse.append(0.0)
 
-        self.saveExecutionStatistics(rmg)
+        self.save_execution_statistics(rmg)
         if rmg.generatePlots:
-            self.generateExecutionPlots(rmg)
+            self.generate_execution_plots(rmg)
 
         logging.info('')
 
-    def saveExecutionStatistics(self, rmg):
+    def save_execution_statistics(self, rmg):
         """
         Save the statistics of the RMG job to an Excel spreadsheet for easy viewing
         after the run is complete. The statistics are saved to the file
@@ -169,7 +169,7 @@ class ExecutionStatsWriter(object):
         fstr = os.path.join(rmg.outputDirectory, 'statistics.xls')
         workbook.save(fstr)
 
-    def generateExecutionPlots(self, rmg):
+    def generate_execution_plots(self, rmg):
         """
         Generate a number of plots describing the statistics of the RMG job,
         including the reaction model core and edge size and memory use versus

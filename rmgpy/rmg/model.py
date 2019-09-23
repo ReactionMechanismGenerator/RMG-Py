@@ -42,7 +42,7 @@ import numpy as np
 
 import rmgpy.data.rmg
 from rmgpy import settings
-from rmgpy.constraints import failsSpeciesConstraints
+from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
@@ -652,13 +652,13 @@ class CoreEdgeReactionModel:
         new_core_reactions = self.core.reactions[num_old_core_reactions:]
         new_edge_reactions = self.edge.reactions[num_old_edge_reactions:]
         checked_reactions = self.core.reactions[:num_old_core_reactions] + self.edge.reactions[:num_old_edge_reactions]
-        from rmgpy.chemkin import markDuplicateReaction
+        from rmgpy.chemkin import mark_duplicate_reaction
         for rxn in new_core_reactions:
-            markDuplicateReaction(rxn, checked_reactions)
+            mark_duplicate_reaction(rxn, checked_reactions)
             checked_reactions.append(rxn)
         if self.saveEdgeSpecies:
             for rxn in new_edge_reactions:
-                markDuplicateReaction(rxn, checked_reactions)
+                mark_duplicate_reaction(rxn, checked_reactions)
                 checked_reactions.append(rxn)
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[num_old_core_species:],
@@ -1488,7 +1488,7 @@ class CoreEdgeReactionModel:
                                                       "You may explicitly allow it, but it will remain inert unless "
                                                       "found in a seed mechanism or reaction "
                                                       "library.".format(spec.label, seedMechanism.label))
-            if failsSpeciesConstraints(spec):
+            if fails_species_constraints(spec):
                 if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
                     rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
@@ -1585,7 +1585,7 @@ class CoreEdgeReactionModel:
                                                           "forbidden. You may explicitly allow it, but it will remain "
                                                           "inert unless found in a seed mechanism or reaction "
                                                           "library.".format(spec.label, reactionLibrary.label))
-            if failsSpeciesConstraints(spec):
+            if fails_species_constraints(spec):
                 if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
                     rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
@@ -1609,11 +1609,11 @@ class CoreEdgeReactionModel:
                 self.addReactionToEdge(rxn)
 
         if self.saveEdgeSpecies:
-            from rmgpy.chemkin import markDuplicateReaction
+            from rmgpy.chemkin import mark_duplicate_reaction
             new_edge_reactions = self.edge.reactions[num_old_edge_reactions:]
             checked_reactions = self.core.reactions + self.edge.reactions[:num_old_edge_reactions]
             for rxn in new_edge_reactions:
-                markDuplicateReaction(rxn, checked_reactions)
+                mark_duplicate_reaction(rxn, checked_reactions)
                 checked_reactions.append(rxn)
 
         self.printEnlargeSummary(
@@ -1815,10 +1815,10 @@ class CoreEdgeReactionModel:
         like add a reaction library or seed mechanism.
         Anything added via the :meth:`expand` method should already be detected.
         """
-        from rmgpy.chemkin import markDuplicateReactions
+        from rmgpy.chemkin import mark_duplicate_reactions
 
         rxn_list = self.core.reactions + self.outputReactionList
-        markDuplicateReactions(rxn_list)
+        mark_duplicate_reactions(rxn_list)
 
     def registerReaction(self, rxn):
         """

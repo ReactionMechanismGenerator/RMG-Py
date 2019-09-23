@@ -57,7 +57,7 @@ from rmgpy.rmg.model import Species, CoreEdgeReactionModel
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.constraints import failsSpeciesConstraints
+from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
@@ -463,9 +463,9 @@ class RMG(util.Subject):
             self.filterReactions = self.modelSettingsList[0].filterReactions
 
         # Make output subdirectories
-        util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
-        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
-        util.makeOutputSubdirectory(self.outputDirectory, 'kinetics_database')
+        util.make_output_subdirectory(self.outputDirectory, 'pdep')
+        util.make_output_subdirectory(self.outputDirectory, 'solver')
+        util.make_output_subdirectory(self.outputDirectory, 'kinetics_database')
 
         # Specifies if details of kinetic database entries should be stored according to user
         try:
@@ -494,7 +494,7 @@ class RMG(util.Subject):
             core_restart = os.path.join(restart_dir, 'restart')
             edge_restart = os.path.join(restart_dir, 'restart_edge')
             filters_restart = os.path.join(restart_dir, 'filters')
-            util.makeOutputSubdirectory(self.outputDirectory, 'previous_restart')
+            util.make_output_subdirectory(self.outputDirectory, 'previous_restart')
             shutil.copytree(self.coreSeedPath, core_restart)
             shutil.copytree(self.edgeSeedPath, edge_restart)
             os.mkdir(filters_restart)
@@ -560,7 +560,7 @@ class RMG(util.Subject):
                     raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly "
                                                       "allow it, but it will remain inert unless found in a seed "
                                                       "mechanism or reaction library.".format(spec.label))
-            if failsSpeciesConstraints(spec):
+            if fails_species_constraints(spec):
                 if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                     self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
                 else:

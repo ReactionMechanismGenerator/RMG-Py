@@ -48,7 +48,7 @@ try:
 except ImportError:
     pass
 
-from rmgpy.chemkin import writeElementsSection
+from rmgpy.chemkin import write_elements_section
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
@@ -185,7 +185,7 @@ class Arkane(object):
 
         # write the chemkin files and run the thermo and then kinetics jobs
         with open(chemkin_file, 'w') as f:
-            writeElementsSection(f)
+            write_elements_section(f)
 
             f.write('SPECIES\n\n')
 

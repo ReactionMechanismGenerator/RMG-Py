@@ -38,7 +38,7 @@ heat capacity data in RMG-database format.
 import os.path
 
 from rmgpy import settings
-from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
+from rmgpy.chemkin import save_chemkin_file, save_species_dictionary
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.rmg.main import RMG
@@ -83,8 +83,8 @@ def runThermoEstimator(inputFile, library_flag):
         library.save(os.path.join(rmg.outputDirectory, 'ThermoLibrary.py'))
 
     # Save the thermo data to chemkin format output files and dictionary, with no reactions    
-    saveChemkinFile(os.path.join(rmg.outputDirectory, 'chem_annotated.inp'), species=rmg.initialSpecies, reactions=[])
-    saveSpeciesDictionary(os.path.join(rmg.outputDirectory, 'species_dictionary.txt'), species=rmg.initialSpecies)
+    save_chemkin_file(os.path.join(rmg.outputDirectory, 'chem_annotated.inp'), species=rmg.initialSpecies, reactions=[])
+    save_species_dictionary(os.path.join(rmg.outputDirectory, 'species_dictionary.txt'), species=rmg.initialSpecies)
 
 
 ################################################################################

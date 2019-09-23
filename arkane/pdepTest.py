@@ -40,7 +40,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from rmgpy import settings
-from rmgpy.chemkin import readReactionsBlock
+from rmgpy.chemkin import read_reactions_block
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.species import Species
 
@@ -102,7 +102,7 @@ class ArkaneTest(unittest.TestCase):
         dictionary = {'hydroperoxylvinoxy': Species().from_smiles('[CH2]C(=O)OO'),
                       'acetylperoxy': Species().from_smiles('CC(=O)O[O]')}
         with open(os.path.join(self.directory, 'chem.inp'), 'r') as chem:
-            reaction_list = readReactionsBlock(chem, dictionary)
+            reaction_list = read_reactions_block(chem, dictionary)
         rxn = reaction_list[0]
         self.assertIsInstance(rxn.kinetics, Chebyshev)
         self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246)

@@ -34,7 +34,7 @@ import os.path
 
 import numpy as np
 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromUserSpecies
 from rmgpy.tools.plot import GenericPlot, SimulationPlot, findNearest
 
@@ -116,13 +116,13 @@ class ObservablesTestCase(object):
             new_transport_path = os.path.join(newDir, 'tran.dat')
 
         # load the species and reactions from each model
-        old_species_list, old_reaction_list = loadChemkinFile(os.path.join(oldDir, 'chem_annotated.inp'),
-                                                              os.path.join(oldDir, 'species_dictionary.txt'),
-                                                              old_transport_path)
+        old_species_list, old_reaction_list = load_chemkin_file(os.path.join(oldDir, 'chem_annotated.inp'),
+                                                                os.path.join(oldDir, 'species_dictionary.txt'),
+                                                                old_transport_path)
 
-        new_species_list, new_reaction_list = loadChemkinFile(os.path.join(newDir, 'chem_annotated.inp'),
-                                                              os.path.join(newDir, 'species_dictionary.txt'),
-                                                              new_transport_path)
+        new_species_list, new_reaction_list = load_chemkin_file(os.path.join(newDir, 'chem_annotated.inp'),
+                                                                os.path.join(newDir, 'species_dictionary.txt'),
+                                                                new_transport_path)
 
         self.oldSim = Cantera(speciesList=old_species_list,
                               reactionList=old_reaction_list,

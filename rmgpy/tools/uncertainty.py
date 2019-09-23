@@ -332,11 +332,11 @@ class Uncertainty(object):
         containing information about the source of the thermodynamic and kinetic
         parameters
         """
-        from rmgpy.chemkin import loadChemkinFile
+        from rmgpy.chemkin import load_chemkin_file
 
-        self.speciesList, self.reactionList = loadChemkinFile(chemkinPath,
-                                                              dictionaryPath=dictionaryPath,
-                                                              transportPath=transportPath)
+        self.speciesList, self.reactionList = load_chemkin_file(chemkinPath,
+                                                                dictionary_path=dictionaryPath,
+                                                                transport_path=transportPath)
 
     def retrieveSaturatedSpeciesFromList(self, species):
         """
@@ -615,7 +615,7 @@ class Uncertainty(object):
                                         sensitivityThreshold=sensitivityThreshold)
 
         # Create the csv worksheets for logging sensitivity
-        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+        util.make_output_subdirectory(self.outputDirectory, 'solver')
         sens_worksheet = []
         reaction_system_index = 0
         for spec in reaction_system.sensitiveSpecies:

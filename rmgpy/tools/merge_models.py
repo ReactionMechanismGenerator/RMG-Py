@@ -46,7 +46,7 @@ import argparse
 import os
 import os.path
 
-from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
+from rmgpy.chemkin import load_chemkin_file, save_chemkin_file, save_species_dictionary, save_transport_file
 from rmgpy.rmg.model import ReactionModel
 
 
@@ -114,10 +114,10 @@ def execute(input_model_files, **kwargs):
     final_model = combine_models(models)
 
     # Save the merged model to disk
-    saveChemkinFile(output_chemkin_file, final_model.species, final_model.reactions)
-    saveSpeciesDictionary(output_species_dictionary, final_model.species)
+    save_chemkin_file(output_chemkin_file, final_model.species, final_model.reactions)
+    save_species_dictionary(output_species_dictionary, final_model.species)
     if transport:
-        saveTransportFile(output_transport_file, final_model.species)
+        save_transport_file(output_transport_file, final_model.species)
 
     print('Merged Chemkin file saved to {0}'.format(output_chemkin_file))
     print('Merged species dictionary saved to {0}'.format(output_species_dictionary))
@@ -130,10 +130,10 @@ def get_models_to_merge(input_model_files):
     Reads input file paths and creates a list of ReactionModel
     """
     models = []
-    for chemkin, speciesPath, transportPath in input_model_files:
+    for chemkin, species_path, transport_path in input_model_files:
         print('Loading model #{0:d}...'.format(len(models) + 1))
         model = ReactionModel()
-        model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
+        model.species, model.reactions = load_chemkin_file(chemkin, species_path, transport_path=transport_path)
         models.append(model)
     return models
 

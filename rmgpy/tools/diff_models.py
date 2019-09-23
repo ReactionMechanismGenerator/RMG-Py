@@ -62,7 +62,7 @@ import os
 
 import matplotlib.pyplot as plt
 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.rmg.model import ReactionModel
 from rmgpy.rmg.output import saveDiffHTML
 
@@ -219,9 +219,9 @@ def saveCompareHTML(outputDir, chemkinPath1, speciesDictPath1, chemkinPath2, spe
     files.
     """
     model1 = ReactionModel()
-    model1.species, model1.reactions = loadChemkinFile(chemkinPath1, speciesDictPath1, readComments=readComments1)
+    model1.species, model1.reactions = load_chemkin_file(chemkinPath1, speciesDictPath1, read_comments=readComments1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2, readComments=readComments2)
+    model2.species, model2.reactions = load_chemkin_file(chemkinPath2, speciesDictPath2, read_comments=readComments2)
     common_reactions, unique_reactions1, unique_reactions2 = compareModelReactions(model1, model2)
     common_species, unique_species1, unique_species2 = compareModelSpecies(model1, model2)
 
@@ -321,9 +321,9 @@ def main():
 
 def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **kwargs):
     model1 = ReactionModel()
-    model1.species, model1.reactions = loadChemkinFile(chemkin1, speciesDict1, thermoPath=thermo1)
+    model1.species, model1.reactions = load_chemkin_file(chemkin1, speciesDict1, thermo_path=thermo1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = loadChemkinFile(chemkin2, speciesDict2, thermoPath=thermo2)
+    model2.species, model2.reactions = load_chemkin_file(chemkin2, speciesDict2, thermo_path=thermo2)
 
     common_species, unique_species1, unique_species2 = compareModelSpecies(model1, model2)
     common_reactions, unique_reactions1, unique_reactions2 = compareModelReactions(model1, model2)

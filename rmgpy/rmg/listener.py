@@ -31,7 +31,7 @@
 import csv
 import os
 
-from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.chemkin import get_species_identifier
 from rmgpy.tools.plot import SimulationPlot
 
 
@@ -86,7 +86,7 @@ class SimulationProfileWriter(object):
 
         header = ['Time (s)', 'Volume (m^3)']
         for spc in self.coreSpecies:
-            header.append(getSpeciesIdentifier(spc))
+            header.append(get_species_identifier(spc))
 
         with open(filename, 'w') as csvfile:
             worksheet = csv.writer(csvfile)

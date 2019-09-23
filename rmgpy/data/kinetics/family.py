@@ -48,7 +48,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 
 from rmgpy import settings
-from rmgpy.constraints import failsSpeciesConstraints
+from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry, find_degenerate_reactions, generate_molecule_combos, \
                                        ensure_independent_atom_ids
@@ -1591,7 +1591,7 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            if failsSpeciesConstraints(struct):
+            if fails_species_constraints(struct):
                 raise ForbiddenStructureException()
 
         return product_structures
