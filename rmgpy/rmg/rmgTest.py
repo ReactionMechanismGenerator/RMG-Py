@@ -61,7 +61,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         path = os.path.join(settings['test_data.directory'], 'testing_database')
 
         # kinetics family Disproportionation loading
-        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'), \
+        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
                                         kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
                                         reactionLibraries=[])
 
@@ -79,7 +79,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         rmgpy.data.rmg.database = None
 
     @work_in_progress
-    def testDeterministicReactionTemplateMatching(self):
+    def test_deterministic_reaction_template_matching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
         deterministically. 
@@ -104,7 +104,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         mol_H = Molecule().from_smiles("[H]")
         mol_C3H2O = Molecule().from_smiles("C=C=C=O")
 
-        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, new_reactions)
+        target_rxns = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions)
         self.assertEqual(len(target_rxns), 2)
 
         # reverse the order of molecules in spc
@@ -115,13 +115,13 @@ class TestRMGWorkFlow(unittest.TestCase):
         new_reactions_reverse.extend(react_species((spc,)))
 
         # try to pick out the target reaction 
-        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, new_reactions_reverse)
+        target_rxns_reverse = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions_reverse)
         self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
         self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
 
-    def testCheckForExistingSpeciesForBiAromatics(self):
+    def test_check_for_existing_species_for_bi_aromatics(self):
         """
         Test RMG check_for_existing_species can correctly check isomorphism for biaromatics.
         In this test, DPP is a species already stored in rmg species_dict, mol_test is a newly
@@ -177,7 +177,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.assertIsNotNone(spec)
 
 
-def findTargetRxnsContaining(mol1, mol2, reactions):
+def find_target_rxns_containing(mol1, mol2, reactions):
     target_rxns = []
     for rxn in reactions:
         reactants = rxn.reactants

@@ -69,7 +69,7 @@ class TestSpecies(unittest.TestCase):
         # forbidden structure loading
         cls.rmg.database.load_thermo(os.path.join(path, 'thermo'))
 
-    def testGetThermoData(self):
+    def test_get_thermo_data(self):
         """
         Test that get_thermo_data method of Species works.
         """
@@ -88,7 +88,7 @@ class TestSpecies(unittest.TestCase):
         self.assertNotEquals(id(thermo), id(spc.thermo))
 
     @classmethod
-    def tearDownClass(cls):
+    def tear_down_class(cls):
         """
         Reset the loaded database
         """
@@ -126,7 +126,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
             family.forbidden = ForbiddenStructures()
         rmg.database.forbiddenStructures = ForbiddenStructures()
 
-    def testAddNewSurfaceObjects(self):
+    def test_add_new_surface_objects(self):
         """
         basic test that surface movement object management works properly
         """
@@ -191,7 +191,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         self.assertEqual(cerm.new_surface_rxns_loss, empty)
         self.assertEqual(cerm.new_surface_rxns_add, set([cerm.edge.reactions[0]]))
 
-    def testMakeNewSpecies(self):
+    def test_make_new_species(self):
         """
         Test that CoreEdgeReactionModel.make_new_species method correctly stores the unique species.
         """
@@ -246,7 +246,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         self.assertEquals(len(cerm.index_species_dict[2].molecule), 1)
         self.assertTrue(cerm.index_species_dict[2].molecule[0].reactive)
 
-    def testMakeNewReaction(self):
+    def test_make_new_reaction(self):
         """
         Test that CoreEdgeReactionModel.make_new_reaction method correctly works.
         """
@@ -279,7 +279,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertEquals(counter, 3)
 
-    def testThermoFilterSpecies(self):
+    def test_thermo_filter_species(self):
         """
         test that thermo_filter_species leaves species alone if if toleranceThermoKeepInEdge
         is high and removes them if if toleranceThermoKeepInEdge is low
@@ -377,7 +377,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertLess(len(difset), 2)  # edge is smaller
 
-    def testThermoFilterDown(self):
+    def test_thermo_filter_down(self):
         """
         test that thermo_filter_down with maximum_edge_species = 1 reduces
         the edge to one species
@@ -463,7 +463,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertEquals(len(difset), 1)  # should be one because we thermo filtered down to one edge species
 
-    def test_checkForExistingReaction_eliminates_identical_reactions(self):
+    def test_check_for_existing_reaction_eliminates_identical_reactions(self):
         """
         Test that check_for_existing_reaction catches identical reactions.
         """
@@ -503,7 +503,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertTrue(found, 'check_for_existing_reaction failed to identify existing reaction')
 
-    def test_checkForExistingReaction_keeps_identical_reactions_with_duplicate_flag(self):
+    def test_check_for_existing_reaction_keeps_identical_reactions_with_duplicate_flag(self):
         """
         Test that check_for_existing_reaction keeps reactions with different templates and duplicate=True.
         """
@@ -545,7 +545,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertFalse(found, 'check_for_existing_reaction failed to identify duplicate template reactions')
 
-    def test_checkForExistingReaction_eliminates_identical_reactions_without_duplicate_flag(self):
+    def test_check_for_existing_reaction_eliminates_identical_reactions_without_duplicate_flag(self):
         """
         Test that check_for_existing_reaction eliminates reactions with different templates and duplicate=false
         """
@@ -587,7 +587,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertTrue(found, 'check_for_existing_reaction failed to eliminate reactions without duplicate tag')
 
-    def test_checkForExistingReaction_removes_duplicates_in_opposite_directions(self):
+    def test_check_for_existing_reaction_removes_duplicates_in_opposite_directions(self):
         """
         Test that check_for_existing_reaction removes duplicate reverse reactions
         """

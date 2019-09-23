@@ -41,7 +41,7 @@ from rmgpy.chemkin import load_chemkin_file
 
 class TestOutput(unittest.TestCase):
 
-    def testSaveOutputHTML(self):
+    def test_save_output_html(self):
         """
         This example is to test if an HTML file can be generated
         for the provided chemkin model.

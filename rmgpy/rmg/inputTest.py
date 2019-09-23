@@ -63,7 +63,7 @@ class TestInputDatabase(unittest.TestCase):
         global rmg
         rmg.reaction_libraries = None
 
-    def testImportingDatabaseReactionLibrariesFromString(self):
+    def test_importing_database_reaction_libraries_from_string(self):
         """
         Test that we can import Reaction Libraries using the non-tuple form.
         """
@@ -73,7 +73,7 @@ class TestInputDatabase(unittest.TestCase):
         self.assertIsInstance(rmg.reaction_libraries[0], tuple)
         self.assertFalse(rmg.reaction_libraries[0][1])
 
-    def testImportingDatabaseReactionLibrariesFromFalseTuple(self):
+    def test_importing_database_reaction_libraries_from_false_tuple(self):
         """
         Test that we can import Reaction Libraries using the Tuple False form.
         """
@@ -83,7 +83,7 @@ class TestInputDatabase(unittest.TestCase):
         self.assertIsInstance(rmg.reaction_libraries[0], tuple)
         self.assertFalse(rmg.reaction_libraries[0][1])
 
-    def testImportingDatabaseReactionLibrariesFromTrueTuple(self):
+    def test_importing_database_reaction_libraries_from_true_tuple(self):
         """
         Test that we can import Reaction Libraries using the Tuple True form.
         """
@@ -104,7 +104,7 @@ class TestInputMLEstimator(unittest.TestCase):
         global rmg
         rmg.ml_estimator = None
 
-    def testMLEstimator(self):
+    def test_ml_estimator(self):
         """
         Test that we can input.
         """
@@ -126,7 +126,7 @@ class TestInputThemoCentralDatabase(unittest.TestCase):
         global rmg
         rmg.thermo_central_database = None
 
-    def testThemoCentralDatabase(self):
+    def test_themo_central_database(self):
         """
         Test that we can input.
         """

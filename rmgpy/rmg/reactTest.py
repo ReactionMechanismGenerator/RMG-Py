@@ -67,7 +67,7 @@ class TestReact(unittest.TestCase):
                                         reactionLibraries=[]
                                         )
 
-    def testReact(self):
+    def test_react(self):
         """
         Test that the ``react`` function works in serial
         """
@@ -82,7 +82,7 @@ class TestReact(unittest.TestCase):
         self.assertEqual(len(reaction_list), 3)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
-    def testReactParallel(self):
+    def test_react_parallel(self):
         """
         Test that the ``react`` function works in parallel using Python multiprocessing
         """
@@ -102,7 +102,7 @@ class TestReact(unittest.TestCase):
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
 
-    def testReactAll(self):
+    def test_react_all(self):
         """
         Test that the ``react_all`` function works in serial
         """
@@ -125,7 +125,7 @@ class TestReact(unittest.TestCase):
         self.assertEqual(len(flat_rxn_list), 44)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list]))
 
-    def testReactAllParallel(self):
+    def test_react_all_parallel(self):
         """
         Test that the ``react_all`` function works in parallel using Python multiprocessing
         """

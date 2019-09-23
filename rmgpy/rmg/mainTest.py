@@ -80,19 +80,19 @@ class TestMain(unittest.TestCase):
         shutil.rmtree(cls.seedKinetics)
         shutil.rmtree(cls.seedKineticsEdge)
 
-    def testRMGExecute(self):
+    def test_rmg_execute(self):
         """Test that RMG.execute completed successfully."""
         self.assertIsInstance(self.rmg.database, RMGDatabase)
         self.assertTrue(self.rmg.done)
 
-    def testRMGIncreasesReactions(self):
+    def test_rmg_increases_reactions(self):
         """Test that RMG.execute increases reactions and species."""
         self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
         self.assertTrue(len(self.rmg.reaction_model.core.species) > 1)
         self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
         self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
 
-    def testRMGSeedMechanismCreation(self):
+    def test_rmg_seed_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
@@ -102,7 +102,7 @@ class TestMain(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'dictionary.txt')))  # dictionary file made
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'reactions.py')))  # reactions file made
 
-    def testRMGSeedEdgeMechanismCreation(self):
+    def test_rmg_seed_edge_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
@@ -112,15 +112,15 @@ class TestMain(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'dictionary.txt')))  # dictionary file made
         self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'reactions.py')))  # reactions file made
 
-    def testRMGSeedLibraryCreation(self):
+    def test_rmg_seed_library_creation(self):
         """Test that seed mechanisms are created in the correct database locations."""
         self.assertTrue(os.path.exists(self.seedKinetics))
 
-    def testRMGSeedEdgeLibraryCreation(self):
+    def test_rmg_seed_edge_library_creation(self):
         """Test that edge seed mechanisms are created in the correct database locations."""
         self.assertTrue(os.path.exists(self.seedKinetics))
 
-    def testRMGSeedWorks(self):
+    def test_rmg_seed_works(self):
         """Test that the created seed libraries work.
 
         Note: Since this test modifies the class level RMG instance,
@@ -156,7 +156,7 @@ class TestMain(unittest.TestCase):
         self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
         self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
 
-    def testRMGMemory(self):
+    def test_rmg_memory(self):
         """
         test that RMG Memory objects function properly
         """
@@ -168,7 +168,7 @@ class TestMain(unittest.TestCase):
             Rmem.generate_cond()
             Rmem.get_cond()
 
-    def testMakeCanteraInputFile(self):
+    def test_make_cantera_input_file(self):
         """
         This tests to ensure that a usable Cantera input file is created.
         """
@@ -319,7 +319,7 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
         # go back to the main RMG-Py directory
         os.chdir('..')
 
-    def testChemkinToCanteraConversion(self):
+    def test_chemkin_to_cantera_conversion(self):
         """
         Tests that good and bad chemkin files raise proper exceptions
         """
