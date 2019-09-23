@@ -496,14 +496,10 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
 
     source = [species_dict[name] for name in source]
 
-    if bathGas:
-        bath_gas_0 = bathGas or {}
-        bath_gas = {}
-        for spec, fraction in bath_gas_0.items():
-            bath_gas[species_dict[spec]] = fraction
+    bath_gas = {species_dict[spec]: fraction for spec, fraction in bathGas.items()} if bathGas else None
 
     job = ExplorerJob(source=source, pdepjob=pdepjob, explore_tol=explore_tol,
-                      energy_tol=energy_tol, flux_tol=flux_tol, bath_gas=bathGas,
+                      energy_tol=energy_tol, flux_tol=flux_tol, bath_gas=bath_gas,
                       maximum_radical_electrons=maximumRadicalElectrons)
     job_list.append(job)
 
