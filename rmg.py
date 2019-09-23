@@ -37,6 +37,10 @@ import os.path
 import argparse
 import logging
 
+# Before importing any RMG modules, check Python version
+import utilities
+utilities.check_python()
+
 import rmgpy
 from rmgpy.rmg.main import RMG, initialize_log, process_profile_stats, make_profile_graph
 

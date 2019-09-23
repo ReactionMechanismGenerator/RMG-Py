@@ -39,6 +39,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 
 
 def check_dependencies():
@@ -227,7 +228,7 @@ def check_pydas():
     else:
         print('No PyDAS solvers found. Please check that you have the latest version of PyDAS '
               'or that you have activated the appropriate conda environment.\n')
-        raise Exception('Cannot compile RMG solver without PyDAS.')
+        sys.exit('Cannot compile RMG solver without PyDAS.')
 
     settings_path = os.path.join(os.path.dirname(__file__), 'rmgpy', 'solver', 'settings.pxi')
 
@@ -246,6 +247,20 @@ def check_pydas():
                 f.write('DEF DASPK = 1\n')
             elif dassl:
                 f.write('DEF DASPK = 0\n')
+
+
+def check_python():
+    """
+    Check that Python 3 is in the environment.
+    """
+    major = sys.version_info.major
+    minor = sys.version_info.minor
+    if not (major == 3 and minor >= 7):
+        sys.exit('\nRMG-Py requires Python 3.7 or higher. You are using Python {0}.{1}.\n\n'
+                 'If you are using Anaconda, you should create a new environment using\n\n'
+                 '    conda env create -f environment.yml\n\n'
+                 'If you have an existing rmg_env, you can remove it using\n\n'
+                 '    conda remove --name rmg_env --all\n'.format(major, minor))
 
 
 def clean(subdirectory=''):
@@ -395,6 +410,7 @@ if __name__ == '__main__':
     parser.add_argument('command', metavar='COMMAND', type=str,
                         choices=['check-dependencies',
                                  'check-pydas',
+                                 'check-python',
                                  'clean',
                                  'clean-solver',
                                  'update-headers'],
@@ -406,6 +422,8 @@ if __name__ == '__main__':
         check_dependencies()
     elif args.command == 'check-pydas':
         check_pydas()
+    elif args.command == 'check-python':
+        check_python()
     elif args.command == 'clean':
         clean()
     elif args.command == 'clean-solver':

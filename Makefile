@@ -4,9 +4,9 @@
 #
 ################################################################################
 
-.PHONY : all minimal main solver check cantherm clean install decython documentation mopac_travis
+.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis
 
-all: main solver check
+all: pycheck main solver check
 
 minimal:
 	python setup.py build_ext minimal --inplace --build-temp .
@@ -23,6 +23,9 @@ arkane:
 
 check:
 	@ python utilities.py check-dependencies
+
+pycheck:
+	@ python utilities.py check-python
 
 documentation:
 	$(MAKE) -C documentation html
