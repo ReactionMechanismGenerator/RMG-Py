@@ -56,7 +56,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
         """
         cls.rmg = RMG()
         rmgpy.rmg.input.rmg = cls.rmg
-        rmgpy.rmg.input.generatedSpeciesConstraints(
+        rmgpy.rmg.input.generated_species_constraints(
             maximumCarbonAtoms=2,
             maximumOxygenAtoms=1,
             maximumNitrogenAtoms=1,

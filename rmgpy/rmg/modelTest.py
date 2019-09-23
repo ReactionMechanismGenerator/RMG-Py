@@ -668,10 +668,10 @@ class TestEnlarge(unittest.TestCase):
 
         cls.rmg = RMG()
 
-        from rmgpy.rmg.input import set_global_rmg, pressureDependence
+        from rmgpy.rmg.input import set_global_rmg, pressure_dependence
         set_global_rmg(cls.rmg)
 
-        pressureDependence(
+        pressure_dependence(
             method='modified strong collision',
             maximumGrainSize=(0.5, 'kcal/mol'),
             minimumNumberOfGrains=250,

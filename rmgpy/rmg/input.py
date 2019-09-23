@@ -97,14 +97,14 @@ def database(
         rmg.kinetics_families = kineticsFamilies
 
 
-def catalystProperties(bindingEnergies=None,
-                       surfaceSiteDensity=None, ):
+def catalyst_properties(bindingEnergies=None,
+                        surfaceSiteDensity=None, ):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
     Defaults to Pt(111) if not specified.
     """
-    rmg.binding_energies = convertBindingEnergies(bindingEnergies)
+    rmg.binding_energies = convert_binding_energies(bindingEnergies)
 
     if surfaceSiteDensity is None:
         surfaceSiteDensity = (2.72e-9, 'mol/cm^2')
@@ -113,7 +113,7 @@ def catalystProperties(bindingEnergies=None,
     rmg.surface_site_density = surfaceSiteDensity
 
 
-def convertBindingEnergies(bindingEnergies):
+def convert_binding_energies(bindingEnergies):
     """
     Process the bindingEnergies from the input file.
     If "None" is passed, then it returns Pt(111) values.
@@ -160,37 +160,37 @@ def species(label, structure, reactive=True):
     species_dict[label] = spec
 
 
-def SMARTS(string):
+def smarts(string):
     return Molecule().from_smarts(string)
 
 
-def SMILES(string):
+def smiles(string):
     return Molecule().from_smiles(string)
 
 
-def InChI(string):
+def inchi(string):
     return Molecule().from_inchi(string)
 
 
-def adjacencyList(string):
+def adjacency_list(string):
     return Molecule().from_adjacency_list(string)
 
 
 # Reaction systems
-def simpleReactor(temperature,
-                  pressure,
-                  initialMoleFractions,
-                  nSims=6,
-                  terminationConversion=None,
-                  terminationTime=None,
-                  terminationRateRatio=None,
-                  balanceSpecies=None,
-                  sensitivity=None,
-                  sensitivityThreshold=1e-3,
-                  sensitivityTemperature=None,
-                  sensitivityPressure=None,
-                  sensitivityMoleFractions=None,
-                  ):
+def simple_reactor(temperature,
+                   pressure,
+                   initialMoleFractions,
+                   nSims=6,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   balanceSpecies=None,
+                   sensitivity=None,
+                   sensitivityThreshold=1e-3,
+                   sensitivityTemperature=None,
+                   sensitivityPressure=None,
+                   sensitivityMoleFractions=None,
+                   ):
     logging.debug('Found SimpleReactor reaction system')
 
     for key, value in initialMoleFractions.items():
@@ -285,17 +285,17 @@ def simpleReactor(temperature,
 
 
 # Reaction systems
-def liquidReactor(temperature,
-                  initialConcentrations,
-                  terminationConversion=None,
-                  nSims=4,
-                  terminationTime=None,
-                  terminationRateRatio=None,
-                  sensitivity=None,
-                  sensitivityThreshold=1e-3,
-                  sensitivityTemperature=None,
-                  sensitivityConcentrations=None,
-                  constantSpecies=None):
+def liquid_reactor(temperature,
+                   initialConcentrations,
+                   terminationConversion=None,
+                   nSims=4,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   sensitivity=None,
+                   sensitivityThreshold=1e-3,
+                   sensitivityTemperature=None,
+                   sensitivityConcentrations=None,
+                   constantSpecies=None):
     logging.debug('Found LiquidReactor reaction system')
 
     if not isinstance(temperature, list):
@@ -332,10 +332,10 @@ def liquidReactor(temperature,
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
 
-    sensitiveSpecies = []
+    sensitive_species = []
     if sensitivity:
         for spec in sensitivity:
-            sensitiveSpecies.append(species_dict[spec])
+            sensitive_species.append(species_dict[spec])
 
     # chatelak: check the constant species exist
     if constantSpecies is not None:
@@ -355,23 +355,23 @@ def liquidReactor(temperature,
         sens_conditions = sensitivityConcentrations
         sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
 
-    system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold,
+    system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitive_species, sensitivityThreshold,
                            sens_conditions, constantSpecies)
     rmg.reaction_systems.append(system)
 
 
 # Reaction systems
-def surfaceReactor(temperature,
-                   initialPressure,
-                   initialGasMoleFractions,
-                   initialSurfaceCoverages,
-                   surfaceVolumeRatio,
-                   nSims=4,
-                   terminationConversion=None,
-                   terminationTime=None,
-                   terminationRateRatio=None,
-                   sensitivity=None,
-                   sensitivityThreshold=1e-3):
+def surface_reactor(temperature,
+                    initialPressure,
+                    initialGasMoleFractions,
+                    initialSurfaceCoverages,
+                    surfaceVolumeRatio,
+                    nSims=4,
+                    terminationConversion=None,
+                    terminationTime=None,
+                    terminationRateRatio=None,
+                    sensitivity=None,
+                    sensitivityThreshold=1e-3):
     logging.debug('Found SurfaceReactor reaction system')
 
     for value in list(initialGasMoleFractions.values()):
@@ -400,12 +400,12 @@ def surfaceReactor(temperature,
         T = [Quantity(t) for t in temperature]
 
     if not isinstance(initialPressure, list):
-        initialP = Quantity(initialPressure)
+        P_initial = Quantity(initialPressure)
     else:
         if len(initialPressure) != 2:
             raise InputError('Initial pressure ranges can either be in the form ''of (number,units) or a list with '
                              '2 entries of the same format')
-        initialP = [Quantity(p) for p in initialPressure]
+        P_initial = [Quantity(p) for p in initialPressure]
 
     if not isinstance(temperature, list) and not isinstance(initialPressure, list):
         nSims = 1
@@ -440,7 +440,7 @@ def surfaceReactor(temperature,
         # mole fractions (simple reactor). In fact, some may be surface coverages.
 
     system = SurfaceReactor(T=T,
-                            P_initial=initialP,
+                            P_initial=P_initial,
                             initial_gas_mole_fractions=initialGasMoleFractions,
                             initial_surface_coverages=initialSurfaceCoverages,
                             surface_volume_ratio=surfaceVolumeRatio,
@@ -455,16 +455,16 @@ def surfaceReactor(temperature,
 
 
 # Reaction systems
-def mbsampledReactor(temperature,
-                     pressure,
-                     initialMoleFractions,
-                     mbsamplingRate,
-                     terminationConversion=None,
-                     terminationTime=None,
-                     sensitivity=None,
-                     sensitivityThreshold=1e-3,
-                     constantSpecies=None,
-                     ):
+def mb_sampled_reactor(temperature,
+                       pressure,
+                       initialMoleFractions,
+                       mbsamplingRate,
+                       terminationConversion=None,
+                       terminationTime=None,
+                       sensitivity=None,
+                       sensitivityThreshold=1e-3,
+                       constantSpecies=None,
+                       ):
     logging.debug('Found MBSampledReactor reaction system')
 
     for value in initialMoleFractions.values():
@@ -585,7 +585,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
     )
 
 
-def quantumMechanics(
+def quantum_mechanics(
         software,
         method,
         fileStore=None,
@@ -604,22 +604,22 @@ def quantumMechanics(
     )
 
 
-def mlEstimator(thermo=True,
-                name='main',
-                minHeavyAtoms=1,
-                maxHeavyAtoms=None,
-                minCarbonAtoms=0,
-                maxCarbonAtoms=None,
-                minOxygenAtoms=0,
-                maxOxygenAtoms=None,
-                minNitrogenAtoms=0,
-                maxNitrogenAtoms=None,
-                onlyCyclics=False,
-                onlyHeterocyclics=False,
-                minCycleOverlap=0,
-                H298UncertaintyCutoff=(3.0, 'kcal/mol'),
-                S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
-                CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')):
+def ml_estimator(thermo=True,
+                 name='main',
+                 minHeavyAtoms=1,
+                 maxHeavyAtoms=None,
+                 minCarbonAtoms=0,
+                 maxCarbonAtoms=None,
+                 minOxygenAtoms=0,
+                 maxOxygenAtoms=None,
+                 minNitrogenAtoms=0,
+                 maxNitrogenAtoms=None,
+                 onlyCyclics=False,
+                 onlyHeterocyclics=False,
+                 minCycleOverlap=0,
+                 H298UncertaintyCutoff=(3.0, 'kcal/mol'),
+                 S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
+                 CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')):
     from rmgpy.ml.estimator import MLEstimator
 
     # Currently only support thermo
@@ -665,7 +665,7 @@ def mlEstimator(thermo=True,
                         'Machine learning estimator is restricted to only heterocyclic species thermo')
 
 
-def pressureDependence(
+def pressure_dependence(
         method,
         temperatures,
         pressures,
@@ -743,7 +743,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.walltime = wallTime
 
 
-def generatedSpeciesConstraints(**kwargs):
+def generated_species_constraints(**kwargs):
     valid_constraints = [
         'allowed',
         'maximumCarbonAtoms',
@@ -765,11 +765,11 @@ def generatedSpeciesConstraints(**kwargs):
         rmg.species_constraints[key] = value
 
 
-def thermoCentralDatabase(host,
-                          port,
-                          username,
-                          password,
-                          application):
+def thermo_central_database(host,
+                            port,
+                            username,
+                            password,
+                            application):
     from rmgpy.data.thermo import ThermoCentralDatabaseInterface
     rmg.thermo_central_database = ThermoCentralDatabaseInterface(host,
                                                                  port,
@@ -796,7 +796,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
     }
 
 
-def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
+def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
     parent_dir = os.path.dirname(rmg.input_file)
     rmg.restart = True
     doc_link = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
@@ -883,27 +883,27 @@ def read_input_file(path, rmg0):
         'True': True,
         'False': False,
         'database': database,
-        'catalystProperties': catalystProperties,
+        'catalystProperties': catalyst_properties,
         'species': species,
-        'SMARTS': SMARTS,
-        'SMILES': SMILES,
-        'InChI': InChI,
-        'adjacencyList': adjacencyList,
-        'simpleReactor': simpleReactor,
-        'liquidReactor': liquidReactor,
-        'surfaceReactor': surfaceReactor,
-        'mbsampledReactor': mbsampledReactor,
+        'SMARTS': smarts,
+        'SMILES': smiles,
+        'InChI': inchi,
+        'adjacencyList': adjacency_list,
+        'simpleReactor': simple_reactor,
+        'liquidReactor': liquid_reactor,
+        'surfaceReactor': surface_reactor,
+        'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
         'model': model,
-        'quantumMechanics': quantumMechanics,
-        'mlEstimator': mlEstimator,
-        'pressureDependence': pressureDependence,
+        'quantumMechanics': quantum_mechanics,
+        'mlEstimator': ml_estimator,
+        'pressureDependence': pressure_dependence,
         'options': options,
-        'generatedSpeciesConstraints': generatedSpeciesConstraints,
-        'thermoCentralDatabase': thermoCentralDatabase,
+        'generatedSpeciesConstraints': generated_species_constraints,
+        'thermoCentralDatabase': thermo_central_database,
         'uncertainty': uncertainty,
-        'restartFromSeed': restartFromSeed,
+        'restartFromSeed': restart_from_seed,
     }
 
     try:
@@ -960,15 +960,15 @@ def read_thermo_input_file(path, rmg0):
         'True': True,
         'False': False,
         'database': database,
-        'catalystProperties': catalystProperties,
+        'catalystProperties': catalyst_properties,
         'species': species,
-        'SMARTS': SMARTS,
-        'SMILES': SMILES,
-        'InChI': InChI,
+        'SMARTS': smarts,
+        'SMILES': smiles,
+        'InChI': inchi,
         'solvation': solvation,
-        'adjacencyList': adjacencyList,
-        'quantumMechanics': quantumMechanics,
-        'mlEstimator': mlEstimator,
+        'adjacencyList': adjacency_list,
+        'quantumMechanics': quantum_mechanics,
+        'mlEstimator': ml_estimator,
     }
 
     try:

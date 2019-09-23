@@ -451,7 +451,7 @@ class RMG(util.Subject):
 
         if kwargs.get('restart', ''):
             import rmgpy.rmg.input
-            rmgpy.rmg.input.restartFromSeed(path=kwargs['restart'])
+            rmgpy.rmg.input.restart_from_seed(path=kwargs['restart'])
 
         # Check input file 
         self.check_input()

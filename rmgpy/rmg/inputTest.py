@@ -111,7 +111,7 @@ class TestInputMLEstimator(unittest.TestCase):
         from rmgpy.ml.estimator import MLEstimator
         global rmg
         # add database properties to RMG
-        inp.mlEstimator(thermo=True)
+        inp.ml_estimator(thermo=True)
         self.assertIsInstance(rmg.ml_estimator, MLEstimator)
         self.assertIsInstance(rmg.ml_settings, dict)
 
@@ -132,7 +132,7 @@ class TestInputThemoCentralDatabase(unittest.TestCase):
         """
         global rmg
         # add database properties to RMG
-        inp.thermoCentralDatabase(
+        inp.thermo_central_database(
             host='some_host',
             port=0,
             username='some_usr',
