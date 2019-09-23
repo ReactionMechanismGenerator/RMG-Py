@@ -198,9 +198,9 @@ pressureDependence(
     minimumGrainCount = 500, 
     method = 'modified strong collision',
     #Other methods include: 'reservoir state', 'chemically-significant eigenvalues', 
-    interpolationModel = ('pdeparrhenius'), 
+    interpolationModel = 'pdeparrhenius',
     activeKRotor = True,
-#    active_j_rotor = False,  # causes Arkane to crash
+#    active_J_rotor = False,  # causes Arkane to crash
     rmgmode = False, 
 )
 
@@ -209,6 +209,6 @@ explorer(
     explore_tol=0.01,
     energy_tol=8e1,
     flux_tol=1e-6,
-     bathGas={'He':1.0},
-     maximumRadicalElectrons=2,
+    bathGas={'He':1.0},
+    maximumRadicalElectrons=2,
 )

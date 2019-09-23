@@ -75,23 +75,23 @@ class ArkaneTest(unittest.TestCase):
         A general test for a PDep job in Arkane
         """
         self.tst1 = Arkane()
-        self.tst1.inputFile = self.input_file
-        self.tst1.outputDirectory = self.directory
+        self.tst1.input_file = self.input_file
+        self.tst1.output_directory = self.directory
         self.tst1.verbose = logging.WARN
         self.tst1.plot = False
-        self.tst1.jobList = []
-        self.tst1.jobList = self.tst1.loadInputFile(self.tst1.inputFile)
+        self.tst1.job_list = []
+        self.tst1.job_list = self.tst1.load_input_file(self.tst1.input_file)
         self.tst1.execute()
 
-        job = self.tst1.jobList[0]
+        job = self.tst1.job_list[0]
         self.assertEquals(job.Tmin.value_si, 300.0)
-        self.assertEquals(job.minimumGrainCount, 100)
+        self.assertEquals(job.minimum_grain_count, 100)
         self.assertFalse(job.rmgmode)
-        self.assertTrue(job.activeJRotor)
-        self.assertEquals(job.network.pathReactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
-        self.assertAlmostEquals(job.network.pathReactions[0].transition_state.tunneling.E0_TS.value_si, -24267.2)
-        self.assertAlmostEquals(job.network.pathReactions[0].transition_state.tunneling.frequency.value_si, -1679.04)
-        self.assertEquals(len(job.network.netReactions[0].reactants[0].conformer.modes), 6)
+        self.assertTrue(job.active_j_rotor)
+        self.assertEquals(job.network.path_reactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
+        self.assertAlmostEquals(job.network.path_reactions[0].transition_state.tunneling.E0_TS.value_si, -24267.2)
+        self.assertAlmostEquals(job.network.path_reactions[0].transition_state.tunneling.frequency.value_si, -1679.04)
+        self.assertEquals(len(job.network.net_reactions[0].reactants[0].conformer.modes), 6)
         # self.assertEquals(self.tst1.frequencyScaleFactor, 0.947)
 
         # test that a network pdf was generated

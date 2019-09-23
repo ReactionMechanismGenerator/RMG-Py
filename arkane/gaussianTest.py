@@ -61,8 +61,8 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
-        conformer, unscaled_frequencies = log.loadConformer()
-        e0 = log.loadEnergy()
+        conformer, unscaled_frequencies = log.load_conformer()
+        e0 = log.load_energy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
@@ -88,8 +88,8 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
-        conformer, unscaled_frequencies = log.loadConformer()
-        e0 = log.loadEnergy()
+        conformer, unscaled_frequencies = log.load_conformer()
+        e0 = log.load_energy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, LinearRotor)]) == 1)
@@ -116,8 +116,8 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_G3.log'))
-        conformer, unscaled_frequencies = log.loadConformer()
-        e0 = log.loadEnergy()
+        conformer, unscaled_frequencies = log.load_conformer()
+        e0 = log.load_energy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
@@ -148,7 +148,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(optical, 1)
         self.assertEqual(symmetry, 2)
 
-        conf = log.loadConformer()[0]
+        conf = log.load_conformer()[0]
         self.assertEqual(conf.optical_isomers, 1)
         found_rotor = False
         for mode in conf.modes:

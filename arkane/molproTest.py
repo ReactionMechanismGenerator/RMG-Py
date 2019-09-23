@@ -59,7 +59,7 @@ class MolproTest(unittest.TestCase):
         """
 
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
-        e0 = log.loadEnergy()
+        e0 = log.load_energy()
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.474353559604, 5)
 
@@ -70,7 +70,7 @@ class MolproTest(unittest.TestCase):
         """
 
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_qz.out'))
-        e0 = log.loadEnergy()
+        e0 = log.load_energy()
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.472682755635, 5)
 
@@ -81,7 +81,7 @@ class MolproTest(unittest.TestCase):
         """
 
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'OH_f12.out'))
-        e0 = log.loadEnergy()
+        e0 = log.load_energy()
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -75.663696424380, 5)
 
@@ -92,8 +92,8 @@ class MolproTest(unittest.TestCase):
         """
 
         log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'HOSI_ccsd_t1.out'))
-        conformer, unscaled_frequencies = log.loadConformer(spinMultiplicity=1)
-        e0 = log.loadEnergy()
+        conformer, unscaled_frequencies = log.load_conformer(spin_multiplicity=1)
+        e0 = log.load_energy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
@@ -118,7 +118,7 @@ class MolproTest(unittest.TestCase):
         Load E0 for CCSD(T) (without F12) from a molpro output file
         """
         molpro_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'TS_CCSD(T)_no_F12_sp_molpro.out'))
-        e0 = molpro_log.loadEnergy()
+        e0 = molpro_log.load_energy()
         self.assertAlmostEqual(e0, -301585968.58196217, places=7)
 
     def test_load_mrci_e0(self):
@@ -127,8 +127,8 @@ class MolproTest(unittest.TestCase):
         """
         mrci_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci.out'))
         mrciq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci+q.out'))
-        mrci_e0 = mrci_log.loadEnergy()
-        mrciq_e0 = mrciq_log.loadEnergy()
+        mrci_e0 = mrci_log.load_energy()
+        mrciq_e0 = mrciq_log.load_energy()
         self.assertAlmostEqual(mrci_e0, -293217091.0381712, places=7)
         self.assertAlmostEqual(mrciq_e0, -293284017.3925107, places=7)
 
@@ -137,7 +137,7 @@ class MolproTest(unittest.TestCase):
         Load an imaginary frequency from a  molpro output file
         """
         freq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_TS.out'))
-        imaginary_freq = freq_log.loadNegativeFrequency()
+        imaginary_freq = freq_log.load_negative_frequency()
         self.assertEqual(imaginary_freq, -1997.98)
 
     def test_get_d1_diagnostic(self):

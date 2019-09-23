@@ -49,17 +49,16 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.level = level
         self.indent = indent
 
-    def visit_Call(self, node):
+    def visit_call(self, node):
         """
-        Return a pretty representation of the class or function call 
-        represented by `node`.
+        Return a pretty representation of the class or function call represented by `node`.
         """
         result = node.func.id + '(\n'
 
         keywords = []
         for keyword in node.keywords:
             keywords.append('{0}={1}'.format(keyword.arg, self.visit(keyword.value)))
-        result = '{0}({1})'.format(node.func.id, ', '.join(keywords))
+        result += '{0}({1})'.format(node.func.id, ', '.join(keywords))
 
         if len(result) > 80:
             result = node.func.id + '(\n'
@@ -76,7 +75,7 @@ class PrettifyVisitor(ast.NodeVisitor):
 
         return result
 
-    def visit_List(self, node):
+    def visit_list(self, node):
         """
         Return a pretty representation of the list represented by `node`.
         """
@@ -95,7 +94,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Tuple(self, node):
+    def visit_tuple(self, node):
         """
         Return a pretty representation of the tuple represented by `node`.
         """
@@ -122,7 +121,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Dict(self, node):
+    def visit_dict(self, node):
         """
         Return a pretty representation of the dict represented by `node`.
         """
@@ -144,7 +143,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Str(self, node):
+    def visit_str(self, node):
         """
         Return a pretty representation of the string represented by `node`.
         """
@@ -152,7 +151,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.string = result
         return result
 
-    def visit_Num(self, node):
+    def visit_num(self, node):
         """
         Return a pretty representation of the number represented by `node`.
         """

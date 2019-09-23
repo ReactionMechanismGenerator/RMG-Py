@@ -60,7 +60,7 @@ class GaussianLog(Log):
     def __init__(self, path):
         super(GaussianLog, self).__init__(path)
 
-    def getNumberOfAtoms(self):
+    def get_number_of_atoms(self):
         """
         Return the number of atoms in the molecular configuration used in
         the Gaussian log file.
@@ -81,7 +81,7 @@ class GaussianLog(Log):
 
         return n_atoms
 
-    def loadForceConstantMatrix(self):
+    def load_force_constant_matrix(self):
         """
         Return the force constant matrix from the Gaussian log file. The job
         that generated the log file must have the option ``iop(7/33=1)`` in
@@ -93,7 +93,7 @@ class GaussianLog(Log):
         """
         force = None
 
-        n_atoms = self.getNumberOfAtoms()
+        n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
 
         with open(self.path, 'r') as f:
@@ -117,7 +117,7 @@ class GaussianLog(Log):
 
         return force
 
-    def loadGeometry(self):
+    def load_geometry(self):
         """
         Return the optimum geometry of the molecular configuration from the
         Gaussian log file. If multiple such geometries are identified, only the
@@ -156,7 +156,7 @@ class GaussianLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -169,10 +169,10 @@ class GaussianLog(Log):
         modes = []
         unscaled_frequencies = []
         e0 = 0.0
-        if opticalIsomers is None or symmetry is None:
-            _opticalIsomers, _symmetry, _ = self.get_symmetry_properties()
-            if opticalIsomers is None:
-                opticalIsomers = _opticalIsomers
+        if optical_isomers is None or symmetry is None:
+            _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
+            if optical_isomers is None:
+                optical_isomers = _optical_isomers
             if symmetry is None:
                 symmetry = _symmetry
         with open(self.path, 'r') as f:
@@ -180,10 +180,10 @@ class GaussianLog(Log):
             while line != '':
 
                 # Read the spin multiplicity if not explicitly given
-                if spinMultiplicity == 0 and 'Multiplicity =' in line:
-                    spinMultiplicity = int(line.split()[-1])
+                if spin_multiplicity == 0 and 'Multiplicity =' in line:
+                    spin_multiplicity = int(line.split()[-1])
                     logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'
-                                  .format(label, spinMultiplicity))
+                                  .format(label, spin_multiplicity))
 
                 # The data we want is in the Thermochemistry section of the output
                 if '- Thermochemistry -' in line:
@@ -239,8 +239,8 @@ class GaussianLog(Log):
                             e0 = float(line.split()[6]) * 4.35974394e-18 * constants.Na
 
                         # Read spin multiplicity if above method was unsuccessful
-                        elif 'Electronic' in line and in_partition_functions and spinMultiplicity == 0:
-                            spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
+                        elif 'Electronic' in line and in_partition_functions and spin_multiplicity == 0:
+                            spin_multiplicity = int(float(line.split()[1].replace('D', 'E')))
 
                         elif 'Log10(Q)' in line:
                             in_partition_functions = True
@@ -251,10 +251,10 @@ class GaussianLog(Log):
                 # Read the next line in the file
                 line = f.readline()
 
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spinMultiplicity,
-                         optical_isomers=opticalIsomers), unscaled_frequencies
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
+                         optical_isomers=optical_isomers), unscaled_frequencies
 
-    def loadEnergy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -300,7 +300,7 @@ class GaussianLog(Log):
         else:
             raise LogError('Unable to find energy in Gaussian log file.')
 
-    def loadZeroPointEnergy(self):
+    def load_zero_point_energy(self):
         """
         Load the unscaled zero-point energy in J/mol from a Gaussian log file.
         """
@@ -326,7 +326,7 @@ class GaussianLog(Log):
         else:
             raise LogError('Unable to find zero-point energy in Gaussian log file.')
 
-    def loadScanEnergies(self):
+    def load_scan_energies(self):
         """
         Extract the optimized energies in J/mol from a log file, e.g. the 
         result of a Gaussian "Scan" quantum chemistry calculation.
@@ -448,7 +448,7 @@ class GaussianLog(Log):
         """
         return self._load_scan_specs('F')
 
-    def loadNegativeFrequency(self):
+    def load_negative_frequency(self):
         """
         Return the negative frequency from a transition state frequency
         calculation in cm^-1.
@@ -467,8 +467,7 @@ class GaussianLog(Log):
         frequencies.sort()
         frequency = [freq for freq in frequencies if freq < 0][0]
         if frequency is None:
-            raise LogError('Unable to find imaginary frequency of {1} '
-                           'in Gaussian output file {0}'.format(self.path, self.species.label))
+            raise LogError('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
         return frequency
 
     def get_D1_diagnostic(self):

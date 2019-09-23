@@ -48,7 +48,7 @@ from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass
-from arkane.input import jobList
+from arkane.input import job_list
 from arkane.statmech import InputError, StatMechJob
 
 ################################################################################
@@ -81,11 +81,11 @@ class TestArkaneJob(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                     'data', 'methoxy.py'))
+        job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                       'data', 'methoxy.py'))
         pdepjob = job_list[-1]
         cls.kineticsjob = job_list[0]
-        pdepjob.activeJRotor = True
+        pdepjob.active_j_rotor = True
         network = pdepjob.network
         cls.Nisom = len(network.isomers)
         cls.Nreac = len(network.reactants)
@@ -99,9 +99,9 @@ class TestArkaneJob(unittest.TestCase):
         cls.PminValue = pdepjob.Pmin.value
         cls.Pcount = pdepjob.Pcount
         cls.Tcount = pdepjob.Tcount
-        cls.GenTlist = pdepjob.generateTemperatureList()
+        cls.GenTlist = pdepjob.generate_T_list()
         cls.PlistValue = pdepjob.Plist.value
-        cls.maximumGrainSizeValue = pdepjob.maximumGrainSize.value
+        cls.maximum_grain_size_value = pdepjob.maximum_grain_size.value
         cls.method = pdepjob.method
         cls.rmgmode = pdepjob.rmgmode
 
@@ -189,7 +189,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the max grain size value.
         """
-        self.assertEqual(self.maximumGrainSizeValue, 0.5)
+        self.assertEqual(self.maximum_grain_size_value, 0.5)
 
     def test_method(self):
         """
@@ -242,7 +242,7 @@ class TestArkaneInput(unittest.TestCase):
 
     def test_species_statmech(self):
         """Test loading of statmech job from species input file."""
-        job = jobList[-1]
+        job = job_list[-1]
         self.assertTrue(isinstance(job, StatMechJob))
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
@@ -256,7 +256,7 @@ class TestArkaneInput(unittest.TestCase):
     def test_species_thermo(self):
         """Test thermo job execution for species from separate input file."""
         input.thermo('C2H4', 'NASA')
-        job = jobList[-1]
+        job = job_list[-1]
         filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5')
         job.execute(output_directory=filepath)
         self.assertTrue(os.path.isfile(os.path.join(filepath, 'output.py')))
@@ -271,7 +271,7 @@ class TestArkaneInput(unittest.TestCase):
 
     def test_transition_state_statmech(self):
         """Test loading of statmech job from transition state input file."""
-        job = jobList[-1]
+        job = job_list[-1]
         self.assertTrue(isinstance(job, StatMechJob))
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
@@ -289,8 +289,8 @@ class TestStatmech(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                         'data', 'Benzyl', 'input.py'))
+        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                           'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
@@ -330,7 +330,7 @@ class TestArkaneSpecies(unittest.TestCase):
         """
         Test properly dumping the ArkaneSpecies object and respective sub-objects
         """
-        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        job_list = self.arkane.load_input_file(self.dump_input_path)
         for job in job_list:
             job.execute(output_directory=self.dump_path)
         self.assertTrue(os.path.isfile(self.dump_output_file))
@@ -340,7 +340,7 @@ class TestArkaneSpecies(unittest.TestCase):
         Test properly loading the ArkaneSpecies object and respective sub-objects
         """
         # Create YAML file by running Arkane
-        job_list = self.arkane.loadInputFile(self.dump_input_path)
+        job_list = self.arkane.load_input_file(self.dump_input_path)
         for job in job_list:
             job.execute(output_directory=self.dump_path)
 

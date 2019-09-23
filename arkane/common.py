@@ -42,7 +42,7 @@ import yaml
 
 import rmgpy.constants as constants
 from rmgpy import __version__
-from rmgpy.molecule.element import element_list, get_element
+from rmgpy.molecule.element import get_element
 from rmgpy.molecule.translator import to_inchi, to_inchi_key
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.quantity import ScalarQuantity, ArrayQuantity
@@ -57,8 +57,6 @@ from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
 from rmgpy.transport import TransportData
 
 from arkane.pdep import PressureDependenceJob
-
-################################################################################
 
 
 # Add a custom string representer to use block literals for multiline strings
@@ -229,7 +227,7 @@ class ArkaneSpecies(RMGObject):
     def load_yaml(self, path, label=None, pdep=False):
         """
         Load the all statMech data from the .yml file in `path` into `species`
-        `pdep` is a boolean specifying whether or not jobList includes a pressureDependentJob.
+        `pdep` is a boolean specifying whether or not job_list includes a pressureDependentJob.
         """
         yml_file = os.path.basename(path)
         if label:
@@ -312,26 +310,26 @@ class ArkaneSpecies(RMGObject):
 ################################################################################
 
 
-def is_pdep(jobList):
+def is_pdep(job_list):
     """A helper function to determine whether a job is PressureDependenceJob or not"""
-    for job in jobList:
+    for job in job_list:
         if isinstance(job, PressureDependenceJob):
             return True
     return False
 
 
-def check_conformer_energy(Vlist, path):
+def check_conformer_energy(energies, path):
     """
     Check to see that the starting energy of the species in the potential energy scan calculation
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 
     log a warning message.  
     """
-    v_list = np.array(Vlist, np.float64)
-    v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
-    if v_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
+    energies = np.array(energies, np.float64)
+    e_diff = (energies[0] - np.min(energies)) * constants.E_h * constants.Na / 1000
+    if e_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
                         'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
-                        .format(path=os.path.basename(path), diff=v_diff))
+                        .format(path=os.path.basename(path), diff=e_diff))
 
 
 def get_element_mass(input_element, isotope=None):

@@ -45,7 +45,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.transport import TransportData
 
-from arkane.input import species, transitionState, reaction, SMILES, loadInputFile, process_model_chemistry
+from arkane.input import species, transitionState, reaction, SMILES, load_input_file, process_model_chemistry
 
 ################################################################################
 
@@ -212,7 +212,7 @@ class InputTest(unittest.TestCase):
         """Test loading an Arkane input file"""
         path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane', 'networks',
                             'acetyl+O2', 'input.py')
-        job_list, reaction_dict, species_dict, transition_state_dict, network_dict = loadInputFile(path)
+        job_list, reaction_dict, species_dict, transition_state_dict, network_dict = load_input_file(path)
 
         self.assertEqual(len(job_list), 1)
 

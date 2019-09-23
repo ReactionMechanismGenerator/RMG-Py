@@ -44,7 +44,6 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from arkane.common import get_element_mass
 from arkane.exceptions import LogError
 from arkane.log import Log
-from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -59,7 +58,7 @@ class MolproLog(Log):
     def __init__(self, path):
         super(MolproLog, self).__init__(path)
 
-    def getNumberOfAtoms(self):
+    def get_number_of_atoms(self):
         """
         Return the number of atoms in the molecular configuration used in
         the MolPro log file.
@@ -80,13 +79,13 @@ class MolproLog(Log):
 
         return n_atoms - 1
 
-    def loadForceConstantMatrix(self):
+    def load_force_constant_matrix(self):
         """
         Print the force constant matrix by including the print, hessian command in the input file
         """
 
         fc = None
-        n_atoms = self.getNumberOfAtoms()
+        n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
 
         with open(self.path, 'r') as f:
@@ -110,7 +109,7 @@ class MolproLog(Log):
 
         return fc
 
-    def loadGeometry(self):
+    def load_geometry(self):
         """
         Return the optimum geometry of the molecular configuration from the
         Molpro .out file. If multiple such geometries are identified, only the
@@ -166,7 +165,7 @@ class MolproLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a MolPro "Freq" quantum chemistry calculation with the thermo printed.
@@ -175,10 +174,10 @@ class MolproLog(Log):
         modes = []
         unscaled_frequencies = []
         e0 = 0.0
-        if opticalIsomers is None or symmetry is None:
-            _opticalIsomers, _symmetry, _ = self.get_symmetry_properties()
-            if opticalIsomers is None:
-                opticalIsomers = _opticalIsomers
+        if optical_isomers is None or symmetry is None:
+            _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
+            if optical_isomers is None:
+                optical_isomers = _optical_isomers
             if symmetry is None:
                 symmetry = _symmetry
         with open(self.path, 'r') as f:
@@ -186,31 +185,31 @@ class MolproLog(Log):
             while line != '':
 
                 # Read the spin multiplicity if not explicitly given
-                if spinMultiplicity == 0 and 'spin' in line:
+                if spin_multiplicity == 0 and 'spin' in line:
                     splits = line.replace('=', ' ').replace(',', ' ').split(' ')
                     for i, s in enumerate(splits):
                         if 'spin' in s:
-                            spinMultiplicity = int(splits[i + 1]) + 1
+                            spin_multiplicity = int(splits[i + 1]) + 1
                             logging.debug(
-                                'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                                'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spin_multiplicity))
                             break
-                if spinMultiplicity == 0 and 'SPIN SYMMETRY' in line:
+                if spin_multiplicity == 0 and 'SPIN SYMMETRY' in line:
                     spin_symmetry = line.split()[-1]
                     if spin_symmetry == 'Singlet':
-                        spinMultiplicity = 1
+                        spin_multiplicity = 1
                     elif spin_symmetry == 'Doublet':
-                        spinMultiplicity = 2
+                        spin_multiplicity = 2
                     elif spin_symmetry == 'Triplet':
-                        spinMultiplicity = 3
+                        spin_multiplicity = 3
                     elif spin_symmetry == 'Quartet':
-                        spinMultiplicity = 4
+                        spin_multiplicity = 4
                     elif spin_symmetry == 'Quintet':
-                        spinMultiplicity = 5
+                        spin_multiplicity = 5
                     elif spin_symmetry == 'Sextet':
-                        spinMultiplicity = 6
-                    if spinMultiplicity:
+                        spin_multiplicity = 6
+                    if spin_multiplicity:
                         logging.debug(
-                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spin_multiplicity))
                         break
 
                 # The data we want is in the Thermochemistry section of the output
@@ -266,10 +265,10 @@ class MolproLog(Log):
                 # Read the next line in the file
                 line = f.readline()
 
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spinMultiplicity,
-                         optical_isomers=opticalIsomers), unscaled_frequencies
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
+                         optical_isomers=optical_isomers), unscaled_frequencies
 
-    def loadEnergy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.):
         """
         Return either the f12 or MRCI energy in J/mol from a Molpro Logfile.
         If the MRCI job outputted the MRCI+Davidson energy, the latter is returned.
@@ -347,7 +346,7 @@ class MolproLog(Log):
         else:
             raise LogError('Unable to find energy in Molpro log file {0}.'.format(self.path))
 
-    def loadZeroPointEnergy(self):
+    def load_zero_point_energy(self):
         """
         Load the unscaled zero-point energy in J/mol from a MolPro log file.
         """
@@ -373,7 +372,7 @@ class MolproLog(Log):
             raise LogError('Unable to find zero-point energy in Molpro log file. Make sure that the '
                            'keyword {frequencies, thermo, print,thermo} is included in the input file.')
 
-    def loadNegativeFrequency(self):
+    def load_negative_frequency(self):
         """
         Return the negative frequency from a transition state frequency calculation in cm^-1.
         """
@@ -393,7 +392,7 @@ class MolproLog(Log):
         negativefrequency = -float(frequency)
         return negativefrequency
 
-    def loadScanEnergies(self):
+    def load_scan_energies(self):
         """
         Rotor scans are not implemented in Molpro
         """

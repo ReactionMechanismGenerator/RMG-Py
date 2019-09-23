@@ -42,8 +42,6 @@ import arkane.encorr.mbac as mbac
 import arkane.encorr.pbac as pbac
 from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectionError
 
-################################################################################
-
 
 def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplicity=1,
                           atom_energies=None, apply_atom_corrections=True,

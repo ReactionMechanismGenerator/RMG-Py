@@ -89,7 +89,7 @@ class KineticsSensitivity(object):
         for species in [self.job.reaction.reactants[0], self.job.reaction.products[0],
                         self.job.reaction.transition_state]:
             self.perturb(species)
-            self.job.execute(outputFile=None, plot=False)  # run the perturbed job
+            self.job.execute(output_file=None, plot=False)  # run the perturbed job
             self.f_sa_rates[species] = [self.job.reaction.kinetics.get_rate_coefficient(condition.value_si)
                                         for condition in self.conditions]
             kr = self.job.reaction.generate_reverse_rate_coefficient()
@@ -245,14 +245,14 @@ class PDepSensitivity(object):
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
         self.rates = {}
-        for rxn in self.job.network.netReactions:
+        for rxn in self.job.network.net_reactions:
             self.rates[str(rxn)] = []
             for condition in self.conditions:
                 self.rates[str(rxn)].append(rxn.kinetics.get_rate_coefficient(condition[0].value_si,
                                                                               condition[1].value_si))
         self.sa_rates = {}
         self.sa_coefficients = {}
-        for rxn in self.job.network.netReactions:
+        for rxn in self.job.network.net_reactions:
             self.sa_rates[str(rxn)] = {}
             self.sa_coefficients[str(rxn)] = {}
         self.perturbation = quantity.Quantity(perturbation, 'kcal/mol')
@@ -267,7 +267,7 @@ class PDepSensitivity(object):
         wells.extend(self.job.network.isomers)
         wells.extend(self.job.network.products)
         transition_states = []
-        for rxn in self.job.network.pathReactions:
+        for rxn in self.job.network.path_reactions:
             # if rxn.transition_state is not None:
             transition_states.append(rxn.transition_state)
 
@@ -277,9 +277,9 @@ class PDepSensitivity(object):
             else:
                 logging.info("\n\nPerturbing TS '{0}' by {1}:".format(entry.label, self.perturbation))
             self.perturb(entry)
-            self.job.execute(outputFile=None, plot=False, print_summary=False)  # run the perturbed job
+            self.job.execute(output_file=None, plot=False, print_summary=False)  # run the perturbed job
             self.unperturb(entry)
-            for rxn in self.job.network.netReactions:
+            for rxn in self.job.network.net_reactions:
                 self.sa_rates[str(rxn)][entry] = [rxn.kinetics.get_rate_coefficient(
                     condition[0].value_si, condition[1].value_si) for condition in self.conditions]
                 self.sa_coefficients[str(rxn)][entry] = [((self.sa_rates[str(rxn)][entry][i]
@@ -323,7 +323,7 @@ class PDepSensitivity(object):
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
                        "by perturbing E0 of each well or TS by {1},\n and are given in "
                        "`mol/J` units.\n\n\n".format(network_str, self.perturbation))
-            for rxn in self.job.network.netReactions:
+            for rxn in self.job.network.net_reactions:
                 reactants_label = ' + '.join([reactant.label for reactant in rxn.reactants])
                 products_label = ' + '.join([reactant.label for reactant in rxn.products])
                 reaction_str = '{0} {1} {2}'.format(reactants_label, '<=>', products_label)
@@ -353,7 +353,7 @@ class PDepSensitivity(object):
         except ImportError:
             return
 
-        for rxn in self.job.network.netReactions:
+        for rxn in self.job.network.net_reactions:
             plt.rcdefaults()
             ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)[1]
             labels = [str(entry) for entry in wells]

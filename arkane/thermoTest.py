@@ -53,12 +53,12 @@ class TestThermo(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         spc = Species().from_smiles('CCO')
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
-        spc.conformer = log.loadConformer()[0]
-        coords, numbers, masses = log.loadGeometry()
+        spc.conformer = log.load_conformer()[0]
+        coords, numbers, masses = log.load_geometry()
         spc.conformer.coordinates = coords, 'angstroms'
         spc.conformer.number = numbers
         spc.conformer.mass = masses, 'amu'
-        cls.thermo_job = ThermoJob(species=spc, thermoClass='NASA')
+        cls.thermo_job = ThermoJob(species=spc, thermo_class='NASA')
 
     def test_element_count_from_conformer(self):
         """Test Getting an element count dictionary from the species.conformer attribute"""

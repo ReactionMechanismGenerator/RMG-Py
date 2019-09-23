@@ -85,7 +85,7 @@ def get_bac(model_chemistry, coords, nums, multiplicity=1, mol_corr=0.0):
 
     # Bond correction
     bac_bond = 0.0
-    for bond in mol.getAllEdges():
+    for bond in mol.get_all_edges():
         atom1 = bond.atom1
         atom2 = bond.atom2
         symbol1 = atom1.element.symbol

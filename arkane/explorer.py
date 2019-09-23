@@ -54,24 +54,24 @@ class ExplorerJob(object):
     """
 
     def __init__(self, source, pdepjob, explore_tol, energy_tol=np.inf, flux_tol=0.0,
-                 bathGas=None, maximumRadicalElectrons=np.inf):
+                 bath_gas=None, maximum_radical_electrons=np.inf):
         self.source = source
         self.explore_tol = explore_tol
         self.energy_tol = energy_tol
         self.flux_tol = flux_tol
-        self.maximumRadicalElectrons = maximumRadicalElectrons
-        self.jobRxns = None
+        self.maximum_radical_electrons = maximum_radical_electrons
+        self.job_rxns = None
         self.networks = None
 
         self.pdepjob = pdepjob
 
-        if not hasattr(self.pdepjob, 'outputFile'):
-            self.pdepjob.outputFile = None
+        if not hasattr(self.pdepjob, 'output_file'):
+            self.pdepjob.output_file = None
 
-        if bathGas:
-            self.bathGas = bathGas
-        elif self.pdepjob.network and self.pdepjob.network.bathGas:
-            self.bathGas = self.pdepjob.network.bathGas
+        if bath_gas:
+            self.bath_gas = bath_gas
+        elif self.pdepjob.network and self.pdepjob.network.bath_gas:
+            self.bath_gas = self.pdepjob.network.bath_gas
         else:
             raise InputError('bathGas not specified in explorer block')
 
@@ -87,47 +87,45 @@ class ExplorerJob(object):
             flux_tol=self.flux_tol
         )
 
-    def execute(self, outputFile, plot, format='pdf', print_summary=True, speciesList=None, thermoLibrary=None,
-                kineticsLibrary=None):
+    def execute(self, output_file, plot, file_format='pdf', print_summary=True, species_list=None,
+                thermo_library=None, kinetics_library=None):
         """Execute an ExplorerJob"""
         logging.info('Exploring network...')
 
         rmg = RMG()
 
         rmg.species_constraints = {'allowed': ['input species', 'seed mechanisms', 'reaction libraries'],
-                                   'maximumRadicalElectrons': self.maximumRadicalElectrons,
+                                   'maximumRadicalElectrons': self.maximum_radical_electrons,
                                    'explicitlyAllowedMolecules': []}
 
         rmgpy.rmg.input.rmg = rmg
 
         reaction_model = CoreEdgeReactionModel()
 
-        reaction_model.pressureDependence = self.pdepjob
+        reaction_model.pressure_dependence = self.pdepjob
 
-        reaction_model.pressureDependence.rmgmode = True
+        reaction_model.pressure_dependence.rmgmode = True
 
-        if outputFile:
-            reaction_model.pressureDependence.outputFile = os.path.dirname(outputFile)
+        if output_file:
+            reaction_model.pressure_dependence.output_file = os.path.dirname(output_file)
 
         kinetics_database = get_db('kinetics')
         thermo_database = get_db('thermo')
 
-        thermo_database.libraries['thermojobs'] = thermoLibrary
-        thermo_database.libraryOrder.insert(0, 'thermojobs')
+        thermo_database.libraries['thermojobs'] = thermo_library
+        thermo_database.library_order.insert(0, 'thermojobs')
 
-        kinetics_database.libraries['kineticsjobs'] = kineticsLibrary
-        kinetics_database.libraryOrder.insert(0, ('kineticsjobs', 'Reaction Library'))
+        kinetics_database.libraries['kineticsjobs'] = kinetics_library
+        kinetics_database.library_order.insert(0, ('kineticsjobs', 'Reaction Library'))
 
-        job_rxns = [rxn for rxn in reaction_model.core.reactions]
+        self.job_rxns = [rxn for rxn in reaction_model.core.reactions]
 
-        self.jobRxns = job_rxns
-
-        if outputFile is not None:
-            if not os.path.exists(os.path.join(reaction_model.pressureDependence.outputFile, 'pdep')):
-                os.mkdir(os.path.join(reaction_model.pressureDependence.outputFile, 'pdep'))
+        if output_file is not None:
+            if not os.path.exists(os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')):
+                os.mkdir(os.path.join(reaction_model.pressure_dependence.output_file, 'pdep'))
             else:
-                shutil.rmtree(os.path.join(reaction_model.pressureDependence.outputFile, 'pdep'))
-                os.mkdir(os.path.join(reaction_model.pressureDependence.outputFile, 'pdep'))
+                shutil.rmtree(os.path.join(reaction_model.pressure_dependence.output_file, 'pdep'))
+                os.mkdir(os.path.join(reaction_model.pressure_dependence.output_file, 'pdep'))
 
         # get the molecular formula for the network
         mmol = None
@@ -137,18 +135,18 @@ class ExplorerJob(object):
             else:
                 mmol = spc.molecule[0].copy(deep=True)
 
-        form = mmol.getFormula()
+        form = mmol.get_formula()
 
-        for spec in list(self.bathGas.keys()) + self.source:
+        for spec in list(self.bath_gas.keys()) + self.source:
             nspec, is_new = reaction_model.make_new_species(spec, reactive=False)
             flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
-            reaction_model.enlarge(nspec, reactEdge=False, unimolecularReact=flags,
-                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+            reaction_model.enlarge(nspec, react_edge=False, unimolecular_react=flags,
+                                   bimolecular_react=np.zeros((len(reaction_model.core.species),
                                                               len(reaction_model.core.species))))
 
         reaction_model.add_seed_mechanism_to_core('kineticsjobs')
 
-        for lib in kinetics_database.libraryOrder:
+        for lib in kinetics_database.library_order:
             if lib[0] != 'kineticsjobs':
                 reaction_model.add_reaction_library_to_edge(lib[0])
 
@@ -170,23 +168,23 @@ class ExplorerJob(object):
         else:
             raise ValueError("Reactant channels with greater than 2 reactants not supported")
 
-        reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
-                               bimolecularReact=biflags)
+        reaction_model.enlarge(react_edge=True, unimolecular_react=flags,
+                               bimolecular_react=biflags)
 
         # find the networks we're interested in
         networks = []
-        for nwk in reaction_model.networkList:
+        for nwk in reaction_model.network_list:
             if set(nwk.source) == set(self.source):
                 self.source = nwk.source
                 networks.append(nwk)
 
         if len(networks) == 0:
-            raise ValueError('Did not generate a network with the requested source. This usually means no unimolecular'
-                             'reactions were generated for the source. Note that library reactions that are not'
-                             ' properly flagged as elementary_high_p can replace RMG generated reactions that would'
-                             ' otherwise be part of networks.')
+            raise ValueError('Did not generate a network with the requested source. This usually means no unimolecular '
+                             'reactions were generated for the source. Note that library reactions that are not '
+                             'properly flagged as elementary_high_p can replace RMG generated reactions that would '
+                             'otherwise be part of networks.')
         for network in networks:
-            network.bathGas = self.bathGas
+            network.bath_gas = self.bath_gas
 
         self.networks = networks
 
@@ -219,48 +217,48 @@ class ExplorerJob(object):
                             if spc in checked_species:
                                 continue
                             if forbidden_structures.is_molecule_forbidden(spc.molecule[0]):
-                                reaction_model.remove_species_from_edge(reaction_model.reactionSystems, spc)
+                                reaction_model.remove_species_from_edge(reaction_model.reaction_systems, spc)
                                 reaction_model.remove_empty_pdep_networks()
                             else:
                                 checked_species.append(spc)
 
                         kchar = 0.0
-                        for rxn in network.netReactions:  # reaction_model.core.reactions+reaction_model.edge.reactions:
+                        for rxn in network.net_reactions:  # reaction_model.core.reactions+reaction_model.edge.reactions
                             if (set(rxn.reactants) == set(self.source)
                                     and rxn.products[0].molecule[0].get_formula() == form):
                                 kchar += rxn.kinetics.get_rate_coefficient(T=temperature, P=pressure)
                             elif (set(rxn.products) == set(self.source)
                                   and rxn.reactants[0].molecule[0].get_formula() == form):
-                                kchar += rxn.generate_reverse_rate_coefficient(network_kinetics=True).get_rate_coefficient(
-                                    T=temperature, P=pressure)
+                                kchar += rxn.generate_reverse_rate_coefficient(
+                                    network_kinetics=True).get_rate_coefficient(T=temperature, P=pressure)
 
                         if network.get_leak_coefficient(T=temperature, P=pressure) > self.explore_tol * kchar:
                             incomplete = True
                             spc = network.get_maximum_leak_species(T=temperature, P=pressure)
                             logging.info('adding new isomer {0} to network'.format(spc))
                             flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
-                            reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
-                                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+                            reaction_model.enlarge((network, spc), react_edge=False, unimolecular_react=flags,
+                                                   bimolecular_react=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))
 
                             flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
-                            reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
-                                                   bimolecularReact=np.zeros((len(reaction_model.core.species),
+                            reaction_model.enlarge(react_edge=True, unimolecular_react=flags,
+                                                   bimolecular_react=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))
         for network in self.networks:
             rm_rxns = []
-            for rxn in network.pathReactions:  # remove reactions with forbidden species
+            for rxn in network.path_reactions:  # remove reactions with forbidden species
                 for r in rxn.reactants + rxn.products:
                     if forbidden_structures.is_molecule_forbidden(r.molecule[0]):
                         rm_rxns.append(rxn)
 
             for rxn in rm_rxns:
                 logging.info('Removing forbidden reaction: {0}'.format(rxn))
-                network.pathReactions.remove(rxn)
+                network.path_reactions.remove(rxn)
 
             # clean up output files
-            if outputFile is not None:
-                path = os.path.join(reaction_model.pressureDependence.outputFile, 'pdep')
+            if output_file is not None:
+                path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
                 for name in os.listdir(path):
                     if name.endswith('.py') and '_' in name:
                         if name.split('_')[-1].split('.')[0] != str(len(network.isomers)):
@@ -271,8 +269,8 @@ class ExplorerJob(object):
 
         warns = []
 
-        for rxn in job_rxns:
-            if rxn not in network.pathReactions:
+        for rxn in self.job_rxns:
+            if rxn not in network.path_reactions:
                 warns.append('Reaction {0} in the input file was not explored during network expansion and was '
                              'not included in the full network.  This is likely because your explore_tol value is '
                              'too high.'.format(rxn))
@@ -314,8 +312,8 @@ class ExplorerJob(object):
 
                 network.remove_reactions(reaction_model, rxns=rxn_set, prods=product_set)
 
-                for rxn in job_rxns:
-                    if rxn not in network.pathReactions:
+                for rxn in self.job_rxns:
+                    if rxn not in network.path_reactions:
                         warns.append(
                             'Reaction {0} in the input file was not included in the reduced model.'.format(rxn))
 
@@ -324,13 +322,13 @@ class ExplorerJob(object):
             self.pdepjob.network = network
 
             if len(self.networks) > 1:
-                s1, s2 = outputFile.split(".")
+                s1, s2 = output_file.split(".")
                 ind = str(self.networks.index(network))
                 stot = s1 + "{}.".format(ind) + s2
             else:
-                stot = outputFile
+                stot = output_file
 
-            self.pdepjob.execute(stot, plot, format='pdf', print_summary=True)
+            self.pdepjob.execute(stot, plot, file_format='pdf', print_summary=True)
             if os.path.isfile('network.pdf'):
                 os.rename('network.pdf', 'network' + str(p) + '.pdf')
 

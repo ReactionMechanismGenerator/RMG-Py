@@ -60,9 +60,9 @@ class ThermoJob(object):
     compute and save the thermodynamics information for a single species.
     """
 
-    def __init__(self, species, thermoClass):
+    def __init__(self, species, thermo_class):
         self.species = species
-        self.thermoClass = thermoClass
+        self.thermo_class = thermo_class
         self.arkane_species = ArkaneSpecies(species=species)
 
     def execute(self, output_directory=None, plot=False):
@@ -74,7 +74,7 @@ class ThermoJob(object):
         capacity, entropy, enthalpy, gibbs free energy, and hindered rotors
         will be saved.
         """
-        self.generateThermo()
+        self.generate_thermo()
         if output_directory is not None:
             try:
                 self.write_output(output_directory)
@@ -100,18 +100,18 @@ class ThermoJob(object):
                     logging.warning("Could not create plots due to error: "
                                     "{0} for species {1}".format(e, self.species.label))
 
-    def generateThermo(self):
+    def generate_thermo(self):
         """
         Generate the thermodynamic data for the species and fit it to the
-        desired heat capacity model (as specified in the `thermoClass` 
+        desired heat capacity model (as specified in the `thermo_class`
         attribute).
         """
-        if self.thermoClass.lower() not in ['wilhoit', 'nasa']:
-            raise InputError('Unknown thermodynamic model "{0}".'.format(self.thermoClass))
+        if self.thermo_class.lower() not in ['wilhoit', 'nasa']:
+            raise InputError('Unknown thermodynamic model "{0}".'.format(self.thermo_class))
 
         species = self.species
 
-        logging.debug('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
+        logging.debug('Generating {0} thermo model for {1}...'.format(self.thermo_class, species))
 
         if species.thermo is not None:
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
@@ -129,7 +129,6 @@ class ThermoJob(object):
 
         if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
             # Monatomic species
-            linear = False
             n_freq = 0
             n_rotors = 0
             Cp0 = 2.5 * constants.R
@@ -154,7 +153,7 @@ class ThermoJob(object):
         else:
             wilhoit.fit_to_data(Tlist, Cplist, Cp0, CpInf, H298, S298, B0=500.0)
 
-        if self.thermoClass.lower() == 'nasa':
+        if self.thermo_class.lower() == 'nasa':
             species.thermo = wilhoit.to_nasa(Tmin=10.0, Tmax=3000.0, Tint=500.0)
         else:
             species.thermo = wilhoit
@@ -247,7 +246,7 @@ class ThermoJob(object):
                 element_counts[symbol] = 1
         return element_counts
 
-    def plot(self, outputDirectory):
+    def plot(self, output_directory):
         """
         Plot the heat capacity, enthapy, entropy, and Gibbs free energy of the
         fitted thermodynamics model, along with the same values from the
@@ -311,7 +310,7 @@ class ThermoJob(object):
 
         fig.subplots_adjust(left=0.10, bottom=0.08, right=0.95, top=0.95, wspace=0.35, hspace=0.20)
 
-        plot_path = os.path.join(outputDirectory, 'plots')
+        plot_path = os.path.join(output_directory, 'plots')
 
         if not os.path.exists(plot_path):
             os.mkdir(plot_path)

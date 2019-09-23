@@ -60,7 +60,7 @@ class QChemLog(Log):
     def __init__(self, path):
         super(QChemLog, self).__init__(path)
 
-    def getNumberOfAtoms(self):
+    def get_number_of_atoms(self):
         """
         Return the number of atoms in the molecular configuration used in
         the QChem output file.
@@ -81,7 +81,7 @@ class QChemLog(Log):
 
         return n_atoms
 
-    def loadForceConstantMatrix(self):
+    def load_force_constant_matrix(self):
         """
         Return the force constant matrix (in Cartesian coordinates) from the
         QChem log file. If multiple such matrices are identified,
@@ -91,7 +91,7 @@ class QChemLog(Log):
         """
         force = None
 
-        n_atoms = self.getNumberOfAtoms()
+        n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
         with open(self.path, 'r') as f:
             line = f.readline()
@@ -114,7 +114,7 @@ class QChemLog(Log):
 
         return force
 
-    def loadGeometry(self):
+    def load_geometry(self):
 
         """
         Return the optimum geometry of the molecular configuration from the
@@ -169,7 +169,7 @@ class QChemLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
@@ -183,22 +183,22 @@ class QChemLog(Log):
         inertia = []
         unscaled_frequencies = []
         e0 = 0.0
-        if opticalIsomers is None or symmetry is None:
-            _opticalIsomers, _symmetry, _ = self.get_symmetry_properties()
-            if opticalIsomers is None:
-                opticalIsomers = _opticalIsomers
+        if optical_isomers is None or symmetry is None:
+            _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
+            if optical_isomers is None:
+                optical_isomers = _optical_isomers
             if symmetry is None:
                 symmetry = _symmetry
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
                 # Read spin multiplicity if not explicitly given
-                if '$molecule' in line and spinMultiplicity == 0:
+                if '$molecule' in line and spin_multiplicity == 0:
                     line = f.readline()
                     if len(line.split()) == 2:
-                        spinMultiplicity = int(float(line.split()[1]))
+                        spin_multiplicity = int(float(line.split()[1]))
                         logging.debug(
-                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spin_multiplicity))
                 # The rest of the data we want is in the Thermochemistry section of the output
                 elif 'VIBRATIONAL ANALYSIS' in line:
                     modes = []
@@ -267,10 +267,10 @@ class QChemLog(Log):
                     inertia = []
 
         modes = mmass + rot + freq
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spinMultiplicity,
-                         optical_isomers=opticalIsomers), unscaled_frequencies
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
+                         optical_isomers=optical_isomers), unscaled_frequencies
 
-    def loadEnergy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.):
         """
         Load the energy in J/mol from a QChem log file. Only the last energy
         in the file is returned. The zero-point energy is *not* included in
@@ -289,7 +289,7 @@ class QChemLog(Log):
             raise LogError('Unable to find energy in QChem output file {0}.'.format(self.path))
         return e_elect
 
-    def loadZeroPointEnergy(self):
+    def load_zero_point_energy(self):
         """
         Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
@@ -304,7 +304,7 @@ class QChemLog(Log):
         else:
             raise LogError('Unable to find zero-point energy in QChem output file {0}.'.format(self.path))
 
-    def loadScanEnergies(self):
+    def load_scan_energies(self):
         """
         Extract the optimized energies in J/mol from a QChem log file, e.g. the
         result of a QChem "PES Scan" quantum chemistry calculation.
@@ -339,7 +339,7 @@ class QChemLog(Log):
         angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
         return v_list, angle
 
-    def loadNegativeFrequency(self):
+    def load_negative_frequency(self):
         """
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
