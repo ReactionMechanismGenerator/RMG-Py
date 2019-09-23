@@ -60,6 +60,7 @@ from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.transport import TransportData
+from rmgpy.util import as_list
 
 from arkane.common import is_pdep
 from arkane.explorer import ExplorerJob
@@ -76,9 +77,9 @@ job_list = list()
 def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=None, frequenciesLibraries=None,
              kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='rate rules'):
     """Load the RMG database"""
-    thermo_libraries = [thermoLibraries] if isinstance(thermoLibraries, str) else list()
-    reaction_libraries = [reactionLibraries] if isinstance(reactionLibraries, str) else list()
-    transport_libraries = [transportLibraries] if isinstance(thermoLibraries, str) else None
+    thermo_libraries = as_list(thermoLibraries, default=[])
+    transport_libraries = as_list(transportLibraries, default=None)
+    reaction_libraries = as_list(reactionLibraries, default=[])
 
     database_directory = settings['database.directory']
 
