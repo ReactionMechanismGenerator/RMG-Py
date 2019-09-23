@@ -47,7 +47,7 @@ from rmgpy.thermo import ThermoData, NASA, NASAPolynomial
 
 
 class SurfaceReactorCheck(unittest.TestCase):
-    def testSolveH2(self):
+    def test_solve_h2(self):
         """
         Test the surface batch reactor with a dissociative adsorption of H2
 
@@ -153,7 +153,7 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         return
 
-    def testSolveCH3(self):
+    def test_solve_ch3(self):
         """
         Test the surface batch reactor with a nondissociative adsorption of CH3
 

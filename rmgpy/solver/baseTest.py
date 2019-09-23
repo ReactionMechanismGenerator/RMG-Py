@@ -58,7 +58,7 @@ class ReactionSystemTest(unittest.TestCase):
 
         self.rmg = load_rmg_py_job(input_file, chemkin_file, spc_dict, generate_images=False, check_duplicates=False)
 
-    def testSurfaceInitialization(self):
+    def test_surface_initialization(self):
         """
         test that initialize_surface is correctly removing species and reactions when
         they are no longer consistent with the surface (due to other species/reactions moving to the 
@@ -80,7 +80,7 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEquals(len(surface_species), 1)  # only H should be left
         self.assertEquals(len(surface_reactions), 2)  # all the reactions with H should stay
 
-    def testSurfaceLayeringConstraint(self):
+    def test_surface_layering_constraint(self):
         """
         test that the correct maximum under the surface layering constraint is being
         found
@@ -111,7 +111,7 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEquals(inds[0], 1)  # worked correctly
         self.assertEquals(inds[1], 2)
 
-    def testAddReactionsToSurface(self):
+    def test_add_reactions_to_surface(self):
         """
         Test that add_reactions_to_surface gives the correct surface_species and surface_reactions lists after being called
         """
@@ -140,7 +140,7 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEqual(set(surface_species), set(edge_species))  # all edge species should now be in the surface
         self.assertEqual(set(surface_reactions), set(edge_reactions))  # all edge reactions should now be in the surface
 
-    def testAttachDetach(self):
+    def test_attach_detach(self):
         """
         Test that a ReactionSystem listener can be attached/detached.
         """
@@ -153,7 +153,7 @@ class ReactionSystemTest(unittest.TestCase):
         reaction_system.detach(self.listener)
         self.assertEquals(reaction_system._observers, [])
 
-    def testListen(self):
+    def test_listen(self):
         """
         Test that data can be retrieved from an attached ReactionSystem listener.
         """
@@ -182,7 +182,7 @@ class ReactionSystemTest(unittest.TestCase):
 
         self.assertNotEqual(self.listener.data, [])
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a ReactionSystem object can be un/pickled.
         """

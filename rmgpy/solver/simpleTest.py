@@ -51,7 +51,7 @@ from rmgpy.thermo import ThermoData
 
 class SimpleReactorCheck(unittest.TestCase):
 
-    def testSolve(self):
+    def test_solve(self):
         """
         Test the simple batch reactor with a simple kinetic model. Here we
         choose a kinetic model consisting of the hydrogen abstraction reaction
@@ -287,7 +287,7 @@ class SimpleReactorCheck(unittest.TestCase):
         # fig.subplots_adjust(left=0.12, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
         # pylab.show()
 
-    def testColliderModel(self):
+    def test_collider_model(self):
         """
         Test the solver's ability to simulate a model with collision efficiencies.
         """
@@ -357,7 +357,7 @@ class SimpleReactorCheck(unittest.TestCase):
         for i in range(len(simulated_mole_fracs)):
             self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i])
 
-    def testSpecificColliderModel(self):
+    def test_specific_collider_model(self):
         """
         Test the solver's ability to simulate a model with specific third body species collision efficiencies.
         """

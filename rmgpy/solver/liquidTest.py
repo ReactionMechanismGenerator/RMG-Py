@@ -107,7 +107,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         self.T = 1000
 
-    def testComputeFlux(self):
+    def test_compute_flux(self):
         """
         Test the liquid batch reactor with a simple kinetic model. 
         """
@@ -379,7 +379,7 @@ class LiquidReactorCheck(unittest.TestCase):
             for j in range(len(rxn_list)):
                 self.assertAlmostEqual(dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3 * dfdk[i, j]))
 
-    def test_storeConstantSpeciesNames(self):
+    def test_store_constant_species_names(self):
         """
         Test if (i) constant species names are stored in reactor attributes and
         (ii) if attributes are not mix/equal for multiple conditions generation.
@@ -411,7 +411,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 self.assertIsNot(spc, spc2, 'Constant species declared in two different reactors seem mixed. '
                                             'Species "{0}" appears in both systems and should be.'.format(spc))
 
-    def test_liquidInputReading(self):
+    def test_liquid_input_reading(self):
         """
         Check if constant concentration condition is well handled. 
         From input file reading to information storage in liquid reactor object.
@@ -433,7 +433,7 @@ class LiquidReactorCheck(unittest.TestCase):
                           rmg.reaction_model.core.species[reactionSystem.const_spc_indices[0]].label,
                           'The constant species name from the reaction model and constantSPCnames should be equal')
 
-    def test_corespeciesRate(self):
+    def test_corespecies_rate(self):
         """
         Test if a specific core species rate is equal to 0 over time.
         """
