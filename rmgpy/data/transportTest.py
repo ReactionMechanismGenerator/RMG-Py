@@ -64,31 +64,31 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
             structureIndex=self.structureIndex,
         )
 
-    def test_Tc(self):
+    def test__tc(self):
         """
         Test that the CriticalPointGroupContribution Tc property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Tc, self.Tc, 6)
 
-    def test_Pc(self):
+    def test__pc(self):
         """
         Test that the CriticalPointGroupContribution Pc property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Pc, self.Pc, 6)
 
-    def test_Vc(self):
+    def test__vc(self):
         """
         Test that the CriticalPointGroupContribution Vc property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Vc, self.Vc, 6)
 
-    def test_Tb(self):
+    def test__tb(self):
         """
         Test that the CriticalPointGroupContribution Tb property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Tb, self.Tb, 6)
 
-    def test_structureIndex(self):
+    def test_structure_index(self):
         """
         Test that the CriticalPointGroupContribution structureIndex property was properly set.
         """
@@ -142,7 +142,7 @@ class TestTransportDatabase(unittest.TestCase):
             Species().from_smiles('c1ccccc1'),
         ]
 
-    def testJoback(self):
+    def test_joback(self):
         """Test transport property estimation via Joback groups."""
         self.testCases = [
             ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
@@ -164,7 +164,7 @@ class TestTransportDatabase(unittest.TestCase):
                 self.assertAlmostEqual(transport_data.epsilon.value_si, epsilon.value_si, 1)
 
     @work_in_progress
-    def testJobackOnBenzeneBonds(self):
+    def test_joback_on_benzene_bonds(self):
         """Test Joback doesn't crash on Cb desription of benzene"""
         species = Species().from_adjacency_list("""
                                               1  C u0 p0 {2,B} {6,B} {7,S}
@@ -183,7 +183,7 @@ class TestTransportDatabase(unittest.TestCase):
         transport_data, blank, blank2 = self.database.get_transport_properties_via_group_estimates(species)
         self.assertIsNotNone(transport_data)
 
-    def testGetTransportProperties(self):
+    def test_get_transport_properties(self):
         """Test that we can retrieve best transport properties for a species."""
 
         for species in self.speciesList:
@@ -192,7 +192,7 @@ class TestTransportDatabase(unittest.TestCase):
             self.assertTrue(isinstance(transport, tuple))
             self.assertTrue(isinstance(transport[0], TransportData))
 
-    def testGetAllTransportProperties(self):
+    def test_get_all_transport_properties(self):
         """Test that we can retrieve transport properties from all sources for a species.
 
         Used for transport search on website."""

@@ -205,7 +205,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         return reaction_list
 
-    def testR_Addition_MultipleBondBenzene(self):
+    def test_r_addition_multiple_bond_benzene(self):
         """Test that the proper degeneracy is calculated for H addition to benzene"""
         family_label = 'R_Addition_MultipleBond'
         reactants = ['c1ccccc1', '[H]']
@@ -215,7 +215,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
 
-    def testR_Addition_MultipleBondMethylNaphthalene(self):
+    def test_r_addition_multiple_bond_methyl_naphthalene(self):
         """Test that the proper degeneracy is calculated for H addition to methylnaphthalene"""
         family_label = 'R_Addition_MultipleBond'
         reactants = ['C1=CC=C2C=CC=CC2=C1C', '[H]']
@@ -226,7 +226,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
-    def testR_RecombinationPhenyl(self):
+    def test_r_recombination_phenyl(self):
         """Test that the proper degeneracy is calculated for phenyl + H recombination"""
         family_label = 'R_Recombination'
         reactants = ['[c]1ccccc1', '[H]']
@@ -236,7 +236,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
 
-    def testR_RecombinationH(self):
+    def test_r_recombination_h(self):
         """Test that the proper degeneracy is calculated for H + H recombination"""
         family_label = 'R_Recombination'
         reactants = ['[H]', '[H]']
@@ -632,7 +632,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         global database
         cls.database = database
 
-    def testParseKinetics(self):
+    def test_parse_kinetics(self):
         species, reactions = load_chemkin_file(
             os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
             os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
@@ -772,7 +772,7 @@ class TestKinetics(unittest.TestCase):
         for atom in s2.molecule[0].atoms:
             self.assertNotEqual(atom.id, -1)
 
-    def testSaveEntry(self):
+    def test_save_entry(self):
         """
         tests that save entry can run
         """
@@ -792,7 +792,7 @@ class TestKinetics(unittest.TestCase):
 
         os.remove(wdir)
 
-    def testDuplicates(self):
+    def test_duplicates(self):
         """
         tests that kinetics libraries load properly and that
         the duplicate related routines run without error
@@ -803,7 +803,7 @@ class TestKinetics(unittest.TestCase):
         out = lib.convert_duplicates_to_multi()
         self.assertIsNone(out)
 
-    def testaddReverseAttribute(self):
+    def test_add_reverse_attribute(self):
         """
         tests that the add_reverse_attribute method gets the reverse degeneracy correct
         """

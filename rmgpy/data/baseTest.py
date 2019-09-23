@@ -48,7 +48,7 @@ class TestBaseDatabase(unittest.TestCase):
         # Set up a dummy database
         self.database = Database()
 
-    def testMatchNodeToStructure(self):
+    def test_match_node_to_structure(self):
         """
         Test that the MatchNodeToStructure family works properly.
         """
@@ -93,7 +93,7 @@ class TestBaseDatabase(unittest.TestCase):
         # entry3 contains fewer labels than entry1, therefore it can be matched
         self.assertTrue(self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms()))
 
-    def testMatchNodeToNode(self):
+    def test_match_node_to_node(self):
         """
         Test that nodes can match other nodes.
         """

@@ -67,7 +67,7 @@ def tearDownModule():
 
 class TestThermoDatabaseLoading(unittest.TestCase):
 
-    def testFailingLoadsThermoLibraries(self):
+    def test_failing_loads_thermo_libraries(self):
         database = ThermoDatabase()
         libraries = ['primaryThermoLibrary', 'GRI-Mech3.0', 'I am a library not existing in official RMG']
         path = os.path.join(settings['database.directory'], 'thermo')
@@ -96,7 +96,7 @@ class TestThermoDatabase(unittest.TestCase):
         s298_cp_path = os.path.join(models_path, 's298_cp')
         self.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
-    def testPickle(self):
+    def test_pickle(self):
         """
         Test that a ThermoDatabase object can be successfully pickled and
         unpickled with no loss of information.
@@ -128,7 +128,7 @@ class TestThermoDatabase(unittest.TestCase):
             self.assertTrue(type(group0), type(group))
             self.assertEqual(sorted(group0.entries.keys()), sorted(group.entries.keys()))
 
-    def testSymmetryAddedByGetThermoData(self):
+    def test_symmetry_added_by_get_thermo_data(self):
         """
         Test that `get_thermo_data` properly accounts for symmetry in thermo
         by comping with the method `estimate_thermo_via_group_additivity`
@@ -152,7 +152,7 @@ class TestThermoDatabase(unittest.TestCase):
                                    thermo_with_sym.get_entropy(298.), thermo_without_sym.get_entropy(298.),
                                    symmetry_contribution_to_entropy))
 
-    def testSymmetryContributionRadicals(self):
+    def test_symmetry_contribution_radicals(self):
         """
         Test that the symmetry contribution is correctly added for radicals
         estimated via the HBI method.
@@ -168,7 +168,7 @@ class TestThermoDatabase(unittest.TestCase):
 
         self.assertAlmostEqual(thermo_data_lib.get_entropy(298.), thermo_data_ga.get_entropy(298.), 0)
 
-    def testParseThermoComments(self):
+    def test_parse_thermo_comments(self):
         """
         Test that the ThermoDatabase.extract_source_from_comments function works properly
         on various thermo comments.
@@ -327,7 +327,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         self.assertEqual(source['GAV']['ring'][0][1], -1)  # the weight of benzene contribution should be -1
         self.assertEqual(source['GAV']['group'][0][1], 2)  # weight of the group(Cs-CsCsHH) conbtribution should be 2
 
-    def testSpeciesThermoGenerationHBILibrary(self):
+    def test_species_thermo_generation_hbi_library(self):
         """Test thermo generation for species objects for HBI correction on library value.
 
         Ensure that molecule list is only reordered, and not changed after matching library value"""
@@ -340,7 +340,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
 
-    def testSpeciesThermoGenerationHBIGAV(self):
+    def test_species_thermo_generation_hbi_gav(self):
         """Test thermo generation for species objects for HBI correction on group additivity value.
 
         Ensure that molecule list is only reordered, and not changed after group additivity"""
@@ -353,7 +353,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertTrue('group additivity' in thermo.comment, 'Thermo not found from GAV, test purpose not fulfilled.')
 
-    def testSpeciesThermoGenerationLibrary(self):
+    def test_species_thermo_generation_library(self):
         """Test thermo generation for species objects for library value.
 
         Ensure that the matched molecule is placed at the beginning of the list."""
@@ -521,7 +521,7 @@ multiplicity 2
         self.assertIsInstance(thermo, ThermoData)
         self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
 
-    def testThermoEstimationNotAffectDatabase(self):
+    def test_thermo_estimation_not_affect_database(self):
 
         poly_root = self.database.groups['polycyclic'].entries['PolycyclicRing']
         previous_enthalpy = poly_root.data.get_enthalpy(298) / 4184.0
@@ -540,7 +540,7 @@ multiplicity 2
 
         self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
 
-    def test_getAllThermoData_fails_quietly(self):
+    def test_get_all_thermo_data_fails_quietly(self):
         """Test that get_all_thermo_data doesn't break when GAV fails."""
         spec = Species().from_smiles('[Ne]')
 
@@ -575,7 +575,7 @@ multiplicity 2
                         msg="Did not select the molecule with the lowest H298 "
                             "as a the thermo entry for C=C[CH][O] / C=CC=O")
 
-    def testThermoForMixedReactiveAndNonreactiveMolecules(self):
+    def test_thermo_for_mixed_reactive_and_nonreactive_molecules(self):
         """Test that the thermo entry of nonreactive molecules isn't selected for a species, even if it's more stable"""
 
         smiles = '[C]=C=O'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
@@ -630,7 +630,7 @@ class TestThermoAccuracy(unittest.TestCase):
         ]
 
     @work_in_progress
-    def testNewThermoGeneration(self):
+    def test_new_thermo_generation(self):
         """
         Test that the new ThermoDatabase generates appropriate thermo data.
         """
@@ -659,7 +659,7 @@ class TestThermoAccuracy(unittest.TestCase):
                                        msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(
                                            smiles, Cp, thermo_data.get_heat_capacity(T) / 4.184, T))
 
-    def testSymmetryNumberGeneration(self):
+    def test_symmetry_number_generation(self):
         """
         Test we generate symmetry numbers correctly.
 
@@ -693,7 +693,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         super(TestThermoAccuracyAromatics, self).__init__(*args, **kwargs)
         self._testMethodDoc = self._testMethodDoc.strip().split('\n')[0] + " for Aromatics.\n"
 
-    def testLongDistanceInteractionInAromaticMolecule(self):
+    def test_long_distance_interaction_in_aromatic_molecule(self):
         """
         Test long distance interaction is properly calculated for aromatic molecule.
         """
@@ -709,7 +709,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         self.assertIn('p_OH_CHO', thermo.comment)
         self.assertIn('p_CHO_CHO', thermo.comment)
 
-    def testLongDistanceInteractionInAromaticRadical(self):
+    def test_long_distance_interaction_in_aromatic_radical(self):
         """
         Test long distance interaction is properly calculated for aromatic radical.
         """
@@ -725,7 +725,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         self.assertIn('o_CHO_CHO', thermo.comment)
         self.assertIn('o_CHO_MeO', thermo.comment)
 
-    def testLongDistanceInteractionInAromaticBiradical(self):
+    def test_long_distance_interaction_in_aromatic_biradical(self):
         """
         Test long distance interaction is properly calculated for aromatic biradical.
         """
@@ -751,7 +751,7 @@ class TestCyclicThermo(unittest.TestCase):
         global database
         cls.database = database.thermo
 
-    def testComputeGroupAdditivityThermoForTwoRingMolecule(self):
+    def test_compute_group_additivity_thermo_for_two_ring_molecule(self):
         """
         The molecule being tested has two rings, one is 13cyclohexadiene5methylene
         the other is benzene ring. This method is to test thermo estimation will
@@ -771,7 +771,7 @@ class TestCyclicThermo(unittest.TestCase):
 
         self.assertEqual(set(ring_groups), set(expected_matched_rings))
 
-    def testThermoForMonocyclicAndPolycyclicSameMolecule(self):
+    def test_thermo_for_monocyclic_and_polycyclic_same_molecule(self):
         """
         Test a molecule that has both a polycyclic and a monocyclic ring in the same molecule
         """
@@ -793,7 +793,7 @@ class TestCyclicThermo(unittest.TestCase):
 
         self.assertEqual(set(polycyclic_groups), set(expected_matched_polyrings))
 
-    def testGetRingGroupsFromComments(self):
+    def test_get_ring_groups_from_comments(self):
         """
         Test that get_ring_groups_from_comments method works for fused polycyclics.
         """
@@ -806,7 +806,7 @@ class TestCyclicThermo(unittest.TestCase):
 
         self.database.get_ring_groups_from_comments(spc.thermo)
 
-    def testRemoveGroup(self):
+    def test_remove_group(self):
         """
         Test that removing groups using nodes near the root of radical.py
         """
@@ -858,7 +858,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertTrue(all([group_to_remove2.parent.data.get_heat_capacity(x) == group_to_remove2.data.get_heat_capacity(x)
                              for x in Tlist]))
 
-    def testIsRingPartialMatched(self):
+    def test_is_ring_partial_matched(self):
 
         # create testing molecule
         smiles = 'C1CC2CCCC3CCCC(C1)C23'
@@ -871,7 +871,7 @@ class TestCyclicThermo(unittest.TestCase):
         # test
         self.assertTrue(is_ring_partial_matched(polyring, matched_group))
 
-    def testAddRingCorrectionThermoDataFromTreeForExistingTricyclic(self):
+    def test_add_ring_correction_thermo_data_from_tree_for_existing_tricyclic(self):
 
         # create testing molecule: C1CC2C3CCC(C3)C2C1
         # this tricyclic molecule is already in polycyclic database
@@ -886,7 +886,7 @@ class TestCyclicThermo(unittest.TestCase):
 
         self.assertEqual(matched_entry.label, 's2-3_5_5_5_ane')
 
-    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingPyrene(self):
+    def test_add_poly_ring_correction_thermo_data_from_heuristic_using_pyrene(self):
 
         # create testing molecule: Pyrene with two ring of aromatic version
         # the other two ring of kekulized version
@@ -934,7 +934,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_6_6_ben_ene_1', polycyclic_group_labels)
         self.assertIn('s2_6_6_diene_2_7', polycyclic_group_labels)
 
-    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAromaticTricyclic(self):
+    def test_add_poly_ring_correction_thermo_data_from_heuristic_using_aromatic_tricyclic(self):
 
         # create testing molecule
         #
@@ -978,7 +978,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_5_6_indene', polycyclic_group_labels)
         self.assertIn('s2_6_6_naphthalene', polycyclic_group_labels)
 
-    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAlkaneTricyclic(self):
+    def test_add_poly_ring_correction_thermo_data_from_heuristic_using_alkane_tricyclic(self):
 
         # create testing molecule
         smiles = 'C1CC2CCCC3C(C1)C23'
@@ -1007,7 +1007,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_6_6_ane', polycyclic_group_labels)
         self.assertIn('s2_3_6_ane', polycyclic_group_labels)
 
-    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingHighlyUnsaturatedPolycyclics1(self):
+    def test_add_poly_ring_correction_thermo_data_from_heuristic_using_highly_unsaturated_polycyclics1(self):
         """
         Test proper thermo estimation for highly unsaturated polycyclic whose decomposed 
         bicyclics are not stored in database. Those bicyclics thermo will be estimated through
@@ -1045,7 +1045,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_4_6_ane', polycyclic_group_labels)
         self.assertIn('s2_4_5_ane', polycyclic_group_labels)
 
-    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingHighlyUnsaturatedPolycyclics2(self):
+    def test_add_poly_ring_correction_thermo_data_from_heuristic_using_highly_unsaturated_polycyclics2(self):
         """
         Test proper thermo estimation for highly unsaturated polycyclic whose decomposed 
         bicyclics are not stored in database. Those bicyclics thermo will be estimated through
@@ -1083,7 +1083,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_5_6_ane', polycyclic_group_labels)
         self.assertIn('s2_5_5_ane', polycyclic_group_labels)
 
-    def testGetBicyclicCorrectionThermoDataFromHeuristic1(self):
+    def test_get_bicyclic_correction_thermo_data_from_heuristic1(self):
         """
         Test bicyclic correction estimated properly from heuristic formula
         The test molecule "C1=CCC2C1=C2" has a shared atom with Cd atomtype, 
@@ -1109,7 +1109,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('Cyclopropene', ring_group_labels)
         self.assertIn('s2_3_5_ane', polycyclic_group_labels)
 
-    def testGetBicyclicCorrectionThermoDataFromHeuristic2(self):
+    def test_get_bicyclic_correction_thermo_data_from_heuristic2(self):
         """
         Test bicyclic correction estimated properly from heuristic formula
         The test molecule "C1=CCC2=C1C2" doesn't have controversial shared 
@@ -1140,7 +1140,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
     Contains unit tests for methods of molecular manipulations for thermo estimation
     """
 
-    def testConvertRingToSubMolecule(self):
+    def test_convert_ring_to_sub_molecule(self):
 
         # list out testing moleculess
         smiles1 = 'C1CCCCC1'
@@ -1187,7 +1187,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(len(bonds2), 11)
         self.assertEqual(len(bonds3), 15)
 
-    def testGetCopyForOneRing(self):
+    def test_get_copy_for_one_ring(self):
         """
         This method tests the get_copy_for_one_ring method, which returns
         an atom object list that contains deep copies of the atoms
@@ -1203,7 +1203,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(len(test_atom_list), len(copied_atom_list))
         self.assertEqual(test_molecule, copied_molecule)
 
-    def testToFailCombineTwoRingsIntoSubMolecule(self):
+    def test_to_fail_combine_two_rings_into_sub_molecule(self):
         """
         Test that if two non-overlapped rings lead to AssertionError
         """
@@ -1218,7 +1218,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         with self.assertRaises(AssertionError):
             combine_two_rings_into_sub_molecule(ring1, ring2)
 
-    def testCombineTwoRingsIntoSubMolecule(self):
+    def test_combine_two_rings_into_sub_molecule(self):
 
         # create testing molecule
         smiles1 = 'C1CCC2CCCCC2C1'
@@ -1242,7 +1242,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         self.assertEqual(len(bonds), 11)
 
-    def testIsAromaticRing(self):
+    def test_is_aromatic_ring(self):
 
         # create testing rings
         smiles1 = 'C1CCC1'
@@ -1272,7 +1272,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(is_aromatic_ring(ring2mol), False)
         self.assertEqual(is_aromatic_ring(ring3mol), True)
 
-    def testIsBicyclic1(self):
+    def test_is_bicyclic1(self):
         """
         Test is_bicyclic identifies bicyclic correctly
         The test molecule is bicyclic, we expect is_bicyclic()
@@ -1284,7 +1284,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         self.assertTrue(is_bicyclic(polyring))
 
-    def testIsBicyclic2(self):
+    def test_is_bicyclic2(self):
         """
         Test is_bicyclic identifies bicyclic correctly
         The test molecule is tetracyclic, we expect 
@@ -1296,7 +1296,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         self.assertFalse(is_bicyclic(polyring))
 
-    def testFindAromaticBondsFromSubMolecule(self):
+    def test_find_aromatic_bonds_from_sub_molecule(self):
 
         smiles = "C1=CC=C2C=CC=CC2=C1"
         spe = Species().from_smiles(smiles)
@@ -1316,7 +1316,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(len(find_aromatic_bonds_from_sub_molecule(submol1)), 6)
         self.assertEqual(len(find_aromatic_bonds_from_sub_molecule(submol2)), 6)
 
-    def testBicyclicDecompositionForPolyringUsingPyrene(self):
+    def test_bicyclic_decomposition_for_polyring_using_pyrene(self):
 
         # create testing molecule: Pyrene with two ring of aromatic version
         # the other two ring of kekulized version
@@ -1367,7 +1367,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         expected_aromatic_bond_num_in_bicyclics = [0, 6, 6, 6, 6]
         self.assertEqual(aromatic_bond_num_in_bicyclics, expected_aromatic_bond_num_in_bicyclics)
 
-    def testBicyclicDecompositionForPolyringUsingAromaticTricyclic(self):
+    def test_bicyclic_decomposition_for_polyring_using_aromatic_tricyclic(self):
 
         # create testing molecule
         #
@@ -1417,7 +1417,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         expected_aromatic_bond_num_in_bicyclics = [6, 6, 11]
         self.assertEqual(aromatic_bond_num_in_bicyclics, expected_aromatic_bond_num_in_bicyclics)
 
-    def testBicyclicDecompositionForPolyringUsingAlkaneTricyclic(self):
+    def test_bicyclic_decomposition_for_polyring_using_alkane_tricyclic(self):
 
         # create testing molecule
         smiles = 'C1CC2CCCC3C(C1)C23'
@@ -1452,7 +1452,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         expected_aromatic_bond_num_in_bicyclics = [0, 0, 0]
         self.assertEqual(aromatic_bond_num_in_bicyclics, expected_aromatic_bond_num_in_bicyclics)
 
-    def testCombineCycles(self):
+    def test_combine_cycles(self):
         """
         This method tests the combine_cycles method, which simply joins two lists
         together without duplication.
@@ -1463,7 +1463,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         joined_cycle = combine_cycles(test_cycle1, test_cycle2)
         self.assertEqual(set(main_cycle), set(joined_cycle))
 
-    def testSplitBicyclicIntoSingleRings1(self):
+    def test_split_bicyclic_into_single_rings1(self):
         """
         Test bicyclic molecule "C1=CCC2C1=C2" can be divided into 
         individual rings properly
@@ -1491,7 +1491,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertTrue(single_ring_submol_a.is_isomorphic(expected_submol_a))
         self.assertTrue(single_ring_submol_b.is_isomorphic(expected_submol_b))
 
-    def testSplitBicyclicIntoSingleRings2(self):
+    def test_split_bicyclic_into_single_rings2(self):
         """
         Test bicyclic molecule "C1=CCC2=C1C2" can be divided into 
         individual rings properly
@@ -1520,7 +1520,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertTrue(single_ring_submol_a.is_isomorphic(expected_submol_a))
         self.assertTrue(single_ring_submol_b.is_isomorphic(expected_submol_b))
 
-    def testSaturateRingBonds1(self):
+    def test_saturate_ring_bonds1(self):
         """
         Test unsaturated bonds of "C1=CCC2=C1C2" to be saturated properly
         """
@@ -1539,7 +1539,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                          expected_saturated_ring_submol.multiplicity)
         self.assertTrue(saturated_ring_submol.is_isomorphic(expected_saturated_ring_submol))
 
-    def testSaturateRingBonds2(self):
+    def test_saturate_ring_bonds2(self):
         """
         Test unsaturated bonds of "C1=CC=C2CCCCC2=C1" to be saturated properly
         """
@@ -1562,7 +1562,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                          expected_saturated_ring_submol.multiplicity)
         self.assertTrue(saturated_ring_submol.is_isomorphic(expected_saturated_ring_submol))
 
-    def testSaturateRingBonds3(self):
+    def test_saturate_ring_bonds3(self):
         """
         Test unsaturated bonds of "C1=CC=C2CC=CCC2=C1" to be saturated properly
         """
@@ -1586,7 +1586,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertTrue(saturated_ring_submol.is_isomorphic(expected_saturated_ring_submol))
 
 
-def getTestingTCDAuthenticationInfo():
+def get_testing_tcd_authentication_info():
     try:
         host = os.environ['TCD_HOST']
         port = int(os.environ['TCD_PORT'])
@@ -1599,12 +1599,12 @@ def getTestingTCDAuthenticationInfo():
     return host, port, username, password
 
 
-def isTCDAvailable():
+def is_tcd_available():
     """Check if TCD is available."""
     import platform
     import subprocess
 
-    host = getTestingTCDAuthenticationInfo()[0]
+    host = get_testing_tcd_authentication_info()[0]
     if host is not None:
         arg = '-n' if platform.system() == 'Windows' else '-c'
         result = subprocess.call(['ping', arg, '1', host]) == 0
@@ -1626,14 +1626,14 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         global database
         self.database = database.thermo
 
-    def connectToTestCentralDatabase(self):
-        host, port, username, password = getTestingTCDAuthenticationInfo()
+    def connect_to_test_central_database(self):
+        host, port, username, password = get_testing_tcd_authentication_info()
         application = 'test'
 
         tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
         return tcdi
 
-    def testConnectFailure(self):
+    def test_connect_failure(self):
         host = 'somehost'
         port = 27017
         username = 'me'
@@ -1644,17 +1644,17 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertTrue(tcdi.client is None)
 
-    def testConnectSuccess(self):
-        tcdi = self.connectToTestCentralDatabase()
+    def test_connect_success(self):
+        tcdi = self.connect_to_test_central_database()
 
         self.assertTrue(tcdi.client is not None)
 
-    def testSatisfyRegistrationRequirements1(self):
+    def test_satisfy_registration_requirements1(self):
         """
         the species is non-cyclic, currently regarded no need to 
         register in thermo central database
         """
-        tcdi = self.connectToTestCentralDatabase()
+        tcdi = self.connect_to_test_central_database()
 
         species = Species().from_smiles('C[CH2]')
 
@@ -1662,12 +1662,12 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
-    def testSatisfyRegistrationRequirements2(self):
+    def test_satisfy_registration_requirements2(self):
         """
         the species is for non-cyclic, so no need to register in 
         thermo central database
         """
-        tcdi = self.connectToTestCentralDatabase()
+        tcdi = self.connect_to_test_central_database()
 
         species = Species().from_smiles('CC')
 
@@ -1675,12 +1675,12 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
-    def testSatisfyRegistrationRequirements3(self):
+    def test_satisfy_registration_requirements3(self):
         """
         the thermo is exact match, so no need to register in 
         thermo central database
         """
-        tcdi = self.connectToTestCentralDatabase()
+        tcdi = self.connect_to_test_central_database()
 
         species = Species().from_smiles('C1CC1')
 
@@ -1688,12 +1688,12 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
-    def testSatisfyRegistrationRequirements4(self):
+    def test_satisfy_registration_requirements4(self):
         """
         the thermo is from library, so no need to register in 
         thermo central database
         """
-        tcdi = self.connectToTestCentralDatabase()
+        tcdi = self.connect_to_test_central_database()
 
         species = Species().from_smiles('[H][H]')
 
@@ -1701,7 +1701,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertFalse(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
-    def testSatisfyRegistrationRequirements5(self):
+    def test_satisfy_registration_requirements5(self):
         """
         the thermo is matching generic node, so it needs to register in 
         thermo central database
@@ -1709,7 +1709,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         In the future, if RMG-database includes corresponding exact match
         this test should be modified.
         """
-        tcdi = self.connectToTestCentralDatabase()
+        tcdi = self.connect_to_test_central_database()
 
         species = Species().from_smiles('C1C=CC2C=CC2=C1')
 
@@ -1717,7 +1717,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertTrue(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
-    def testSatisfyRegistrationRequirements6(self):
+    def test_satisfy_registration_requirements6(self):
         """
         the thermo is matching generic node, so it needs to register in 
         thermo central database
@@ -1725,7 +1725,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         In the future, if RMG-database includes corresponding exact match
         this test should be modified.
         """
-        tcdi = self.connectToTestCentralDatabase()
+        tcdi = self.connect_to_test_central_database()
 
         species = Species().from_smiles('C1=C=C2CC23C=CC=1C=C3')
 
@@ -1733,13 +1733,13 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         self.assertTrue(tcdi.satisfy_registration_requirements(species, thermo_data, self.database))
 
-    def testRegisterInCentralThermoDB1(self):
+    def test_register_in_central_thermo_db1(self):
         """
         Test situation where both registration_table and results_table have no
         species as the one going to be registered
         """
         # connect to thermo central database
-        host, port, username, password = getTestingTCDAuthenticationInfo()
+        host, port, username, password = get_testing_tcd_authentication_info()
         application = 'test'
         tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
@@ -1771,14 +1771,14 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         # clean up the table
         registration_table.delete_many({"aug_inchi": expected_aug_inchi})
 
-    def testRegisterInCentralThermoDB2(self):
+    def test_register_in_central_thermo_db2(self):
         """
         Test situation where registration_table has species as the one going 
         to be registered
         """
 
         # connect to thermo central database
-        host, port, username, password = getTestingTCDAuthenticationInfo()
+        host, port, username, password = get_testing_tcd_authentication_info()
         application = 'test'
 
         tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
@@ -1810,14 +1810,14 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         # clean up the table
         registration_table.delete_many({"aug_inchi": expected_aug_inchi})
 
-    def testRegisterInCentralThermoDB3(self):
+    def test_register_in_central_thermo_db3(self):
         """
         Test situation where results_table has species as the one going 
         to be registered
         """
 
         # connect to thermo central database
-        host, port, username, password = getTestingTCDAuthenticationInfo()
+        host, port, username, password = get_testing_tcd_authentication_info()
         application = 'test'
 
         tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)

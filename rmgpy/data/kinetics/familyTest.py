@@ -74,14 +74,14 @@ class TestFamily(unittest.TestCase):
         )
         cls.family = cls.database.families['intra_H_migration']
 
-    def testGetBackboneRoots(self):
+    def test_get_backbone_roots(self):
         """
         Test the get_backbone_roots() function
         """
         backbones = self.family.get_backbone_roots()
         self.assertEquals(backbones[0].label, "RnH")
 
-    def testGetEndRoots(self):
+    def test_get_end_roots(self):
         """
         Test the get_end_roots() function
         """
@@ -90,7 +90,7 @@ class TestFamily(unittest.TestCase):
         self.assertIn(self.family.groups.entries["Y_rad_out"], ends)
         self.assertIn(self.family.groups.entries["XH_out"], ends)
 
-    def testGetTopLevelGroups(self):
+    def test_get_top_level_groups(self):
         """
         Test the get_top_level_groups() function
         """
@@ -101,7 +101,7 @@ class TestFamily(unittest.TestCase):
         self.assertIn(self.family.groups.entries["R2Hall"], top_groups)
         self.assertIn(self.family.groups.entries["R3Hall"], top_groups)
 
-    def testReactBenzeneBond(self):
+    def test_react_benzene_bond(self):
         """
         Test that hydrogen addition to benzene (w/ benzene bonds) returns kekulized product.
         """
@@ -142,7 +142,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_product.is_isomorphic(products[0]))
 
-    def testReactBenzeneBond2(self):
+    def test_react_benzene_bond2(self):
         """
         Test that hydrogen addition to phenanthrene (w/ benzene bonds) returns kekulized product.
         """
@@ -207,7 +207,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_product.is_isomorphic(products[0]))
 
-    def test_intra_H_migration(self):
+    def test_intra__h_migration(self):
         """
         Test that the intra_H_migration family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -271,7 +271,7 @@ multiplicity 2
 
         self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_H_Abstraction(self):
+    def test_h_abstraction(self):
         """
         Test that the H_Abstraction family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -319,7 +319,7 @@ multiplicity 2
 
         self.assertTrue(expected_products[1].is_isomorphic(products[1], mapping2))
 
-    def test_Intra_ene_reaction(self):
+    def test_intra_ene_reaction(self):
         """
         Test that the Intra_ene_reaction family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -373,7 +373,7 @@ multiplicity 2
 
         self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_6_membered_central_CC_shift(self):
+    def test_6_membered_central_cc_shift(self):
         """
         Test that the 6_membered_central_C-C_shift family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -417,7 +417,7 @@ multiplicity 2
 
         self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_12_shiftC(self):
+    def test_12_shift_c(self):
         """
         Test that the 1,2_shiftC family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -471,7 +471,7 @@ multiplicity 2
 
         self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_Intra_R_Add_Exo_scission(self):
+    def test_intra_r_add_exo_scission(self):
         """
         Test that the Intra_R_Add_Exo_scission family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -531,7 +531,7 @@ multiplicity 2
 
         self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_intra_substitutionS_isomerization(self):
+    def test_intra_substitution_s_isomerization(self):
         """
         Test that the intra_substitutionS_isomerization family returns a properly re-labeled product structure.
         This family is its own reverse.
@@ -624,7 +624,7 @@ multiplicity 2
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_products[0].is_isomorphic(products[0]))
 
-    def testSaveFamily(self):
+    def test_save_family(self):
         """
 
         This tests the the family.save method by writing a new temporary file and
@@ -646,7 +646,7 @@ multiplicity 2
         finally:
             shutil.rmtree(os.path.join(base_path, 'intra_H_copy'))
 
-    def testReactantNumID(self):
+    def test_reactant_num_id(self):
         """
         Tests that templates aren't applied to the incorrect
         number of reactants
@@ -710,7 +710,7 @@ class TestTreeGeneration(unittest.TestCase):
         self.assertEquals([root], self.family.forwardTemplate.reactants)
         self.assertEquals([root], self.family.groups.top)
 
-    def test_BGenerateTree(self):
+    def test_b_generate_tree(self):
         """
         test tree generation process
         """
@@ -726,7 +726,7 @@ class TestTreeGeneration(unittest.TestCase):
         self.family.generate_tree(thermo_database=self.thermoDatabase,
                                   rxns=self.treerxns)  # test that default objective works
 
-    def test_CParentChild(self):
+    def test_c_parent_child(self):
         """
         test that the tree is structured properly
         """
@@ -738,7 +738,7 @@ class TestTreeGeneration(unittest.TestCase):
 
         self.assertIsNone(self.family.groups.entries['Root'].parent)
 
-    def test_FRules(self):
+    def test_f_rules(self):
         """
         test that there are six rules and each is under a different group
         """
@@ -753,7 +753,7 @@ class TestTreeGeneration(unittest.TestCase):
 
         self.assertEquals(c, 6, 'incorrect number of kinetics information, expected 6 found {0}'.format(c))
 
-    def test_DRegularizationDims(self):
+    def test_d_regularization_dims(self):
         """
         test that appropriate regularization dimensions have been identified
         """
@@ -807,7 +807,7 @@ class TestTreeGeneration(unittest.TestCase):
             self.assertTrue(len(vio_obj) <= 1,
                             'there were {0} regularization violations at, {1}'.format(len(vio_obj), vio_obj))
 
-    def test_ERegularizationStructure(self):
+    def test_e_regularization_structure(self):
         """
         test that the tree is structured properly after regularization
         """
@@ -866,7 +866,7 @@ class TestGenerateReactions(unittest.TestCase):
                       'used as a reactant in the reverse direction.'),
         ])
 
-    def test_addAtomLabelsForReaction(self):
+    def test_add_atom_labels_for_reaction(self):
         """Test that we can add atom labels to an existing reaction"""
         reactants = [Species().from_smiles('C=C'), Species().from_smiles('[OH]')]
         products = [Species().from_smiles('[CH2]CO')]

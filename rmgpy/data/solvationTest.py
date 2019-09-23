@@ -53,7 +53,7 @@ class TestSoluteDatabase(TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    def testSoluteLibrary(self):
+    def test_solute_library(self):
         """Test we can obtain solute parameters from a library"""
         species = Species(molecule=[Molecule(smiles='COC=O')])  # methyl formate - we know this is in the solute library
 
@@ -67,7 +67,7 @@ class TestSoluteDatabase(TestCase):
         self.assertEqual(s, 0.68)
         self.assertTrue(solute_data.V is not None)
 
-    def testMcGowan(self):
+    def test_mcgowan(self):
         """Test we can calculate and set the McGowan volume for species containing H,C,O,N or S"""
         self.testCases = [
             ['CCCCCCCC', 1.2358],  # n-octane, in library
@@ -83,7 +83,7 @@ class TestSoluteDatabase(TestCase):
             self.assertIsNotNone(solute_data.V)  # so if it wasn't found in library, we should have calculated it
             self.assertAlmostEqual(solute_data.V, volume)  # the volume is what we expect given the atoms and bonds
 
-    def testDiffusivity(self):
+    def test_diffusivity(self):
         """Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity"""
         species = Species(molecule=[Molecule(smiles='O')])  # water
         solute_data = self.database.get_solute_data(species)
@@ -93,19 +93,19 @@ class TestSoluteDatabase(TestCase):
         self.assertAlmostEqual((d * 1e9), 1.3, 1)
         # self-diffusivity of water is about 2e-9 m2/s
 
-    def testSolventLibrary(self):
+    def test_solvent_library(self):
         """Test we can obtain solvent parameters from a library"""
         solvent_data = self.database.get_solvent_data('water')
         self.assertIsNotNone(solvent_data)
         self.assertEqual(solvent_data.s_h, 2.836)
         self.assertRaises(DatabaseError, self.database.get_solvent_data, 'orange_juice')
 
-    def testViscosity(self):
+    def test_viscosity(self):
         """Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"""
         solvent_data = self.database.get_solvent_data('water')
         self.assertAlmostEqual(solvent_data.get_solvent_viscosity(298), 0.0009155)
 
-    def testSoluteGeneration(self):
+    def test_solute_generation(self):
         """Test we can estimate Abraham solute parameters correctly using group contributions"""
 
         self.testCases = [
@@ -121,7 +121,7 @@ class TestSoluteDatabase(TestCase):
             self.assertAlmostEqual(solute_data.L, L, places=2)
             self.assertAlmostEqual(solute_data.A, A, places=2)
 
-    def testLonePairSoluteGeneration(self):
+    def test_lone_pair_solute_generation(self):
         """Test we can obtain solute parameters via group additivity for a molecule with lone pairs"""
         molecule = Molecule().from_adjacency_list(
             """
@@ -135,7 +135,7 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
-    def testSoluteDataGenerationAmmonia(self):
+    def test_solute_data_generation_ammonia(self):
         """Test we can obtain solute parameters via group additivity for ammonia"""
         molecule = Molecule().from_adjacency_list(
             """
@@ -148,7 +148,7 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
-    def testSoluteDataGenerationAmide(self):
+    def test_solute_data_generation_amide(self):
         """Test that we can obtain solute parameters via group additivity for an amide"""
         molecule = Molecule().from_adjacency_list(
             """
@@ -166,7 +166,7 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
-    def testSoluteDataGenerationCO(self):
+    def test_solute_data_generation_co(self):
         """Test that we can obtain solute parameters via group additivity for CO."""
         molecule = Molecule().from_adjacency_list(
             """
@@ -177,7 +177,7 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
-    def testRadicalandLonePairGeneration(self):
+    def test_radical_and_lone_pair_generation(self):
         """
         Test we can obtain solute parameters via group additivity for a molecule with both lone 
         pairs and a radical
@@ -194,7 +194,7 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
-    def testCorrectionGeneration(self):
+    def test_correction_generation(self):
         """Test we can estimate solvation thermochemistry."""
         self.testCases = [
             # solventName, soluteName, soluteSMILES, Hsolv, Gsolv
@@ -218,7 +218,7 @@ class TestSoluteDatabase(TestCase):
                                    msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}"
                                        "".format(soluteName, solventName, solvation_correction.gibbs, G))
 
-    def testInitialSpecies(self):
+    def test_initial_species(self):
         """Test we can check whether the solvent is listed as one of the initial species in various scenarios"""
 
         # Case 1. when SMILES for solvent is available, the molecular structures of the initial species and the solvent
@@ -253,7 +253,7 @@ class TestSoluteDatabase(TestCase):
         self.database.check_solvent_in_initial_species(rmg, solvent_structure)
         self.assertTrue(rmg.initial_species[0].isSolvent)
 
-    def testSolventMolecule(self):
+    def test_solvent_molecule(self):
         """Test that we can assign a proper solvent molecular structure when different formats are given"""
 
         # solventlibrary.entries['solvent_label'].item should be the instance of Species with the solvent's molecular

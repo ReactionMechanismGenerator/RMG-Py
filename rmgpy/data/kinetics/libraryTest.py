@@ -57,7 +57,7 @@ class TestLibrary(unittest.TestCase):
             libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
         cls.libraries = cls.database.libraries
 
-    def testGetLibraryReactions(self):
+    def test_get_library_reactions(self):
         """
         test that get_library_reactions loads reactions correctly
         """
@@ -72,7 +72,7 @@ class TestLibrary(unittest.TestCase):
             else:
                 self.assertIsInstance(rxn, TemplateReaction)  # all reactions are template based
 
-    def testSaveLibrary(self):
+    def test_save_library(self):
         """
         This tests the the library.save method by writing a new temporary file and
         loading it and comparing the original and copied reactions
