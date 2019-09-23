@@ -1018,11 +1018,11 @@ class Group(Graph):
         """
         return self.draw('png')
 
-    def draw(self, format):
+    def draw(self, file_format):
         """
         Use pydot to draw a basic graph of the group.
 
-        Use format to specify the desired output format, eg. 'png', 'svg', 'ps', 'pdf', 'plain', etc.
+        Use format to specify the desired output file_format, eg. 'png', 'svg', 'ps', 'pdf', 'plain', etc.
         """
         import pydot
 
@@ -1042,7 +1042,7 @@ class Group(Graph):
                     graph.add_edge(pydot.Edge(src=str(index1 + 1), dst=str(index2 + 1),
                                               label=bond_type, fontname="Helvetica", fontsize="16"))
 
-        img = graph.create(prog='neato', format=format)
+        img = graph.create(prog='neato', format=file_format)
         return img
 
     @property

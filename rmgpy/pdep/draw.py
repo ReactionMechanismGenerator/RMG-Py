@@ -42,13 +42,13 @@ from rmgpy.molecule.draw import MoleculeDrawer, create_new_surface
 
 ################################################################################
 
-class NetworkDrawer:
+class NetworkDrawer(object):
     """
     This class provides functionality for drawing the potential energy surface
     for a pressure-dependent reaction network using the Cairo 2D graphics
     engine. The most common use case is simply::
     
-        NetworkDrawer().draw(network, format='png', path='network.png')
+        NetworkDrawer().draw(network, file_format='png', path='network.png')
     
     where ``network`` is the :class:`Network` object to draw. You can also
     pass a dict of options to the constructor to affect how the network is
@@ -142,7 +142,7 @@ class NetworkDrawer:
 
         return use_structures
 
-    def _get_text_size(self, text, padding=2, format='pdf'):
+    def _get_text_size(self, text, padding=2, file_format='pdf'):
         """
         
         """
@@ -152,7 +152,7 @@ class NetworkDrawer:
             import cairo
 
         # Use dummy surface to determine text extents
-        surface = create_new_surface(format)
+        surface = create_new_surface(file_format)
         cr = cairo.Context(surface)
         cr.set_font_size(self.options['fontSizeNormal'])
         extents = cr.text_extents(text)
@@ -179,7 +179,7 @@ class NetworkDrawer:
 
         return [0, 0, width, height]
 
-    def _get_label_size(self, configuration, format='pdf'):
+    def _get_label_size(self, configuration, file_format='pdf'):
         """
         
         """
@@ -188,13 +188,13 @@ class NetworkDrawer:
         bounding_rects = []
         if self._use_structure_for_label(configuration):
             for spec in configuration.species:
-                surface, cr, rect = MoleculeDrawer().draw(spec.molecule[0], format=format)
+                surface, cr, rect = MoleculeDrawer().draw(spec.molecule[0], file_format=file_format)
                 bounding_rects.append(list(rect))
         else:
             for spec in configuration.species:
-                bounding_rects.append(self._get_text_size(spec.label, format=format))
+                bounding_rects.append(self._get_text_size(spec.label, file_format=file_format))
 
-        plus_rect = self._get_text_size('+', format=format)
+        plus_rect = self._get_text_size('+', file_format=file_format)
 
         for rect in bounding_rects:
             if width < rect[2]:
@@ -204,16 +204,16 @@ class NetworkDrawer:
 
         return [0, 0, width, height]
 
-    def _draw_label(self, configuration, cr, x0, y0, format='pdf'):
+    def _draw_label(self, configuration, cr, x0, y0, file_format='pdf'):
 
-        bounding_rect = self._get_label_size(configuration, format=format)
+        bounding_rect = self._get_label_size(configuration, file_format=file_format)
         padding = 2
 
         use_structures = self._use_structure_for_label(configuration)
         y = y0
         for i, spec in enumerate(configuration.species):
             if i > 0:
-                rect = self._get_text_size('+', padding=padding, format=format)
+                rect = self._get_text_size('+', padding=padding, file_format=file_format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
                 self._draw_text('+', cr, x, y)
                 y += rect[3]
@@ -221,7 +221,7 @@ class NetworkDrawer:
             if use_structures:
                 molecule_drawer = MoleculeDrawer()
                 cr.save()
-                surf, c, rect = molecule_drawer.draw(spec.molecule[0], format=format)
+                surf, c, rect = molecule_drawer.draw(spec.molecule[0], file_format=file_format)
                 cr.restore()
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2])
                 cr.save()
@@ -229,14 +229,14 @@ class NetworkDrawer:
                 cr.restore()
                 y += rect[3]
             else:
-                rect = self._get_text_size(spec.label, padding=padding, format=format)
+                rect = self._get_text_size(spec.label, padding=padding, file_format=file_format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
                 self._draw_text(spec.label, cr, x, y)
                 y += rect[3]
 
         return bounding_rect
 
-    def draw(self, network, format, path=None):
+    def draw(self, network, file_format, path=None):
         """
         Draw the potential energy surface for the given `network` as a Cairo
         surface of the given `format`. If `path` is given, the surface is
@@ -266,7 +266,7 @@ class NetworkDrawer:
         # Generate the bounding rectangles for each configuration label
         label_rects = []
         for well in wells:
-            label_rects.append(self._get_label_size(well, format=format))
+            label_rects.append(self._get_label_size(well, file_format=file_format))
 
         # Get energy range (use kJ/mol internally)
         e0_min, e0_max = self._get_energy_range()
@@ -295,7 +295,7 @@ class NetworkDrawer:
             raise Exception('Invalid value "{0}" for Eunits parameter.'.format(e_units))
 
         # Determine height required for drawing
-        e_height = self._get_text_size('0.0', format=format)[3] + 6
+        e_height = self._get_text_size('0.0', file_format=file_format)[3] + 6
         y_e0 = (e0_max - 0.0) * e_slope + padding + e_height
         height = (e0_max - e0_min) * e_slope + 2 * padding + e_height + 6
         for i in range(len(wells)):
@@ -390,7 +390,7 @@ class NetworkDrawer:
         width = max([rect[2] + rect[0] for rect in well_rects]) - min([rect[0] for rect in well_rects]) + 2 * padding
 
         # Draw to the final surface
-        surface = create_new_surface(format=format, target=path, width=width, height=height)
+        surface = create_new_surface(file_format=file_format, target=path, width=width, height=height)
         cr = cairo.Context(surface)
 
         # Some global settings
@@ -511,7 +511,7 @@ class NetworkDrawer:
             cr.rectangle(x, y, label_rects[i][2], label_rects[i][3])
             cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
             cr.fill()
-            self._draw_label(well, cr, x, y, format=format)
+            self._draw_label(well, cr, x, y, file_format=file_format)
 
         # Finish Cairo drawing
         if format == 'png':

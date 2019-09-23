@@ -70,9 +70,9 @@ from rmgpy.species import Species
 
 ################################################################################
 
-def create_new_surface(format, target=None, width=1024, height=768):
+def create_new_surface(file_format, target=None, width=1024, height=768):
     """
-    Create a new surface of the specified `format`:
+    Create a new surface of the specified `file_format`:
         "png" for :class:`ImageSurface`
         "svg" for :class:`SVGSurface`
         "pdf" for :class:`PDFSurface`
@@ -83,14 +83,14 @@ def create_new_surface(format, target=None, width=1024, height=768):
     surface if you know what it is; otherwise a default size of 1024 by 768 is
     used.
     """
-    format = format.lower()
-    if format == 'png':
+    file_format = file_format.lower()
+    if file_format == 'png':
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
-    elif format == 'svg':
+    elif file_format == 'svg':
         surface = cairo.SVGSurface(target, width, height)
-    elif format == 'pdf':
+    elif file_format == 'pdf':
         surface = cairo.PDFSurface(target, width, height)
-    elif format == 'ps':
+    elif file_format == 'ps':
         surface = cairo.PSSurface(target, width, height)
     else:
         raise ValueError(
@@ -106,7 +106,7 @@ class MoleculeDrawer(object):
     molecules using the Cairo 2D graphics engine. The most common use case is
     simply::
     
-        MoleculeDrawer().draw(molecule, format='png', path='molecule.png')
+        MoleculeDrawer().draw(molecule, file_format='png', path='molecule.png')
     
     where ``molecule`` is the :class:`Molecule` object to draw. You can also
     pass a dict of options to the constructor to affect how the molecules are
@@ -151,7 +151,7 @@ class MoleculeDrawer(object):
         self.surface = None
         self.cr = None
 
-    def draw(self, molecule, format, target=None):
+    def draw(self, molecule, file_format, target=None):
         """
         Draw the given `molecule` using the given image `format` - pdf, svg, ps, or
         png. If `path` is given, the drawing is saved to that location on disk. The
@@ -267,7 +267,7 @@ class MoleculeDrawer(object):
 
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
-        surface0 = create_new_surface(format=format, target=None)
+        surface0 = create_new_surface(file_format=file_format, target=None)
         cr0 = cairo.Context(surface0)
 
         # Render using Cairo
@@ -278,7 +278,7 @@ class MoleculeDrawer(object):
         yoff = self.top
         width = self.right - self.left
         height = self.bottom - self.top
-        self.surface = create_new_surface(format=format, target=target, width=width, height=height)
+        self.surface = create_new_surface(file_format=file_format, target=target, width=width, height=height)
         self.cr = cairo.Context(self.surface)
 
         # Draw white background
@@ -1600,7 +1600,7 @@ class ReactionDrawer(object):
     skeletal formula of each reactant and product molecule via the Cairo 2D
     graphics engine. The most common use case is simply::
     
-        ReactionDrawer().draw(reaction, format='png', path='reaction.png')
+        ReactionDrawer().draw(reaction, file_format='png', path='reaction.png')
     
     where ``reaction`` is the :class:`Reaction` object to draw. You can also
     pass a dict of options to the constructor to affect how the molecules are
@@ -1615,7 +1615,7 @@ class ReactionDrawer(object):
         if options:
             self.options.update(options)
 
-    def draw(self, reaction, format, path=None):
+    def draw(self, reaction, file_format, path=None):
         """
         Draw the given `reaction` using the given image `format` - pdf, svg, 
         ps, or png. If `path` is given, the drawing is saved to that location
@@ -1668,7 +1668,7 @@ class ReactionDrawer(object):
         rxn_width += (len(reactants) - 1) * plus_extents[4] + arrow_width + (len(products) - 1) * plus_extents[4]
 
         # Now make the surface for the reaction and render each molecule on it
-        rxn_surface = create_new_surface(format, path, width=rxn_width, height=rxn_height)
+        rxn_surface = create_new_surface(file_format, path, width=rxn_width, height=rxn_height)
         rxn_cr = cairo.Context(rxn_surface)
 
         # Draw white background
