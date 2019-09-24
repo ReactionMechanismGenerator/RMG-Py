@@ -35,11 +35,11 @@ cpdef str compose_aug_inchi(str inchi, str ulayer=*, str player=*)
 
 cpdef str compose_aug_inchi_key(str inchi_key, str ulayer=*, str player=*)
 
-cpdef list _parse_H_layer(str inchi)
+cpdef list _parse_h_layer(str inchi)
 
-cpdef list _parse_E_layer(str auxinfo)
+cpdef list _parse_e_layer(str auxinfo)
 
-cpdef list _parse_N_layer(str auxinfo)
+cpdef list _parse_n_layer(str auxinfo)
 
 cpdef bint _has_unexpected_lone_pairs(Molecule mol)
 
@@ -53,11 +53,11 @@ cpdef bint _is_valid_combo(list combo, Molecule mol, list distances)
 
 cpdef list _find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)
 
-cpdef str _create_U_layer(Molecule mol, str auxinfo)
+cpdef str _create_u_layer(Molecule mol, str auxinfo)
 
 cpdef list _find_lowest_p_layer(Molecule minmol, list p_layer, list equivalent_atoms)
 
-cpdef str _create_P_layer(Molecule mol, str auxinfo)
+cpdef str _create_p_layer(Molecule mol, str auxinfo)
 
 cpdef tuple create_augmented_layers(Molecule mol)
 

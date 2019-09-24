@@ -41,24 +41,25 @@ The resulting HTML file and species image folder are placed in the execution
 directory, unless an output directory is specified.
 """
 
-import os
 import argparse
+import os
 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.chemkin import load_chemkin_file
 from rmgpy.rmg.model import CoreEdgeReactionModel
-from rmgpy.rmg.output import saveOutputHTML
+from rmgpy.rmg.output import save_output_html
+
 
 ################################################################################
 
 def main(chemkin, dictionary, output, foreign):
     model = CoreEdgeReactionModel()
-    model.core.species, model.core.reactions = loadChemkinFile(chemkin, dictionary, readComments=not foreign,
-                                                               checkDuplicates=foreign)
-    outputPath = os.path.join(output, 'output.html')
-    speciesPath = os.path.join(output, 'species')
-    if not os.path.isdir(speciesPath):
-        os.makedirs(speciesPath)
-    saveOutputHTML(outputPath, model)
+    model.core.species, model.core.reactions = load_chemkin_file(chemkin, dictionary, read_comments=not foreign,
+                                                                 check_duplicates=foreign)
+    output_path = os.path.join(output, 'output.html')
+    species_path = os.path.join(output, 'species')
+    if not os.path.isdir(species_path):
+        os.makedirs(species_path)
+    save_output_html(output_path, model)
 
 
 if __name__ == '__main__':
@@ -80,4 +81,3 @@ if __name__ == '__main__':
     foreign = args.foreign
 
     main(chemkin, dictionary, output, foreign)
-

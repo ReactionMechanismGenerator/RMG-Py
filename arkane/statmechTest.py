@@ -29,18 +29,19 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.main` module.
+This module contains unit tests of the :mod:`arkane.statmech` module.
 """
 
-import unittest
 import os
+import unittest
+
 import numpy as np
 
 from rmgpy.exceptions import InputError
 
 from arkane import Arkane
-from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 from arkane.qchem import QChemLog
+from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 
 ################################################################################
 
@@ -49,12 +50,13 @@ class TestStatmech(unittest.TestCase):
     """
     Contains unit tests of the StatmechJob class.
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                         'data', 'Benzyl', 'input.py'))
+        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                           'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are not the same"""
@@ -71,8 +73,8 @@ class TestStatmech(unittest.TestCase):
         path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'NCC_CRotor.out')
         scan_log1 = QChemLog(path1)
         scan_log2 = QChemLog(path2)
-        v_list1, angle = scan_log1.loadScanEnergies()
-        v_list2, angle = scan_log2.loadScanEnergies()
+        v_list1, angle = scan_log1.load_scan_energies()
+        v_list2, angle = scan_log2.load_scan_energies()
         symmetry1 = determine_rotor_symmetry(energies=v_list1, label='NCC', pivots=[])
         symmetry2 = determine_rotor_symmetry(energies=v_list2, label='NCC', pivots=[])
         self.assertEqual(symmetry1, 1)

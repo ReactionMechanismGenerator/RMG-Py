@@ -28,31 +28,35 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 import os.path
 import shutil
+import unittest
+
 from nose.plugins.attrib import attr
+
 import rmgpy
-from rmgpy.tools.generate_reactions import *
+from rmgpy.rmg.main import RMG
+from rmgpy.tools.generate_reactions import execute
+
 
 @attr('functional')
 class GenerateReactionsTest(unittest.TestCase):
 
     def test(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/generate')
-        
+
         input_file = os.path.join(folder, 'input.py')
-        
-        rmg = RMG(inputFile=input_file, outputDirectory=folder)
+
+        rmg = RMG(input_file=input_file, output_directory=folder)
         rmg = execute(rmg)
 
         self.assertIsNotNone(rmg)
-        self.assertIsNotNone(rmg.reactionModel.outputSpeciesList)
-        self.assertIsNotNone(rmg.reactionModel.outputReactionList)
+        self.assertIsNotNone(rmg.reaction_model.output_species_list)
+        self.assertIsNotNone(rmg.reaction_model.output_reaction_list)
 
         shutil.rmtree(os.path.join(folder, 'pdep'))
 
-    def testDuplicateReaction(self):
+    def test_duplicate_reaction(self):
         """
         Test that the radical addition reaction
 
@@ -66,27 +70,27 @@ class GenerateReactionsTest(unittest.TestCase):
         from rmgpy.reaction import Reaction
         from rmgpy.molecule import Molecule
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/generate/duplicates')
-        
+
         input_file = os.path.join(folder, 'input.py')
 
-        rmg = RMG(inputFile=input_file, outputDirectory=folder)
+        rmg = RMG(input_file=input_file, output_directory=folder)
         rmg = execute(rmg)
 
         self.assertIsNotNone(rmg)
-        
-        rxn_flagged = Reaction(reactants=[Molecule(SMILES='[CH]=O'), Molecule(SMILES='C=O')],
-                               products=[Molecule(SMILES='[CH2]OC=O')])
+
+        rxn_flagged = Reaction(reactants=[Molecule(smiles='[CH]=O'), Molecule(smiles='C=O')],
+                               products=[Molecule(smiles='[CH2]OC=O')])
 
         count = 0
-        for reaction in rmg.reactionModel.core.reactions:
-            if reaction.isIsomorphic(rxn_flagged):
+        for reaction in rmg.reaction_model.core.reactions:
+            if reaction.is_isomorphic(rxn_flagged):
                 count += 1
 
         self.assertEquals(count, 1)
 
         shutil.rmtree(os.path.join(folder, 'pdep'))
-        
-    def testLibraryReactionEntersCore(self):
+
+    def test_library_reaction_enters_core(self):
         """
         Test that a reaction from a Reaction Library enters the core
         right after the initialization step if all the input species are 
@@ -101,33 +105,33 @@ class GenerateReactionsTest(unittest.TestCase):
         from rmgpy.reaction import Reaction
         from rmgpy.molecule import Molecule
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/generate/libraryReaction')
-        
+
         input_file = os.path.join(folder, 'input.py')
 
-        rmg = RMG(inputFile=input_file, outputDirectory=folder)
+        rmg = RMG(input_file=input_file, output_directory=folder)
         rmg = execute(rmg)
 
         self.assertIsNotNone(rmg)
-        
+
         # Assert that the flagged reaction occurs
-        rxn_flagged = Reaction(reactants=[Molecule(SMILES='[CH]=O'), Molecule(SMILES='C=O')],
-                               products=[Molecule(SMILES='[CH2]OC=O')])
+        rxn_flagged = Reaction(reactants=[Molecule(smiles='[CH]=O'), Molecule(smiles='C=O')],
+                               products=[Molecule(smiles='[CH2]OC=O')])
 
         count = 0
-        for reaction in rmg.reactionModel.core.reactions:
-            if reaction.isIsomorphic(rxn_flagged):
+        for reaction in rmg.reaction_model.core.reactions:
+            if reaction.is_isomorphic(rxn_flagged):
                 count += 1
 
         self.assertEquals(count, 1)
 
         # Assert that the core only has 1 reaction
-        self.assertEquals(len(rmg.reactionModel.core.reactions), 1)
+        self.assertEquals(len(rmg.reaction_model.core.reactions), 1)
         shutil.rmtree(os.path.join(folder, 'pdep'))
-    
+
     def setUp(self):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
-        
+
     def tearDown(self):
         """
         Reset the loaded database

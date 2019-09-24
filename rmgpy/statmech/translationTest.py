@@ -32,19 +32,23 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.translation` module.
 """
 
-import unittest
-import numpy
+from __future__ import division
 
-from rmgpy.statmech.translation import IdealGasTranslation
+import unittest
+
+import numpy as np
+
 import rmgpy.constants as constants
+from rmgpy.statmech.translation import IdealGasTranslation
 
 ################################################################################
+
 
 class TestIdealGasTranslation(unittest.TestCase):
     """
     Contains unit tests of the IdealGasTranslation class.
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -52,95 +56,98 @@ class TestIdealGasTranslation(unittest.TestCase):
         self.mass = 32.0
         self.quantum = False
         self.mode = IdealGasTranslation(
-            mass = (self.mass,"amu"), 
-            quantum = self.quantum, 
+            mass=(self.mass, "amu"),
+            quantum=self.quantum,
         )
-        
-    def test_getPartitionFunction_classical(self):
-        """
-        Test the IdealGasTranslation.getPartitionFunction() method for a
-        classical translator.
-        """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Qexplist = numpy.array([7.22597e+06, 2.59130e+07, 1.46586e+08, 4.03944e+08, 8.29217e+08])
-        for T, Qexp in zip(Tlist, Qexplist):
-            Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
-            
-    def test_getHeatCapacity_classical(self):
-        """
-        Test the IdealGasTranslation.getHeatCapacity() method using a classical
-        translator.
-        """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Cvexplist = numpy.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R
-        for T, Cvexp in zip(Tlist, Cvexplist):
-            Cvact = self.mode.getHeatCapacity(T)
-            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
-    
-    def test_getEnthalpy_classical(self):
-        """
-        Test the IdealGasTranslation.getEnthalpy() method using a classical
-        translator.
-        """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Hexplist = numpy.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R * Tlist
-        for T, Hexp in zip(Tlist, Hexplist):
-            Hact = self.mode.getEnthalpy(T)
-            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
-    
-    def test_getEntropy_classical(self):
-        """
-        Test the IdealGasTranslation.getEntropy() method using a classical
-        translator.
-        """
-        Tlist = numpy.array([300,500,1000,1500,2000])
-        Sexplist = numpy.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
-        for T, Sexp in zip(Tlist, Sexplist):
-            Sact = self.mode.getEntropy(T)
-            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
-    
-    def test_getSumOfStates_classical(self):
-        """
-        Test the IdealGasTranslation.getSumOfStates() method using a classical
-        translator.
-        """
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        sumStates = self.mode.getSumOfStates(Elist)
-        densStates = self.mode.getDensityOfStates(Elist)
-        for n in range(10, len(Elist)):
-            self.assertTrue(0.8 < numpy.sum(densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
 
-    def test_getDensityOfStates_classical(self):
+    def test_get_partition_function_classical(self):
         """
-        Test the IdealGasTranslation.getDensityOfStates() method using a 
+        Test the IdealGasTranslation.get_partition_function() method for a
         classical translator.
         """
-        Elist = numpy.arange(0, 10000*11.96, 1*11.96)
-        densStates = self.mode.getDensityOfStates(Elist)
-        T = 100
-        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
-        Qexp = self.mode.getPartitionFunction(T)
-        self.assertAlmostEqual(Qexp, Qact, delta=1e-6*Qexp)
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        q_exp_list = np.array([7.22597e+06, 2.59130e+07, 1.46586e+08, 4.03944e+08, 8.29217e+08])
+        for temperature, q_exp in zip(t_list, q_exp_list):
+            q_act = self.mode.get_partition_function(temperature)
+            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+
+    def test_get_heat_capacity_classical(self):
+        """
+        Test the IdealGasTranslation.get_heat_capacity() method using a classical
+        translator.
+        """
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        cv_exp_list = np.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R
+        for temperature, cv_exp in zip(t_list, cv_exp_list):
+            cv_act = self.mode.get_heat_capacity(temperature)
+            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+
+    def test_get_enthalpy_classical(self):
+        """
+        Test the IdealGasTranslation.get_enthalpy() method using a classical
+        translator.
+        """
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        h_exp_list = np.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R * t_list
+        for temperature, h_exp in zip(t_list, h_exp_list):
+            h_act = self.mode.get_enthalpy(temperature)
+            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+
+    def test_get_entropy_classical(self):
+        """
+        Test the IdealGasTranslation.get_entropy() method using a classical
+        translator.
+        """
+        t_list = np.array([300, 500, 1000, 1500, 2000])
+        s_exp_list = np.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
+        for temperature, s_exp in zip(t_list, s_exp_list):
+            s_act = self.mode.get_entropy(temperature)
+            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+
+    def test_get_sum_of_states_classical(self):
+        """
+        Test the IdealGasTranslation.get_sum_of_states() method using a classical
+        translator.
+        """
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        sum_states = self.mode.get_sum_of_states(e_list)
+        dens_states = self.mode.get_density_of_states(e_list)
+        for n in range(10, len(e_list)):
+            self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
+                             '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
+
+    def test_get_density_of_states_classical(self):
+        """
+        Test the IdealGasTranslation.get_density_of_states() method using a
+        classical translator.
+        """
+        e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
+        dens_states = self.mode.get_density_of_states(e_list)
+        temperature = 100
+        q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
+        q_exp = self.mode.get_partition_function(temperature)
+        self.assertAlmostEqual(q_exp, q_act, delta=1e-6 * q_exp)
 
     def test_repr(self):
         """
         Test that an IdealGasTranslation object can be reconstructed from its
         repr() output with no loss of information.
         """
-        mode = None
-        exec('mode = {0!r}'.format(self.mode))
+        namespace = {}
+        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
+        self.assertIn('mode', namespace)
+        mode = namespace['mode']
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         self.assertEqual(self.mode.quantum, mode.quantum)
-        
+
     def test_pickle(self):
         """
         Test that a IdealGasTranslation object can be pickled and unpickled
         with no loss of information.
         """
-        import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
+        import pickle
+        mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         self.assertEqual(self.mode.quantum, mode.quantum)

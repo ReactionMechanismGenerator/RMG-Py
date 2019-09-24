@@ -30,26 +30,27 @@
 
 """
 This script cleans and generates new trees for the specified family running in parallel on the specified number of processors
-`python generateTree.py familyName nprocs`
-ex:  `python generateTree.py intra_H_migration 6`
+`python generate_tree.py familyName nprocs`
+ex:  `python generate_tree.py intra_H_migration 6`
 Note that 6 is the maximum number of processors used currently by this script
 """
 
-import os
-import os.path
 import argparse
 import logging
+import os
+import os.path
+
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.main import initializeLog
+from rmgpy.rmg.main import initialize_log
+
 
 ################################################################################
 
 def parse_arguments():
-
     parser = argparse.ArgumentParser()
     parser.add_argument('name', metavar='NAME', type=str, nargs=1,
-        help='Family Name')
+                        help='Family Name')
 
     parser.add_argument('nprocs', metavar='NPROCS', type=int, nargs=1,
                         help='Number of Processors for Parallelization')
@@ -60,33 +61,37 @@ def parse_arguments():
 
     return name, nprocs
 
+
 def main():
-    initializeLog(logging.INFO,'treegen.log')
+    initialize_log(logging.INFO, 'treegen.log')
     dbdir = settings['database.directory']
-    familyName, nprocs = parse_arguments()
+    family_name, nprocs = parse_arguments()
     database = RMGDatabase()
     database.load(
         path=dbdir,
-        thermoLibraries=['Klippenstein_Glarborg2016', 'BurkeH2O2', 'thermo_DFT_CCSDTF12_BAC', 'DFT_QCI_thermo',
-                           'primaryThermoLibrary', 'primaryNS', 'NitrogenCurran', 'NOx2018', 'FFCM1(-)',
-                           'SulfurLibrary', 'SulfurGlarborgH2S'],
-        transportLibraries=[],
-        reactionLibraries=[],
-        seedMechanisms=[],
-        kineticsFamilies=[familyName],
-        kineticsDepositories=['training'],
+        thermo_libraries=['Klippenstein_Glarborg2016', 'BurkeH2O2', 'thermo_DFT_CCSDTF12_BAC', 'DFT_QCI_thermo',
+                         'primaryThermoLibrary', 'primaryNS', 'NitrogenCurran', 'NOx2018', 'FFCM1(-)',
+                         'SulfurLibrary', 'SulfurGlarborgH2S'],
+        transport_libraries=[],
+        reaction_libraries=[],
+        seed_mechanisms=[],
+        kinetics_families=[family_name],
+        kinetics_depositories=['training'],
         # frequenciesLibraries = self.statmechLibraries,
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )
-    family = database.kinetics.families[familyName]
-    family.cleanTree(database.thermo)
-    family.generateTree(thermoDatabase=database.thermo, nprocs=min(4, nprocs))
-    family.checkTree()
+    family = database.kinetics.families[family_name]
+    family.clean_tree()
+    family.generate_tree(thermo_database=database.thermo, nprocs=min(4, nprocs))
+    family.check_tree()
     family.regularize()
-    templateRxnMap = family.getReactionMatches(thermoDatabase=database.thermo, removeDegeneracy=True, getReverse=True, fixLabels=True)
-    family.makeBMRulesFromTemplateRxnMap(templateRxnMap, nprocs=min(6, nprocs))
-    family.checkTree()
-    family.save(os.path.join(dbdir,'kinetics','families',familyName))
+    template_rxn_map = family.get_reaction_matches(thermo_database=database.thermo, remove_degeneracy=True,
+                                                   get_reverse=True, fix_labels=True)
+    family.make_bm_rules_from_template_rxn_map(template_rxn_map, nprocs=min(6, nprocs))
+    family.check_tree()
+    family.save(os.path.join(dbdir, 'kinetics', 'families', family_name))
+
+
 ################################################################################
 
 if __name__ == '__main__':

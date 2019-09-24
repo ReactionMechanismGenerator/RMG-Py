@@ -37,8 +37,10 @@ Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579
 import logging
 import re
 
-from arkane.exceptions import BondAdditivityCorrectionError
 import arkane.encorr.data as data
+from arkane.exceptions import BondAdditivityCorrectionError
+
+################################################################################
 
 
 def get_bac(model_chemistry, bonds):

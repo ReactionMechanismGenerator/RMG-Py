@@ -30,10 +30,10 @@
 
 import unittest
 
-from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.resonance import generate_resonance_structures, analyze_molecule
 from rmgpy.molecule.filtration import get_octet_deviation_list, get_octet_deviation, filter_structures, \
                                       charge_filtration, get_charge_span_list, aromaticity_filtration
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.resonance import generate_resonance_structures, analyze_molecule
 
 ################################################################################
 
@@ -61,29 +61,29 @@ class FiltrationTest(unittest.TestCase):
         3 N u0 p1 c+1 {1,S} {2,S}
         """
 
-        mol1 = Molecule().fromAdjacencyList(adj1)
-        mol2 = Molecule().fromAdjacencyList(adj2)
-        mol3 = Molecule().fromAdjacencyList(adj3)
+        mol1 = Molecule().from_adjacency_list(adj1)
+        mol2 = Molecule().from_adjacency_list(adj2)
+        mol3 = Molecule().from_adjacency_list(adj3)
 
-        mol_list = [mol1,mol2,mol3]
+        mol_list = [mol1, mol2, mol3]
         octet_deviation_list = get_octet_deviation_list(mol_list)
         filtered_list = filter_structures(mol_list)
 
-        self.assertEqual(octet_deviation_list,[1, 3, 3])
+        self.assertEqual(octet_deviation_list, [1, 3, 3])
         self.assertEqual(len(filtered_list), 1)
         self.assertTrue(all([atom.charge == 0 for atom in filtered_list[0].vertices]))
 
-    def penalty_for_O4tc_test(self):
-        """Test that an O4tc atomType with octet 8 gets penalized in the electronegativity heuristic"""
+    def penalty_for_o4tc_test(self):
+        """Test that an O4tc atomtype with octet 8 gets penalized in the electronegativity heuristic"""
         adj = """
         1 S u0 p1 c0 {2,S} {3,T}
         2 O u0 p3 c-1 {1,S}
         3 O u0 p1 c+1 {1,T}
         """
-        mol = Molecule().fromAdjacencyList(adj)
+        mol = Molecule().from_adjacency_list(adj)
         octet_deviation = get_octet_deviation(mol)
         self.assertEqual(octet_deviation, 0)
-        self.assertEqual(mol.vertices[2].atomType.label, 'O4tc')
+        self.assertEqual(mol.vertices[2].atomtype.label, 'O4tc')
         mol_list = generate_resonance_structures(mol)
         self.assertEqual(len(mol_list), 2)
         for mol in mol_list:
@@ -99,14 +99,14 @@ class FiltrationTest(unittest.TestCase):
         2 O u0 p2 c0 {1,D}
         3 O u0 p2 c0 {1,D}
         """
-        mol = Molecule().fromAdjacencyList(adj)
+        mol = Molecule().from_adjacency_list(adj)
         mol.update()
         mol_list = generate_resonance_structures(mol, keep_isomorphic=False, filter_structures=True)
         for mol in mol_list:
             if mol.reactive:
                 for atom in mol.vertices:
-                    if atom.isSulfur():
-                        self.assertNotEquals(atom.radicalElectrons, 2)
+                    if atom.is_sulfur():
+                        self.assertNotEquals(atom.radical_electrons, 2)
         self.assertEqual(len(mol_list), 3)
         self.assertEqual(sum([1 for mol in mol_list if mol.reactive]), 2)
 
@@ -125,7 +125,7 @@ class FiltrationTest(unittest.TestCase):
         10 H u0 p0 c0 {2,S}
         11 O u0 p2 c0 {3,D}
         """
-        mol = Molecule().fromAdjacencyList(adj)
+        mol = Molecule().from_adjacency_list(adj)
         octet_deviation = get_octet_deviation(mol)
         self.assertEqual(octet_deviation, 3.0)
 
@@ -150,23 +150,23 @@ class FiltrationTest(unittest.TestCase):
         3 N u0 p1 c+1 {1,S} {2,S}
         """
 
-        mol_list = [Molecule().fromAdjacencyList(adj1),
-                    Molecule().fromAdjacencyList(adj2),
-                    Molecule().fromAdjacencyList(adj3)]
+        mol_list = [Molecule().from_adjacency_list(adj1),
+                    Molecule().from_adjacency_list(adj2),
+                    Molecule().from_adjacency_list(adj3)]
 
         for mol in mol_list:
-            mol.update()  # the charge_filtration uses the atom.sortingLabel attribute
+            mol.update()  # the charge_filtration uses the atom.sorting_label attribute
 
         filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
         self.assertEqual(len(filtered_list), 2)
-        self.assertTrue(any([mol.getChargeSpan() == 1 for mol in filtered_list]))
+        self.assertTrue(any([mol.get_charge_span() == 1 for mol in filtered_list]))
         for mol in filtered_list:
-            if mol.getChargeSpan() == 1:
+            if mol.get_charge_span() == 1:
                 for atom in mol.vertices:
                     if atom.charge == -1:
-                        self.assertTrue(atom.isOxygen())
+                        self.assertTrue(atom.is_oxygen())
                     if atom.charge == 1:
-                        self.assertTrue(atom.isNitrogen())
+                        self.assertTrue(atom.is_nitrogen())
 
     def electronegativity_test(self):
         """Test that structures with charge separation are only kept if they obey the electronegativity rule
@@ -233,25 +233,25 @@ class FiltrationTest(unittest.TestCase):
         5 O u0 p3 c-1 {3,S}
         """
 
-        mol_list = [Molecule().fromAdjacencyList(adj1),
-                    Molecule().fromAdjacencyList(adj2),
-                    Molecule().fromAdjacencyList(adj3),
-                    Molecule().fromAdjacencyList(adj4),
-                    Molecule().fromAdjacencyList(adj5),
-                    Molecule().fromAdjacencyList(adj6),
-                    Molecule().fromAdjacencyList(adj7)]
+        mol_list = [Molecule().from_adjacency_list(adj1),
+                    Molecule().from_adjacency_list(adj2),
+                    Molecule().from_adjacency_list(adj3),
+                    Molecule().from_adjacency_list(adj4),
+                    Molecule().from_adjacency_list(adj5),
+                    Molecule().from_adjacency_list(adj6),
+                    Molecule().from_adjacency_list(adj7)]
 
         for mol in mol_list:
-            mol.update()  # the charge_filtration uses the atom.sortingLabel attribute
+            mol.update()  # the charge_filtration uses the atom.sorting_label attribute
 
         filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
         self.assertEqual(len(filtered_list), 4)
-        self.assertTrue(any([mol.getChargeSpan() == 1 for mol in filtered_list]))
+        self.assertTrue(any([mol.get_charge_span() == 1 for mol in filtered_list]))
         for mol in filtered_list:
-            if mol.getChargeSpan() == 1:
+            if mol.get_charge_span() == 1:
                 for atom in mol.vertices:
                     if abs(atom.charge) == 1:
-                        self.assertTrue(atom.isNitrogen())
+                        self.assertTrue(atom.is_nitrogen())
 
     def aromaticity_test(self):
         """Test that aromatics are properly filtered."""
@@ -321,10 +321,10 @@ class FiltrationTest(unittest.TestCase):
 """
 
         mol_list = [
-            Molecule().fromAdjacencyList(adj1),
-            Molecule().fromAdjacencyList(adj2),
-            Molecule().fromAdjacencyList(adj3),
-            Molecule().fromAdjacencyList(adj4),
+            Molecule().from_adjacency_list(adj1),
+            Molecule().from_adjacency_list(adj2),
+            Molecule().from_adjacency_list(adj3),
+            Molecule().from_adjacency_list(adj4),
         ]
 
         filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0]))

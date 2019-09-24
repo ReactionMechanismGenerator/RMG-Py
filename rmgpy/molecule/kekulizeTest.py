@@ -29,17 +29,16 @@
 ###############################################################################
 
 import unittest
-from external.wip import work_in_progress
 
-from rmgpy.molecule import Molecule
-from rmgpy.molecule.kekulize import *
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.kekulize import AromaticRing
 
 
 class KekulizeTest(unittest.TestCase):
 
     def setUp(self):
         """To be run before each test."""
-        molecule = Molecule().fromAdjacencyList("""
+        molecule = Molecule().from_adjacency_list("""
 1  C u0 p0 c0 {2,B} {6,B} {7,S}
 2  C u0 p0 c0 {1,B} {3,B} {8,S}
 3  C u0 p0 c0 {2,B} {4,B} {9,S}
@@ -55,9 +54,9 @@ class KekulizeTest(unittest.TestCase):
 """)
         bonds = set()
         for atom in molecule.atoms:
-            bonds.update(atom.bonds.values())
+            bonds.update(list(atom.bonds.values()))
 
-        ring_atoms, ring_bonds = molecule.getAromaticRings()
+        ring_atoms, ring_bonds = molecule.get_aromatic_rings()
 
         self.aromatic_ring = AromaticRing(ring_atoms[0], set(ring_bonds[0]), bonds - set(ring_bonds[0]))
 

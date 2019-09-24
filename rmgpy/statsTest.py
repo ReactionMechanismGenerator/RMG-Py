@@ -32,14 +32,14 @@
 This script contains unit tests of the :mod:`rmgpy.stats` module.
 """
 
-import unittest
 import os
 import os.path
 import shutil
+import unittest
 
 from rmgpy.rmg.main import RMG, CoreEdgeReactionModel
+from rmgpy.stats import ExecutionStatsWriter
 
-from rmgpy.stats import *
 
 ################################################################################
 
@@ -53,28 +53,28 @@ class TestExecutionStatsWriter(unittest.TestCase):
         Set up an RMG object
         """
 
-        folder = os.path.join(os.getcwd(),'rmgpy/output')
+        folder = os.path.join(os.getcwd(), 'rmgpy/output')
         if not os.path.isdir(folder):
             os.mkdir(folder)
 
-        self.rmg = RMG(outputDirectory=folder)
-        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg = RMG(output_directory=folder)
+        self.rmg.reaction_model = CoreEdgeReactionModel()
 
-        self.rmg.saveEverything()
+        self.rmg.save_everything()
 
     def test_save(self):
         """
         Tests if the statistics output file can be found.
         """
-        
-        folder = self.rmg.outputDirectory
-        
+
+        folder = self.rmg.output_directory
+
         writer = ExecutionStatsWriter(folder)
         writer.update(self.rmg)
 
-        statsfile = os.path.join(folder,'statistics.xls')
+        statsfile = os.path.join(folder, 'statistics.xls')
 
         self.assertTrue(os.path.isfile(statsfile))
 
     def tearDown(self):
-        shutil.rmtree(self.rmg.outputDirectory)
+        shutil.rmtree(self.rmg.output_directory)

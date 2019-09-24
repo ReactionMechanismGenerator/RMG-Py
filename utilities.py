@@ -37,42 +37,130 @@ import argparse
 import os
 import platform
 import re
+import shutil
 import subprocess
+import sys
 
 
 def check_dependencies():
     """
     Checks for and locates major dependencies that RMG requires.
     """
-    missing = install_rdkit = False
-
     print('\nChecking vital dependencies...\n')
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
-    # Check for symmetry
+    missing = {
+        'lpsolve': _check_lpsolve(),
+        'openbabel': _check_openbabel(),
+        'pydqed': _check_pydqed(),
+        'pyrdl': _check_pyrdl(),
+        'rdkit': _check_rdkit(),
+        'symmetry': _check_symmetry(),
+    }
+
+    if any(missing.values()):
+        print("""
+There are missing dependencies as listed above. Please install them before proceeding.
+
+Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
+
+    conda install -c rmg [package name]
+{0}
+You can alternatively update your environment and install all missing dependencies as follows:
+
+    conda env update -f environment.yml
+
+Be sure to activate your conda environment (rmg_env by default) before installing or updating.
+""".format("""
+RDKit should be installed from the RDKit channel instead:
+
+    conda install -c rdkit rdkit
+""" if missing['rdkit'] else ''))
+    else:
+        print("""
+Everything was found :)
+""")
+
+
+def _check_lpsolve():
+    """Check for lpsolve"""
+    missing = False
+
     try:
-        result = subprocess.check_output('symmetry -h', stderr=subprocess.STDOUT, shell=True)
-    except subprocess.CalledProcessError:
-        print('{0:<30}{1}'.format('symmetry', 'Not found. Please install in order to use QM.'))
+        import lpsolve55
+    except ImportError:
+        print('{0:<30}{1}'.format('lpsolve55',
+                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
         missing = True
     else:
-        match = re.search(r'\$Revision: (\S*) \$', result)
-        version = match.group(1)
-        if platform.system() == 'Windows':
-            location = subprocess.check_output('where symmetry', shell=True)
-        else:
-            location = subprocess.check_output('which symmetry', shell=True)
+        location = lpsolve55.__file__
+        print('{0:<30}{1}'.format('lpsolve55', location))
 
-        print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip()))
+    return missing
 
-    # Check for RDKit
+
+def _check_openbabel():
+    """Check for OpenBabel"""
+    missing = False
+
+    try:
+        import openbabel
+    except ImportError:
+        print('{0:<30}{1}'.format('OpenBabel',
+                                  'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
+        missing = True
+    else:
+        version = openbabel.OBReleaseVersion()
+        location = openbabel.__file__
+        print('{0:<15}{1:<15}{2}'.format('OpenBabel', version, location))
+
+    return missing
+
+
+def _check_pydqed():
+    """Check for pydqed"""
+    missing = False
+
+    try:
+        import pydqed
+    except ImportError:
+        print('{0:<30}{1}'.format('pydqed', 'Not found. Necessary for estimating statmech for pressure dependence.'))
+        missing = True
+    else:
+        version = pydqed.__version__
+        location = pydqed.__file__
+        print('{0:<15}{1:<15}{2}'.format('pydqed', version, location))
+
+    return missing
+
+
+def _check_pyrdl():
+    """Check for pyrdl"""
+    missing = False
+
+    try:
+        import py_rdl
+    except ImportError:
+        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
+        missing = True
+    else:
+        location = py_rdl.__file__
+        print('{0:<30}{1}'.format('pyrdl', location))
+
+    return missing
+
+
+def _check_rdkit():
+    """Check for RDKit"""
+    missing = False
+
     try:
         import rdkit
         from rdkit import Chem
     except ImportError:
         print('{0:<30}{1}'.format('RDKit',
                                   'Not found. Please install RDKit version 2015.03.1 or later with InChI support.'))
-        missing = install_rdkit = True
+        missing = True
     else:
         try:
             version = rdkit.__version__
@@ -85,66 +173,94 @@ def check_dependencies():
             print('{0:<15}{1:<15}{2}'.format('RDKit', version, location))
             if not inchi:
                 print('    !!! RDKit installed without InChI Support. Please install with InChI.')
-                missing = install_rdkit = True
+                missing = True
         else:
             print('    !!! RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.')
-            missing = install_rdkit = True
+            missing = True
 
-    # Check for OpenBabel
+    return missing
+
+
+def _check_symmetry():
+    """Check for symmetry package"""
     try:
-        import openbabel
-    except ImportError:
-        print('{0:<30}{1}'.format('OpenBabel',
-                                  'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
+        result = subprocess.check_output('symmetry -h', stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError:
+        print('{0:<30}{1}'.format('symmetry', 'Not found. Please install in order to use QM.'))
         missing = True
     else:
-        version = openbabel.OBReleaseVersion()
-        location = openbabel.__file__
-        print('{0:<15}{1:<15}{2}'.format('OpenBabel', version, location))
+        match = re.search(r'\$Revision: (\S*) \$', result.decode())
+        version = match.group(1)
+        if platform.system() == 'Windows':
+            location = subprocess.check_output('where symmetry', shell=True)
+        else:
+            location = subprocess.check_output('which symmetry', shell=True)
 
-    # Check for lpsolve
+        print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip().decode()))
+
+
+def check_pydas():
+    """
+    Check which solvers PyDAS was compiled with and update rmgpy/solver/settings.pxi accordingly.
+
+    If settings.pxi already exists, check it's contents to avoid unnecessary overwriting and compiling.
+    """
+    print('\nChecking for solvers before compiling...\n')
+
     try:
-        import lpsolve55
+        import pydas.daspk
     except ImportError:
-        print('{0:<30}{1}'.format('lpsolve55',
-                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
-        missing = True
+        daspk = False
     else:
-        location = lpsolve55.__file__
-        print('{0:<30}{1}'.format('lpsolve55', location))
+        daspk = True
 
-    # Check for pyrdl
     try:
-        import py_rdl
+        import pydas.dassl
     except ImportError:
-        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
-        missing = True
+        dassl = False
     else:
-        location = py_rdl.__file__
-        print('{0:<30}{1}'.format('pyrdl', location))
+        dassl = True
 
-    if missing:
-        print("""
-There are missing dependencies as listed above. Please install them before proceeding.
-
-Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
-
-    conda install -c rmg [package name]
-{0}
-You can alternatively update your environment and install all missing dependencies as follows:
-
-    conda env update -f environment_[linux/mac/windows].yml  # Choose the correct file for your OS
-
-Be sure to activate your conda environment (rmg_env by default) before installing or updating.
-""".format("""
-RDKit should be installed from the RDKit channel instead:
-
-    conda install -c rdkit rdkit
-""" if install_rdkit else ''))
+    if daspk:
+        print('DASPK solver found. Compiling with DASPK and sensitivity analysis capability...\n')
+    elif dassl:
+        print('DASSL solver found. Compiling with DASSL. Sensitivity analysis capabilities are off...\n')
     else:
-        print("""
-Everything was found :)
-""")
+        print('No PyDAS solvers found. Please check that you have the latest version of PyDAS '
+              'or that you have activated the appropriate conda environment.\n')
+        sys.exit('Cannot compile RMG solver without PyDAS.')
+
+    settings_path = os.path.join(os.path.dirname(__file__), 'rmgpy', 'solver', 'settings.pxi')
+
+    if os.path.isfile(settings_path):
+        with open(settings_path, 'r') as f:
+            settings = f.read()
+
+        # Only update the settings file if its contents do not match what we found
+        write = not ((daspk and 'DASPK = 1' in settings) or (dassl and 'DASPK = 0' in settings))
+    else:
+        write = True
+
+    if write:
+        with open(settings_path, 'w') as f:
+            if daspk:
+                f.write('DEF DASPK = 1\n')
+            elif dassl:
+                f.write('DEF DASPK = 0\n')
+
+
+def check_python():
+    """
+    Check that Python 3 is in the environment.
+    """
+    major = sys.version_info.major
+    minor = sys.version_info.minor
+    if not (major == 3 and minor >= 7):
+        sys.exit('\nRMG-Py requires Python 3.7 or higher. You are using Python {0}.{1}.\n\n'
+                 'If you are using Anaconda, you should create a new environment using\n\n'
+                 '    conda env create -f environment.yml\n\n'
+                 'If you have an existing rmg_env, you can remove it using\n\n'
+                 '    conda remove --name rmg_env --all\n'.format(major, minor))
 
 
 def clean(subdirectory=''):
@@ -159,13 +275,21 @@ def clean(subdirectory=''):
     else:
         extensions = ['.so', '.pyc']
 
-    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), subdirectory)
+    # Remove temporary build files
+    print('Removing build directory...')
+    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build', subdirectory)
+    shutil.rmtree(directory)
 
+    # Remove C shared object files and compiled Python files
+    print('Removing compiled files...')
+    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), subdirectory)
     for root, dirs, files in os.walk(directory):
         for f in files:
             ext = os.path.splitext(f)[1]
             if ext in extensions:
                 os.remove(os.path.join(root, f))
+
+    print('Cleanup completed.')
 
 
 def update_headers():
@@ -284,13 +408,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RMG Code Utilities')
 
     parser.add_argument('command', metavar='COMMAND', type=str,
-                        choices=['check-dependencies', 'clean', 'clean-solver', 'update-headers'],
+                        choices=['check-dependencies',
+                                 'check-pydas',
+                                 'check-python',
+                                 'clean',
+                                 'clean-solver',
+                                 'update-headers'],
                         help='command to execute')
 
     args = parser.parse_args()
 
     if args.command == 'check-dependencies':
         check_dependencies()
+    elif args.command == 'check-pydas':
+        check_pydas()
+    elif args.command == 'check-python':
+        check_python()
     elif args.command == 'clean':
         clean()
     elif args.command == 'clean-solver':

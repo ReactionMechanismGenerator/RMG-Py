@@ -28,9 +28,18 @@
 #                                                                             #
 ###############################################################################
 
+"""
+This module contains different utilities used in Arkane.
+"""
+
+from rmgpy.exceptions import InputError
+
 from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
+
+################################################################################
+
 
 def determine_qm_software(fullpath):
     """
@@ -54,7 +63,6 @@ def determine_qm_software(fullpath):
                 break
             line = f.readline()
         else:
-            raise InputError(
-                "File at {0} could not be identified as a Gaussian, QChem or Molpro log file.".format(fullpath))
+            raise InputError('File at {0} could not be identified as a Gaussian, '
+                             'QChem or Molpro log file.'.format(fullpath))
     return software_log
-

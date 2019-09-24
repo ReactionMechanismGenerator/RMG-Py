@@ -28,19 +28,23 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+"""
+This module contains unit tests of the :mod:`arkane.explorer` module.
+"""
+
 import os
+import unittest
+
 from nose.plugins.attrib import attr
 
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
 
-
 ################################################################################
 
 
 @attr('functional')
-class testExplorerJob(unittest.TestCase):
+class TestExplorerJob(unittest.TestCase):
     """
     Contains tests for ExplorerJob class execute method
     """
@@ -50,20 +54,19 @@ class testExplorerJob(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
 
-        cls.jobList = arkane.loadInputFile(
+        cls.job_list = arkane.load_input_file(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'methoxy_explore.py'))
-        for job in cls.jobList:
+        for job in cls.job_list:
             if not isinstance(job, ExplorerJob):
-                job.execute(outputFile=None, plot=None)
+                job.execute(output_file=None, plot=None)
             else:
-                thermoLibrary, kineticsLibrary, speciesList = arkane.getLibraries()
-                job.execute(outputFile=None, plot=None, speciesList=speciesList, thermoLibrary=thermoLibrary,
-                            kineticsLibrary=kineticsLibrary)
-
-        cls.thermoLibrary = thermoLibrary
-        cls.kineticsLibrary = kineticsLibrary
-        cls.explorerjob = cls.jobList[-1]
-        cls.pdepjob = cls.jobList[-2]
+                thermo_library, kinetics_library, species_list = arkane.get_libraries()
+                job.execute(output_file=None, plot=None, thermo_library=thermo_library,
+                            kinetics_library=kinetics_library)
+                cls.thermo_library = thermo_library
+                cls.kinetics_library = kinetics_library
+                cls.explorer_job = cls.job_list[-1]
+                cls.pdep_job = cls.job_list[-2]
 
     @classmethod
     def tearDownClass(cls):
@@ -76,21 +79,21 @@ class testExplorerJob(unittest.TestCase):
         """
         test that the right number of reactions are in output network
         """
-        self.assertEqual(len(self.explorerjob.networks[0].pathReactions), 6)
+        self.assertEqual(len(self.explorer_job.networks[0].path_reactions), 6)
 
     def test_isomers(self):
         """
         test that the right number of isomers are in the output network
         """
-        self.assertEqual(len(self.explorerjob.networks[0].isomers), 2)
+        self.assertEqual(len(self.explorer_job.networks[0].isomers), 2)
 
     def test_job_rxns(self):
         """
         test that in this case all the reactions in the job
         ended up in the final network
         """
-        for rxn in self.explorerjob.jobRxns:
-            self.assertIn(rxn, self.explorerjob.networks[0].pathReactions)
+        for rxn in self.explorer_job.job_rxns:
+            self.assertIn(rxn, self.explorer_job.networks[0].path_reactions)
 
 
 if __name__ == '__main__':

@@ -662,8 +662,8 @@ cyclic species regardless of the ``onlyCyclics`` setting. If ``onlyCyclics`` is 
 than zero, RMG will log a warning that ``onlyCyclics`` should also be True and the machine learning estimator will be
 restricted to only cyclic species with the specified minimum cycle overlap.
 
-If the estimated uncertainty of the thermo prediction is greater than any of the ``UncertaintyCutoff`` values, then
-machine learning estimation is not used for that species.
+Note that the current machine learning model is not yet capable of estimating uncertainty so the ``UncertaintyCutoff``
+values do not yet have any effect.
 
 
 .. _pressuredependence:

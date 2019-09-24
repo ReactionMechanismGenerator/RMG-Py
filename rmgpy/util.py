@@ -28,15 +28,16 @@
 #                                                                             #
 ###############################################################################
 
+import logging
 import os.path
 import shutil
-from functools import wraps
 import time
-import logging
+from functools import wraps
 
 
 class Subject(object):
     """Subject in Observer Pattern"""
+
     def __init__(self):
         self._observers = []
 
@@ -50,10 +51,10 @@ class Subject(object):
     listener = YourOwnListener()
     subject.attach(listener)
     """
+
     def attach(self, observer):
         if not observer in self._observers:
             self._observers.append(observer)
-
 
     """
     Call this method when your (self-implemented)
@@ -69,6 +70,7 @@ class Subject(object):
     subject.detach(listener)
 
     """
+
     def detach(self, observer):
         try:
             self._observers.remove(observer)
@@ -104,21 +106,24 @@ class Subject(object):
             self.data.append(subject.data)
 
     """
+
     def notify(self, modifier=None):
         for observer in self._observers:
             if modifier != observer:
                 observer.update(self)
 
-def makeOutputSubdirectory(outputDirectory, folder):
+
+def make_output_subdirectory(output_directory, folder):
     """
     Create a subdirectory `folder` in the output directory. If the folder
     already exists (e.g. from a previous job) its contents are deleted.
     """
-    dir = os.path.join(outputDirectory, folder)
-    if os.path.exists(dir):
+    dirname = os.path.join(output_directory, folder)
+    if os.path.exists(dirname):
         # The directory already exists, so delete it (and all its content!)
-        shutil.rmtree(dir)
-    os.mkdir(dir)
+        shutil.rmtree(dirname)
+    os.mkdir(dirname)
+
 
 def timefn(fn):
     @wraps(fn)
@@ -126,6 +131,23 @@ def timefn(fn):
         t1 = time.time()
         result = fn(*args, **kwargs)
         t2 = time.time()
-        logging.info ("@timefn: {} took {:.2f} seconds".format(fn.func_name, t2 - t1))
+        logging.info("@timefn: {} took {:.2f} seconds".format(fn.__name__, t2 - t1))
         return result
+
     return measure_time
+
+
+def as_list(item, default=None):
+    """
+    Wrap the given item in a list if it is not None and not already a list.
+
+    Args:
+        item: the item to be put in a list
+        default (optional): a default value to return if the item is None
+    """
+    if isinstance(item, list):
+        return item
+    elif item is None:
+        return default
+    else:
+        return [item]

@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Solvent Descriptors"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -32,9 +32,9 @@ entry(
         beta = 0.38,
         eps = 80.4,
     ),
-    shortDesc = u""" """,
+    shortDesc = """ """,
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -65,9 +65,9 @@ entry(
         beta = 0.45,
         eps = 10.3,
     ),
-    shortDesc = u""" """,
+    shortDesc = """ """,
     longDesc =
-u"""
+"""
 alpha = 0.328, #primary alcohols
 beta = 0.45, #primary alcohols,
 """,
@@ -99,9 +99,9 @@ entry(
         beta = 0.14,
         eps = 2.3,
     ),
-    shortDesc = u""" """,
+    shortDesc = """ """,
     longDesc =
-u"""
+"""
 
 """,
 )
@@ -132,9 +132,9 @@ entry(
         beta = 0,
         eps = 2.0,
     ),
-    shortDesc = u""" """,
+    shortDesc = """ """,
     longDesc =
-u"""
+"""
 
 """,
 )

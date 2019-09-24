@@ -34,7 +34,6 @@ This module contains helper functionality for writing Arkane output files.
 
 import ast
 
-
 ################################################################################
 
 
@@ -50,17 +49,16 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.level = level
         self.indent = indent
 
-    def visit_Call(self, node):
+    def visit_call(self, node):
         """
-        Return a pretty representation of the class or function call 
-        represented by `node`.
+        Return a pretty representation of the class or function call represented by `node`.
         """
         result = node.func.id + '(\n'
 
         keywords = []
         for keyword in node.keywords:
             keywords.append('{0}={1}'.format(keyword.arg, self.visit(keyword.value)))
-        result = '{0}({1})'.format(node.func.id, ', '.join(keywords))
+        result += '{0}({1})'.format(node.func.id, ', '.join(keywords))
 
         if len(result) > 80:
             result = node.func.id + '(\n'
@@ -77,7 +75,7 @@ class PrettifyVisitor(ast.NodeVisitor):
 
         return result
 
-    def visit_List(self, node):
+    def visit_list(self, node):
         """
         Return a pretty representation of the list represented by `node`.
         """
@@ -96,19 +94,19 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Tuple(self, node):
+    def visit_tuple(self, node):
         """
         Return a pretty representation of the tuple represented by `node`.
         """
         # If the tuple represents a quantity, keep it on one line
-        isQuantity = True
+        is_quantity = True
         if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num, ast.List)) or (
                 isinstance(node.elts[0], ast.List) and any([not isinstance(e, ast.Num) for e in node.elts[0].elts])):
-            isQuantity = False
+            is_quantity = False
         elif len(node.elts) < 2 or not isinstance(node.elts[1], ast.Str):
-            isQuantity = False
+            is_quantity = False
 
-        if not isQuantity:
+        if not is_quantity:
             # Split elements onto multiple lines
             result = '(\n'
             self.level += 1
@@ -123,7 +121,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Dict(self, node):
+    def visit_dict(self, node):
         """
         Return a pretty representation of the dict represented by `node`.
         """
@@ -145,7 +143,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Str(self, node):
+    def visit_str(self, node):
         """
         Return a pretty representation of the string represented by `node`.
         """
@@ -153,7 +151,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.string = result
         return result
 
-    def visit_Num(self, node):
+    def visit_num(self, node):
         """
         Return a pretty representation of the number represented by `node`.
         """

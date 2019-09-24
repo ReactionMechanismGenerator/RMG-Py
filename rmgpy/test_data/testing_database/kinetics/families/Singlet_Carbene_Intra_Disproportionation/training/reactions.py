@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Singlet_Carbene_Intra_Disproportionation/training"
-shortDesc = u"Kinetics used to train group additivity values"
-longDesc = u"""
+shortDesc = "Kinetics used to train group additivity values"
+longDesc = """
 Put kinetic parameters for reactions to use as a training set for fitting
 group additivity values in this file.
 """
@@ -16,9 +16,9 @@ entry(
     degeneracy = 1,
     kinetics = Arrhenius(A=(8.067e+10, 's^-1'), n=0.649, Ea=(8.03, 'kcal/mol'), T0=(1, 'K')),
     rank = 3,
-    shortDesc = u"""Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
+    shortDesc = """Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
     longDesc = 
-u"""
+"""
 Taken from entry: A <=> IV
 """,
 )
@@ -29,9 +29,9 @@ entry(
     degeneracy = 1,
     kinetics = Arrhenius(A=(1.454e+12, 's^-1'), n=0.178, Ea=(0.205, 'kcal/mol'), T0=(1, 'K')),
     rank = 3,
-    shortDesc = u"""Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
+    shortDesc = """Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
     longDesc = 
-u"""
+"""
 Taken from entry: IX <=> VII
 """,
 )
@@ -42,9 +42,9 @@ entry(
     degeneracy = 1,
     kinetics = Arrhenius(A=(1.865e+11, 's^-1'), n=0.577, Ea=(29.169, 'kcal/mol'), T0=(1, 'K')),
     rank = 3,
-    shortDesc = u"""Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
+    shortDesc = """Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
     longDesc = 
-u"""
+"""
 Taken from entry: X <=> IX
 """,
 )
@@ -55,9 +55,9 @@ entry(
     degeneracy = 1,
     kinetics = Arrhenius(A=(3.355e+12, 's^-1'), n=0.294, Ea=(35.954, 'kcal/mol'), T0=(1, 'K')),
     rank = 3,
-    shortDesc = u"""Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
+    shortDesc = """Training reaction from kinetics library: 2003_Miller_Propargyl_Recomb_High_P""",
     longDesc = 
-u"""
+"""
 Taken from entry: X <=> XI
 """,
 )

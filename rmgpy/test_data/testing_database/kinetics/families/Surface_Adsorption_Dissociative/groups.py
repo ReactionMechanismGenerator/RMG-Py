@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Surface_Adsorption_Dissociative/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 Dissociative adsorption of a gas-phase species onto the surface. The single-bond in the gas-phase species is split; the resulting fragments each are singled bonded to the surface.
 
  *1-*2               *1      *2
@@ -74,9 +74,9 @@ forbidden(
 1 *1 R u0 {2,[S,D,T]}
 2    R u1 {1,[S,D,T]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 The adsorbing atom should not be adjacent to a radical.
 e.g. this is not allowed:
 
@@ -93,9 +93,9 @@ forbidden(
 1 *2 R u0 {2,[S,D,T]}
 2    R u1 {1,[S,D,T]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 Neither adsorbing atom should be adjacent to a radical
 e.g. this is not allowed:
 
@@ -114,9 +114,9 @@ forbidden(
 2    R u0 {1,[S,D,T]} {3,[S,D,T]}
 3    X u0 {2,[S,D,T]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 The adsorbing atom should not be adjacent to an atom that is already adsorbed.
 e.g. this is not allowed:
 
@@ -134,9 +134,9 @@ forbidden(
 2    R u0 {1,[S,D,T]} {3,[S,D,T]}
 3    X u0 {2,[S,D,T]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 The adsorbing atom should not be adjacent to an atom that is already adsorbed.
 e.g. this is not allowed:
 
@@ -155,9 +155,9 @@ forbidden(
 3    R u0 {2,[S,D,T]} {4,[S,D,T]}
 4    X u0 {3,[S,D,T]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 The adsorbing atom should not be next-nearest neighbor to an atom that is already adsorbed.
 """,
 )
@@ -172,9 +172,9 @@ forbidden(
 3    R u0 {2,[S,D,T]} {4,[S,D,T]}
 4    X u0 {3,[S,D,T]}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc =
-u"""
+"""
 The adsorbing atom should not be next-nearest neighbor to an atom that is already adsorbed.
 """,
 )

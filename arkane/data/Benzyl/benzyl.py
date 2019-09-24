@@ -7,8 +7,8 @@ atoms = {
 }
 
 bonds = {
-	'C=C': 3,
-    'C-C': 4, 
+    'C=C': 3,
+    'C-C': 4,
     'C-H': 7,
 }
 
@@ -28,6 +28,6 @@ geometry = GaussianLog('BenzylEnergy.log')
 
 frequencies = GaussianLog('BenzylFreq.log')
 
-rotors = [ 
-    HinderedRotor(scanLog=GaussianLog('BenzylRot1.log'), pivots=[12,4], top=[12,13,14], symmetry=2, fit='best'), 
-    ]
+rotors = [
+    HinderedRotor(scanLog=GaussianLog('BenzylRot1.log'), pivots=[12, 4], top=[12, 13, 14], symmetry=2, fit='best'),
+]

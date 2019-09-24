@@ -30,105 +30,103 @@ Contains functionality for generating the master equation matrix for a given
 pressure-dependent reaction network.
 """
 
-import numpy
-cimport numpy
-
+import numpy as np
+cimport numpy as np
 from libc.math cimport exp
 
 import rmgpy.constants as constants
 
 ################################################################################
 
-cpdef generateFullMEMatrix(network, bint products=True):
+
+cpdef generate_full_me_matrix(network, bint products=True):
     """
     Generate the full master equation matrix for the network.
     """
     
-    cdef numpy.ndarray[numpy.int_t,ndim=1] Jlist
-    cdef numpy.ndarray[numpy.int_t,ndim=3] indices
-    cdef numpy.ndarray[numpy.float64_t,ndim=1] Elist
-    cdef numpy.ndarray[numpy.float64_t,ndim=2] M
-    cdef numpy.ndarray[numpy.float64_t,ndim=3] densStates
-    cdef numpy.ndarray[numpy.float64_t,ndim=4] Kij, Gnj, Fim
-    cdef numpy.ndarray[numpy.float64_t,ndim=5] Mcoll
-    cdef double T, P, beta, val
-    cdef int Nisom, Nreac, Nprod, Ngrains, NJ
+    cdef np.ndarray[np.int_t,ndim=1] j_list
+    cdef np.ndarray[np.int_t,ndim=3] indices
+    cdef np.ndarray[np.float64_t,ndim=1] e_list
+    cdef np.ndarray[np.float64_t,ndim=2] me_mat
+    cdef np.ndarray[np.float64_t,ndim=3] dens_states
+    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im
+    cdef np.ndarray[np.float64_t,ndim=5] m_coll
+    cdef double temperature, pressure, beta, val
+    cdef int n_isom, n_reac, n_prod, n_grains, n_j
     cdef int i, n, r, s, u, v
 
-    T = network.T
-    P = network.P
-    Elist = network.Elist
-    Jlist = network.Jlist
-    densStates = network.densStates
-    Mcoll = network.Mcoll
-    Kij = network.Kij
-    Fim = network.Fim
-    Gnj = network.Gnj
-    Nisom = network.Nisom
-    Nreac = network.Nreac
-    Nprod = network.Nprod
-    Ngrains = network.Ngrains
-    NJ = network.NJ
+    temperature = network.T
+    # pressure = network.P  # not used in this module
+    e_list = network.e_list
+    j_list = network.j_list
+    dens_states = network.dens_states
+    m_coll = network.Mcoll
+    k_ij = network.Kij
+    f_im = network.Fim
+    g_nj = network.Gnj
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = network.n_grains
+    n_j = network.n_j
     
-    beta = 1. / (constants.R * T)
+    beta = 1. / (constants.R * temperature)
     
     # Construct accounting matrix
-    indices = -numpy.ones((Nisom,Ngrains,NJ), numpy.int)
-    Nrows = 0
-    for r in range(Ngrains):
-        for s in range(NJ):
-            for i in range(Nisom):
-                if densStates[i,r,s] > 0:
-                    indices[i,r,s] = Nrows
-                    Nrows += 1
-    Nrows += Nreac
+    indices = -np.ones((n_isom,n_grains,n_j), np.int)
+    n_rows = 0
+    for r in range(n_grains):
+        for s in range(n_j):
+            for i in range(n_isom):
+                if dens_states[i, r, s] > 0:
+                    indices[i, r, s] = n_rows
+                    n_rows += 1
+    n_rows += n_reac
     if products:
-        Nrows += Nprod
+        n_rows += n_prod
     
     # Construct full ME matrix
-    M = numpy.zeros([Nrows,Nrows], numpy.float64)
+    me_mat = np.zeros([n_rows,n_rows], np.float64)
     
     # Collision terms
-    for i in range(Nisom):
-        for r in range(Ngrains):
-            for s in range(NJ):
-                if indices[i,r,s] > -1:
-                    for u in range(r, Ngrains):
-                        for v in range(s, NJ):
-                            M[indices[i,r,s], indices[i,u,v]] = Mcoll[i,r,s,u,v]
-                            M[indices[i,u,v], indices[i,r,s]] = Mcoll[i,u,v,r,s]
+    for i in range(n_isom):
+        for r in range(n_grains):
+            for s in range(n_j):
+                if indices[i, r, s] > -1:
+                    for u in range(r, n_grains):
+                        for v in range(s, n_j):
+                            me_mat[indices[i, r, s], indices[i,u,v]] = m_coll[i, r, s, u, v]
+                            me_mat[indices[i, u, v], indices[i,r,s]] = m_coll[i, u, v, r, s]
     
     # Isomerization terms
-    for i in range(Nisom):
+    for i in range(n_isom):
         for j in range(i):
-            if Kij[i,j,Ngrains-1,0] > 0 or Kij[j,i,Ngrains-1,0] > 0:
-                for r in range(Ngrains):
-                    for s in range(NJ):
-                        u = indices[i,r,s]; v = indices[j,r,s]
+            if k_ij[i, j, n_grains - 1,0] > 0 or k_ij[j, i, n_grains - 1,0] > 0:
+                for r in range(n_grains):
+                    for s in range(n_j):
+                        u, v = indices[i, r, s], v = indices[j,r,s]
                         if u > -1 and v > -1:
-                            M[v,u] = Kij[j,i,r,s]
-                            M[u,u] -= Kij[j,i,r,s]
-                            M[u,v] = Kij[i,j,r,s]
-                            M[v,v] -= Kij[i,j,r,s]
+                            me_mat[u, v] = k_ij[j, i, r, s]
+                            me_mat[u, u] -= k_ij[j, i, r, s]
+                            me_mat[u, v] = k_ij[i, j, r, s]
+                            me_mat[v, v] -= k_ij[i, j, r, s]
     
     # Association/dissociation terms
-    for i in range(Nisom):
-        for n in range(Nreac+Nprod):
-            if Gnj[n,i,Ngrains-1,0] > 0:
-                for r in range(Ngrains):
-                    for s in range(NJ):
-                        u = indices[i,r,s]
-                        if products: 
-                            v = Nrows - Nreac - Nprod + n
-                        else:
-                            v = Nrows - Nreac + n
+    for i in range(n_isom):
+        for n in range(n_reac + n_prod):
+            if g_nj[n, i, n_grains - 1,0] > 0:
+                for r in range(n_grains):
+                    for s in range(n_j):
+                        u = indices[i, r, s]
+                        v = n_rows - n_reac - n_prod + n if products else n_rows - n_reac + n
                         if u > -1:
-                            M[u,u] -= Gnj[n,i,r,s]
-                            if n < Nreac or products:
-                                M[v,u] = Gnj[n,i,r,s]
-                            if n < Nreac:
-                                val = Fim[i,n,r,s] * densStates[n+Nisom,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
-                                M[u,v] = val
-                                M[v,v] -= val
+                            me_mat[u, u] -= g_nj[n, i, r, s]
+                            if n < n_reac or products:
+                                me_mat[u, v] = g_nj[n, i, r, s]
+                            if n < n_reac:
+                                val = f_im[i, n, r, s] * dens_states[n + n_isom, r, s] \
+                                      * (2 * j_list[s] + 1) * exp(-e_list[r] * beta)
+                                me_mat[u,v] = val
+                                me_mat[v,v] -= val
 
-    return M, indices
+    return me_mat, indices

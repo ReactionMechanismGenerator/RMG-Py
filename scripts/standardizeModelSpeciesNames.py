@@ -39,76 +39,77 @@ command-line, e.g.
 The resulting files are saved as ``chem1.inp`` and
 ``species_dictionary1.txt``, ``chem2.inp``, ``species_dictionary2.txt`` and so forth in the execution directory.
 """
+from __future__ import print_function
 
-import os.path
 import argparse
 
-from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
+from rmgpy.chemkin import load_chemkin_file, save_chemkin_file, save_species_dictionary
 from rmgpy.rmg.model import ReactionModel
 
 ################################################################################
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--model1', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the first model')
+                        help='the Chemkin files and species dictionaries of the first model')
     parser.add_argument('--model2', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the second model')
+                        help='the Chemkin files and species dictionaries of the second model')
     parser.add_argument('--model3', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the third model')
+                        help='the Chemkin files and species dictionaries of the third model')
     parser.add_argument('--model4', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the fourth model')
+                        help='the Chemkin files and species dictionaries of the fourth model')
     parser.add_argument('--model5', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the fifth model')
-    
+                        help='the Chemkin files and species dictionaries of the fifth model')
+
     args = parser.parse_args()
-    
+
     transport = False
-    inputModelFiles = []
+    input_model_files = []
     for model in [args.model1, args.model2, args.model3, args.model4, args.model5]:
-        if model is None: continue
+        if model is None:
+            continue
         if len(model) == 2:
-            inputModelFiles.append((model[0], model[1], None))
+            input_model_files.append((model[0], model[1], None))
         elif len(model) == 3:
             transport = True
-            inputModelFiles.append((model[0], model[1], model[2]))
+            input_model_files.append((model[0], model[1], model[2]))
         else:
             raise Exception
-    
-    outputChemkinFile = 'chem.inp'
-    outputSpeciesDictionary = 'species_dictionary.txt'
-    outputTransportFile = 'tran.dat' if transport else None
-    
+
+    output_chemkin_file = 'chem.inp'
+    output_species_dictionary = 'species_dictionary.txt'
+    output_transport_file = 'tran.dat' if transport else None
+
     # Load the models to merge
     models = []
-    for chemkin, speciesPath, transportPath in inputModelFiles:
-        print 'Loading model #{0:d}...'.format(len(models)+1)
+    for chemkin, speciesPath, transportPath in input_model_files:
+        print('Loading model #{0:d}...'.format(len(models) + 1))
         model = ReactionModel()
-        model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
+        model.species, model.reactions = load_chemkin_file(chemkin, speciesPath, transport_path=transportPath)
         models.append(model)
 
-    allSpecies = []
-    speciesIndices = [[] for i in range(len(models))]
-    for i, model in enumerate(models):       
-        speciesIndices[i] = []
+    all_species = []
+    species_indices = [[] for i in range(len(models))]
+    for i, model in enumerate(models):
+        species_indices[i] = []
         for j, species in enumerate(model.species):
-            for index, species0 in enumerate(allSpecies):
-                if species0.isIsomorphic(species):
-                    speciesIndices[i].append(index)
-                    break; 
+            for index, species0 in enumerate(all_species):
+                if species0.is_isomorphic(species):
+                    species_indices[i].append(index)
+                    break
             else:
-                allSpecies.append(species)
-                speciesIndices[i].append(allSpecies.index(species))
+                all_species.append(species)
+                species_indices[i].append(all_species.index(species))
     # Reassign species names and labels according to the list of all species in all models
     # We must retain the original thermochemistry
-    for i, model in enumerate(models):       
+    for i, model in enumerate(models):
         for j, species in enumerate(model.species):
-            index = speciesIndices[i][j]
-            species.label = allSpecies[index].label
-            species.index = allSpecies[index].index
-            
+            index = species_indices[i][j]
+            species.label = all_species[index].label
+            species.index = all_species[index].index
+
         # Resave the models    
-        saveChemkinFile('chem{0}.inp'.format(i+1), model.species, model.reactions)
-        saveSpeciesDictionary('species_dictionary{0}.txt'.format(i+1), model.species)
-        
-    print 'Saving of new models with consistent names is complete!'
+        save_chemkin_file('chem{0}.inp'.format(i + 1), model.species, model.reactions)
+        save_species_dictionary('species_dictionary{0}.txt'.format(i + 1), model.species)
+
+    print('Saving of new models with consistent names is complete!')

@@ -34,35 +34,34 @@ in this subpackage.
 """
 import itertools
 import logging
-import warnings
 
 from rmgpy.data.base import LogicNode
-from rmgpy.reaction import Reaction
+from rmgpy.exceptions import DatabaseError
 from rmgpy.molecule import Group, Molecule
+from rmgpy.reaction import Reaction
 from rmgpy.species import Species
-from rmgpy.exceptions import DatabaseError, KineticsError
+
 
 ################################################################################
 
 
-def saveEntry(f, entry):
+def save_entry(f, entry):
     """
     Save an `entry` in the kinetics database by writing a string to
     the given file object `f`.
     """
-    from arkane.output import prettify
 
-    def sortEfficiencies(efficiencies0):
+    def sort_efficiencies(efficiencies0):
         efficiencies = {}
-        for mol, eff in efficiencies0.iteritems():
+        for mol, eff in efficiencies0.items():
             if isinstance(mol, str):
                 # already in SMILES string format
                 smiles = mol
             else:
-                smiles = mol.toSMILES()
-                
+                smiles = mol.to_smiles()
+
             efficiencies[smiles] = eff
-        keys = efficiencies.keys()
+        keys = list(efficiencies.keys())
         keys.sort()
         return [(key, efficiencies[key]) for key in keys]
 
@@ -71,12 +70,11 @@ def saveEntry(f, entry):
     if entry.label != '':
         f.write('    label = "{0}",\n'.format(entry.label))
 
-
-    #Entries for kinetic rules, libraries, training reactions
-    #and depositories will have a Reaction object for its item
+    # Entries for kinetic rules, libraries, training reactions
+    # and depositories will have a Reaction object for its item
     if isinstance(entry.item, Reaction):
-        #Write out additional data if depository or library
-        #kinetic rules would have a Group object for its reactants instead of Species
+        # Write out additional data if depository or library
+        # kinetic rules would have a Group object for its reactants instead of Species
         if isinstance(entry.item.reactants[0], Species):
             # Add degeneracy if the reaction is coming from a depository or kinetics library
             f.write('    degeneracy = {0:.1f},\n'.format(entry.item.degeneracy))
@@ -90,16 +88,17 @@ def saveEntry(f, entry):
                 f.write('    elementary_high_p = {0!r},\n'.format(entry.item.elementary_high_p))
             if entry.item.allow_max_rate_violation:
                 f.write('    allow_max_rate_violation = {0!r},\n'.format(entry.item.allow_max_rate_violation))
-    #Entries for groups with have a group or logicNode for its item
+    # Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList())
+        f.write(entry.item.to_adjacency_list())
         f.write('""",\n')
     elif isinstance(entry.item, LogicNode):
         f.write('    group = "{0}",\n'.format(entry.item))
     else:
-        raise DatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
+        raise DatabaseError("Encountered unexpected item of type {0} while "
+                            "saving database.".format(entry.item.__class__))
 
     # Write kinetics
     if isinstance(entry.data, str):
@@ -108,45 +107,33 @@ def saveEntry(f, entry):
         efficiencies = None
         if hasattr(entry.data, 'efficiencies'):
             efficiencies = entry.data.efficiencies
-            entry.data.efficiencies = dict(sortEfficiencies(entry.data.efficiencies))
-        kinetics = repr(entry.data) # todo prettify currently does not support uncertainty attribute
+            entry.data.efficiencies = dict(sort_efficiencies(entry.data.efficiencies))
+        kinetics = repr(entry.data)  # todo prettify currently does not support uncertainty attribute
         kinetics = '    kinetics = {0},\n'.format(kinetics.replace('\n', '\n    '))
         f.write(kinetics)
         if hasattr(entry.data, 'efficiencies'):
             entry.data.efficiencies = efficiencies
     else:
         f.write('    kinetics = None,\n')
-            
+
     # Write reference
     if entry.reference is not None:
-        reference = entry.reference.toPrettyRepr()
+        reference = entry.reference.to_pretty_repr()
         lines = reference.splitlines()
         f.write('    reference = {0}\n'.format(lines[0]))
         for line in lines[1:-1]:
             f.write('    {0}\n'.format(line))
         f.write('    ),\n'.format(lines[0]))
-    
-    if entry.referenceType != "":
-        f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+
+    if entry.reference_type != "":
+        f.write('    referenceType = "{0}",\n'.format(entry.reference_type))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
-        
-    if entry.shortDesc.strip() !='':
-        f.write('    shortDesc = u"""')
-        try:
-            f.write(entry.shortDesc.encode('utf-8'))
-        except:
-            f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
-        f.write('""",\n')
-    
-    if entry.longDesc.strip() !='':
-        f.write('    longDesc = \n')
-        f.write('u"""\n')
-        try:
-            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-        except:
-            f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
-        f.write('""",\n')
+
+    if entry.short_desc.strip() != '':
+        f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
+    if entry.long_desc.strip() != '':
+        f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
     f.write(')\n\n')
 
@@ -199,15 +186,16 @@ def ensure_independent_atom_ids(input_species, resonance=True):
     Returns None.
     """
     ensure_species(input_species)  # do not generate resonance structures since we do so below
+
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0
-        IDs = []
-        for species in input_species:
-            num_atoms += len(species.molecule[0].atoms)
-            IDs.extend([atom.id for atom in species.molecule[0].atoms])
-        num_ID = len(set(IDs))
-        return num_ID == num_atoms
+        ids = []
+        for spcs in input_species:
+            num_atoms += len(spcs.molecule[0].atoms)
+            ids.extend([atom.id for atom in spcs.molecule[0].atoms])
+        num_id = len(set(ids))
+        return num_id == num_atoms
 
     # If they are not all different, reassign ids and remake resonance structures
     if not independent_ids():
@@ -215,7 +203,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
         for species in input_species:
             unreactive_mol_list = [mol for mol in species.molecule if not mol.reactive]
             mol = [mol for mol in species.molecule if mol.reactive][0]  # Choose first reactive molecule
-            mol.assignAtomIDs()
+            mol.assign_atom_ids()
             species.molecule = [mol]
             # Remake resonance structures with new labels
             if resonance:
@@ -228,7 +216,8 @@ def ensure_independent_atom_ids(input_species, resonance=True):
             species.generate_resonance_structures(keep_isomorphic=True)
 
 
-def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
+def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None,
+                              kinetics_family=None):
     """
     Given a list of Reaction objects, this method combines degenerate
     reactions and increments the reaction degeneracy value. For multiple
@@ -242,7 +231,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
     calculate the degeneracy for reactions generated in the reverse direction.
     If not provided, then it will be retrieved from the global database.
 
-    This algorithm used to exist in family.__generateReactions, but was moved
+    This algorithm used to exist in family._generate_reactions, but was moved
     here so it could operate across reaction families.
 
     This method returns an updated list with degenerate reactions removed.
@@ -285,15 +274,17 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                 # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
                 isomorphic = False
                 identical = False
-                sameTemplate = True
+                same_template = True
                 for rxn in sub_list:
-                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, strict=False, checkTemplateRxnProducts=True)
+                    isomorphic = rxn0.is_isomorphic(rxn, check_identical=False, strict=False,
+                                                    check_template_rxn_products=True)
                     if isomorphic:
-                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, strict=False, checkTemplateRxnProducts=True)
+                        identical = rxn0.is_isomorphic(rxn, check_identical=True, strict=False,
+                                                       check_template_rxn_products=True)
                         if identical:
                             # An exact copy of rxn0 is already in our list, so we can move on
                             break
-                        sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
+                        same_template = frozenset(rxn.template) == frozenset(rxn0.template)
                     else:
                         # This sublist contains a different product
                         break
@@ -303,7 +294,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                     # This reaction does not contribute to degeneracy
                     break
                 elif isomorphic:
-                    if sameTemplate:
+                    if same_template:
                         # We found the right sublist, and there is no identical reaction
                         # We should add rxn0 to the sublist as a degenerate rxn, and move on to the next rxn
                         sub_list.append(rxn0)
@@ -338,12 +329,13 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
             try:
                 family = kinetics_family or kinetics_database.families[rxn.family]
             except AttributeError:
-                from rmgpy.data.rmg import getDB
-                family = getDB('kinetics').families[rxn.family]
-            if not family.ownReverse:
-                rxn.degeneracy = family.calculateDegeneracy(rxn)
+                from rmgpy.data.rmg import get_db
+                family = get_db('kinetics').families[rxn.family]
+            if not family.own_reverse:
+                rxn.degeneracy = family.calculate_degeneracy(rxn)
 
     return rxn_list
+
 
 def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     """
@@ -360,7 +352,7 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     if not (same_reactants == 0 or same_reactants == 1):
         if len(reaction.reactants) == 2:
             if ((reaction.is_forward and same_reactants == 2) or
-                    reaction.reactants[0].isIsomorphic(reaction.reactants[1])):
+                    reaction.reactants[0].is_isomorphic(reaction.reactants[1])):
                 reaction.degeneracy *= 0.5
                 logging.debug(
                     'Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(
@@ -381,8 +373,8 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
                         'are identical'.format(reaction, reaction.degeneracy)
                     )
             else:
-                same_01 = reaction.reactants[0].isIsomorphic(reaction.reactants[1])
-                same_02 = reaction.reactants[0].isIsomorphic(reaction.reactants[2])
+                same_01 = reaction.reactants[0].is_isomorphic(reaction.reactants[1])
+                same_02 = reaction.reactants[0].is_isomorphic(reaction.reactants[2])
                 if same_01 and same_02:
                     reaction.degeneracy /= 6.0
                     logging.debug(
@@ -395,7 +387,7 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
                         'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
                         'are identical'.format(reaction, reaction.degeneracy)
                     )
-                elif reaction.reactants[1].isIsomorphic(reaction.reactants[2]):
+                elif reaction.reactants[1].is_isomorphic(reaction.reactants[2]):
                     reaction.degeneracy *= 0.5
                     logging.debug(
                         'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '

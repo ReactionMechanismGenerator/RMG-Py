@@ -34,10 +34,10 @@ requirements:
     - cairo
     - cairocffi
     - cantera >=2.3.0
+    - chemprop
     - coolprop
     - coverage
     - cython >=0.25.2
-    - dde
     - ffmpeg
     - gprof2dot
     - graphviz

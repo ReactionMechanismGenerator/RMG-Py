@@ -30,22 +30,23 @@
 
 import os
 import unittest
-from external.wip import work_in_progress
 
-from .main import RMG, CoreEdgeReactionModel
-from .model import Species
+from external.wip import work_in_progress
+from rmg import parse_command_line_arguments
 from rmgpy import settings
+from rmgpy.data.base import ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react_species
-import rmgpy
-from rmgpy.data.base import ForbiddenStructures
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.species import Species
 
-from rmg import *
+
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
-    
+
     @classmethod
     def setUpClass(self):
         """
@@ -53,20 +54,21 @@ class TestRMGWorkFlow(unittest.TestCase):
         """
         # set-up RMG object
         self.rmg = RMG()
-        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reaction_model = CoreEdgeReactionModel()
 
         # load kinetic database and forbidden structures
         self.rmg.database = RMGDatabase()
         path = os.path.join(settings['test_data.directory'], 'testing_database')
 
         # kinetics family Disproportionation loading
-        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
-                                       kineticsFamilies=['H_Abstraction','R_Addition_MultipleBond'],reactionLibraries=[])
+        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
+                                        kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond'],
+                                        reaction_libraries=[])
 
-        #load empty forbidden structures 
+        # load empty forbidden structures
         for family in self.rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
-        self.rmg.database.forbiddenStructures = ForbiddenStructures()
+        self.rmg.database.forbidden_structures = ForbiddenStructures()
 
     @classmethod
     def tearDownClass(self):
@@ -75,9 +77,9 @@ class TestRMGWorkFlow(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
-        
+
     @work_in_progress
-    def testDeterministicReactionTemplateMatching(self):
+    def test_deterministic_reaction_template_matching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
         deterministically. 
@@ -94,50 +96,50 @@ class TestRMGWorkFlow(unittest.TestCase):
         """
 
         # react
-        spc = Species().fromSMILES("O=C[C]=C")
+        spc = Species().from_smiles("O=C[C]=C")
         spc.generate_resonance_structures()
-        newReactions = react_species((spc,))
+        new_reactions = react_species((spc,))
 
         # try to pick out the target reaction 
-        mol_H = Molecule().fromSMILES("[H]")
-        mol_C3H2O = Molecule().fromSMILES("C=C=C=O")
+        mol_H = Molecule().from_smiles("[H]")
+        mol_C3H2O = Molecule().from_smiles("C=C=C=O")
 
-        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions)
+        target_rxns = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions)
         self.assertEqual(len(target_rxns), 2)
 
         # reverse the order of molecules in spc
         spc.molecule = list(reversed(spc.molecule))
 
         # react again
-        newReactions_reverse = []
-        newReactions_reverse.extend(react_species((spc,)))
+        new_reactions_reverse = []
+        new_reactions_reverse.extend(react_species((spc,)))
 
         # try to pick out the target reaction 
-        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
+        target_rxns_reverse = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions_reverse)
         self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
         self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
 
-    def testCheckForExistingSpeciesForBiAromatics(self):
+    def test_check_for_existing_species_for_bi_aromatics(self):
         """
-        Test RMG checkForExistingSpecies can correctly check isomorphism for biaromatics. 
-        In this test, DPP is a species already stored in rmg speciesDict, mol_test is a newly
+        Test RMG check_for_existing_species can correctly check isomorphism for biaromatics.
+        In this test, DPP is a species already stored in rmg species_dict, mol_test is a newly
         created molecule which has one kekulized benzene ring and one double_bond-single_bond
         benzene ring.
         """
 
         rmg_test = RMG()
-        rmg_test.reactionModel = CoreEdgeReactionModel()
-        DPP = Species().fromSMILES('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
+        rmg_test.reaction_model = CoreEdgeReactionModel()
+        DPP = Species().from_smiles('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
         DPP.generate_resonance_structures()
-        formula = DPP.molecule[0].getFormula()
-        if formula in rmg_test.reactionModel.speciesDict:
-            rmg_test.reactionModel.speciesDict[formula].append(DPP)
+        formula = DPP.molecule[0].get_formula()
+        if formula in rmg_test.reaction_model.species_dict:
+            rmg_test.reaction_model.species_dict[formula].append(DPP)
         else:
-            rmg_test.reactionModel.speciesDict[formula] = [DPP]
+            rmg_test.reaction_model.species_dict[formula] = [DPP]
 
-        mol_test = Molecule().fromAdjacencyList(
+        mol_test = Molecule().from_adjacency_list(
 """
 1     C u0 p0 c0 {2,S} {3,S} {16,S} {17,S}
 2     C u0 p0 c0 {1,S} {4,S} {18,S} {19,S}
@@ -171,20 +173,20 @@ class TestRMGWorkFlow(unittest.TestCase):
 30    H u0 p0 c0 {14,S}
 31    H u0 p0 c0 {15,S}
 """)
-        spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
+        spec = rmg_test.reaction_model.check_for_existing_species(mol_test)
         self.assertIsNotNone(spec)
 
 
-def findTargetRxnsContaining(mol1, mol2, reactions):
+def find_target_rxns_containing(mol1, mol2, reactions):
     target_rxns = []
     for rxn in reactions:
         reactants = rxn.reactants
         products = rxn.products
         rxn_specs = reactants + products
         for rxn_spec in rxn_specs:
-            if rxn_spec.isIsomorphic(mol1):
+            if rxn_spec.is_isomorphic(mol1):
                 for rxn_spec1 in rxn_specs:
-                    if rxn_spec1.isIsomorphic(mol2):
+                    if rxn_spec1.is_isomorphic(mol2):
                         target_rxns.append(rxn)
     return target_rxns
 
@@ -221,7 +223,7 @@ class TestRMGScript(unittest.TestCase):
 
         # Acquire arguments
         args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', 'test/seed/', '-P',
-                                            '-t', '01:20:33:45', '-k'])
+                                             '-t', '01:20:33:45', '-k'])
 
         # Test expected values
         self.assertEqual(args.walltime, '01:20:33:45')

@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Surface Adsorption Corrections"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 Changes due to adsorbing on a surface.
 Here, Pt(111)
 Note: "-h" means "horizontal".
@@ -18,8 +18,8 @@ entry(
 2 X u0
 """,
     thermo=None,
-    shortDesc=u"""Anything adsorbed anyhow.""",
-    longDesc=u"""
+    shortDesc="""Anything adsorbed anyhow.""",
+    longDesc="""
    R
    x
 ***********
@@ -41,8 +41,8 @@ entry(
         H298=(-86.29, 'kcal/mol'),
         S298=(-26.39, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    R
    |
@@ -65,8 +65,8 @@ entry(
         H298=(-1.22, 'kcal/mol'),
         S298=(-7.73, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2 vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2 vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   R-R
    :
@@ -90,8 +90,8 @@ entry(
         H298=(-4.85, 'kcal/mol'),
         S298=(-22.53, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2O vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2O vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RO-R
    :
@@ -114,8 +114,8 @@ entry(
         H298=(-46.18, 'kcal/mol'),
         S298=(-33.89, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from OH single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from OH single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    R
    |
@@ -142,8 +142,8 @@ entry(
         H298=(-6.72, 'kcal/mol'),
         S298=(-26.31, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HO-OH vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HO-OH vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RO-OR
    :
@@ -167,8 +167,8 @@ entry(
         H298=(-8.59, 'kcal/mol'),
         S298=(-40.49, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from O2 bidentate, twice single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from O2 bidentate, twice single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    O--O
    |  |
@@ -192,8 +192,8 @@ entry(
         H298=(-17.47, 'kcal/mol'),
         S298=(-31.56, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from OOH single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from OOH single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    OR
    |
@@ -217,8 +217,8 @@ entry(
         H298=(-99.97, 'kcal/mol'),
         S298=(-30.95, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from O double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from O double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    O
    ||
@@ -243,8 +243,8 @@ entry(
         H298=(-16.75, 'kcal/mol'),
         S298=(-33.37, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from O-NH2 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from O-NH2 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR2
    |
@@ -272,8 +272,8 @@ entry(
         H298=(-32.28, 'kcal/mol'),
         S298=(-34.6, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from O-CH3 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from O-CH3 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR3
    |
@@ -300,8 +300,8 @@ entry(
         H298=(-16.11, 'kcal/mol'),
         S298=(-32.0, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NH3 vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NH3 vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2N-R
     :
@@ -325,8 +325,8 @@ entry(
         H298=(-48.33, 'kcal/mol'),
         S298=(-47.88, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NH2 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NH2 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR2
    |
@@ -349,8 +349,8 @@ entry(
         H298=(-80.92, 'kcal/mol'),
         S298=(-40.72, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NH double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NH double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 ***********
 """
 )
@@ -369,8 +369,8 @@ entry(
         H298=(-147.51, 'kcal/mol'),
         S298=(-32.92, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from N triple-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from N triple-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
     N
    |||
@@ -396,8 +396,8 @@ entry(
         H298=(-15.69, 'kcal/mol'),
         S298=(-32.2, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2N-OH vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2N-OH vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2N-OR
     :
@@ -421,8 +421,8 @@ entry(
         H298=(-30.08, 'kcal/mol'),
         S298=(-32.78, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HN-O vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HN-O vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   RN=O
     :
@@ -447,8 +447,8 @@ entry(
         H298=(-32.32, 'kcal/mol'),
         S298=(-45.51, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HN-OH single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HN-OH single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R-N-OR
    |
@@ -471,8 +471,8 @@ entry(
         H298=(-37.18, 'kcal/mol'),
         S298=(-40.63, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NO single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NO single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    O
    ||
@@ -498,8 +498,8 @@ entry(
         H298=(-32.66, 'kcal/mol'),
         S298=(-29.32, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NO-h bidentate, double- and single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NO-h bidentate, double- and single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    N--O
   ||  |
@@ -523,8 +523,8 @@ entry(
         H298=(-75.72, 'kcal/mol'),
         S298=(-44.7, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NOH double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NOH double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    OR
    |
@@ -553,8 +553,8 @@ entry(
         H298=(-23.19, 'kcal/mol'),
         S298=(-31.95, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2N-NH2 vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2N-NH2 vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2N-NR2
     :
@@ -579,8 +579,8 @@ entry(
         H298=(-20.58, 'kcal/mol'),
         S298=(-42.07, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HN-NH vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HN-NH vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RN=NR
    :
@@ -604,8 +604,8 @@ entry(
         H298=(-2.39, 'kcal/mol'),
         S298=(-13.89, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from NN bidentate, twice single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from NN bidentate, twice single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   N==N
   |  |
@@ -631,8 +631,8 @@ entry(
         H298=(-29.97, 'kcal/mol'),
         S298=(-45.43, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HN-NH2 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HN-NH2 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R-N-NR2
    |
@@ -656,8 +656,8 @@ entry(
         H298=(-25.14, 'kcal/mol'),
         S298=(-43.45, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from N-NH single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from N-NH single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR
   ||
@@ -684,8 +684,8 @@ entry(
         H298=(-47.66, 'kcal/mol'),
         S298=(-43.17, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from N-NH2 double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from N-NH2 double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR2
    |
@@ -713,8 +713,8 @@ entry(
         H298=(-23.37, 'kcal/mol'),
         S298=(-43.91, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HN-NH-h bidentate, twice single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HN-NH-h bidentate, twice single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RN--NR
   |  |
@@ -741,8 +741,8 @@ entry(
         H298=(-43.5, 'kcal/mol'),
         S298=(-46.63, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HN-CH3 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HN-CH3 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R-N-CR3
    |
@@ -767,8 +767,8 @@ entry(
         H298=(-39.07, 'kcal/mol'),
         S298=(-44.16, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from N-CH2 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from N-CH2 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR2
   ||
@@ -796,8 +796,8 @@ entry(
         H298=(-71.1, 'kcal/mol'),
         S298=(-47.17, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from N-CH3 double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from N-CH3 double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR3
    |
@@ -823,8 +823,8 @@ entry(
         H298=(-16.1, 'kcal/mol'),
         S298=(-33.93, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from ON-O single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from ON-O single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  O-N=O
    |
@@ -846,8 +846,8 @@ entry(
         H298=(-156.9, 'kcal/mol'),
         S298=(-31.82, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from C quadruple-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from C quadruple-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    C
  ||||
@@ -871,8 +871,8 @@ entry(
         H298=(-137.31, 'kcal/mol'),
         S298=(-41.99, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from C-C bidentate, twice double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from C-C bidentate, twice double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   C--C
   |  |
@@ -897,8 +897,8 @@ entry(
         H298=(-93.15, 'kcal/mol'),
         S298=(-48.06, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from C-CH2 double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from C-CH2 double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR2
   ||
@@ -926,8 +926,8 @@ entry(
         H298=(-129.74, 'kcal/mol'),
         S298=(-45.92, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from C-CH3 triple-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from C-CH3 triple-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR3
    |
@@ -952,8 +952,8 @@ entry(
         H298=(-145.5, 'kcal/mol'),
         S298=(-40.0, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH triple-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH triple-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    R
    |
@@ -981,8 +981,8 @@ entry(
         H298=(-47.33, 'kcal/mol'),
         S298=(-31.36, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH-CH bidentate, twice double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH-CH bidentate, twice double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R-C--C-R
   ||  ||
@@ -1006,8 +1006,8 @@ entry(
         H298=(-85.5, 'kcal/mol'),
         S298=(-42.7, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH2 double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH2 double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R-C-R
   ||
@@ -1035,8 +1035,8 @@ entry(
         H298=(-22.63, 'kcal/mol'),
         S298=(-41.46, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH2-CH2 bidentate, twice single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH2-CH2 bidentate, twice single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2C--CR2
    |  |
@@ -1061,8 +1061,8 @@ entry(
         H298=(-41.63, 'kcal/mol'),
         S298=(-32.73, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH3 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH3 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR3
    |
@@ -1091,8 +1091,8 @@ entry(
         H298=(-4.64, 'kcal/mol'),
         S298=(-15.11, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH3-CH3 vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH3-CH3 vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R3C-CR3
     :
@@ -1118,8 +1118,8 @@ entry(
         H298=(-2.4, 'kcal/mol'),
         S298=(-6.92, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CH4 vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CH4 vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   R3C-R
      :
@@ -1143,8 +1143,8 @@ entry(
         H298=(-77.01, 'kcal/mol'),
         S298=(-34.98, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CN bidentate, double- and single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CN bidentate, double- and single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   C==N
  ||  |
@@ -1168,8 +1168,8 @@ entry(
         H298=(-40.56, 'kcal/mol'),
         S298=(-30.68, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CNH double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CNH double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
     NR
    ||
@@ -1196,8 +1196,8 @@ entry(
         H298=(-94.24, 'kcal/mol'),
         S298=(-49.82, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CNH2 triple-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CNH2 triple-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR2
    |
@@ -1222,8 +1222,8 @@ entry(
         H298=(-34.7, 'kcal/mol'),
         S298=(-38.09, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from CO-f double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from CO-f double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    O
   ||
@@ -1249,8 +1249,8 @@ entry(
         H298=(-99.0, 'kcal/mol'),
         S298=(-43.75, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from COH triple-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from COH triple-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    OR
    |
@@ -1279,8 +1279,8 @@ entry(
         H298=(-65.6, 'kcal/mol'),
         S298=(-53.04, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2C-CH bidentate, single- and double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2C-CH bidentate, single- and double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2C--CR
    |  ||
@@ -1308,8 +1308,8 @@ entry(
         H298=(-41.42, 'kcal/mol'),
         S298=(-38.35, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2C-CH3 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2C-CH3 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    R
    |
@@ -1337,8 +1337,8 @@ entry(
         H298=(-5.98, 'kcal/mol'),
         S298=(-33.14, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2C-NH vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2C-NH vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2C=NR
     :
@@ -1365,8 +1365,8 @@ entry(
         H298=(-46.51, 'kcal/mol'),
         S298=(-35.43, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2C-NH2 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2C-NH2 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    R
    |
@@ -1393,8 +1393,8 @@ entry(
         H298=(-5.18, 'kcal/mol'),
         S298=(-34.64, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2C-O vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2C-O vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R2C=O
     :
@@ -1420,8 +1420,8 @@ entry(
         H298=(-44.42, 'kcal/mol'),
         S298=(-35.7, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H2C-OH single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H2C-OH single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
     R
     |
@@ -1451,8 +1451,8 @@ entry(
         H298=(-20.93, 'kcal/mol'),
         S298=(-33.73, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H3C-NH2 vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H3C-NH2 vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R3C-NR2
     :
@@ -1479,8 +1479,8 @@ entry(
         H298=(-7.47, 'kcal/mol'),
         S298=(-28.83, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from H3C-OH vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from H3C-OH vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  R3C-OR
     :
@@ -1505,8 +1505,8 @@ entry(
         H298=(-95.45, 'kcal/mol'),
         S298=(-42.29, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HC-C bidentate, single- and double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HC-C bidentate, single- and double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RC--C
   |  ||
@@ -1532,8 +1532,8 @@ entry(
         H298=(-65.44, 'kcal/mol'),
         S298=(-48.91, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HC-CH2 single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HC-CH2 single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR2
   ||
@@ -1562,8 +1562,8 @@ entry(
         H298=(-83.24, 'kcal/mol'),
         S298=(-44.11, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HC-CH3 double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HC-CH3 double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    CR3
    |
@@ -1589,8 +1589,8 @@ entry(
         H298=(-0.94, 'kcal/mol'),
         S298=(-22.92, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCN vdW-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCN vdW-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RC#N
    :
@@ -1615,8 +1615,8 @@ entry(
         H298=(-15.96, 'kcal/mol'),
         S298=(-35.76, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCN-h bidentate, twice double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCN-h bidentate, twice double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   R
   |
@@ -1643,8 +1643,8 @@ entry(
         H298=(-51.9, 'kcal/mol'),
         S298=(-33.8, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCNH single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCNH single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR
   ||
@@ -1672,8 +1672,8 @@ entry(
         H298=(-58.44, 'kcal/mol'),
         S298=(-46.17, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCNH-h bidentate, double- and single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCNH-h bidentate, double- and single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
  RC--NR
  ||  |
@@ -1699,8 +1699,8 @@ entry(
         H298=(-62.35, 'kcal/mol'),
         S298=(-33.34, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCNH2 double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCNH2 double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    NR2
    |
@@ -1726,8 +1726,8 @@ entry(
         H298=(-51.82, 'kcal/mol'),
         S298=(-33.46, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCO single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCO single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    R
    |
@@ -1754,8 +1754,8 @@ entry(
         H298=(-44.71, 'kcal/mol'),
         S298=(-45.92, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCO-h bidentate, double- and single-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCO-h bidentate, double- and single-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
   R
   |
@@ -1782,8 +1782,8 @@ entry(
         H298=(-69.06, 'kcal/mol'),
         S298=(-33.81, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Came from HCOH double-bonded on Pt(111)""",
-    longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+    shortDesc="""Came from HCOH double-bonded on Pt(111)""",
+    longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 
    OR
    |
@@ -1801,7 +1801,7 @@ entry(
 1 X  u0 {2,[S,D,T,Q]}
 2 C  u0 {1,[S,D,T,Q]}
 """,
-    thermo=u'C-*R3',
+    thermo='C-*R3',
 )
 
 entry(
@@ -1812,7 +1812,7 @@ entry(
 1 X  u0 {2,[S,D,T,Q]}
 2 N  u0 {1,[S,D,T,Q]}
 """,
-    thermo=u'N-*R2',
+    thermo='N-*R2',
 )
 
 entry(
@@ -1823,7 +1823,7 @@ entry(
 1 X  u0 {2,[S,D,T,Q]}
 2 O  u0 {1,[S,D,T,Q]}
 """,
-    thermo=u'O-*R',
+    thermo='O-*R',
 )
 
 entry(
@@ -1840,7 +1840,7 @@ entry(
         H298=(-45.38, 'kcal/mol'),
         S298=(-38.17, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Average of C-*R3, N-*R2 and O-*R thermo. """
+    shortDesc="""Average of C-*R3, N-*R2 and O-*R thermo. """
 )
 
 entry(
@@ -1853,7 +1853,7 @@ entry(
 3 C  u0
 4 C  u0
 """,
-    thermo=u'C-*R2C-*R2',
+    thermo='C-*R2C-*R2',
 )
 
 entry(
@@ -1866,7 +1866,7 @@ entry(
 3 C  u0
 4 N  u0
 """,
-    thermo=u'C=*RN-*R',
+    thermo='C=*RN-*R',
 )
 
 entry(
@@ -1879,7 +1879,7 @@ entry(
 3 C  u0
 4 O  u0
 """,
-    thermo=u'C=*RO-*R',
+    thermo='C=*RO-*R',
 )
 
 entry(
@@ -1892,7 +1892,7 @@ entry(
 3 N  u0
 4 N  u0
 """,
-    thermo=u'N-*RN-*R',
+    thermo='N-*RN-*R',
 )
 
 entry(
@@ -1911,7 +1911,7 @@ entry(
         H298=(-37.29, 'kcal/mol'),
         S298=(-44.37, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Average of C-*R2C-*R2, C=*RN-*R, C=*RO-* and N-*RN-*R thermo. """
+    shortDesc="""Average of C-*R2C-*R2, C=*RN-*R, C=*RO-* and N-*RN-*R thermo. """
 )
 
 entry(
@@ -1928,7 +1928,7 @@ entry(
         H298=(-7.79, 'kcal/mol'),
         S298=(-20.48, 'cal/(mol*K)'),
     ),
-    shortDesc=u"""Average of (CR4)*, (NR3)* and (OR2)* thermo. """
+    shortDesc="""Average of (CR4)*, (NR3)* and (OR2)* thermo. """
 )
 
 entry(
@@ -1941,8 +1941,8 @@ entry(
 3 N  u0 p1 c0 {1,[S,D]} {4,[S,D]}
 4 O  u0 p2 c0 {2,[S,D]} {3,[S,D]}
 """,
-    thermo=u'N=*O-*',
-    longDesc=u"""Is there really any way to do N*O* besides N=*O-* ?"""
+    thermo='N=*O-*',
+    longDesc="""Is there really any way to do N*O* besides N=*O-* ?"""
 )
 
 entry(
@@ -1955,8 +1955,8 @@ entry(
 3 O  u0 p2 c0 {1,S} {4,S}
 4 O  u0 p2 c0 {2,S} {3,S}
 """,
-    thermo=u'O-*O-*',
-    longDesc=u"""Is there really any way to do O*O* besides O-*O-* ?"""
+    thermo='O-*O-*',
+    longDesc="""Is there really any way to do O*O* besides O-*O-* ?"""
 )
 
 entry(
@@ -1968,7 +1968,7 @@ entry(
 2 N  u0 {1,T} {3,[S,D]}
 3 R  u0 {2,[S,D]}
 """,
-    thermo=u'N*'
+    thermo='N*'
 )
 
 entry(
@@ -1982,8 +1982,8 @@ entry(
 4 R  u0 {2,S}
 5 R  u0 {2,S}
 """,
-    thermo=u'(CR2NR)*',
-    longDesc=u"""Perhaps should be an average?"""
+    thermo='(CR2NR)*',
+    longDesc="""Perhaps should be an average?"""
 )
 
 entry(
@@ -1996,7 +1996,7 @@ entry(
 3 R  u0 {2,[S,D,T]}
 4 R  u0 {2,[S,D,T]}
 """,
-    thermo=u'(CRN)*'
+    thermo='(CRN)*'
 )
 
 entry(
@@ -2010,8 +2010,8 @@ entry(
 4 R  u0 p0 c0 {2,S}
 5 R  u0 p0 c0 {2,S}
 """,
-    thermo=u'(NR3)*',
-    longDesc=u"""Do we have data for this?"""
+    thermo='(NR3)*',
+    longDesc="""Do we have data for this?"""
 )
 
 entry(
@@ -2024,8 +2024,8 @@ entry(
 3 R  u0 {2,D}
 4 R  u0 {2,S}
 """,
-    thermo=u'(NRO)*',
-    longDesc=u"""Parent of (RN=O)* and (RN=NR)*. Should it be an average?"""
+    thermo='(NRO)*',
+    longDesc="""Parent of (RN=O)* and (RN=NR)*. Should it be an average?"""
 )
 
 tree(

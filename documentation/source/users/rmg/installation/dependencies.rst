@@ -46,7 +46,6 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **quantities:** unit conversion
 * **rdkit:** open-source cheminformatics toolkit
 * **scipy:** fast mathematical toolkit
-* **scoop:** parallelization of Python code
 * **setuptools:** for packaging Python projects
 * **sphinx:** documentation generation
 * **symmetry:** calculating symmetry numbers of chemical point groups

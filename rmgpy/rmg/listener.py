@@ -30,8 +30,10 @@
 
 import csv
 import os
-from rmgpy.chemkin import getSpeciesIdentifier
+
+from rmgpy.chemkin import get_species_identifier
 from rmgpy.tools.plot import SimulationPlot
+
 
 class SimulationProfileWriter(object):
     """
@@ -42,9 +44,9 @@ class SimulationProfileWriter(object):
 
     A new instance of the class can be appended to a subject as follows:
     
-    reactionSystem = ...
+    reaction_system = ...
     listener = SimulationProfileWriter()
-    reactionSystem.attach(listener)
+    reaction_system.attach(listener)
 
     Whenever the subject calls the .notify() method, the
     .update() method of the listener will be called.
@@ -52,17 +54,18 @@ class SimulationProfileWriter(object):
     To stop listening to the subject, the class can be detached
     from its subject:
 
-    reactionSystem.detach(listener)
+    reaction_system.detach(listener)
 
     """
-    def __init__(self, outputDirectory, reaction_sys_index, coreSpecies):
-        super(SimulationProfileWriter, self).__init__()
-        
-        self.outputDirectory = outputDirectory
-        self.reaction_sys_index = reaction_sys_index
-        self.coreSpecies = coreSpecies
 
-    def update(self, reactionSystem):
+    def __init__(self, output_directory, reaction_sys_index, core_species):
+        super(SimulationProfileWriter, self).__init__()
+
+        self.output_directory = output_directory
+        self.reaction_sys_index = reaction_sys_index
+        self.core_species = core_species
+
+    def update(self, reaction_system):
         """
         Opens a file with filename referring to:
             - reaction system
@@ -74,26 +77,26 @@ class SimulationProfileWriter(object):
         """
 
         filename = os.path.join(
-            self.outputDirectory,
+            self.output_directory,
             'solver',
             'simulation_{0}_{1:d}.csv'.format(
-                self.reaction_sys_index + 1, len(self.coreSpecies)
-                )
+                self.reaction_sys_index + 1, len(self.core_species)
             )
+        )
 
         header = ['Time (s)', 'Volume (m^3)']
-        for spc in self.coreSpecies:
-            header.append(getSpeciesIdentifier(spc))
+        for spc in self.core_species:
+            header.append(get_species_identifier(spc))
 
-        with open(filename, 'wb') as csvfile:
+        with open(filename, 'w') as csvfile:
             worksheet = csv.writer(csvfile)
 
             # add header row:
-            worksheet.writerow(header) 
+            worksheet.writerow(header)
 
             # add mole fractions:
-            worksheet.writerows(reactionSystem.snapshots)
-            
+            worksheet.writerows(reaction_system.snapshots)
+
 
 class SimulationProfilePlotter(object):
     """
@@ -102,9 +105,9 @@ class SimulationProfilePlotter(object):
 
     A new instance of the class can be appended to a subject as follows:
     
-    reactionSystem = ...
+    reaction_system = ...
     listener = SimulationProfilePlotter()
-    reactionSystem.attach(listener)
+    reaction_system.attach(listener)
 
     Whenever the subject calls the .notify() method, the
     .update() method of the listener will be called.
@@ -112,37 +115,37 @@ class SimulationProfilePlotter(object):
     To stop listening to the subject, the class can be detached
     from its subject:
 
-    reactionSystem.detach(listener)
+    reaction_system.detach(listener)
     """
-    
-    def __init__(self, outputDirectory, reaction_sys_index, coreSpecies):
-        super(SimulationProfilePlotter, self).__init__()
-        
-        self.outputDirectory = outputDirectory
-        self.reaction_sys_index = reaction_sys_index
-        self.coreSpecies = coreSpecies
 
-    def update(self, reactionSystem):
+    def __init__(self, output_directory, reaction_sys_index, core_species):
+        super(SimulationProfilePlotter, self).__init__()
+
+        self.output_directory = output_directory
+        self.reaction_sys_index = reaction_sys_index
+        self.core_species = core_species
+
+    def update(self, reaction_system):
         """
         Saves a png with filename referring to:
             - reaction system
             - number of core species
         """
 
-        csvFile = os.path.join(
-            self.outputDirectory,
+        csv_file = os.path.join(
+            self.output_directory,
             'solver',
             'simulation_{0}_{1:d}.csv'.format(
-                self.reaction_sys_index + 1, len(self.coreSpecies)
-                )
+                self.reaction_sys_index + 1, len(self.core_species)
             )
-        
-        pngFile = os.path.join(
-            self.outputDirectory,
+        )
+
+        png_file = os.path.join(
+            self.output_directory,
             'solver',
             'simulation_{0}_{1:d}.png'.format(
-                self.reaction_sys_index + 1, len(self.coreSpecies)
-                )
+                self.reaction_sys_index + 1, len(self.core_species)
             )
-            
-        SimulationPlot(csvFile=csvFile, numSpecies=10, ylabel='Moles').plot(pngFile)
+        )
+
+        SimulationPlot(csv_file=csv_file, num_species=10, ylabel='Moles').plot(png_file)

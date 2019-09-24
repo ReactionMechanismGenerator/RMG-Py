@@ -29,26 +29,29 @@
 ###############################################################################
 
 
-import os.path
+from __future__ import division, print_function
+
 import logging
+import os.path
 from copy import deepcopy
-import numpy
+
+import numpy as np
 
 import rmgpy.constants as constants
+from rmgpy.data.base import LogicNode
+from rmgpy.data.kinetics.common import ensure_species, generate_molecule_combos, \
+                                       find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.data.kinetics.family import KineticsFamily
+from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
+from rmgpy.exceptions import DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
                            StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, ArrheniusBM
 from rmgpy.molecule import Molecule, Group
-from rmgpy.species import Species
 from rmgpy.reaction import Reaction, same_species_lists
-from rmgpy.data.base import LogicNode
+from rmgpy.species import Species
 
-from .family import  KineticsFamily
-from .library import LibraryReaction, KineticsLibrary
-from .common import ensure_species, generate_molecule_combos, \
-                    find_degenerate_reactions, ensure_independent_atom_ids
-from rmgpy.exceptions import DatabaseError
 
 ################################################################################
 
@@ -58,11 +61,11 @@ class KineticsDatabase(object):
     """
 
     def __init__(self):
-        self.recommendedFamilies = {}
+        self.recommended_families = {}
         self.families = {}
         self.libraries = {}
-        self.libraryOrder = []     # a list of tuples in the format ('library_label', LibraryType),
-                                   # where LibraryType is set to either 'Reaction Library' or 'Seed'.  
+        self.library_order = []  # a list of tuples in the format ('library_label', LibraryType),
+                                 # where LibraryType is set to either 'Reaction Library' or 'Seed'.
         self.local_context = {
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
@@ -79,7 +82,7 @@ class KineticsDatabase(object):
             'SurfaceArrhenius': SurfaceArrhenius,
             'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
             'R': constants.R,
-            'ArrheniusBM' : ArrheniusBM
+            'ArrheniusBM': ArrheniusBM
         }
         self.global_context = {}
 
@@ -90,9 +93,9 @@ class KineticsDatabase(object):
         d = {
             'families': self.families,
             'libraries': self.libraries,
-            'libraryOrder': self.libraryOrder,
+            'library_order': self.library_order,
         }
-        return (KineticsDatabase, (), d)
+        return KineticsDatabase, (), d
 
     def __setstate__(self, d):
         """
@@ -100,18 +103,18 @@ class KineticsDatabase(object):
         """
         self.families = d['families']
         self.libraries = d['libraries']
-        self.libraryOrder = d['libraryOrder']
+        self.library_order = d['library_order']
 
     def load(self, path, families=None, libraries=None, depositories=None):
         """
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the families database.
         """
-        self.loadRecommendedFamiliesList(os.path.join(path, 'families', 'recommended.py')),
-        self.loadFamilies(os.path.join(path, 'families'), families, depositories)
-        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
+        self.load_recommended_families(os.path.join(path, 'families', 'recommended.py')),
+        self.load_families(os.path.join(path, 'families'), families, depositories)
+        self.load_libraries(os.path.join(path, 'libraries'), libraries)
 
-    def loadRecommendedFamiliesList(self, filepath):
+    def load_recommended_families(self, filepath):
         """
         Load the recommended families from the given file.
         The file is usually stored at 'kinetics/families/recommended.py'.
@@ -135,16 +138,16 @@ class KineticsDatabase(object):
         # For backward compatibility, check for old-style recommendedFamilies dictionary
         if hasattr(rec, 'recommendedFamilies'):
             default = set()
-            for family, recommended in rec.recommendedFamilies.iteritems():
+            for family, recommended in rec.recommendedFamilies.items():
                 if recommended:
                     default.add(family)
-            self.recommendedFamilies = {'default': default}
+            self.recommended_families = {'default': default}
         else:
-            self.recommendedFamilies = {name: value
-                                        for name, value in rec.__dict__.iteritems()
-                                        if not name.startswith('_')}
+            self.recommended_families = {name: value
+                                         for name, value in rec.__dict__.items()
+                                         if not name.startswith('_')}
 
-    def loadFamilies(self, path, families=None, depositories=None):
+    def load_families(self, path, families=None, depositories=None):
         """
         Load the kinetics families from the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
@@ -158,11 +161,9 @@ class KineticsDatabase(object):
         If all items begin with a `!` (e.g. ['!H_Abstraction']), then the
         selection will be inverted to families NOT in the list.
         """
-        for (root, dirs, files) in os.walk(os.path.join(path)):
-            if root == path:
-                break  # all we wanted was the list of dirs in the base path
-
-        all_families = set(dirs)
+        dirs = os.listdir(path)
+        all_families = set([item for item in dirs if os.path.isdir(os.path.join(path, item))])  # Only keep folders
+        all_families.discard('__pycache__')
 
         # Convert input to a list to simplify processing
         if not isinstance(families, list):
@@ -186,8 +187,8 @@ class KineticsDatabase(object):
             elif item.lower() == 'none':
                 selected_families = set()
                 break
-            elif item in self.recommendedFamilies:
-                family_set = self.recommendedFamilies[item]
+            elif item in self.recommended_families:
+                family_set = self.recommended_families[item]
                 missing_fams = [fam for fam in family_set if fam not in all_families]
                 if missing_fams:
                     raise DatabaseError('Unable to load recommended set "{0}", '
@@ -211,16 +212,16 @@ class KineticsDatabase(object):
         # Now we know what families to load, so let's load them
         self.families = {}
         for label in selected_families:
-            familyPath = os.path.join(path, label)
+            family_path = os.path.join(path, label)
             family = KineticsFamily(label=label)
             try:
-                family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+                family.load(family_path, self.local_context, self.global_context, depository_labels=depositories)
             except:
-                logging.error("Error when loading reaction family {!r}".format(familyPath))
+                logging.error("Error when loading reaction family {!r}".format(family_path))
                 raise
             self.families[label] = family
 
-    def loadLibraries(self, path, libraries=None):
+    def load_libraries(self, path, libraries=None):
         """
         Load the listed kinetics libraries from the given `path` on disk.
         
@@ -228,10 +229,10 @@ class KineticsDatabase(object):
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
-        
+
         if libraries is not None:
             for library_name in libraries:
-                library_file = os.path.join(path, library_name,'reactions.py')
+                library_file = os.path.join(path, library_name, 'reactions.py')
                 if os.path.exists(library_file):
                     logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
                     library = KineticsLibrary(label=library_name)
@@ -244,14 +245,16 @@ For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inAr
 library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
 
-        else:# load all the libraries you can find (this cannot be activated in a normal RMG job.  Only activated when loading the database for other purposes)
-            self.libraryOrder = []
+        else:
+            # load all the libraries you can find
+            # this cannot be activated in a normal RMG job. Only activated when loading the database for other purposes
+            self.library_order = []
             for (root, dirs, files) in os.walk(os.path.join(path)):
                 for f in files:
                     name, ext = os.path.splitext(f)
                     if ext.lower() == '.py':
                         library_file = os.path.join(root, f)
-                        label=os.path.dirname(library_file)[len(path)+1:]
+                        label = os.path.dirname(library_file)[len(path) + 1:]
                         logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
                         library = KineticsLibrary(label=label)
                         try:
@@ -260,7 +263,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                             logging.error("Problem loading reaction library {0!r}".format(library_file))
                             raise
                         self.libraries[library.label] = library
-                        self.libraryOrder.append((library.label,'Reaction Library'))
+                        self.library_order.append((library.label, 'Reaction Library'))
 
     def save(self, path):
         """
@@ -268,23 +271,25 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         points to the top-level folder of the kinetics database.
         """
         path = os.path.abspath(path)
-        if not os.path.exists(path): os.mkdir(path)
-        self.saveRecommendedFamilies(os.path.join(path, 'families'))
-        self.saveFamilies(os.path.join(path, 'families'))
-        self.saveLibraries(os.path.join(path, 'libraries'))
-        
-    def saveRecommendedFamilies(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+        self.save_recommended_families(os.path.join(path, 'families'))
+        self.save_families(os.path.join(path, 'families'))
+        self.save_libraries(os.path.join(path, 'libraries'))
+
+    def save_recommended_families(self, path):
         """ 
         Save the recommended families to [path]/recommended.py.
         The old style was as a dictionary named `recommendedFamilies`.
         The new style is as multiple sets with different labels.
         """
         import codecs
-        
-        if not os.path.exists(path): os.mkdir(path)
 
-        with codecs.open(os.path.join(path,'recommended.py'), 'w', 'utf-8') as f:
-            if 'recommendedFamilies' in self.recommendedFamilies:
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        with codecs.open(os.path.join(path, 'recommended.py'), 'w', 'utf-8') as f:
+            if 'recommendedFamilies' in self.recommended_families:
                 # For backwards compatibility with the old system of recommended families
                 f.write("""# This file contains a dictionary of kinetics families.  The families
 # set to `True` are recommended by RMG and turned on by default by setting
@@ -293,8 +298,8 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 # These families should only be turned on with caution.""")
                 f.write('\n\n')
                 f.write('recommendedFamilies = {\n')
-                for label in sorted(self.recommendedFamilies.keys()):
-                    f.write("'{label}':{value},\n".format(label=label,value=self.recommendedFamilies[label]))
+                for label in sorted(self.recommended_families.keys()):
+                    f.write("'{label}':{value},\n".format(label=label, value=self.recommended_families[label]))
                 f.write('}')
             else:
                 f.write('''#!/usr/bin/env python
@@ -309,81 +314,86 @@ along with individual families. Custom sets can be easily defined in this file
 and immediately used in input files without any additional changes.
 """
 ''')
-                for name, item in self.recommendedFamilies.iteritems():
+                for name, item in self.recommended_families.items():
                     f.write('\n{0} = {{\n'.format(name))
                     for label in sorted(item):
                         f.write("    '{0}',\n".format(label))
                     f.write('}\n')
-        
-    def saveFamilies(self, path):
+
+    def save_families(self, path):
         """
         Save the kinetics families to the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
         """
-        if not os.path.exists(path): os.mkdir(path)
-        for label, family in self.families.iteritems():
-            familyPath = os.path.join(path, label)
-            if not os.path.exists(familyPath): os.mkdir(familyPath)
-            family.save(familyPath)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for label, family in self.families.items():
+            family_path = os.path.join(path, label)
+            if not os.path.exists(family_path): os.mkdir(family_path)
+            family.save(family_path)
 
-    def saveLibraries(self, path):
+    def save_libraries(self, path):
         """
         Save the kinetics libraries to the given `path` on disk, where `path`
         points to the top-level folder of the kinetics libraries.
         """
-        for label, library in self.libraries.iteritems():
+        for label, library in self.libraries.items():
             folders = label.split(os.sep)
             try:
                 os.makedirs(os.path.join(path, *folders))
             except OSError:
                 pass
             library.save(os.path.join(path, label, 'reactions.py'))
-            library.saveDictionary(os.path.join(path, label, 'dictionary.txt'))
+            library.save_dictionary(os.path.join(path, label, 'dictionary.txt'))
 
-    def loadOld(self, path):
+    def load_old(self, path):
         """
         Load the old RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
         """
         self.families = {}
         self.libraries = {}
-        
-        librariesPath = os.path.join(path, 'kinetics_libraries')
+
+        libraries_path = os.path.join(path, 'kinetics_libraries')
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_libraries')):
-            if os.path.exists(os.path.join(root, 'species.txt')) and os.path.exists(os.path.join(root, 'reactions.txt')):
-                library = KineticsLibrary(label=root[len(librariesPath)+1:], name=root[len(librariesPath)+1:])
+            if os.path.exists(os.path.join(root, 'species.txt')) and \
+                    os.path.exists(os.path.join(root, 'reactions.txt')):
+                library = KineticsLibrary(label=root[len(libraries_path) + 1:], name=root[len(libraries_path) + 1:])
                 logging.warning("Loading {0}".format(root))
-                library.loadOld(root)
+                library.load_old(root)
                 self.libraries[library.label] = library
-                
+
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_groups')):
-            if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
+            if os.path.exists(os.path.join(root, 'dictionary.txt')) and \
+                    os.path.exists(os.path.join(root, 'rateLibrary.txt')):
                 label = os.path.split(root)[1]
                 family = KineticsFamily(label=label)
                 logging.warning("Loading {0}".format(root))
-                family.loadOld(root)
+                family.load_old(root)
                 self.families[family.label] = family
 
         return self
 
-    def saveOld(self, path):
+    def save_old(self, path):
         """
         Save the old RMG kinetics database to the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
         """
-        librariesPath = os.path.join(path, 'kinetics_libraries')
-        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+        libraries_path = os.path.join(path, 'kinetics_libraries')
+        if not os.path.exists(libraries_path):
+            os.mkdir(libraries_path)
         for library in self.libraries.values():
-            libraryPath = os.path.join(librariesPath, library.label)
-            library.saveOld(libraryPath)
+            library_path = os.path.join(libraries_path, library.label)
+            library.save_old(library_path)
 
-        groupsPath = os.path.join(path, 'kinetics_groups')
-        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
-        for label, family in self.families.iteritems():
-            groupPath = os.path.join(groupsPath, label)
-            family.saveOld(groupPath)
-            
-        with open(os.path.join(path,'kinetics_groups','families.txt'),'w') as f:
+        groups_path = os.path.join(path, 'kinetics_groups')
+        if not os.path.exists(groups_path):
+            os.mkdir(groups_path)
+        for label, family in self.families.items():
+            group_path = os.path.join(groups_path, label)
+            family.save_old(group_path)
+
+        with open(os.path.join(path, 'kinetics_groups', 'families.txt'), 'w') as f:
             f.write("""
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -405,20 +415,21 @@ and immediately used in input files without any additional changes.
 // No.  on/off  Forward reaction
 """)
             for number, label in enumerate(sorted(self.families.keys())):
-                onoff = 'on ' if self.recommendedFamilies[label] else 'off'
+                onoff = 'on ' if self.recommended_families[label] else 'off'
                 f.write("{num:<2d}    {onoff}     {label}\n".format(num=number, label=label, onoff=onoff))
-    
+
     def generate_reactions(self, reactants, products=None, only_families=None, resonance=True):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         searches the depository, libraries, and groups, in that order.
         """
-        reactionList = []
+        reaction_list = []
         if only_families is None:
-            reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
-        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=resonance))
-        return reactionList
+            reaction_list.extend(self.generate_reactions_from_libraries(reactants, products))
+        reaction_list.extend(self.generate_reactions_from_families(reactants, products,
+                                                                   only_families=None, resonance=resonance))
+        return reaction_list
 
     def generate_reactions_from_libraries(self, reactants, products=None):
         """
@@ -427,10 +438,11 @@ and immediately used in input files without any additional changes.
         :class:`Species` objects.
         """
         reaction_list = []
-        for label, library_type in self.libraryOrder:
+        for label, library_type in self.library_order:
             # Generate reactions from reaction libraries (no need to generate them from seeds)
             if library_type == "Reaction Library":
-                reaction_list.extend(self.generate_reactions_from_library(self.libraries[label], reactants, products=products))
+                reaction_list.extend(self.generate_reactions_from_library(self.libraries[label],
+                                                                          reactants, products=products))
         return reaction_list
 
     def generate_reactions_from_library(self, library, reactants, products=None):
@@ -443,17 +455,17 @@ and immediately used in input files without any additional changes.
 
         reaction_list = []
         for entry in library.entries.values():
-            if entry.item.matchesSpecies(reactants, products=products):
+            if entry.item.matches_species(reactants, products=products):
                 reaction = LibraryReaction(
-                    reactants = entry.item.reactants[:],
-                    products = entry.item.products[:],
-                    specificCollider = entry.item.specificCollider,
-                    degeneracy = entry.item.degeneracy,
-                    reversible = entry.item.reversible,
-                    duplicate = entry.item.duplicate,
-                    kinetics = deepcopy(entry.data),
-                    library = library,
-                    entry = entry,
+                    reactants=entry.item.reactants[:],
+                    products=entry.item.products[:],
+                    specific_collider=entry.item.specific_collider,
+                    degeneracy=entry.item.degeneracy,
+                    reversible=entry.item.reversible,
+                    duplicate=entry.item.duplicate,
+                    kinetics=deepcopy(entry.data),
+                    library=library,
+                    entry=entry,
                 )
                 reaction_list.append(reaction)
 
@@ -486,7 +498,7 @@ and immediately used in input files without any additional changes.
             if reactants[0] is reactants[1]:
                 reactants[1] = reactants[1].copy(deep=True)
                 same_reactants = 2
-            elif reactants[0].isIsomorphic(reactants[1]):
+            elif reactants[0].is_isomorphic(reactants[1]):
                 same_reactants = 2
         elif len(reactants) == 3:
             same_01 = reactants[0] is reactants[1]
@@ -505,13 +517,13 @@ and immediately used in input files without any additional changes.
                 same_reactants = 2
                 reactants[2] = reactants[2].copy(deep=True)
             else:
-                same_01 = reactants[0].isIsomorphic(reactants[1])
-                same_02 = reactants[0].isIsomorphic(reactants[2])
+                same_01 = reactants[0].is_isomorphic(reactants[1])
+                same_02 = reactants[0].is_isomorphic(reactants[2])
                 if same_01 and same_02:
                     same_reactants = 3
                 elif same_01 or same_02:
                     same_reactants = 2
-                elif reactants[1].isIsomorphic(reactants[2]):
+                elif reactants[1].is_isomorphic(reactants[2]):
                     same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
@@ -521,7 +533,8 @@ and immediately used in input files without any additional changes.
 
         reaction_list = []
         for combo in combos:
-            reaction_list.extend(self.react_molecules(combo, products=products, only_families=only_families, prod_resonance=resonance))
+            reaction_list.extend(self.react_molecules(combo, products=products, only_families=only_families,
+                                                      prod_resonance=resonance))
 
         # Calculate reaction degeneracy
         reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
@@ -529,8 +542,8 @@ and immediately used in input files without any additional changes.
         to_delete = []
         for i, rxn in enumerate(reaction_list):
             family = self.families[rxn.family]
-            if family.ownReverse:
-                successful = family.addReverseAttribute(rxn)
+            if family.own_reverse:
+                successful = family.add_reverse_attribute(rxn)
                 if not successful:
                     to_delete.append(i)
         # Delete reactions which we could not find a reverse reaction for
@@ -544,21 +557,22 @@ and immediately used in input files without any additional changes.
         Generate reactions from all families for the input molecules.
         """
         reaction_list = []
-        for label, family in self.families.iteritems():
+        for label, family in self.families.items():
             if only_families is None or label in only_families:
                 try:
-                    reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                    reaction_list.extend(family.generate_reactions(molecules, products=products,
+                                                                   prod_resonance=prod_resonance))
                 except:
                     logging.error("Problem family: {}".format(label))
                     logging.error("Problem reactants: {}".format(molecules))
                     raise
 
         for reactant in molecules:
-            reactant.clearLabeledAtoms()
+            reactant.clear_labeled_atoms()
 
         return reaction_list
 
-    def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
+    def get_forward_reaction_for_family_entry(self, entry, family, thermo_database):
         """
         For a given `entry` for a reaction of the given reaction `family` (the
         string label of the family), return the reaction with kinetics and
@@ -574,9 +588,10 @@ and immediately used in input files without any additional changes.
         In order to reverse the reactions that are given in the reverse of the
         direction the family is defined, we need to compute the thermodynamics
         of the reactants and products. For this reason you must also pass
-        the `thermoDatabase` to use to generate the thermo data.
+        the `thermo_database` to use to generate the thermo data.
         """
-        reaction = None; template = None
+        reaction = None
+        template = None
 
         # Get the indicated reaction family
         try:
@@ -589,16 +604,16 @@ and immediately used in input files without any additional changes.
             # By convention, these are always given in the forward direction and
             # have kinetics defined on a per-site basis
             reaction = Reaction(
-                reactants = entry.item.reactants[:],
-                products = [],
-                specificCollider = entry.item.specificCollider,
-                kinetics = entry.data,
-                degeneracy = 1,
+                reactants=entry.item.reactants[:],
+                products=[],
+                specific_collider=entry.item.specific_collider,
+                kinetics=entry.data,
+                degeneracy=1,
             )
             template = [groups.entries[label] for label in entry.label.split(';')]
 
         elif (all([isinstance(reactant, Molecule) for reactant in entry.item.reactants]) and
-            all([isinstance(product, Molecule) for product in entry.item.products])):
+                all([isinstance(product, Molecule) for product in entry.item.products])):
             # The entry is a real reaction, containing molecules
             # These could be defined for either the forward or reverse direction
             # and could have a reaction-path degeneracy
@@ -607,20 +622,22 @@ and immediately used in input files without any additional changes.
             for molecule in entry.item.reactants:
                 reactant = Species(molecule=[molecule])
                 reactant.generate_resonance_structures()
-                reactant.thermo = thermoDatabase.getThermoData(reactant)
+                reactant.thermo = thermo_database.get_thermo_data(reactant)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 product = Species(molecule=[molecule])
                 product.generate_resonance_structures()
-                product.thermo = thermoDatabase.getThermoData(product)
+                product.thermo = thermo_database.get_thermo_data(product)
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generate_reactions_from_families([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
+            generated_reactions = self.generate_reactions_from_families(
+                [reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
 
             # Remove from that set any reactions that don't produce the desired reactants and products
-            forward = []; reverse = []
-            for rxn in generatedReactions:
+            forward = []
+            reverse = []
+            for rxn in generated_reactions:
                 if (same_species_lists(reaction.reactants, rxn.reactants)
                         and same_species_lists(reaction.products, rxn.products)):
                     forward.append(rxn)
@@ -639,16 +656,16 @@ and immediately used in input files without any additional changes.
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                Tdata = 1000.0 / numpy.arange(0.5, 3.301, 0.1, numpy.float64)
-                kdata = numpy.zeros_like(Tdata)
-                for i in range(Tdata.shape[0]):
-                    kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
+                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
+                k_data = np.zeros_like(T_data)
+                for i in range(T_data.shape[0]):
+                    k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.get_equilibrium_constant(T_data[i])
                 try:
-                    kunits = ('s^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)')[len(reverse[0].reactants)-1]
+                    k_units = ('s^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)')[len(reverse[0].reactants) - 1]
                 except IndexError:
                     raise NotImplementedError('Cannot reverse reactions with {} products'.format(
-                                              len(reverse[0].reactants)))
-                kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
+                        len(reverse[0].reactants)))
+                kinetics = Arrhenius().fit_to_data(T_data, k_data, k_units, T0=1.0)
                 kinetics.Tmin = entry.data.Tmin
                 kinetics.Tmax = entry.data.Tmax
                 kinetics.Pmin = entry.data.Pmin
@@ -658,21 +675,21 @@ and immediately used in input files without any additional changes.
                 reaction.kinetics = kinetics
                 template = reaction.template
             elif len(reverse) > 0 and len(forward) > 0:
-                print 'FAIL: Multiple reactions found for {0!r}.'.format(entry.label)
+                print('FAIL: Multiple reactions found for {0!r}.'.format(entry.label))
             elif len(reverse) == 0 and len(forward) == 0:
-                print 'FAIL: No reactions found for "%s".' % (entry.label)
+                print('FAIL: No reactions found for "%s".' % (entry.label))
             else:
-                print 'FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label)
+                print('FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label))
 
         assert reaction is not None
         assert template is not None
         return reaction, template
-    
-    def extractSourceFromComments(self, reaction):
+
+    def extract_source_from_comments(self, reaction):
         """
         `reaction`: A reaction object containing kinetics data and kinetics data comments.  
             Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
-            as loaded from the rmgpy.chemkin.loadChemkinFile function
+            as loaded from the rmgpy.chemkin.load_chemkin_file function
         
         Parses the verbose string of comments from the thermo data of the species object,
         and extracts the thermo sources.
@@ -689,114 +706,114 @@ and immediately used in input files without any additional changes.
         from rmgpy.rmg.pdep import PDepReaction
         from rmgpy.data.kinetics.library import LibraryReaction
         from rmgpy.data.kinetics.family import TemplateReaction
-        
+
         source = {}
-        
+
         if isinstance(reaction, TemplateReaction):
             # This reaction comes from rate rules
-            training, dataSource = self.families[reaction.family].extractSourceFromComments(reaction)
+            training, data_source = self.families[reaction.family].extract_source_from_comments(reaction)
             if training:
-                source['Training'] = dataSource
+                source['Training'] = data_source
             else:
-                source['Rate Rules'] = dataSource
+                source['Rate Rules'] = data_source
         elif isinstance(reaction, LibraryReaction):
             # This reaction comes from a reaction library or seed mechanism
             source['Library'] = reaction.library
-            
+
         elif isinstance(reaction, PDepReaction):
             # This reaction is a pressure-dependent reaction
             source['PDep'] = reaction.network.index
-        
+
         else:
-            raise Exception('Reaction {} must be either a TemplateReaction, LibraryReaction, or PDepReaction object for source data to be extracted.'.format(reaction))
-            
+            raise ValueError('Reaction {} must be either a TemplateReaction, LibraryReaction, or PDepReaction object '
+                             'for source data to be extracted.'.format(reaction))
+
         return source
-    
-    def reconstructKineticsFromSource(self, reaction, source, fixBarrierHeight=False, forcePositiveBarrier=False):
+
+    def reconstruct_kinetics_from_source(self, reaction, source, fix_barrier_height=False, force_positive_barrier=False):
         """
         Reaction is the original reaction with original kinetics.
         Note that for Library and PDep reactions this function does not do anything other than return the original kinetics...
         
-        You must enter source data in the appropriate format such as returned from returned from self.extractSourceFromComments, 
+        You must enter source data in the appropriate format such as returned from returned from self.extract_source_from_comments,
         self-constructed.  
-        fixBarrierHeight and forcePositiveBarrier will change the kinetics based on the Reaction.fixBarrierHeight function.
+        fix_barrier_height and force_positive_barrier will change the kinetics based on the Reaction.fix_barrier_height function.
         Return Arrhenius form kinetics if the source is from training reaction or rate rules.
         """
-        from rmgpy.data.thermo import findCp0andCpInf
+        from rmgpy.data.thermo import find_cp0_and_cpinf
         from rmgpy.thermo import Wilhoit
         if 'Library' in source:
             return reaction.kinetics
         elif 'PDep' in source:
             return reaction.kinetics
         else:
-            rxnCopy = deepcopy(reaction)
+            rxn_copy = deepcopy(reaction)
             if 'Training' in source:
-                trainingEntry = source['Training'][1]
+                training_entry = source['Training'][1]
                 reverse = source['Training'][2]
                 if reverse:
-                    reverseKinetics = trainingEntry.data
-                    rxnCopy.kinetics = reverseKinetics
-                    forwardKinetics = rxnCopy.generateReverseRateCoefficient()
-                    kinetics = forwardKinetics
+                    reverse_kinetics = training_entry.data
+                    rxn_copy.kinetics = reverse_kinetics
+                    forward_kinetics = rxn_copy.generate_reverse_rate_coefficient()
+                    kinetics = forward_kinetics
                 else:
-                    kinetics = trainingEntry.data
+                    kinetics = training_entry.data
             elif 'Rate Rules' in source:
-    
-                sourceDict = source['Rate Rules'][1]
-                rules = sourceDict['rules']
-                training = sourceDict['training']
-                degeneracy = sourceDict['degeneracy']
-    
-                logA = 0
+
+                source_dict = source['Rate Rules'][1]
+                rules = source_dict['rules']
+                training = source_dict['training']
+                degeneracy = source_dict['degeneracy']
+
+                log_a = 0
                 n = 0
                 alpha = 0
                 E0 = 0
-                for ruleEntry, weight in rules:
-                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
-                    n += ruleEntry.data.n.value_si*weight
-                    alpha +=ruleEntry.data.alpha.value_si*weight
-                    E0 +=ruleEntry.data.E0.value_si*weight
-                for ruleEntry, trainingEntry, weight in training:
-                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
-                    n += ruleEntry.data.n.value_si*weight
-                    alpha +=ruleEntry.data.alpha.value_si*weight
-                    E0 +=ruleEntry.data.E0.value_si*weight
-                
-                Aunits = ruleEntry.data.A.units 
-                if Aunits == 'cm^3/(mol*s)' or Aunits == 'cm^3/(molecule*s)' or Aunits == 'm^3/(molecule*s)':
-                    Aunits = 'm^3/(mol*s)'
-                elif Aunits == 'cm^6/(mol^2*s)' or Aunits == 'cm^6/(molecule^2*s)' or Aunits == 'm^6/(molecule^2*s)':
-                    Aunits = 'm^6/(mol^2*s)'
-                elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
+                for rule_entry, weight in rules:
+                    log_a += np.log10(rule_entry.data.A.value_si) * weight
+                    n += rule_entry.data.n.value_si * weight
+                    alpha += rule_entry.data.alpha.value_si * weight
+                    E0 += rule_entry.data.E0.value_si * weight
+                for rule_entry, training_entry, weight in training:
+                    log_a += np.log10(rule_entry.data.A.value_si) * weight
+                    n += rule_entry.data.n.value_si * weight
+                    alpha += rule_entry.data.alpha.value_si * weight
+                    E0 += rule_entry.data.E0.value_si * weight
+
+                a_units = rule_entry.data.A.units
+                if a_units == 'cm^3/(mol*s)' or a_units == 'cm^3/(molecule*s)' or a_units == 'm^3/(molecule*s)':
+                    a_units = 'm^3/(mol*s)'
+                elif a_units == 'cm^6/(mol^2*s)' or a_units == 'cm^6/(molecule^2*s)' or a_units == 'm^6/(molecule^2*s)':
+                    a_units = 'm^6/(mol^2*s)'
+                elif a_units == 's^-1' or a_units == 'm^3/(mol*s)' or a_units == 'm^6/(mol^2*s)':
                     pass
                 else:
-                    raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
+                    raise ValueError('Invalid units {0} for averaging kinetics.'.format(a_units))
                 kinetics = ArrheniusEP(
-                    A = (degeneracy*10**logA, Aunits),
-                    n = n,
-                    alpha = alpha,
-                    E0 = (E0*0.001,"kJ/mol"),
+                    A=(degeneracy * 10 ** log_a, a_units),
+                    n=n,
+                    alpha=alpha,
+                    E0=(E0 * 0.001, "kJ/mol"),
                 )
             else:
-                raise Exception("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")
-                
-            
+                raise ValueError("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")
+
             # Convert ArrheniusEP to Arrhenius
-            if fixBarrierHeight:
-                for spc in rxnCopy.reactants + rxnCopy.products:
+            if fix_barrier_height:
+                for spc in rxn_copy.reactants + rxn_copy.products:
                     # Need wilhoit to do this
                     if not isinstance(spc.thermo, Wilhoit):
-                        findCp0andCpInf(spc, spc.thermo)
-                        wilhoit = spc.thermo.toWilhoit()
+                        find_cp0_and_cpinf(spc, spc.thermo)
+                        wilhoit = spc.thermo.to_wilhoit()
                         spc.thermo = wilhoit
-                        
-                rxnCopy.kinetics = kinetics
-                rxnCopy.fixBarrierHeight(forcePositive=forcePositiveBarrier)
-                
-                return rxnCopy.kinetics
+
+                rxn_copy.kinetics = kinetics
+                rxn_copy.fix_barrier_height(force_positive=force_positive_barrier)
+
+                return rxn_copy.kinetics
             else:
-                
-                H298 = rxnCopy.getEnthalpyOfReaction(298)
+
+                h298 = rxn_copy.get_enthalpy_of_reaction(298)
                 if isinstance(kinetics, (ArrheniusEP, ArrheniusBM)):
-                    kinetics = kinetics.toArrhenius(H298)
+                    kinetics = kinetics.to_arrhenius(h298)
                 return kinetics

@@ -28,10 +28,11 @@
 #                                                                             #
 ###############################################################################
 
-import unittest 
+import unittest
 
+import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg import input as inp
+
 
 ###################################################
 
@@ -43,12 +44,14 @@ def setUpModule(self):
     # so methods can be tested
     global rmg
     rmg = RMG()
-    inp.setGlobalRMG(rmg)
+    inp.set_global_rmg(rmg)
+
 
 def tearDownModule(self):
     # remove RMG object
     global rmg
     rmg = None
+
 
 class TestInputDatabase(unittest.TestCase):
     """
@@ -58,86 +61,90 @@ class TestInputDatabase(unittest.TestCase):
     def tearDown(self):
         # remove the reactionLibraries value
         global rmg
-        rmg.reactionLibraries = None
+        rmg.reaction_libraries = None
 
-    def testImportingDatabaseReactionLibrariesFromString(self):
+    def test_importing_database_reaction_libraries_from_string(self):
         """
         Test that we can import Reaction Libraries using the non-tuple form.
         """
         global rmg
         # add database properties to RMG
         inp.database(reactionLibraries=['test'])
-        self.assertIsInstance(rmg.reactionLibraries[0], tuple)
-        self.assertFalse(rmg.reactionLibraries[0][1])
-        
-    def testImportingDatabaseReactionLibrariesFromFalseTuple(self):
+        self.assertIsInstance(rmg.reaction_libraries[0], tuple)
+        self.assertFalse(rmg.reaction_libraries[0][1])
+
+    def test_importing_database_reaction_libraries_from_false_tuple(self):
         """
         Test that we can import Reaction Libraries using the Tuple False form.
         """
         global rmg
         # add database properties to RMG
-        inp.database(reactionLibraries=[('test',False)])
-        self.assertIsInstance(rmg.reactionLibraries[0], tuple)
-        self.assertFalse(rmg.reactionLibraries[0][1])
-        
-    def testImportingDatabaseReactionLibrariesFromTrueTuple(self):
+        inp.database(reactionLibraries=[('test', False)])
+        self.assertIsInstance(rmg.reaction_libraries[0], tuple)
+        self.assertFalse(rmg.reaction_libraries[0][1])
+
+    def test_importing_database_reaction_libraries_from_true_tuple(self):
         """
         Test that we can import Reaction Libraries using the Tuple True form.
         """
         global rmg
         # add database properties to RMG
-        inp.database(reactionLibraries=[('test',True)])
-        self.assertIsInstance(rmg.reactionLibraries[0], tuple)
-        self.assertTrue(rmg.reactionLibraries[0][1])
+        inp.database(reactionLibraries=[('test', True)])
+        self.assertIsInstance(rmg.reaction_libraries[0], tuple)
+        self.assertTrue(rmg.reaction_libraries[0][1])
+
 
 class TestInputMLEstimator(unittest.TestCase):
     """
     Contains unit tests rmgpy.rmg.input.mlEstimator
     """
+
     def tearDown(self):
         # remove the reactionLibraries value
         global rmg
         rmg.ml_estimator = None
 
-    def testMLEstimator(self):
+    def test_ml_estimator(self):
         """
         Test that we can input.
         """
         from rmgpy.ml.estimator import MLEstimator
         global rmg
         # add database properties to RMG
-        inp.mlEstimator(thermo=True)
+        inp.ml_estimator(thermo=True)
         self.assertIsInstance(rmg.ml_estimator, MLEstimator)
         self.assertIsInstance(rmg.ml_settings, dict)
 
+
 class TestInputThemoCentralDatabase(unittest.TestCase):
     """
-    Contains unit tests rmgpy.rmg.input.thermoCentralDatabase
+    Contains unit tests rmgpy.rmg.input.thermo_central_database
     """
+
     def tearDown(self):
         # remove the reactionLibraries value
         global rmg
-        rmg.thermoCentralDatabase = None
-        
-    def testThemoCentralDatabase(self):
+        rmg.thermo_central_database = None
+
+    def test_themo_central_database(self):
         """
         Test that we can input.
         """
         global rmg
         # add database properties to RMG
-        inp.thermoCentralDatabase(
-                host='some_host',
-                port=0,
-                username='some_usr',
-                password='some_pw',
-                application='some_app'
+        inp.thermo_central_database(
+            host='some_host',
+            port=0,
+            username='some_usr',
+            password='some_pw',
+            application='some_app'
         )
-        self.assertEqual(rmg.thermoCentralDatabase.host, 'some_host')
-        self.assertEqual(rmg.thermoCentralDatabase.port, 0)
-        self.assertEqual(rmg.thermoCentralDatabase.username, 'some_usr')
-        self.assertEqual(rmg.thermoCentralDatabase.password, 'some_pw')
-        self.assertEqual(rmg.thermoCentralDatabase.application, 'some_app')
-        self.assertEqual(rmg.thermoCentralDatabase.client, None)
+        self.assertEqual(rmg.thermo_central_database.host, 'some_host')
+        self.assertEqual(rmg.thermo_central_database.port, 0)
+        self.assertEqual(rmg.thermo_central_database.username, 'some_usr')
+        self.assertEqual(rmg.thermo_central_database.password, 'some_pw')
+        self.assertEqual(rmg.thermo_central_database.application, 'some_app')
+        self.assertEqual(rmg.thermo_central_database.client, None)
 
 
 if __name__ == '__main__':

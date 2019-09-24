@@ -32,6 +32,7 @@
 This module provides custom Exception classes for use in Arkane.
 """
 
+
 class AtomEnergyCorrectionError(Exception):
     """
     An exception to be raised when an error occurs while applying atom
@@ -44,5 +45,13 @@ class BondAdditivityCorrectionError(Exception):
     """
     An exception to be raised when an error occurs while applying bond
     additivity corrections.
+    """
+    pass
+
+
+class LogError(Exception):
+    """
+    An exception to be raised when an error occurs while parsing
+    electronic structure calculation log files.
     """
     pass

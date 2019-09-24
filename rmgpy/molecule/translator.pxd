@@ -35,21 +35,21 @@ cpdef dict SMILES_LOOKUPS
 cpdef dict MOLECULE_LOOKUPS
 cpdef dict RADICAL_LOOKUPS
 
-cpdef str toInChI(mm.Molecule mol, str backend=?, int aug_level=?)
+cpdef str to_inchi(mm.Molecule mol, str backend=?, int aug_level=?)
 
-cpdef str toInChIKey(mm.Molecule mol, str backend=?, int aug_level=?)
+cpdef str to_inchi_key(mm.Molecule mol, str backend=?, int aug_level=?)
 
-cpdef str toSMARTS(mm.Molecule mol, backend=?)
+cpdef str to_smarts(mm.Molecule mol, backend=?)
 
-cpdef str toSMILES(mm.Molecule mol, backend=?)
+cpdef str to_smiles(mm.Molecule mol, backend=?)
 
-cpdef mm.Molecule fromInChI(mm.Molecule mol, str inchistr, backend=?)
+cpdef mm.Molecule from_inchi(mm.Molecule mol, str inchistr, backend=?)
 
-cpdef mm.Molecule fromSMILES(mm.Molecule mol, str smilesstr, str backend=?)
+cpdef mm.Molecule from_smiles(mm.Molecule mol, str smilesstr, str backend=?)
 
-cpdef mm.Molecule fromSMARTS(mm.Molecule mol, str smartsstr, str backend=?)
+cpdef mm.Molecule from_smarts(mm.Molecule mol, str smartsstr, str backend=?)
 
-cpdef mm.Molecule fromAugmentedInChI(mm.Molecule mol, aug_inchi)
+cpdef mm.Molecule from_augmented_inchi(mm.Molecule mol, aug_inchi)
 
 cpdef object _rdkit_translator(object input_object, str identifier_type, mm.Molecule mol=?)
 

@@ -40,98 +40,103 @@ The resulting merged files are placed in ``chem.inp`` and
 ``species_dictionary.txt`` in the execution directory.
 """
 
+from __future__ import division, print_function
+
+import argparse
 import os
 import os.path
-import argparse
 
-from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
+from rmgpy.chemkin import load_chemkin_file, save_chemkin_file, save_species_dictionary, save_transport_file
 from rmgpy.rmg.model import ReactionModel
+
 
 ################################################################################
 
-def parseCommandLineArguments():
-
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model1', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the first model to merge')
+                        help='the Chemkin files and species dictionaries of the first model to merge')
     parser.add_argument('--model2', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the second model to merge')
+                        help='the Chemkin files and species dictionaries of the second model to merge')
     parser.add_argument('--model3', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the third model to merge')
+                        help='the Chemkin files and species dictionaries of the third model to merge')
     parser.add_argument('--model4', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the fourth model to merge')
+                        help='the Chemkin files and species dictionaries of the fourth model to merge')
     parser.add_argument('--model5', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the fifth model to merge')
-    
+                        help='the Chemkin files and species dictionaries of the fifth model to merge')
+
     args = parser.parse_args()
     return args
+
 
 def main():
     """
     Driver function that parses command line arguments and passes them to the execute function.
     """
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
-
+    args = parse_command_line_arguments()
 
     transport = False
-    inputModelFiles = []
+    input_model_files = []
     for model in [args.model1, args.model2, args.model3, args.model4, args.model5]:
-        if model is None: continue
+        if model is None:
+            continue
         if len(model) == 2:
-            inputModelFiles.append((model[0], model[1], None))
+            input_model_files.append((model[0], model[1], None))
         elif len(model) == 3:
             transport = True
-            inputModelFiles.append((model[0], model[1], model[2]))
+            input_model_files.append((model[0], model[1], model[2]))
         else:
             raise Exception
 
     kwargs = {
-            'wd': os.getcwd(),
-            'transport': transport,
+        'wd': os.getcwd(),
+        'transport': transport,
     }
 
-    execute(inputModelFiles, **kwargs)
+    execute(input_model_files, **kwargs)
 
-def execute(inputModelFiles, **kwargs):
-    
+
+def execute(input_model_files, **kwargs):
     try:
         wd = kwargs['wd']
     except KeyError:
         wd = os.getcwd()
 
     transport = kwargs['transport']
-    
-    outputChemkinFile = os.path.join(wd, 'chem.inp')
-    outputSpeciesDictionary = os.path.join(wd, 'species_dictionary.txt')
-    outputTransportFile = os.path.join(wd, 'tran.dat') if transport else None
 
-    models = get_models_to_merge(inputModelFiles)
+    output_chemkin_file = os.path.join(wd, 'chem.inp')
+    output_species_dictionary = os.path.join(wd, 'species_dictionary.txt')
+    output_transport_file = os.path.join(wd, 'tran.dat') if transport else None
 
-    finalModel = combine_models(models)
+    models = get_models_to_merge(input_model_files)
+
+    final_model = combine_models(models)
 
     # Save the merged model to disk
-    saveChemkinFile(outputChemkinFile, finalModel.species, finalModel.reactions)
-    saveSpeciesDictionary(outputSpeciesDictionary, finalModel.species)
+    save_chemkin_file(output_chemkin_file, final_model.species, final_model.reactions)
+    save_species_dictionary(output_species_dictionary, final_model.species)
     if transport:
-        saveTransportFile(outputTransportFile, finalModel.species)
+        save_transport_file(output_transport_file, final_model.species)
 
-    print 'Merged Chemkin file saved to {0}'.format(outputChemkinFile)
-    print 'Merged species dictionary saved to {0}'.format(outputSpeciesDictionary)
+    print('Merged Chemkin file saved to {0}'.format(output_chemkin_file))
+    print('Merged species dictionary saved to {0}'.format(output_species_dictionary))
     if transport:
-        print 'Merged transport file saved to {0}'.format(outputTransportFile)
+        print('Merged transport file saved to {0}'.format(output_transport_file))
+
 
 def get_models_to_merge(input_model_files):
     """
     Reads input file paths and creates a list of ReactionModel
     """
     models = []
-    for chemkin, speciesPath, transportPath in input_model_files:
-        print 'Loading model #{0:d}...'.format(len(models)+1)
+    for chemkin, species_path, transport_path in input_model_files:
+        print('Loading model #{0:d}...'.format(len(models) + 1))
         model = ReactionModel()
-        model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
+        model.species, model.reactions = load_chemkin_file(chemkin, species_path, transport_path=transport_path)
         models.append(model)
     return models
+
 
 def combine_models(models):
     """
@@ -139,26 +144,28 @@ def combine_models(models):
     Reindexes species with the same label and index
     """
     final_model = ReactionModel()
-    for i, model in enumerate(models):        
-        print 'Ignoring common species and reactions from model #{0:d}...'.format(i+1)
-        Nspec0 = len(final_model.species)
-        Nrxn0 = len(final_model.reactions)
+    for i, model in enumerate(models):
+        print('Ignoring common species and reactions from model #{0:d}...'.format(i + 1))
+        nspec0 = len(final_model.species)
+        nrxn0 = len(final_model.reactions)
         final_model = final_model.merge(model)
-        Nspec = len(final_model.species)
-        Nrxn = len(final_model.reactions)
-        if  len(model.species) > 0:
+        nspec = len(final_model.species)
+        nrxn = len(final_model.reactions)
+        if len(model.species) > 0:
             print('Added {1:d} out of {2:d} ({3:.1f}%) unique species from model '
-                  '#{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species), (Nspec - Nspec0) * 100. / len(model.species)))
+                  '#{0:d}.'.format(i + 1, nspec - nspec0, len(model.species),
+                                   (nspec - nspec0) * 100. / len(model.species)))
         else:
             print('Added {1:d} out of {2:d} unique species from model '
-                  '#{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species)))
+                  '#{0:d}.'.format(i + 1, nspec - nspec0, len(model.species)))
 
         if len(model.reactions) > 0:
             print('Added {1:d} out of {2:d} ({3:.1f}%) unique reactions from model '
-                  '#{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions), (Nrxn - Nrxn0) * 100. / len(model.reactions)))
+                  '#{0:d}.'.format(i + 1, nrxn - nrxn0, len(model.reactions),
+                                   (nrxn - nrxn0) * 100. / len(model.reactions)))
         else:
             print('Added {1:d} out of {2:d} unique reactions from model '
-                  '#{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions)))
+                  '#{0:d}.'.format(i + 1, nrxn - nrxn0, len(model.reactions)))
     print('The merged model has {0:d} species and {1:d} reactions'
           ''.format(len(final_model.species), len(final_model.reactions)))
 

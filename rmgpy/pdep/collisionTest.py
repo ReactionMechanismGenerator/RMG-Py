@@ -31,37 +31,38 @@
 """
 This module contains unit tests of the :mod:`rmgpy.pdep.collision` module.
 """
+from __future__ import division
 
-import numpy
 import unittest
 
-import rmgpy.constants as constants
-from rmgpy.pdep.collision import  SingleExponentialDown
+from rmgpy.pdep.collision import SingleExponentialDown
+
 
 ################################################################################
+
 
 class TestSingleExponentialDown(unittest.TestCase):
     """
     Contains unit tests of the SingleExponentialDown class.
     """
-    
+
     def setUp(self):
         self.alpha0 = 0.5
         self.T0 = 300.
         self.n = 0.85
         self.singleExponentialDown = SingleExponentialDown(
-            alpha0 = (self.alpha0,"kJ/mol"),
-            T0 = (self.T0,"K"),
-            n = self.n,
+            alpha0=(self.alpha0, "kJ/mol"),
+            T0=(self.T0, "K"),
+            n=self.n,
         )
-       
+
     def test_alpha0(self):
         """
         Test the SingleExponentialDown.sigma attribute.
         """
-        self.assertAlmostEqual(self.singleExponentialDown.alpha0.value_si*0.001, self.alpha0, 4)
+        self.assertAlmostEqual(self.singleExponentialDown.alpha0.value_si * 0.001, self.alpha0, 4)
 
-    def test_T0(self):
+    def test_temperature_0(self):
         """
         Test the SingleExponentialDown.T0 attribute.
         """
@@ -73,13 +74,13 @@ class TestSingleExponentialDown(unittest.TestCase):
         """
         self.assertAlmostEqual(self.singleExponentialDown.n, self.n, 4)
 
-    def test_getAlpha(self):
+    def test_get_alpha(self):
         """
-        Test the SingleExponentialDown.getAlpha() method.
+        Test the SingleExponentialDown.get_alpha() method.
         """
-        for T in [300,400,500,600,800,1000,1500,2000]:
+        for T in [300, 400, 500, 600, 800, 1000, 1500, 2000]:
             dEdown0 = 1000. * self.alpha0 * (T / self.T0) ** self.n
-            dEdown = self.singleExponentialDown.getAlpha(T)
+            dEdown = self.singleExponentialDown.get_alpha(T)
             self.assertAlmostEqual(dEdown0, dEdown, 6)
 
     def test_pickle(self):
@@ -87,8 +88,8 @@ class TestSingleExponentialDown(unittest.TestCase):
         Test that a SingleExponentialDown object can be successfully pickled
         and unpickled with no loss of information.
         """
-        import cPickle
-        singleExponentialDown = cPickle.loads(cPickle.dumps(self.singleExponentialDown,-1))
+        import pickle
+        singleExponentialDown = pickle.loads(pickle.dumps(self.singleExponentialDown, -1))
         self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
         self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
         self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)
@@ -100,7 +101,10 @@ class TestSingleExponentialDown(unittest.TestCase):
         Test that a SingleExponentialDown object can be successfully 
         reconstructed from its repr() with no loss of information.
         """
-        exec('singleExponentialDown = {0!r}'.format(self.singleExponentialDown))
+        namespace = {}
+        exec('singleExponentialDown = {0!r}'.format(self.singleExponentialDown), globals(), namespace)
+        self.assertIn('singleExponentialDown', namespace)
+        singleExponentialDown = namespace['singleExponentialDown']
         self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
         self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
         self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)

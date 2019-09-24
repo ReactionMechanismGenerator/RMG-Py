@@ -28,6 +28,8 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
+
 import copy
 import logging
 from time import time
@@ -228,15 +230,15 @@ class ReactorModPiece(ModPiece):
                 for spcIndex, uncertaintyFactor in self.gUncertaintyFactors[gParam]:
                     mappedSpeciesScaling[spcIndex] += G_rv[i] * uncertaintyFactor
 
-            for rxnIndex, uncertaintyFactor in mappedReactionScaling.iteritems():
+            for rxnIndex, uncertaintyFactor in mappedReactionScaling.items():
                 self.scaleToKinetics(1.0, uncertaintyFactor, rxnIndex)
-            for spcIndex, uncertaintyFactor in mappedSpeciesScaling.iteritems():
+            for spcIndex, uncertaintyFactor in mappedSpeciesScaling.items():
                 self.scaleToThermo(1.0, uncertaintyFactor, spcIndex)
 
         # The model must be refreshed when there are any thermo changes
         # kinetics can be refreshed automatically so we don't need to recreate the Solution() object.
         if G_rv:
-            self.cantera.refreshModel()
+            self.cantera.refresh_model()
 
         # Run the cantera simulation
         allData = self.cantera.simulate()
@@ -297,8 +299,8 @@ class ReactorModPiece(ModPiece):
         factor = randomInput * uncertaintyFactor
 
         # The rate is loguniform in k
-        rxn.kinetics.changeRate(10 ** factor)
-        self.cantera.modifyReactionKinetics(reactionIndex, rxn)
+        rxn.kinetics.change_rate(10 ** factor)
+        self.cantera.modify_reaction_kinetics(reactionIndex, rxn)
 
     def scaleToThermo(self, randomInput, uncertaintyFactor, speciesIndex):
         """
@@ -313,11 +315,11 @@ class ReactorModPiece(ModPiece):
         species = self.cantera.speciesList[speciesIndex]
         deltaH = randomInput * uncertaintyFactor * 4184.0  # Convert kcal/mol to J/mol
 
-        species.thermo.changeBaseEnthalpy(deltaH)
-        self.cantera.modifySpeciesThermo(speciesIndex, species, useChemkinIdentifier=True)
+        species.thermo.change_base_enthalpy(deltaH)
+        self.cantera.modify_species_thermo(speciesIndex, species, useChemkinIdentifier=True)
 
 
-class ReactorPCEFactory:
+class ReactorPCEFactory(object):
     """
     This class uses MUQ to generate adaptive Polynomial Chaos Expansions for global uncertainty analysis in chemical reaction systems. 
     It uses RMG, Cantera, and MUQ dependencies.
@@ -423,7 +425,7 @@ Species                      True Output          PCE Output
 
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                 outputIndex = i * reactorMod.numOutputSpecies + j
-                output += '{0:<20}{1:>20.3f}{2:>20.3f}\n'.format(outputSpecies.toChemkin(), trueOutput[outputIndex], pceOutput[outputIndex])
+                output += '{0:<20}{1:>20.3f}{2:>20.3f}\n'.format(outputSpecies.to_chemkin(), trueOutput[outputIndex], pceOutput[outputIndex])
             output += '============================================================\n'
 
         if log:
@@ -470,7 +472,7 @@ Species                   Mean         Stddev     Stddev (%)
 
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                 outputIndex = i * reactorMod.numOutputSpecies + j
-                output += '{0:<15}{1:>15.3e}{2:>15.3e}{3:>15.3f}\n'.format(outputSpecies.toChemkin(),
+                output += '{0:<15}{1:>15.3e}{2:>15.3e}{3:>15.3f}\n'.format(outputSpecies.to_chemkin(),
                                                                            mean[outputIndex],
                                                                            stddev[outputIndex],
                                                                            stddev_percent[outputIndex])
@@ -489,10 +491,10 @@ Description                                                                 sens
                     for k, descriptor in enumerate(reactorMod.kParams):
                         parameterIndex = k
                         if not reactorMod.correlated:
-                            description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(),
-                                                                     reactorMod.cantera.reactionList[descriptor].toChemkin(kinetics=False))
+                            description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.to_chemkin(),
+                                                                     reactorMod.cantera.reactionList[descriptor].to_chemkin(kinetics=False))
                         else:
-                            description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(), descriptor)
+                            description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.to_chemkin(), descriptor)
 
                         output += '{0:<70}{1:>14.3f}%{2:>14.3f}%\n'.format(description,
                                                                            100 * mainSens[outputIndex][parameterIndex],
@@ -511,10 +513,10 @@ Description                                                                 sens
                     for g, descriptor in enumerate(reactorMod.gParams):
                         parameterIndex = len(reactorMod.kParams) + g
                         if not reactorMod.correlated:
-                            description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.toChemkin(),
-                                                                    reactorMod.cantera.speciesList[descriptor].toChemkin())
+                            description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.to_chemkin(),
+                                                                    reactorMod.cantera.speciesList[descriptor].to_chemkin())
                         else:
-                            description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.toChemkin(), descriptor)
+                            description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.to_chemkin(), descriptor)
 
                         output += '{0:<70}{1:>14.3f}%{2:>14.3f}%\n'.format(description,
                                                                            100 * mainSens[outputIndex][parameterIndex],

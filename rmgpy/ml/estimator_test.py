@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -32,7 +29,6 @@ import os
 import unittest
 
 from rmgpy import settings
-from rmgpy.molecule import Molecule
 from rmgpy.ml.estimator import MLEstimator
 
 
@@ -47,20 +43,18 @@ class TestMLEstimator(unittest.TestCase):
         other unit tests.
         """
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
-        Hf298_path = os.path.join(models_path, 'H298')
-        S298_path = os.path.join(models_path, 'S298')
-        Cp_path = os.path.join(models_path, 'Cp')
-        self.ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
+        hf298_path = os.path.join(models_path, 'hf298')
+        s298_cp_path = os.path.join(models_path, 's298_cp')
+        self.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
     def test_get_thermo_data(self):
         """
         Test that we can make a prediction using MLEstimator.
         """
-        mol = Molecule().fromSMILES('C1C2C1C2')
-        thermo = self.ml_estimator.get_thermo_data(mol)
+        smi = 'C1C2C1C2'
+        thermo = self.ml_estimator.get_thermo_data(smi)
 
         self.assertTrue(thermo.comment.startswith('ML Estimation'))
         self.assertAlmostEqual(thermo.Cp0.value_si, 33.3, 1)
         self.assertAlmostEqual(thermo.CpInf.value_si, 232.8, 1)
         self.assertEqual(len(thermo.Cpdata.value_si), 7)
-        self.assertGreater(thermo.S298.uncertainty_si, 0.01)

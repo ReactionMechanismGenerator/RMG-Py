@@ -75,11 +75,11 @@ def generate_header_html(n, fam_rxn, lib_rxn, library_name, families):
     html += ['</tr><tr>']
     html += ['<th colspan="{0}">Reactant SMILES</th>'.format(half)]
     html += ['<td colspan="{0}">{1}</td>'.format(half, ' + '.join(
-        [reactant.molecule[0].toSMILES() for reactant in lib_rxn.reactants]))]
+        [reactant.molecule[0].to_smiles() for reactant in lib_rxn.reactants]))]
     html += ['</tr><tr>']
     html += ['<th colspan="{0}">Product SMILES</th>'.format(half)]
     html += ['<td colspan="{0}">{1}</td>'.format(half, ' + '.join(
-        [product.molecule[0].toSMILES() for product in lib_rxn.products]))]
+        [product.molecule[0].to_smiles() for product in lib_rxn.products]))]
     html += ['</tr>']
 
     return html
@@ -107,8 +107,8 @@ def generate_template_html(rxn, template):
         html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full / templateSize, b64encode(entry.item._repr_png_()))]
     html += ['</tr><tr>']
     if templateSize == 3:
-        merged_group = template[0].item.mergeGroups(template[1].item)
-        merged_group = merged_group.mergeGroups(template[2].item)
+        merged_group = template[0].item.merge_groups(template[1].item)
+        merged_group = merged_group.merge_groups(template[2].item)
         html += ['<td colspan="{0}">{1}</td>'.format(full, 'Merged Template')]
         html += ['</tr><tr>']
         html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full, b64encode(merged_group._repr_png_()))]
@@ -147,7 +147,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     num_aromatic_reactants = 0
                     reactants = fam_rxn.reactants if fam_rxn.is_forward else fam_rxn.products
                     for r in reactants:
-                        num_aromatic_reactants += r.molecule[0].isAromatic()
+                        num_aromatic_reactants += r.molecule[0].is_aromatic()
                     if num_aromatic_reactants > max_num_aromatic_reactants:
                         max_num_aromatic_reactants = num_aromatic_reactants
                         selected_rxns = [fam_rxn]
@@ -164,7 +164,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 forward = fam_rxn.is_forward
 
                 # Find the labeled atoms using family and reactants & products from fam_rxn
-                database.kinetics.families[fam_rxn.family].addAtomLabelsForReaction(fam_rxn)
+                database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn)
 
                 # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
                 if forward:
@@ -180,17 +180,17 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 else:
                     reaction_dict[fam_rxn.family] = [lib_rxn]
 
-                template = database.kinetics.families[fam_rxn.family].retrieveTemplate(fam_rxn.template)
+                template = database.kinetics.families[fam_rxn.family].retrieve_template(fam_rxn.template)
 
                 if compareKinetics:
                     # Check what the current kinetics for this template are
                     newKinetics = lib_rxn.kinetics
-                    oldKinetics = database.kinetics.families[fam_rxn.family].getKineticsForTemplate(template, degeneracy=fam_rxn.degeneracy)[0]
+                    oldKinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([newKinetics.getRateCoefficient(t) for t in tlist]))
-                    oldklist = np.log10(np.array([oldKinetics.getRateCoefficient(t) for t in tlist]))
+                    newklist = np.log10(np.array([newKinetics.get_rate_coefficient(t) for t in tlist]))
+                    oldklist = np.log10(np.array([oldKinetics.get_rate_coefficient(t) for t in tlist]))
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
@@ -199,7 +199,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     plt.xlabel('1000/T')
                     plt.ylabel('log(k)')
                     fig = BytesIO()
-                    plt.savefig(fig, format='png')
+                    plt.savefig(fig, file_format='png')
                     fig.seek(0)
                     figdata = b64encode(fig.getvalue())
                     fig.close()
@@ -240,10 +240,10 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 for i, rxn in enumerate(fam_rxn_list):
                     forward = rxn.is_forward
 
-                    template = database.kinetics.families[rxn.family].retrieveTemplate(rxn.template)
+                    template = database.kinetics.families[rxn.family].retrieve_template(rxn.template)
 
                     if compareKinetics:
-                        oldKinetics.append(database.kinetics.families[rxn.family].getKineticsForTemplate(template, degeneracy=rxn.degeneracy)[0])
+                        oldKinetics.append(database.kinetics.families[rxn.family].get_kinetics_for_template(template, degeneracy=rxn.degeneracy)[0])
 
                     if i == 0:
                         html = generate_header_html(2, rxn, lib_rxn, library_name, families)
@@ -260,10 +260,10 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([newKinetics.getRateCoefficient(t) for t in tlist]))
+                    newklist = np.log10(np.array([newKinetics.get_rate_coefficient(t) for t in tlist]))
                     oldklist = []
                     for kinetics in oldKinetics:
-                        oldklist.append(np.log10(np.array([kinetics.getRateCoefficient(t) for t in tlist])))
+                        oldklist.append(np.log10(np.array([kinetics.get_rate_coefficient(t) for t in tlist])))
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
@@ -273,7 +273,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     plt.xlabel('1000/T')
                     plt.ylabel('log(k)')
                     fig = BytesIO()
-                    plt.savefig(fig, format='png')
+                    plt.savefig(fig, file_format='png')
                     fig.seek(0)
                     figdata = b64encode(fig.getvalue())
                     fig.close()
@@ -394,7 +394,7 @@ def manual_selection(master_dict, multiple_dict, database):
             forward = fam_rxn.is_forward
 
             # Find the labeled atoms using family and reactants & products from fam_rxn
-            database.kinetics.families[fam_rxn.family].addAtomLabelsForReaction(fam_rxn)
+            database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn)
 
             # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
             if forward:

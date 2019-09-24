@@ -33,15 +33,15 @@ This module contains classes for sensitivity analysis
 of kinetics and pressure-dependent jobs.
 """
 
-import os
 import logging
+import os
 import string
+
 import numpy as np
 
+from rmgpy.pdep import Configuration
 import rmgpy.quantity as quantity
 from rmgpy.species import TransitionState
-from rmgpy.pdep import Configuration
-
 
 ################################################################################
 
@@ -71,10 +71,10 @@ class KineticsSensitivity(object):
         self.output_directory = output_directory
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
-        self.f_rates = [self.job.reaction.kinetics.getRateCoefficient(condition.value_si)
+        self.f_rates = [self.job.reaction.kinetics.get_rate_coefficient(condition.value_si)
                         for condition in self.conditions]
-        kr = self.job.reaction.generateReverseRateCoefficient()
-        self.r_rates = [kr.getRateCoefficient(condition.value_si) for condition in self.conditions]
+        kr = self.job.reaction.generate_reverse_rate_coefficient()
+        self.r_rates = [kr.get_rate_coefficient(condition.value_si) for condition in self.conditions]
         self.f_sa_rates = {}
         self.r_sa_rates = {}
         self.f_sa_coefficients = {}
@@ -87,22 +87,22 @@ class KineticsSensitivity(object):
         Execute the sensitivity analysis for a :class:KineticsJob: object
         """
         for species in [self.job.reaction.reactants[0], self.job.reaction.products[0],
-                        self.job.reaction.transitionState]:
+                        self.job.reaction.transition_state]:
             self.perturb(species)
-            self.job.execute(outputFile=None, plot=False)  # run the perturbed job
-            self.f_sa_rates[species] = [self.job.reaction.kinetics.getRateCoefficient(condition.value_si)
+            self.job.execute(output_file=None, plot=False)  # run the perturbed job
+            self.f_sa_rates[species] = [self.job.reaction.kinetics.get_rate_coefficient(condition.value_si)
                                         for condition in self.conditions]
-            kr = self.job.reaction.generateReverseRateCoefficient()
-            self.r_sa_rates[species] = [kr.getRateCoefficient(condition.value_si)
+            kr = self.job.reaction.generate_reverse_rate_coefficient()
+            self.r_sa_rates[species] = [kr.get_rate_coefficient(condition.value_si)
                                         for condition in self.conditions]
             self.unperturb(species)
             # Calculate the sensitivity coefficients according to dln(r) / dln(E0) = (E0 * dr) / (r * dE0)
             self.f_sa_coefficients[species] = [(self.f_sa_rates[species][i] - self.f_rates[i]) /
                                                (self.perturbation.value_si * self.f_rates[i])
-                                               for i in xrange(len(self.conditions))]
+                                               for i in range(len(self.conditions))]
             self.r_sa_coefficients[species] = [(self.r_sa_rates[species][i] - self.r_rates[i]) /
                                                (self.perturbation.value_si * self.r_rates[i])
-                                               for i in xrange(len(self.conditions))]
+                                               for i in range(len(self.conditions))]
         self.save()
         self.plot()
 
@@ -127,16 +127,16 @@ class KineticsSensitivity(object):
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for reaction {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
-                       "by perturbing E0 of each well or TS by {1}, and are given in `mol/J` units.\n\n\n".format(
-                        reaction_str, self.perturbation))
+                       "by perturbing E0 of each well or TS by {1}, and are given in "
+                       "`mol/J` units.\n\n\n".format(reaction_str, self.perturbation))
             reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
-            ts_label = self.job.reaction.transitionState.label
+            ts_label = self.job.reaction.transition_state.label
             products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
             max_label = max(len(reactants_label), len(products_label), len(ts_label), 10)
             sa_f.write('========================={0}=============================================\n'
                        '| Direction | Well or TS {1}| Temperature (K) | Sensitivity coefficient |\n'
-                       '|-----------+------------{2}+-----------------+-------------------------|\n'.format(
-                        '=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
+                       '|-----------+------------{2}+-----------------+-------------------------|\n'
+                       .format('=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     reactants_label, ' ' * (max_label - len(reactants_label)), condition.value_si,
@@ -148,7 +148,7 @@ class KineticsSensitivity(object):
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
-                    self.f_sa_coefficients[self.job.reaction.transitionState][i]))
+                    self.f_sa_coefficients[self.job.reaction.transition_state][i]))
             sa_f.write('|-----------+------------{0}+-----------------+-------------------------|\n'.format(
                 '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
@@ -162,7 +162,7 @@ class KineticsSensitivity(object):
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
-                    self.r_sa_coefficients[self.job.reaction.transitionState][i]))
+                    self.r_sa_coefficients[self.job.reaction.transition_state][i]))
             sa_f.write('========================={0}=============================================\n'.format(
                 '=' * (max_label - 10)))
 
@@ -174,20 +174,20 @@ class KineticsSensitivity(object):
             return
 
         reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
-        ts_label = self.job.reaction.transitionState.label
+        ts_label = self.job.reaction.transition_state.label
         products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
 
         plt.rcdefaults()
-        _, ax = plt.subplots(nrows=len(self.conditions), ncols=2, tight_layout=True)
+        ax = plt.subplots(nrows=len(self.conditions), ncols=2, tight_layout=True)[1]
         labels = [reactants_label, ts_label, products_label]
-        min_sa = min(min(min(self.f_sa_coefficients.itervalues())), min(min(self.r_sa_coefficients.itervalues())))
-        max_sa = max(max(max(self.f_sa_coefficients.itervalues())), max(max(self.r_sa_coefficients.itervalues())))
+        min_sa = min(min(min(self.f_sa_coefficients.values())), min(min(self.r_sa_coefficients.values())))
+        max_sa = max(max(max(self.f_sa_coefficients.values())), max(max(self.r_sa_coefficients.values())))
         for i, condition in enumerate(self.conditions):
             f_values = [self.f_sa_coefficients[self.job.reaction.reactants[0]][i],
-                        self.f_sa_coefficients[self.job.reaction.transitionState][i],
+                        self.f_sa_coefficients[self.job.reaction.transition_state][i],
                         self.f_sa_coefficients[self.job.reaction.products[0]][i]]
             r_values = [self.r_sa_coefficients[self.job.reaction.reactants[0]][i],
-                        self.r_sa_coefficients[self.job.reaction.transitionState][i],
+                        self.r_sa_coefficients[self.job.reaction.transition_state][i],
                         self.r_sa_coefficients[self.job.reaction.products[0]][i]]
             y_pos = np.arange(3)
             ax[i][0].barh(y_pos, f_values, align='center', color='green')
@@ -229,9 +229,9 @@ class PDepSensitivity(object):
     `conditions`        A list of the conditions (each entry is a list of one T and one P quantities) at which the
                         sensitivity coefficients are calculated
     `job`               The PressureDependenceJob object
-    `rates`             A dictionary with netReactions as keys. Values are lists of forward rates from `job` for the
+    `rates`             A dictionary with net_reactions as keys. Values are lists of forward rates from `job` for the
                         respective path reaction at the respective `conditions` in the appropriate units
-    `sa_rates`          A dictionary with string representations of netReactions as keys. Values are dictionaries with
+    `sa_rates`          A dictionary with string representations of net_reactions as keys. Values are dictionaries with
                         Wells or TransitionStates as keys and each value is a list of forward rates from `job` at the
                         respective `conditions` after perturbing the corresponding well or TS's E0
     `sa_coefficients`   A dictionary with similar structure as `sa_rates`, containing the sensitivity coefficients
@@ -245,14 +245,14 @@ class PDepSensitivity(object):
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
         self.rates = {}
-        for rxn in self.job.network.netReactions:
+        for rxn in self.job.network.net_reactions:
             self.rates[str(rxn)] = []
             for condition in self.conditions:
-                self.rates[str(rxn)].append(rxn.kinetics.getRateCoefficient(condition[0].value_si,
-                                                                            condition[1].value_si))
+                self.rates[str(rxn)].append(rxn.kinetics.get_rate_coefficient(condition[0].value_si,
+                                                                              condition[1].value_si))
         self.sa_rates = {}
         self.sa_coefficients = {}
-        for rxn in self.job.network.netReactions:
+        for rxn in self.job.network.net_reactions:
             self.sa_rates[str(rxn)] = {}
             self.sa_coefficients[str(rxn)] = {}
         self.perturbation = quantity.Quantity(perturbation, 'kcal/mol')
@@ -267,9 +267,9 @@ class PDepSensitivity(object):
         wells.extend(self.job.network.isomers)
         wells.extend(self.job.network.products)
         transition_states = []
-        for rxn in self.job.network.pathReactions:
-            # if rxn.transitionState is not None:
-            transition_states.append(rxn.transitionState)
+        for rxn in self.job.network.path_reactions:
+            # if rxn.transition_state is not None:
+            transition_states.append(rxn.transition_state)
 
         for entry in wells + transition_states:
             if entry in wells:
@@ -277,15 +277,15 @@ class PDepSensitivity(object):
             else:
                 logging.info("\n\nPerturbing TS '{0}' by {1}:".format(entry.label, self.perturbation))
             self.perturb(entry)
-            self.job.execute(outputFile=None, plot=False, print_summary=False)  # run the perturbed job
+            self.job.execute(output_file=None, plot=False, print_summary=False)  # run the perturbed job
             self.unperturb(entry)
-            for rxn in self.job.network.netReactions:
-                self.sa_rates[str(rxn)][entry] = [rxn.kinetics.getRateCoefficient(
+            for rxn in self.job.network.net_reactions:
+                self.sa_rates[str(rxn)][entry] = [rxn.kinetics.get_rate_coefficient(
                     condition[0].value_si, condition[1].value_si) for condition in self.conditions]
                 self.sa_coefficients[str(rxn)][entry] = [((self.sa_rates[str(rxn)][entry][i]
                                                            - self.rates[str(rxn)][i])) /
                                                          (self.perturbation.value_si * self.rates[str(rxn)][i])
-                                                         for i in xrange(len(self.conditions))]
+                                                         for i in range(len(self.conditions))]
         self.save(wells, transition_states)
         self.plot(wells, transition_states)
 
@@ -321,9 +321,9 @@ class PDepSensitivity(object):
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for network {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
-                       "by perturbing E0 of each well or TS by {1},\n and are given in `mol/J` units.\n\n\n".format(
-                        network_str, self.perturbation))
-            for rxn in self.job.network.netReactions:
+                       "by perturbing E0 of each well or TS by {1},\n and are given in "
+                       "`mol/J` units.\n\n\n".format(network_str, self.perturbation))
+            for rxn in self.job.network.net_reactions:
                 reactants_label = ' + '.join([reactant.label for reactant in rxn.reactants])
                 products_label = ' + '.join([reactant.label for reactant in rxn.products])
                 reaction_str = '{0} {1} {2}'.format(reactants_label, '<=>', products_label)
@@ -331,8 +331,8 @@ class PDepSensitivity(object):
                 max_label = 40
                 sa_f.write('========================={0}==================================================\n'
                            '| Well or TS {1}| Temperature (K) | Pressure (bar) | Sensitivity coefficient |\n'
-                           '|------------{2}+-----------------+----------------+-------------------------|\n'.format(
-                            '=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
+                           '|------------{2}+-----------------+----------------+-------------------------|\n'
+                           .format('=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
                 for entry in wells + transition_states:
                     if isinstance(entry, TransitionState):
                         entry_label = '(TS) ' + entry.label
@@ -353,13 +353,13 @@ class PDepSensitivity(object):
         except ImportError:
             return
 
-        for rxn in self.job.network.netReactions:
+        for rxn in self.job.network.net_reactions:
             plt.rcdefaults()
-            _, ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)
+            ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)[1]
             labels = [str(entry) for entry in wells]
             labels.extend(ts.label for ts in transition_states)
             max_sa = min_sa = self.sa_coefficients[str(rxn)][wells[0]][0]
-            for conformer_sa in self.sa_coefficients[str(rxn)].itervalues():
+            for conformer_sa in self.sa_coefficients[str(rxn)].values():
                 for sa_condition in conformer_sa:
                     if min_sa > sa_condition:
                         min_sa = sa_condition

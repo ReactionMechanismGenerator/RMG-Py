@@ -2,18 +2,18 @@
 # encoding: utf-8
 
 name = "Radical Corrections"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
     index = 0,
     label = "Radical",
     group = "OR{RJ, RJ2_singlet}",
-    thermo = u'RJ',
-    shortDesc = u"""""",
+    thermo = 'RJ',
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -25,10 +25,10 @@ entry(
 """
 1 * R u1
 """,
-    thermo = u'CJ',
-    shortDesc = u"""""",
+    thermo = 'CJ',
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -40,10 +40,10 @@ entry(
 """
 1 * C u1
 """,
-    thermo = u'CsJ',
-    shortDesc = u"""""",
+    thermo = 'CsJ',
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -61,9 +61,9 @@ entry(
         H298 = (104.81,'kcal/mol','+|-',0.1),
         S298 = (0.52,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -75,10 +75,10 @@ entry(
 """
 1 * O u1
 """,
-    thermo = u'RJ',
-    shortDesc = u"""""",
+    thermo = 'RJ',
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -91,10 +91,10 @@ entry(
 """
 1 * R u2
 """,
-    thermo = u'CsJ',
-    shortDesc = u"""""",
+    thermo = 'CsJ',
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )
