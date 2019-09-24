@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>3.4.3. Binary Installation Using Anaconda for Windows &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -62,31 +60,29 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="binary-installation-using-anaconda-for-windows">
 <span id="anacondauserwindows"></span><h1>3.4.3. Binary Installation Using Anaconda for Windows<a class="headerlink" href="#binary-installation-using-anaconda-for-windows" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic">
-<li><p class="first">Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to <code class="docutils literal notranslate"><span class="pre">C:\Anaconda\</span></code> in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.</p>
+<li><p>Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to <code class="docutils literal notranslate"><span class="pre">C:\Anaconda\</span></code> in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.</p>
 <blockquote>
 <div><img alt="../../../_images/AnacondaInstallWindows.png" class="align-center" src="../../../_images/AnacondaInstallWindows.png" />
 </div></blockquote>
 </li>
-<li><p class="first">Now we want to install both RMG and the RMG-database binaries via the command prompt. Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for <code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>. You may need to run the command prompt as an administrator: to do this open up a file explorer and navigate to <code class="docutils literal notranslate"><span class="pre">C:\Windows\System32</span></code> and find the file <code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>; right click on this file and select “run as administrator”) and type the following to create the new environment named ‘<code class="docutils literal notranslate"><span class="pre">rmg_env</span></code>’ containing the latest stable version of the RMG program and its database.</p>
+<li><p>Now we want to install both RMG and the RMG-database binaries via the command prompt. Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for <code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>. You may need to run the command prompt as an administrator: to do this open up a file explorer and navigate to <code class="docutils literal notranslate"><span class="pre">C:\Windows\System32</span></code> and find the file <code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>; right click on this file and select “run as administrator”) and type the following to create the new environment named ‘<code class="docutils literal notranslate"><span class="pre">rmg_env</span></code>’ containing the latest stable version of the RMG program and its database.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_env</span> <span class="n">rmg</span> <span class="n">rmgdatabase</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Whenever you wish to use it you must first activate the environment in the command prompt by typing:</p>
+<li><p>Whenever you wish to use it you must first activate the environment in the command prompt by typing:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activate</span> <span class="n">rmg_env</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Optional: If you wish to use the <a class="reference internal" href="../thermo.html#qm"><span class="std std-ref">QMTP interface</span></a> with <a class="reference external" href="http://openmopac.net/">MOPAC</a> to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the <a class="reference external" href="http://openmopac.net/form.php">MOPAC License Request Form</a>.Once you have it, type the following into your command prompt (while the environment is activated)</p>
+<li><p>Optional: If you wish to use the <a class="reference internal" href="../thermo.html#qm"><span class="std std-ref">QMTP interface</span></a> with <a class="reference external" href="http://openmopac.net/">MOPAC</a> to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the <a class="reference external" href="http://openmopac.net/form.php">MOPAC License Request Form</a>.Once you have it, type the following into your command prompt (while the environment is activated)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mopac</span> <span class="n">password_string_here</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Now you must <a class="reference internal" href="windowsEnvironment.html#windowsenvironment"><span class="std std-ref">set the RMG environment variable in Windows</span></a> to allow your system to find the RMG python files more easily.</p>
-</li>
-<li><p class="first">If you set any new environment variables, you must now close and reopen the command prompt so that those environment variables can be refreshed and used.</p>
-</li>
-<li><p class="first">You may now run an RMG test job. Save the <a class="reference external" href="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py">Minimal Example Input File</a> to a local directory.  Use the command prompt to run your RMG job inside that folder by using the following command</p>
+<li><p>Now you must <a class="reference internal" href="windowsEnvironment.html#windowsenvironment"><span class="std std-ref">set the RMG environment variable in Windows</span></a> to allow your system to find the RMG python files more easily.</p></li>
+<li><p>If you set any new environment variables, you must now close and reopen the command prompt so that those environment variables can be refreshed and used.</p></li>
+<li><p>You may now run an RMG test job. Save the <a class="reference external" href="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py">Minimal Example Input File</a> to a local directory.  Use the command prompt to run your RMG job inside that folder by using the following command</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activate</span> <span class="n">rmg_env</span>
 <span class="n">python</span> <span class="o">%</span><span class="n">RMGPy</span><span class="o">%</span>\<span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
@@ -161,13 +157,11 @@ check and update your installation to the latest stable version available on Ana
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -205,7 +199,7 @@ check and update your installation to the latest stable version available on Ana
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

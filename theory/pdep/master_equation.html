@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>2. The Master Equation &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -71,12 +69,12 @@ independent variable.</p>
 <h2>2.1. Isomers, Reactants, and Products<a class="headerlink" href="#isomers-reactants-and-products" title="Permalink to this headline">¶</a></h2>
 <p>Throughout this document we will utilize the following terminology:</p>
 <ul class="simple">
-<li>An <strong>isomer</strong> is a unimolecular configuration on the potential energy surface.</li>
-<li>A <strong>reactant channel</strong> is a bimolecular configuration that associates to form
-an isomer. Dissociation from the isomer back to reactants is allowed.</li>
-<li>A <strong>product channel</strong> is a bimolecular configuration that is formed by
+<li><p>An <strong>isomer</strong> is a unimolecular configuration on the potential energy surface.</p></li>
+<li><p>A <strong>reactant channel</strong> is a bimolecular configuration that associates to form
+an isomer. Dissociation from the isomer back to reactants is allowed.</p></li>
+<li><p>A <strong>product channel</strong> is a bimolecular configuration that is formed by
 dissociation of an isomer. Reassociation of products to the isomer is <em>not</em>
-allowed.</li>
+allowed.</p></li>
 </ul>
 <p>The isomers are the configurations for which we must model the energy states.
 We designate <span class="math notranslate nohighlight">\(p_i(E, J, t)\)</span> as the population of isomer <span class="math notranslate nohighlight">\(i\)</span> having
@@ -207,18 +205,18 @@ the molecular degrees of freedom are consistent with the macroscopic
 thermodynamic parameters. There are multiple reasons to use the latter
 formulation:</p>
 <ul class="simple">
-<li>Only the density of states of the unimolecular isomers need be computed. This
+<li><p>Only the density of states of the unimolecular isomers need be computed. This
 is a result of the assumption of thermalized bimolecular channels, which
 means that we only need to compute the product <span class="math notranslate nohighlight">\(f_{in} b_n\)</span>, and not
-the individual values of <span class="math notranslate nohighlight">\(f_{in}\)</span> and <span class="math notranslate nohighlight">\(b_n\)</span>.</li>
-<li>Only the reactive rovibrational modes need be included in the density of
+the individual values of <span class="math notranslate nohighlight">\(f_{in}\)</span> and <span class="math notranslate nohighlight">\(b_n\)</span>.</p></li>
+<li><p>Only the reactive rovibrational modes need be included in the density of
 states. Missing modes will not affect the observed equilibrium because we are
-imposing the macroscopic equilibrium via <span class="math notranslate nohighlight">\(K_\mathrm{eq}(T)\)</span>.</li>
-<li>Constants of proportionality in the density of states become unimportant, as
+imposing the macroscopic equilibrium via <span class="math notranslate nohighlight">\(K_\mathrm{eq}(T)\)</span>.</p></li>
+<li><p>Constants of proportionality in the density of states become unimportant, as
 they cancel when taking the ratio <span class="math notranslate nohighlight">\(\rho(E,J)/Q(\beta)\)</span>. For example, if
 the external rotational constants are unknown then we will include an active
 K-rotor in the density of states; this property means that the rotational
-constant of this active K-rotor cancels and is therefore arbitrary.</li>
+constant of this active K-rotor cancels and is therefore arbitrary.</p></li>
 </ul>
 <p>There are two common ways of determining values for <span class="math notranslate nohighlight">\(k(E, J)\)</span>: the
 inverse Laplace transform method and RRKM theory. The latter requires detailed
@@ -299,49 +297,49 @@ collision and reaction models to give a linear integro-differential equation:</p
                        &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E, J) b_n(E, J, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E, J) p_i(E, J, t) \\\end{split}\\\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E, J) p_i(E, J, t) \ dE \\
                                                                   &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E, J) b_n(E, J, t) \  dE\end{split}\end{aligned}\end{align} \]</div>
 <p>A summary of the variables is given below:</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="26%" />
-<col width="74%" />
+<col style="width: 26%" />
+<col style="width: 74%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Variable</th>
-<th class="head">Meaning</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p>Meaning</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><span class="math notranslate nohighlight">\(p_i(E, J, t)\)</span></td>
-<td>Population distribution of isomer <span class="math notranslate nohighlight">\(i\)</span></td>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(p_i(E, J, t)\)</span></p></td>
+<td><p>Population distribution of isomer <span class="math notranslate nohighlight">\(i\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><span class="math notranslate nohighlight">\(y_{n\mathrm{A}}(t)\)</span></td>
-<td>Total population of species <span class="math notranslate nohighlight">\(\ce{A}_n\)</span> in reactant channel <span class="math notranslate nohighlight">\(n\)</span></td>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(y_{n\mathrm{A}}(t)\)</span></p></td>
+<td><p>Total population of species <span class="math notranslate nohighlight">\(\ce{A}_n\)</span> in reactant channel <span class="math notranslate nohighlight">\(n\)</span></p></td>
 </tr>
-<tr class="row-even"><td><span class="math notranslate nohighlight">\(\omega_i(T, P)\)</span></td>
-<td>Collision frequency of isomer <span class="math notranslate nohighlight">\(i\)</span></td>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\omega_i(T, P)\)</span></p></td>
+<td><p>Collision frequency of isomer <span class="math notranslate nohighlight">\(i\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><span class="math notranslate nohighlight">\(P_i(E, J, E^\prime, J^\prime)\)</span></td>
-<td>Collisional transfer probability from <span class="math notranslate nohighlight">\((E^\prime, J^\prime)\)</span> to <span class="math notranslate nohighlight">\((E, J)\)</span> for isomer <span class="math notranslate nohighlight">\(i\)</span></td>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(P_i(E, J, E^\prime, J^\prime)\)</span></p></td>
+<td><p>Collisional transfer probability from <span class="math notranslate nohighlight">\((E^\prime, J^\prime)\)</span> to <span class="math notranslate nohighlight">\((E, J)\)</span> for isomer <span class="math notranslate nohighlight">\(i\)</span></p></td>
 </tr>
-<tr class="row-even"><td><span class="math notranslate nohighlight">\(k_{ij}(E, J)\)</span></td>
-<td>Microcanonical rate coefficient for isomerization from isomer <span class="math notranslate nohighlight">\(j\)</span> to isomer <span class="math notranslate nohighlight">\(i\)</span></td>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(k_{ij}(E, J)\)</span></p></td>
+<td><p>Microcanonical rate coefficient for isomerization from isomer <span class="math notranslate nohighlight">\(j\)</span> to isomer <span class="math notranslate nohighlight">\(i\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><span class="math notranslate nohighlight">\(f_{im}(E, J)\)</span></td>
-<td>Microcanonical rate coefficient for association from reactant channel <span class="math notranslate nohighlight">\(m\)</span> to isomer <span class="math notranslate nohighlight">\(i\)</span></td>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(f_{im}(E, J)\)</span></p></td>
+<td><p>Microcanonical rate coefficient for association from reactant channel <span class="math notranslate nohighlight">\(m\)</span> to isomer <span class="math notranslate nohighlight">\(i\)</span></p></td>
 </tr>
-<tr class="row-even"><td><span class="math notranslate nohighlight">\(g_{nj}(E, J)\)</span></td>
-<td>Microcanonical rate coefficient for dissociation from isomer <span class="math notranslate nohighlight">\(j\)</span> to reactant or product channel <span class="math notranslate nohighlight">\(n\)</span></td>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(g_{nj}(E, J)\)</span></p></td>
+<td><p>Microcanonical rate coefficient for dissociation from isomer <span class="math notranslate nohighlight">\(j\)</span> to reactant or product channel <span class="math notranslate nohighlight">\(n\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><span class="math notranslate nohighlight">\(b_n(E, J, t)\)</span></td>
-<td>Boltzmann distribution for reactant channel <span class="math notranslate nohighlight">\(n\)</span></td>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(b_n(E, J, t)\)</span></p></td>
+<td><p>Boltzmann distribution for reactant channel <span class="math notranslate nohighlight">\(n\)</span></p></td>
 </tr>
-<tr class="row-even"><td><span class="math notranslate nohighlight">\(N_\mathrm{isom}\)</span></td>
-<td>Total number of isomers</td>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(N_\mathrm{isom}\)</span></p></td>
+<td><p>Total number of isomers</p></td>
 </tr>
-<tr class="row-odd"><td><span class="math notranslate nohighlight">\(N_\mathrm{reac}\)</span></td>
-<td>Total number of reactant channels</td>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(N_\mathrm{reac}\)</span></p></td>
+<td><p>Total number of reactant channels</p></td>
 </tr>
-<tr class="row-even"><td><span class="math notranslate nohighlight">\(N_\mathrm{prod}\)</span></td>
-<td>Total number of product channels</td>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(N_\mathrm{prod}\)</span></p></td>
+<td><p>Total number of product channels</p></td>
 </tr>
 </tbody>
 </table>
@@ -430,43 +428,30 @@ reactant channel <span class="math notranslate nohighlight">\(n\)</span> due to 
 <h2>2.6. Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this headline">¶</a></h2>
 <p>The interested reader is referred to any of a variety of other sources for
 alternative presentations, of which an illustrative sampling is given here
-<a class="reference internal" href="#gilbert1990" id="id1">[Gilbert1990]</a> <a class="reference internal" href="#baer1996" id="id2">[Baer1996]</a> <a class="reference internal" href="#holbrook1996" id="id3">[Holbrook1996]</a> <a class="reference internal" href="#forst2003" id="id4">[Forst2003]</a> <a class="reference internal" href="#pilling2003" id="id5">[Pilling2003]</a>.</p>
-<table class="docutils citation" frame="void" id="gilbert1990" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Gilbert1990]</a></td><td>R. G. Gilbert and S. C. Smith. <em>Theory of Unimolecular and
-Recombination Reactions</em>. Blackwell Sci. (1990).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="baer1996" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Baer1996]</a></td><td>T. Baer and W. L. Hase. <em>Unimolecular Reaction Dynamics</em>.
-Oxford University Press (1996).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="holbrook1996" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[Holbrook1996]</a></td><td>K. A. Holbrook, M. J. Pilling, and S. H. Robertson.
-<em>Unimolecular Reactions</em>. Second Edition. John Wiley and Sons (1996).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="forst2003" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[Forst2003]</a></td><td>W. Forst. <em>Unimolecular Reactions: A Concise Introduction</em>.
-Cambridge University Press (2003).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="pilling2003" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id5">[Pilling2003]</a></td><td>M. J. Pilling and S. H. Robertson. <em>Annu. Rev. Phys. Chem.</em>
+<a class="reference internal" href="#gilbert1990" id="id1"><span>[Gilbert1990]</span></a> <a class="reference internal" href="#baer1996" id="id2"><span>[Baer1996]</span></a> <a class="reference internal" href="#holbrook1996" id="id3"><span>[Holbrook1996]</span></a> <a class="reference internal" href="#forst2003" id="id4"><span>[Forst2003]</span></a> <a class="reference internal" href="#pilling2003" id="id5"><span>[Pilling2003]</span></a>.</p>
+<dl class="citation">
+<dt class="label" id="gilbert1990"><span class="brackets"><a class="fn-backref" href="#id1">Gilbert1990</a></span></dt>
+<dd><p>R. G. Gilbert and S. C. Smith. <em>Theory of Unimolecular and
+Recombination Reactions</em>. Blackwell Sci. (1990).</p>
+</dd>
+<dt class="label" id="baer1996"><span class="brackets"><a class="fn-backref" href="#id2">Baer1996</a></span></dt>
+<dd><p>T. Baer and W. L. Hase. <em>Unimolecular Reaction Dynamics</em>.
+Oxford University Press (1996).</p>
+</dd>
+<dt class="label" id="holbrook1996"><span class="brackets"><a class="fn-backref" href="#id3">Holbrook1996</a></span></dt>
+<dd><p>K. A. Holbrook, M. J. Pilling, and S. H. Robertson.
+<em>Unimolecular Reactions</em>. Second Edition. John Wiley and Sons (1996).</p>
+</dd>
+<dt class="label" id="forst2003"><span class="brackets"><a class="fn-backref" href="#id4">Forst2003</a></span></dt>
+<dd><p>W. Forst. <em>Unimolecular Reactions: A Concise Introduction</em>.
+Cambridge University Press (2003).</p>
+</dd>
+<dt class="label" id="pilling2003"><span class="brackets"><a class="fn-backref" href="#id5">Pilling2003</a></span></dt>
+<dd><p>M. J. Pilling and S. H. Robertson. <em>Annu. Rev. Phys. Chem.</em>
 <strong>54</strong>, p. 245-275 (2003).
-<a class="reference external" href="http://dx.doi.org/10.1146/annurev.physchem.54.011002.103822">doi:10.1146/annurev.physchem.54.011002.103822</a></td></tr>
-</tbody>
-</table>
+<a class="reference external" href="http://dx.doi.org/10.1146/annurev.physchem.54.011002.103822">doi:10.1146/annurev.physchem.54.011002.103822</a></p>
+</dd>
+</dl>
 </div>
 </div>
 
@@ -535,13 +520,11 @@ Cambridge University Press (2003).</td></tr>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -578,7 +561,7 @@ Cambridge University Press (2003).</td></tr>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

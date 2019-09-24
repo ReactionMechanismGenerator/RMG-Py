@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.statmech.KRotor &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,31 +60,31 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.statmech.KRotor<a class="headerlink" href="#rmgpy-statmech-krotor" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.statmech.KRotor">
-<em class="property">class </em><code class="descclassname">rmgpy.statmech.</code><code class="descname">KRotor</code><span class="sig-paren">(</span><em>inertia=None</em>, <em>symmetry=1</em>, <em>quantum=False</em>, <em>rotationalConstant=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.KRotor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.statmech.</code><code class="sig-name descname">KRotor</code><span class="sig-paren">(</span><em class="sig-param">inertia=None</em>, <em class="sig-param">symmetry=1</em>, <em class="sig-param">quantum=False</em>, <em class="sig-param">rotationalConstant=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.KRotor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A statistical mechanical model of an active K-rotor (a one-dimensional
 rigid rotor). The attributes are:</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="23%" />
-<col width="77%" />
+<col style="width: 23%" />
+<col style="width: 77%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>inertia</cite></td>
-<td>The moment of inertia of the rotor in amu*angstrom^2</td>
+<tbody>
+<tr class="row-even"><td><p><cite>inertia</cite></p></td>
+<td><p>The moment of inertia of the rotor in amu*angstrom^2</p></td>
 </tr>
-<tr class="row-odd"><td><cite>rotationalConstant</cite></td>
-<td>The rotational constant of the rotor in cm^-1</td>
+<tr class="row-odd"><td><p><cite>rotationalConstant</cite></p></td>
+<td><p>The rotational constant of the rotor in cm^-1</p></td>
 </tr>
-<tr class="row-even"><td><cite>symmetry</cite></td>
-<td>The symmetry number of the rotor</td>
+<tr class="row-even"><td><p><cite>symmetry</cite></p></td>
+<td><p>The symmetry number of the rotor</p></td>
 </tr>
-<tr class="row-odd"><td><cite>quantum</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">True</span></code> to use the quantum mechanical model, <code class="docutils literal notranslate"><span class="pre">False</span></code> to use the classical model</td>
+<tr class="row-odd"><td><p><cite>quantum</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to use the quantum mechanical model, <code class="docutils literal notranslate"><span class="pre">False</span></code> to use the classical model</p></td>
 </tr>
 </tbody>
 </table>
@@ -111,123 +109,115 @@ for the linear rotor partition function in the classical limit:</p>
 <div class="math notranslate nohighlight">
 \[Q_\mathrm{rot}^\mathrm{cl}(T) = \frac{1}{\sigma} \left( \frac{8 \pi^2 I k_\mathrm{B} T}{h^2} \right)^{1/2}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\sigma\)</span> is the symmetry number of the K-rotor.</p>
-<dl class="method">
+<dl class="attribute">
 <dt id="rmgpy.statmech.KRotor.as_dict">
-<code class="descname">as_dict</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.statmech.KRotor.as_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">as_dict</code><a class="headerlink" href="#rmgpy.statmech.KRotor.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary representation of the object</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary representation of the object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getDensityOfStates">
-<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray densStates0=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.KRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_density_of_states">
+<code class="sig-name descname">get_density_of_states</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
-energies <cite>Elist</cite> in J/mol above the ground state. If an initial density
-of states <cite>densStates0</cite> is given, the rotor density of states will be
+energies <cite>e_list</cite> in J/mol above the ground state. If an initial density
+of states <cite>dens_states_0</cite> is given, the rotor density of states will be
 convoluted into these states.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getEnthalpy">
-<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_enthalpy">
+<code class="sig-name descname">get_enthalpy</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getEntropy">
-<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_entropy">
+<code class="sig-name descname">get_entropy</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getHeatCapacity">
-<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_heat_capacity">
+<code class="sig-name descname">get_heat_capacity</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getLevelDegeneracy">
-<code class="descname">getLevelDegeneracy</code><span class="sig-paren">(</span><em>self</em>, <em>int J</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#rmgpy.statmech.KRotor.getLevelDegeneracy" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_level_degeneracy">
+<code class="sig-name descname">get_level_degeneracy</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_level_degeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the degeneracy of level <cite>J</cite>.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getLevelEnergy">
-<code class="descname">getLevelEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>int J</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getLevelEnergy" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_level_energy">
+<code class="sig-name descname">get_level_energy</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_level_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the energy of level <cite>J</cite> in kJ/mol.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getPartitionFunction">
-<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_partition_function">
+<code class="sig-name descname">get_partition_function</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.statmech.KRotor.getSumOfStates">
-<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray sumStates0=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.KRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+<dl class="attribute">
+<dt id="rmgpy.statmech.KRotor.get_sum_of_states">
+<code class="sig-name descname">get_sum_of_states</code><a class="headerlink" href="#rmgpy.statmech.KRotor.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in J/mol above the ground state. If an initial sum of states
-<cite>sumStates0</cite> is given, the rotor sum of states will be convoluted into
+<cite>sum_states_0</cite> is given, the rotor sum of states will be convoluted into
 these states.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.statmech.KRotor.inertia">
-<code class="descname">inertia</code><a class="headerlink" href="#rmgpy.statmech.KRotor.inertia" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">inertia</code><a class="headerlink" href="#rmgpy.statmech.KRotor.inertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>The moment of inertia of the rotor.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="attribute">
 <dt id="rmgpy.statmech.KRotor.make_object">
-<code class="descname">make_object</code><span class="sig-paren">(</span><em>self</em>, <em>data</em>, <em>class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.KRotor.make_object" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_object</code><a class="headerlink" href="#rmgpy.statmech.KRotor.make_object" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.statmech.KRotor.quantum">
-<code class="descname">quantum</code><a class="headerlink" href="#rmgpy.statmech.KRotor.quantum" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">quantum</code><a class="headerlink" href="#rmgpy.statmech.KRotor.quantum" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">quantum</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>quantum</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.statmech.KRotor.rotationalConstant">
-<code class="descname">rotationalConstant</code><a class="headerlink" href="#rmgpy.statmech.KRotor.rotationalConstant" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rotationalConstant</code><a class="headerlink" href="#rmgpy.statmech.KRotor.rotationalConstant" title="Permalink to this definition">¶</a></dt>
 <dd><p>The rotational constant of the rotor.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.statmech.KRotor.symmetry">
-<code class="descname">symmetry</code><a class="headerlink" href="#rmgpy.statmech.KRotor.symmetry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">symmetry</code><a class="headerlink" href="#rmgpy.statmech.KRotor.symmetry" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">symmetry</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>symmetry</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -282,13 +272,11 @@ these states.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -319,13 +307,13 @@ these states.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

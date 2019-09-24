@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>3.1.2. Installing RMG in the Linux Subsystem on Windows 10 &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -69,12 +67,11 @@ determined from the “About” tab in the system settings (see the “OS build�
 <div class="section" id="installing-the-linux-subsystem">
 <h2>3.1.2.2. Installing the Linux Subsystem<a class="headerlink" href="#installing-the-linux-subsystem" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">Follow the instructions provided by Microsoft to install the Linux subsystem, available <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">here</a>. The basic steps include enabling the Windows Linux
+<li><p>Follow the instructions provided by Microsoft to install the Linux subsystem, available <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">here</a>. The basic steps include enabling the Windows Linux
 subsystem from a powershell <strong>run as an administrator</strong>, and downloading the latest LTS version of Ubuntu
 <em>from the Windows store</em>. We recommend Ubuntu (for which these instructions were made) over the other Linux
-distributions.</p>
-</li>
-<li><p class="first">Once the Linux subsystem is installed, open a web browser in Windows and go to the
+distributions.</p></li>
+<li><p>Once the Linux subsystem is installed, open a web browser in Windows and go to the
 <a class="reference external" href="https://www.anaconda.com/download/#linux">Anaconda Python Platform Downloads Page</a>. Go to the tab for the
 <strong>Linux Installer</strong>, and <strong>right click</strong> on the download icon for Python 2.7 to copy the link location. Open an Ubuntu
 terminal (type in <code class="docutils literal notranslate"><span class="pre">Ubuntu</span></code> into the Windows search bar if you are unsure where to find it) and paste the link
@@ -85,7 +82,7 @@ into the terminal immediately after typing the <code class="docutils literal not
 <p>Your exact link will look similar to the one above, but may be a more recent version of the installer. Execute this
 command in the terminal to begin downloading the installer.</p>
 </li>
-<li><p class="first">Once the Anaconda installer has downloaded, execute the following commands in the Ubuntu terminal, changing the name
+<li><p>Once the Anaconda installer has downloaded, execute the following commands in the Ubuntu terminal, changing the name
 of <code class="docutils literal notranslate"><span class="pre">Anaconda2-2018.12-Linux-x86_64.sh</span></code> to match the name of the script you downloaded.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">Anaconda2</span><span class="o">-</span><span class="mf">2018.12</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
@@ -95,7 +92,7 @@ to install). <strong>When prompted to append Anaconda to your PATH, select or ty
 Microsoft VSCode. If you are interested in this lightweight IDE then you will want to install this into Windows 10
 instead of inside the linux subsystem.</p>
 </li>
-<li><p class="first">Execute the following commands to make sure that all of the required packages in Ubuntu are also installed:</p>
+<li><p>Execute the following commands to make sure that all of the required packages in Ubuntu are also installed:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">g</span><span class="o">++</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">make</span>
@@ -103,9 +100,8 @@ instead of inside the linux subsystem.</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Follow the instructions for either the binary (<a class="reference internal" href="anacondaUser.html#anacondauser"><span class="std std-ref">Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</span></a>) or source installation (<a class="reference internal" href="anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</span></a>)
-for the Linux Operating system. Follow these instructions from the point directly after installing Anaconda.</p>
-</li>
+<li><p>Follow the instructions for either the binary (<a class="reference internal" href="anacondaUser.html#anacondauser"><span class="std std-ref">Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</span></a>) or source installation (<a class="reference internal" href="anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</span></a>)
+for the Linux Operating system. Follow these instructions from the point directly after installing Anaconda.</p></li>
 </ol>
 </div>
 </div>
@@ -167,13 +163,11 @@ for the Linux Operating system. Follow these instructions from the point directl
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -211,7 +205,7 @@ for the Linux Operating system. Follow these instructions from the point directl
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

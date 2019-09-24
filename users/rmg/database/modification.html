@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>12.4. Database Modification &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -82,31 +80,29 @@ line indentations shown in the examples.</p>
 add to the training set instead of modifying the kinetic groups.</p>
 <p>Put kinetic parameters into a kinetic library when:</p>
 <ul class="simple">
-<li>A set of reaction rates were optimized together</li>
-<li>You know the reaction rate is not generalizable to similar species (perhaps due to catalysis or aromatic structures)</li>
-<li>No family exists for the class of reaction</li>
-<li>You are not confident about the accuracy of kinetic parameters</li>
+<li><p>A set of reaction rates were optimized together</p></li>
+<li><p>You know the reaction rate is not generalizable to similar species (perhaps due to catalysis or aromatic structures)</p></li>
+<li><p>No family exists for the class of reaction</p></li>
+<li><p>You are not confident about the accuracy of kinetic parameters</p></li>
 </ul>
 <p>Put kinetic parameters into the training set when:</p>
 <ul class="simple">
-<li>You are confident on the accurcy of the kinetic parameter</li>
-<li>You wish for the reaction to be generalized to similar reactions in your mechanism</li>
+<li><p>You are confident on the accurcy of the kinetic parameter</p></li>
+<li><p>You wish for the reaction to be generalized to similar reactions in your mechanism</p></li>
 </ul>
 <div class="section" id="adding-reaction-family">
 <h3>12.4.2.1. Adding Reaction Family<a class="headerlink" href="#adding-reaction-family" title="Permalink to this headline">¶</a></h3>
 <p>There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt><code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/[family</span> <span class="pre">name]</span></code></dt>
-<dd><ul class="first last">
-<li>add folder for your family name</li>
-<li>create <code class="docutils literal notranslate"><span class="pre">groups.py</span></code>, <code class="docutils literal notranslate"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code>.</li>
-<li>fill the files with rate data that you plan to use.</li>
-<li><dl class="first docutils">
-<dt>Many tools exist to help with the conversion process:</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code></li>
-<li><code class="docutils literal notranslate"><span class="pre">importChemkinLibrary.py</span></code> in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/[family</span> <span class="pre">name]</span></code></dt><dd><ul>
+<li><p>add folder for your family name</p></li>
+<li><p>create <code class="docutils literal notranslate"><span class="pre">groups.py</span></code>, <code class="docutils literal notranslate"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code>.</p></li>
+<li><p>fill the files with rate data that you plan to use.</p></li>
+<li><dl class="simple">
+<dt>Many tools exist to help with the conversion process:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">importChemkinLibrary.py</span></code> in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -115,37 +111,33 @@ add to the training set instead of modifying the kinetic groups.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>rmgpy.data.kinetics.family</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">applyRecipe</span></code>: swapping the atom labels (eg. <cite>*1</cite> and <cite>*2</cite>) around</li>
-<li><code class="docutils literal notranslate"><span class="pre">getReactionPairs</span></code>: figuring out which species becomes which for flux analyses</li>
-<li><code class="docutils literal notranslate"><span class="pre">__generateReactions</span></code>: correcting degeneracy eg. dividing by 2 for radical recombination</li>
+<li><dl class="simple">
+<dt>rmgpy.data.kinetics.family</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">applyRecipe</span></code>: swapping the atom labels (eg. <cite>*1</cite> and <cite>*2</cite>) around</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">getReactionPairs</span></code>: figuring out which species becomes which for flux analyses</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__generateReactions</span></code>: correcting degeneracy eg. dividing by 2 for radical recombination</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>rmgpy.data.kinetics.rules</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">processOldLibraryEntry</span></code>: determining units when importing RMG-Java database</li>
-<li><code class="docutils literal notranslate"><span class="pre">getAllRules</span></code>: for radical recombination add reverse templates</li>
+<li><dl class="simple">
+<dt>rmgpy.data.kinetics.rules</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">processOldLibraryEntry</span></code>: determining units when importing RMG-Java database</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">getAllRules</span></code>: for radical recombination add reverse templates</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>rmgpy.data.kinetics.groups</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">getReactionTemplate</span></code>: for radical recombination duplicate the template</li>
+<li><dl class="simple">
+<dt>rmgpy.data.kinetics.groups</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">getReactionTemplate</span></code>: for radical recombination duplicate the template</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>RMG-database/input/kinetics/families/recommended.py</dt>
-<dd><ul class="first last">
-<li>allows the usage of the database with the recommended families.</li>
+<li><dl class="simple">
+<dt>RMG-database/input/kinetics/families/recommended.py</dt><dd><ul>
+<li><p>allows the usage of the database with the recommended families.</p></li>
 </ul>
 </dd>
 </dl>
@@ -335,10 +327,10 @@ Allowed pressure units are <code class="docutils literal notranslate"><span clas
 <p>First you need to know the template for your reaction to decide whether or not
 to create new groups:</p>
 <ol class="arabic simple">
-<li>Type your reaction into the kinetics search at <a class="reference external" href="http://rmg.mit.edu/database/kinetics/search/">http://rmg.mit.edu/database/kinetics/search/</a></li>
-<li>Select the correct reaction</li>
-<li>In the results search for “(RMG-Py rate rules)” and select that link. The kinetic family listed is the family of interest.</li>
-<li>Scroll to the bottom and look at the end of the long description. There may be very long description of the averaging scheme, but the template for the reaction is the very last one listed:</li>
+<li><p>Type your reaction into the kinetics search at <a class="reference external" href="http://rmg.mit.edu/database/kinetics/search/">http://rmg.mit.edu/database/kinetics/search/</a></p></li>
+<li><p>Select the correct reaction</p></li>
+<li><p>In the results search for “(RMG-Py rate rules)” and select that link. The kinetic family listed is the family of interest.</p></li>
+<li><p>Scroll to the bottom and look at the end of the long description. There may be very long description of the averaging scheme, but the template for the reaction is the very last one listed:</p></li>
 </ol>
 <img alt="../../../_images/GroupSearch.png" class="align-center" src="../../../_images/GroupSearch.png" />
 <p>Now you must determine whether the chosen template is appropriate.  A good rule
@@ -396,10 +388,10 @@ next section for instructions on creating the new group.</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li>The index can be any number not already present in the set</li>
-<li>The label is the name of the group.</li>
-<li>The group is the group adjacency list with the starred reacting atoms.</li>
-<li>The other attributes do not need to be filled for a group</li>
+<li><p>The index can be any number not already present in the set</p></li>
+<li><p>The label is the name of the group.</p></li>
+<li><p>The group is the group adjacency list with the starred reacting atoms.</p></li>
+<li><p>The other attributes do not need to be filled for a group</p></li>
 </ul>
 <p>Next, you must enter your new group into the tree. At the bottom of groups.py
 you will find the trees. Place your group in the appropriate position. In the
@@ -461,21 +453,20 @@ will want to add your reaction to the training set.</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li>The index can be any number not already used in rules.py.</li>
-<li>The label is the name of the rule.</li>
-<li>The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</li>
-<li><dl class="first docutils">
-<dt>The value and units of kinetic parameters must be given.</dt>
-<dd><ul class="first last">
-<li>Multiplicative uncertainty is given as <code class="docutils literal notranslate"><span class="pre">'*\|/,'</span> <span class="pre">5</span></code> meaning within a factor of 5</li>
-<li>Additive uncertainty is given as <code class="docutils literal notranslate"><span class="pre">'+\|/-',</span> <span class="pre">2</span></code> meaning plus or minus 2.</li>
+<li><p>The index can be any number not already used in rules.py.</p></li>
+<li><p>The label is the name of the rule.</p></li>
+<li><p>The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</p></li>
+<li><dl class="simple">
+<dt>The value and units of kinetic parameters must be given.</dt><dd><ul>
+<li><p>Multiplicative uncertainty is given as <code class="docutils literal notranslate"><span class="pre">'*\|/,'</span> <span class="pre">5</span></code> meaning within a factor of 5</p></li>
+<li><p>Additive uncertainty is given as <code class="docutils literal notranslate"><span class="pre">'+\|/-',</span> <span class="pre">2</span></code> meaning plus or minus 2.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>Rank determines the priority of the rule when compared with other rules.</li>
-<li>The short description will appear in the annotated chemkin file.</li>
-<li>The long description only appears in the database.</li>
+<li><p>Rank determines the priority of the rule when compared with other rules.</p></li>
+<li><p>The short description will appear in the annotated chemkin file.</p></li>
+<li><p>The long description only appears in the database.</p></li>
 </ul>
 </div>
 <div class="section" id="adding-training-reactions">
@@ -505,11 +496,11 @@ labeled for you.  After editing the reaction data, write a short message for the
 the ‘Summary of changes’ field, then click ‘Save.’  You will need an account for the RMG website to
 make an entry.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>If you are entering the reaction in the reverse direction of the family, you must still label the
 reactants and products with the atomLabels of the original reaction template.  Otherwise, RMG
 will not be able to locate the nodes in the group tree to match the reaction.</p>
-<p class="last">Entries added in the reverse direction of the original template will use the current RMG job’s
+<p>Entries added in the reverse direction of the original template will use the current RMG job’s
 thermo database to estimate the kinetics in the forward direction.  Therefore this value can differ
 depending on the order of thermo libraries used when running a job.</p>
 </div>
@@ -613,13 +604,11 @@ activation energy truly does reflect the reaction barrier height.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -657,7 +646,7 @@ activation energy truly does reflect the reaction barrier height.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

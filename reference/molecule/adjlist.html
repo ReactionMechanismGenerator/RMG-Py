@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Adjacency Lists &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -61,8 +59,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="module-rmgpy.molecule.adjlist">
 <span id="adjacency-lists"></span><span id="rmgpy-molecule-adjlist"></span><h1>Adjacency Lists<a class="headerlink" href="#module-rmgpy.molecule.adjlist" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The adjacency list syntax changed in July 2014.
+<p class="admonition-title">Note</p>
+<p>The adjacency list syntax changed in July 2014.
 The minimal requirement for most translations is to prefix the number
 of unpaired electrons with the letter <cite>u</cite>.
 The new syntax, however, allows much
@@ -70,8 +68,8 @@ greater flexibility, including definition of lone pairs, partial charges,
 wildcards, and molecule multiplicities.</p>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">To quickly visualize any adjacency list, or to generate an adjacency list from
+<p class="admonition-title">Note</p>
+<p>To quickly visualize any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
 species names, use the Molecule Search tool found here: <a class="reference external" href="http://rmg.mit.edu/molecule_search">http://rmg.mit.edu/molecule_search</a></p>
 </div>
@@ -128,10 +126,10 @@ is just an asterisk with no number: <code class="docutils literal notranslate"><
 the atom’s element or atom type, indicated by its atomic symbol, followed by
 a sequence of tokens describing the electronic state of the atom:</p>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">u0</span></code> number of <strong>unpaired</strong> electrons (eg. radicals)</li>
-<li><code class="docutils literal notranslate"><span class="pre">p0</span></code> number of lone <strong>pairs</strong> of electrons, common on oxygen and nitrogen.</li>
-<li><code class="docutils literal notranslate"><span class="pre">c0</span></code> formal <strong>charge</strong> on the atom, e.g. <code class="docutils literal notranslate"><span class="pre">c-1</span></code> (negatively charged),
-<code class="docutils literal notranslate"><span class="pre">c0</span></code>, <code class="docutils literal notranslate"><span class="pre">c+1</span></code> (positively charged)</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">u0</span></code> number of <strong>unpaired</strong> electrons (eg. radicals)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p0</span></code> number of lone <strong>pairs</strong> of electrons, common on oxygen and nitrogen.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">c0</span></code> formal <strong>charge</strong> on the atom, e.g. <code class="docutils literal notranslate"><span class="pre">c-1</span></code> (negatively charged),
+<code class="docutils literal notranslate"><span class="pre">c0</span></code>, <code class="docutils literal notranslate"><span class="pre">c+1</span></code> (positively charged)</p></li>
 </ul>
 <p>For <a class="reference internal" href="molecule.html#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></a> definitions:
 The value must be a single integer (and for charge must have a + or - sign if not equal to 0)
@@ -151,8 +149,8 @@ To indicate a bond, place the number of the atom at the other end of the bond
 and the bond type within curly braces and separated by a comma, e.g. <code class="docutils literal notranslate"><span class="pre">{2,S}</span></code>.
 Multiple bonds from the same atom should be separated by whitespace.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">You must take care to make sure each bond is listed on the lines of <em>both</em>
+<p class="admonition-title">Note</p>
+<p>You must take care to make sure each bond is listed on the lines of <em>both</em>
 atoms in the bond, and that these entries have the same bond type. RMG will
 raise an exception if it encounters such an invalid adjacency list.</p>
 </div>
@@ -180,81 +178,67 @@ electrons, lone pairs, and charges are all correctly defined:</p>
 </div>
 <p>The allowed element types, radicals, and bonds are listed in the following table:</p>
 <blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-default">
 <colgroup>
-<col width="42%" />
-<col width="19%" />
-<col width="40%" />
+<col style="width: 42%" />
+<col style="width: 19%" />
+<col style="width: 40%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">&#160;</th>
-<th class="head">Notation</th>
-<th class="head">Explanation</th>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Notation</p></th>
+<th class="head"><p>Explanation</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td rowspan="5">Chemical Element</td>
-<td>C</td>
-<td>Carbon atom</td>
+<tbody>
+<tr class="row-even"><td rowspan="5"><p>Chemical Element</p></td>
+<td><p>C</p></td>
+<td><p>Carbon atom</p></td>
 </tr>
-<tr class="row-odd"><td>O</td>
-<td>Oxygen atom</td>
+<tr class="row-odd"><td><p>O</p></td>
+<td><p>Oxygen atom</p></td>
 </tr>
-<tr class="row-even"><td>H</td>
-<td>Hydrogen atom</td>
+<tr class="row-even"><td><p>H</p></td>
+<td><p>Hydrogen atom</p></td>
 </tr>
-<tr class="row-odd"><td>S</td>
-<td>Sulfur atom</td>
+<tr class="row-odd"><td><p>S</p></td>
+<td><p>Sulfur atom</p></td>
 </tr>
-<tr class="row-even"><td>N</td>
-<td>Nitrogen atom</td>
+<tr class="row-even"><td><p>N</p></td>
+<td><p>Nitrogen atom</p></td>
 </tr>
-<tr class="row-odd"><td rowspan="5">Nonreactive Elements</td>
-<td>Si</td>
-<td>Silicon atom</td>
+<tr class="row-odd"><td rowspan="5"><p>Nonreactive Elements</p></td>
+<td><p>Si</p></td>
+<td><p>Silicon atom</p></td>
 </tr>
-<tr class="row-even"><td>Cl</td>
-<td>Chlorine atom</td>
+<tr class="row-even"><td><p>Cl</p></td>
+<td><p>Chlorine atom</p></td>
 </tr>
-<tr class="row-odd"><td>He</td>
-<td>Helium atom</td>
+<tr class="row-odd"><td><p>He</p></td>
+<td><p>Helium atom</p></td>
 </tr>
-<tr class="row-even"><td>Ar</td>
-<td>Argon atom</td>
+<tr class="row-even"><td><p>Ar</p></td>
+<td><p>Argon atom</p></td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
+<tr class="row-odd"><td></td>
+<td></td>
 </tr>
-<tr class="row-even"><td rowspan="4">Chemical Bond</td>
-<td>S</td>
-<td>Single Bond</td>
+<tr class="row-even"><td rowspan="4"><p>Chemical Bond</p></td>
+<td><p>S</p></td>
+<td><p>Single Bond</p></td>
 </tr>
-<tr class="row-odd"><td>D</td>
-<td>Double Bond</td>
+<tr class="row-odd"><td><p>D</p></td>
+<td><p>Double Bond</p></td>
 </tr>
-<tr class="row-even"><td>T</td>
-<td>Triple bond</td>
+<tr class="row-even"><td><p>T</p></td>
+<td><p>Triple bond</p></td>
 </tr>
-<tr class="row-odd"><td>B</td>
-<td>Benzene bond</td>
+<tr class="row-odd"><td><p>B</p></td>
+<td><p>Benzene bond</p></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
-<dl class="function">
-<dt id="rmgpy.molecule.adjlist.fromAdjacencyList">
-<code class="descclassname">rmgpy.molecule.adjlist.</code><code class="descname">fromAdjacencyList</code><span class="sig-paren">(</span><em>adjlist</em>, <em>group=False</em>, <em>saturateH=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a string adjacency list <cite>adjlist</cite> into a set of <code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code> and
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code> objects.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.molecule.adjlist.toAdjacencyList">
-<code class="descclassname">rmgpy.molecule.adjlist.</code><code class="descname">toAdjacencyList</code><span class="sig-paren">(</span><em>atoms</em>, <em>multiplicity</em>, <em>label=None</em>, <em>group=False</em>, <em>removeH=False</em>, <em>removeLonePairs=False</em>, <em>oldStyle=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a chemical graph defined by a list of <cite>atoms</cite> into a string
-adjacency list.</p>
-</dd></dl>
-
 </div>
 
 
@@ -305,13 +289,11 @@ adjacency list.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -342,13 +324,13 @@ adjacency list.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

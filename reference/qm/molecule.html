@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.qm.molecule &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,58 +60,58 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.molecule<a class="headerlink" href="#rmgpy-qm-molecule" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.qm.molecule.Geometry">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.molecule.</code><code class="descname">Geometry</code><span class="sig-paren">(</span><em>settings</em>, <em>uniqueID</em>, <em>molecule</em>, <em>uniqueIDlong=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.molecule.</code><code class="sig-name descname">Geometry</code><span class="sig-paren">(</span><em class="sig-param">settings</em>, <em class="sig-param">unique_id</em>, <em class="sig-param">molecule</em>, <em class="sig-param">unique_id_long=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>A geometry, used for quantum calculations.</p>
 <p>Created from a molecule. Geometry estimated by RDKit.</p>
 <p>The attributes are:</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="21%" />
-<col width="25%" />
-<col width="54%" />
+<col style="width: 20%" />
+<col style="width: 24%" />
+<col style="width: 55%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
-<th class="head">Description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>settings</cite></td>
-<td><code class="xref py py-class docutils literal notranslate"><span class="pre">QMSettings</span></code></td>
-<td>Settings for QM calculations</td>
+<tbody>
+<tr class="row-even"><td><p><cite>settings</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">QMSettings</span></code></p></td>
+<td><p>Settings for QM calculations</p></td>
 </tr>
-<tr class="row-odd"><td><cite>uniqueID</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>A short ID such as an augmented InChI Key</td>
+<tr class="row-odd"><td><p><cite>unique_id</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>A short ID such as an augmented InChI Key</p></td>
 </tr>
-<tr class="row-even"><td><cite>molecule</cite></td>
-<td><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></td>
-<td>RMG Molecule object</td>
+<tr class="row-even"><td><p><cite>molecule</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></p></td>
+<td><p>RMG Molecule object</p></td>
 </tr>
-<tr class="row-odd"><td><cite>uniqueIDlong</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>A long, truly unique ID such as an augmented InChI</td>
+<tr class="row-odd"><td><p><cite>unique_id_long</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>A long, truly unique ID such as an augmented InChI</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="rmgpy.qm.molecule.Geometry.generateRDKitGeometries">
-<code class="descname">generateRDKitGeometries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.generateRDKitGeometries" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.generate_rdkit_geometries">
+<code class="sig-name descname">generate_rdkit_geometries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.generate_rdkit_geometries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use RDKit to guess geometry.</p>
 <p>Save mol files of both crude and refined.
 Saves coordinates on atoms.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.Geometry.getCrudeMolFilePath">
-<code class="descname">getCrudeMolFilePath</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.getCrudeMolFilePath" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.get_crude_mol_file_path">
+<code class="sig-name descname">get_crude_mol_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.get_crude_mol_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path of the crude mol file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.Geometry.getFilePath">
-<code class="descname">getFilePath</code><span class="sig-paren">(</span><em>extension</em>, <em>scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.getFilePath" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.get_file_path">
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
@@ -121,38 +119,38 @@ else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDir
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.Geometry.getRefinedMolFilePath">
-<code class="descname">getRefinedMolFilePath</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.getRefinedMolFilePath" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.get_refined_mol_file_path">
+<code class="sig-name descname">get_refined_mol_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.get_refined_mol_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the the refined mol file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.qm.molecule.Geometry.rd_build">
-<code class="descname">rd_build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.rd_build" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rd_build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.rd_build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Import rmg molecule and create rdkit molecule with the same atom labeling.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.qm.molecule.Geometry.rd_embed">
-<code class="descname">rd_embed</code><span class="sig-paren">(</span><em>rdmol</em>, <em>numConfAttempts</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.rd_embed" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rd_embed</code><span class="sig-paren">(</span><em class="sig-param">rdmol</em>, <em class="sig-param">num_conf_attempts</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.rd_embed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Embed the RDKit molecule and create the crude molecule file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.Geometry.saveCoordinatesFromQMData">
-<code class="descname">saveCoordinatesFromQMData</code><span class="sig-paren">(</span><em>qmdata</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.saveCoordinatesFromQMData" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.save_coordinates_from_qm_data">
+<code class="sig-name descname">save_coordinates_from_qm_data</code><span class="sig-paren">(</span><em class="sig-param">qmdata</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.save_coordinates_from_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save geometry info from QMData (eg CCLibData)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.qm.molecule.Geometry.uniqueID">
-<code class="descname">uniqueID</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.uniqueID" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.unique_id">
+<code class="sig-name descname">unique_id</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.unique_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>A short unique ID such as an augmented InChI Key.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.qm.molecule.Geometry.uniqueIDlong">
-<code class="descname">uniqueIDlong</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.uniqueIDlong" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.Geometry.unique_id_long">
+<code class="sig-name descname">unique_id_long</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.unique_id_long" title="Permalink to this definition">¶</a></dt>
 <dd><p>Long, truly unique, ID, such as the augmented InChI.</p>
 </dd></dl>
 
@@ -160,104 +158,110 @@ else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDir
 
 <dl class="class">
 <dt id="rmgpy.qm.molecule.QMMolecule">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.molecule.</code><code class="descname">QMMolecule</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.molecule.</code><code class="sig-name descname">QMMolecule</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for QM Molecule calculations.</p>
 <p>Specific programs and methods should inherit from this and define some
 extra attributes and methods:</p>
 <blockquote>
 <div><ul class="simple">
-<li>outputFileExtension</li>
-<li>inputFileExtension</li>
-<li>generateQMData() …and whatever else is needed to make this method work.</li>
+<li><p>outputFileExtension</p></li>
+<li><p>inputFileExtension</p></li>
+<li><p>generate_qm_data() …and whatever else is needed to make this method work.</p></li>
 </ul>
 </div></blockquote>
 <p>The attributes are:</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="21%" />
-<col width="25%" />
-<col width="54%" />
+<col style="width: 21%" />
+<col style="width: 25%" />
+<col style="width: 54%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
-<th class="head">Description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>molecule</cite></td>
-<td><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></td>
-<td>RMG Molecule object</td>
+<tbody>
+<tr class="row-even"><td><p><cite>molecule</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></p></td>
+<td><p>RMG Molecule object</p></td>
 </tr>
-<tr class="row-odd"><td><cite>settings</cite></td>
-<td><code class="xref py py-class docutils literal notranslate"><span class="pre">QMSettings</span></code></td>
-<td>Settings for QM calculations</td>
+<tr class="row-odd"><td><p><cite>settings</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">QMSettings</span></code></p></td>
+<td><p>Settings for QM calculations</p></td>
 </tr>
-<tr class="row-even"><td><cite>uniqueID</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>A short ID such as an augmented InChI Key</td>
+<tr class="row-even"><td><p><cite>unique_id</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>A short ID such as an augmented InChI Key</p></td>
 </tr>
-<tr class="row-odd"><td><cite>uniqueIDlong</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>A long, truly unique ID such as an augmented InChI</td>
+<tr class="row-odd"><td><p><cite>unique_id_long</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>A long, truly unique ID such as an augmented InChI</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.calculateChiralityCorrection">
-<code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.calculate_chirality_correction">
+<code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.calculateThermoData">
-<code class="descname">calculateThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.calculateThermoData" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.calculate_thermo_data">
+<code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
 <p>Stores and returns a ThermoData object as self.thermo.
-self.qmData and self.pointGroup need to be generated before this method is called.</p>
+self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.checkPaths">
-<code class="descname">checkPaths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.checkPaths" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.check_paths">
+<code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.checkReady">
-<code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.checkReady" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.check_ready">
+<code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.createGeometry">
-<code class="descname">createGeometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.createGeometry" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.create_geometry">
+<code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.determinePointGroup">
-<code class="descname">determinePointGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.determinePointGroup" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.determine_point_group">
+<code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
-<p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
+<p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.generateQMData">
-<code class="descname">generateQMData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.generateQMData" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.generate_qm_data">
+<code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data somehow and return a CCLibData object, or None if it fails.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.generateThermoData">
-<code class="descname">generateThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.generate_thermo_data">
+<code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.getFilePath">
-<code class="descname">getFilePath</code><span class="sig-paren">(</span><em>extension</em>, <em>scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.getFilePath" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.get_augmented_inchi_key">
+<code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the augmented InChI from self.molecule</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.get_file_path">
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
@@ -265,70 +269,64 @@ else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDir
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.getInChiKeyAug">
-<code class="descname">getInChiKeyAug</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.getInChiKeyAug" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the augmented InChI from self.molecule</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.getMolFilePathForCalculation">
-<code class="descname">getMolFilePathForCalculation</code><span class="sig-paren">(</span><em>attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.getMolFilePathForCalculation" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.get_mol_file_path_for_calculation">
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
-<p>If attempt &lt;= self.scriptAttempts then we use the refined coordinates,
+<p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.getThermoFilePath">
-<code class="descname">getThermoFilePath</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.getThermoFilePath" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.get_thermo_file_path">
+<code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.qm.molecule.QMMolecule.initialize">
-<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.qm.molecule.QMMolecule.inputFilePath">
-<code class="descname">inputFilePath</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.inputFilePath" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.input_file_path">
+<em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.loadThermoData">
-<code class="descname">loadThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.loadThermoData" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.load_thermo_data">
+<code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.qm.molecule.QMMolecule.maxAttempts">
-<code class="descname">maxAttempts</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.maxAttempts" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.max_attempts">
+<em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.qm.molecule.QMMolecule.outputFilePath">
-<code class="descname">outputFilePath</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.outputFilePath" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.output_file_path">
+<em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.qm.molecule.QMMolecule.parse">
-<code class="descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.molecule.QMMolecule.saveThermoData">
-<code class="descname">saveThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.saveThermoData" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.molecule.QMMolecule.save_thermo_data">
+<code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.qm.molecule.QMMolecule.scriptAttempts">
-<code class="descname">scriptAttempts</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.scriptAttempts" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.script_attempts">
+<em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -384,13 +382,11 @@ then we start to use the crude coordinates.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -421,13 +417,13 @@ then we start to use the crude coordinates.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >QMTP (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

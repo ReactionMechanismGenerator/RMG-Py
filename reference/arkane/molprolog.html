@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>arkane.molpro.MolproLog &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,34 +60,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.molpro.MolproLog<a class="headerlink" href="#arkane-molpro-molprolog" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="arkane.molpro.MolproLog">
-<em class="property">class </em><code class="descclassname">arkane.molpro.</code><code class="descname">MolproLog</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arkane.molpro.</code><code class="sig-name descname">MolproLog</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a Molpro log file. The attribute <cite>path</cite> refers to the
 location on disk of the Molpro log file of interest. Methods are provided
 to extract a variety of information into Arkane classes and/or NumPy arrays.</p>
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.getNumberOfAtoms">
-<code class="descname">getNumberOfAtoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.getNumberOfAtoms" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.get_D1_diagnostic">
+<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the D1 diagnostic from output log.
+If multiple occurrences exist, returns the last occurrence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.molpro.MolproLog.get_T1_diagnostic">
+<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the T1 diagnostic from output log.
+If multiple occurrences exist, returns the last occurrence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.molpro.MolproLog.get_number_of_atoms">
+<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of atoms in the molecular configuration used in
 the MolPro log file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.get_D1_diagnostic">
-<code class="descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the D1 diagnostic from output log.
-If multiple occurrences exist, returns the last occurence</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.molpro.MolproLog.get_T1_diagnostic">
-<code class="descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the T1 diagnostic from output log.
-If multiple occurrences exist, returns the last occurence</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="arkane.molpro.MolproLog.get_symmetry_properties">
-<code class="descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method uses the symmetry package from RMG’s QM module
 and returns a tuple where the first element is the number
 of optical isomers, the second element is the symmetry number,
@@ -97,15 +95,15 @@ and the third element is the point group identified.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadConformer">
-<code class="descname">loadConformer</code><span class="sig-paren">(</span><em>symmetry=None</em>, <em>spinMultiplicity=0</em>, <em>opticalIsomers=None</em>, <em>label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadConformer" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.load_conformer">
+<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from a log file created as
 the result of a MolPro “Freq” quantum chemistry calculation with the thermo printed.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadEnergy">
-<code class="descname">loadEnergy</code><span class="sig-paren">(</span><em>zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadEnergy" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.load_energy">
+<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return either the f12 or MRCI energy in J/mol from a Molpro Logfile.
 If the MRCI job outputted the MRCI+Davidson energy, the latter is returned.
 For CCSD(T)-f12, the function determines which energy (f12a or f12b) to use based on the basis set,
@@ -114,53 +112,47 @@ a better approximation, but for higher basis sets f12b is a better approximation
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadForceConstantMatrix">
-<code class="descname">loadForceConstantMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadForceConstantMatrix" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.load_force_constant_matrix">
+<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the force constant matrix by including the print, hessian command in the input file</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadGeometry">
-<code class="descname">loadGeometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadGeometry" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.load_geometry">
+<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the optimum geometry of the molecular configuration from the
 Molpro .out file. If multiple such geometries are identified, only the
 last is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadNegativeFrequency">
-<code class="descname">loadNegativeFrequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadNegativeFrequency" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.load_negative_frequency">
+<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the negative frequency from a transition state frequency calculation in cm^-1.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadScanEnergies">
-<code class="descname">loadScanEnergies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadScanEnergies" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.molpro.MolproLog.load_scan_energies">
+<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotor scans are not implemented in Molpro</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.molpro.MolproLog.loadZeroPointEnergy">
-<code class="descname">loadZeroPointEnergy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadZeroPointEnergy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the unscaled zero-point energy in J/mol from a MolPro log file.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="arkane.molpro.MolproLog.load_scan_frozen_atoms">
-<code class="descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract the atom numbers which were frozen during the scan
-Return a list of list of atom numbers starting with the first atom as 1
-Each element of the outer lists represents a frozen bond
-Inner lists with length 2 represent frozen bond lengths
-Inner lists with length 3 represent frozen bond angles
-Inner lists with length 4 represent frozen dihedral angles</p>
+<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Molpro</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="arkane.molpro.MolproLog.load_scan_pivot_atoms">
-<code class="descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract the atom numbers which the rotor scan pivots around
-Return a list of atom numbers starting with the first atom as 1</p>
+<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Molpro</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.molpro.MolproLog.load_zero_point_energy">
+<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the unscaled zero-point energy in J/mol from a MolPro log file.</p>
 </dd></dl>
 
 </dd></dl>
@@ -215,13 +207,11 @@ Return a list of atom numbers starting with the first atom as 1</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -252,13 +242,13 @@ Return a list of atom numbers starting with the first atom as 1</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

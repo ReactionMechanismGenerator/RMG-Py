@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>2. Overview of Features &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -60,27 +58,27 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="overview-of-features">
 <span id="features"></span><h1>2. Overview of Features<a class="headerlink" href="#overview-of-features" title="Permalink to this headline">¶</a></h1>
-<dl class="docutils">
-<dt>Thermodynamics estimation using group additivity.</dt>
-<dd>Group additivity based on Benson’s groups provide fast and reliable thermochemistry estimates. A standalone utility for estimating heat of formation, entropy, and heat capacity is also included.</dd>
-<dt>Rate-based model enlargement</dt>
-<dd>Reactions are added to the model based on their rate, fastest first.</dd>
-<dt>Rate-based termination.</dt>
-<dd>The model enlargement stops when all excluded reactions are slower than a given threshold.
-This provides a controllable error bound on the kinetic model that is generated.</dd>
-<dt>Extensible libraries</dt>
-<dd>Ability to include reaction models on top of the provided reaction families.</dd>
-<dt>Pressure-dependent reaction networks.</dt>
-<dd>Dissociation, combination, and isomerization reactions have the potential to have rate coefficients that are dependent on both temperature and pressure, and RMG is able to estimate both for networks of arbitrary complexity with a bounded error.</dd>
-<dt>Simultaneous mechanism generation for several conditions.</dt>
-<dd>Concurrent generation of a reaction mechanism over multiple temperature and pressure conditions.
-Mechanisms generated this way are valid over a range of reaction conditions.</dd>
-<dt>Dynamic simulation to a target conversion or time.</dt>
-<dd>Often the desired simulation time is not known <em>a priori</em>, so a target conversion is preferred.</dd>
-<dt>Transport properties estimation using group additivity</dt>
-<dd>The Lennard-Jones sigma and epsilon parameters are estimated using empirical correlations (based on a species’ critical properties and acentric factor).
+<dl class="simple">
+<dt>Thermodynamics estimation using group additivity.</dt><dd><p>Group additivity based on Benson’s groups provide fast and reliable thermochemistry estimates. A standalone utility for estimating heat of formation, entropy, and heat capacity is also included.</p>
+</dd>
+<dt>Rate-based model enlargement</dt><dd><p>Reactions are added to the model based on their rate, fastest first.</p>
+</dd>
+<dt>Rate-based termination.</dt><dd><p>The model enlargement stops when all excluded reactions are slower than a given threshold.
+This provides a controllable error bound on the kinetic model that is generated.</p>
+</dd>
+<dt>Extensible libraries</dt><dd><p>Ability to include reaction models on top of the provided reaction families.</p>
+</dd>
+<dt>Pressure-dependent reaction networks.</dt><dd><p>Dissociation, combination, and isomerization reactions have the potential to have rate coefficients that are dependent on both temperature and pressure, and RMG is able to estimate both for networks of arbitrary complexity with a bounded error.</p>
+</dd>
+<dt>Simultaneous mechanism generation for several conditions.</dt><dd><p>Concurrent generation of a reaction mechanism over multiple temperature and pressure conditions.
+Mechanisms generated this way are valid over a range of reaction conditions.</p>
+</dd>
+<dt>Dynamic simulation to a target conversion or time.</dt><dd><p>Often the desired simulation time is not known <em>a priori</em>, so a target conversion is preferred.</p>
+</dd>
+<dt>Transport properties estimation using group additivity</dt><dd><p>The Lennard-Jones sigma and epsilon parameters are estimated using empirical correlations (based on a species’ critical properties and acentric factor).
 The critical properties are estimated using a group-additivity approach; the acentric factor is also estimated using empirical correlations.
-A standalone application for estimating these parameters is provided, and the output is stored in CHEMKIN-readable format.</dd>
+A standalone application for estimating these parameters is provided, and the output is stored in CHEMKIN-readable format.</p>
+</dd>
 </dl>
 </div>
 
@@ -132,13 +130,11 @@ A standalone application for estimating these parameters is provided, and the ou
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -175,7 +171,7 @@ A standalone application for estimating these parameters is provided, and the ou
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>2. Prune Edge Species &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -67,49 +65,50 @@ in order to achieve both low memory consumption and mechanism accuracy. Pruning 
 <div class="section" id="key-parameters-in-pruning">
 <h2>2.1. Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first">toleranceKeepInEdge</p>
+<li><p>toleranceKeepInEdge</p>
 <p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Thus, larger values will lead to smaller edge mechanisms.</p>
 </li>
-<li><p class="first">toleranceMoveToCore</p>
+<li><p>toleranceMoveToCore</p>
 <p>Any edge species to enter core model should have flux at some point larger than toleranceMoveToCore <span class="math notranslate nohighlight">\(*\)</span> characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.</p>
 </li>
-<li><p class="first">toleranceInterrupSimulation</p>
+<li><p>toleranceInterrupSimulation</p>
 <p>Once flux of any edge species exceeds toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux, dynamic simulation will be stopped.
 Usually this tolerance will be set a very high value so that any flux’s exceeding that means mechanism is too incomplete to continue
 dynamic simulation.</p>
 </li>
-<li><p class="first">maximumEdgeSpecies</p>
+<li><p>maximumEdgeSpecies</p>
 <p>If dynamic simulation isn’t interrupted in half way and total number of the edge species whose peak fluxes are higher than
 toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
 </li>
-<li><p class="first">minCoreSizeForPrune</p>
+<li><p>minCoreSizeForPrune</p>
 <p>Ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species.</p>
 </li>
-<li><p class="first">minSpeciesExistIterationsForPrune</p>
+<li><p>minSpeciesExistIterationsForPrune</p>
 <p>Set the number of iterations an edge species must stay in the job before it can be pruned.  The default value is 2 iterations.</p>
 </li>
 </ul>
 </div>
 <div class="section" id="how-pruning-works">
 <h2>2.2. How Pruning Works<a class="headerlink" href="#how-pruning-works" title="Permalink to this headline">¶</a></h2>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="../../_images/fluxDiagram.png" src="../../_images/fluxDiagram.png" />
 <p class="caption"><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
 criterion for “usefulness”. Since flux changes with reactant conversion, peak flux is chosen here to make decision of pruning or not.
-Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux will be deleted.</span></p>
+Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux will be deleted.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <img alt="../../_images/fluxDiagramWithTolerance.png" src="../../_images/fluxDiagramWithTolerance.png" />
 <p class="caption"><span class="caption-text">However, pruning is not always triggered because of toleranceInterruptSimulation. As mentioned above, in order to prune, RMG needs to figure out
 the peak flux of each edge species, which requires dynamic simulation to complete. If some run of dynamic simulation is terminated in half way
 by toleranceInterruptSimulation, pruning is rejected although there might be some edge species with peak fluxes lower than
 toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Since pruning requires to complete dynamic simulation, setting toleranceInterruptSimulation to be positive infinity,
 as an extreme case, means always enabling pruning. Another extreme case would be that it has same value as toleranceMoveToCore where
-no pruning occurs.</span></p>
+no pruning occurs.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 <div class="legend">
-In summary, each run of dynamic simulation will proceed towards terminationConversion unless some flux exceeds
+<p>In summary, each run of dynamic simulation will proceed towards terminationConversion unless some flux exceeds
 toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux.Following complete simulation is the pruning of edge species whose flux is not high enough be kept
-in the edge, which is followed by pruning of excessive amount of edge species to make sure total edge species number is no greater than maximumEdgeSpecies.</div>
+in the edge, which is followed by pruning of excessive amount of edge species to make sure total edge species number is no greater than maximumEdgeSpecies.</p>
+</div>
 </div>
 </div>
 </div>
@@ -171,13 +170,11 @@ in the edge, which is followed by pruning of excessive amount of edge species to
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -214,7 +211,7 @@ in the edge, which is followed by pruning of excessive amount of edge species to
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

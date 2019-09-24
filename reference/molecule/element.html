@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.molecule.Element &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,160 +60,28 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Element<a class="headerlink" href="#rmgpy-molecule-element" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Element">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Element</code><span class="sig-paren">(</span><em>number</em>, <em>symbol</em>, <em>name</em>, <em>mass</em>, <em>isotope=-1</em>, <em>chemkinName=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Element</code><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical element. The attributes are:</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="16%" />
-<col width="19%" />
-<col width="65%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>number</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
-<td>The atomic number of the element</td>
-</tr>
-<tr class="row-odd"><td><cite>symbol</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>The symbol used for the element</td>
-</tr>
-<tr class="row-even"><td><cite>name</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>The IUPAC name of the element</td>
-</tr>
-<tr class="row-odd"><td><cite>mass</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">float</span></code></td>
-<td>The mass of the element in kg/mol</td>
-</tr>
-<tr class="row-even"><td><cite>covRadius</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">float</span></code></td>
-<td>Covalent bond radius in Angstrom</td>
-</tr>
-<tr class="row-odd"><td><cite>isotope</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
-<td>The isotope integer of the element</td>
-</tr>
-<tr class="row-even"><td><cite>chemkinName</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
-<td>The chemkin compatible representation of the element</td>
-</tr>
-</tbody>
-</table>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">docstring of rmgpy.molecule.Element</span>, line 12)</p>
+<p>Malformed table.
+Text in column margin in table line 10.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>============= =============== ================================================
+Attribute     Type            Description
+============= =============== ================================================
+`number`      ``int``         The atomic number of the element
+`symbol`      ``str``         The symbol used for the element
+`name`        ``str``         The IUPAC name of the element
+`mass`        ``float``       The mass of the element in kg/mol
+`covRadius`   ``float``       Covalent bond radius in Angstrom
+`isotope`     ``int``         The isotope integer of the element
+`chemkin_name` ``str``         The chemkin compatible representation of the element
+============= =============== ================================================
+</pre></div>
+</div>
+</div>
 <p>This class is specifically for properties that all atoms of the same element
 share. Ideally there is only one instance of this class for each element.</p>
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.chemkinName">
-<code class="descname">chemkinName</code><a class="headerlink" href="#rmgpy.molecule.Element.chemkinName" title="Permalink to this definition">¶</a></dt>
-<dd><p>str</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">chemkinName</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.covRadius">
-<code class="descname">covRadius</code><a class="headerlink" href="#rmgpy.molecule.Element.covRadius" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘float’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">covRadius</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.isotope">
-<code class="descname">isotope</code><a class="headerlink" href="#rmgpy.molecule.Element.isotope" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘int’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">isotope</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.mass">
-<code class="descname">mass</code><a class="headerlink" href="#rmgpy.molecule.Element.mass" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘float’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">mass</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.name">
-<code class="descname">name</code><a class="headerlink" href="#rmgpy.molecule.Element.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>str</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">name</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.number">
-<code class="descname">number</code><a class="headerlink" href="#rmgpy.molecule.Element.number" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘int’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">number</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Element.symbol">
-<code class="descname">symbol</code><a class="headerlink" href="#rmgpy.molecule.Element.symbol" title="Permalink to this definition">¶</a></dt>
-<dd><p>str</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">symbol</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.molecule.getElement">
-<code class="descclassname">rmgpy.molecule.</code><code class="descname">getElement</code><span class="sig-paren">(</span><em>value</em>, <em>int isotope=-1</em><span class="sig-paren">)</span> &#x2192; Element<a class="headerlink" href="#rmgpy.molecule.getElement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <a class="reference internal" href="#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a> object corresponding to the given parameter
-<cite>value</cite>. If an integer is provided, the value is treated as the atomic
-number. If a string is provided, the value is treated as the symbol. An
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ElementError</span></code> is raised if no matching element is found.</p>
 </dd></dl>
 
 </div>
@@ -268,13 +134,11 @@ number. If a string is provided, the value is treated as the symbol. An
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -305,13 +169,13 @@ number. If a string is provided, the value is treated as the symbol. An
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

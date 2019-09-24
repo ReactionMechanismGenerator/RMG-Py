@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.12. Isotopes &#8212; RMG-Py 2.4.1 Documentation</title>
+    <meta charset="utf-8" />
+    <title>9.11. Isotopes &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -20,7 +18,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="10. Species Representation" href="../species.html" />
-    <link rel="prev" title="9.11. Reaction Reduction in an RMG Job" href="reduction.html" />
+    <link rel="prev" title="9.10. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -43,7 +41,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../species.html" title="10. Species Representation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="reduction.html" title="9.11. Reaction Reduction in an RMG Job"
+          <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -60,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="isotopes">
-<span id="id1"></span><h1>9.12. Isotopes<a class="headerlink" href="#isotopes" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>9.11. Isotopes<a class="headerlink" href="#isotopes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="describing-isotopes-in-adjacency-lists">
-<h2>9.12.1. Describing isotopes in adjacency lists<a class="headerlink" href="#describing-isotopes-in-adjacency-lists" title="Permalink to this headline">¶</a></h2>
+<h2>9.11.1. Describing isotopes in adjacency lists<a class="headerlink" href="#describing-isotopes-in-adjacency-lists" title="Permalink to this headline">¶</a></h2>
 <p>Isotopic enrichment can be indicated in a molecular structure’s adjacency list.
 The example below is methane with an isotopically labeled carbon of isotope
 number 13, which is indicated with <code class="docutils literal notranslate"><span class="pre">i13</span></code>:</p>
@@ -75,7 +73,7 @@ number 13, which is indicated with <code class="docutils literal notranslate"><s
 </div>
 </div>
 <div class="section" id="running-the-rmg-isotopes-algorithm">
-<h2>9.12.2. Running the RMG isotopes algorithm<a class="headerlink" href="#running-the-rmg-isotopes-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>9.11.2. Running the RMG isotopes algorithm<a class="headerlink" href="#running-the-rmg-isotopes-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The isotopes script is located in the folder scripts. To run the algorithm,
 ensure the RMG packages are loaded and type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rmg</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">isotopes</span><span class="o">.</span><span class="n">py</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="nb">input</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
@@ -122,7 +120,7 @@ fluctuations in enrichment ten to one hundred times larger than from non-hydroge
 kinetic isotope effects.</p>
 </div>
 <div class="section" id="output-from-script">
-<h2>9.12.3. Output from script<a class="headerlink" href="#output-from-script" title="Permalink to this headline">¶</a></h2>
+<h2>9.11.3. Output from script<a class="headerlink" href="#output-from-script" title="Permalink to this headline">¶</a></h2>
 <p>The isotope generation script will output two files inside the nested folders
 <code class="docutils literal notranslate"><span class="pre">iso/chemkin</span></code>, unless <code class="docutils literal notranslate"><span class="pre">--output</span></code> is specified. The file
 <code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code> lists the structure of all isotopologue using the
@@ -161,10 +159,10 @@ the entire system.</p>
         <div class="menuitem">
   <h3><a href="../../../contents.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9.12. Isotopes</a><ul>
-<li><a class="reference internal" href="#describing-isotopes-in-adjacency-lists">9.12.1. Describing isotopes in adjacency lists</a></li>
-<li><a class="reference internal" href="#running-the-rmg-isotopes-algorithm">9.12.2. Running the RMG isotopes algorithm</a></li>
-<li><a class="reference internal" href="#output-from-script">9.12.3. Output from script</a></li>
+<li><a class="reference internal" href="#">9.11. Isotopes</a><ul>
+<li><a class="reference internal" href="#describing-isotopes-in-adjacency-lists">9.11.1. Describing isotopes in adjacency lists</a></li>
+<li><a class="reference internal" href="#running-the-rmg-isotopes-algorithm">9.11.2. Running the RMG isotopes algorithm</a></li>
+<li><a class="reference internal" href="#output-from-script">9.11.3. Output from script</a></li>
 </ul>
 </li>
 </ul>
@@ -172,8 +170,8 @@ the entire system.</p>
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="reduction.html"
-                        title="previous chapter">9.11. Reaction Reduction in an RMG Job</a></p>
+  <p class="topless"><a href="standardizeModelSpeciesNames.html"
+                        title="previous chapter">9.10. Standardize Model Species Names</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../species.html"
                         title="next chapter">10. Species Representation</a></p>
@@ -190,13 +188,11 @@ the entire system.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -221,7 +217,7 @@ the entire system.</p>
           <a href="../species.html" title="10. Species Representation"
              >next</a> |</li>
         <li class="right" >
-          <a href="reduction.html" title="9.11. Reaction Reduction in an RMG Job"
+          <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -234,7 +230,7 @@ the entire system.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

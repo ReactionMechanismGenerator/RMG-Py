@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Reaction events &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,98 +60,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Reaction events<a class="headerlink" href="#reaction-events" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="microcanonical-rate-coefficients">
 <h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.pdep.calculateMicrocanonicalRateCoefficient">
-<code class="descclassname">rmgpy.pdep.</code><code class="descname">calculateMicrocanonicalRateCoefficient</code><span class="sig-paren">(</span><em>reaction</em>, <em>ndarray Elist</em>, <em>ndarray Jlist</em>, <em>ndarray reacDensStates</em>, <em>ndarray prodDensStates=None</em>, <em>double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.calculateMicrocanonicalRateCoefficient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> for the reaction
-<cite>reaction</cite> at the energies <cite>Elist</cite> in J/mol. <cite>reacDensStates</cite> and
-<cite>prodDensStates</cite> are the densities of states of the reactant and product
-configurations for this reaction. If the reaction is irreversible, only the
-reactant density of states is required; if the reaction is reversible, then
-both are required. This function will try to use the best method that it
-can based on the input data available:</p>
-<ul class="simple">
-<li>If detailed information has been provided for the transition state (i.e.
-the molecular degrees of freedom), then RRKM theory will be used.</li>
-<li>If the above is not possible but high-pressure limit kinetics
-<span class="math notranslate nohighlight">\(k_\infty(T)\)</span> have been provided, then the inverse Laplace
-transform method will be used.</li>
-</ul>
-<p>The density of states for the product <cite>prodDensStates</cite> and the temperature
-of interest <cite>T</cite> in K can also be provided. For isomerization and association
-reactions <cite>prodDensStates</cite> is required; for dissociation reactions it is
-optional. The temperature is used if provided in the detailed balance
-expression to determine the reverse kinetics, and in certain cases in the
-inverse Laplace transform method.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="rrkm-theory">
 <h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.pdep.applyRRKMTheory">
-<code class="descclassname">rmgpy.pdep.</code><code class="descname">applyRRKMTheory</code><span class="sig-paren">(</span><em>transitionState</em>, <em>ndarray Elist</em>, <em>ndarray Jlist</em>, <em>ndarray densStates</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.applyRRKMTheory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the microcanonical rate coefficient for a reaction using RRKM
-theory, where <cite>transitionState</cite> is the transition state of the reaction,
-<cite>Elist</cite> is the array of energies in J/mol at which to evaluate the
-microcanonial rate, and <cite>densStates</cite> is the density of states of the
-reactant.</p>
-<p>RRKM (Rice-Ramsperger-Kassel-Marcus) theory is the microcanonical analogue of
-transition state theory. The microcanonical rate coefficient as a function of
-total energy <span class="math notranslate nohighlight">\(E\)</span> and total angular momentum quantum number <span class="math notranslate nohighlight">\(J\)</span> is
-given by</p>
-<div class="math notranslate nohighlight">
-\[k(E,J) = \frac{N^\ddagger(E, J)}{h \rho(E, J)}\]</div>
-<p>where <span class="math notranslate nohighlight">\(N^\ddagger(E, J)\)</span> is the sum of states of the transition state and
-<span class="math notranslate nohighlight">\(\rho(E, J)\)</span> is the density of states of the reactant. If the J-rotor is
-treated as active, the J-dependence can be averaged in the above expression to
-give</p>
-<div class="math notranslate nohighlight">
-\[k(E) = \frac{N^\ddagger(E)}{h \rho(E)}\]</div>
-<p>as a function of total energy alone. This is reasonable at high temperatures,
-but less accurate at low temperatures.</p>
-<p>Use of RRKM theory requires detailed information about the statistical mechanics
-of the reactant <em>and</em> transition state. However, it is generally more accurate
-than the inverse Laplace transform method.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="inverse-laplace-transform-method">
 <h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.pdep.applyInverseLaplaceTransformMethod">
-<code class="descclassname">rmgpy.pdep.</code><code class="descname">applyInverseLaplaceTransformMethod</code><span class="sig-paren">(</span><em>transitionState</em>, <em>Arrhenius kinetics</em>, <em>ndarray Elist</em>, <em>ndarray Jlist</em>, <em>ndarray densStates</em>, <em>double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.applyInverseLaplaceTransformMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the microcanonical rate coefficient for a reaction using the
-inverse Laplace transform method, where <cite>kinetics</cite> is the high pressure
-limit rate coefficient, <cite>E0</cite> is the ground-state energy of the transition
-state, <cite>Elist</cite> is the array of energies in kJ/mol at which to evaluate the
-microcanonial rate, and <cite>densStates</cite> is the density of states of the
-reactant. The temperature <cite>T</cite> in K is not required, and is only used when
-the temperature exponent of the Arrhenius expression is negative (for which
-the inverse transform is undefined).</p>
-<p>The inverse Laplace transform method exploits the following relationship to
-determine the microcanonical rate coefficient:</p>
-<div class="math notranslate nohighlight">
-\[\mathcal{L} \left[k(E) \rho(E) \right] = \int_0^\infty k(E) \rho(E) e^{-E/k_\mathrm{B} T} \ dE = k_\infty(T) Q(T)\]</div>
-<p>Given a high-pressure limit rate coefficient <span class="math notranslate nohighlight">\(k_\infty(T)\)</span> represented as
-an Arrhenius expression with positive <span class="math notranslate nohighlight">\(n\)</span> and <span class="math notranslate nohighlight">\(E_\mathrm{a}\)</span>,
-the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> can be determined via an
-inverse Laplace transform. For <span class="math notranslate nohighlight">\(n = 0\)</span> the transform can be defined
-analytically:</p>
-<div class="math notranslate nohighlight">
-\[k(E) = A \frac{\rho(E - E_\mathrm{a})}{\rho(E)} \ \ \ \ (n = 0)\]</div>
-<p>For <span class="math notranslate nohighlight">\(n &gt; 0\)</span> the transform is defined numerically. For <span class="math notranslate nohighlight">\(n &lt; 0\)</span> or
-<span class="math notranslate nohighlight">\(E_\mathrm{a} &lt; 0\)</span> the transform is not defined; in this case we
-approximate by simply lumping the <span class="math notranslate nohighlight">\(T^n\)</span> or <span class="math notranslate nohighlight">\(e^{-E_\mathrm{a}/RT}\)</span>
-terms into the preexponential factor, and use a different <span class="math notranslate nohighlight">\(k(E)\)</span> at each
-temperature.</p>
-<p>The ILT method does not required detailed transition state information, but only
-the high-pressure limit kinetics. However, it assumes that (1)
-<span class="math notranslate nohighlight">\(k_\infty(T)\)</span> is valid over the temperature range from zero to infinity
-and (2) the activation energy <span class="math notranslate nohighlight">\(E_\mathrm{a}\)</span> is physically identical to
-the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger - E_0\)</span>.</p>
-</dd></dl>
-
 </div>
 </div>
 
@@ -215,13 +127,11 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -252,13 +162,13 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.quantity.Quantity &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Physical quantities (<code class="docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Physical quantities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,19 +60,19 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.quantity.Quantity<a class="headerlink" href="#rmgpy-quantity-quantity" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="rmgpy.quantity.Quantity">
-<code class="descclassname">rmgpy.quantity.</code><code class="descname">Quantity</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.Quantity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.quantity.</code><code class="sig-name descname">Quantity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.Quantity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarQuantity</span></code></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> object for a
 given physical quantity. The physical quantity can be specified in several
 ways:</p>
 <ul class="simple">
-<li>A scalar-like or array-like value (for a dimensionless quantity)</li>
-<li>An array of arguments (including keyword arguments) giving some or all of
-the <cite>value</cite>, <cite>units</cite>, <cite>uncertainty</cite>, and/or <cite>uncertaintyType</cite>.</li>
-<li>A tuple of the form <code class="docutils literal notranslate"><span class="pre">(value,)</span></code>, <code class="docutils literal notranslate"><span class="pre">(value,units)</span></code>,
+<li><p>A scalar-like or array-like value (for a dimensionless quantity)</p></li>
+<li><p>An array of arguments (including keyword arguments) giving some or all of
+the <cite>value</cite>, <cite>units</cite>, <cite>uncertainty</cite>, and/or <cite>uncertainty_type</cite>.</p></li>
+<li><p>A tuple of the form <code class="docutils literal notranslate"><span class="pre">(value,)</span></code>, <code class="docutils literal notranslate"><span class="pre">(value,units)</span></code>,
 <code class="docutils literal notranslate"><span class="pre">(value,units,uncertainty)</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">(value,units,uncertaintyType,uncertainty)</span></code></li>
-<li>An existing <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarQuantity</span></code></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> object, for
-which a copy is made</li>
+<code class="docutils literal notranslate"><span class="pre">(value,units,uncertainty_type,uncertainty)</span></code></p></li>
+<li><p>An existing <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarQuantity</span></code></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> object, for
+which a copy is made</p></li>
 </ul>
 </dd></dl>
 
@@ -114,7 +112,7 @@ which a copy is made</li>
                         title="previous chapter">rmgpy.quantity.ArrayQuantity</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../reaction/index.html"
-                        title="next chapter">Reactions (<code class="docutils literal notranslate"><span class="pre">rmgpy.reaction</span></code>)</a></p>
+                        title="next chapter">Reactions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.reaction</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -128,13 +126,11 @@ which a copy is made</li>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -165,13 +161,13 @@ which a copy is made</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Physical quantities (<code class="docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Physical quantities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.qm.qmverifier &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,18 +60,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.qmverifier<a class="headerlink" href="#rmgpy-qm-qmverifier" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.qm.qmverifier.QMVerifier">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.qmverifier.</code><code class="descname">QMVerifier</code><span class="sig-paren">(</span><em>molfile</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Verifies whether a QM job (externalized) was succesfully completed by</dt>
-<dd><ul class="first last simple">
-<li>searching for specific keywords in the output files,</li>
-<li>located in a specific directory (e.g. “QMFiles”)</li>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.qmverifier.</code><code class="sig-name descname">QMVerifier</code><span class="sig-paren">(</span><em class="sig-param">molfile</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Verifies whether a QM job (externalized) was succesfully completed by</dt><dd><ul class="simple">
+<li><p>searching for specific keywords in the output files,</p></li>
+<li><p>located in a specific directory (e.g. “QMFiles”)</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="method">
-<dt id="rmgpy.qm.qmverifier.QMVerifier.checkForInChiKeyCollision">
-<code class="descname">checkForInChiKeyCollision</code><span class="sig-paren">(</span><em>logFileInChI</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.checkForInChiKeyCollision" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.qmverifier.QMVerifier.check_for_inchi_key_collision">
+<code class="sig-name descname">check_for_inchi_key_collision</code><span class="sig-paren">(</span><em class="sig-param">log_file_inchi</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.check_for_inchi_key_collision" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is designed in the case a MOPAC output file was found but the InChI found in the file did not
 correspond to the InChI of the given molecule.</p>
 <p>This could mean two things:
@@ -84,8 +81,8 @@ second line and only a part of the InChI was actually taken as the ‘whole’ I
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.qm.qmverifier.QMVerifier.succesfulJobExists">
-<code class="descname">succesfulJobExists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.succesfulJobExists" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.qm.qmverifier.QMVerifier.succesful_job_exists">
+<code class="sig-name descname">succesful_job_exists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.succesful_job_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>checks whether one of the flags is true.
 If so, it returns true.</p>
 </dd></dl>
@@ -142,13 +139,11 @@ If so, it returns true.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -179,13 +174,13 @@ If so, it returns true.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >QMTP (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

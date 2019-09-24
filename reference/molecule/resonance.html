@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.molecule.resonance &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -66,27 +64,25 @@ Molecule object is <code class="docutils literal notranslate"><span class="pre">
 functions for generating each type of resonance structure.</p>
 <p>Currently supported resonance types:</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>All species:</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">generate_allyl_delocalization_resonance_structures</span></code>: single radical shift with double or triple bond</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_lone_pair_multiple_bond_resonance_structures</span></code>: lone pair shift with double or triple bond in a 3-atom system (between nonadjacent atoms)</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_radical_resonance_structures</span></code>: single radical shift with lone pair between adjacent atoms</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_multiple_bond_resonance_structures</span></code>: multiple bond shift with lone pair between adjacent atoms</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_radical_multiple_bond_resonance_structures</span></code>: multiple bond and radical shift with lone pair and radical  between adjacent atoms</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_N5dc_radical_resonance_structures</span></code>: shift between radical and lone pair mediated by an N5dc atom</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_aryne_resonance_structures</span></code>: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG</li>
+<li><dl class="simple">
+<dt>All species:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_allyl_delocalization_resonance_structures</span></code>: single radical shift with double or triple bond</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_lone_pair_multiple_bond_resonance_structures</span></code>: lone pair shift with double or triple bond in a 3-atom system (between nonadjacent atoms)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_radical_resonance_structures</span></code>: single radical shift with lone pair between adjacent atoms</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_multiple_bond_resonance_structures</span></code>: multiple bond shift with lone pair between adjacent atoms</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_radical_multiple_bond_resonance_structures</span></code>: multiple bond and radical shift with lone pair and radical  between adjacent atoms</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_N5dc_radical_resonance_structures</span></code>: shift between radical and lone pair mediated by an N5dc atom</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_aryne_resonance_structures</span></code>: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Aromatic species only:</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">generate_optimal_aromatic_resonance_structures</span></code>: fully delocalized structure, where all aromatic rings have benzene bonds</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_kekule_structure</span></code>: generate a single Kekule structure for an aromatic compound (single/double bond form)</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_opposite_kekule_structure</span></code>: for monocyclic aromatic species, rotate the double bond assignment</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_clar_structures</span></code>: generate all structures with the maximum number of pi-sextet assignments</li>
+<li><dl class="simple">
+<dt>Aromatic species only:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_optimal_aromatic_resonance_structures</span></code>: fully delocalized structure, where all aromatic rings have benzene bonds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_kekule_structure</span></code>: generate a single Kekule structure for an aromatic compound (single/double bond form)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_opposite_kekule_structure</span></code>: for monocyclic aromatic species, rotate the double bond assignment</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_clar_structures</span></code>: generate all structures with the maximum number of pi-sextet assignments</p></li>
 </ul>
 </dd>
 </dl>
@@ -94,34 +90,34 @@ functions for generating each type of resonance structure.</p>
 </ul>
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.analyze_molecule">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">analyze_molecule</code><a class="headerlink" href="#rmgpy.molecule.resonance.analyze_molecule" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">analyze_molecule</code><a class="headerlink" href="#rmgpy.molecule.resonance.analyze_molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify key features of molecule important for resonance structure generation.</p>
 <p>Returns a dictionary of features.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_N5dc_radical_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_N5dc_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_N5dc_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_N5dc_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_N5dc_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures formed by radical and lone pair shifts mediated by an N5dc atom.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_adj_lone_pair_multiple_bond_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adj_lone_pair_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_adj_lone_pair_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures formed by lone electron pair - multiple bond shifts between adjacent atoms.
 Example: [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]
 (where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
-Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lonePairs aren’t affected)
+Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lone_pairs aren’t affected)
 (In direction 1 atom1 &lt;losses&gt; a lone pair, in direction 2 atom1 &lt;gains&gt; a lone pair)</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_adj_lone_pair_radical_multiple_bond_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adj_lone_pair_radical_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_radical_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_adj_lone_pair_radical_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_radical_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts between adjacent atoms.
 Example: [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]
 (where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
-Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lonePairs aren’t affected)
+Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lone_pairs aren’t affected)
 This function is similar to generate_adj_lone_pair_multiple_bond_resonance_structures() except for dealing with the
 radical transformations.
 (In direction 1 atom1 &lt;losses&gt; a lone pair, gains a radical, and atom2 looses a radical.
@@ -130,7 +126,7 @@ In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gain
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_adj_lone_pair_radical_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adj_lone_pair_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_adj_lone_pair_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures formed by lone electron pair - radical shifts between adjacent atoms.
 These resonance transformations do not involve changing bond orders.
 NO2 example: O=[:N]-[::O.] &lt;=&gt; O=[N.+]-[:::O-]
@@ -139,42 +135,38 @@ NO2 example: O=[:N]-[::O.] &lt;=&gt; O=[N.+]-[:::O-]
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_allyl_delocalization_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_allyl_delocalization_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_allyl_delocalization_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_allyl_delocalization_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_allyl_delocalization_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures formed by one allyl radical shift.</p>
 <p>Biradicals on a single atom are not supported.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_aromatic_resonance_structure">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_aromatic_resonance_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aromatic_resonance_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_aromatic_resonance_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aromatic_resonance_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the aromatic form of the molecule in place without considering other resonance.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>mol</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object to modify</li>
-<li><strong>aromatic_bonds</strong> (<em>optional</em>) – list of previously identified aromatic bonds</li>
-<li><strong>copy</strong> (<em>optional</em>) – copy the molecule if <code class="docutils literal notranslate"><span class="pre">True</span></code>, otherwise modify in place</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object to modify</p></li>
+<li><p><strong>aromatic_bonds</strong> (<em>optional</em>) – list of previously identified aromatic bonds</p></li>
+<li><p><strong>copy</strong> (<em>optional</em>) – copy the molecule if <code class="docutils literal notranslate"><span class="pre">True</span></code>, otherwise modify in place</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of one molecule if successful, empty list otherwise</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of one molecule if successful, empty list otherwise</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_aryne_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_aryne_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aryne_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_aryne_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aryne_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate aryne resonance structures, including the cumulene and alkyne forms.</p>
 <p>For all 6-membered rings, check for the following bond patterns:</p>
 <blockquote>
 <div><ul class="simple">
-<li>DDDSDS</li>
-<li>STSDSD</li>
+<li><p>DDDSDS</p></li>
+<li><p>STSDSD</p></li>
 </ul>
 </div></blockquote>
 <p>This does NOT cover all possible aryne resonance forms, only the simplest ones.
@@ -184,14 +176,14 @@ related to enumeration of all Kekule structures, which is very difficult.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_clar_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_clar_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_clar_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_clar_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_clar_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Clar structures for a given molecule.</p>
 <p>Returns a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects corresponding to the Clar structures.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_isomorphic_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_isomorphic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_isomorphic_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_isomorphic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_isomorphic_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
 electrons descriptor.</p>
 <p>We generate over all resonance isomers (non-isomorphic as well as isomorphic) and retain isomorphic
@@ -199,13 +191,13 @@ isomers.</p>
 <p>If <cite>saturate_h</cite> is <cite>True</cite>, then saturate <cite>mol</cite> with hydrogens before generating the resonance structures,
 and remove the hydrogens before returning <cite>isomorphic_isomers</cite>. This is useful when resonance structures are
 generated for molecules in which all hydrogens were intentionally removed as in generating augInChI. Otherwise,
-RMG will probably get many of the lonePairs and partial charges in a molecule wrong.</p>
+RMG will probably get many of the lone_pairs and partial charges in a molecule wrong.</p>
 <p>WIP: do not generate aromatic resonance isomers.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_kekule_structure">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_kekule_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_kekule_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_kekule_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_kekule_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a kekulized (single-double bond) form of the molecule.
 The specific arrangement of double bonds is non-deterministic, and depends on RDKit.</p>
 <p>Returns a single Kekule structure as an element of a list of length 1.
@@ -214,7 +206,7 @@ If there’s an error (eg. in RDKit) then it just returns an empty list.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_lone_pair_multiple_bond_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_lone_pair_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_lone_pair_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_lone_pair_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_lone_pair_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures formed by lone electron pair - multiple bond shifts in 3-atom systems.
 Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] &lt;=&gt; [NH2+]=C[:::O-]
 (where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)</p>
@@ -222,7 +214,7 @@ Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] &lt;=&gt; [NH2+]=C[:::O-]
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_optimal_aromatic_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_optimal_aromatic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_optimal_aromatic_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_optimal_aromatic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_optimal_aromatic_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.</p>
 <p>Returns result as a list.
 In most cases, only one structure will be returned.
@@ -232,32 +224,32 @@ If there’s an error (eg. in RDKit) it just returns an empty list.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">generate_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return all of the resonance structures for the input molecule.</p>
 <p>Most of the complexity of this method goes into handling aromatic species, particularly to generate an accurate
 set of resonance structures that is consistent regardless of the input structure. The following considerations
 are made:</p>
 <ol class="arabic simple">
-<li>False positives from RDKit aromaticity detection can occur if a molecule has exocyclic double bonds</li>
-<li>False negatives from RDKit aromaticity detection can occur if a radical is delocalized into an aromatic ring</li>
-<li>sp2 hybridized radicals in the plane of an aromatic ring do not participate in hyperconjugation</li>
-<li>Non-aromatic resonance structures of PAHs are not important resonance contributors (assumption)</li>
+<li><p>False positives from RDKit aromaticity detection can occur if a molecule has exocyclic double bonds</p></li>
+<li><p>False negatives from RDKit aromaticity detection can occur if a radical is delocalized into an aromatic ring</p></li>
+<li><p>sp2 hybridized radicals in the plane of an aromatic ring do not participate in hyperconjugation</p></li>
+<li><p>Non-aromatic resonance structures of PAHs are not important resonance contributors (assumption)</p></li>
 </ol>
 <p>Aromatic species are broken into the following categories for resonance treatment:</p>
 <ul class="simple">
-<li>Radical polycyclic aromatic species: Kekule structures are generated in order to generate adjacent resonance
+<li><p>Radical polycyclic aromatic species: Kekule structures are generated in order to generate adjacent resonance
 structures. The resulting structures are then used for Clar structure generation. After all three steps, any
-non-aromatic structures are removed, under the assumption that they are not important resonance contributors.</li>
-<li>Radical monocyclic aromatic species: Kekule structures are generated along with adjacent resonance structures.
-All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.</li>
-<li>Stable polycyclic aromatic species: Clar structures are generated</li>
-<li>Stable monocyclic aromatic species: Kekule structures are generated</li>
+non-aromatic structures are removed, under the assumption that they are not important resonance contributors.</p></li>
+<li><p>Radical monocyclic aromatic species: Kekule structures are generated along with adjacent resonance structures.
+All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.</p></li>
+<li><p>Stable polycyclic aromatic species: Clar structures are generated</p></li>
+<li><p>Stable monocyclic aromatic species: Kekule structures are generated</p></li>
 </ul>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.populate_resonance_algorithms">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">populate_resonance_algorithms</code><a class="headerlink" href="#rmgpy.molecule.resonance.populate_resonance_algorithms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.resonance.</code><code class="sig-name descname">populate_resonance_algorithms</code><a class="headerlink" href="#rmgpy.molecule.resonance.populate_resonance_algorithms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate list of resonance structure algorithms relevant to the current molecule.</p>
 <p>Takes a dictionary of features generated by analyze_molecule().
 Returns a list of resonance algorithms.</p>
@@ -313,13 +305,11 @@ Returns a list of resonance algorithms.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -350,13 +340,13 @@ Returns a list of resonance algorithms.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

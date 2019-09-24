@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Methods for estimating k(T,P) values &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -68,71 +66,12 @@ unimolecular isomer <span class="math notranslate nohighlight">\(i\)</span> as a
 of all unimolecular isomers and bimolecular reactant channels.</p>
 <div class="section" id="the-modified-strong-collision-method">
 <h2>The modified strong collision method<a class="headerlink" href="#the-modified-strong-collision-method" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.pdep.msc.applyModifiedStrongCollisionMethod">
-<code class="descclassname">rmgpy.pdep.msc.</code><code class="descname">applyModifiedStrongCollisionMethod</code><span class="sig-paren">(</span><em>network</em>, <em>str efficiencyModel='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.msc.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>The modified strong collision method utilizes a greatly simplified collision
-model that allows for a decoupling of the energy grains. In the simplified
-collision model, collisional stabilization of a reactive isomer is treated as a
-single-step process, ignoring the effects of collisional energy redistribution
-within the reactive energy space. An attempt to correct for the effect of
-collisional energy redistribution is made by modifying the collision frequency
-<span class="math notranslate nohighlight">\(\omega_i(T,P)\)</span> with a collision efficiency <span class="math notranslate nohighlight">\(\beta_i(T)\)</span> estimated
-from the low-pressure limit fall-off of a single isomer.</p>
-<p>By approximating the reactive populations as existing in pseudo-steady state,
-the master equation is converted to a matrix equation is at each energy. Solving
-these small matrix equations gives the pseudo-steady state populations of each
-isomer as a function of the total population of each isomer and reactant
-channel, which are then applied to determine the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
-<p>In practice, the modified strong collision method is the fastest and most
-robust of the methods, and is reasonably accurate over a wide range of
-temperatures and pressures.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="the-reservoir-state-method">
 <h2>The reservoir state method<a class="headerlink" href="#the-reservoir-state-method" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.pdep.rs.applyReservoirStateMethod">
-<code class="descclassname">rmgpy.pdep.rs.</code><code class="descname">applyReservoirStateMethod</code><span class="sig-paren">(</span><em>network</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.rs.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>In the reservoir state method, the population distribution of each isomer is
-partitioned into the low-energy grains (called the <em>reservoir</em>) and the
-high-energy grains (called the <em>active space</em>). The partition generally occurs
-at or near the lowest transition state energy for each isomer. The reservoir
-population is assumed to be thermalized, while the active-space population is
-assumed to be in pseudo-steady state. Applying these approximations converts
-the master equation into a single large matrix equation. Solving this matrix
-equation gives the pseudo-steady state populations of each isomer as a function
-of the total population of each isomer and reactant channel, which are then
-applied to determine the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
-<p>The reservoir state method is only slightly more expensive than the modified
-strong collision method. At low temperatures the approximations used are very
-good, and the resulting <span class="math notranslate nohighlight">\(k(T,P)\)</span> values are more accurate than the
-modified strong collision values. However, at high temperatures the thermalized
-reservoir approximation breaks down, resulting in very inaccurate
-<span class="math notranslate nohighlight">\(k(T,P)\)</span> values. Thus, the reservoir state method is not robustly
-applicable over a wide range of temperatures and pressures.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="the-chemically-significant-eigenvalues-method">
 <h2>The chemically-significant eigenvalues method<a class="headerlink" href="#the-chemically-significant-eigenvalues-method" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod">
-<code class="descclassname">rmgpy.pdep.cse.</code><code class="descname">applyChemicallySignificantEigenvaluesMethod</code><span class="sig-paren">(</span><em>network</em>, <em>list lumpingOrder=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>In the chemically-significant eigenvalues method, the master equation matrix
-is diagonized to determine its eigenmodes. Only the slowest of these modes are
-relevant to the chemistry; the rest involve internal energy relaxation due to
-collisions. Keeping only these “chemically-significant” eigenmodes allows for
-reduction to <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
-<p>The chemically-significant eigenvalues method is the most accurate method,
-and is considered to be exact as long as the chemically-significant eigenmodes
-are separable and distinct from the internal energy relaxation eigenmodes.
-However, this is often only the case near the high-pressure limit, even for
-networks of only modest size. The chemically-significant eigenvalues method
-is also substantially more expensive to apply than the other methods.</p>
-</dd></dl>
-
 </div>
 </div>
 
@@ -180,7 +119,7 @@ is also substantially more expensive to apply than the other methods.</p>
                         title="previous chapter">The master equation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../qm/index.html"
-                        title="next chapter">QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a></p>
+                        title="next chapter">QMTP (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -194,13 +133,11 @@ is also substantially more expensive to apply than the other methods.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -231,13 +168,13 @@ is also substantially more expensive to apply than the other methods.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

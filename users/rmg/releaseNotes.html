@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>18. Release Notes &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -64,37 +62,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>18.1. RMG-Py Version 2.4.1<a class="headerlink" href="#rmg-py-version-2-4-1" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 23, 2019</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Bugfixes</dt>
-<dd><ul class="first last">
-<li>Improve error handling in NASA as_dict method #1630</li>
-<li>Fixes to Fluorine atomtypes #1656</li>
-<li>Fix pressure dependent network generation #1658</li>
-<li>Add support for reversing PDepArrhenius with MultiArrhenius rates #1659</li>
+<li><dl class="simple">
+<dt>Bugfixes</dt><dd><ul>
+<li><p>Improve error handling in NASA as_dict method #1630</p></li>
+<li><p>Fixes to Fluorine atomtypes #1656</p></li>
+<li><p>Fix pressure dependent network generation #1658</p></li>
+<li><p>Add support for reversing PDepArrhenius with MultiArrhenius rates #1659</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Arkane</dt>
-<dd><ul class="first last">
-<li>Implement ZPE scaling factor #1619</li>
-<li>Refactor infrastructure for bond additivity corrections #1605</li>
-<li>Add frequency scale factors for wb97xd/def2tzvp and apfd/def2tzvpp #1653</li>
-<li>Fix frequency scale factors in example files #1657</li>
-<li>Get element counts from conformers #1651</li>
+<li><dl class="simple">
+<dt>Arkane</dt><dd><ul>
+<li><p>Implement ZPE scaling factor #1619</p></li>
+<li><p>Refactor infrastructure for bond additivity corrections #1605</p></li>
+<li><p>Add frequency scale factors for wb97xd/def2tzvp and apfd/def2tzvpp #1653</p></li>
+<li><p>Fix frequency scale factors in example files #1657</p></li>
+<li><p>Get element counts from conformers #1651</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Miscellaneous</dt>
-<dd><ul class="first last">
-<li>Update conda environment files #1623, #1644</li>
-<li>Output RMS (Reaction Mechanism Simulator) format mechanism files #1629</li>
-<li>Properly clean up files after running tests #1645</li>
-<li>Documentation fixes #1650</li>
-<li>Improve as_dict and make_object by making them recursive #1643</li>
+<li><dl class="simple">
+<dt>Miscellaneous</dt><dd><ul>
+<li><p>Update conda environment files #1623, #1644</p></li>
+<li><p>Output RMS (Reaction Mechanism Simulator) format mechanism files #1629</p></li>
+<li><p>Properly clean up files after running tests #1645</p></li>
+<li><p>Documentation fixes #1650</p></li>
+<li><p>Improve as_dict and make_object by making them recursive #1643</p></li>
 </ul>
 </dd>
 </dl>
@@ -105,101 +100,93 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>18.2. RMG-Py Version 2.4.0<a class="headerlink" href="#rmg-py-version-2-4-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: June 14, 2019</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Heterogeneous catalysis!</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>RMG-cat fork has been merged #1573</dt>
-<dd><ul class="first last">
-<li>Introduce SurfaceReactor</li>
-<li>Thermo estimation for adsorbed species</li>
-<li>Surface reaction generation and kinetics estimation</li>
+<li><dl class="simple">
+<dt>Heterogeneous catalysis!</dt><dd><ul>
+<li><dl class="simple">
+<dt>RMG-cat fork has been merged #1573</dt><dd><ul>
+<li><p>Introduce SurfaceReactor</p></li>
+<li><p>Thermo estimation for adsorbed species</p></li>
+<li><p>Surface reaction generation and kinetics estimation</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>Introduce Van der Waals bonds (order 0) and quadruple bonds (order 4) #1542</li>
+<li><p>Introduce Van der Waals bonds (order 0) and quadruple bonds (order 4) #1542</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Arkane</dt>
-<dd><ul class="first last">
-<li>Automatically detect rotor symmetry #1526</li>
-<li>Introduce new YAML files for storing and loading species statmech data #1402, #1551</li>
-<li>Don’t create species dictionary file if there are no structures #1528</li>
-<li>Improvements to network explorer tool #1545</li>
-<li>Improved class inheritance for quantum log file classes #1571</li>
-<li>Automatic determination of optical isomers and symmetry using <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> package #1571</li>
-<li>Parse CCSD(T) energies from Molpro output #1592</li>
-<li>Automatically determine molecule linearity #1601</li>
-<li>Determine frequency scaling factor based on geom/freq method rather than sp method #1612</li>
-<li>Improve logging related to energy barriers #1575</li>
-<li>Ensure that translational mode is calculated for atoms #1620</li>
+<li><dl class="simple">
+<dt>Arkane</dt><dd><ul>
+<li><p>Automatically detect rotor symmetry #1526</p></li>
+<li><p>Introduce new YAML files for storing and loading species statmech data #1402, #1551</p></li>
+<li><p>Don’t create species dictionary file if there are no structures #1528</p></li>
+<li><p>Improvements to network explorer tool #1545</p></li>
+<li><p>Improved class inheritance for quantum log file classes #1571</p></li>
+<li><p>Automatic determination of optical isomers and symmetry using <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> package #1571</p></li>
+<li><p>Parse CCSD(T) energies from Molpro output #1592</p></li>
+<li><p>Automatically determine molecule linearity #1601</p></li>
+<li><p>Determine frequency scaling factor based on geom/freq method rather than sp method #1612</p></li>
+<li><p>Improve logging related to energy barriers #1575</p></li>
+<li><p>Ensure that translational mode is calculated for atoms #1620</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Miscellaneous features</dt>
-<dd><ul class="first last">
-<li>New <code class="docutils literal notranslate"><span class="pre">enumerate_bonds</span></code> method of Molecule to generate dictionary of bond types #1525</li>
-<li>Introduce <code class="docutils literal notranslate"><span class="pre">RMGObject</span></code> parent class to support YAML dumping and loading #1402, #1540</li>
-<li>Add support for fluorine atomtypes #1543</li>
-<li>Introduce <code class="docutils literal notranslate"><span class="pre">ArrheniusBM</span></code> class for Blower-Masel kinetics #1461</li>
-<li>Allow defining and using co-solvents for solvent libraries #1558</li>
-<li>Introduce <code class="docutils literal notranslate"><span class="pre">strict</span></code> option to perform isomorphism between species/molecules while ignoring electrons and bond orders #1329</li>
-<li>Molecule and Species objects can be instantiated by providing <code class="docutils literal notranslate"><span class="pre">SMILES</span></code> or <code class="docutils literal notranslate"><span class="pre">InChI</span></code> argument directly, and the identifiers can be accessed via the <code class="docutils literal notranslate"><span class="pre">SMILES</span></code> and <code class="docutils literal notranslate"><span class="pre">InChI</span></code> attributes #1329</li>
-<li>Parallelization has been completely refactored using Python multiprocessing module in replacement of scoop, currently supports parallel reaction generation and QMTP #1459</li>
-<li>Improvements to usability of uncertainty analysis functionality #1593</li>
+<li><dl class="simple">
+<dt>Miscellaneous features</dt><dd><ul>
+<li><p>New <code class="docutils literal notranslate"><span class="pre">enumerate_bonds</span></code> method of Molecule to generate dictionary of bond types #1525</p></li>
+<li><p>Introduce <code class="docutils literal notranslate"><span class="pre">RMGObject</span></code> parent class to support YAML dumping and loading #1402, #1540</p></li>
+<li><p>Add support for fluorine atomtypes #1543</p></li>
+<li><p>Introduce <code class="docutils literal notranslate"><span class="pre">ArrheniusBM</span></code> class for Blower-Masel kinetics #1461</p></li>
+<li><p>Allow defining and using co-solvents for solvent libraries #1558</p></li>
+<li><p>Introduce <code class="docutils literal notranslate"><span class="pre">strict</span></code> option to perform isomorphism between species/molecules while ignoring electrons and bond orders #1329</p></li>
+<li><p>Molecule and Species objects can be instantiated by providing <code class="docutils literal notranslate"><span class="pre">SMILES</span></code> or <code class="docutils literal notranslate"><span class="pre">InChI</span></code> argument directly, and the identifiers can be accessed via the <code class="docutils literal notranslate"><span class="pre">SMILES</span></code> and <code class="docutils literal notranslate"><span class="pre">InChI</span></code> attributes #1329</p></li>
+<li><p>Parallelization has been completely refactored using Python multiprocessing module in replacement of scoop, currently supports parallel reaction generation and QMTP #1459</p></li>
+<li><p>Improvements to usability of uncertainty analysis functionality #1593</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Bug fixes</dt>
-<dd><ul class="first last">
-<li>Various fixes for supporting mono-atomic molecules in Arkane #1513, #1521</li>
-<li>Ensure <code class="docutils literal notranslate"><span class="pre">keras_backend</span></code> is set consistently #1535</li>
-<li>Fix handling of disconnected graphs in VF2 isomorphism algorithm #1538</li>
-<li>Ignore hydrogen bonds when converting to RDKit molecule #1552</li>
-<li>Other miscellaneous bugs #1546, #1556, #1593, #1600, #1622</li>
+<li><dl class="simple">
+<dt>Bug fixes</dt><dd><ul>
+<li><p>Various fixes for supporting mono-atomic molecules in Arkane #1513, #1521</p></li>
+<li><p>Ensure <code class="docutils literal notranslate"><span class="pre">keras_backend</span></code> is set consistently #1535</p></li>
+<li><p>Fix handling of disconnected graphs in VF2 isomorphism algorithm #1538</p></li>
+<li><p>Ignore hydrogen bonds when converting to RDKit molecule #1552</p></li>
+<li><p>Other miscellaneous bugs #1546, #1556, #1593, #1600, #1622</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Backward incompatible changes</dt>
-<dd><ul class="first last">
-<li>Hydrogen bonds are now order 0.1 (instead of 0) #1542</li>
+<li><dl class="simple">
+<dt>Backward incompatible changes</dt><dd><ul>
+<li><p>Hydrogen bonds are now order 0.1 (instead of 0) #1542</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New dependencies</dt>
-<dd><ul class="first last">
-<li>pyyaml (required) #1402</li>
-<li>scikit-learn (required) #1461</li>
-<li>textgenrnn (optional) #1573</li>
+<li><dl class="simple">
+<dt>New dependencies</dt><dd><ul>
+<li><p>pyyaml (required) #1402</p></li>
+<li><p>scikit-learn (required) #1461</p></li>
+<li><p>textgenrnn (optional) #1573</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other</dt>
-<dd><ul class="first last">
-<li>Windows binaries are no longer officially supported. The new recommended way to use RMG on Windows computers is via a virtual machine or through the Linux subsystem. See documentation for updated installation instructions. #1531, #1534</li>
-<li>Documentation updates #1544, #1567</li>
-<li>Logging/exception improvements #1538, #1562</li>
-<li>PEP-8 improvements #1566, #1592, #1596</li>
-<li>Solver output files (png/csv) now report moles instead of mole fractions #1542</li>
-<li>Replace global RMGDatabase object if the database is reloaded #1565</li>
-<li>Print ML generated quote upon completion of RMG jobs #1573</li>
-<li>Infrastructure for automatically generated reaction rate trees #1461</li>
-<li>Testing related changes #1597, #1599</li>
-<li>Updates to example Jupyter notebooks #1541, #1593</li>
+<li><dl class="simple">
+<dt>Other</dt><dd><ul>
+<li><p>Windows binaries are no longer officially supported. The new recommended way to use RMG on Windows computers is via a virtual machine or through the Linux subsystem. See documentation for updated installation instructions. #1531, #1534</p></li>
+<li><p>Documentation updates #1544, #1567</p></li>
+<li><p>Logging/exception improvements #1538, #1562</p></li>
+<li><p>PEP-8 improvements #1566, #1592, #1596</p></li>
+<li><p>Solver output files (png/csv) now report moles instead of mole fractions #1542</p></li>
+<li><p>Replace global RMGDatabase object if the database is reloaded #1565</p></li>
+<li><p>Print ML generated quote upon completion of RMG jobs #1573</p></li>
+<li><p>Infrastructure for automatically generated reaction rate trees #1461</p></li>
+<li><p>Testing related changes #1597, #1599</p></li>
+<li><p>Updates to example Jupyter notebooks #1541, #1593</p></li>
 </ul>
 </dd>
 </dl>
@@ -210,41 +197,37 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>18.3. RMG-database Version 2.4.0<a class="headerlink" href="#rmg-database-version-2-4-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: June 14, 2019</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Heterogeneous catalysis!</dt>
-<dd><ul class="first last">
-<li>RMG-cat fork has been merged #309</li>
-<li><dl class="first docutils">
-<dt>New kinetics families</dt>
-<dd><ul class="first last">
-<li>Surface_Adsorption_Single</li>
-<li>Surface_Adsorption_vdW</li>
-<li>Surface_Adsorption_Dissociative</li>
-<li>Surface_Dissociation</li>
-<li>Surface_Abstraction</li>
-<li>Surface_Adsorption_Double</li>
-<li>Surface_Dissociation_vdW</li>
-<li>Surface_Adsorption_Bidentate</li>
-<li>Surface_Bidentate_Dissociation</li>
-<li>Surface_Recombination (deprecated, use Surface_Dissociation instead)</li>
+<li><dl class="simple">
+<dt>Heterogeneous catalysis!</dt><dd><ul>
+<li><p>RMG-cat fork has been merged #309</p></li>
+<li><dl class="simple">
+<dt>New kinetics families</dt><dd><ul>
+<li><p>Surface_Adsorption_Single</p></li>
+<li><p>Surface_Adsorption_vdW</p></li>
+<li><p>Surface_Adsorption_Dissociative</p></li>
+<li><p>Surface_Dissociation</p></li>
+<li><p>Surface_Abstraction</p></li>
+<li><p>Surface_Adsorption_Double</p></li>
+<li><p>Surface_Dissociation_vdW</p></li>
+<li><p>Surface_Adsorption_Bidentate</p></li>
+<li><p>Surface_Bidentate_Dissociation</p></li>
+<li><p>Surface_Recombination (deprecated, use Surface_Dissociation instead)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New thermo group types</dt>
-<dd><ul class="first last">
-<li>adsorptionNi</li>
-<li>adsorptionPt</li>
+<li><dl class="simple">
+<dt>New thermo group types</dt><dd><ul>
+<li><p>adsorptionNi</p></li>
+<li><p>adsorptionPt</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New thermo libraries</dt>
-<dd><ul class="first last">
-<li>surfaceThermoNi</li>
-<li>surfaceThermoPt</li>
+<li><dl class="simple">
+<dt>New thermo libraries</dt><dd><ul>
+<li><p>surfaceThermoNi</p></li>
+<li><p>surfaceThermoPt</p></li>
 </ul>
 </dd>
 </dl>
@@ -253,94 +236,86 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New kinetics families</dt>
-<dd><ul class="first last">
-<li>1,2_NH3_elimination #326</li>
-<li>1,3_NH3_elimination #326</li>
+<li><dl class="simple">
+<dt>New kinetics families</dt><dd><ul>
+<li><p>1,2_NH3_elimination #326</p></li>
+<li><p>1,3_NH3_elimination #326</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New kinetics libraries</dt>
-<dd><ul class="first last">
-<li>HydrazinePDep #326</li>
+<li><dl class="simple">
+<dt>New kinetics libraries</dt><dd><ul>
+<li><p>HydrazinePDep #326</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New transport libraries</dt>
-<dd><ul class="first last">
-<li>OneDMinN2 #326</li>
+<li><dl class="simple">
+<dt>New transport libraries</dt><dd><ul>
+<li><p>OneDMinN2 #326</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Kinetics training reaction additions</dt>
-<dd><ul class="first last">
-<li>1,2_shiftC #306</li>
-<li>Intra_R_Add_Endocyclic #306, #258</li>
-<li>Intra_R_Add_Exocyclic #306, #258, #331</li>
-<li>Intra_ene_reaction #306</li>
-<li>R_Addition_COm #306</li>
-<li>R_Addition_MultipleBond #306, #258</li>
-<li>R_Recombination #306,  #326</li>
-<li>Intra_H_migration #306</li>
-<li>H_Abstraction #326</li>
+<li><dl class="simple">
+<dt>Kinetics training reaction additions</dt><dd><ul>
+<li><p>1,2_shiftC #306</p></li>
+<li><p>Intra_R_Add_Endocyclic #306, #258</p></li>
+<li><p>Intra_R_Add_Exocyclic #306, #258, #331</p></li>
+<li><p>Intra_ene_reaction #306</p></li>
+<li><p>R_Addition_COm #306</p></li>
+<li><p>R_Addition_MultipleBond #306, #258</p></li>
+<li><p>R_Recombination #306,  #326</p></li>
+<li><p>Intra_H_migration #306</p></li>
+<li><p>H_Abstraction #326</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Kinetics library additions</dt>
-<dd><ul class="first last">
-<li>primaryNitrogenLibrary #326</li>
-<li>Lai_Hexylbenzene #258</li>
+<li><dl class="simple">
+<dt>Kinetics library additions</dt><dd><ul>
+<li><p>primaryNitrogenLibrary #326</p></li>
+<li><p>Lai_Hexylbenzene #258</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Thermo library additions</dt>
-<dd><ul class="first last">
-<li>CBS_QB3_1dHR, thermo_DFT_CCSDTF12_BAC #319</li>
-<li>primaryNS #326</li>
-<li>Lai_Hexylbenzene #258</li>
+<li><dl class="simple">
+<dt>Thermo library additions</dt><dd><ul>
+<li><p>CBS_QB3_1dHR, thermo_DFT_CCSDTF12_BAC #319</p></li>
+<li><p>primaryNS #326</p></li>
+<li><p>Lai_Hexylbenzene #258</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Thermo group additions</dt>
-<dd><ul class="first last">
-<li>ring, polycyclic, radical #258</li>
+<li><dl class="simple">
+<dt>Thermo group additions</dt><dd><ul>
+<li><p>ring, polycyclic, radical #258</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes</dt>
-<dd><ul class="first last">
-<li>[adjlist] kinetics/libraries/Klippenstein_Glarborg2016 #308</li>
-<li>[labels] thermo/libraries/CBS_QB3_1dHR, Narayanaswamy #306</li>
-<li>[units] kinetics/libraries/Sulfur/GlarborgMarhsall, Nitrogen_Dean_and_Bozzelli, primaryNitrogenLibrary, primarySulfurLibrary #311</li>
-<li>[units] R_Addition_MultipleBond/training, R_Recombination/training #312</li>
-<li>[adjlist] kinetics/libraries/GRI-Mech3.0-N #313</li>
-<li>[adjlist] thermo/libraries/GRI-Mech3.0-N, GRI-Mech3.0 #313</li>
-<li>[rates] Disproportionation/training, R_Addition_MultipleBond/training #326</li>
-<li>[labels] kinetics/libraries/NOx2018 #326</li>
-<li>[labels, attributes] kinetics/libraries/Nitrogen_Dean_and_Bozelli #326</li>
-<li>[labels] kinetics/librariesNitrogen_Glarbog_Gimenez_et_al, Nitrogen_Glarborg_Zhang_et_al  #326</li>
-<li>[labels, adjlist] thermo/libraries/BurcatNS #326</li>
-<li>[labels] thermo/libraries/NOx2018, NitrogenCurran #326</li>
-<li>[labels] transport/libraries/NOx2018 #326</li>
-<li>[adjlist] Intra_R_Add_Endocyclic/training #332</li>
-<li>[value] thermo/groups/ring/12dioxetane #327</li>
-<li>[adjlist] thermo/libraries/GRI-Mech3.0 #336</li>
-<li>[value] thermo/libraries/primaryThermoLibrary #338</li>
+<li><dl class="simple">
+<dt>Changes</dt><dd><ul>
+<li><p>[adjlist] kinetics/libraries/Klippenstein_Glarborg2016 #308</p></li>
+<li><p>[labels] thermo/libraries/CBS_QB3_1dHR, Narayanaswamy #306</p></li>
+<li><p>[units] kinetics/libraries/Sulfur/GlarborgMarhsall, Nitrogen_Dean_and_Bozzelli, primaryNitrogenLibrary, primarySulfurLibrary #311</p></li>
+<li><p>[units] R_Addition_MultipleBond/training, R_Recombination/training #312</p></li>
+<li><p>[adjlist] kinetics/libraries/GRI-Mech3.0-N #313</p></li>
+<li><p>[adjlist] thermo/libraries/GRI-Mech3.0-N, GRI-Mech3.0 #313</p></li>
+<li><p>[rates] Disproportionation/training, R_Addition_MultipleBond/training #326</p></li>
+<li><p>[labels] kinetics/libraries/NOx2018 #326</p></li>
+<li><p>[labels, attributes] kinetics/libraries/Nitrogen_Dean_and_Bozelli #326</p></li>
+<li><p>[labels] kinetics/librariesNitrogen_Glarbog_Gimenez_et_al, Nitrogen_Glarborg_Zhang_et_al  #326</p></li>
+<li><p>[labels, adjlist] thermo/libraries/BurcatNS #326</p></li>
+<li><p>[labels] thermo/libraries/NOx2018, NitrogenCurran #326</p></li>
+<li><p>[labels] transport/libraries/NOx2018 #326</p></li>
+<li><p>[adjlist] Intra_R_Add_Endocyclic/training #332</p></li>
+<li><p>[value] thermo/groups/ring/12dioxetane #327</p></li>
+<li><p>[adjlist] thermo/libraries/GRI-Mech3.0 #336</p></li>
+<li><p>[value] thermo/libraries/primaryThermoLibrary #338</p></li>
 </ul>
 </dd>
 </dl>
@@ -351,62 +326,57 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>18.4. RMG-Py Version 2.3.0<a class="headerlink" href="#rmg-py-version-2-3-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: Dec 20, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Arkane (formerly CanTherm):</dt>
-<dd><ul class="first last">
-<li>CanTherm had been renamed to Arkane (Automated Reaction Kinetics And Network Exploration)</li>
-<li>New network exploration functionality using RMG-database</li>
-<li>Support for all elements has been added for reading quantum output files</li>
-<li>New supporting information output file with rotational constants and frequencies</li>
-<li>Known thermo and kinetics can be provided in addition to quantum information</li>
-<li>Improve general user experience and error handling</li>
+<li><dl class="simple">
+<dt>Arkane (formerly CanTherm):</dt><dd><ul>
+<li><p>CanTherm had been renamed to Arkane (Automated Reaction Kinetics And Network Exploration)</p></li>
+<li><p>New network exploration functionality using RMG-database</p></li>
+<li><p>Support for all elements has been added for reading quantum output files</p></li>
+<li><p>New supporting information output file with rotational constants and frequencies</p></li>
+<li><p>Known thermo and kinetics can be provided in addition to quantum information</p></li>
+<li><p>Improve general user experience and error handling</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New machine learning thermo estimator</dt>
-<dd><ul class="first last">
-<li>Estimate species thermochemistry using a graph convolutional neural network</li>
-<li>Estimator trained on quantum calculations at B3LYP and CCSD(T)-F12 levels</li>
-<li>Currently supports C/H/O/N, with an emphasis on cyclic molecules</li>
+<li><dl class="simple">
+<dt>New machine learning thermo estimator</dt><dd><ul>
+<li><p>Estimate species thermochemistry using a graph convolutional neural network</p></li>
+<li><p>Estimator trained on quantum calculations at B3LYP and CCSD(T)-F12 levels</p></li>
+<li><p>Currently supports C/H/O/N, with an emphasis on cyclic molecules</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Resonance:</dt>
-<dd><ul class="first last">
-<li>New pathways added for lone-pair multiple-bond resonance, replacing
-two pathways which were more specific</li>
-<li>New pathways added for aryne resonance</li>
-<li>Aromatic resonance pathways simplified and refactored to use filtration</li>
-<li>Kekule structures are now considered unreactive structures</li>
+<li><dl class="simple">
+<dt>Resonance:</dt><dd><ul>
+<li><p>New pathways added for lone-pair multiple-bond resonance, replacing
+two pathways which were more specific</p></li>
+<li><p>New pathways added for aryne resonance</p></li>
+<li><p>Aromatic resonance pathways simplified and refactored to use filtration</p></li>
+<li><p>Kekule structures are now considered unreactive structures</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Miscellaneous changes:</dt>
-<dd><ul class="first last">
-<li>Isotope support added for reading and writing InChI strings</li>
-<li>New branching algorithm for picking up feedback loops implemented (beta)</li>
-<li>Global forbidden structure checking is now only done for core species for
-efficiency, which may lead to forbidden species existing in the edge</li>
-<li>Minor improvements to symmetry algorithm to fix a few incorrect cases</li>
+<li><dl class="simple">
+<dt>Miscellaneous changes:</dt><dd><ul>
+<li><p>Isotope support added for reading and writing InChI strings</p></li>
+<li><p>New branching algorithm for picking up feedback loops implemented (beta)</p></li>
+<li><p>Global forbidden structure checking is now only done for core species for
+efficiency, which may lead to forbidden species existing in the edge</p></li>
+<li><p>Minor improvements to symmetry algorithm to fix a few incorrect cases</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Bug fixes:</dt>
-<dd><ul class="first last">
-<li>Fixed issue where react flags were being reset when filterReactions was
-used with multiple reactors, resulting in no reactions generated</li>
-<li>File paths for collision violators log changed to output directory</li>
-<li>Fixed bug in local uncertainty introduced by ranged reactor changes</li>
-<li>Fixed bug with diffusion limitation calculations for multi-molecular reactions</li>
-<li>Various other minor fixes</li>
+<li><dl class="simple">
+<dt>Bug fixes:</dt><dd><ul>
+<li><p>Fixed issue where react flags were being reset when filterReactions was
+used with multiple reactors, resulting in no reactions generated</p></li>
+<li><p>File paths for collision violators log changed to output directory</p></li>
+<li><p>Fixed bug in local uncertainty introduced by ranged reactor changes</p></li>
+<li><p>Fixed bug with diffusion limitation calculations for multi-molecular reactions</p></li>
+<li><p>Various other minor fixes</p></li>
 </ul>
 </dd>
 </dl>
@@ -417,27 +387,25 @@ used with multiple reactors, resulting in no reactions generated</li>
 <h2>18.5. RMG-database Version 2.3.0<a class="headerlink" href="#rmg-database-version-2-3-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: Dec 20, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Kinetics rules to training reactions</dt>
-<dd><ul class="first last">
-<li>All kinetics rules have been converted into training reactions by converting
-each group to the smallest molecule that matches it</li>
-<li>Training reactions are preferred over rules because they correspond to a
-specific reaction and are therefore easier to update</li>
-<li>This conversion is in anticipation of upcoming changes to trees in kinetics families</li>
+<li><dl class="simple">
+<dt>Kinetics rules to training reactions</dt><dd><ul>
+<li><p>All kinetics rules have been converted into training reactions by converting
+each group to the smallest molecule that matches it</p></li>
+<li><p>Training reactions are preferred over rules because they correspond to a
+specific reaction and are therefore easier to update</p></li>
+<li><p>This conversion is in anticipation of upcoming changes to trees in kinetics families</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>R_Addition_MultipleBond training reactions</li>
-<li>intra_NO2_ONO_conversion training reactions</li>
-<li>SABIC_aromatics thermo library (CBS-QB3, RRHO)</li>
-<li>McGowan volumes for noble gases</li>
-<li>More entries added to Lai_Hexylbenzene libraries</li>
-<li>Architecture and weights for neural network thermo estimator</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>R_Addition_MultipleBond training reactions</p></li>
+<li><p>intra_NO2_ONO_conversion training reactions</p></li>
+<li><p>SABIC_aromatics thermo library (CBS-QB3, RRHO)</p></li>
+<li><p>McGowan volumes for noble gases</p></li>
+<li><p>More entries added to Lai_Hexylbenzene libraries</p></li>
+<li><p>Architecture and weights for neural network thermo estimator</p></li>
 </ul>
 </dd>
 </dl>
@@ -449,21 +417,19 @@ specific reaction and are therefore easier to update</li>
 <p>Date July 23, 2018</p>
 <p>This release is minor patch which fixes a number of issues discovered after 2.2.0.</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Collision limit checking:</dt>
-<dd><ul class="first last">
-<li>RMG will now output a list of collision limit violations for the generated model</li>
+<li><dl class="simple">
+<dt>Collision limit checking:</dt><dd><ul>
+<li><p>RMG will now output a list of collision limit violations for the generated model</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Ambiguous chemical formulas in SMILES lookup leading to incorrect SMILES generation</li>
-<li>Fixed issue with reading geometries from QChem output files</li>
-<li>React flags for reaction filter were not properly updated on each iteration</li>
-<li>Fixed issue with inconsistent symmetry number calculation</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Ambiguous chemical formulas in SMILES lookup leading to incorrect SMILES generation</p></li>
+<li><p>Fixed issue with reading geometries from QChem output files</p></li>
+<li><p>React flags for reaction filter were not properly updated on each iteration</p></li>
+<li><p>Fixed issue with inconsistent symmetry number calculation</p></li>
 </ul>
 </dd>
 </dl>
@@ -474,65 +440,60 @@ specific reaction and are therefore easier to update</li>
 <h2>18.7. RMG-Py Version 2.2.0<a class="headerlink" href="#rmg-py-version-2-2-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 5, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>New features:</dt>
-<dd><ul class="first last">
-<li>New ring membership attribute added to atoms. Can be specified in group adjacency lists in order to enforce
-ring membership of atoms during subgraph matching.</li>
-<li>Reactors now support specification of T, P, X ranges. Different conditions are sampled on each iteration to
-optimally capture the full parameter space.</li>
-<li>New termination type! Termination rate ratio stops the simulation when the characteristic rate falls to the
-specified fraction of the maximum characteristic rate. Currently not recommended for systems with two-stage ignition.</li>
-<li>New resonance transitions implemented for species with lone pairs (particularly N and S containing species).
-A filtration algorithm was also added to select only the most representative structures.</li>
-<li>Formal support for trimolecular reaction families.</li>
-<li>New isotopes module allows post-processing of RMG mechanisms to generate a mechanism with isotopic labeling.</li>
+<li><dl class="simple">
+<dt>New features:</dt><dd><ul>
+<li><p>New ring membership attribute added to atoms. Can be specified in group adjacency lists in order to enforce
+ring membership of atoms during subgraph matching.</p></li>
+<li><p>Reactors now support specification of T, P, X ranges. Different conditions are sampled on each iteration to
+optimally capture the full parameter space.</p></li>
+<li><p>New termination type! Termination rate ratio stops the simulation when the characteristic rate falls to the
+specified fraction of the maximum characteristic rate. Currently not recommended for systems with two-stage ignition.</p></li>
+<li><p>New resonance transitions implemented for species with lone pairs (particularly N and S containing species).
+A filtration algorithm was also added to select only the most representative structures.</p></li>
+<li><p>Formal support for trimolecular reaction families.</p></li>
+<li><p>New isotopes module allows post-processing of RMG mechanisms to generate a mechanism with isotopic labeling.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>Library reactions can now be integrated into RMG pdep networks if the new elementary_high_p attribute is True</li>
-<li>Library reactions may be duplicated by pdep reactions if the new allow_pdep_route attribute is True</li>
-<li>Jupyter notebook for adding new training reactions has been revamped and is now located at ipython/kinetics_library_to_training.ipynb</li>
-<li>Syntax for recommended families has changed to set notation instead of dictionaries, old style still compatible</li>
-<li>Ranking system for database entries expanded to new 0-11 system from the old 0-5 system</li>
-<li>Collision limit checking has been added for database entries</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>Library reactions can now be integrated into RMG pdep networks if the new elementary_high_p attribute is True</p></li>
+<li><p>Library reactions may be duplicated by pdep reactions if the new allow_pdep_route attribute is True</p></li>
+<li><p>Jupyter notebook for adding new training reactions has been revamped and is now located at ipython/kinetics_library_to_training.ipynb</p></li>
+<li><p>Syntax for recommended families has changed to set notation instead of dictionaries, old style still compatible</p></li>
+<li><p>Ranking system for database entries expanded to new 0-11 system from the old 0-5 system</p></li>
+<li><p>Collision limit checking has been added for database entries</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Cantherm:</dt>
-<dd><ul class="first last">
-<li>Improved support for MolPro output files</li>
-<li>Added iodine support</li>
-<li>Automatically read spin multiplicity from quantum output</li>
-<li>Automatically assign frequency scale factor for supported model chemistries</li>
-<li>Plot calculated rates and thermo by default</li>
-<li>New sensitivity analysis feature analyzes sensitivity of reaction rates to isomer/TS energies in pdep networks</li>
+<li><dl class="simple">
+<dt>Cantherm:</dt><dd><ul>
+<li><p>Improved support for MolPro output files</p></li>
+<li><p>Added iodine support</p></li>
+<li><p>Automatically read spin multiplicity from quantum output</p></li>
+<li><p>Automatically assign frequency scale factor for supported model chemistries</p></li>
+<li><p>Plot calculated rates and thermo by default</p></li>
+<li><p>New sensitivity analysis feature analyzes sensitivity of reaction rates to isomer/TS energies in pdep networks</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Properly update charges when creating product templates in reaction families</li>
-<li>Excessive duplicate reactions from different resonance structures has been fixed (bug introduced in 2.1.3)</li>
-<li>Fixed rate calculation for MultiPdepArrhenius objects when member rates have different plists</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Properly update charges when creating product templates in reaction families</p></li>
+<li><p>Excessive duplicate reactions from different resonance structures has been fixed (bug introduced in 2.1.3)</p></li>
+<li><p>Fixed rate calculation for MultiPdepArrhenius objects when member rates have different plists</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>A more formal deprecation process is now being trialed. Deprecation warnings have been added to functions to be removed in version 2.3.0:</dt>
-<dd><ul class="first last">
-<li>All methods related to saving or reading RMG-Java databases and old-style adjacency lists</li>
-<li>The group additivity method for kinetics estimation (unrelated to thermo group additivity)</li>
-<li>The saveRestartPeriod option and the old method of saving restart files</li>
+<li><dl class="simple">
+<dt>A more formal deprecation process is now being trialed. Deprecation warnings have been added to functions to be removed in version 2.3.0:</dt><dd><ul>
+<li><p>All methods related to saving or reading RMG-Java databases and old-style adjacency lists</p></li>
+<li><p>The group additivity method for kinetics estimation (unrelated to thermo group additivity)</p></li>
+<li><p>The saveRestartPeriod option and the old method of saving restart files</p></li>
 </ul>
 </dd>
 </dl>
@@ -543,46 +504,42 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.8. RMG-database Version 2.2.0<a class="headerlink" href="#rmg-database-version-2-2-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 5, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>New Intra_R_Add_Exo_Scission reaction family</li>
-<li>New 1,2_ShiftC reaction family</li>
-<li><dl class="first docutils">
-<dt>New reaction families for peroxide chemistry in liquid systems</dt>
-<dd><ul class="first last">
-<li>Korcek_step1_cat</li>
-<li>Bimolec_Hydroperoxide_Decomposition</li>
-<li>Peroxyl_Termination</li>
-<li>Peroxyl_Disproportionation</li>
-<li>Baeyer-Villiger_step1_cat</li>
-<li>Baeyer-Villiger_step2</li>
-<li>Baeyer-Villiger_step2_cat</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>New Intra_R_Add_Exo_Scission reaction family</p></li>
+<li><p>New 1,2_ShiftC reaction family</p></li>
+<li><dl class="simple">
+<dt>New reaction families for peroxide chemistry in liquid systems</dt><dd><ul>
+<li><p>Korcek_step1_cat</p></li>
+<li><p>Bimolec_Hydroperoxide_Decomposition</p></li>
+<li><p>Peroxyl_Termination</p></li>
+<li><p>Peroxyl_Disproportionation</p></li>
+<li><p>Baeyer-Villiger_step1_cat</p></li>
+<li><p>Baeyer-Villiger_step2</p></li>
+<li><p>Baeyer-Villiger_step2_cat</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>Numerous new training reactions added to many families</li>
+<li><p>Numerous new training reactions added to many families</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>New tree structure for Intra_R_Add_Endocyclic with consideration for cyclic species</li>
-<li>Multiple bond on ring is no longer allowed in Intra_R_Add_Exocyclic and should react in Intra_R_Add_Endocyclic instead</li>
-<li>Entry ranks rescaled to new 0-11 ranking system</li>
-<li>Global forbidden structures has been cleaned up, leading to significant performance improvement</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>New tree structure for Intra_R_Add_Endocyclic with consideration for cyclic species</p></li>
+<li><p>Multiple bond on ring is no longer allowed in Intra_R_Add_Exocyclic and should react in Intra_R_Add_Endocyclic instead</p></li>
+<li><p>Entry ranks rescaled to new 0-11 ranking system</p></li>
+<li><p>Global forbidden structures has been cleaned up, leading to significant performance improvement</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Corrected shape indices in NOx2018 transport library</li>
-<li>Removed or corrected some kinetics entries based on collision limit check</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Corrected shape indices in NOx2018 transport library</p></li>
+<li><p>Removed or corrected some kinetics entries based on collision limit check</p></li>
 </ul>
 </dd>
 </dl>
@@ -593,32 +550,29 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.9. RMG-Py Version 2.1.9<a class="headerlink" href="#rmg-py-version-2-1-9" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 1, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Cantherm:</dt>
-<dd><ul class="first last">
-<li>Atom counts are no longer necessary in input files and are automatically determined from geometries</li>
-<li>Custom atom energies can now be specified in input files</li>
-<li>Removed atom energies for a few ambiguous model chemistries</li>
-<li>Add atom energies for B3LYP/6-311+g(3df,2p)</li>
+<li><dl class="simple">
+<dt>Cantherm:</dt><dd><ul>
+<li><p>Atom counts are no longer necessary in input files and are automatically determined from geometries</p></li>
+<li><p>Custom atom energies can now be specified in input files</p></li>
+<li><p>Removed atom energies for a few ambiguous model chemistries</p></li>
+<li><p>Add atom energies for B3LYP/6-311+g(3df,2p)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>Refactored molecule.parser and molecule.generator modules into molecule.converter and molecule.translator to improve code organization</li>
-<li>SMILES generation now outputs canonical SMILES</li>
-<li>Molecule.sortAtoms method restored for deterministic atom order</li>
-<li>PDep reactions which match an existing library reaction are no longer added to the model</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>Refactored molecule.parser and molecule.generator modules into molecule.converter and molecule.translator to improve code organization</p></li>
+<li><p>SMILES generation now outputs canonical SMILES</p></li>
+<li><p>Molecule.sortAtoms method restored for deterministic atom order</p></li>
+<li><p>PDep reactions which match an existing library reaction are no longer added to the model</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Fix issue with reaction filter initiation when using seed mechanisms</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Fix issue with reaction filter initiation when using seed mechanisms</p></li>
 </ul>
 </dd>
 </dl>
@@ -629,40 +583,36 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.10. RMG-database Version 2.1.9<a class="headerlink" href="#rmg-database-version-2-1-9" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 1, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Chlorine:</dt>
-<dd><ul class="first last">
-<li>New Chlorinated_Hydrocarbons thermo library</li>
-<li>Added group additivity values and long distance corrections for chlorinated species</li>
-<li>Added chlorine groups and training reactions to H_Abstraction</li>
+<li><dl class="simple">
+<dt>Chlorine:</dt><dd><ul>
+<li><p>New Chlorinated_Hydrocarbons thermo library</p></li>
+<li><p>Added group additivity values and long distance corrections for chlorinated species</p></li>
+<li><p>Added chlorine groups and training reactions to H_Abstraction</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>New NOx2018 kinetics, thermo, and transport libraries</li>
-<li>New N-S_interactions kinetics library</li>
-<li>New SulfurHaynes thermo library</li>
-<li>Added species to SOxNOx thermo library from quantum calculations</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>New NOx2018 kinetics, thermo, and transport libraries</p></li>
+<li><p>New N-S_interactions kinetics library</p></li>
+<li><p>New SulfurHaynes thermo library</p></li>
+<li><p>Added species to SOxNOx thermo library from quantum calculations</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other changes:</dt>
-<dd><ul class="first last">
-<li>Renamed NOx and SOx kinetics libraries to PrimaryNitrogenLibrary and PrimarySulfurLibrary</li>
-<li>S2O2, SOO2, SO2O2, and N2SH were globally forbidden due to inability to optimize geometries</li>
+<li><dl class="simple">
+<dt>Other changes:</dt><dd><ul>
+<li><p>Renamed NOx and SOx kinetics libraries to PrimaryNitrogenLibrary and PrimarySulfurLibrary</p></li>
+<li><p>S2O2, SOO2, SO2O2, and N2SH were globally forbidden due to inability to optimize geometries</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Corrected some A-factor units in Nitrogen_Dean_and_Bozzelli kinetics library</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Corrected some A-factor units in Nitrogen_Dean_and_Bozzelli kinetics library</p></li>
 </ul>
 </dd>
 </dl>
@@ -673,37 +623,34 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.11. RMG-Py Version 2.1.8<a class="headerlink" href="#rmg-py-version-2-1-8" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 22, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>New features:</dt>
-<dd><ul class="first last">
-<li>Chlorine and iodine atom types have been added, bringing support for these elements to RMG-database</li>
-<li>Forbidden structures now support Molecule and Species definitions in addition to Group definitions</li>
+<li><dl class="simple">
+<dt>New features:</dt><dd><ul>
+<li><p>Chlorine and iodine atom types have been added, bringing support for these elements to RMG-database</p></li>
+<li><p>Forbidden structures now support Molecule and Species definitions in addition to Group definitions</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>Reaction pair generation will now fall back to generic method instead of raising an exception</li>
-<li>Removed sensitivity.py script since it was effectively a duplicate of simulate.py</li>
-<li>Thermo jobs in Cantherm now output a species dictionary</li>
-<li>Fitted atom energy corrections added for B3LYP/6-31g**</li>
-<li>Initial framework added for hydrogen bonding</li>
-<li>Renamed molepro module and associated classes to molpro (MolPro) to match actual spelling of the program</li>
-<li>Chemkin module is now cythonized to improve performance</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>Reaction pair generation will now fall back to generic method instead of raising an exception</p></li>
+<li><p>Removed sensitivity.py script since it was effectively a duplicate of simulate.py</p></li>
+<li><p>Thermo jobs in Cantherm now output a species dictionary</p></li>
+<li><p>Fitted atom energy corrections added for B3LYP/6-31g**</p></li>
+<li><p>Initial framework added for hydrogen bonding</p></li>
+<li><p>Renamed molepro module and associated classes to molpro (MolPro) to match actual spelling of the program</p></li>
+<li><p>Chemkin module is now cythonized to improve performance</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Allow delocalization of triradicals to prevent hysteresis in resonance structure generation</li>
-<li>Fix reaction comment parsing issue with uncertainty analysis</li>
-<li>Fix numerical issue causing a number of pressure dependent RMG jobs to crash</li>
-<li>Template reactions from seed mechanisms are now loaded as library reactions if the original family is not loaded</li>
-<li>Fix issues with degeneracy calculation for identical reactants</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Allow delocalization of triradicals to prevent hysteresis in resonance structure generation</p></li>
+<li><p>Fix reaction comment parsing issue with uncertainty analysis</p></li>
+<li><p>Fix numerical issue causing a number of pressure dependent RMG jobs to crash</p></li>
+<li><p>Template reactions from seed mechanisms are now loaded as library reactions if the original family is not loaded</p></li>
+<li><p>Fix issues with degeneracy calculation for identical reactants</p></li>
 </ul>
 </dd>
 </dl>
@@ -714,12 +661,11 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.12. RMG-database Version 2.1.8<a class="headerlink" href="#rmg-database-version-2-1-8" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 22, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>Corrected name of JetSurf2.0 kinetics and thermo libraries to JetSurf1.0</li>
-<li>Added actual JetSurf2.0 kinetics and thermo libraries</li>
-<li>Updated thermo groups for near-aromatic radicals, including radical and polycyclic corrections</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>Corrected name of JetSurf2.0 kinetics and thermo libraries to JetSurf1.0</p></li>
+<li><p>Added actual JetSurf2.0 kinetics and thermo libraries</p></li>
+<li><p>Updated thermo groups for near-aromatic radicals, including radical and polycyclic corrections</p></li>
 </ul>
 </dd>
 </dl>
@@ -730,45 +676,41 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.13. RMG-Py Version 2.1.7<a class="headerlink" href="#rmg-py-version-2-1-7" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 12, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Charged atom types:</dt>
-<dd><ul class="first last">
-<li>Atom types now have a charge attribute to cover a wider range of species</li>
-<li>New atom types added for nitrogen and sulfur groups</li>
-<li>Carbon and oxygen atom types renamed following new valence based naming scheme</li>
+<li><dl class="simple">
+<dt>Charged atom types:</dt><dd><ul>
+<li><p>Atom types now have a charge attribute to cover a wider range of species</p></li>
+<li><p>New atom types added for nitrogen and sulfur groups</p></li>
+<li><p>Carbon and oxygen atom types renamed following new valence based naming scheme</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Ring perception:</dt>
-<dd><ul class="first last">
-<li>Ring perception methods in the Graph class now use RingDecomposerLib</li>
-<li>This includes the getSmallestSetOfSmallestRings methods and a newly added getRelevantCycles method</li>
-<li>The set of relevant cycles is unique and generally more useful for chemical graphs</li>
-<li>This also fixes inaccuracies with the original SSSR method</li>
+<li><dl class="simple">
+<dt>Ring perception:</dt><dd><ul>
+<li><p>Ring perception methods in the Graph class now use RingDecomposerLib</p></li>
+<li><p>This includes the getSmallestSetOfSmallestRings methods and a newly added getRelevantCycles method</p></li>
+<li><p>The set of relevant cycles is unique and generally more useful for chemical graphs</p></li>
+<li><p>This also fixes inaccuracies with the original SSSR method</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other changes:</dt>
-<dd><ul class="first last">
-<li>Automatically load reaction libraries when using a seed mechanism</li>
-<li>Default kinetics estimator has been changed to rate rules instead of group additivity</li>
-<li>Kinetics families can now be set to be irreversible</li>
-<li>Model enlargement now occurs after each reactor simulation rather than after all of them</li>
-<li>Updated bond additivity corrections for CBS-QB3 in Cantherm</li>
+<li><dl class="simple">
+<dt>Other changes:</dt><dd><ul>
+<li><p>Automatically load reaction libraries when using a seed mechanism</p></li>
+<li><p>Default kinetics estimator has been changed to rate rules instead of group additivity</p></li>
+<li><p>Kinetics families can now be set to be irreversible</p></li>
+<li><p>Model enlargement now occurs after each reactor simulation rather than after all of them</p></li>
+<li><p>Updated bond additivity corrections for CBS-QB3 in Cantherm</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Do not print SMILES when raising AtomTypeError to avoid further exceptions</li>
-<li>Do not recalculate thermo if a species already has it</li>
-<li>Fixes to parsing of family names in seed mechanisms</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Do not print SMILES when raising AtomTypeError to avoid further exceptions</p></li>
+<li><p>Do not recalculate thermo if a species already has it</p></li>
+<li><p>Fixes to parsing of family names in seed mechanisms</p></li>
 </ul>
 </dd>
 </dl>
@@ -779,52 +721,48 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.14. RMG-database Version 2.1.7<a class="headerlink" href="#rmg-database-version-2-1-7" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 12, 2018</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Charged atom types:</dt>
-<dd><ul class="first last">
-<li>Update adjlists with new atom types across the entire database</li>
-<li>Added sulfur groups to all relevant kinetics families</li>
-<li>New thermo group additivity values for sulfur/oxygen species</li>
+<li><dl class="simple">
+<dt>Charged atom types:</dt><dd><ul>
+<li><p>Update adjlists with new atom types across the entire database</p></li>
+<li><p>Added sulfur groups to all relevant kinetics families</p></li>
+<li><p>New thermo group additivity values for sulfur/oxygen species</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>Benzene bonds can now react in in R_Addition_MultipleBond</li>
-<li>Many new training reactions and groups added in R_Addition_MultipleBond</li>
-<li>New Singlet_Val6_to_triplet kinetics family</li>
-<li>New Sulfur GlarborgBozzelli kinetics and thermo libraries</li>
-<li>New Sulfur GlarborgMarshall kinetics and thermo libraries</li>
-<li>New Sulfur GlarborgH2S kinetics and thermo libraries</li>
-<li>New Sulfur GlarborgNS kinetics and thermo libraries</li>
-<li>New NOx and NOx/LowT kinetics libraries</li>
-<li>New SOx kinetics library</li>
-<li>New BurcatNS thermo library</li>
-<li>New SOxNOx thermo library</li>
-<li>New 2+2_cycloaddition_CS kinetics family</li>
-<li>New Cyclic_Thioether_Formation kinetics family</li>
-<li>New Lai_Hexylbenzene kinetics and thermo libraries</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>Benzene bonds can now react in in R_Addition_MultipleBond</p></li>
+<li><p>Many new training reactions and groups added in R_Addition_MultipleBond</p></li>
+<li><p>New Singlet_Val6_to_triplet kinetics family</p></li>
+<li><p>New Sulfur GlarborgBozzelli kinetics and thermo libraries</p></li>
+<li><p>New Sulfur GlarborgMarshall kinetics and thermo libraries</p></li>
+<li><p>New Sulfur GlarborgH2S kinetics and thermo libraries</p></li>
+<li><p>New Sulfur GlarborgNS kinetics and thermo libraries</p></li>
+<li><p>New NOx and NOx/LowT kinetics libraries</p></li>
+<li><p>New SOx kinetics library</p></li>
+<li><p>New BurcatNS thermo library</p></li>
+<li><p>New SOxNOx thermo library</p></li>
+<li><p>New 2+2_cycloaddition_CS kinetics family</p></li>
+<li><p>New Cyclic_Thioether_Formation kinetics family</p></li>
+<li><p>New Lai_Hexylbenzene kinetics and thermo libraries</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>1,2-Birad_to_alkene family is now irreversible</li>
-<li>OxygenSingTrip kinetics library removed (replaced by Singlet_Val6_to_triplet family)</li>
-<li>Ozone is no longer forbidden</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>1,2-Birad_to_alkene family is now irreversible</p></li>
+<li><p>OxygenSingTrip kinetics library removed (replaced by Singlet_Val6_to_triplet family)</p></li>
+<li><p>Ozone is no longer forbidden</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Corrected adjlist for phenyl radical in JetSurf2.0 and USC-Mech-ii</li>
-<li>Some singlet thermo groups relocated from radical.py to group.py</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Corrected adjlist for phenyl radical in JetSurf2.0 and USC-Mech-ii</p></li>
+<li><p>Some singlet thermo groups relocated from radical.py to group.py</p></li>
 </ul>
 </dd>
 </dl>
@@ -835,42 +773,38 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.15. RMG-Py Version 2.1.6<a class="headerlink" href="#rmg-py-version-2-1-6" title="Permalink to this headline">¶</a></h2>
 <p>Date: December 21, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Model resurrection:</dt>
-<dd><ul class="first last">
-<li>Automatically attempts to save simulation after encountering a DASPK error</li>
-<li>Adds species and reactions in order to modify model dynamics and fix the error</li>
+<li><dl class="simple">
+<dt>Model resurrection:</dt><dd><ul>
+<li><p>Automatically attempts to save simulation after encountering a DASPK error</p></li>
+<li><p>Adds species and reactions in order to modify model dynamics and fix the error</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New features:</dt>
-<dd><ul class="first last">
-<li>Add functionality to read RCCSD(T)-F12 energies from MolPro log files</li>
-<li>Add liquidReactor support to flux diagram generation</li>
+<li><dl class="simple">
+<dt>New features:</dt><dd><ul>
+<li><p>Add functionality to read RCCSD(T)-F12 energies from MolPro log files</p></li>
+<li><p>Add liquidReactor support to flux diagram generation</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other changes:</dt>
-<dd><ul class="first last">
-<li>Removed rmgpy.rmg.model.Species class and merged functionality into main rmgpy.species.Species class</li>
-<li>Refactored parsing of RMG-generated kinetics comments from Chemkin files and fixed related issues</li>
-<li>Refactored framework for generating reactions to reduce code duplication</li>
-<li>Resonance methods renamed from generateResonanceIsomers to generate_resonance_structures across all modules</li>
-<li>Raise CpInf to Cphigh for entropy calculations to prevent invalid results</li>
+<li><dl class="simple">
+<dt>Other changes:</dt><dd><ul>
+<li><p>Removed rmgpy.rmg.model.Species class and merged functionality into main rmgpy.species.Species class</p></li>
+<li><p>Refactored parsing of RMG-generated kinetics comments from Chemkin files and fixed related issues</p></li>
+<li><p>Refactored framework for generating reactions to reduce code duplication</p></li>
+<li><p>Resonance methods renamed from generateResonanceIsomers to generate_resonance_structures across all modules</p></li>
+<li><p>Raise CpInf to Cphigh for entropy calculations to prevent invalid results</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Update sensitivity analysis to use ModelSettings and SimulatorSettings classes introduced in v2.1.5</li>
-<li>Fixed generate_reactions methods in KineticsDatabase to be directly usable again</li>
-<li>Fixed issues with aromaticity perception and generation of aromatic resonance structures</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Update sensitivity analysis to use ModelSettings and SimulatorSettings classes introduced in v2.1.5</p></li>
+<li><p>Fixed generate_reactions methods in KineticsDatabase to be directly usable again</p></li>
+<li><p>Fixed issues with aromaticity perception and generation of aromatic resonance structures</p></li>
 </ul>
 </dd>
 </dl>
@@ -881,29 +815,26 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.16. RMG-database Version 2.1.6<a class="headerlink" href="#rmg-database-version-2-1-6" title="Permalink to this headline">¶</a></h2>
 <p>Date: December 21, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>New training reactions added for [NH2] related H_Abstractions</li>
-<li>14 new kinetics libraries related to aromatics formation (see RMG-database #222 for details)</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>New training reactions added for [NH2] related H_Abstractions</p></li>
+<li><p>14 new kinetics libraries related to aromatics formation (see RMG-database #222 for details)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other changes:</dt>
-<dd><ul class="first last">
-<li>Removed some global forbidden groups which are no longer needed</li>
-<li>Forbid CO and CS biradicals</li>
-<li>Updated lone_electron_pair_bond family and removed from recommended list</li>
+<li><dl class="simple">
+<dt>Other changes:</dt><dd><ul>
+<li><p>Removed some global forbidden groups which are no longer needed</p></li>
+<li><p>Forbid CO and CS biradicals</p></li>
+<li><p>Updated lone_electron_pair_bond family and removed from recommended list</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Fixed unit errors in some H_Abstraction and R_Addition_MultipleBond depositories</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Fixed unit errors in some H_Abstraction and R_Addition_MultipleBond depositories</p></li>
 </ul>
 </dd>
 </dl>
@@ -914,33 +845,30 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.17. RMG-Py Version 2.1.5<a class="headerlink" href="#rmg-py-version-2-1-5" title="Permalink to this headline">¶</a></h2>
 <p>Date: October 18, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>New bicyclic formula:</dt>
-<dd><ul class="first last">
-<li>Estimates polycyclic corrections for unsaturated bicyclics by adjusting the correction for the saturated version</li>
-<li>Can provide a decent estimate in many cases where there is not an exact match</li>
+<li><dl class="simple">
+<dt>New bicyclic formula:</dt><dd><ul>
+<li><p>Estimates polycyclic corrections for unsaturated bicyclics by adjusting the correction for the saturated version</p></li>
+<li><p>Can provide a decent estimate in many cases where there is not an exact match</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other changes:</dt>
-<dd><ul class="first last">
-<li>Refactored simulation algorithm to properly add multiple objects per iteration</li>
-<li>Print equilibrium constant and reverse rate coefficient values when using Cantherm to calculate kinetics</li>
-<li>Speed up degeneracy calculation by reducing unnecessary operations</li>
+<li><dl class="simple">
+<dt>Other changes:</dt><dd><ul>
+<li><p>Refactored simulation algorithm to properly add multiple objects per iteration</p></li>
+<li><p>Print equilibrium constant and reverse rate coefficient values when using Cantherm to calculate kinetics</p></li>
+<li><p>Speed up degeneracy calculation by reducing unnecessary operations</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Loosen tolerance for bond order identification to account for floating point error</li>
-<li>Fixed uncertainty analysis to allow floats as bond orders</li>
-<li>Fixed some comment parsing issues in uncertainty analysis</li>
-<li>Added product structure atom relabeling for families added in RMG-database v2.1.5</li>
-<li>Fixed issue with automatic debugging of kinetics errors due to forbidden structures</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Loosen tolerance for bond order identification to account for floating point error</p></li>
+<li><p>Fixed uncertainty analysis to allow floats as bond orders</p></li>
+<li><p>Fixed some comment parsing issues in uncertainty analysis</p></li>
+<li><p>Added product structure atom relabeling for families added in RMG-database v2.1.5</p></li>
+<li><p>Fixed issue with automatic debugging of kinetics errors due to forbidden structures</p></li>
 </ul>
 </dd>
 </dl>
@@ -951,20 +879,18 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.18. RMG-database Version 2.1.5<a class="headerlink" href="#rmg-database-version-2-1-5" title="Permalink to this headline">¶</a></h2>
 <p>Date: October 18, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>New thermo groups added for species relevant in cyclopentadiene and natural gas pyrolysis</li>
-<li>Added C2H4+O_Klipp2017 kinetics library</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>New thermo groups added for species relevant in cyclopentadiene and natural gas pyrolysis</p></li>
+<li><p>Added C2H4+O_Klipp2017 kinetics library</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Prevent charged carbenes from reacting in Singlet_Carbene_Intra_Disproportionation</li>
-<li>Updated H_Abstraction rates in ethylamine library and corresponding training reactions</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Prevent charged carbenes from reacting in Singlet_Carbene_Intra_Disproportionation</p></li>
+<li><p>Updated H_Abstraction rates in ethylamine library and corresponding training reactions</p></li>
 </ul>
 </dd>
 </dl>
@@ -975,56 +901,51 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.19. RMG-Py Version 2.1.4<a class="headerlink" href="#rmg-py-version-2-1-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 08, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Accelerator tools:</dt>
-<dd><ul class="first last">
-<li>Dynamics criterion provides another method to expand the mechanism by adding reactions to the core</li>
-<li>Surface algorithm enables better control of species movement to the core when using the dynamics criterion</li>
-<li>Multiple sets of model parameters can now be specified in a input file to allow different stages of model generation</li>
-<li>A species number termination criterion can now be set to limit model size</li>
-<li>Multiple items can now be added per iteration to speed up model construction</li>
-<li>New ModelSettings and SimulatorSettings classes for storing input parameters</li>
+<li><dl class="simple">
+<dt>Accelerator tools:</dt><dd><ul>
+<li><p>Dynamics criterion provides another method to expand the mechanism by adding reactions to the core</p></li>
+<li><p>Surface algorithm enables better control of species movement to the core when using the dynamics criterion</p></li>
+<li><p>Multiple sets of model parameters can now be specified in a input file to allow different stages of model generation</p></li>
+<li><p>A species number termination criterion can now be set to limit model size</p></li>
+<li><p>Multiple items can now be added per iteration to speed up model construction</p></li>
+<li><p>New ModelSettings and SimulatorSettings classes for storing input parameters</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New features:</dt>
-<dd><ul class="first last">
-<li>Kinetics libraries can now be automatically generated during RMG runs to be used as seeds for subsequent runs</li>
-<li>Loading automatically generated seed mechanisms recreates the original template reaction objects to allow restarting runs from the seed mechanism</li>
-<li>Carbene constraints can now be set in the species constraint block using maxSingletCarbenes and maxCarbeneRadicals</li>
-<li>Chirality is now considered for determining symmetry numbers</li>
-<li>Thermodynamic pruning has been added to allow removal of edge species with unfavorable free energy (beta)</li>
+<li><dl class="simple">
+<dt>New features:</dt><dd><ul>
+<li><p>Kinetics libraries can now be automatically generated during RMG runs to be used as seeds for subsequent runs</p></li>
+<li><p>Loading automatically generated seed mechanisms recreates the original template reaction objects to allow restarting runs from the seed mechanism</p></li>
+<li><p>Carbene constraints can now be set in the species constraint block using maxSingletCarbenes and maxCarbeneRadicals</p></li>
+<li><p>Chirality is now considered for determining symmetry numbers</p></li>
+<li><p>Thermodynamic pruning has been added to allow removal of edge species with unfavorable free energy (beta)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other changes:</dt>
-<dd><ul class="first last">
-<li>RMG-Py exception classes have been consolidated in the rmgpy.exceptions module</li>
-<li>Species labels will now inherit the label from a matched thermo library entry</li>
-<li>Sensitivity analysis is now available for LiquidReactor</li>
+<li><dl class="simple">
+<dt>Other changes:</dt><dd><ul>
+<li><p>RMG-Py exception classes have been consolidated in the rmgpy.exceptions module</p></li>
+<li><p>Species labels will now inherit the label from a matched thermo library entry</p></li>
+<li><p>Sensitivity analysis is now available for LiquidReactor</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Fixed sensitivity analysis following changes to the simulate method</li>
-<li>Add memory handling when generating collision matrix for pressure dependence</li>
-<li>Improved error checking for MOPAC</li>
-<li>Prevent infinite loops when retrieving thermo groups</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Fixed sensitivity analysis following changes to the simulate method</p></li>
+<li><p>Add memory handling when generating collision matrix for pressure dependence</p></li>
+<li><p>Improved error checking for MOPAC</p></li>
+<li><p>Prevent infinite loops when retrieving thermo groups</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Known issues:</dt>
-<dd><ul class="first last">
-<li>Seed mechanisms cannot be loaded if the database settings are different from the original ones used to generate the seed</li>
+<li><dl class="simple">
+<dt>Known issues:</dt><dd><ul>
+<li><p>Seed mechanisms cannot be loaded if the database settings are different from the original ones used to generate the seed</p></li>
 </ul>
 </dd>
 </dl>
@@ -1035,34 +956,31 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.20. RMG-database Version 2.1.4<a class="headerlink" href="#rmg-database-version-2-1-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 08, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>New kinetics families for propargyl recombination route to benzene:</dt>
-<dd><ul class="first last">
-<li>Singlet_Carbene_Intra_Disproportionation</li>
-<li>Intra_5_membered_conjugated_C=C_C=C_addition</li>
-<li>Intra_Diels_alder_monocyclic</li>
-<li>Concerted_Intra_Diels_alder_monocyclic_1,2_shift</li>
-<li>Intra_2+2_cycloaddition_Cd</li>
-<li>Cyclopentadiene_scission</li>
-<li>6_membered_central_C-C_shift</li>
+<li><dl class="simple">
+<dt>New kinetics families for propargyl recombination route to benzene:</dt><dd><ul>
+<li><p>Singlet_Carbene_Intra_Disproportionation</p></li>
+<li><p>Intra_5_membered_conjugated_C=C_C=C_addition</p></li>
+<li><p>Intra_Diels_alder_monocyclic</p></li>
+<li><p>Concerted_Intra_Diels_alder_monocyclic_1,2_shift</p></li>
+<li><p>Intra_2+2_cycloaddition_Cd</p></li>
+<li><p>Cyclopentadiene_scission</p></li>
+<li><p>6_membered_central_C-C_shift</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Renamed kinetics families:</dt>
-<dd><ul class="first last">
-<li>Intra_Diels_Alder –&gt; Intra_Retro_Diels_alder_bicyclic</li>
-<li>H_shift_cyclopentadiene –&gt; Intra_ene_reaction</li>
+<li><dl class="simple">
+<dt>Renamed kinetics families:</dt><dd><ul>
+<li><p>Intra_Diels_Alder –&gt; Intra_Retro_Diels_alder_bicyclic</p></li>
+<li><p>H_shift_cyclopentadiene –&gt; Intra_ene_reaction</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other additions:</dt>
-<dd><ul class="first last">
-<li>Klippenstein_Glarborg2016 kinetics and thermo libraries</li>
-<li>Group additivity values added for singlet carbenes, which are no longer forbidden</li>
+<li><dl class="simple">
+<dt>Other additions:</dt><dd><ul>
+<li><p>Klippenstein_Glarborg2016 kinetics and thermo libraries</p></li>
+<li><p>Group additivity values added for singlet carbenes, which are no longer forbidden</p></li>
 </ul>
 </dd>
 </dl>
@@ -1073,73 +991,66 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.21. RMG-Py Version 2.1.3<a class="headerlink" href="#rmg-py-version-2-1-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 27, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Thermo central database:</dt>
-<dd><ul class="first last">
-<li>Framework for tracking and submitting species to a central database have been added</li>
-<li>Following species submission, the central database will queue and submit quantum chemistry jobs for thermochemistry calculation</li>
-<li>This is an initial step towards self-improving thermochemistry prediction</li>
+<li><dl class="simple">
+<dt>Thermo central database:</dt><dd><ul>
+<li><p>Framework for tracking and submitting species to a central database have been added</p></li>
+<li><p>Following species submission, the central database will queue and submit quantum chemistry jobs for thermochemistry calculation</p></li>
+<li><p>This is an initial step towards self-improving thermochemistry prediction</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Rotor handling in Cantherm:</dt>
-<dd><ul class="first last">
-<li>Free rotors can now be specified</li>
-<li>Limit number of terms used when fitting hinder rotor scans</li>
-<li>Fixed bug with ZPE calculation when using hindered rotors</li>
+<li><dl class="simple">
+<dt>Rotor handling in Cantherm:</dt><dd><ul>
+<li><p>Free rotors can now be specified</p></li>
+<li><p>Limit number of terms used when fitting hinder rotor scans</p></li>
+<li><p>Fixed bug with ZPE calculation when using hindered rotors</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New reaction degeneracy algorithm:</dt>
-<dd><ul class="first last">
-<li>Use atom ID’s to distinguish degenerate reactions from duplicates due to other factors</li>
-<li>Degeneracy calculation now operates across all families rather than within each separately</li>
-<li>Multiple transition states are now identified based on template comparisons and kept as duplicate reactions</li>
+<li><dl class="simple">
+<dt>New reaction degeneracy algorithm:</dt><dd><ul>
+<li><p>Use atom ID’s to distinguish degenerate reactions from duplicates due to other factors</p></li>
+<li><p>Degeneracy calculation now operates across all families rather than within each separately</p></li>
+<li><p>Multiple transition states are now identified based on template comparisons and kept as duplicate reactions</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Nodal distances:</dt>
-<dd><ul class="first last">
-<li>Distances can now be assigned to trees in reaction families</li>
-<li>This enables better rate averages with multiple trees</li>
-<li>Fixed bug with finding the closest rate rule in the tree</li>
+<li><dl class="simple">
+<dt>Nodal distances:</dt><dd><ul>
+<li><p>Distances can now be assigned to trees in reaction families</p></li>
+<li><p>This enables better rate averages with multiple trees</p></li>
+<li><p>Fixed bug with finding the closest rate rule in the tree</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New features:</dt>
-<dd><ul class="first last">
-<li>Added methods for automatically writing RMG-database files</li>
-<li>New symmetry algorithm improves symmetry number calculations for resonant and cyclic species</li>
-<li>Group additivity algorithm updated to apply new long distance corrections</li>
-<li>Specific colliders can now be specified for pressure-dependent rates</li>
-<li>Very short superminimal example added (hydrogen oxidation) for checking basic RMG operation</li>
-<li>Cantera now outputs a Chemkin file which can be directly imported into Chemkin</li>
+<li><dl class="simple">
+<dt>New features:</dt><dd><ul>
+<li><p>Added methods for automatically writing RMG-database files</p></li>
+<li><p>New symmetry algorithm improves symmetry number calculations for resonant and cyclic species</p></li>
+<li><p>Group additivity algorithm updated to apply new long distance corrections</p></li>
+<li><p>Specific colliders can now be specified for pressure-dependent rates</p></li>
+<li><p>Very short superminimal example added (hydrogen oxidation) for checking basic RMG operation</p></li>
+<li><p>Cantera now outputs a Chemkin file which can be directly imported into Chemkin</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Fixed bug with negative activation energies when using Evans-Polanyi rates</li>
-<li>Fixed walltime specification from command line when running RMG</li>
-<li>Fixes and unit tests added for diffusionLimited module</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Fixed bug with negative activation energies when using Evans-Polanyi rates</p></li>
+<li><p>Fixed walltime specification from command line when running RMG</p></li>
+<li><p>Fixes and unit tests added for diffusionLimited module</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Known issues:</dt>
-<dd><ul class="first last">
-<li>The multiple transition state algorithm can result in undesired duplicate reactions for reactants with multiple resonance structures</li>
+<li><dl class="simple">
+<dt>Known issues:</dt><dd><ul>
+<li><p>The multiple transition state algorithm can result in undesired duplicate reactions for reactants with multiple resonance structures</p></li>
 </ul>
 </dd>
 </dl>
@@ -1150,21 +1061,19 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.22. RMG-database Version 2.1.3<a class="headerlink" href="#rmg-database-version-2-1-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 27, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Long-distance interaction thermo corrections:</dt>
-<dd><ul class="first last">
-<li>The gauche and int15 group files have been replaced by longDistanceInteraction_noncyclic</li>
-<li>New corrections for cyclic ortho/meta/para interactions are now available in longDistanceInteraction_cyclic</li>
+<li><dl class="simple">
+<dt>Long-distance interaction thermo corrections:</dt><dd><ul>
+<li><p>The gauche and int15 group files have been replaced by longDistanceInteraction_noncyclic</p></li>
+<li><p>New corrections for cyclic ortho/meta/para interactions are now available in longDistanceInteraction_cyclic</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>Oa_R_Recombination family renamed to Birad_R_Recombination</li>
-<li>More training reactions added for sulfur species in H_Abstraction</li>
-<li>RMG-database tests have been moved to RMG-Py</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>Oa_R_Recombination family renamed to Birad_R_Recombination</p></li>
+<li><p>More training reactions added for sulfur species in H_Abstraction</p></li>
+<li><p>RMG-database tests have been moved to RMG-Py</p></li>
 </ul>
 </dd>
 </dl>
@@ -1175,24 +1084,22 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.23. RMG-Py Version 2.1.2<a class="headerlink" href="#rmg-py-version-2-1-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 18, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Improvements:</dt>
-<dd><ul class="first last">
-<li>New nitrogen atom types</li>
-<li>Kinetics libraries can now be specified as a list of strings in the input file</li>
-<li>New script to generate output HTML locally: generateChemkinHTML.py</li>
-<li>New kekulization module replaces RDKit for generating Kekule structures</li>
-<li>Benzene bonds can now be reacted in reaction families</li>
-<li>Removed cantherm.geometry module due to redundancy with statmech.conformer</li>
+<li><dl class="simple">
+<dt>Improvements:</dt><dd><ul>
+<li><p>New nitrogen atom types</p></li>
+<li><p>Kinetics libraries can now be specified as a list of strings in the input file</p></li>
+<li><p>New script to generate output HTML locally: generateChemkinHTML.py</p></li>
+<li><p>New kekulization module replaces RDKit for generating Kekule structures</p></li>
+<li><p>Benzene bonds can now be reacted in reaction families</p></li>
+<li><p>Removed cantherm.geometry module due to redundancy with statmech.conformer</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Reaction direction is now more deterministic after accounting for floating point error</li>
-<li>Multiple bugs with resonance structure generation for aromatics have been addressed</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Reaction direction is now more deterministic after accounting for floating point error</p></li>
+<li><p>Multiple bugs with resonance structure generation for aromatics have been addressed</p></li>
 </ul>
 </dd>
 </dl>
@@ -1203,30 +1110,27 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.24. RMG-database Version 2.1.2<a class="headerlink" href="#rmg-database-version-2-1-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 18, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Nitrogen improvements:</dt>
-<dd><ul class="first last">
-<li>Added ethylamine kinetics library</li>
-<li>Updated group additivity values for nitrogen species</li>
-<li>Added rate rules and training reactions for nitrogen species</li>
+<li><dl class="simple">
+<dt>Nitrogen improvements:</dt><dd><ul>
+<li><p>Added ethylamine kinetics library</p></li>
+<li><p>Updated group additivity values for nitrogen species</p></li>
+<li><p>Added rate rules and training reactions for nitrogen species</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>New CO_Disproportionation family</li>
-<li>Added CurranPentane kinetics and thermo libraries</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>New CO_Disproportionation family</p></li>
+<li><p>Added CurranPentane kinetics and thermo libraries</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Corrected some rates in FFCM1(-) to use MultiArrhenius kinetics</li>
-<li>Corrected a few adjlists in FFCM1(-)</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Corrected some rates in FFCM1(-) to use MultiArrhenius kinetics</p></li>
+<li><p>Corrected a few adjlists in FFCM1(-)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1237,22 +1141,20 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.25. RMG-Py Version 2.1.1<a class="headerlink" href="#rmg-py-version-2-1-1" title="Permalink to this headline">¶</a></h2>
 <p>Date: April 07, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Uncertainty analysis:</dt>
-<dd><ul class="first last">
-<li>Local and global uncertainty analysis now available for RMG-generated models</li>
-<li>Global uncertainty analysis uses MIT Uncertainty Quantification library, currently only supported on Linux systems</li>
-<li>Examples for each module are available in localUncertainty.ipynb and globalUncertainty.ipynb</li>
+<li><dl class="simple">
+<dt>Uncertainty analysis:</dt><dd><ul>
+<li><p>Local and global uncertainty analysis now available for RMG-generated models</p></li>
+<li><p>Global uncertainty analysis uses MIT Uncertainty Quantification library, currently only supported on Linux systems</p></li>
+<li><p>Examples for each module are available in localUncertainty.ipynb and globalUncertainty.ipynb</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Clar structure generation no longer intercepts signals</li>
-<li>Fixes to SMILES generation</li>
-<li>Fix default spin state of [CH]</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Clar structure generation no longer intercepts signals</p></li>
+<li><p>Fixes to SMILES generation</p></li>
+<li><p>Fix default spin state of [CH]</p></li>
 </ul>
 </dd>
 </dl>
@@ -1263,28 +1165,25 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.26. RMG-database Version 2.1.1<a class="headerlink" href="#rmg-database-version-2-1-1" title="Permalink to this headline">¶</a></h2>
 <p>Date: April 07, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Additions:</dt>
-<dd><ul class="first last">
-<li>More species added to FFCM1(-) thermo library</li>
+<li><dl class="simple">
+<dt>Additions:</dt><dd><ul>
+<li><p>More species added to FFCM1(-) thermo library</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Changes:</dt>
-<dd><ul class="first last">
-<li>Improved handling of excited species in FFCM1(-) kinetics library</li>
-<li>Replaced Klippenstein H2O2 kinetics and thermo libraries with BurkeH2O2inN2 and BurkeH2O2inArHe</li>
+<li><dl class="simple">
+<dt>Changes:</dt><dd><ul>
+<li><p>Improved handling of excited species in FFCM1(-) kinetics library</p></li>
+<li><p>Replaced Klippenstein H2O2 kinetics and thermo libraries with BurkeH2O2inN2 and BurkeH2O2inArHe</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes:</dt>
-<dd><ul class="first last">
-<li>Corrected adjlists for some species in JetSurf2.0 kinetics and thermo libraries (also renamed from JetSurf0.2)</li>
-<li>Correct multiplicities for [C] and [CH] in multiple libraries ([C] from 5 to 3, [CH] from 4 to 2)</li>
+<li><dl class="simple">
+<dt>Fixes:</dt><dd><ul>
+<li><p>Corrected adjlists for some species in JetSurf2.0 kinetics and thermo libraries (also renamed from JetSurf0.2)</p></li>
+<li><p>Correct multiplicities for [C] and [CH] in multiple libraries ([C] from 5 to 3, [CH] from 4 to 2)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1295,40 +1194,36 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.27. RMG-Py Version 2.1.0<a class="headerlink" href="#rmg-py-version-2-1-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 07, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Clar structure generation</dt>
-<dd><ul class="first last">
-<li>optimizes the aromatic isomer representations in RMG</li>
-<li>lays the foundations for future development of poly-aromatic kinetics reaction families</li>
+<li><dl class="simple">
+<dt>Clar structure generation</dt><dd><ul>
+<li><p>optimizes the aromatic isomer representations in RMG</p></li>
+<li><p>lays the foundations for future development of poly-aromatic kinetics reaction families</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Flux pathway analysis</dt>
-<dd><ul class="first last">
-<li>introduces an ipython notebook for post-generatation pathway analysis (<code class="docutils literal notranslate"><span class="pre">ipython.mechanism_analyzer.ipynb</span></code>)</li>
-<li>visualizes reactions and provides flux statistics in a more transparent way</li>
+<li><dl class="simple">
+<dt>Flux pathway analysis</dt><dd><ul>
+<li><p>introduces an ipython notebook for post-generatation pathway analysis (<code class="docutils literal notranslate"><span class="pre">ipython.mechanism_analyzer.ipynb</span></code>)</p></li>
+<li><p>visualizes reactions and provides flux statistics in a more transparent way</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Cantera mechanism</dt>
-<dd><ul class="first last">
-<li>automatically writes cantera version of RMG-generated mechanism at the end of RMG jobs</li>
+<li><dl class="simple">
+<dt>Cantera mechanism</dt><dd><ul>
+<li><p>automatically writes cantera version of RMG-generated mechanism at the end of RMG jobs</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes bugs</dt>
-<dd><ul class="first last">
-<li>upgrades <code class="docutils literal notranslate"><span class="pre">pruning</span></code> to fix new memory leaks introduced by recent functionalities</li>
-<li>fixes the bug of duplicated species creation caused by <code class="docutils literal notranslate"><span class="pre">getThermoData</span></code> removing isomers unexpectedly</li>
-<li>fixes restart file generation and parsing problems and users can choose restart mode again</li>
-<li>upgrades bicyclic decomposition method such that more deterministic behaviors are ensured</li>
-<li>change bond order type to float from string to improve RMG’s symmetry calculation for species with multiple resonance structures</li>
+<li><dl class="simple">
+<dt>Fixes bugs</dt><dd><ul>
+<li><p>upgrades <code class="docutils literal notranslate"><span class="pre">pruning</span></code> to fix new memory leaks introduced by recent functionalities</p></li>
+<li><p>fixes the bug of duplicated species creation caused by <code class="docutils literal notranslate"><span class="pre">getThermoData</span></code> removing isomers unexpectedly</p></li>
+<li><p>fixes restart file generation and parsing problems and users can choose restart mode again</p></li>
+<li><p>upgrades bicyclic decomposition method such that more deterministic behaviors are ensured</p></li>
+<li><p>change bond order type to float from string to improve RMG’s symmetry calculation for species with multiple resonance structures</p></li>
 </ul>
 </dd>
 </dl>
@@ -1339,48 +1234,44 @@ A filtration algorithm was also added to select only the most representative str
 <h2>18.28. RMG-database Version 2.1.0<a class="headerlink" href="#rmg-database-version-2-1-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 07, 2017</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Several new kinetics libraries added</dt>
-<dd><ul class="first last">
-<li>FFCM-1</li>
-<li>JetSurF 0.2</li>
-<li>Chernov_aromatic_only</li>
-<li>Narayanaswamy_aromatic_only</li>
-<li>1989_Stewart_2CH3_to_C2H5_H</li>
-<li>2005_Senosiain_OH_C2H2</li>
-<li>2006_Joshi_OH_CO</li>
-<li>C6H5_C4H4_Mebel</li>
-<li>c-C5H5_CH3_Sharma</li>
+<li><dl class="simple">
+<dt>Several new kinetics libraries added</dt><dd><ul>
+<li><p>FFCM-1</p></li>
+<li><p>JetSurF 0.2</p></li>
+<li><p>Chernov_aromatic_only</p></li>
+<li><p>Narayanaswamy_aromatic_only</p></li>
+<li><p>1989_Stewart_2CH3_to_C2H5_H</p></li>
+<li><p>2005_Senosiain_OH_C2H2</p></li>
+<li><p>2006_Joshi_OH_CO</p></li>
+<li><p>C6H5_C4H4_Mebel</p></li>
+<li><p>c-C5H5_CH3_Sharma</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Several new thermochemistry libraries added</dt>
-<dd><ul class="first last">
-<li>FFCM-1</li>
-<li>JetSurF 0.2</li>
-<li>Chernov_aromatic_only</li>
-<li>Narayanaswamy_aromatic_only</li>
+<li><dl class="simple">
+<dt>Several new thermochemistry libraries added</dt><dd><ul>
+<li><p>FFCM-1</p></li>
+<li><p>JetSurF 0.2</p></li>
+<li><p>Chernov_aromatic_only</p></li>
+<li><p>Narayanaswamy_aromatic_only</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Improved kinetics tree accessibility</dt>
-<dd><ul class="first last">
-<li>adds database tests ensuring groups in the tree to be accessible</li>
-<li>improves definitions of group structures in the kinetics trees to ensure accessibility</li>
+<li><dl class="simple">
+<dt>Improved kinetics tree accessibility</dt><dd><ul>
+<li><p>adds database tests ensuring groups in the tree to be accessible</p></li>
+<li><p>improves definitions of group structures in the kinetics trees to ensure accessibility</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>New oxygenates thermo groups are added based Paraskeva et al.</li>
-<li><dl class="first docutils">
-<dt>Improved database tools</dt>
-<dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> now can visualize groups of matched rate rules that training reactions hit</li>
-<li><code class="docutils literal notranslate"><span class="pre">exportKineticsLibrarytoChemkin.py</span></code> and <code class="docutils literal notranslate"><span class="pre">importChemkinLibrary.py</span></code> add more logging information on reaction sources</li>
+<li><p>New oxygenates thermo groups are added based Paraskeva et al.</p></li>
+<li><dl class="simple">
+<dt>Improved database tools</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> now can visualize groups of matched rate rules that training reactions hit</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exportKineticsLibrarytoChemkin.py</span></code> and <code class="docutils literal notranslate"><span class="pre">importChemkinLibrary.py</span></code> add more logging information on reaction sources</p></li>
 </ul>
 </dd>
 </dl>
@@ -1392,51 +1283,46 @@ A filtration algorithm was also added to select only the most representative str
 <p>Date: September 16, 2016</p>
 <p>This release includes several milestones of RMG project:</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Parallelization finally introduced in RMG:</dt>
-<dd><ul class="first last">
-<li>Generates reactions during <code class="docutils literal notranslate"><span class="pre">enlarge</span></code> step in parallel fashion (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg.react</span></code>)</li>
-<li>Enables concurrent computing for QMTP thermochemistry calculations (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo.thermoengine</span></code>)</li>
-<li>Instructions of running RMG parallel mode can be found <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SLURM-scheduler">here for SLURM scheduler</a> and <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SGE-scheduler">here for SGE scheduler</a>.</li>
+<li><dl class="simple">
+<dt>Parallelization finally introduced in RMG:</dt><dd><ul>
+<li><p>Generates reactions during <code class="docutils literal notranslate"><span class="pre">enlarge</span></code> step in parallel fashion (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg.react</span></code>)</p></li>
+<li><p>Enables concurrent computing for QMTP thermochemistry calculations (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo.thermoengine</span></code>)</p></li>
+<li><p>Instructions of running RMG parallel mode can be found <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SLURM-scheduler">here for SLURM scheduler</a> and <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SGE-scheduler">here for SGE scheduler</a>.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Polycyclic thermochemistry estimation improved:</dt>
-<dd><ul class="first last">
-<li>Extends group additivity method for polycyclics and estimates polycyclics of any large sizes by a heuristic method (bicyclics decomposition)</li>
+<li><dl class="simple">
+<dt>Polycyclic thermochemistry estimation improved:</dt><dd><ul>
+<li><p>Extends group additivity method for polycyclics and estimates polycyclics of any large sizes by a heuristic method (bicyclics decomposition)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>New tree averaging for kinetics:</dt>
-<dd><ul class="first last">
-<li>Fixes previous issue of imcomplete generation of cross-level rate rules</li>
-<li>Implements Euclidean distance algorithm for the selection of the best rate rules to use in <code class="docutils literal notranslate"><span class="pre">estimateKinetics</span></code></li>
-<li>Streamlines storage of kinetics comments for averaged rules, which can be analyzed by <code class="docutils literal notranslate"><span class="pre">extractSourceFromComments</span></code></li>
+<li><dl class="simple">
+<dt>New tree averaging for kinetics:</dt><dd><ul>
+<li><p>Fixes previous issue of imcomplete generation of cross-level rate rules</p></li>
+<li><p>Implements Euclidean distance algorithm for the selection of the best rate rules to use in <code class="docutils literal notranslate"><span class="pre">estimateKinetics</span></code></p></li>
+<li><p>Streamlines storage of kinetics comments for averaged rules, which can be analyzed by <code class="docutils literal notranslate"><span class="pre">extractSourceFromComments</span></code></p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Database entry accessibility tests:</dt>
-<dd><ul class="first last">
-<li>Adds entry accessibility tests for future entries (<code class="docutils literal notranslate"><span class="pre">testing.databaseTest</span></code>)</li>
+<li><dl class="simple">
+<dt>Database entry accessibility tests:</dt><dd><ul>
+<li><p>Adds entry accessibility tests for future entries (<code class="docutils literal notranslate"><span class="pre">testing.databaseTest</span></code>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Fixes bugs</dt>
-<dd><ul class="first last">
-<li>fluxdiagram generation is now fixed, one can use it to generate short video of fluxdigram evolution</li>
-<li>mac environment yml file is introduced to make sure smooth RMG-Py installation and jobs on mac</li>
-<li>fixes failure of <code class="docutils literal notranslate"><span class="pre">checkForExistingSpecies</span></code> for polyaromatics species</li>
-<li>fixes execution failure when both pruning and pDep are turned on</li>
-<li>fixes pDep irreversible reactions</li>
-<li>fixes issue of valency of <code class="docutils literal notranslate"><span class="pre">Cbf</span></code> atom by dynamic benzene bond order assignment</li>
+<li><dl class="simple">
+<dt>Fixes bugs</dt><dd><ul>
+<li><p>fluxdiagram generation is now fixed, one can use it to generate short video of fluxdigram evolution</p></li>
+<li><p>mac environment yml file is introduced to make sure smooth RMG-Py installation and jobs on mac</p></li>
+<li><p>fixes failure of <code class="docutils literal notranslate"><span class="pre">checkForExistingSpecies</span></code> for polyaromatics species</p></li>
+<li><p>fixes execution failure when both pruning and pDep are turned on</p></li>
+<li><p>fixes pDep irreversible reactions</p></li>
+<li><p>fixes issue of valency of <code class="docutils literal notranslate"><span class="pre">Cbf</span></code> atom by dynamic benzene bond order assignment</p></li>
 </ul>
 </dd>
 </dl>
@@ -1449,18 +1335,16 @@ A filtration algorithm was also added to select only the most representative str
 <p>In conjunction with the release of RMG-Py v2.0.0, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Polycyclic thermochemistry estimation improved:</dt>
-<dd><ul class="first last">
-<li>polycyclic database reorganized and more entries added in systematic way (<code class="docutils literal notranslate"><span class="pre">input.thermo.groups.polycyclic</span></code>)</li>
+<li><dl class="simple">
+<dt>Polycyclic thermochemistry estimation improved:</dt><dd><ul>
+<li><p>polycyclic database reorganized and more entries added in systematic way (<code class="docutils literal notranslate"><span class="pre">input.thermo.groups.polycyclic</span></code>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Database entry accessibility tests:</dt>
-<dd><ul class="first last">
-<li>Fixes existing inaccessible entries in solvation/statmech/thermo of RMG-database</li>
+<li><dl class="simple">
+<dt>Database entry accessibility tests:</dt><dd><ul>
+<li><p>Fixes existing inaccessible entries in solvation/statmech/thermo of RMG-database</p></li>
 </ul>
 </dd>
 </dl>
@@ -1471,50 +1355,45 @@ This release brings some new additions and fixes:</p>
 <h2>18.31. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 28, 2016</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Cantera support in RMG (<code class="docutils literal notranslate"><span class="pre">rmgpy.tools.canteraModel</span></code>):</dt>
-<dd><ul class="first last">
-<li>Provides functions to help simulate RMG models using Cantera.</li>
-<li>Has capability to generate cantera conditions and convert CHEMKIN files to cantera models, or use RMG to directly convert species and reactions objects to Cantera objects.</li>
-<li>Demonstrative example found in <code class="docutils literal notranslate"><span class="pre">ipython/canteraSimulation.ipynb</span></code></li>
+<li><dl class="simple">
+<dt>Cantera support in RMG (<code class="docutils literal notranslate"><span class="pre">rmgpy.tools.canteraModel</span></code>):</dt><dd><ul>
+<li><p>Provides functions to help simulate RMG models using Cantera.</p></li>
+<li><p>Has capability to generate cantera conditions and convert CHEMKIN files to cantera models, or use RMG to directly convert species and reactions objects to Cantera objects.</p></li>
+<li><p>Demonstrative example found in <code class="docutils literal notranslate"><span class="pre">ipython/canteraSimulation.ipynb</span></code></p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Module for regression testing of models generated by RMG (<code class="docutils literal notranslate"><span class="pre">rmgpy.tools.observableRegression</span></code>):</dt>
-<dd><ul class="first last">
-<li>Helps identify differences between two versions of models generated by RMG, using the “observables” that the user cares about.</li>
+<li><dl class="simple">
+<dt>Module for regression testing of models generated by RMG (<code class="docutils literal notranslate"><span class="pre">rmgpy.tools.observableRegression</span></code>):</dt><dd><ul>
+<li><p>Helps identify differences between two versions of models generated by RMG, using the “observables” that the user cares about.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Automatic plotting of simulations and sensitivities when generating models (<code class="docutils literal notranslate"><span class="pre">rmgpy.tools.plot</span></code>):</dt>
-<dd><ul class="first last">
-<li>Contains plotting classes useful for plotting simulations, sensitivities, and other data</li>
-<li>Automatic plotting of simulations in the job’s <code class="docutils literal notranslate"><span class="pre">solver</span></code> folder when <code class="docutils literal notranslate"><span class="pre">saveSimulationProfiles</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the input file.</li>
-<li>Sensitivities for top 10 most sensitivie reactions and thermo now plotted automatically and stored in the <code class="docutils literal notranslate"><span class="pre">solver</span></code> folder.</li>
+<li><dl class="simple">
+<dt>Automatic plotting of simulations and sensitivities when generating models (<code class="docutils literal notranslate"><span class="pre">rmgpy.tools.plot</span></code>):</dt><dd><ul>
+<li><p>Contains plotting classes useful for plotting simulations, sensitivities, and other data</p></li>
+<li><p>Automatic plotting of simulations in the job’s <code class="docutils literal notranslate"><span class="pre">solver</span></code> folder when <code class="docutils literal notranslate"><span class="pre">saveSimulationProfiles</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the input file.</p></li>
+<li><p>Sensitivities for top 10 most sensitivie reactions and thermo now plotted automatically and stored in the <code class="docutils literal notranslate"><span class="pre">solver</span></code> folder.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Improved thermochemistry estimation (mostly for cyclics and polycyclics)</dt>
-<dd><ul class="first last">
-<li>Add rank as an additional attribute in thermo database entries to determine trustworthiness</li>
+<li><dl class="simple">
+<dt>Improved thermochemistry estimation (mostly for cyclics and polycyclics)</dt><dd><ul>
+<li><p>Add rank as an additional attribute in thermo database entries to determine trustworthiness</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Bug fixes:</dt>
-<dd><ul class="first last">
-<li>Training reactions now load successfully regardless of <code class="docutils literal notranslate"><span class="pre">generateSpeciesConstraints</span></code> parameters</li>
-<li>Transport data is now saved correctly to CHEMKIN <code class="docutils literal notranslate"><span class="pre">tran.dat</span></code> file and also imports successfully</li>
-<li>Fixes appending of reactions to CHEMKIN file when reaction libraries are desired to be appended to output</li>
-<li>Fixes writing of csv files for simulation and sensitivity results in Windows</li>
-<li>Fixes <code class="docutils literal notranslate"><span class="pre">Reaction.draw()</span></code> function to draw the entire reaction rather than a single species</li>
+<li><dl class="simple">
+<dt>Bug fixes:</dt><dd><ul>
+<li><p>Training reactions now load successfully regardless of <code class="docutils literal notranslate"><span class="pre">generateSpeciesConstraints</span></code> parameters</p></li>
+<li><p>Transport data is now saved correctly to CHEMKIN <code class="docutils literal notranslate"><span class="pre">tran.dat</span></code> file and also imports successfully</p></li>
+<li><p>Fixes appending of reactions to CHEMKIN file when reaction libraries are desired to be appended to output</p></li>
+<li><p>Fixes writing of csv files for simulation and sensitivity results in Windows</p></li>
+<li><p>Fixes <code class="docutils literal notranslate"><span class="pre">Reaction.draw()</span></code> function to draw the entire reaction rather than a single species</p></li>
 </ul>
 </dd>
 </dl>
@@ -1526,8 +1405,8 @@ This release brings some new additions and fixes:</p>
 <p>Date: February 4, 2016</p>
 <p>This mini release contains the following updates:</p>
 <ul class="simple">
-<li>Pdep convergence issues in RMG-Py v1.0.2 are now fixed.</li>
-<li>RMG-database version information and anaconda binary version information is now recorded in RMG log file.</li>
+<li><p>Pdep convergence issues in RMG-Py v1.0.2 are now fixed.</p></li>
+<li><p>RMG-database version information and anaconda binary version information is now recorded in RMG log file.</p></li>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-2">
@@ -1535,20 +1414,20 @@ This release brings some new additions and fixes:</p>
 <p>Date: January 29, 2016</p>
 <p>This new release adds several new features and bug fixes.</p>
 <ul class="simple">
-<li>Windows users can rejoice: RMG is now available in binary format on the Anaconda platform.  Building by source is also
+<li><p>Windows users can rejoice: RMG is now available in binary format on the Anaconda platform.  Building by source is also
 much easier now through the Anaconda managed python environment for dependencies. See the updated <a class="reference internal" href="installation/index.html#installation"><span class="std std-ref">Installation Page</span></a>
-for more details</li>
-<li>Reaction filtering for speeding up model generation has now been added.  It has been shown to speed up model convergence by
+for more details</p></li>
+<li><p>Reaction filtering for speeding up model generation has now been added.  It has been shown to speed up model convergence by
 7-10x.  See more details about how to use it in your RMG job <a class="reference internal" href="input.html#filterreactions"><span class="std std-ref">here</span></a>.  Learn more about the theory
-and algorithm on the <a class="reference internal" href="../../theory/rmg/enlarger.html#ratebasedmodelenlarger"><span class="std std-ref">Rate-based Model Enlarging Algorithm</span></a> page.</li>
-<li>The RMG <a class="reference internal" href="modules/index.html#modules"><span class="std std-ref">native scripts</span></a> are now organized under the <code class="docutils literal notranslate"><span class="pre">rmgpy.tools</span></code> submodule for
-developer ease and better extensibility in external scripts.</li>
-<li>InChI conversion is now more robust for singlets and triplets,
-and augmented InChIs and InChI keys are now possible with new radical electron, lone pair, and multiplicity flags.</li>
-<li>Output HTML for visualizing models are now cleaned up and also more functional, including features to display thermo comments,
+and algorithm on the <a class="reference internal" href="../../theory/rmg/enlarger.html#ratebasedmodelenlarger"><span class="std std-ref">Rate-based Model Enlarging Algorithm</span></a> page.</p></li>
+<li><p>The RMG <a class="reference internal" href="modules/index.html#modules"><span class="std std-ref">native scripts</span></a> are now organized under the <code class="docutils literal notranslate"><span class="pre">rmgpy.tools</span></code> submodule for
+developer ease and better extensibility in external scripts.</p></li>
+<li><p>InChI conversion is now more robust for singlets and triplets,
+and augmented InChIs and InChI keys are now possible with new radical electron, lone pair, and multiplicity flags.</p></li>
+<li><p>Output HTML for visualizing models are now cleaned up and also more functional, including features to display thermo comments,
 display enthalpy, entropy, and free energy of reaction, as well as filter reactions by species.  You can use this new visualization format
 either by running a job in RMG v1.0.2 or revisualizing your CHEMKIN file and species dictionary using
-the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">visualization web tool</a>.</li>
+the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">visualization web tool</a>.</p></li>
 </ul>
 </div>
 <div class="section" id="rmg-database-version-1-0-2">
@@ -1557,26 +1436,25 @@ the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">vis
 <p>In conjunction with the release of RMG-Py v1.0.2, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
 <ul class="simple">
-<li>New group additivity values for oxitene, oxerene, oexpane, and furan ring groups</li>
-<li><dl class="first docutils">
-<dt>Improvements to sulfur chemistry:</dt>
-<dd><ul class="first last">
-<li>Restructuring of radical trees in the kinetics families <code class="docutils literal notranslate"><span class="pre">SubstitutionS</span></code> and <code class="docutils literal notranslate"><span class="pre">intra_substitutionCS_cyclization</span></code></li>
-<li>A reaction library for di-tert-butyl sulfide</li>
+<li><p>New group additivity values for oxitene, oxerene, oexpane, and furan ring groups</p></li>
+<li><dl class="simple">
+<dt>Improvements to sulfur chemistry:</dt><dd><ul>
+<li><p>Restructuring of radical trees in the kinetics families <code class="docutils literal notranslate"><span class="pre">SubstitutionS</span></code> and <code class="docutils literal notranslate"><span class="pre">intra_substitutionCS_cyclization</span></code></p></li>
+<li><p>A reaction library for di-tert-butyl sulfide</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>Improvements for the <code class="docutils literal notranslate"><span class="pre">R_Addition_Multiple_Bond</span></code> kinetics family through new rate rules
+<li><p>Improvements for the <code class="docutils literal notranslate"><span class="pre">R_Addition_Multiple_Bond</span></code> kinetics family through new rate rules
 for the addition of allyl radical to double bonds in ethene, propene, and butene-like
 compounds, based on CBS-QB3 estimates from K. Wang, S.M. Villano, A.M. Dean,
 “Reactions of allylic radicals that impact molecular weight growth kinetics”, <em>PCCP</em>,
-6255-6273 (2015).</li>
-<li>Several new thermodynamic and kinetics libraries for molecules associated with the
+6255-6273 (2015).</p></li>
+<li><p>Several new thermodynamic and kinetics libraries for molecules associated with the
 pyrolysis of cyclopentadiene in the presence of ethene, based off of calculations from
 the paper A.G. Vandeputte, S.S. Merchant, M.R. Djokic, K.M. Van Geem,
 G.B. Marin, W. H. Green, “Detailed study of cyclopentadiene pyrolysis in the
-presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</li>
+presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</p></li>
 </ul>
 </div>
 </div>
@@ -1670,13 +1548,11 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</li>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -1713,7 +1589,7 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</li>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

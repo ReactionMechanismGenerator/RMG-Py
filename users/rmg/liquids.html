@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>15. Liquid Phase Systems &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -115,8 +113,8 @@ in one final simulation (sensitivity is not performed in intermediate iterations
 <h2>15.1. Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
 <p>Specifying a liquidReactor will have two effects:</p>
 <ol class="arabic simple">
-<li>disable the ideal gas law renormalization and instead rely on the concentrations you specified in the input file to initialize the system.</li>
-<li>prevent the volume from changing when there is a net stoichiometry change due to a chemical reaction (A = B + C).</li>
+<li><p>disable the ideal gas law renormalization and instead rely on the concentrations you specified in the input file to initialize the system.</p></li>
+<li><p>prevent the volume from changing when there is a net stoichiometry change due to a chemical reaction (A = B + C).</p></li>
 </ol>
 </div>
 <div class="section" id="solvation-thermochemistry">
@@ -141,8 +139,8 @@ thermo of species matching a library in a liquid phase simulation is obtained fo
 <p>If library is a “gas thermo library”, thermo data are extracted and then corrections are applied on it using the <a class="reference internal" href="#lsertoestimatethermo"><span class="std std-ref">LSER method</span></a>
 for this specific species-solvent system.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Gas phase libraries can be declared first, liquid thermo libraries will still be tested first but the order will be respected if several liquid libraries are provided.</p>
+<p class="admonition-title">Note</p>
+<p>Gas phase libraries can be declared first, liquid thermo libraries will still be tested first but the order will be respected if several liquid libraries are provided.</p>
 </div>
 </div>
 <div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry">
@@ -159,54 +157,54 @@ log (base 10) of the partition coefficient) of a solute between the vapor phase 
 <p>The variables in the Abraham model represent solute (<cite>E, S, A, B, V, L</cite>) and solvent descriptors (<cite>c, e, s, a, b, v, l</cite>)
 for different interactions. The <cite>sS</cite> term is attributed to electrostatic interactions between the
 solute and the solvent (dipole-dipole interactions related to solvent dipolarity and the dipole-induced
-dipole interactions related to the polarizability of the solvent) <a class="reference internal" href="#vitha2006" id="id1">[Vitha2006]</a>, <a class="reference internal" href="#abraham1999" id="id2">[Abraham1999]</a>, <a class="reference internal" href="#jalan2010" id="id3">[Jalan2010]</a>. The
+dipole interactions related to the polarizability of the solvent) <a class="reference internal" href="#vitha2006" id="id1"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id2"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#jalan2010" id="id3"><span>[Jalan2010]</span></a>. The
 <cite>lL</cite> term accounts for the contribution from cavity formation and dispersion (dispersion interactions are
-known to scale with solute volume <a class="reference internal" href="#vitha2006" id="id4">[Vitha2006]</a>, <a class="reference internal" href="#abraham1999" id="id5">[Abraham1999]</a>. The <cite>eE</cite> term, like the <cite>sS</cite> term,
+known to scale with solute volume <a class="reference internal" href="#vitha2006" id="id4"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id5"><span>[Abraham1999]</span></a>. The <cite>eE</cite> term, like the <cite>sS</cite> term,
 accounts for residual contributions from dipolarity/polarizability related interactions for solutes
-whose blend of dipolarity/polarizability differs from that implicitly built into the <cite>S</cite> parameter <a class="reference internal" href="#vitha2006" id="id6">[Vitha2006]</a>, <a class="reference internal" href="#abraham1999" id="id7">[Abraham1999]</a>, <a class="reference internal" href="#jalan2010" id="id8">[Jalan2010]</a>.
+whose blend of dipolarity/polarizability differs from that implicitly built into the <cite>S</cite> parameter <a class="reference internal" href="#vitha2006" id="id6"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id7"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#jalan2010" id="id8"><span>[Jalan2010]</span></a>.
 The <cite>aA</cite> and <cite>bB</cite> terms account for the contribution of hydrogen bonding between the solute and
 the surrounding solvent molecules. H-bonding interactions require two terms as the solute (or solvent)
 can act as acceptor (donor) and vice versa. The descriptor <cite>A</cite> is a measure of the solute’s ability
 to donate a hydrogen bond (acidity) and the solvent descriptor <cite>a</cite> is a measure of the solvent’s ability
-to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> term <a class="reference internal" href="#vitha2006" id="id9">[Vitha2006]</a>, <a class="reference internal" href="#abraham1999" id="id10">[Abraham1999]</a>, <a class="reference internal" href="#poole2009" id="id11">[Poole2009]</a>.</p>
+to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> term <a class="reference internal" href="#vitha2006" id="id9"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id10"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#poole2009" id="id11"><span>[Poole2009]</span></a>.</p>
 <p>The solvent descriptors (<cite>c, e, s, a, b, l</cite>) are largely treated as regressed empirical coefficients. Parameters are provided in RMG’s database for the following solvents:</p>
 <ol class="arabic simple">
-<li>acetonitrile</li>
-<li>benzene</li>
-<li>butanol</li>
-<li>carbontet</li>
-<li>chloroform</li>
-<li>cyclohexane</li>
-<li>decane</li>
-<li>dibutylether</li>
-<li>dichloroethane</li>
-<li>dimethylformamide</li>
-<li>dimethylsulfoxide</li>
-<li>dodecane</li>
-<li>ethanol</li>
-<li>ethylacetate</li>
-<li>heptane</li>
-<li>hexadecane</li>
-<li>hexane</li>
-<li>isooctane</li>
-<li>nonane</li>
-<li>octane</li>
-<li>octanol</li>
-<li>pentane</li>
-<li>toluene</li>
-<li>undecane</li>
-<li>water</li>
+<li><p>acetonitrile</p></li>
+<li><p>benzene</p></li>
+<li><p>butanol</p></li>
+<li><p>carbontet</p></li>
+<li><p>chloroform</p></li>
+<li><p>cyclohexane</p></li>
+<li><p>decane</p></li>
+<li><p>dibutylether</p></li>
+<li><p>dichloroethane</p></li>
+<li><p>dimethylformamide</p></li>
+<li><p>dimethylsulfoxide</p></li>
+<li><p>dodecane</p></li>
+<li><p>ethanol</p></li>
+<li><p>ethylacetate</p></li>
+<li><p>heptane</p></li>
+<li><p>hexadecane</p></li>
+<li><p>hexane</p></li>
+<li><p>isooctane</p></li>
+<li><p>nonane</p></li>
+<li><p>octane</p></li>
+<li><p>octanol</p></li>
+<li><p>pentane</p></li>
+<li><p>toluene</p></li>
+<li><p>undecane</p></li>
+<li><p>water</p></li>
 </ol>
 </div>
 <div class="section" id="group-additivity-method-for-solute-descriptor-estimation">
 <h3>15.2.3. Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
 <p>Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach
-to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id12">[Platts1999]</a>) proposed such a scheme employing a set of 81 molecular fragments for estimating <cite>B, E, L, V</cite> and <cite>S</cite> and another set of 51 fragments for the estimation of <cite>A</cite>. Only those fragments containing C, H and O are implemented in order to match RMG’s existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.</p>
+to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id12"><span>[Platts1999]</span></a>) proposed such a scheme employing a set of 81 molecular fragments for estimating <cite>B, E, L, V</cite> and <cite>S</cite> and another set of 51 fragments for the estimation of <cite>A</cite>. Only those fragments containing C, H and O are implemented in order to match RMG’s existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.</p>
 </div>
 <div class="section" id="mintz-model-for-enthalpy-of-solvation">
 <h3>15.2.4. Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
-<p>For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. (<a class="reference internal" href="#mintz2007" id="id13">[Mintz2007]</a>, <a class="reference internal" href="#mintz2007a" id="id14">[Mintz2007a]</a>, <a class="reference internal" href="#mintz2007b" id="id15">[Mintz2007b]</a>, <a class="reference internal" href="#mintz2007c" id="id16">[Mintz2007c]</a>, <a class="reference internal" href="#mintz2007d" id="id17">[Mintz2007d]</a>, <a class="reference internal" href="#mintz2008" id="id18">[Mintz2008]</a>, <a class="reference internal" href="#mintz2008a" id="id19">[Mintz2008a]</a>, <a class="reference internal" href="#mintz2009" id="id20">[Mintz2009]</a>) have developed linear correlations similar to the Abraham model for estimating ΔH:</p>
+<p>For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. (<a class="reference internal" href="#mintz2007" id="id13"><span>[Mintz2007]</span></a>, <a class="reference internal" href="#mintz2007a" id="id14"><span>[Mintz2007a]</span></a>, <a class="reference internal" href="#mintz2007b" id="id15"><span>[Mintz2007b]</span></a>, <a class="reference internal" href="#mintz2007c" id="id16"><span>[Mintz2007c]</span></a>, <a class="reference internal" href="#mintz2007d" id="id17"><span>[Mintz2007d]</span></a>, <a class="reference internal" href="#mintz2008" id="id18"><span>[Mintz2008]</span></a>, <a class="reference internal" href="#mintz2008a" id="id19"><span>[Mintz2008a]</span></a>, <a class="reference internal" href="#mintz2009" id="id20"><span>[Mintz2009]</span></a>) have developed linear correlations similar to the Abraham model for estimating ΔH:</p>
 <div class="math notranslate nohighlight" id="equation-mintz">
 <span class="eqno">(3)<a class="headerlink" href="#equation-mintz" title="Permalink to this equation">¶</a></span>\[ΔH(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L\]</div>
 <p>where <cite>A, B, E, S</cite> and <cite>L</cite> are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients <cite>c’, a’, b’, e’, s’</cite> and <cite>l’</cite> depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.</p>
@@ -216,7 +214,7 @@ to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>)
 <span id="diffusionlimited"></span><h2>15.3. Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion
 limits. The theory behind diffusive limits in the solution phase for bimolecular reactions is well established
-(<a class="reference internal" href="#rice1985" id="id21">[Rice1985]</a>) and has been extended to reactions of any order (<a class="reference internal" href="#flegg2016" id="id22">[Flegg2016]</a>). The effective rate constant of a
+(<a class="reference internal" href="#rice1985" id="id21"><span>[Rice1985]</span></a>) and has been extended to reactions of any order (<a class="reference internal" href="#flegg2016" id="id22"><span>[Flegg2016]</span></a>). The effective rate constant of a
 diffusion-limited reaction is given by:</p>
 <div class="math notranslate nohighlight" id="equation-diffusive-limit">
 <span class="eqno">(4)<a class="headerlink" href="#equation-diffusive-limit" title="Permalink to this equation">¶</a></span>\[k_{\textrm{eff}} = \frac {k_{\textrm{diff}} k_{\textrm{int}}}{k_{\textrm{diff}} + k_{\textrm{int}}}\]</div>
@@ -365,96 +363,53 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <span class="p">)</span>
 </pre></div>
 </div>
-<table class="docutils citation" frame="void" id="vitha2006" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Vitha2006]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id4">2</a>, <a class="fn-backref" href="#id6">3</a>, <a class="fn-backref" href="#id9">4</a>)</em> M. Vitha and P.W. Carr. “The chemical interpretation and practice of linear solvation energy relationships in chromatography.” <em>J. Chromatogr. A.</em> <strong>1126(1-2)</strong>, p. 143-194 (2006).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="abraham1999" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Abraham1999]</td><td><em>(<a class="fn-backref" href="#id2">1</a>, <a class="fn-backref" href="#id5">2</a>, <a class="fn-backref" href="#id7">3</a>, <a class="fn-backref" href="#id10">4</a>)</em> M.H. Abraham et al. “Correlation and estimation of gas-chloroform and water-chloroformpartition coefficients by a linear free energy relationship method.” <em>J. Pharm. Sci.</em> <strong>88(7)</strong>, p. 670-679 (1999).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="jalan2010" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Jalan2010]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id8">2</a>)</em> A. Jalan et al. “Predicting solvation energies for kinetic modeling.” <em>Annu. Rep.Prog. Chem., Sect. C</em> <strong>106</strong>, p. 211-258 (2010).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="poole2009" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id11">[Poole2009]</a></td><td>C.F. Poole et al. “Determination of solute descriptors by chromatographic methods.” <em>Anal. Chim. Acta</em> <strong>652(1-2)</strong> p. 32-53 (2009).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="platts1999" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id12">[Platts1999]</a></td><td>J. Platts and D. Butina. “Estimation of molecular linear free energy relation descriptorsusing a group contribution approach.” <em>J. Chem. Inf. Comput. Sci.</em> <strong>39</strong>, p. 835-845 (1999).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2007" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id13">[Mintz2007]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inwater and in 1-octanol based on the Abraham model.” <em>J. Chem. Inf. Model.</em> <strong>47(1)</strong>, p. 115-121 (2007).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2007a" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id14">[Mintz2007a]</a></td><td>C. Mintz et al. “Enthalpy of solvation corrections for gaseous solutes dissolved in benzene and in alkane solvents based on the Abraham model.” <em>QSAR Comb. Sci.</em> <strong>26(8)</strong>, p. 881-888 (2007).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2007b" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id15">[Mintz2007b]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved in toluene and carbon tetrachloride based on the Abraham model.” <em>J. Sol. Chem.</em> <strong>36(8)</strong>, p. 947-966 (2007).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2007c" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id16">[Mintz2007c]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved indimethyl sulfoxide and propylene carbonate based on the Abraham model.” <em>Thermochim. Acta</em> <strong>459(1-2)</strong>, p, 17-25 (2007).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2007d" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id17">[Mintz2007d]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inchloroform and 1,2-dichloroethane based on the Abraham model.” <em>Fluid Phase Equilib.</em> <strong>258(2)</strong>, p. 191-198 (2007).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2008" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id18">[Mintz2008]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inlinear alkanes (C5-C16) based on the Abraham model.” <em>QSAR Comb. Sci.</em> <strong>27(2)</strong>, p. 179-186 (2008).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2008a" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id19">[Mintz2008a]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inalcohol solvents based on the Abraham model.” <em>QSAR Comb. Sci.</em> <strong>27(5)</strong>, p. 627-635 (2008).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="mintz2009" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id20">[Mintz2009]</a></td><td>C. Mintz et al. “Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone.” <em>Thermochim. Acta</em> <strong>484(1-2)</strong>, p. 65-69 (2009).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="rice1985" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id21">[Rice1985]</a></td><td>S.A. Rice. “Diffusion-limited reactions.” In <em>Comprehensive Chemical Kinetics</em>, EditorsC.H. Bamford, C.F.H. Tipper and R.G. Compton. <strong>25</strong>, (1985).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="flegg2016" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id22">[Flegg2016]</a></td><td>M.B. Flegg. “Smoluchowski reaction kinetics for reactions of any order.” <em>SIAM J. Appl. Math.</em> <strong>76(4)</strong>, p. 1403-1432 (2016).</td></tr>
-</tbody>
-</table>
+<dl class="citation">
+<dt class="label" id="vitha2006"><span class="brackets">Vitha2006</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id4">2</a>,<a href="#id6">3</a>,<a href="#id9">4</a>)</span></dt>
+<dd><p>M. Vitha and P.W. Carr. “The chemical interpretation and practice of linear solvation energy relationships in chromatography.” <em>J. Chromatogr. A.</em> <strong>1126(1-2)</strong>, p. 143-194 (2006).</p>
+</dd>
+<dt class="label" id="abraham1999"><span class="brackets">Abraham1999</span><span class="fn-backref">(<a href="#id2">1</a>,<a href="#id5">2</a>,<a href="#id7">3</a>,<a href="#id10">4</a>)</span></dt>
+<dd><p>M.H. Abraham et al. “Correlation and estimation of gas-chloroform and water-chloroformpartition coefficients by a linear free energy relationship method.” <em>J. Pharm. Sci.</em> <strong>88(7)</strong>, p. 670-679 (1999).</p>
+</dd>
+<dt class="label" id="jalan2010"><span class="brackets">Jalan2010</span><span class="fn-backref">(<a href="#id3">1</a>,<a href="#id8">2</a>)</span></dt>
+<dd><p>A. Jalan et al. “Predicting solvation energies for kinetic modeling.” <em>Annu. Rep.Prog. Chem., Sect. C</em> <strong>106</strong>, p. 211-258 (2010).</p>
+</dd>
+<dt class="label" id="poole2009"><span class="brackets"><a class="fn-backref" href="#id11">Poole2009</a></span></dt>
+<dd><p>C.F. Poole et al. “Determination of solute descriptors by chromatographic methods.” <em>Anal. Chim. Acta</em> <strong>652(1-2)</strong> p. 32-53 (2009).</p>
+</dd>
+<dt class="label" id="platts1999"><span class="brackets"><a class="fn-backref" href="#id12">Platts1999</a></span></dt>
+<dd><p>J. Platts and D. Butina. “Estimation of molecular linear free energy relation descriptorsusing a group contribution approach.” <em>J. Chem. Inf. Comput. Sci.</em> <strong>39</strong>, p. 835-845 (1999).</p>
+</dd>
+<dt class="label" id="mintz2007"><span class="brackets"><a class="fn-backref" href="#id13">Mintz2007</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inwater and in 1-octanol based on the Abraham model.” <em>J. Chem. Inf. Model.</em> <strong>47(1)</strong>, p. 115-121 (2007).</p>
+</dd>
+<dt class="label" id="mintz2007a"><span class="brackets"><a class="fn-backref" href="#id14">Mintz2007a</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation corrections for gaseous solutes dissolved in benzene and in alkane solvents based on the Abraham model.” <em>QSAR Comb. Sci.</em> <strong>26(8)</strong>, p. 881-888 (2007).</p>
+</dd>
+<dt class="label" id="mintz2007b"><span class="brackets"><a class="fn-backref" href="#id15">Mintz2007b</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved in toluene and carbon tetrachloride based on the Abraham model.” <em>J. Sol. Chem.</em> <strong>36(8)</strong>, p. 947-966 (2007).</p>
+</dd>
+<dt class="label" id="mintz2007c"><span class="brackets"><a class="fn-backref" href="#id16">Mintz2007c</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved indimethyl sulfoxide and propylene carbonate based on the Abraham model.” <em>Thermochim. Acta</em> <strong>459(1-2)</strong>, p, 17-25 (2007).</p>
+</dd>
+<dt class="label" id="mintz2007d"><span class="brackets"><a class="fn-backref" href="#id17">Mintz2007d</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inchloroform and 1,2-dichloroethane based on the Abraham model.” <em>Fluid Phase Equilib.</em> <strong>258(2)</strong>, p. 191-198 (2007).</p>
+</dd>
+<dt class="label" id="mintz2008"><span class="brackets"><a class="fn-backref" href="#id18">Mintz2008</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inlinear alkanes (C5-C16) based on the Abraham model.” <em>QSAR Comb. Sci.</em> <strong>27(2)</strong>, p. 179-186 (2008).</p>
+</dd>
+<dt class="label" id="mintz2008a"><span class="brackets"><a class="fn-backref" href="#id19">Mintz2008a</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for gaseous solutes dissolved inalcohol solvents based on the Abraham model.” <em>QSAR Comb. Sci.</em> <strong>27(5)</strong>, p. 627-635 (2008).</p>
+</dd>
+<dt class="label" id="mintz2009"><span class="brackets"><a class="fn-backref" href="#id20">Mintz2009</a></span></dt>
+<dd><p>C. Mintz et al. “Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone.” <em>Thermochim. Acta</em> <strong>484(1-2)</strong>, p. 65-69 (2009).</p>
+</dd>
+<dt class="label" id="rice1985"><span class="brackets"><a class="fn-backref" href="#id21">Rice1985</a></span></dt>
+<dd><p>S.A. Rice. “Diffusion-limited reactions.” In <em>Comprehensive Chemical Kinetics</em>, EditorsC.H. Bamford, C.F.H. Tipper and R.G. Compton. <strong>25</strong>, (1985).</p>
+</dd>
+<dt class="label" id="flegg2016"><span class="brackets"><a class="fn-backref" href="#id22">Flegg2016</a></span></dt>
+<dd><p>M.B. Flegg. “Smoluchowski reaction kinetics for reactions of any order.” <em>SIAM J. Appl. Math.</em> <strong>76(4)</strong>, p. 1403-1432 (2016).</p>
+</dd>
+</dl>
 </div>
 </div>
 
@@ -524,13 +479,11 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -567,7 +520,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

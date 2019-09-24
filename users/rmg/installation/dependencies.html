@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>3.5.1. Dependencies &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -65,59 +63,58 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>3.5.1.1. List of Dependencies<a class="headerlink" href="#list-of-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>Briefly, RMG depends on the following packages, almost all of which can be found in the <a class="reference external" href="https://anaconda.org/rmg">RMG anaconda channel</a> as binary packages.</p>
 <ul class="simple">
-<li><strong>boost:</strong> portable C++ source libraries</li>
-<li><strong>cairo:</strong> a 2D vector graphics library with support for multiple backends including image buffers, PNG, PostScript, PDF, and SVG file output.  Used for molecular diagram generation</li>
-<li><strong>cairocffi:</strong> a set of Python bindings and object-oriented API for cairo</li>
-<li><strong>coverage:</strong> code coverage measurement for Python</li>
-<li><strong>cython:</strong> compiling Python modules to C for speed up</li>
-<li><strong>dde:</strong> Data Driven Estimator for neural network thermochemistry prediction</li>
-<li><strong>ffmpeg:</strong> (optional) used to encode videos, necessary for generating video flux diagrams</li>
-<li><strong>gaussian:</strong> (optional) commerical software program for quantum mechanical calculations.  Must be installed separately.</li>
-<li><strong>gcc:</strong> GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)</li>
-<li><strong>gprof2dot:</strong> converts Python profiling output to a dot graph</li>
-<li><strong>graphviz:</strong> generating flux diagrams</li>
-<li><strong>jinja2:</strong> Python templating language for html rendering</li>
-<li><strong>jupyter:</strong> (optional) for using IPython notebooks</li>
-<li><strong>lpsolve:</strong> mixed integer linear programming solver, used for resonance structure generation. Must also install Python extension.</li>
-<li><strong>markupsafe:</strong> implements XML/HTML/XHTML markup safe strings for Python</li>
-<li><strong>matplotlib:</strong> library for making plots</li>
-<li><strong>mock:</strong> for unit-testing</li>
-<li><strong>mopac:</strong> semi-empirical software package for QM calculations</li>
-<li><strong>mpmath:</strong> for arbitrary-precision arithmetic used in Arkane</li>
-<li><strong>muq:</strong> (optional) MIT Uncertainty Quantification library, used for global uncertainty analysis</li>
-<li><strong>networkx:</strong> (optional) network analysis for reaction-path analysis IPython notebook</li>
-<li><strong>nose:</strong> advanced unit test controls</li>
-<li><strong>numpy:</strong> fast matrix operations</li>
-<li><strong>openbabel:</strong> chemical toolbox for speaking the many languages of chemical data</li>
-<li><strong>psutil:</strong> system utilization diagnostic tool</li>
-<li><strong>pydas:</strong> differential algebraic system solver</li>
-<li><strong>pydot:</strong> interface to Dot graph language</li>
-<li><strong>pydqed:</strong> constrained nonlinear optimization</li>
-<li><strong>pyparsing:</strong> a general parsing module for python</li>
-<li><strong>pyrdl:</strong> RingDecomposerLib for graph ring perception</li>
-<li><strong>pyyaml:</strong> Python framework for YAML</li>
-<li><strong>pyzmq:</strong> Python bindings for zeroMQ</li>
-<li><strong>quantities:</strong> unit conversion</li>
-<li><strong>rdkit:</strong> open-source cheminformatics toolkit</li>
-<li><strong>scipy:</strong> fast mathematical toolkit</li>
-<li><strong>scoop:</strong> parallelization of Python code</li>
-<li><strong>setuptools:</strong> for packaging Python projects</li>
-<li><strong>sphinx:</strong> documentation generation</li>
-<li><strong>symmetry:</strong> calculating symmetry numbers of chemical point groups</li>
-<li><strong>xlwt:</strong> generating Excel output files</li>
+<li><p><strong>boost:</strong> portable C++ source libraries</p></li>
+<li><p><strong>cairo:</strong> a 2D vector graphics library with support for multiple backends including image buffers, PNG, PostScript, PDF, and SVG file output.  Used for molecular diagram generation</p></li>
+<li><p><strong>cairocffi:</strong> a set of Python bindings and object-oriented API for cairo</p></li>
+<li><p><strong>coverage:</strong> code coverage measurement for Python</p></li>
+<li><p><strong>cython:</strong> compiling Python modules to C for speed up</p></li>
+<li><p><strong>dde:</strong> Data Driven Estimator for neural network thermochemistry prediction</p></li>
+<li><p><strong>ffmpeg:</strong> (optional) used to encode videos, necessary for generating video flux diagrams</p></li>
+<li><p><strong>gaussian:</strong> (optional) commerical software program for quantum mechanical calculations.  Must be installed separately.</p></li>
+<li><p><strong>gcc:</strong> GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)</p></li>
+<li><p><strong>gprof2dot:</strong> converts Python profiling output to a dot graph</p></li>
+<li><p><strong>graphviz:</strong> generating flux diagrams</p></li>
+<li><p><strong>jinja2:</strong> Python templating language for html rendering</p></li>
+<li><p><strong>jupyter:</strong> (optional) for using IPython notebooks</p></li>
+<li><p><strong>lpsolve:</strong> mixed integer linear programming solver, used for resonance structure generation. Must also install Python extension.</p></li>
+<li><p><strong>markupsafe:</strong> implements XML/HTML/XHTML markup safe strings for Python</p></li>
+<li><p><strong>matplotlib:</strong> library for making plots</p></li>
+<li><p><strong>mock:</strong> for unit-testing</p></li>
+<li><p><strong>mopac:</strong> semi-empirical software package for QM calculations</p></li>
+<li><p><strong>mpmath:</strong> for arbitrary-precision arithmetic used in Arkane</p></li>
+<li><p><strong>muq:</strong> (optional) MIT Uncertainty Quantification library, used for global uncertainty analysis</p></li>
+<li><p><strong>networkx:</strong> (optional) network analysis for reaction-path analysis IPython notebook</p></li>
+<li><p><strong>nose:</strong> advanced unit test controls</p></li>
+<li><p><strong>numpy:</strong> fast matrix operations</p></li>
+<li><p><strong>openbabel:</strong> chemical toolbox for speaking the many languages of chemical data</p></li>
+<li><p><strong>psutil:</strong> system utilization diagnostic tool</p></li>
+<li><p><strong>pydas:</strong> differential algebraic system solver</p></li>
+<li><p><strong>pydot:</strong> interface to Dot graph language</p></li>
+<li><p><strong>pydqed:</strong> constrained nonlinear optimization</p></li>
+<li><p><strong>pyparsing:</strong> a general parsing module for python</p></li>
+<li><p><strong>pyrdl:</strong> RingDecomposerLib for graph ring perception</p></li>
+<li><p><strong>pyyaml:</strong> Python framework for YAML</p></li>
+<li><p><strong>pyzmq:</strong> Python bindings for zeroMQ</p></li>
+<li><p><strong>quantities:</strong> unit conversion</p></li>
+<li><p><strong>rdkit:</strong> open-source cheminformatics toolkit</p></li>
+<li><p><strong>scipy:</strong> fast mathematical toolkit</p></li>
+<li><p><strong>setuptools:</strong> for packaging Python projects</p></li>
+<li><p><strong>sphinx:</strong> documentation generation</p></li>
+<li><p><strong>symmetry:</strong> calculating symmetry numbers of chemical point groups</p></li>
+<li><p><strong>xlwt:</strong> generating Excel output files</p></li>
 </ul>
 </div>
 <div class="section" id="license-restrictions-on-dependencies">
 <span id="dependenciesrestrictions"></span><h2>3.5.1.2. License Restrictions on Dependencies<a class="headerlink" href="#license-restrictions-on-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>All of RMG’s dependencies except the ones listed below are freely available and compatible with RMG’s open source MIT license (though the specific nature of their licenses vary).</p>
 <ul class="simple">
-<li><strong>pydas</strong>: The DAE solvers used in the simulations come from <a class="reference external" href="http://www.engineering.ucsb.edu/~cse/software.html">Linda Petzold’s research group</a> at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which “is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is “available in the public domain.”</li>
+<li><p><strong>pydas</strong>: The DAE solvers used in the simulations come from <a class="reference external" href="http://www.engineering.ucsb.edu/~cse/software.html">Linda Petzold’s research group</a> at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which “is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is “available in the public domain.”</p></li>
 </ul>
 <p>If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (advisable for fused cyclic species in particular, where the ring corrections to group additive estimates are lacking),
 the then you will need the third-party software for the QM calculations:</p>
 <ul class="simple">
-<li><strong>gaussian</strong>: Gaussian03 and Gaussian09 are currently supported and commercially available.  See <a class="reference external" href="http://www.gaussian.com">http://www.gaussian.com</a> for more details.</li>
-<li><strong>mopac</strong> MOPAC can be found at <a class="reference external" href="http://openmopac.net/">http://openmopac.net/</a>. Though it is not free for industrial use, it is free for non-profit and academic research use.</li>
+<li><p><strong>gaussian</strong>: Gaussian03 and Gaussian09 are currently supported and commercially available.  See <a class="reference external" href="http://www.gaussian.com">http://www.gaussian.com</a> for more details.</p></li>
+<li><p><strong>mopac</strong> MOPAC can be found at <a class="reference external" href="http://openmopac.net/">http://openmopac.net/</a>. Though it is not free for industrial use, it is free for non-profit and academic research use.</p></li>
 </ul>
 </div>
 </div>
@@ -179,13 +176,11 @@ the then you will need the third-party software for the QM calculations:</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -223,7 +218,7 @@ the then you will need the third-party software for the QM calculations:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

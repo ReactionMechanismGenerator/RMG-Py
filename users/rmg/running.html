@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>6. Running a Job &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -83,26 +81,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 the RMG-Py simulation.</p>
 <p>Make sure that:</p>
 <ul class="simple">
-<li>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SLURM scheduler.</li>
-<li>you modify the path to the parent folder of the RMG-Py installation folder.</li>
-<li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains RMG-Py’s dependencies.</li>
-<li>the working directory from which you launched the job contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code></li>
+<li><p>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SLURM scheduler.</p></li>
+<li><p>you modify the path to the parent folder of the RMG-Py installation folder.</p></li>
+<li><p>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains RMG-Py’s dependencies.</p></li>
+<li><p>the working directory from which you launched the job contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code></p></li>
 </ul>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
-#SBATCH -p debug
-#SBATCH -J jobname
-#SBATCH -n 24
+<span class="c1">#SBATCH -p debug</span>
+<span class="c1">#SBATCH -J jobname</span>
+<span class="c1">#SBATCH -n 24</span>
 
-Processes=12
-RMG_WS=/path/to/RMG/parent/folder
-export PYTHONPATH=$PYTHONPATH:$RMG_WS/RMG-Py/
+<span class="nv">Processes</span><span class="o">=</span><span class="m">12</span>
+<span class="nv">RMG_WS</span><span class="o">=</span>/path/to/RMG/parent/folder
+<span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$PYTHONPATH</span>:<span class="nv">$RMG_WS</span>/RMG-Py/
 
-source activate rmg_env
+<span class="nb">source</span> activate rmg_env
 
-python  -n $Processes $RMG_WS/RMG-Py/rmg.py input.py
+python  -n <span class="nv">$Processes</span> <span class="nv">$RMG_WS</span>/RMG-Py/rmg.py input.py
 
-source deactivate
+<span class="nb">source</span> deactivate
 </pre></div>
 </div>
 </div>
@@ -113,29 +111,29 @@ source deactivate
 the RMG-Py simulation.</p>
 <p>Make sure that:</p>
 <ul class="simple">
-<li>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SGE scheduler.</li>
-<li>you modify the path to the parent folder of the RMG-Py installation
-folder.</li>
-<li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains
-RMG-Py’s dependencies.</li>
-<li>the working directory from which you launched the job
-contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code>.</li>
+<li><p>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SGE scheduler.</p></li>
+<li><p>you modify the path to the parent folder of the RMG-Py installation
+folder.</p></li>
+<li><p>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains
+RMG-Py’s dependencies.</p></li>
+<li><p>the working directory from which you launched the job
+contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code>.</p></li>
 </ul>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#! /bin/bash
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /bin/bash</span>
 
-#$ -l debug
-#$ -N jobname
-#$ -pe singlenode 24
+<span class="c1">#$ -l debug</span>
+<span class="c1">#$ -N jobname</span>
+<span class="c1">#$ -pe singlenode 24</span>
 
-Processes=12
-RMG_WS=/path/to/RMG/parent/folder
-export PYTHONPATH=$PYTHONPATH:$RMG_WS/RMG-Py/
+<span class="nv">Processes</span><span class="o">=</span><span class="m">12</span>
+<span class="nv">RMG_WS</span><span class="o">=</span>/path/to/RMG/parent/folder
+<span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$PYTHONPATH</span>:<span class="nv">$RMG_WS</span>/RMG-Py/
 
-source activate rmg_env
+<span class="nb">source</span> activate rmg_env
 
-python -n $Processes $RMG_WS/RMG-Py/rmg.py input.py
+python -n <span class="nv">$Processes</span> <span class="nv">$RMG_WS</span>/RMG-Py/rmg.py input.py
 
-source deactivate
+<span class="nb">source</span> deactivate
 </pre></div>
 </div>
 </div>
@@ -204,13 +202,11 @@ source deactivate
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -247,7 +243,7 @@ source deactivate
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

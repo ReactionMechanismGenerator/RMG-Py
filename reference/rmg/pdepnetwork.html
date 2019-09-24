@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.rmg.pdep.PDepNetwork &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,85 +60,85 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.rmg.pdep.PDepNetwork<a class="headerlink" href="#rmgpy-rmg-pdep-pdepnetwork" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.pdep.PDepNetwork">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.pdep.</code><code class="descname">PDepNetwork</code><span class="sig-paren">(</span><em>index=-1</em>, <em>source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.rmg.pdep.</code><code class="sig-name descname">PDepNetwork</code><span class="sig-paren">(</span><em class="sig-param">index=-1</em>, <em class="sig-param">source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a <em>partial</em> unimolecular reaction network. Each partial
 network has a single <cite>source</cite> isomer or reactant channel, and is responsible
 only for <span class="math notranslate nohighlight">\(k(T,P)\)</span> values for net reactions with source as the
 reactant. Multiple partial networks can have the same source, but networks
 with the same source and any explored isomers must be combined.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="16%" />
-<col width="20%" />
-<col width="64%" />
+<col style="width: 16%" />
+<col style="width: 20%" />
+<col style="width: 64%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
-<th class="head">Description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>source</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
-<td>The isomer or reactant channel that acts as the source</td>
+<tbody>
+<tr class="row-even"><td><p><cite>source</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The isomer or reactant channel that acts as the source</p></td>
 </tr>
-<tr class="row-odd"><td><cite>explored</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
-<td>A list of the unimolecular isomers whose reactions have been fully explored</td>
+<tr class="row-odd"><td><p><cite>explored</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>A list of the unimolecular isomers whose reactions have been fully explored</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.addPathReaction">
-<code class="descname">addPathReaction</code><span class="sig-paren">(</span><em>newReaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.addPathReaction" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.add_path_reaction">
+<code class="sig-name descname">add_path_reaction</code><span class="sig-paren">(</span><em class="sig-param">newReaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.add_path_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a path reaction to the network. If the path reaction already exists,
 no action is taken.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.applyChemicallySignificantEigenvaluesMethod">
-<code class="descname">applyChemicallySignificantEigenvaluesMethod</code><span class="sig-paren">(</span><em>lumpingOrder=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.apply_chemically_significant_eigenvalues_method">
+<code class="sig-name descname">apply_chemically_significant_eigenvalues_method</code><span class="sig-paren">(</span><em class="sig-param">lumping_order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.apply_chemically_significant_eigenvalues_method" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the chemically-significant eigenvalues method.
-If a <cite>lumpingOrder</cite> is provided, the algorithm will attempt to lump the
+If a <cite>lumping_order</cite> is provided, the algorithm will attempt to lump the
 configurations (given by index) in the order provided, and return a
 reduced set of <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.applyModifiedStrongCollisionMethod">
-<code class="descname">applyModifiedStrongCollisionMethod</code><span class="sig-paren">(</span><em>efficiencyModel='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.apply_modified_strong_collision_method">
+<code class="sig-name descname">apply_modified_strong_collision_method</code><span class="sig-paren">(</span><em class="sig-param">efficiency_model='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.apply_modified_strong_collision_method" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the modified strong collision method.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.applyReservoirStateMethod">
-<code class="descname">applyReservoirStateMethod</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.apply_reservoir_state_method">
+<code class="sig-name descname">apply_reservoir_state_method</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.apply_reservoir_state_method" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the reservoir state method.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.calculateCollisionModel">
-<code class="descname">calculateCollisionModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculateCollisionModel" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.calculate_collision_model">
+<code class="sig-name descname">calculate_collision_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculate_collision_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the matrix of first-order rate coefficients for collisional
 population transfer between grains for each isomer, including the
 corresponding collision frequencies.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.calculateDensitiesOfStates">
-<code class="descname">calculateDensitiesOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculateDensitiesOfStates" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.calculate_densities_of_states">
+<code class="sig-name descname">calculate_densities_of_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculate_densities_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the densities of states of each configuration that has states
 data. The densities of states are computed such that they can be
 applied to each temperature in the range of interest by interpolation.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.calculateEquilibriumRatios">
-<code class="descname">calculateEquilibriumRatios</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculateEquilibriumRatios" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.calculate_equilibrium_ratios">
+<code class="sig-name descname">calculate_equilibrium_ratios</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculate_equilibrium_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an array containing the fraction of each isomer and reactant
 channel present at equilibrium, as determined from the Gibbs free
 energy and using the concentration equilibrium constant
@@ -150,8 +148,8 @@ elements of the array so that they sum to unity.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.calculateMicrocanonicalRates">
-<code class="descname">calculateMicrocanonicalRates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculateMicrocanonicalRates" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.calculate_microcanonical_rates">
+<code class="sig-name descname">calculate_microcanonical_rates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculate_microcanonical_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return arrays containing the microcanonical rate
 coefficients <span class="math notranslate nohighlight">\(k(E)\)</span> for the isomerization, dissociation, and
 association path reactions in the network.</p>
@@ -159,35 +157,42 @@ association path reactions in the network.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.cleanup">
-<code class="descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.cleanup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.cleanup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete intermedate arrays used to compute k(T,P) values.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.exploreIsomer">
-<code class="descname">exploreIsomer</code><span class="sig-paren">(</span><em>isomer</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.exploreIsomer" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.explore_isomer">
+<code class="sig-name descname">explore_isomer</code><span class="sig-paren">(</span><em class="sig-param">isomer</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.explore_isomer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Explore a previously-unexplored unimolecular <cite>isomer</cite> in this partial
-network using the provided core-edge reaction model <cite>reactionModel</cite>,
+network using the provided core-edge reaction model <cite>reaction_model</cite>,
 returning the new reactions and new species.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.getAllSpecies">
-<code class="descname">getAllSpecies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.getAllSpecies" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_all_species">
+<code class="sig-name descname">get_all_species</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_all_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of all unique species in the network, including all
 isomers, reactant and product channels, and bath gas species.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.getLeakBranchingRatios">
-<code class="descname">getLeakBranchingRatios</code><span class="sig-paren">(</span><em>T</em>, <em>P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.getLeakBranchingRatios" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions">
+<code class="sig-name descname">get_energy_filtered_reactions</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of products and isomers that are greater in Free Energy
+than a*R*T + Gfsource(T)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_leak_branching_ratios">
+<code class="sig-name descname">get_leak_branching_ratios</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_leak_branching_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dict with the unexplored isomers in the partial network as the
 keys and the fraction of the total leak coefficient as the values.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.getLeakCoefficient">
-<code class="descname">getLeakCoefficient</code><span class="sig-paren">(</span><em>T</em>, <em>P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.getLeakCoefficient" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_leak_coefficient">
+<code class="sig-name descname">get_leak_coefficient</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_leak_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the pressure-dependent rate coefficient <span class="math notranslate nohighlight">\(k(T,P)\)</span> describing
 the total rate of “leak” from this network. This is defined as the sum
 of the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values for all net reactions to nonexplored
@@ -195,70 +200,42 @@ unimolecular isomers.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.getMaximumLeakSpecies">
-<code class="descname">getMaximumLeakSpecies</code><span class="sig-paren">(</span><em>T</em>, <em>P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.getMaximumLeakSpecies" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_maximum_leak_species">
+<code class="sig-name descname">get_maximum_leak_species</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_maximum_leak_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the unexplored (unimolecular) isomer with the maximum leak flux.
 Note that the leak rate coefficients vary with temperature and
 pressure, so you must provide these in order to get a meaningful result.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions">
-<code class="descname">get_energy_filtered_reactions</code><span class="sig-paren">(</span><em>T</em>, <em>tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of products and isomers that are greater in Free Energy
-than a*R*T + Gfsource(T)</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_products">
-<code class="descname">get_rate_filtered_products</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_products" title="Permalink to this definition">¶</a></dt>
-<dd><p>determines the set of pathReactions that have fluxes less than
+<code class="sig-name descname">get_rate_filtered_products</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em>, <em class="sig-param">tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_products" title="Permalink to this definition">¶</a></dt>
+<dd><p>determines the set of path_reactions that have fluxes less than
 tol at steady state where all A =&gt; B + C reactions are irreversible
 and there is a constant flux from/to the source configuration of 1.0</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.initialize">
-<code class="descname">initialize</code><span class="sig-paren">(</span><em>Tmin</em>, <em>Tmax</em>, <em>Pmin</em>, <em>Pmax</em>, <em>maximumGrainSize=0.0</em>, <em>minimumGrainCount=0</em>, <em>activeJRotor=True</em>, <em>activeKRotor=True</em>, <em>rmgmode=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param">Tmin</em>, <em class="sig-param">Tmax</em>, <em class="sig-param">Pmin</em>, <em class="sig-param">Pmax</em>, <em class="sig-param">maximum_grain_size=0.0</em>, <em class="sig-param">minimum_grain_count=0</em>, <em class="sig-param">active_j_rotor=True</em>, <em class="sig-param">active_k_rotor=True</em>, <em class="sig-param">rmgmode=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a pressure dependence calculation by computing several
 quantities that are independent of the conditions. You must specify
 the temperature and pressure ranges of interesting using <cite>Tmin</cite> and
 <cite>Tmax</cite> in K and <cite>Pmin</cite> and <cite>Pmax</cite> in Pa. You must also specify the
-maximum energy grain size <cite>grainSize</cite> in J/mol and/or the minimum
-number of grains <cite>grainCount</cite>.</p>
+maximum energy grain size <cite>grain_size</cite> in J/mol and/or the minimum
+number of grains <cite>grain_count</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.invalidate">
-<code class="descname">invalidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.invalidate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">invalidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.invalidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mark the network as in need of a new calculation to determine the
 pressure-dependent rate coefficients</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.label">
-<code class="descname">label</code><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.label" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the <cite>label</cite> for this network (analogous to reaction families as a reaction’s source)</p>
-</dd></dl>
-
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.mapDensitiesOfStates">
-<code class="descname">mapDensitiesOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.mapDensitiesOfStates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Map the overall densities of states to the current energy grains.
-Semi-logarithmic interpolation will be used if the grain sizes of
-<cite>Elist0</cite> and <cite>Elist</cite> do not match; this should not be a significant
-source of error as long as the grain sizes are sufficiently small.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.merge">
-<code class="descname">merge</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge the partial network <cite>other</cite> into this network.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.printSummary">
-<code class="descname">printSummary</code><span class="sig-paren">(</span><em>level=20</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.printSummary" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.log_summary">
+<code class="sig-name descname">log_summary</code><span class="sig-paren">(</span><em class="sig-param">level=20</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.log_summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a formatted list of information about the current network. Each
 molecular configuration - unimolecular isomers, bimolecular reactant
 channels, and bimolecular product channels - is given along with its
@@ -270,37 +247,52 @@ default.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.map_densities_of_states">
+<code class="sig-name descname">map_densities_of_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.map_densities_of_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map the overall densities of states to the current energy grains.
+Semi-logarithmic interpolation will be used if the grain sizes of
+<cite>Elist0</cite> and <cite>e_list</cite> do not match; this should not be a significant
+source of error as long as the grain sizes are sufficiently small.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.merge">
+<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param">other</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge the partial network <cite>other</cite> into this network.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.remove_disconnected_reactions">
-<code class="descname">remove_disconnected_reactions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_disconnected_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">remove_disconnected_reactions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_disconnected_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>gets rid of reactions/isomers/products not connected to the source by a reaction sequence</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.remove_reactions">
-<code class="descname">remove_reactions</code><span class="sig-paren">(</span><em>reactionModel</em>, <em>rxns=None</em>, <em>prods=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">remove_reactions</code><span class="sig-paren">(</span><em class="sig-param">reaction_model</em>, <em class="sig-param">rxns=None</em>, <em class="sig-param">prods=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>removes a list of reactions from the network and all reactions/products
 left disconnected by removing those reactions</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.selectEnergyGrains">
-<code class="descname">selectEnergyGrains</code><span class="sig-paren">(</span><em>T</em>, <em>grainSize=0.0</em>, <em>grainCount=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.selectEnergyGrains" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.select_energy_grains">
+<code class="sig-name descname">select_energy_grains</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">grain_size=0.0</em>, <em class="sig-param">grain_count=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.select_energy_grains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select a suitable list of energies to use for subsequent calculations.
 This is done by finding the minimum and maximum energies on the
 potential energy surface, then adding a multiple of
 <span class="math notranslate nohighlight">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
-<p>You must specify either the desired grain spacing <cite>grainSize</cite> in J/mol
-or the desired number of grains <cite>Ngrains</cite>, as well as a temperature
+<p>You must specify either the desired grain spacing <cite>grain_size</cite> in J/mol
+or the desired number of grains <cite>n_grains</cite>, as well as a temperature
 <cite>T</cite> in K to use for the equilibrium calculation. You can specify both
-<cite>grainSize</cite> and <cite>grainCount</cite>, in which case the one that gives the more
+<cite>grain_size</cite> and <cite>grain_count</cite>, in which case the one that gives the more
 accurate result will be used (i.e. they represent a maximum grain size
 and a minimum number of grains). An array containing the energy grains
 in J/mol is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.setConditions">
-<code class="descname">setConditions</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>ymB=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.setConditions" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.set_conditions">
+<code class="sig-name descname">set_conditions</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em>, <em class="sig-param">ymB=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.set_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the current network conditions to the temperature <cite>T</cite> in K and
 pressure <cite>P</cite> in Pa. All of the internal variables are updated
 accordingly if they are out of date. For example, those variables that
@@ -309,22 +301,22 @@ is the same.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.solveFullME">
-<code class="descname">solveFullME</code><span class="sig-paren">(</span><em>tlist</em>, <em>x0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solveFullME" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.solve_full_me">
+<code class="sig-name descname">solve_full_me</code><span class="sig-paren">(</span><em class="sig-param">tlist</em>, <em class="sig-param">x0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solve_full_me" title="Permalink to this definition">¶</a></dt>
 <dd><p>Directly solve the full master equation using a stiff ODE solver. Pass the
 reaction <cite>network</cite> to solve, the temperature <cite>T</cite> in K and pressure <cite>P</cite> in
-Pa to solve at, the energies <cite>Elist</cite> in J/mol to use, the output time
+Pa to solve at, the energies <cite>e_list</cite> in J/mol to use, the output time
 points <cite>tlist</cite> in s, the initial total populations <cite>x0</cite>, the full master
 equation matrix <cite>M</cite>, the accounting matrix <cite>indices</cite> relating isomer and
 energy grain indices to indices of the master equation matrix, and the
-densities of states <cite>densStates</cite> in mol/J of each isomer.
+densities of states <cite>dens_states</cite> in mol/J of each isomer.
 Returns the times in s, population distributions for each isomer, and total
 population profiles for each configuration.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.solveReducedME">
-<code class="descname">solveReducedME</code><span class="sig-paren">(</span><em>tlist</em>, <em>x0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solveReducedME" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.solve_reduced_me">
+<code class="sig-name descname">solve_reduced_me</code><span class="sig-paren">(</span><em class="sig-param">tlist</em>, <em class="sig-param">x0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solve_reduced_me" title="Permalink to this definition">¶</a></dt>
 <dd><p>Directly solve the reduced master equation using a stiff ODE solver.
 Pass the output time points <cite>tlist</cite> in s and the initial total
 populations <cite>x0</cite>. Be sure to run one of the methods for generating
@@ -334,8 +326,8 @@ population profiles for each configuration.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.solve_SS_network">
-<code class="descname">solve_SS_network</code><span class="sig-paren">(</span><em>T</em>, <em>P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solve_SS_network" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.solve_ss_network">
+<code class="sig-name descname">solve_ss_network</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solve_ss_network" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculates the steady state concentrations if all A =&gt; B + C
 reactions are irreversible and the flux from/to the source
 configuration is 1.0</p>
@@ -343,17 +335,17 @@ configuration is 1.0</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>reactionModel</em>, <em>pdepSettings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.update" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">reaction_model</em>, <em class="sig-param">pdep_settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regenerate the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values for this partial network if the
 network is marked as invalid.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.updateConfigurations">
-<code class="descname">updateConfigurations</code><span class="sig-paren">(</span><em>reactionModel</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.updateConfigurations" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.update_configurations">
+<code class="sig-name descname">update_configurations</code><span class="sig-paren">(</span><em class="sig-param">reaction_model</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.update_configurations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the reactants and products of each of the network’s path reactions
 into isomers, reactant channels, and product channels. You must pass
-the current <cite>reactionModel</cite> because some decisions on sorting are made
+the current <cite>reaction_model</cite> because some decisions on sorting are made
 based on which species are in the model core.</p>
 </dd></dl>
 
@@ -409,13 +401,11 @@ based on which species are in the model core.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -446,13 +436,13 @@ based on which species are in the model core.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Reaction mechanism generation (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction mechanism generation (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

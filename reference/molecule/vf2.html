@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.molecule.vf2.VF2 &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,12 +60,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.vf2.VF2<a class="headerlink" href="#rmgpy-molecule-vf2-vf2" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.vf2.VF2">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.vf2.</code><code class="descname">VF2</code><span class="sig-paren">(</span><em>graphA=None</em>, <em>graphB=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.vf2.</code><code class="sig-name descname">VF2</code><a class="headerlink" href="#rmgpy.molecule.vf2.VF2" title="Permalink to this definition">¶</a></dt>
 <dd><p>An implementation of the second version of the Vento-Foggia (VF2) algorithm
 for graph and subgraph isomorphism.</p>
-<dl class="method">
+<dl class="attribute">
 <dt id="rmgpy.molecule.vf2.VF2.feasible">
-<code class="descname">feasible</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex vertex1</em>, <em>Vertex vertex2</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.vf2.VF2.feasible" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">feasible</code><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.feasible" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if vertex <cite>vertex1</cite> from the first graph is a feasible
 match for vertex <cite>vertex2</cite> from the second graph, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.
 The semantic and structural relationship of the vertices is evaluated,
@@ -75,36 +73,36 @@ including several structural “look-aheads” that cheaply eliminate many
 otherwise feasible pairs.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.molecule.vf2.VF2.findIsomorphism">
-<code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph graph1</em>, <em>Graph graph2</em>, <em>dict initialMapping</em>, <em>bool saveOrder=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.vf2.VF2.findIsomorphism" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.molecule.vf2.VF2.find_isomorphism">
+<code class="sig-name descname">find_isomorphism</code><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.find_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of dicts of all valid isomorphism mappings from graph
 <cite>graph1</cite> to graph <cite>graph2</cite> with the optional initial mapping
-<cite>initialMapping</cite>. If no valid isomorphisms are found, an empty list is
+<cite>initial_mapping</cite>. If no valid isomorphisms are found, an empty list is
 returned.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.molecule.vf2.VF2.findSubgraphIsomorphisms">
-<code class="descname">findSubgraphIsomorphisms</code><span class="sig-paren">(</span><em>self</em>, <em>Graph graph1</em>, <em>Graph graph2</em>, <em>dict initialMapping</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.vf2.VF2.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.molecule.vf2.VF2.find_subgraph_isomorphisms">
+<code class="sig-name descname">find_subgraph_isomorphisms</code><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of dicts of all valid subgraph isomorphism mappings from
 graph <cite>graph1</cite> to subgraph <cite>graph2</cite> with the optional initial mapping
-<cite>initialMapping</cite>. If no valid subgraph isomorphisms are found, an empty
+<cite>initial_mapping</cite>. If no valid subgraph isomorphisms are found, an empty
 list is returned.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.molecule.vf2.VF2.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Graph graph1</em>, <em>Graph graph2</em>, <em>dict initialMapping</em>, <em>bool saveOrder=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.vf2.VF2.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.molecule.vf2.VF2.is_isomorphic">
+<code class="sig-name descname">is_isomorphic</code><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if graph <cite>graph1</cite> is isomorphic to graph <cite>graph2</cite> with
-the optional initial mapping <cite>initialMapping</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+the optional initial mapping <cite>initial_mapping</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.molecule.vf2.VF2.isSubgraphIsomorphic">
-<code class="descname">isSubgraphIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Graph graph1</em>, <em>Graph graph2</em>, <em>dict initialMapping</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.vf2.VF2.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.molecule.vf2.VF2.is_subgraph_isomorphic">
+<code class="sig-name descname">is_subgraph_isomorphic</code><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if graph <cite>graph1</cite> is subgraph isomorphic to subgraph
-<cite>graph2</cite> with the optional initial mapping <cite>initialMapping</cite>, or
+<cite>graph2</cite> with the optional initial mapping <cite>initial_mapping</cite>, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
@@ -160,13 +158,11 @@ the optional initial mapping <cite>initialMapping</cite>, or <code class="docuti
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -197,13 +193,13 @@ the optional initial mapping <cite>initialMapping</cite>, or <code class="docuti
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>14. Kinetics Estimation &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -67,61 +65,61 @@ kinetic parameters. For general usage of the kinetic database see <a class="refe
 <p>When multiple sources are available for kinetic parameters, the following priority
 is followed:</p>
 <ol class="arabic simple">
-<li>Seed mechanisms (based on listed order in input.py)</li>
-<li>Reaction libraries (based on listed order in input.py)</li>
-<li>Matched training set reactions</li>
-<li>Exact template matches from rules or matched training groups (based on rank)</li>
-<li>Estimated averaged rules</li>
+<li><p>Seed mechanisms (based on listed order in input.py)</p></li>
+<li><p>Reaction libraries (based on listed order in input.py)</p></li>
+<li><p>Matched training set reactions</p></li>
+<li><p>Exact template matches from rules or matched training groups (based on rank)</p></li>
+<li><p>Estimated averaged rules</p></li>
 </ol>
 <p>In the case where multiple rules or training set reactions fall under the same
 template node, we use a user-defined rank to determine the priority of kinetic
 parameters</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="8%" />
-<col width="92%" />
+<col style="width: 8%" />
+<col style="width: 92%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Rank</th>
-<th class="head">Example methods</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Rank</p></th>
+<th class="head"><p>Example methods</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>Rank 1</td>
-<td>Experiment/FCI</td>
+<tbody>
+<tr class="row-even"><td><p>Rank 1</p></td>
+<td><p>Experiment/FCI</p></td>
 </tr>
-<tr class="row-odd"><td>Rank 2</td>
-<td>W4/HEAT with very good (2-d if necessary) rotors</td>
+<tr class="row-odd"><td><p>Rank 2</p></td>
+<td><p>W4/HEAT with very good (2-d if necessary) rotors</p></td>
 </tr>
-<tr class="row-even"><td>Rank 3</td>
-<td>CCSD(T)-F12/cc-PVnZ with n&gt;2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors</td>
+<tr class="row-even"><td><p>Rank 3</p></td>
+<td><p>CCSD(T)-F12/cc-PVnZ with n&gt;2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors</p></td>
 </tr>
-<tr class="row-odd"><td>Rank 4</td>
-<td>CCSD(T)-F12/DZ, with good (2-d if necessary) rotors</td>
+<tr class="row-odd"><td><p>Rank 4</p></td>
+<td><p>CCSD(T)-F12/DZ, with good (2-d if necessary) rotors</p></td>
 </tr>
-<tr class="row-even"><td>Rank 5</td>
-<td>CBS-QB3 with 1-d rotors</td>
+<tr class="row-even"><td><p>Rank 5</p></td>
+<td><p>CBS-QB3 with 1-d rotors</p></td>
 </tr>
-<tr class="row-odd"><td>Rank 6</td>
-<td>Double-hybrid DFT with 1-D rotors</td>
+<tr class="row-odd"><td><p>Rank 6</p></td>
+<td><p>Double-hybrid DFT with 1-D rotors</p></td>
 </tr>
-<tr class="row-even"><td>Rank 7</td>
-<td>Hybrid DFT (w/ dispersion) (rotors if necessary)</td>
+<tr class="row-even"><td><p>Rank 7</p></td>
+<td><p>Hybrid DFT (w/ dispersion) (rotors if necessary)</p></td>
 </tr>
-<tr class="row-odd"><td>Rank 8</td>
-<td>B3LYP &amp; lower DFT (rotors if necessary)</td>
+<tr class="row-odd"><td><p>Rank 8</p></td>
+<td><p>B3LYP &amp; lower DFT (rotors if necessary)</p></td>
 </tr>
-<tr class="row-even"><td>Rank 9</td>
-<td>Group Additivity</td>
+<tr class="row-even"><td><p>Rank 9</p></td>
+<td><p>Group Additivity</p></td>
 </tr>
-<tr class="row-odd"><td>Rank 10</td>
-<td>Direct Estimate/Guess</td>
+<tr class="row-odd"><td><p>Rank 10</p></td>
+<td><p>Direct Estimate/Guess</p></td>
 </tr>
-<tr class="row-even"><td>Rank 11</td>
-<td>Average of Rates</td>
+<tr class="row-even"><td><p>Rank 11</p></td>
+<td><p>Average of Rates</p></td>
 </tr>
-<tr class="row-odd"><td>Rank 0</td>
-<td>General Estimate (Never used in generation)</td>
+<tr class="row-odd"><td><p>Rank 0</p></td>
+<td><p>General Estimate (Never used in generation)</p></td>
 </tr>
 </tbody>
 </table>
@@ -230,13 +228,11 @@ up to more and more general nodes. In the worst case, the root nodes may be used
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -273,7 +269,7 @@ up to more and more general nodes. In the worst case, the root nodes may be used
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

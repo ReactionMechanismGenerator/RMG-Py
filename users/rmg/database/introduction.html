@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>12.1. Introduction &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -74,373 +72,373 @@ be lacking full valency. When this occurs, the omitted bonds are allowed to be
 anything. An example of a primary carbon group from H-Abstraction is shown below.
 The adjacency list defined on the left matches any of the three drawn structures
 on the right (the numbers correspond to the index from the adjacency list).</p>
-<a class="reference internal image-reference" href="../../../_images/Group.png"><img alt="../../../_images/Group.png" class="align-center" src="../../../_images/Group.png" style="width: 613.2px; height: 301.0px;" /></a>
+<a class="reference internal image-reference" href="../../../_images/Group.png"><img alt="../../../_images/Group.png" class="align-center" src="../../../_images/Group.png" style="width: 613.1999999999999px; height: 301.0px;" /></a>
 <p><strong>Atom types</strong> describe atoms in group definitions. The
 table below shows all atoms types in RMG.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="7%" />
-<col width="13%" />
-<col width="80%" />
+<col style="width: 7%" />
+<col style="width: 13%" />
+<col style="width: 80%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Atom Type</th>
-<th class="head">Chemical Element</th>
-<th class="head">Localized electronic structure</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Atom Type</p></th>
+<th class="head"><p>Chemical Element</p></th>
+<th class="head"><p>Localized electronic structure</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>R</td>
-<td>Any</td>
-<td>No requirements</td>
-</tr>
-<tr class="row-odd"><td>R!H</td>
-<td>Any except hydrogen</td>
-<td>No requirements</td>
-</tr>
-<tr class="row-even"><td>H</td>
-<td>Hydrogen</td>
-<td>No requirements</td>
-</tr>
-<tr class="row-odd"><td>C</td>
-<td>Carbon</td>
-<td>No requirements</td>
-</tr>
-<tr class="row-even"><td>Ca</td>
-<td>Carbon</td>
-<td>Atomic carbon with two lone pairs and no bonds</td>
-</tr>
-<tr class="row-odd"><td>Cs</td>
-<td>Carbon</td>
-<td>Up to four single bonds</td>
-</tr>
-<tr class="row-even"><td>Csc</td>
-<td>Carbon</td>
-<td>Up to three single bonds, charged +1</td>
-</tr>
-<tr class="row-odd"><td>Cd</td>
-<td>Carbon</td>
-<td>One double bond (to any atom other than O or S), up to two single bonds</td>
-</tr>
-<tr class="row-even"><td>Cdc</td>
-<td>Carbon</td>
-<td>One double bond, up to one single bond, charged +1</td>
-</tr>
-<tr class="row-odd"><td>CO</td>
-<td>Carbon</td>
-<td>One double bond to an oxygen atom, up to two single bonds</td>
-</tr>
-<tr class="row-even"><td>CS</td>
-<td>Carbon</td>
-<td>One double bond to an sulfur atom, up to two single bonds</td>
-</tr>
-<tr class="row-odd"><td>Cdd</td>
-<td>Carbon</td>
-<td>Two double bonds</td>
-</tr>
-<tr class="row-even"><td>Ct</td>
-<td>Carbon</td>
-<td>One triple bond, up to one single bond</td>
-</tr>
-<tr class="row-odd"><td>Cb</td>
-<td>Carbon</td>
-<td>Two benzene bonds, up tp one single bond</td>
-</tr>
-<tr class="row-even"><td>Cbf</td>
-<td>Carbon</td>
-<td>Three benzene bonds (fused aromatics)</td>
-</tr>
-<tr class="row-odd"><td>C2s</td>
-<td>Carbon</td>
-<td>One lone pair, up to two single bonds</td>
-</tr>
-<tr class="row-even"><td>C2sc</td>
-<td>Carbon</td>
-<td>One lone pair, up to three single bonds, charged -1</td>
-</tr>
-<tr class="row-odd"><td>C2d</td>
-<td>Carbon</td>
-<td>One lone pair, one double bond</td>
-</tr>
-<tr class="row-even"><td>C2dc</td>
-<td>Carbon</td>
-<td>One lone pair, one double bond, up to one single bond, charge -1</td>
-</tr>
-<tr class="row-odd"><td>C2tc</td>
-<td>Carbon</td>
-<td>One lone pair, one triple bond, charged -1</td>
-</tr>
-<tr class="row-even"><td>N</td>
-<td>Nitrogen</td>
-<td>No requirements</td>
-</tr>
-<tr class="row-odd"><td>N0sc</td>
-<td>Nitrogen</td>
-<td>Three lone pairs, up to one single bond, charged -2</td>
-</tr>
-<tr class="row-even"><td>N1s</td>
-<td>Nitrogen</td>
-<td>Two lone pairs, up to one single bond</td>
-</tr>
-<tr class="row-odd"><td>N1sc</td>
-<td>Nitrogen</td>
-<td>Two lone pairs, up to two single bonds, charged -1</td>
-</tr>
-<tr class="row-even"><td>N1dc</td>
-<td>Nitrogen</td>
-<td>Two lone pairs, one double bond, charged -1</td>
-</tr>
-<tr class="row-odd"><td>N3s</td>
-<td>Nitrogen</td>
-<td>One lone pair, up to three single bonds</td>
+<tbody>
+<tr class="row-even"><td><p>R</p></td>
+<td><p>Any</p></td>
+<td><p>No requirements</p></td>
+</tr>
+<tr class="row-odd"><td><p>R!H</p></td>
+<td><p>Any except hydrogen</p></td>
+<td><p>No requirements</p></td>
+</tr>
+<tr class="row-even"><td><p>H</p></td>
+<td><p>Hydrogen</p></td>
+<td><p>No requirements</p></td>
+</tr>
+<tr class="row-odd"><td><p>C</p></td>
+<td><p>Carbon</p></td>
+<td><p>No requirements</p></td>
+</tr>
+<tr class="row-even"><td><p>Ca</p></td>
+<td><p>Carbon</p></td>
+<td><p>Atomic carbon with two lone pairs and no bonds</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cs</p></td>
+<td><p>Carbon</p></td>
+<td><p>Up to four single bonds</p></td>
+</tr>
+<tr class="row-even"><td><p>Csc</p></td>
+<td><p>Carbon</p></td>
+<td><p>Up to three single bonds, charged +1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cd</p></td>
+<td><p>Carbon</p></td>
+<td><p>One double bond (to any atom other than O or S), up to two single bonds</p></td>
+</tr>
+<tr class="row-even"><td><p>Cdc</p></td>
+<td><p>Carbon</p></td>
+<td><p>One double bond, up to one single bond, charged +1</p></td>
+</tr>
+<tr class="row-odd"><td><p>CO</p></td>
+<td><p>Carbon</p></td>
+<td><p>One double bond to an oxygen atom, up to two single bonds</p></td>
+</tr>
+<tr class="row-even"><td><p>CS</p></td>
+<td><p>Carbon</p></td>
+<td><p>One double bond to an sulfur atom, up to two single bonds</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cdd</p></td>
+<td><p>Carbon</p></td>
+<td><p>Two double bonds</p></td>
+</tr>
+<tr class="row-even"><td><p>Ct</p></td>
+<td><p>Carbon</p></td>
+<td><p>One triple bond, up to one single bond</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cb</p></td>
+<td><p>Carbon</p></td>
+<td><p>Two benzene bonds, up tp one single bond</p></td>
+</tr>
+<tr class="row-even"><td><p>Cbf</p></td>
+<td><p>Carbon</p></td>
+<td><p>Three benzene bonds (fused aromatics)</p></td>
+</tr>
+<tr class="row-odd"><td><p>C2s</p></td>
+<td><p>Carbon</p></td>
+<td><p>One lone pair, up to two single bonds</p></td>
+</tr>
+<tr class="row-even"><td><p>C2sc</p></td>
+<td><p>Carbon</p></td>
+<td><p>One lone pair, up to three single bonds, charged -1</p></td>
+</tr>
+<tr class="row-odd"><td><p>C2d</p></td>
+<td><p>Carbon</p></td>
+<td><p>One lone pair, one double bond</p></td>
+</tr>
+<tr class="row-even"><td><p>C2dc</p></td>
+<td><p>Carbon</p></td>
+<td><p>One lone pair, one double bond, up to one single bond, charge -1</p></td>
+</tr>
+<tr class="row-odd"><td><p>C2tc</p></td>
+<td><p>Carbon</p></td>
+<td><p>One lone pair, one triple bond, charged -1</p></td>
+</tr>
+<tr class="row-even"><td><p>N</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No requirements</p></td>
+</tr>
+<tr class="row-odd"><td><p>N0sc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>Three lone pairs, up to one single bond, charged -2</p></td>
+</tr>
+<tr class="row-even"><td><p>N1s</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>Two lone pairs, up to one single bond</p></td>
+</tr>
+<tr class="row-odd"><td><p>N1sc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>Two lone pairs, up to two single bonds, charged -1</p></td>
+</tr>
+<tr class="row-even"><td><p>N1dc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>Two lone pairs, one double bond, charged -1</p></td>
+</tr>
+<tr class="row-odd"><td><p>N3s</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>One lone pair, up to three single bonds</p></td>
 </tr>
-<tr class="row-even"><td>N3d</td>
-<td>Nitrogen</td>
-<td>One lone pair, one double bond, up to one single bond</td>
+<tr class="row-even"><td><p>N3d</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>One lone pair, one double bond, up to one single bond</p></td>
 </tr>
-<tr class="row-odd"><td>N3t</td>
-<td>Nitrogen</td>
-<td>One lone pair, one triple bond</td>
+<tr class="row-odd"><td><p>N3t</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>One lone pair, one triple bond</p></td>
 </tr>
-<tr class="row-even"><td>N3b</td>
-<td>Nitrogen</td>
-<td>One lone pair, two aromatic bonds</td>
+<tr class="row-even"><td><p>N3b</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>One lone pair, two aromatic bonds</p></td>
 </tr>
-<tr class="row-odd"><td>N5sc</td>
-<td>Nitrogen</td>
-<td>No lone pairs, up to four single bonds, charged +1</td>
+<tr class="row-odd"><td><p>N5sc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No lone pairs, up to four single bonds, charged +1</p></td>
 </tr>
-<tr class="row-even"><td>N5dc</td>
-<td>Nitrogen</td>
-<td>No lone pairs, one double bond, up to two single bonds, charged +1</td>
+<tr class="row-even"><td><p>N5dc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No lone pairs, one double bond, up to two single bonds, charged +1</p></td>
 </tr>
-<tr class="row-odd"><td>N5ddc</td>
-<td>Nitrogen</td>
-<td>No lone pairs, two double bonds, charged +1</td>
+<tr class="row-odd"><td><p>N5ddc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No lone pairs, two double bonds, charged +1</p></td>
 </tr>
-<tr class="row-even"><td>N5dddc</td>
-<td>Nitrogen</td>
-<td>No lone pairs, three double bonds, charged -1</td>
+<tr class="row-even"><td><p>N5dddc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No lone pairs, three double bonds, charged -1</p></td>
 </tr>
-<tr class="row-odd"><td>N5tc</td>
-<td>Nitrogen</td>
-<td>No lone pairs, one triple bond, up to one single bond, charged +1</td>
+<tr class="row-odd"><td><p>N5tc</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No lone pairs, one triple bond, up to one single bond, charged +1</p></td>
 </tr>
-<tr class="row-even"><td>N5b</td>
-<td>Nitrogen</td>
-<td>No lone pairs, two aromatic bonds, up to one single bond</td>
+<tr class="row-even"><td><p>N5b</p></td>
+<td><p>Nitrogen</p></td>
+<td><p>No lone pairs, two aromatic bonds, up to one single bond</p></td>
 </tr>
-<tr class="row-odd"><td>O</td>
-<td>Oxygen</td>
-<td>No requirements</td>
+<tr class="row-odd"><td><p>O</p></td>
+<td><p>Oxygen</p></td>
+<td><p>No requirements</p></td>
 </tr>
-<tr class="row-even"><td>Oa</td>
-<td>Oxygen</td>
-<td>Atomic oxygen with three lone pairs and no bonds</td>
+<tr class="row-even"><td><p>Oa</p></td>
+<td><p>Oxygen</p></td>
+<td><p>Atomic oxygen with three lone pairs and no bonds</p></td>
 </tr>
-<tr class="row-odd"><td>O0sc</td>
-<td>Oxygen</td>
-<td>Three lone pairs, up to one single bond, charged -1</td>
+<tr class="row-odd"><td><p>O0sc</p></td>
+<td><p>Oxygen</p></td>
+<td><p>Three lone pairs, up to one single bond, charged -1</p></td>
 </tr>
-<tr class="row-even"><td>O0dc</td>
-<td>Oxygen</td>
-<td>Three lone pairs, one double bond, charged -2</td>
+<tr class="row-even"><td><p>O0dc</p></td>
+<td><p>Oxygen</p></td>
+<td><p>Three lone pairs, one double bond, charged -2</p></td>
 </tr>
-<tr class="row-odd"><td>O2s</td>
-<td>Oxygen</td>
-<td>Two lone pairs, up to two single bonds</td>
+<tr class="row-odd"><td><p>O2s</p></td>
+<td><p>Oxygen</p></td>
+<td><p>Two lone pairs, up to two single bonds</p></td>
 </tr>
-<tr class="row-even"><td>O2sc</td>
-<td>Oxygen</td>
-<td>Two lone pairs, up to one single bond, charged +1</td>
+<tr class="row-even"><td><p>O2sc</p></td>
+<td><p>Oxygen</p></td>
+<td><p>Two lone pairs, up to one single bond, charged +1</p></td>
 </tr>
-<tr class="row-odd"><td>O2d</td>
-<td>Oxygen</td>
-<td>Two lone pairs, one double bond</td>
+<tr class="row-odd"><td><p>O2d</p></td>
+<td><p>Oxygen</p></td>
+<td><p>Two lone pairs, one double bond</p></td>
 </tr>
-<tr class="row-even"><td>O4sc</td>
-<td>Oxygen</td>
-<td>One lone pair, up to three single bonds, charged +1</td>
+<tr class="row-even"><td><p>O4sc</p></td>
+<td><p>Oxygen</p></td>
+<td><p>One lone pair, up to three single bonds, charged +1</p></td>
 </tr>
-<tr class="row-odd"><td>O4dc</td>
-<td>Oxygen</td>
-<td>One lone pair, one double bond, up to one single bond, charged +1</td>
+<tr class="row-odd"><td><p>O4dc</p></td>
+<td><p>Oxygen</p></td>
+<td><p>One lone pair, one double bond, up to one single bond, charged +1</p></td>
 </tr>
-<tr class="row-even"><td>O4tc</td>
-<td>Oxygen</td>
-<td>One lone pair, one triple bond, charged +1</td>
+<tr class="row-even"><td><p>O4tc</p></td>
+<td><p>Oxygen</p></td>
+<td><p>One lone pair, one triple bond, charged +1</p></td>
 </tr>
-<tr class="row-odd"><td>Si</td>
-<td>Silicon</td>
-<td>No requirements</td>
+<tr class="row-odd"><td><p>Si</p></td>
+<td><p>Silicon</p></td>
+<td><p>No requirements</p></td>
 </tr>
-<tr class="row-even"><td>Sis</td>
-<td>Silicon</td>
-<td>Up to four single bonds</td>
+<tr class="row-even"><td><p>Sis</p></td>
+<td><p>Silicon</p></td>
+<td><p>Up to four single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>Sid</td>
-<td>Silicon</td>
-<td>One double bond (not to O), up to two single bonds</td>
+<tr class="row-odd"><td><p>Sid</p></td>
+<td><p>Silicon</p></td>
+<td><p>One double bond (not to O), up to two single bonds</p></td>
 </tr>
-<tr class="row-even"><td>SiO</td>
-<td>Silicon</td>
-<td>One double bond to an oxygen atom, up to two single bonds</td>
+<tr class="row-even"><td><p>SiO</p></td>
+<td><p>Silicon</p></td>
+<td><p>One double bond to an oxygen atom, up to two single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>Sidd</td>
-<td>Silicon</td>
-<td>Two double bonds</td>
+<tr class="row-odd"><td><p>Sidd</p></td>
+<td><p>Silicon</p></td>
+<td><p>Two double bonds</p></td>
 </tr>
-<tr class="row-even"><td>Sit</td>
-<td>Silicon</td>
-<td>One triple bond, up to one single bond</td>
+<tr class="row-even"><td><p>Sit</p></td>
+<td><p>Silicon</p></td>
+<td><p>One triple bond, up to one single bond</p></td>
 </tr>
-<tr class="row-odd"><td>Sib</td>
-<td>Silicon</td>
-<td>Two benzene bonds, up tp one single bond</td>
+<tr class="row-odd"><td><p>Sib</p></td>
+<td><p>Silicon</p></td>
+<td><p>Two benzene bonds, up tp one single bond</p></td>
 </tr>
-<tr class="row-even"><td>Sibf</td>
-<td>Silicon</td>
-<td>Three benzene bonds (fused aromatics)</td>
+<tr class="row-even"><td><p>Sibf</p></td>
+<td><p>Silicon</p></td>
+<td><p>Three benzene bonds (fused aromatics)</p></td>
 </tr>
-<tr class="row-odd"><td>S</td>
-<td>Sulfur</td>
-<td>No requirements</td>
+<tr class="row-odd"><td><p>S</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No requirements</p></td>
 </tr>
-<tr class="row-even"><td>Sa</td>
-<td>Sulfur</td>
-<td>Atomic sulfur with three lone pairs and no bonds</td>
+<tr class="row-even"><td><p>Sa</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Atomic sulfur with three lone pairs and no bonds</p></td>
 </tr>
-<tr class="row-odd"><td>S0sc</td>
-<td>Sulfur</td>
-<td>Three lone pairs, up to once single bond, charged -1</td>
+<tr class="row-odd"><td><p>S0sc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Three lone pairs, up to once single bond, charged -1</p></td>
 </tr>
-<tr class="row-even"><td>S2s</td>
-<td>Sulfur</td>
-<td>Two lone pairs, up to two single bonds</td>
+<tr class="row-even"><td><p>S2s</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Two lone pairs, up to two single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>S2sc</td>
-<td>Sulfur</td>
-<td>Two lone pairs, up to three single bonds, charged -1/+1</td>
+<tr class="row-odd"><td><p>S2sc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Two lone pairs, up to three single bonds, charged -1/+1</p></td>
 </tr>
-<tr class="row-even"><td>S2d</td>
-<td>Sulfur</td>
-<td>Two lone pairs, one double bond</td>
+<tr class="row-even"><td><p>S2d</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Two lone pairs, one double bond</p></td>
 </tr>
-<tr class="row-odd"><td>S2dc</td>
-<td>Sulfur</td>
-<td>Two lone pairs, one to two double bonds, up to one single bond, charged -1</td>
+<tr class="row-odd"><td><p>S2dc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Two lone pairs, one to two double bonds, up to one single bond, charged -1</p></td>
 </tr>
-<tr class="row-even"><td>S2tc</td>
-<td>Sulfur</td>
-<td>Two lone pairs, one triple bond, charged -1</td>
+<tr class="row-even"><td><p>S2tc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>Two lone pairs, one triple bond, charged -1</p></td>
 </tr>
-<tr class="row-odd"><td>S4s</td>
-<td>Sulfur</td>
-<td>One lone pair, up to four single bonds</td>
+<tr class="row-odd"><td><p>S4s</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, up to four single bonds</p></td>
 </tr>
-<tr class="row-even"><td>S4sc</td>
-<td>Sulfur</td>
-<td>One lone pair, up to five single bonds, charged -1/+1</td>
+<tr class="row-even"><td><p>S4sc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, up to five single bonds, charged -1/+1</p></td>
 </tr>
-<tr class="row-odd"><td>S4d</td>
-<td>Sulfur</td>
-<td>One lone pair, one double bond, up to two single bonds</td>
+<tr class="row-odd"><td><p>S4d</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, one double bond, up to two single bonds</p></td>
 </tr>
-<tr class="row-even"><td>S4dd</td>
-<td>Sulfur</td>
-<td>One lone pair, two double bonds</td>
+<tr class="row-even"><td><p>S4dd</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, two double bonds</p></td>
 </tr>
-<tr class="row-odd"><td>S4dc</td>
-<td>Sulfur</td>
-<td>One lone pair, one to three double bonds, up to three single bonds, charged -1/+1</td>
+<tr class="row-odd"><td><p>S4dc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, one to three double bonds, up to three single bonds, charged -1/+1</p></td>
 </tr>
-<tr class="row-even"><td>S4b</td>
-<td>Sulfur</td>
-<td>One lone pair, two aromatic bonds</td>
+<tr class="row-even"><td><p>S4b</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, two aromatic bonds</p></td>
 </tr>
-<tr class="row-odd"><td>S4t</td>
-<td>Sulfur</td>
-<td>One lone pair, one triple bond, up to one single bond</td>
+<tr class="row-odd"><td><p>S4t</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, one triple bond, up to one single bond</p></td>
 </tr>
-<tr class="row-even"><td>S4tdc</td>
-<td>Sulfur</td>
-<td>One lone pair, one to two triple bonds, up to two double bonds, up to two single bonds, charged -1/+1</td>
+<tr class="row-even"><td><p>S4tdc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>One lone pair, one to two triple bonds, up to two double bonds, up to two single bonds, charged -1/+1</p></td>
 </tr>
-<tr class="row-odd"><td>S6s</td>
-<td>Sulfur</td>
-<td>No lone pairs, up to six single bonds</td>
+<tr class="row-odd"><td><p>S6s</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, up to six single bonds</p></td>
 </tr>
-<tr class="row-even"><td>S6sc</td>
-<td>Sulfur</td>
-<td>No lone pairs, up to seven single bonds, charged -1/+1/+2</td>
+<tr class="row-even"><td><p>S6sc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, up to seven single bonds, charged -1/+1/+2</p></td>
 </tr>
-<tr class="row-odd"><td>S6d</td>
-<td>Sulfur</td>
-<td>No lone pairs, one double bond, up to four single bonds</td>
+<tr class="row-odd"><td><p>S6d</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, one double bond, up to four single bonds</p></td>
 </tr>
-<tr class="row-even"><td>S6dd</td>
-<td>Sulfur</td>
-<td>No lone pairs, two double bonds, up to two single bonds</td>
+<tr class="row-even"><td><p>S6dd</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, two double bonds, up to two single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>S6ddd</td>
-<td>Sulfur</td>
-<td>No lone pairs, up to three double bonds</td>
+<tr class="row-odd"><td><p>S6ddd</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, up to three double bonds</p></td>
 </tr>
-<tr class="row-even"><td>S6dc</td>
-<td>Sulfur</td>
-<td>No lone pairs, one to three double bonds, up to five single bonds, charged -1/-1/+2</td>
+<tr class="row-even"><td><p>S6dc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, one to three double bonds, up to five single bonds, charged -1/-1/+2</p></td>
 </tr>
-<tr class="row-odd"><td>S6t</td>
-<td>Sulfur</td>
-<td>No lone pairs, one triple bond, up to three single bonds</td>
+<tr class="row-odd"><td><p>S6t</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, one triple bond, up to three single bonds</p></td>
 </tr>
-<tr class="row-even"><td>S6td</td>
-<td>Sulfur</td>
-<td>No lone pairs, one triple bond, one double bond, up to one single bond</td>
+<tr class="row-even"><td><p>S6td</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, one triple bond, one double bond, up to one single bond</p></td>
 </tr>
-<tr class="row-odd"><td>S6tt</td>
-<td>Sulfur</td>
-<td>No lone pairs, two triple bonds</td>
+<tr class="row-odd"><td><p>S6tt</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, two triple bonds</p></td>
 </tr>
-<tr class="row-even"><td>S6tdc</td>
-<td>Sulfur</td>
-<td>No lone pairs, one to two triple bonds, up to two double bonds, up to four single bonds, charged -1/-1</td>
+<tr class="row-even"><td><p>S6tdc</p></td>
+<td><p>Sulfur</p></td>
+<td><p>No lone pairs, one to two triple bonds, up to two double bonds, up to four single bonds, charged -1/-1</p></td>
 </tr>
-<tr class="row-odd"><td>Cl</td>
-<td>Chlorine</td>
-<td>No requirements</td>
+<tr class="row-odd"><td><p>Cl</p></td>
+<td><p>Chlorine</p></td>
+<td><p>No requirements</p></td>
 </tr>
-<tr class="row-even"><td>Cl1s</td>
-<td>Chlorine</td>
-<td>Three lone pairs, zero to one single bonds</td>
+<tr class="row-even"><td><p>Cl1s</p></td>
+<td><p>Chlorine</p></td>
+<td><p>Three lone pairs, zero to one single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>I</td>
-<td>Iodine</td>
-<td>No requirements</td>
+<tr class="row-odd"><td><p>I</p></td>
+<td><p>Iodine</p></td>
+<td><p>No requirements</p></td>
 </tr>
-<tr class="row-even"><td>I1s</td>
-<td>Iodine</td>
-<td>Three lone pairs, zero to one single bonds</td>
+<tr class="row-even"><td><p>I1s</p></td>
+<td><p>Iodine</p></td>
+<td><p>Three lone pairs, zero to one single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>F</td>
-<td>Fluorine</td>
-<td>No requirements</td>
+<tr class="row-odd"><td><p>F</p></td>
+<td><p>Fluorine</p></td>
+<td><p>No requirements</p></td>
 </tr>
-<tr class="row-even"><td>F1s</td>
-<td>Fluorine</td>
-<td>Three lone pairs, zero to one single bonds</td>
+<tr class="row-even"><td><p>F1s</p></td>
+<td><p>Fluorine</p></td>
+<td><p>Three lone pairs, zero to one single bonds</p></td>
 </tr>
-<tr class="row-odd"><td>He</td>
-<td>Helium</td>
-<td>No requirements, nonreactive</td>
+<tr class="row-odd"><td><p>He</p></td>
+<td><p>Helium</p></td>
+<td><p>No requirements, nonreactive</p></td>
 </tr>
-<tr class="row-even"><td>Ne</td>
-<td>Neon</td>
-<td>No requirements, nonreactive</td>
+<tr class="row-even"><td><p>Ne</p></td>
+<td><p>Neon</p></td>
+<td><p>No requirements, nonreactive</p></td>
 </tr>
-<tr class="row-odd"><td>Ar</td>
-<td>Argon</td>
-<td>No requirements, nonreactive</td>
+<tr class="row-odd"><td><p>Ar</p></td>
+<td><p>Argon</p></td>
+<td><p>No requirements, nonreactive</p></td>
 </tr>
 </tbody>
 </table>
@@ -596,13 +594,11 @@ Templates can be filled in with kinetic parameters from the training set or rule
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -640,7 +636,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

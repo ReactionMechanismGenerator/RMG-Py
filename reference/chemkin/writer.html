@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Writing Chemkin files &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,99 +60,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Writing Chemkin files<a class="headerlink" href="#writing-chemkin-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="main-functions">
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.chemkin.saveChemkinFile">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em>, <em>checkForDuplicates=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
-of <cite>species</cite> and <cite>reactions</cite>.
-If checkForDuplicates is False then we don’t check for unlabeled duplicate reactions,
-thus saving time (eg. if you are sure you’ve already labeled them as duplicate).</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.saveSpeciesDictionary">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveSpeciesDictionary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>oldStyle=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveSpeciesDictionary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the given list of <cite>species</cite> as adjacency lists in a text file <cite>path</cite>
-on disk.</p>
-<p>If <cite>oldStyle==True</cite> then it saves it in the old RMG-Java syntax.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.saveTransportFile">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveTransportFile</code><span class="sig-paren">(</span><em>path</em>, <em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveTransportFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Chemkin transport properties file to <cite>path</cite> on disk containing the
-transport properties of the given list of <cite>species</cite>.</p>
-<p>The syntax is from the Chemkin TRANSPORT manual.
-The first 16 columns in each line of the database are reserved for the species name
-(Presently CHEMKIN is programmed to allow no more than 16-character names.)
-Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:</p>
-<ol class="arabic simple">
-<li>An index indicating whether the molecule has a monatomic, linear or nonlinear geometrical configuration.
-If the index is 0, the molecule is a single atom.
-If the index is 1 the molecule is linear, and
-if it is 2, the molecule is nonlinear.</li>
-<li>The Lennard-Jones potential well depth  <span class="math notranslate nohighlight">\(\epsilon / k_B\)</span> in Kelvins.</li>
-<li>The Lennard-Jones collision diameter <span class="math notranslate nohighlight">\(\sigma\)</span> in Angstroms.</li>
-<li>The dipole moment <span class="math notranslate nohighlight">\(\mu\)</span> in Debye. Note: a Debye is <span class="math notranslate nohighlight">\(10^{-18} cm^{3/2}erg^{1/2}\)</span>.</li>
-<li>The polarizability <span class="math notranslate nohighlight">\(\alpha\)</span> in cubic Angstroms.</li>
-<li>The rotational relaxation collision number <span class="math notranslate nohighlight">\(Z_rot\)</span> at 298K.</li>
-<li>After the last number, a comment field can be enclosed in parenthesis.</li>
-</ol>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.saveHTMLFile">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveHTMLFile</code><span class="sig-paren">(</span><em>path</em>, <em>readComments=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveHTMLFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save an output HTML file from the contents of a RMG-Java output folder</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.saveJavaKineticsLibrary">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveJavaKineticsLibrary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveJavaKineticsLibrary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
-and reactions.txt given a list of reactions, with species.txt containing the
-RMG-Java formatted dictionary.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.chemkin.getSpeciesIdentifier">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">getSpeciesIdentifier</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.getSpeciesIdentifier" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string identifier for the provided <cite>species</cite> that can be used in a
-Chemkin file. Although the Chemkin format allows up to 16 characters for a
-species identifier, this function uses a maximum of 10 to ensure that all
-reaction equations fit in the maximum limit of 52 characters.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.writeKineticsEntry">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">writeKineticsEntry</code><span class="sig-paren">(</span><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em>, <em>commented=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string representation of the reaction as used in a Chemkin
-file. Use <cite>verbose = True</cite> to turn on kinetics comments.
-Use <cite>commented = True</cite> to comment out the entire reaction.
-Use javaLibrary = True in order to generate a kinetics entry suitable
-for an RMG-Java kinetics library.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.writeThermoEntry">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">writeThermoEntry</code><span class="sig-paren">(</span><em>species</em>, <em>elementCounts=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.writeThermoEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string representation of the NASA model readable by Chemkin.
-To use this method you must have exactly two NASA polynomials in your
-model, and you must use the seven-coefficient forms for each.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.markDuplicateReactions">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">markDuplicateReactions</code><span class="sig-paren">(</span><em>reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.markDuplicateReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>For a given list of <cite>reactions</cite>, mark all of the duplicate reactions as
-understood by Chemkin.</p>
-<p>This is pretty slow (quadratic in size of reactions list) so only call it if you’re really worried
-you may have undetected duplicate reactions.</p>
-</dd></dl>
-
 </div>
 </div>
 
@@ -201,7 +109,7 @@ you may have undetected duplicate reactions.</p>
                         title="previous chapter">Reading Chemkin files</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../constants.html"
-                        title="next chapter">Physical constants (<code class="docutils literal notranslate"><span class="pre">rmgpy.constants</span></code>)</a></p>
+                        title="next chapter">Physical constants (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.constants</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -215,13 +123,11 @@ you may have undetected duplicate reactions.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -252,13 +158,13 @@ you may have undetected duplicate reactions.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Chemkin files (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

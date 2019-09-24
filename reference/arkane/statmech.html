@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>arkane.StatMechJob &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,20 +60,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.StatMechJob<a class="headerlink" href="#arkane-statmechjob" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="arkane.StatMechJob">
-<em class="property">class </em><code class="descclassname">arkane.</code><code class="descname">StatMechJob</code><span class="sig-paren">(</span><em>species</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arkane.</code><code class="sig-name descname">StatMechJob</code><span class="sig-paren">(</span><em class="sig-param">species</em>, <em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a Arkane statistical mechanics job. This job is used
 to compute and save the statistical mechanics information for a single
 species or transition state.</p>
 <dl class="method">
 <dt id="arkane.StatMechJob.create_hindered_rotor_figure">
-<code class="descname">create_hindered_rotor_figure</code><span class="sig-paren">(</span><em>angle</em>, <em>v_list</em>, <em>cosineRotor</em>, <em>fourierRotor</em>, <em>rotor</em>, <em>rotorIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.create_hindered_rotor_figure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_hindered_rotor_figure</code><span class="sig-paren">(</span><em class="sig-param">angle</em>, <em class="sig-param">v_list</em>, <em class="sig-param">cosine_rotor</em>, <em class="sig-param">fourier_rotor</em>, <em class="sig-param">rotor</em>, <em class="sig-param">rotor_index</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.create_hindered_rotor_figure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the potential for the rotor, along with its cosine and Fourier
 series potential fits, and save it in the <cite>hindered_rotor_plots</cite> attribute.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="arkane.StatMechJob.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>output_directory=None</em>, <em>plot=False</em>, <em>pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">output_directory=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the statmech job, saving the results within
 the <cite>output_directory</cite>.</p>
 <p>If <cite>plot</cite> is True, then plots of the hindered rotor fits will be saved.</p>
@@ -83,7 +81,7 @@ the <cite>output_directory</cite>.</p>
 
 <dl class="method">
 <dt id="arkane.StatMechJob.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>pdep=False</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param">pdep=False</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statistical mechanics parameters for each conformer from
 the associated files on disk. Creates <code class="xref py py-class docutils literal notranslate"><span class="pre">Conformer</span></code> objects for
 each conformer and appends them to the list of conformers on the
@@ -92,14 +90,14 @@ species object.</p>
 
 <dl class="method">
 <dt id="arkane.StatMechJob.save_hindered_rotor_figures">
-<code class="descname">save_hindered_rotor_figures</code><span class="sig-paren">(</span><em>directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save_hindered_rotor_figures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save_hindered_rotor_figures</code><span class="sig-paren">(</span><em class="sig-param">directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save_hindered_rotor_figures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save hindered rotor plots as set of files of the form
 <code class="docutils literal notranslate"><span class="pre">rotor_[species_label]_0.pdf</span></code> in the specified directory</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="arkane.StatMechJob.write_output">
-<code class="descname">write_output</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.write_output" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_output</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.write_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the results of the statmech job to the <cite>output.py</cite> file located
 in <cite>output_directory</cite>.</p>
 </dd></dl>
@@ -156,13 +154,11 @@ in <cite>output_directory</cite>.</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -193,13 +189,13 @@ in <cite>output_directory</cite>.</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

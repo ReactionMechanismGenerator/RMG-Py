@@ -21,5 +21,4 @@ otherwise.
     convertFAME
     databaseScripts
     standardizeModelSpeciesNames
-    reduction
     isotopes

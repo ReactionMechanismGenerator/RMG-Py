@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.molecule.pathfinder &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -64,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 The paths generally consist of alternating atoms and bonds.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.add_allyls">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">add_allyls</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_allyls" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">add_allyls</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_allyls" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the (3-atom, 2-bond) patterns “X=X-X” starting from the
 last atom of the existing path.</p>
 <p>The bond attached to the starting atom should be non single.
@@ -73,7 +71,7 @@ The second bond should be single.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.add_inverse_allyls">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">add_inverse_allyls</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_inverse_allyls" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">add_inverse_allyls</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_inverse_allyls" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the (3-atom, 2-bond) patterns “start~atom2=atom3” starting from the
 last atom of the existing path.</p>
 <p>The second bond should be non-single.</p>
@@ -81,7 +79,7 @@ last atom of the existing path.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.add_unsaturated_bonds">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">add_unsaturated_bonds</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_unsaturated_bonds" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">add_unsaturated_bonds</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_unsaturated_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the (2-atom, 1-bond) patterns “X=X” starting from the
 last atom of the existing path.</p>
 <p>The bond attached to the starting atom should be non single.</p>
@@ -89,7 +87,7 @@ last atom of the existing path.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.compute_atom_distance">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">compute_atom_distance</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.compute_atom_distance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">compute_atom_distance</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.compute_atom_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the distances between each pair of atoms in the atom_indices.</p>
 <p>The distance between two atoms is defined as the length of the shortest path
 between the two atoms minus 1, because the start atom is part of the path.</p>
@@ -101,31 +99,31 @@ of atoms in a dictionary.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_N5dc_radical_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_N5dc_radical_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
 single bond to a negatively charged N/O/S site, and one double bond (not participating in this transformation)</p>
 <p>Example:</p>
 <ul class="simple">
-<li>N=[N+]([O])([O-]) &lt;=&gt; N=[N+]([O-])([O]), these structures are isomorphic but not identical, the transition is
-important for correct degeneracy calculations</li>
+<li><p>N=[N+]([O])([O-]) &lt;=&gt; N=[N+]([O-])([O]), these structures are isomorphic but not identical, the transition is
+important for correct degeneracy calculations</p></li>
 </ul>
 <p>In this transition atom1 is the middle N+ (N5dc), atom2 is the radical site, and atom3 is negatively charged
-A “if atom1.atomType.label == ‘N5dc’” check should be done before calling this function</p>
+A “if atom1.atomtype.label == ‘N5dc’” check should be done before calling this function</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_adj_lone_pair_multiple_bond_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_adj_lone_pair_multiple_bond_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths of atom1 which either</p>
 <ul class="simple">
-<li>Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) – direction 1</li>
-<li>Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) – direction 2</li>
+<li><p>Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) – direction 1</p></li>
+<li><p>Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) – direction 2</p></li>
 </ul>
 <p>Giving the following resonance transitions, for example:</p>
 <ul class="simple">
-<li>[::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2]</li>
-<li>[:N]#[CH] &lt;=&gt; [::N-]=[CH+]</li>
-<li>other examples: S#N, N#[S], O=S([O])=O</li>
+<li><p>[::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2]</p></li>
+<li><p>[:N]#[CH] &lt;=&gt; [::N-]=[CH+]</p></li>
+<li><p>other examples: S#N, N#[S], O=S([O])=O</p></li>
 </ul>
 <p>Direction “1” is the direction &lt;increasing&gt; the bond order as in [::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2]
 Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]
@@ -135,31 +133,31 @@ Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:NH]
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_delocalization_paths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_adj_lone_pair_radical_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_adj_lone_pair_radical_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths of lone electron pairs next to the radical center indicated
 by <cite>atom1</cite>. Used to generate resonance isomers in adjacent N/O/S atoms.
 Two adjacent O atoms are not allowed since (a) currently RMG has no good thermo/kinetics for R[:O+.][:::O-] which
 could have been generated as a resonance structure of R[::O][::O.].</p>
 <p>The radical site (atom1) could be either:</p>
 <ul class="simple">
-<li><cite>N u1 p0</cite>, eg O=[N.+][:::O-]</li>
-<li><cite>N u1 p1</cite>, eg R[:NH][:NH.]</li>
-<li><cite>O u1 p1</cite>, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom</li>
-<li><cite>O u1 p2</cite>, eg O=N[::O.]; not allowed when adjacent to another O atom</li>
-<li><cite>S u1 p0</cite>, eg O[S.+]([O-])=O</li>
-<li><cite>S u1 p1</cite>, eg O[:S.+][O-]</li>
-<li><cite>S u1 p2</cite>, eg O=N[::S.]</li>
-<li>any of the above with more than 1 radical where possible</li>
+<li><p><cite>N u1 p0</cite>, eg O=[N.+][:::O-]</p></li>
+<li><p><cite>N u1 p1</cite>, eg R[:NH][:NH.]</p></li>
+<li><p><cite>O u1 p1</cite>, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom</p></li>
+<li><p><cite>O u1 p2</cite>, eg O=N[::O.]; not allowed when adjacent to another O atom</p></li>
+<li><p><cite>S u1 p0</cite>, eg O[S.+]([O-])=O</p></li>
+<li><p><cite>S u1 p1</cite>, eg O[:S.+][O-]</p></li>
+<li><p><cite>S u1 p2</cite>, eg O=N[::S.]</p></li>
+<li><p>any of the above with more than 1 radical where possible</p></li>
 </ul>
 <p>The non-radical site (atom2) could respectively be:</p>
 <ul class="simple">
-<li><cite>N u0 p1</cite></li>
-<li><cite>N u0 p2</cite></li>
-<li><cite>O u0 p2</cite></li>
-<li><cite>O u0 p3</cite></li>
-<li><cite>S u0 p1</cite></li>
-<li><cite>S u0 p2</cite></li>
-<li><cite>S u0 p3</cite></li>
+<li><p><cite>N u0 p1</cite></p></li>
+<li><p><cite>N u0 p2</cite></p></li>
+<li><p><cite>O u0 p2</cite></p></li>
+<li><p><cite>O u0 p3</cite></p></li>
+<li><p><cite>S u0 p1</cite></p></li>
+<li><p><cite>S u0 p2</cite></p></li>
+<li><p><cite>S u0 p3</cite></p></li>
 </ul>
 <p>(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
 The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] &lt;=&gt; [::O]=[:N.]</p>
@@ -167,16 +165,16 @@ The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] &lt;=
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_adj_lone_pair_radical_multiple_bond_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_adj_lone_pair_radical_multiple_bond_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths of atom1 which either</p>
 <ul class="simple">
-<li>Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])</li>
-<li>Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])</li>
+<li><p>Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])</p></li>
+<li><p>Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])</p></li>
 </ul>
 <p>Giving the following resonance transitions, for example:</p>
 <ul class="simple">
-<li>[::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]</li>
-<li>O[:S](=O)[::O.] &lt;=&gt; O[S.](=O)=[::O]</li>
+<li><p>[::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]</p></li>
+<li><p>O[:S](=O)[::O.] &lt;=&gt; O[S.](=O)=[::O]</p></li>
 </ul>
 <p>Direction “1” is the direction &lt;increasing&gt; the bond order as in [::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]
 Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]
@@ -187,13 +185,13 @@ In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gain
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_allyl_delocalization_paths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_allyl_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_allyl_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths allyl to the radical center indicated by <cite>atom1</cite>.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_allyl_end_with_charge">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_allyl_end_with_charge</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_end_with_charge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_allyl_end_with_charge</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_end_with_charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for a (3-atom, 2-bond) path between start and end atom that consists of
 alternating non-single and single bonds and ends with a charged atom.</p>
 <p>Returns a list with atom and bond elements from start to end, or
@@ -202,7 +200,7 @@ an empty list if nothing was found.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_butadiene">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_butadiene</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_butadiene" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_butadiene</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_butadiene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for a path between start and end atom that consists of
 alternating non-single and single bonds.</p>
 <p>Returns a list with atom and bond elements from start to end, or
@@ -211,7 +209,7 @@ None if nothing was found.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_butadiene_end_with_charge">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_butadiene_end_with_charge</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_butadiene_end_with_charge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_butadiene_end_with_charge</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_butadiene_end_with_charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for a (4-atom, 3-bond) path between start and end atom that consists of
 alternating non-single and single bonds and ends with a charged atom.</p>
 <p>Returns a list with atom and bond elements from start to end, or
@@ -220,27 +218,22 @@ None if nothing was found.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_paths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_lone_pair_multiple_bond_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">find_lone_pair_multiple_bond_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
 <cite>atom1</cite> indicates the localized lone pair site. Currently carbenes are excluded from this path.</p>
 <p>Examples:</p>
 <ul class="simple">
-<li>N2O (N#[N+][O-] &lt;-&gt; [N-]=[N+]=O)</li>
-<li>Azide (N#[N+][NH-] &lt;-&gt; [N-]=[N+]=N &lt;-&gt; [N-2][N+]#[NH+])</li>
-<li>N#N group on sulfur (O[S-](O)[N+]#N &lt;-&gt; OS(O)=[N+]=[N-] &lt;-&gt; O[S+](O)#[N+][N-2])</li>
-<li>N[N+]([O-])=O &lt;=&gt; N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
-important for correct degeneracy calculations</li>
+<li><p>N2O (N#[N+][O-] &lt;-&gt; [N-]=[N+]=O)</p></li>
+<li><p>Azide (N#[N+][NH-] &lt;-&gt; [N-]=[N+]=N &lt;-&gt; [N-2][N+]#[NH+])</p></li>
+<li><p>N#N group on sulfur (O[S-](O)[N+]#N &lt;-&gt; OS(O)=[N+]=[N-] &lt;-&gt; O[S+](O)#[N+][N-2])</p></li>
+<li><p>N[N+]([O-])=O &lt;=&gt; N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
+important for correct degeneracy calculations</p></li>
 </ul>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.pathfinder.find_shortest_path">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_shortest_path</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_shortest_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.is_atom_able_to_gain_lone_pair">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">is_atom_able_to_gain_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.is_atom_able_to_gain_lone_pair" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">is_atom_able_to_gain_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.is_atom_able_to_gain_lone_pair" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function
 Returns True if atom is N/O/S and is able to &lt;gain&gt; an additional lone pair, False otherwise
 We don’t allow O to remain with no lone pairs</p>
@@ -248,7 +241,7 @@ We don’t allow O to remain with no lone pairs</p>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.is_atom_able_to_lose_lone_pair">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">is_atom_able_to_lose_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.is_atom_able_to_lose_lone_pair" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.molecule.pathfinder.</code><code class="sig-name descname">is_atom_able_to_lose_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.is_atom_able_to_lose_lone_pair" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function
 Returns True if atom is N/O/S and is able to &lt;loose&gt; a lone pair, False otherwise
 We don’t allow O to remain with no lone pairs</p>
@@ -304,13 +297,11 @@ We don’t allow O to remain with no lone pairs</p>
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -341,13 +332,13 @@ We don’t allow O to remain with no lone pairs</p>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

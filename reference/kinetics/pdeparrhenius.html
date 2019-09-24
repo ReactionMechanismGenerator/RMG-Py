@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>rmgpy.kinetics.PDepArrhenius &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -49,7 +47,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,47 +60,47 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.kinetics.PDepArrhenius<a class="headerlink" href="#rmgpy-kinetics-pdeparrhenius" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.kinetics.PDepArrhenius">
-<em class="property">class </em><code class="descclassname">rmgpy.kinetics.</code><code class="descname">PDepArrhenius</code><span class="sig-paren">(</span><em>pressures=None</em>, <em>arrhenius=None</em>, <em>highPlimit=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">PDepArrhenius</code><span class="sig-paren">(</span><em class="sig-param">pressures=None</em>, <em class="sig-param">arrhenius=None</em>, <em class="sig-param">highPlimit=None</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em>, <em class="sig-param">Pmin=None</em>, <em class="sig-param">Pmax=None</em>, <em class="sig-param">comment=u''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient <span class="math notranslate nohighlight">\(k(T,P)\)</span> where
 a set of Arrhenius kinetics are stored at a variety of pressures and
 interpolated between on a logarithmic scale. The attributes are:</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="14%" />
-<col width="86%" />
+<col style="width: 14%" />
+<col style="width: 86%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>pressures</cite></td>
-<td>The list of pressures</td>
+<tbody>
+<tr class="row-even"><td><p><cite>pressures</cite></p></td>
+<td><p>The list of pressures</p></td>
 </tr>
-<tr class="row-odd"><td><cite>arrhenius</cite></td>
-<td>The list of <a class="reference internal" href="arrhenius.html#rmgpy.kinetics.Arrhenius" title="rmgpy.kinetics.Arrhenius"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arrhenius</span></code></a> objects at each pressure</td>
+<tr class="row-odd"><td><p><cite>arrhenius</cite></p></td>
+<td><p>The list of <a class="reference internal" href="arrhenius.html#rmgpy.kinetics.Arrhenius" title="rmgpy.kinetics.Arrhenius"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arrhenius</span></code></a> objects at each pressure</p></td>
 </tr>
-<tr class="row-even"><td><cite>Tmin</cite></td>
-<td>The minimum temperature in K at which the model is valid, or zero if unknown or undefined</td>
+<tr class="row-even"><td><p><cite>Tmin</cite></p></td>
+<td><p>The minimum temperature in K at which the model is valid, or zero if unknown or undefined</p></td>
 </tr>
-<tr class="row-odd"><td><cite>Tmax</cite></td>
-<td>The maximum temperature in K at which the model is valid, or zero if unknown or undefined</td>
+<tr class="row-odd"><td><p><cite>Tmax</cite></p></td>
+<td><p>The maximum temperature in K at which the model is valid, or zero if unknown or undefined</p></td>
 </tr>
-<tr class="row-even"><td><cite>Pmin</cite></td>
-<td>The minimum pressure in bar at which the model is valid, or zero if unknown or undefined</td>
+<tr class="row-even"><td><p><cite>Pmin</cite></p></td>
+<td><p>The minimum pressure in bar at which the model is valid, or zero if unknown or undefined</p></td>
 </tr>
-<tr class="row-odd"><td><cite>Pmax</cite></td>
-<td>The maximum pressure in bar at which the model is valid, or zero if unknown or undefined</td>
+<tr class="row-odd"><td><p><cite>Pmax</cite></p></td>
+<td><p>The maximum pressure in bar at which the model is valid, or zero if unknown or undefined</p></td>
 </tr>
-<tr class="row-even"><td><cite>efficiencies</cite></td>
-<td>A dict associating chemical species with associated efficiencies</td>
+<tr class="row-even"><td><p><cite>efficiencies</cite></p></td>
+<td><p>A dict associating chemical species with associated efficiencies</p></td>
 </tr>
-<tr class="row-odd"><td><cite>order</cite></td>
-<td>The reaction order (1 = first, 2 = second, etc.)</td>
+<tr class="row-odd"><td><p><cite>order</cite></p></td>
+<td><p>The reaction order (1 = first, 2 = second, etc.)</p></td>
 </tr>
-<tr class="row-even"><td><cite>comment</cite></td>
-<td>Information about the model (e.g. its source)</td>
+<tr class="row-even"><td><p><cite>comment</cite></p></td>
+<td><p>Information about the model (e.g. its source)</p></td>
 </tr>
 </tbody>
 </table>
@@ -117,169 +115,157 @@ highly complex and non-Arrhenius, limiting the usefulness of this formulation
 to simple systems.</p>
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.Pmax">
-<code class="descname">Pmax</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Pmax" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">Pmax</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Pmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.Pmin">
-<code class="descname">Pmin</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Pmin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">Pmin</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Pmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.Tmax">
-<code class="descname">Tmax</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Tmax" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">Tmax</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.Tmin">
-<code class="descname">Tmin</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Tmin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">Tmin</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.arrhenius">
-<code class="descname">arrhenius</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.arrhenius" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">arrhenius</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.arrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">arrhenius</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>arrhenius</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.changeRate">
-<code class="descname">changeRate</code><span class="sig-paren">(</span><em>self</em>, <em>double factor</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.changeRate" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.change_rate">
+<code class="sig-name descname">change_rate</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.change_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes kinetics rate by a multiple <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.comment">
-<code class="descname">comment</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.comment" title="Permalink to this definition">¶</a></dt>
-<dd><p>str</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">comment</td>
-</tr>
-</tbody>
-</table>
+<code class="sig-name descname">comment</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>comment</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.discrepancy">
-<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discrepancy</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.efficiencies">
-<code class="descname">efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.efficiencies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">efficiencies</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>efficiencies</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.fitToData">
-<code class="descname">fitToData</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tlist</em>, <em>ndarray Plist</em>, <em>ndarray K</em>, <em>str kunits</em>, <em>double T0=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.fitToData" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.fit_to_data">
+<code class="sig-name descname">fit_to_data</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.fit_to_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the pressure-dependent Arrhenius model to a matrix of rate
 coefficient data <cite>K</cite> with units of <cite>kunits</cite> corresponding to a set of
 temperatures <cite>Tlist</cite> in K and pressures <cite>Plist</cite> in Pa. An Arrhenius
-model is fit cpdef changeRate(self, double factor)at each pressure.</p>
+model is fit cpdef change_rate(self, double factor)at each pressure.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.getCanteraEfficiencies">
-<code class="descname">getCanteraEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>speciesList</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getCanteraEfficiencies" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.get_cantera_efficiencies">
+<code class="sig-name descname">get_cantera_efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.get_cantera_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary containing the collider efficiencies for this PDepKineticsModel object
 suitable for setting the efficiencies in the following cantera reaction objects:
 <cite>ThreeBodyReaction</cite>, <cite>FalloffReaction</cite>,`ChemicallyActivatedReaction`</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.getEffectiveColliderEfficiencies">
-<code class="descname">getEffectiveColliderEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>list species</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getEffectiveColliderEfficiencies" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.get_effective_collider_efficiencies">
+<code class="sig-name descname">get_effective_collider_efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.get_effective_collider_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective collider efficiencies for all species in the form of
 a numpy array.  This function helps assist rapid effective pressure calculations in the solver.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.getEffectivePressure">
-<code class="descname">getEffectivePressure</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em>, <em>list species</em>, <em>ndarray fractions</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getEffectivePressure" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.get_effective_pressure">
+<code class="sig-name descname">get_effective_pressure</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.get_effective_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective pressure in Pa for a system at a given pressure
 <cite>P</cite> in Pa composed of the given list of <cite>species</cite> (Species or Molecule objects) with the given
 <cite>fractions</cite>.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.getRateCoefficient">
-<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.get_rate_coefficient">
+<code class="sig-name descname">get_rate_coefficient</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient in the appropriate combination of m^3,
 mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.highPlimit">
-<code class="descname">highPlimit</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.highPlimit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">highPlimit</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.highPlimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.model.KineticsModel</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">highPlimit</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>highPlimit</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.isIdenticalTo">
-<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.is_identical_to">
+<code class="sig-name descname">is_identical_to</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if kinetics matches that of another kinetics model.  Each duplicate
 reaction must be matched and equal to that in the other PDepArrhenius model
 in the same order.  Otherwise returns <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.isPressureDependent">
-<code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.is_pressure_dependent">
+<code class="sig-name descname">is_pressure_dependent</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.isPressureValid">
-<code class="descname">isPressureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isPressureValid" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.is_pressure_valid">
+<code class="sig-name descname">is_pressure_valid</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.is_pressure_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
 pressure range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum pressure are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.isSimilarTo">
-<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.is_similar_to">
+<code class="sig-name descname">is_similar_to</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.isTemperatureValid">
-<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.is_temperature_valid">
+<code class="sig-name descname">is_temperature_valid</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -288,35 +274,32 @@ returned.</p>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.pressures">
-<code class="descname">pressures</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.pressures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pressures</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.pressures" title="Permalink to this definition">¶</a></dt>
 <dd><p>The list of pressures.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.setCanteraKinetics">
-<code class="descname">setCanteraKinetics</code><span class="sig-paren">(</span><em>self</em>, <em>ctReaction</em>, <em>speciesList</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.setCanteraKinetics" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.set_cantera_kinetics">
+<code class="sig-name descname">set_cantera_kinetics</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a Cantera PlogReaction()’s <cite>rates</cite> attribute with
 A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="rmgpy.kinetics.PDepArrhenius.toHTML">
-<code class="descname">toHTML</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.toHTML" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepArrhenius.to_html">
+<code class="sig-name descname">to_html</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.to_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.uncertainty">
-<code class="descname">uncertainty</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.uncertainty" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">uncertainty</code><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">uncertainty</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>uncertainty</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -371,13 +354,11 @@ A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]</
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -408,13 +389,13 @@ A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]</
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

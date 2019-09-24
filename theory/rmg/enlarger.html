@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>1. Rate-based Model Enlarging Algorithm &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -60,7 +58,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rate-based-model-enlarging-algorithm">
 <span id="ratebasedmodelenlarger"></span><h1>1. Rate-based Model Enlarging Algorithm<a class="headerlink" href="#rate-based-model-enlarging-algorithm" title="Permalink to this headline">¶</a></h1>
-<div class="figure">
+<div class="figure align-default">
 <img alt="../../_images/fluxAlgorithm.png" src="../../_images/fluxAlgorithm.png" />
 </div>
 <p>To construct a mechanism, the user must specify an initial set of species and
@@ -84,31 +82,27 @@ all <strong>core</strong> species rates:</p>
 it is added to the core. The parameter <span class="math notranslate nohighlight">\(\epsilon\)</span> is the user-specified
 <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> that can be adjusted under the <a class="reference internal" href="../../users/rmg/input.html#modeltolerances"><span class="std std-ref">model tolerances</span></a>
 in the <a class="reference internal" href="../../users/rmg/input.html#input"><span class="std std-ref">RMG Input File</span></a>.</p>
-<p>For more information on rate-based model enlargement, please refer to the papers <a class="reference internal" href="../../users/rmg/input.html#gao2016" id="id1">[Gao2016]</a> or <a class="reference internal" href="#susnow1997" id="id2">[Susnow1997]</a>.</p>
-<table class="docutils citation" frame="void" id="gao2016" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Gao2016]</a></td><td>C. W. Gao, J. W. Allen, W. H. Green, R. H. West, “Reaction Mechanism Generator: automatic construction of chemical kinetic mechanisms.” <em>Computer Physics Communications</em> (2016).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="susnow1997" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Susnow1997]</a></td><td>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. “Rate-Based Construction of Kinetic Models for Complex Systems.” <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</td></tr>
-</tbody>
-</table>
+<p>For more information on rate-based model enlargement, please refer to the papers <a class="reference internal" href="../../users/rmg/input.html#gao2016" id="id1"><span>[Gao2016]</span></a> or <a class="reference internal" href="#susnow1997" id="id2"><span>[Susnow1997]</span></a>.</p>
+<dl class="citation">
+<dt class="label" id="gao2016"><span class="brackets"><a class="fn-backref" href="#id1">Gao2016</a></span></dt>
+<dd><p>C. W. Gao, J. W. Allen, W. H. Green, R. H. West, “Reaction Mechanism Generator: automatic construction of chemical kinetic mechanisms.” <em>Computer Physics Communications</em> (2016).</p>
+</dd>
+<dt class="label" id="susnow1997"><span class="brackets"><a class="fn-backref" href="#id2">Susnow1997</a></span></dt>
+<dd><p>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. “Rate-Based Construction of Kinetic Models for Complex Systems.” <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</p>
+</dd>
+</dl>
 <div class="section" id="filtering-reactions-within-the-rate-based-algorithm">
 <span id="filterreactionstheory"></span><h2>1.1. Filtering Reactions within the Rate-based Algorithm<a class="headerlink" href="#filtering-reactions-within-the-rate-based-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Filtering reactions in the react step in the flux-based algorithm attempts to speed up model generation by attacking the pain point.  RMG has trouble
 converging when generating models for large molecules because it searches for reactions on the order of <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.</p>
 <p>The original algorithm performs in the following manner:</p>
 <ol class="arabic simple">
-<li>Reacts species together (slow)</li>
-<li>Determines which reactions are negligible (fast)</li>
+<li><p>Reacts species together (slow)</p></li>
+<li><p>Determines which reactions are negligible (fast)</p></li>
 </ol>
 <p>By filtering reactions we add a pre-filtering step before step 1 which prevents species from reacting together when the reactions are expected to be negligible
 throughout the simulation.</p>
-<div class="figure">
+<div class="figure align-default">
 <img alt="../../_images/fluxAlgorithmWithReactionFiltering.png" src="../../_images/fluxAlgorithmWithReactionFiltering.png" />
 </div>
 <p>Here, <code class="docutils literal notranslate"><span class="pre">unimolecularThreshold</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularThreshold</span></code>, and <code class="docutils literal notranslate"><span class="pre">trimolecularThreshold</span></code> are binary arrays storing flags for whether a species or a pair of species are above a reaction threshold.
@@ -200,13 +194,11 @@ shifts from <code class="docutils literal notranslate"><span class="pre">False</
         </div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -243,7 +235,7 @@ shifts from <code class="docutils literal notranslate"><span class="pre">False</
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
