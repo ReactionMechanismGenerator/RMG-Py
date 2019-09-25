@@ -32,7 +32,6 @@ import os
 import unittest
 
 from external.wip import work_in_progress
-from rmg import parse_command_line_arguments
 from rmgpy import settings
 from rmgpy.data.base import ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
@@ -41,6 +40,7 @@ from rmgpy.rmg.react import react_species
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.species import Species
+from rmgpy.util import parse_command_line_arguments
 
 
 ###################################################
