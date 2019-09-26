@@ -16,7 +16,6 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - ffmpeg
-  - future
   - gprof2dot
   - graphviz
   - h5py
