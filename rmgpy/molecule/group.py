@@ -630,6 +630,7 @@ class GroupAtom(Vertex):
                               'X': 0,
                               }
 
+
         for element_label in allElements:
             if atomtype is ATOMTYPES[element_label] or atomtype in ATOMTYPES[element_label].specific:
                 element = element_label
