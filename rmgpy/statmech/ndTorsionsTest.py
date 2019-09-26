@@ -31,7 +31,6 @@
 """
 This script contains unit tests of the :mod:`arkane.multidimensionalTorsions` module.
 """
-from __future__ import division
 
 import unittest
 import os

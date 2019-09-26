@@ -33,8 +33,6 @@ This module contains functionality for working with kinetics family functional
 groups, including support for using group additivity to estimate rate
 coefficients.
 """
-from __future__ import division
-
 import logging
 import math
 import warnings

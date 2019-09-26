@@ -1,7 +1,6 @@
 """
 This scripts runs tests on the database
 """
-from __future__ import division, print_function
 
 import logging
 from copy import copy

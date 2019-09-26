@@ -33,8 +33,6 @@
 This module contains functions for generating flux diagrams.
 """
 
-from __future__ import division, print_function
-
 import math
 import os.path
 import re

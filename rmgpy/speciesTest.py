@@ -32,8 +32,6 @@
 This module contains unit tests of the rmgpy.species module.
 """
 
-from __future__ import division
-
 import unittest
 
 from rmgpy.species import Species

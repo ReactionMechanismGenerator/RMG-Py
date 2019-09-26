@@ -31,7 +31,6 @@
 This module contains base classes that represent various rate coefficient
 models.
 """
-from __future__ import division
 
 import numpy as np
 cimport numpy as np

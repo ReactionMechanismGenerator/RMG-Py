@@ -32,8 +32,6 @@
 This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 """
 
-from __future__ import division
-
 import os.path
 import unittest
 

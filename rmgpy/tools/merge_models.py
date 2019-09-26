@@ -40,8 +40,6 @@ The resulting merged files are placed in ``chem.inp`` and
 ``species_dictionary.txt`` in the execution directory.
 """
 
-from __future__ import division, print_function
-
 import argparse
 import os
 import os.path

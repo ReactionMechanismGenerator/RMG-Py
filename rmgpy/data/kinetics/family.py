@@ -31,8 +31,6 @@
 """
 This module contains functionality for working with kinetics families.
 """
-from __future__ import division
-
 import codecs
 import itertools
 import logging

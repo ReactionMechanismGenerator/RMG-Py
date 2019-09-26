@@ -32,8 +32,6 @@
 This module contains the :class:`Network` class, a representation of a 
 pressure-dependent unimolecular reaction network
 """
-from __future__ import division
-
 import logging
 import math
 

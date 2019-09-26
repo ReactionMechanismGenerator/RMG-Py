@@ -32,8 +32,6 @@
 This module contains unit tests of the rmgpy.reaction module.
 """
 
-from __future__ import division
-
 import unittest
 
 import cantera as ct

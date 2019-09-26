@@ -32,8 +32,6 @@ This module contains classes representing various models of tunneling through
 a reaction barrier.
 """
 
-from __future__ import division
-
 import logging
 
 import cython

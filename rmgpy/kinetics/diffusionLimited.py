@@ -27,7 +27,6 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
-from __future__ import division
 
 import logging
 import math

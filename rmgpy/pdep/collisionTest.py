@@ -31,8 +31,6 @@
 """
 This module contains unit tests of the :mod:`rmgpy.pdep.collision` module.
 """
-from __future__ import division
-
 import unittest
 
 from rmgpy.pdep.collision import SingleExponentialDown

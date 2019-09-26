@@ -40,8 +40,6 @@ object. This module also provides the :class:`ReactionModel` class for
 representing a set of chemical reactions and the species involved.
 """
 
-from __future__ import division
-
 import logging
 import math
 import os.path

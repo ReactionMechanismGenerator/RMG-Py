@@ -46,8 +46,6 @@ then uses Cairo to render the atom.
 
 """
 
-from __future__ import division
-
 import logging
 import math
 import os.path

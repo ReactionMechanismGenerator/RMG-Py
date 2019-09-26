@@ -28,8 +28,6 @@
 #                                                                             #
 ###############################################################################
 
-from __future__ import division
-
 import copy
 import logging
 from time import time

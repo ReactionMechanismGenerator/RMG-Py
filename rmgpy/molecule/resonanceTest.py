@@ -28,8 +28,6 @@
 #                                                                             #
 ###############################################################################
 
-from __future__ import division
-
 import unittest
 
 from external.wip import work_in_progress

@@ -31,7 +31,6 @@
 """
 This module contains functionality for working with kinetics libraries.
 """
-from __future__ import division
 
 import codecs
 import logging

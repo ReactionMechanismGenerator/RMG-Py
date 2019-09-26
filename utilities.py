@@ -31,7 +31,6 @@
 """
 This module contains utilities related to compilation and code maintenance.
 """
-from __future__ import print_function
 
 import argparse
 import os

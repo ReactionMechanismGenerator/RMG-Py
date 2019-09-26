@@ -31,7 +31,6 @@
 """
 This module provides methods for converting molecules between RMG, RDKit, and OpenBabel.
 """
-from __future__ import print_function
 
 import logging
 import sys

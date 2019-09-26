@@ -27,8 +27,6 @@
 #                                                                             #
 ###############################################################################
 
-from __future__ import division
-
 import rmgpy.quantity as quantity
 from rmgpy.rmgobject cimport RMGObject
 

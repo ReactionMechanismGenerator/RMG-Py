@@ -32,8 +32,6 @@
 This module provides functionality for estimating the symmetry number of a
 molecule from its chemical graph representation.
 """
-from __future__ import division
-
 import itertools
 
 

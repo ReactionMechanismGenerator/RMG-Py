@@ -31,8 +31,6 @@
 """
 
 """
-from __future__ import division
-
 import itertools
 import logging
 import math

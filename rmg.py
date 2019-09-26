@@ -31,7 +31,6 @@
 """
 RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
-from __future__ import print_function
 
 import os.path
 import logging

@@ -31,7 +31,6 @@
 """
 This script contains unit tests of the :mod:`rmgpy.kinetics.arrhenius` module.
 """
-from __future__ import division
 
 import math
 import unittest
