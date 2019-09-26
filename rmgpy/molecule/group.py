@@ -588,10 +588,12 @@ class GroupAtom(Vertex):
                               'Ne': 4,
                               'Cl': 3,
                               'F': 3,
+                              'Br': 3,
                               'I': 3,
                               'Ar': 4,
                               'X': 0,
                               }
+
 
         for element_label in allElements:
             if atomtype is ATOMTYPES[element_label] or atomtype in ATOMTYPES[element_label].specific:

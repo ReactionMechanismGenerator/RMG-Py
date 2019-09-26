@@ -502,6 +502,9 @@ class TestGetAtomType(unittest.TestCase):
                                                      6 H u0 p0 c0 {1,S}''')
 
         self.mol78 = Molecule().from_adjacency_list('''1 X u0 p0 c0''')
+        
+        self.mol79 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
+                                                     2 Br  u0 p3 c0 {1,S}''')
 
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
