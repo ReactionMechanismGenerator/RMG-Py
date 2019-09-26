@@ -33,10 +33,7 @@ This module provides functions for searching paths within a molecule.
 The paths generally consist of alternating atoms and bonds.
 """
 import itertools
-try:
-    from queue import Queue  # py3
-except ImportError:
-    from Queue import Queue  # py2
+from queue import Queue
 
 import cython
 

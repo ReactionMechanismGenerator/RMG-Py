@@ -45,10 +45,7 @@ import math
 import os.path
 from copy import deepcopy
 from functools import reduce
-try:
-    from urllib.parse import quote  # py3
-except ImportError:
-    from urllib import quote  # py2
+from urllib.parse import quote
 
 import cython
 import numpy as np

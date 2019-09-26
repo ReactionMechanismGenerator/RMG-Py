@@ -41,10 +41,7 @@ import logging
 import os
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
-try:
-    from urllib.parse import quote  # py3
-except ImportError:
-    from urllib import quote  # py2
+from urllib.parse import quote
 
 import cython
 import numpy as np
