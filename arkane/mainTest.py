@@ -59,11 +59,6 @@ class TestArkaneExamples(unittest.TestCase):
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         cls.failed = []
         cls.example_types = ['species', 'reactions', 'explorer', 'networks']
-        ch2ooh_path = os.path.join(cls.base_path, 'species', 'CH2CHOOH', 'CH2CHOOHscans')
-        if not os.path.exists(ch2ooh_path):
-            ch2ooh_path = os.path.join(cls.base_path, 'species', 'CH2CHOOH', 'CH2CHOOHscans.zip')
-            zip_ref = zipfile.ZipFile(ch2ooh_path, 'r')
-            zip_ref.extractall()
 
     def test_arkane_examples(self):
         for example_type in self.example_types:
