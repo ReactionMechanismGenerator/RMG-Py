@@ -90,7 +90,7 @@ def fails_species_constraints(species):
 
     max_radicals = species_constraints.get('maximumRadicalElectrons', -1)
     if max_radicals != -1:
-        if (struct.get_radical_count() > max_radicals):
+        if struct.get_radical_count() > max_radicals:
             return True
 
     max_carbenes = species_constraints.get('maximumSingletCarbenes', 1)
