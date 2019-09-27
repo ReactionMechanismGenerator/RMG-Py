@@ -62,7 +62,6 @@ from rdkit.Chem import AllChem
 
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.molecule import Geometry
-from rmgpy.species import Species
 
 
 ################################################################################
@@ -1634,16 +1633,20 @@ class ReactionDrawer(object):
         # First draw each of the reactants and products
         reactants, products = [], []
         for reactant in reaction.reactants:
-            if isinstance(reactant, Species):
-                molecule = reactant.molecule[0]
-            elif isinstance(reactant, Molecule):
+            if isinstance(reactant, Molecule):
                 molecule = reactant
+            elif hasattr(reactant, 'molecule'):
+                molecule = reactant.molecule[0]
+            else:
+                raise TypeError('Expected Molecule or Species object, not {0}'.format(reactant.__class__.__name__))
             reactants.append(MoleculeDrawer().draw(molecule, format))
         for product in reaction.products:
-            if isinstance(product, Species):
-                molecule = product.molecule[0]
-            elif isinstance(product, Molecule):
+            if isinstance(product, Molecule):
                 molecule = product
+            elif hasattr(product, 'molecule'):
+                molecule = product.molecule[0]
+            else:
+                raise TypeError('Expected Molecule or Species object, not {0}'.format(product.__class__.__name__))
             products.append(MoleculeDrawer().draw(molecule, format))
 
         # Next determine size required for surface
