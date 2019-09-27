@@ -164,6 +164,14 @@ class TestThermoDatabase(unittest.TestCase):
 
         thermo_data_ga = self.databaseWithoutLibraries.get_thermo_data(spc)
 
+        print('')
+        print(thermo_data_lib)
+        print(thermo_data_lib.get_entropy(298.))
+        print('')
+        print(thermo_data_ga)
+        print(thermo_data_ga.get_entropy(298.))
+        print('')
+
         self.assertAlmostEqual(thermo_data_lib.get_entropy(298.), thermo_data_ga.get_entropy(298.), 0)
 
     def test_parse_thermo_comments(self):
