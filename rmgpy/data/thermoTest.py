@@ -53,7 +53,10 @@ def setUpModule():
     """A function that is run ONCE before all unit tests in this module."""
     global database
     database = RMGDatabase()
-    database.load_thermo(os.path.join(settings['database.directory'], 'thermo'))
+    database.load_thermo(
+        os.path.join(settings['database.directory'], 'thermo'),
+        thermo_libraries=['DFT_QCI_thermo', 'SABIC_aromatics', 'primaryThermoLibrary']
+    )
 
 
 def tearDownModule():
