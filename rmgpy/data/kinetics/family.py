@@ -1002,26 +1002,19 @@ class KineticsFamily(Database):
         # First, generate a list of reactant structures that are actual
         # structures, rather than unions
         reactant_structures = []
-        logging.log(1, "Generating template for products.")
         for reactant in reactants0:
             if isinstance(reactant, list):
                 reactants = [reactant[0]]
             else:
                 reactants = [reactant]
 
-            logging.log(1, "Reactants: {0}".format(reactants))
             for s in reactants:
-                logging.log(1, "Reactant {0}".format(s))
                 struct = s.item
                 if isinstance(struct, LogicNode):
                     all_structures = struct.get_possible_structures(self.groups.entries)
-                    logging.log(1, 'Expanding logic node {0} to {1}'.format(s, all_structures))
                     reactant_structures.append(all_structures)
-                    for p in all_structures:
-                        logging.log(1, p.to_adjacency_list())
                 else:
                     reactant_structures.append([struct])
-                    logging.log(1, struct.to_adjacency_list())
 
         # Second, get all possible combinations of reactant structures
         reactant_structures = get_all_combinations(reactant_structures)
@@ -1048,10 +1041,6 @@ class KineticsFamily(Database):
                         raise
                 else:
                     product_structure_list[i].append(struct)
-
-        logging.log(1, "Unique generated product structures:")
-        logging.log(1, "\n".join([p[0].to_adjacency_list() for p in product_structures]))
-
         # Fifth, associate structures with product template
         product_set = []
         for index, products in enumerate(product_structure_list):
