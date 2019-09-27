@@ -32,8 +32,6 @@
 This module contains the TransportData class for storing transport properties.
 """
 
-from __future__ import division
-
 import numpy as np
 
 import rmgpy.constants as constants

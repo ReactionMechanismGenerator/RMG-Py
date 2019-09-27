@@ -32,8 +32,6 @@
 Contains functions for fitting of molecular degrees of freedom from
 macroscopic properties, particularly the heat capacity.
 """
-from __future__ import division
-
 import logging
 import math
 

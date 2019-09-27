@@ -36,17 +36,12 @@ Both :class:`Atom` and :class:`Bond` objects store semantic information that
 describe the corresponding atom or bond.
 """
 
-from __future__ import division
-
 import itertools
 import logging
 import os
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
-try:
-    from urllib.parse import quote  # py3
-except ImportError:
-    from urllib import quote  # py2
+from urllib.parse import quote
 
 import cython
 import numpy as np

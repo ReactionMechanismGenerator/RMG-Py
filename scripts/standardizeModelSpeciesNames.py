@@ -39,7 +39,6 @@ command-line, e.g.
 The resulting files are saved as ``chem1.inp`` and
 ``species_dictionary1.txt``, ``chem2.inp``, ``species_dictionary2.txt`` and so forth in the execution directory.
 """
-from __future__ import print_function
 
 import argparse
 

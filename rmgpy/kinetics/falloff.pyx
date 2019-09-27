@@ -32,8 +32,6 @@ This module contains classes representing pressure-dependent kinetics models
 of "standard" falloff.
 """
 
-from __future__ import division
-
 from libc.math cimport exp, log, log10
 
 cimport rmgpy.constants as constants

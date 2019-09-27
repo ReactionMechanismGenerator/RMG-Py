@@ -32,8 +32,6 @@
 A class for returning and estimating the transport properties of a species
 
 """
-from __future__ import division
-
 import logging
 import os.path
 from copy import deepcopy

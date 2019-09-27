@@ -32,8 +32,6 @@
 This module contains functionality for generating mechanisms with isotopes.
 """
 
-from __future__ import division, print_function
-
 import logging
 import math
 import os

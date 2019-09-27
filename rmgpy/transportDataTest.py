@@ -32,8 +32,6 @@
 This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: 'rmgpy.data.transport' module
 """
 
-from __future__ import division
-
 import unittest
 
 import rmgpy.constants as constants

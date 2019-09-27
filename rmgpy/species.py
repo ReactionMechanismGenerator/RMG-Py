@@ -43,8 +43,6 @@ contains the :class:`TransitionState` class for representing chemical reaction
 transition states (first-order saddle points on a potential energy surface).
 """
 
-from __future__ import division
-
 import logging
 from copy import deepcopy
 from operator import itemgetter

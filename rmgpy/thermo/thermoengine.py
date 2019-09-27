@@ -28,8 +28,6 @@
 #                                                                             #
 ###############################################################################
 
-from __future__ import division
-
 import logging as logging
 import math
 

@@ -33,8 +33,6 @@ This module contains classes and methods for working with physical quantities,
 particularly the :class:`Quantity` class for representing physical quantities.
 """
 
-from __future__ import division
-
 import logging
 
 import cython

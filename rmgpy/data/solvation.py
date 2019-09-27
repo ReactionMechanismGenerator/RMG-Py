@@ -31,8 +31,6 @@
 """
 
 """
-from __future__ import division
-
 import logging
 import math
 import os.path

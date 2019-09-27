@@ -32,8 +32,6 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.torsion` module.
 """
 
-from __future__ import division
-
 import unittest
 import numpy as np
 

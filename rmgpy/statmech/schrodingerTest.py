@@ -33,8 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.statmech.schrodinger`
 module.
 """
 
-from __future__ import division
-
 import unittest
 
 import numpy as np
