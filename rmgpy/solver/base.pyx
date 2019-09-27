@@ -756,8 +756,9 @@ cdef class ReactionSystem(DASx):
                         if pdepNetworks != [] and networkLeakRateRatios != []:
                             ind = numpy.argmax(networkLeakRateRatios)
                             obj = pdepNetworks[ind]
-                            logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} was sent for exploring during model resurrection process'.format(self.t, obj.index, networkLeakRateRatios[ind]))
-                            invalidObjects.append(obj)
+                            if not numpy.isnan(networkLeakRateRatios[ind]):
+                                logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} was sent for exploring during model resurrection process'.format(self.t, obj.index, networkLeakRateRatios[ind]))
+                                invalidObjects.append(obj)
                     
                     if invalidObjects != []:
                         return False,True,invalidObjects,surfaceSpecies,surfaceReactions,self.t,conversion
