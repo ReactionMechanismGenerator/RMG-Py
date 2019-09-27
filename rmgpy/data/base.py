@@ -968,10 +968,9 @@ class Database(object):
                             return False
                     elif group.has_bond(center, atom1):  # but structure doesn't
                         return False
-                    # but we don't mind if...
                     elif structure.has_bond(atom, atom2):  # but group doesn't
-                        logging.debug("We don't mind that structure " + str(structure) +
-                                      " has bond but group {0} doesn't".format(node))
+                        # We don't mind that the structure has bond but the group doesn't
+                        pass
                 # Passed semantic checks, so add to maps of already-matched atoms
                 if not (isinstance(center, list) or isinstance(atom, list)):
                     initial_map[atom] = center
