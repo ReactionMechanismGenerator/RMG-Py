@@ -656,8 +656,8 @@ class ReferenceDatabase(object):
 
         for set_name in sets:
             current_set = self.reference_sets[set_name]
-            for ref_spcs in current_set:
-                if model_chemistry not in ref_spcs.calculated_data:  # Move on to the next reference species
+            for smiles,ref_spcs in current_set.items():
+                if model_chemistry not in ref_spcs.calculated_data.keys():  # Move on to the next reference species
                     continue
                 if not ref_spcs.calculated_data[model_chemistry].thermo: # Make sure refernce species has thermo
                     continue
@@ -694,7 +694,7 @@ class ReferenceDatabase(object):
                     reference_list.append(spcs)
   
         constraint = SpeciesConstraints(target=None, reference_list=reference_list, 
-        constraint_class='all',conserve_bonds=True, conserve_ring_size=True)
+        constraint_classes='all',conserve_bonds=True, conserve_ring_size=True)
         
         self.SpeciesConstraints[model_chemistry] = constraint
 
