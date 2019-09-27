@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: importChemkin USC-mech",
             "type": "python",
@@ -15,6 +16,21 @@
                      "--thermo", "thermdat.txt", 
                      "--known", "SMILES.txt", 
                      "--port", "8084",
+            ],
+            "console": "integratedTerminal",
+            "env": {"PATH":"/Users/rwest/anaconda/envs/rmg230/bin:${env:PATH}"}
+        },
+        {
+            "name": "Python: importChemkin Fluorine",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/../RMG-models/Fluorine/",
+            "program": "${workspaceFolder}/importChemkin.py",
+            "args": ["--species", "yf-zee-zf-june-19-2018-del-cl.txt",
+                     "--reactions", "yf-zee-zf-june-19-2018-del-cl.txt",
+                     "--thermo", "thermo-hfo1234zee-burcat-c.txt", 
+                     "--known", "SMILES.txt", 
+                     "--port", "8178",
             ],
             "console": "integratedTerminal",
             "env": {"PATH":"/Users/rwest/anaconda/envs/rmg230/bin:${env:PATH}"}
