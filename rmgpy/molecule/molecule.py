@@ -2218,6 +2218,27 @@ class Molecule(Graph):
                     atom.props['inRing'] = True
                     break
 
+    def count_aromatic_rings(self):
+        """
+        Count the number of aromatic rings in the current molecule, as determined by the benzene bond type.
+        This is purely dependent on representation and is unrelated to the actual aromaticity of the molecule.
+
+        Returns an integer corresponding to the number or aromatic rings.
+        """
+        cython.declare(rings=list, count=int, ring=list, bonds=list, bond=Bond)
+        rings = self.get_relevant_cycles()
+        count = 0
+        for ring in rings:
+            if len(ring) != 6:
+                # We currently only recognize 6-membered rings as being aromatic
+                continue
+
+            bonds = self.get_edges_in_cycle(ring)
+            if all([bond.is_benzene() for bond in bonds]):
+                count += 1
+
+        return count
+
     def get_aromatic_rings(self, rings=None):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.

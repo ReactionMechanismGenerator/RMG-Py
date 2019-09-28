@@ -585,6 +585,15 @@ multiplicity 2
         self.assertTrue(thermo_gav2.get_enthalpy(298) > thermo_gav1.get_enthalpy(298),
                         msg="Did not select the reactive molecule for thermo")
 
+    def test_thermo_for_aromatic_radicals(self):
+        """Test that we use the most aromatic resonance structure for thermo estimation"""
+        spec = Species(smiles='C=[C]c1ccc2ccccc2c1')  # vinylnaphthalene radical
+        spec.generate_resonance_structures()
+        thermo_gav = self.database.get_thermo_data_from_groups(spec)
+        self.assertAlmostEqual(thermo_gav.H298.value_si / 4184, 107, delta=1)
+        self.assertIn('group additivity', thermo_gav.comment, 'Thermo not found from GAV, test purpose not fulfilled.')
+        self.assertIn('polycyclic(s2_6_6_naphthalene)', thermo_gav.comment)
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """
