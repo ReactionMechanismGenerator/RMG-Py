@@ -33,11 +33,10 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.surface` module.
 """
 
 import unittest
-import math
-import numpy
 
-from rmgpy.kinetics.surface import StickingCoefficient, StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP
-import rmgpy.constants as constants
+import numpy as np
+
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
 
 ################################################################################
 
@@ -46,7 +45,7 @@ class TestStickingCoefficient(unittest.TestCase):
     """
     Contains unit tests of the :class:`StickingCoefficient` class.
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -67,66 +66,66 @@ class TestStickingCoefficient(unittest.TestCase):
             Tmax=(self.Tmax, "K"),
             comment=self.comment,
         )
-    
+
     def test_A(self):
         """
         Test that the StickingCoefficient A property was properly set.
         """
         self.assertAlmostEqual(self.stick.A.value_si, self.A, delta=1e0)
-        
+
     def test_n(self):
         """
         Test that the StickingCoefficient n property was properly set.
         """
         self.assertAlmostEqual(self.stick.n.value_si, self.n, 6)
-        
+
     def test_Ea(self):
         """
         Test that the StickingCoefficient Ea property was properly set.
         """
         self.assertAlmostEqual(self.stick.Ea.value_si * 0.001, self.Ea, 6)
-        
+
     def test_T0(self):
         """
         Test that the StickingCoefficient T0 property was properly set.
         """
         self.assertAlmostEqual(self.stick.T0.value_si, self.T0, 6)
-        
+
     def test_Tmin(self):
         """
         Test that the StickingCoefficient Tmin property was properly set.
         """
         self.assertAlmostEqual(self.stick.Tmin.value_si, self.Tmin, 6)
-        
+
     def test_Tmax(self):
         """
         Test that the StickingCoefficient Tmax property was properly set.
         """
         self.assertAlmostEqual(self.stick.Tmax.value_si, self.Tmax, 6)
-        
+
     def test_comment(self):
         """
         Test that the StickingCoefficient comment property was properly set.
         """
         self.assertEqual(self.stick.comment, self.comment)
-        
+
     def test_is_temperature_valid(self):
         """
         Test the StickingCoefficient.is_temperature_valid() method.
         """
-        Tdata = numpy.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
-        validdata = numpy.array([False, True, True, True, True, True, True, True, True, False], numpy.bool)
-        for T, valid in zip(Tdata, validdata):
+        T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
+        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
+        for T, valid in zip(T_data, valid_data):
             valid0 = self.stick.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
-    
+
     def test_pickle(self):
         """
         Test that an StickingCoefficient object can be pickled and unpickled with no loss
         of information.
         """
         import pickle
-        stick = pickle.loads(pickle.dumps(self.stick,-1))
+        stick = pickle.loads(pickle.dumps(self.stick, -1))
         self.assertAlmostEqual(self.stick.A.value, stick.A.value, delta=1e0)
         self.assertEqual(self.stick.A.units, stick.A.units)
         self.assertAlmostEqual(self.stick.n.value, stick.n.value, 4)
@@ -140,7 +139,7 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
         self.assertEqual(dir(self.stick), dir(stick))
-    
+
     def test_repr(self):
         """
         Test that an StickingCoefficient object can be reconstructed from its repr()
@@ -163,7 +162,7 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
         self.assertEqual(dir(self.stick), dir(stick))
-    
+
     def test_copy(self):
         """
         Test that an StickingCoefficient object can be copied with deepcopy
@@ -190,7 +189,7 @@ class TestStickingCoefficient(unittest.TestCase):
         Test that the StickingCoefficient.is_identical_to method works on itself
         """
         self.assertTrue(self.stick.is_identical_to(self.stick))
-     
+
 ################################################################################
 
 
@@ -198,7 +197,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
     """
     Contains unit tests of the :class:`SurfaceArrhenius` class.
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -219,66 +218,66 @@ class TestSurfaceArrhenius(unittest.TestCase):
             Tmax=(self.Tmax, "K"),
             comment=self.comment,
         )
-    
+
     def test_A(self):
         """
         Test that the SurfaceArrhenius A property was properly set.
         """
         self.assertAlmostEqual(self.surfarr.A.value_si, self.A, delta=1e0)
-        
+
     def test_n(self):
         """
         Test that the SurfaceArrhenius n property was properly set.
         """
         self.assertAlmostEqual(self.surfarr.n.value_si, self.n, 6)
-        
+
     def test_Ea(self):
         """
         Test that the SurfaceArrhenius Ea property was properly set.
         """
         self.assertAlmostEqual(self.surfarr.Ea.value_si * 0.001, self.Ea, 6)
-        
+
     def test_T0(self):
         """
         Test that the SurfaceArrhenius T0 property was properly set.
         """
         self.assertAlmostEqual(self.surfarr.T0.value_si, self.T0, 6)
-        
+
     def test_Tmin(self):
         """
         Test that the SurfaceArrhenius Tmin property was properly set.
         """
         self.assertAlmostEqual(self.surfarr.Tmin.value_si, self.Tmin, 6)
-        
+
     def test_Tmax(self):
         """
         Test that the SurfaceArrhenius Tmax property was properly set.
         """
         self.assertAlmostEqual(self.surfarr.Tmax.value_si, self.Tmax, 6)
-        
+
     def test_comment(self):
         """
         Test that the SurfaceArrhenius comment property was properly set.
         """
         self.assertEqual(self.surfarr.comment, self.comment)
-        
+
     def test_is_temperature_valid(self):
         """
         Test the SurfaceArrhenius.is_temperature_valid() method.
         """
-        Tdata = numpy.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
-        validdata = numpy.array([False, True, True, True, True, True, True, True, True, False], numpy.bool)
-        for T, valid in zip(Tdata, validdata):
+        T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
+        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
+        for T, valid in zip(T_data, valid_data):
             valid0 = self.surfarr.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
-    
+
     def test_pickle(self):
         """
         Test that an SurfaceArrhenius object can be pickled and unpickled with no loss
         of information.
         """
         import pickle
-        surfarr = pickle.loads(pickle.dumps(self.surfarr,-1))
+        surfarr = pickle.loads(pickle.dumps(self.surfarr, -1))
         self.assertAlmostEqual(self.surfarr.A.value, surfarr.A.value, delta=1e0)
         self.assertEqual(self.surfarr.A.units, surfarr.A.units)
         self.assertAlmostEqual(self.surfarr.n.value, surfarr.n.value, 4)
@@ -292,7 +291,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
-    
+
     def test_repr(self):
         """
         Test that an SurfaceArrhenius object can be reconstructed from its repr()
@@ -315,7 +314,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
-    
+
     def test_copy(self):
         """
         Test that an SurfaceArrhenius object can be copied with deepcopy
