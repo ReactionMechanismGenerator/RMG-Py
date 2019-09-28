@@ -4238,12 +4238,15 @@ class KineticsFamily(Database):
         full_comment_string = reaction.kinetics.comment.replace('\n', ' ')
 
         # The rate rule string is right after the phrase 'for rate rule'
-        rate_rule_string = full_comment_string.split("for rate rule", 1)[1].split()[0]
+        rate_rule_string = full_comment_string.split("for rate rule", 1)[1].strip()
 
         if rate_rule_string[0] == '[':
-            template_label = re.split(regex, rate_rule_string)[1]
+            # Get the contents of the capture group in the regex
+            # Remove any spaces which may be left over as a result of a line break
+            template_label = re.split(regex, rate_rule_string)[1].replace(' ', '')
         else:
-            template_label = rate_rule_string  # if has the line 'From training reaction # for rate rule node1;node2'
+            # If this has the line 'From training reaction # for rate rule node1;node2'
+            template_label = rate_rule_string.split()[0]
 
         template = self.retrieve_template(template_label.split(';'))
         rules, training_entries = self.get_sources_for_template(template)
