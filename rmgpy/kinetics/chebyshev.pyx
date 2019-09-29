@@ -249,7 +249,7 @@ cdef class Chebyshev(PDepKineticsModel):
             return False
         if self.degreeT != other_kinetics.degreeT or self.degreeP != other_kinetics.degreeP:
             return False
-        if self.kunits != other_kinetics.kunits or (self.coeffs != other_kinetics.coeffs).any():
+        if self.kunits != other_kinetics.kunits or not np.array_equal(self.coeffs.value, other_kinetics.coeffs.value):
             return False
 
         return True
