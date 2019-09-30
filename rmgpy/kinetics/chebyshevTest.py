@@ -239,6 +239,96 @@ class TestChebyshev(unittest.TestCase):
             kact = self.chebyshev.get_rate_coefficient(T, 1e5)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
 
+    def test_is_identical_to(self):
+        """
+        Test the Chebyshev.is_identical_to() method.
+        """
+        # Trivial case, compare to a KineticsModel
+        from rmgpy.kinetics.model import KineticsModel
+        self.assertFalse(self.chebyshev.is_identical_to(KineticsModel()))
+
+        # Compare to identical Chebyshev
+        new_chebyshev = Chebyshev(
+            coeffs=self.coeffs,
+            kunits="cm^3/(mol*s)",
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertTrue(self.chebyshev.is_identical_to(new_chebyshev))
+
+        # Compare to Chebyshev with different Tmin/Tmax
+        new_chebyshev = Chebyshev(
+            coeffs=self.coeffs,
+            kunits="cm^3/(mol*s)",
+            Tmin=(200, "K"),
+            Tmax=(self.Tmax, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+
+        new_chebyshev = Chebyshev(
+            coeffs=self.coeffs,
+            kunits="cm^3/(mol*s)",
+            Tmin=(self.Tmin, "K"),
+            Tmax=(2500, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+
+        # Compare to Chebyshev with different degreeT/degreeP
+        new_chebyshev = Chebyshev(
+            coeffs=self.coeffs[0:-1, :],  # Remove one T dimension
+            kunits="cm^3/(mol*s)",
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+
+        new_chebyshev = Chebyshev(
+            coeffs=self.coeffs[:, 0:-1],  # Remove one P dimension
+            kunits="cm^3/(mol*s)",
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+
+        # Compare to Chebyshev with different units
+        new_chebyshev = Chebyshev(
+            coeffs=self.coeffs,
+            kunits="m^3/(mol*s)",
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+
+        # Compare to Chebyshev with slightly different coefficients
+        new_chebyshev = Chebyshev(
+            coeffs=np.copy(self.coeffs) * 0.01,
+            kunits="cm^3/(mol*s)",
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            Pmin=(self.Pmin, "bar"),
+            Pmax=(self.Pmax, "bar"),
+            comment=self.comment,
+        )
+        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+
 
 ################################################################################
 
