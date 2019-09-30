@@ -35,7 +35,7 @@ from nose.plugins.attrib import attr
 
 import rmgpy
 from rmgpy.rmg.main import RMG
-from rmgpy.tools.generate_reactions import execute
+from rmgpy.tools.generatereactions import execute
 
 
 @attr('functional')

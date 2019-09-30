@@ -34,14 +34,14 @@ effectively the first step in the RMG rate-based mechanism generation algorithm.
 
 The input file is a subset of that used with regular RMG jobs. 
 """
-import rmgpy.tools.generate_reactions as generate_reactions
+import rmgpy.tools.generatereactions
 
 
 ################################################################################
 
 
 def main():
-    generate_reactions.main()
+    rmgpy.tools.generatereactions.main()
 
 
 if __name__ == '__main__':

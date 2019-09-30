@@ -27,57 +27,30 @@
 #                                                                             #
 ###############################################################################
 
-import os
 import os.path
+import shutil
 import unittest
 
-from rmgpy.tools.merge_models import get_models_to_merge, combine_models
+from rmgpy.tools.diffmodels import execute
 
 
-class MergeModelsTest(unittest.TestCase):
+class DiffModelsTest(unittest.TestCase):
 
-    def test_merge_different_models(self):
+    def test_identical_models(self):
         folder = os.path.join(os.getcwd(), 'rmgpy/tools/data/diffmodels')
 
-        chemkin3 = os.path.join(folder, 'chem3.inp')
-        species_dict3 = os.path.join(folder, 'species_dictionary3.txt')
+        chemkin1 = os.path.join(folder, 'chem1.inp')
+        species_dict1 = os.path.join(folder, 'species_dictionary1.txt')
 
         chemkin2 = os.path.join(folder, 'chem2.inp')
         species_dict2 = os.path.join(folder, 'species_dictionary2.txt')
 
-        models = get_models_to_merge(((chemkin3, species_dict3, None), (chemkin2, species_dict2, None)))
-        final_model = combine_models(models)
-        species = final_model.species
-        reactions = final_model.reactions
+        kwargs = {
+            'wd': folder,
+        }
 
-        # make sure all species are included
-        self.assertEqual(len(species), 15)
+        execute(chemkin1, species_dict1, None, chemkin2, species_dict2, None, **kwargs)
 
-        # make sure indexes are not unnecessarily redone
-        for s in species:
-            if s.label == 'CH2O':
-                self.assertEqual(s.index, 150)
-            elif s.label == 'CH3':
-                self.assertEqual(s.index, -1)
-            elif s.label == 'C3H7':
-                self.assertEqual(s.index, 14)
-
-        # make sure indexes are redone when there is a conflict
-        h_index = False
-        for s in species:
-            if s.label == 'H':
-                if isinstance(h_index, bool):
-                    h_index = s.index
-                else:
-                    # found second matching label, make sure index different
-                    self.assertNotEqual(s.index, h_index)
-                    break
-        else:
-            raise Exception("Could not find two species identical labels")
-
-        # make sure reaction rates come from first model
-        for r in reactions:
-            if len(r.reactants) == 2 and r.reactants[0].label == 'CH3' and\
-                                         r.reactants[1].label == 'CH3':
-                self.assertAlmostEqual(r.kinetics.A.value_si, 8.260e+9, places=0,
-                                       msg="Kinetics did not match from first input model")
+        shutil.rmtree(os.path.join(folder, 'species1'))
+        shutil.rmtree(os.path.join(folder, 'species2'))
+        os.remove(os.path.join(folder, 'diff.html'))

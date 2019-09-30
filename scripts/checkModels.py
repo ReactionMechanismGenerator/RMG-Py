@@ -31,7 +31,7 @@ import argparse
 import logging
 import math
 
-from rmgpy.tools.diff_models import execute
+from rmgpy.tools.diffmodels import execute
 
 logger = logging.getLogger('checkModels')
 
