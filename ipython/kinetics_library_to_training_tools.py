@@ -50,27 +50,29 @@ def generate_header_html(n, fam_rxn, lib_rxn, library_name, families):
         html += ['<th colspan="{0}" style="color:green">One RMG match for this reaction</th>'.format(full)]
     elif n == 0:
         if families == 'all':
-            html += [
-                '<th colspan="{0}" style="color:red">Sad :( There are no matches. This is a magic reaction or has chemistry that should be made into a new reaction family</th>'.format(
-                    full)]
+            html += ['<th colspan="{0}" style="color:red">'
+                     'Sad :( There are no matches. This is a magic reaction or has '
+                     'chemistry that should be made into a new reaction family.'
+                     '</th>'.format(full)]
         else:
-            html += [
-                '<th colspan="{0}" style="color:red">There are no matches within the selected families: {1}</th>'.format(
-                    full, families)]
+            html += ['<th colspan="{0}" style="color:red">'
+                     'There are no matches within the selected families: {1}'
+                     '</th>'.format(full, families)]
     else:
-        html += [
-            '<th colspan="{0}" style="color:blue">There are multiple RMG matches for this reaction. You have to manually create this training reaction.</th>'.format(
-                full)]
+        html += ['<th colspan="{0}" style="color:blue">'
+                 'There are multiple RMG matches for this reaction. '
+                 'You have to manually create this training reaction.'
+                 '</th>'.format(full)]
 
     html += ['</tr><tr>']
     html += ['<th colspan="{0}">Source Library: {1}</th>'.format(full, library_name)]
     html += ['</tr><tr>']
     if fam_rxn is not None:
-        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full,
-                                                                                       b64encode(fam_rxn._repr_png_()))]
+        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}">'
+                 '</td>'.format(full, b64encode(fam_rxn._repr_png_()).decode())]
     else:
-        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full,
-                                                                                       b64encode(lib_rxn._repr_png_()))]
+        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}">'
+                 '</td>'.format(full, b64encode(lib_rxn._repr_png_()).decode())]
     html += ['</tr><tr>']
     html += ['<th colspan="{0}">Reactant SMILES</th>'.format(half)]
     html += ['<td colspan="{0}">{1}</td>'.format(half, ' + '.join(
@@ -88,9 +90,9 @@ def generate_template_html(rxn, template):
     """
     Generates HTML for displaying reaction template.
     """
-    templateSize = len(template)
+    template_size = len(template)
     # HTML table uses a 12 column setup, so templates with 5 groups will break the table, which should not happen
-    assert templateSize < 5
+    assert template_size < 5
 
     html = ['<tr>']
     html += ['<th colspan="{0}">Matched Family</th>'.format(half)]
@@ -100,22 +102,24 @@ def generate_template_html(rxn, template):
     html += ['<td colspan="{0}">{1}</td>'.format(half, [entry.label for entry in template])]
     html += ['</tr><tr>']
     for entry in template:
-        html += ['<td colspan="{0}">{1}</td>'.format(full / templateSize, entry.label)]
+        html += ['<td colspan="{0}">{1}</td>'.format(full / template_size, entry.label)]
     html += ['</tr><tr>']
     for entry in template:
-        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full / templateSize, b64encode(entry.item._repr_png_()))]
+        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}">'
+                 '</td>'.format(full / template_size, b64encode(entry.item._repr_png_()).decode())]
     html += ['</tr><tr>']
-    if templateSize == 3:
+    if template_size == 3:
         merged_group = template[0].item.merge_groups(template[1].item)
         merged_group = merged_group.merge_groups(template[2].item)
         html += ['<td colspan="{0}">{1}</td>'.format(full, 'Merged Template')]
         html += ['</tr><tr>']
-        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full, b64encode(merged_group._repr_png_()))]
+        html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}">'
+                 '</td>'.format(full, b64encode(merged_group._repr_png_()).decode())]
 
     return html
 
 
-def process_reactions(database, libraries, families, compareKinetics=True, showAll=False, filterAromatic=True):
+def process_reactions(database, libraries, families, compare_kinetics=True, show_all=False, filter_aromatic=True):
     """
     Main function to recreate library reactions from families and display the results.
     """
@@ -125,7 +129,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
     for library_name in libraries:
         library = database.kinetics.libraries[library_name]
         reaction_dict = {}
-        for index, entry in library.entries.iteritems():
+        for index, entry in library.entries.items():
             lib_rxn = entry.item
             lib_rxn.kinetics = entry.data
             lib_rxn.index = index
@@ -139,7 +143,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
             )
 
             # Filter by aromatic resonance structures if requested
-            if filterAromatic and len(fam_rxn_list) > 1:
+            if filter_aromatic and len(fam_rxn_list) > 1:
                 selected_rxns = []
                 max_num_aromatic_reactants = 0
                 for fam_rxn in fam_rxn_list:
@@ -181,15 +185,15 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
 
                 template = database.kinetics.families[fam_rxn.family].retrieve_template(fam_rxn.template)
 
-                if compareKinetics:
+                if compare_kinetics:
                     # Check what the current kinetics for this template are
-                    newKinetics = lib_rxn.kinetics
-                    oldKinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
+                    new_kinetics = lib_rxn.kinetics
+                    old_kinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([newKinetics.get_rate_coefficient(t) for t in tlist]))
-                    oldklist = np.log10(np.array([oldKinetics.get_rate_coefficient(t) for t in tlist]))
+                    newklist = np.log10(np.array([new_kinetics.get_rate_coefficient(t) for t in tlist]))
+                    oldklist = np.log10(np.array([old_kinetics.get_rate_coefficient(t) for t in tlist]))
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
@@ -200,27 +204,27 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     fig = BytesIO()
                     plt.savefig(fig, file_format='png')
                     fig.seek(0)
-                    figdata = b64encode(fig.getvalue())
+                    figdata = b64encode(fig.getvalue()).decode()
                     fig.close()
 
                 # Format output using html
                 html = generate_header_html(1, fam_rxn, lib_rxn, library_name, families)
                 html += generate_template_html(fam_rxn, template)
-                if compareKinetics:
+                if compare_kinetics:
                     if not forward:
                         html += ['<tr><th colspan="{0}" style="color:red;text-align:center">'
                                  'Note: Training reaction written in opposite direction from reaction family.'
                                  '</th></tr>'.format(full)]
                     html += ['<tr>']
                     html += ['<td colspan="{0}"><strong>New Kinetics:</strong><br>{1}<br><br>'
-                             '<strong>Current Kinetics</strong><br>{2}</td>'.format(half, newKinetics, oldKinetics)]
+                             '<strong>Current Kinetics</strong><br>{2}</td>'.format(half, new_kinetics, old_kinetics)]
                     html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(half, figdata)]
                     html += ['</tr>']
                 html += ['</table>']
 
                 display(HTML(''.join(html)))
             elif len(fam_rxn_list) == 0:
-                if showAll:
+                if show_all:
                     html = generate_header_html(0, None, lib_rxn, library_name, families)
                     html += ['</table>']
 
@@ -234,15 +238,16 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 else:
                     multiple_dict[library_name] = [(lib_rxn, fam_rxn_list)]
 
-                if compareKinetics: oldKinetics = []
+                if compare_kinetics:
+                    old_kinetics = []
 
                 for i, rxn in enumerate(fam_rxn_list):
                     forward = rxn.is_forward
 
                     template = database.kinetics.families[rxn.family].retrieve_template(rxn.template)
 
-                    if compareKinetics:
-                        oldKinetics.append(database.kinetics.families[rxn.family].get_kinetics_for_template(template, degeneracy=rxn.degeneracy)[0])
+                    if compare_kinetics:
+                        old_kinetics.append(database.kinetics.families[rxn.family].get_kinetics_for_template(template, degeneracy=rxn.degeneracy)[0])
 
                     if i == 0:
                         html = generate_header_html(2, rxn, lib_rxn, library_name, families)
@@ -250,18 +255,18 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     html += ['<tr>']
                     html += ['<th colspan="{0}">Match #{1} - For the following resonance form of the reaction:</th>'.format(full, i + 1)]
                     html += ['</tr><tr>']
-                    html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full, b64encode(rxn._repr_png_()))]
+                    html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(full, b64encode(rxn._repr_png_()).decode())]
                     html += ['</tr>']
                     html += generate_template_html(rxn, template)
 
-                if compareKinetics:
-                    newKinetics = lib_rxn.kinetics
+                if compare_kinetics:
+                    new_kinetics = lib_rxn.kinetics
                     # Evaluate kinetics
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([newKinetics.get_rate_coefficient(t) for t in tlist]))
+                    newklist = np.log10(np.array([new_kinetics.get_rate_coefficient(t) for t in tlist]))
                     oldklist = []
-                    for kinetics in oldKinetics:
+                    for kinetics in old_kinetics:
                         oldklist.append(np.log10(np.array([kinetics.get_rate_coefficient(t) for t in tlist])))
                     # Create plot
                     plt.cla()
@@ -274,7 +279,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                     fig = BytesIO()
                     plt.savefig(fig, file_format='png')
                     fig.seek(0)
-                    figdata = b64encode(fig.getvalue())
+                    figdata = b64encode(fig.getvalue()).decode()
                     fig.close()
 
                     if not forward:
@@ -282,8 +287,8 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                                  'Note: Training reaction written in opposite direction from reaction family.'
                                  '</tr></tr>'.format(full)]
                     html += ['<tr><td colspan="{0}">'.format(half)]
-                    html += ['<strong>New Kinetics:</strong><br>{0}'.format(newKinetics)]
-                    for i, kinetics in enumerate(oldKinetics):
+                    html += ['<strong>New Kinetics:</strong><br>{0}'.format(new_kinetics)]
+                    for i, kinetics in enumerate(old_kinetics):
                         html += ['<br><br><strong>Match #{0} Kinetics:</strong><br>{1}'.format(i + 1, kinetics)]
                     html += ['</td><td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(half, figdata)]
                     html += ['</tr>']
@@ -309,10 +314,10 @@ def review_reactions(master_dict, prompt=False):
     print('================================================================================')
     print('The following reactions will be added to the indicated families.')
 
-    for library_name, reaction_dict in master_dict.iteritems():
+    for library_name, reaction_dict in master_dict.items():
         print('================================================================================')
         print('Source Library: {0}'.format(library_name))
-        for family_name, reaction_list in reaction_dict.iteritems():
+        for family_name, reaction_list in reaction_dict.items():
             print('--------------------------------------------------------------------------------')
             print('Destination Family: {0}'.format(family_name))
 
@@ -326,7 +331,7 @@ def review_reactions(master_dict, prompt=False):
                 if prompt:
                     success = False
                     while not success:
-                        choice = raw_input('Would you like to add this reaction? (y/n) ')
+                        choice = input('Would you like to add this reaction? (y/n) ')
                         if choice in ['y', 'n']:
                             success = True
                         else:
@@ -353,7 +358,7 @@ def manual_selection(master_dict, multiple_dict, database):
     print('================================================================================')
     print('The following reactions had multiple matches. You may choose one match to add.')
 
-    for library_name, reaction_list in multiple_dict.iteritems():
+    for library_name, reaction_list in multiple_dict.items():
         print('================================================================================')
         print('Source Library: {0}'.format(library_name))
 
@@ -371,7 +376,7 @@ def manual_selection(master_dict, multiple_dict, database):
 
             success = False
             while not success:
-                choice = raw_input('Select a match to add (or use "s" to skip): ')
+                choice = input('Select a match to add (or use "s" to skip): ')
                 try:
                     choice = int(choice)
                 except ValueError:
