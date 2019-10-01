@@ -35,7 +35,7 @@ import matplotlib as mpl
 # Force matplotlib to not use any Xwindows backend.
 # This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
 # Do not warn if the backend has already been set, e.g. when running from an IPython notebook
-mpl.use('Agg', warn=False)
+mpl.use('Agg', warn=False, force=False)
 import matplotlib.pyplot as plt
 import numpy as np
 
