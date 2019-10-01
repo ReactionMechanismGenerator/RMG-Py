@@ -1142,7 +1142,11 @@ class RMG(util.Subject):
                             )
 
                             logging.info('Generating PCEs...')
-                            reactor_pce_factory.generate_pce(run_time=self.uncertainty['pcetime'])
+                            reactor_pce_factory.generate_pce(
+                                max_adapt_time=self.uncertainty['pcetime'],
+                                error_tol=self.uncertainty['pcetol'],
+                                max_evals=self.uncertainty['pceevals'],
+                            )
 
                             # Try a test point to see how well the PCE performs
                             reactor_pce_factory.compare_output(

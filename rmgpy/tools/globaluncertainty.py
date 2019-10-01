@@ -333,28 +333,31 @@ class ReactorPCEFactory(object):
         self.pce = None
         self.logx = logx
 
-    def generate_pce(self, run_time=None, start_order=2, tolerance=None, fixed_terms=False):
+    def generate_pce(self, max_adapt_time=None, error_tol=None, max_evals=None, should_adapt=True, start_order=2):
         """
-        Generate the PCEs adaptively. There are three methods for doing so. 
-        `run_time` should be given in seconds
-        Option 1: Adaptive for a pre-specified amount of time
-        Option 2: Adaptively construct PCE to error tolerance
-        Option 3: Use a fixed order
+        Compute PCEs using the provided termination criteria.
+
+        Args:
+            max_adapt_time: maximum run time for adapting, in seconds
+            error_tol: stop adapting when L2 error falls below this value
+            max_evals: stop adapting after this many model evaluations
+            should_adapt: should adaption continue after constructing initial approximation
+            start_order: PCE order for the initial approximation
         """
 
-        if run_time is None and tolerance is None and not fixed_terms:
+        if should_adapt and max_adapt_time is None and error_tol is None and max_evals is None:
             raise ValueError('Must define at least one termination criteria')
 
         multis = muqu.MultiIndexFactory.CreateTotalOrder(self.dim, start_order)
 
         options = dict()
-        options['ShouldAdapt'] = 1
-        if fixed_terms:
-            options['ShouldAdapt'] = 0
-        if run_time is not None:
-            options['MaximumAdaptTime'] = run_time
-        if tolerance is not None:
-            options['ErrorTol'] = tolerance
+        options['ShouldAdapt'] = int(should_adapt)
+        if max_adapt_time is not None:
+            options['MaximumAdaptTime'] = max_adapt_time
+        if error_tol is not None:
+            options['ErrorTol'] = error_tol
+        if max_evals is not None:
+            options['MaximumEvals'] = max_evals
 
         # Also monitor the amount of time it takes
         start_time = time()
