@@ -560,7 +560,7 @@ class ReferenceDatabase(object):
 
         ThermoLibrary = ThermoLibrary(name='Isodesmic-Reference-Set')
         index = 0
-        for ref in self.reference_sets[set_name]:
+        for ref in self.reference_sets[set_name].values():
             thermo = None
             for model_chem in model_chemistry_preference:
                 if model_chem not in ref.calculated_data.keys():
