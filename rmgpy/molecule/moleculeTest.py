@@ -2537,6 +2537,36 @@ multiplicity 2
         self.molecule[0].fingerprint = 'nitronate'
         self.assertEqual(self.molecule[0].fingerprint, 'nitronate')
 
+    def test_fingerprint_property_more_elements(self):
+        """Test that the Molecule.fingerprint property is consistent with many elements"""
+        mol1 = Molecule().from_adjacency_list("""
+1 Cl u0 p3 c0 {2,S}
+2 C  u0 p0 c0 {1,S} {3,S} {4,S} {6,S}
+3 F  u0 p3 c0 {2,S}
+4 O  u0 p2 c0 {2,S} {5,S}
+5 O  u0 p2 c0 {4,S} {7,S}
+6 H  u0 p0 c0 {2,S}
+7 H  u0 p0 c0 {5,S}
+""")
+        mol2 = Molecule().from_adjacency_list("""
+1 Cl u0 p3 c0 {5,S}
+2 F u0 p3 c0 {5,S}
+3 O u0 p2 c0 {4,S} {5,S}
+4 O u0 p2 c0 {3,S} {7,S}
+5 C u0 p0 c0 {1,S} {2,S} {3,S} {6,S}
+6 H u0 p0 c0 {5,S}
+7 H u0 p0 c0 {4,S}
+""")
+        # Confirm that atom orders are different
+        mol1_atoms = ''.join([atom.symbol for atom in mol1.atoms])
+        mol2_atoms = ''.join([atom.symbol for atom in mol2.atoms])
+        self.assertNotEqual(mol1_atoms, mol2_atoms)
+
+        # Test getting fingerprint
+        expected = 'C01H02N00O02S00Cl01F01'
+        self.assertEqual(mol1.fingerprint, expected)
+        self.assertEqual(mol2.fingerprint, expected)
+
     def test_saturate_unfilled_valence(self):
         """
         Test the saturateUnfilledValence for an aromatic and nonaromatic case
