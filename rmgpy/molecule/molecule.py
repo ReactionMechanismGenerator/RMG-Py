@@ -988,7 +988,8 @@ class Molecule(Graph):
         if self._fingerprint is None:
             # Include these elements in this order at minimum
             element_dict = {'C': 0, 'H': 0, 'N': 0, 'O': 0, 'S': 0}
-            element_dict.update(self.get_element_count())
+            all_elements = sorted(self.get_element_count().items(), key=lambda x: x[0])  # Sort alphabetically
+            element_dict.update(all_elements)
             self._fingerprint = ''.join([f'{symbol}{num:0>2}' for symbol, num in element_dict.items()])
         return self._fingerprint
 
