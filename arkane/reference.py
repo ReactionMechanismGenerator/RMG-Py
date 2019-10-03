@@ -557,6 +557,7 @@ class ReferenceDatabase(object):
 
         from rmgpy.data.thermo import ThermoLibrary
         from rmgpy.data.base import Entry
+        from .thermo import NASA
 
         ThermoLibrary = ThermoLibrary(name='Isodesmic-Reference-Set')
         index = 0
@@ -591,18 +592,19 @@ class ReferenceDatabase(object):
             index += 1
             #molecule = Molecule().fromAdjacencyList(ref.adjacency_list)
             label = str(ref.formula) + '_' + str(ref.label)
-            current_H298 = thermo.getEnthalpy(298.15)
-            thermo.changeBaseEnthalpy(Hf298-current_H298)
-            diff = abs(Hf298 - thermo.getEnthalpy(298.15))
-            if thermo.poly1.Tmax > 298.15:
-                diff_poly = abs(Hf298 - thermo.poly1.getEnthalpy(298.15))
-            elif thermo.poly2.Tmax > 298.15:
-                diff_poly = abs(Hf298 - thermo.poly2.getEnthalpy(298.15))
-            if (abs(diff) > 1e-3) or (abs(diff_poly) > 1e-3):
-                logging.warning("Could not set reference thermo for {}...excluding from thermo library".format(ref))
-                continue
-            thermo = ref.calculated_data[model_chem].thermo
-            ThermoLibrary.loadEntry(i,label,ref.adjacency_list,thermo,
+            uncorrected_H298 = thermo.getEnthalpy(298)
+            h_correction = Hf298 - uncorrected_H298
+            thermo.changeBaseEnthalpy(h_correction)
+
+            nasa = NASA(
+            polynomials=thermo.polynomials, 
+            Tmin=thermo.Tmin, 
+            Tmax=thermo.Tmax, 
+            Cp0=thermo.Cp0, 
+            CpInf=thermo.CpInf
+            )
+
+            ThermoLibrary.loadEntry(i,label,ref.adjacency_list,nasa,
             shortDesc='{}-{}'.format(source,model_chem), longDesc='H298 taken from {} {} and used to tweak {} calculation'.format(source,atct_id,model_chem))
 
         return ThermoLibrary
