@@ -49,7 +49,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.level = level
         self.indent = indent
 
-    def visit_call(self, node):
+    def visit_Call(self, node):
         """
         Return a pretty representation of the class or function call represented by `node`.
         """
@@ -75,7 +75,7 @@ class PrettifyVisitor(ast.NodeVisitor):
 
         return result
 
-    def visit_list(self, node):
+    def visit_List(self, node):
         """
         Return a pretty representation of the list represented by `node`.
         """
@@ -94,7 +94,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_tuple(self, node):
+    def visit_Tuple(self, node):
         """
         Return a pretty representation of the tuple represented by `node`.
         """
@@ -121,7 +121,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_dict(self, node):
+    def visit_Dict(self, node):
         """
         Return a pretty representation of the dict represented by `node`.
         """
@@ -143,7 +143,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_str(self, node):
+    def visit_Str(self, node):
         """
         Return a pretty representation of the string represented by `node`.
         """
@@ -151,7 +151,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.string = result
         return result
 
-    def visit_num(self, node):
+    def visit_Num(self, node):
         """
         Return a pretty representation of the number represented by `node`.
         """
