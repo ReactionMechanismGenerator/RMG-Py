@@ -83,5 +83,52 @@ class OutputTest(unittest.TestCase):
                 shutil.rmtree(item_path)
 
 
+class OutputUnitTest(unittest.TestCase):
+    """
+    Contains unit tests for the Arkane's output module.
+    """
+    def test_prettify(self):
+        """Test that ``prettify`` returns the expected result"""
+        input_str = ("conformer(label='C7H7', E0=(193.749,'kJ/mol'), modes=[IdealGasTranslation(mass=(91.0548,'amu')), "
+                     "NonlinearRotor(inertia=([91.0567,186.675,277.733],'amu*angstrom^2'), symmetry=2), "
+                     "HarmonicOscillator(frequencies=([199.381,360.536,413.795,480.347,536.285,630.723,687.118,709.613,"
+                     "776.662,830.404,834.386,901.841,973.498,975.148,993.349,998.606,1040.14,1120.69,1179.22,1189.07,"
+                     "1292.86,1332.91,1357.18,1479.46,1495.36,1507.91,1583.14,1604.63,3156.85,3170.22,3172.78,3185.05,"
+                     "3189.8,3203.23,3253.99],'cm^-1')), HinderedRotor(inertia=(1.70013,'amu*angstrom^2'), symmetry=2, "
+                     "fourier=([[-0.315923,-27.7665,0.177678,3.2437,0.0509515],[-0.00164953,-0.0021925,-0.00386396,"
+                     "-0.000912068,0.00274206]],'kJ/mol'), quantum=True, semiclassical=False)], spin_multiplicity=2, "
+                     "optical_isomers=1)")
+        expected_output = """conformer(
+    label = 'C7H7',
+    E0 = (193.749, 'kJ/mol'),
+    modes = [
+        IdealGasTranslation(mass=(91.0548, 'amu')),
+        NonlinearRotor(
+            inertia = ([91.0567, 186.675, 277.733], 'amu*angstrom^2'),
+            symmetry = 2,
+        ),
+        HarmonicOscillator(
+            frequencies = ([199.381, 360.536, 413.795, 480.347, 536.285, 630.723, 687.118, 709.613, 776.662, 830.404, 834.386, 901.841, 973.498, 975.148, 993.349, 998.606, 1040.14, 1120.69, 1179.22, 1189.07, 1292.86, 1332.91, 1357.18, 1479.46, 1495.36, 1507.91, 1583.14, 1604.63, 3156.85, 3170.22, 3172.78, 3185.05, 3189.8, 3203.23, 3253.99], 'cm^-1'),
+        ),
+        HinderedRotor(
+            inertia = (1.70013, 'amu*angstrom^2'),
+            symmetry = 2,
+            fourier = (
+                [
+                    [-0.315923, -27.7665, 0.177678, 3.2437, 0.0509515],
+                    [-0.00164953, -0.0021925, -0.00386396, -0.000912068, 0.00274206],
+                ],
+                'kJ/mol',
+            ),
+            quantum = None,
+            semiclassical = None,
+        ),
+    ],
+    spin_multiplicity = 2,
+    optical_isomers = 1,
+)"""
+        self.assertEqual(prettify(input_str), expected_output)
+
+
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
