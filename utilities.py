@@ -277,7 +277,11 @@ def clean(subdirectory=''):
     # Remove temporary build files
     print('Removing build directory...')
     directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build', subdirectory)
-    shutil.rmtree(directory)
+    
+    try:
+        shutil.rmtree(directory)
+    except FileNotFoundError:
+        print(f'{directory} not found. Unable to clean up build directory.')
 
     # Remove C shared object files and compiled Python files
     print('Removing compiled files...')
