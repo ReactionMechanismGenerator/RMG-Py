@@ -77,7 +77,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the list represented by `node`.
         """
-        if any([not isinstance(e, (ast.Str, ast.Num)) for e in node.elts]):
+        if any([not isinstance(e, (ast.Str, ast.Num, ast.UnaryOp)) for e in node.elts]):
             # Split elements onto multiple lines
             result = '[\n'
             self.level += 1
@@ -99,7 +99,8 @@ class PrettifyVisitor(ast.NodeVisitor):
         # If the tuple represents a quantity, keep it on one line
         is_quantity = True
         if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num, ast.List)) or (
-                isinstance(node.elts[0], ast.List) and any([not isinstance(e, ast.Num) for e in node.elts[0].elts])):
+                isinstance(node.elts[0], ast.List) and
+                any([not isinstance(e, (ast.Num, ast.UnaryOp)) for e in node.elts[0].elts])):
             is_quantity = False
         elif len(node.elts) < 2 or not isinstance(node.elts[1], ast.Str):
             is_quantity = False
@@ -155,6 +156,18 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         result = '{0:g}'.format(node.n)
         # result = repr(node.n)
+        self.string = result
+        return result
+
+    def visit_UnaryOp(self, node):
+        """
+        Return a pretty representation of the number represented by `node`.
+        """
+        operators = {
+            ast.UAdd: '+',
+            ast.USub: '-',
+        }
+        result = '{0}{1}'.format(operators[node.op.__class__], self.visit(node.operand))
         self.string = result
         return result
 
