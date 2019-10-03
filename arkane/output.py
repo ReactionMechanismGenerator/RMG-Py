@@ -53,12 +53,10 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the class or function call represented by `node`.
         """
-        result = node.func.id + '(\n'
-
         keywords = []
         for keyword in node.keywords:
             keywords.append('{0}={1}'.format(keyword.arg, self.visit(keyword.value)))
-        result += '{0}({1})'.format(node.func.id, ', '.join(keywords))
+        result = '{0}({1})'.format(node.func.id, ', '.join(keywords))
 
         if len(result) > 80:
             result = node.func.id + '(\n'
