@@ -1364,7 +1364,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
             reaction = read_kinetics_entry(kinetics, species_dict, Aunits, Eunits)
             reaction = read_reaction_comments(reaction, comments, read=read_comments)
         except ChemkinError as e:
-            if e.message == "Skip reaction!":
+            if "Skip reaction!" in str(e):
                 logging.warning("Skipping the reaction {0!r}".format(kinetics))
                 continue
             else:

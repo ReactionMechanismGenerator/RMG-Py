@@ -732,8 +732,8 @@ cdef class ReactionSystem(DASx):
                     if np.isnan(self.y).any():
                         raise DASxError("nans in moles")
                 except DASxError as e:
-                    logging.error("Trying to step from time {} to {} resulted in a solver (DASPK) error: "
-                                  "{}".format(prev_time, step_time, e.message))
+                    logging.error("Trying to step from time {0} to {1} resulted in a solver (DASPK) error: "
+                                  "{2!s}".format(prev_time, step_time, e))
 
                     logging.info('Resurrecting Model...')
 
