@@ -239,7 +239,7 @@ class PDepSensitivity(object):
     =================== ================================================================================================
     """
 
-    def __init__(self, job, output_directory, perturbation):
+    def __init__(self, job, output_directory, perturbation, save=True, plot=True):
         self.job = job
         self.output_directory = output_directory
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
@@ -256,9 +256,9 @@ class PDepSensitivity(object):
             self.sa_rates[str(rxn)] = {}
             self.sa_coefficients[str(rxn)] = {}
         self.perturbation = quantity.Quantity(perturbation, 'kcal/mol')
-        self.execute()
+        self.execute(save=save, plot=plot)
 
-    def execute(self):
+    def execute(self, save=True, plot=True):
         """
         Execute the sensitivity analysis for a :class:PressureDependenceJob: object
         """
@@ -286,8 +286,10 @@ class PDepSensitivity(object):
                                                            - self.rates[str(rxn)][i])) /
                                                          (self.perturbation.value_si * self.rates[str(rxn)][i])
                                                          for i in range(len(self.conditions))]
-        self.save(wells, transition_states)
-        self.plot(wells, transition_states)
+        if save:
+            self.save(wells, transition_states)
+        if plot:
+            self.plot(wells, transition_states)
 
     def perturb(self, entry, unperturb=False):
         """
