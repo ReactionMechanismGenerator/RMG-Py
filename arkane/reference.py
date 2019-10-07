@@ -590,21 +590,22 @@ class ReferenceDatabase(object):
                 continue
             i = index
             index += 1
-            #molecule = Molecule().fromAdjacencyList(ref.adjacency_list)
             label = str(ref.formula) + '_' + str(ref.label)
             uncorrected_H298 = thermo.getEnthalpy(298)
+            delta = uncorrected_H298 - thermo.E0.value_si
             h_correction = Hf298 - uncorrected_H298
             thermo.changeBaseEnthalpy(h_correction)
+            thermo.E0.value_si += h_correction + (2 * delta)
 
-            nasa = NASA(
-            polynomials=thermo.polynomials, 
-            Tmin=thermo.Tmin, 
-            Tmax=thermo.Tmax, 
-            Cp0=thermo.Cp0, 
-            CpInf=thermo.CpInf
-            )
+            # nasa = NASA(
+            # polynomials=thermo.polynomials, 
+            # Tmin=thermo.Tmin, 
+            # Tmax=thermo.Tmax, 
+            # Cp0=thermo.Cp0, 
+            # CpInf=thermo.CpInf
+            # )
 
-            ThermoLibrary.loadEntry(i,label,ref.adjacency_list,nasa,
+            ThermoLibrary.loadEntry(i,label,ref.adjacency_list,thermo,
             shortDesc='{}-{}'.format(source,model_chem), longDesc='H298 taken from {} {} and used to tweak {} calculation'.format(source,atct_id,model_chem))
 
         return ThermoLibrary
