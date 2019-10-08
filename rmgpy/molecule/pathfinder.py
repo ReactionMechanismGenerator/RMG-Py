@@ -292,8 +292,8 @@ def find_lone_pair_multiple_bond_paths(atom1):
 
     paths = []
     for atom2, bond12 in atom1.edges.items():
-        # Bond must be capable of gaining an order
-        if bond12.is_single() or bond12.is_double():
+        #If both atom1 and atom2 are sulfur then don't do this type of resonance. Also, the bond must be capable of gaining an order.
+        if (not atom1.is_sulfur() or not atom2.is_sulfur()) and (bond12.is_single() or bond12.is_double()):
             for atom3, bond23 in atom2.edges.items():
                 # Bond must be capable of losing an order without breaking, atom3 must be able to gain a lone pair
                 if atom1 is not atom3 and (bond23.is_double() or bond23.is_triple()) \
@@ -381,8 +381,9 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
         if atom2.is_non_hydrogen():  # don't bother with hydrogen atoms.
             # Find paths in the direction <increasing> the bond order,
             # atom1 must posses at least one lone pair to loose it
+            # the final clause of this prevents S#S from forming by this resonance pathway
             if ((bond12.is_single() or bond12.is_double())
-                    and is_atom_able_to_lose_lone_pair(atom1)):
+                    and is_atom_able_to_lose_lone_pair(atom1)) and not (atom1.is_sulfur() and atom2.is_sulfur() and bond12.is_double()):
                 paths.append([atom1, atom2, bond12, 1])  # direction = 1
             # Find paths in the direction <decreasing> the bond order,
             # atom1 gains a lone pair, hence cannot already have more than two lone pairs
