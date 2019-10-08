@@ -607,7 +607,7 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.float64_t, ndim=1] forward_rate_coefficients, core_species_concentrations
         cdef double prev_time, total_moles, c, volume, RTP, max_char_rate, br, rr
         cdef double unimolecular_threshold_val, bimolecular_threshold_val, trimolecular_threshold_val
-        cdef bool useDynamicsTemp, first_time, use_dynamics, terminate_at_max_objects, schanged
+        cdef bool useDynamicsTemp, first_time, use_dynamics, terminate_at_max_objects, schanged, invalid_objects_print_boolean
         cdef np.ndarray[np.float64_t, ndim=1] edge_reaction_rates
         cdef double reaction_rate, production, consumption
         cdef np.ndarray[np.int_t, ndim=1] surface_species_indices, surface_reaction_indices
@@ -723,6 +723,7 @@ cdef class ReactionSystem(DASx):
 
         first_time = True
 
+        invalid_objects_print_boolean = True  
         while not terminated:
             # Integrate forward in time by one time step
 
@@ -1162,7 +1163,9 @@ cdef class ReactionSystem(DASx):
 
             #remove excess objects
             if len(invalid_objects) + len(new_objects) > max_num_objs_per_iter:
-                logging.info('Exceeded max number of objects...removing excess objects')
+                if invalid_objects_print_boolean:
+                    logging.info('Exceeded max number of objects...removing excess objects')
+                    invalid_objects_print_boolean = False
                 num = max_num_objs_per_iter - len(invalid_objects)
                 new_objects = new_objects[:num]
                 new_object_inds = new_object_inds[:num]
