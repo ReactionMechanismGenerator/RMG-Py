@@ -311,8 +311,7 @@ def update_headers():
     start of each file, be sure to double-check the results to make sure
     important lines aren't accidentally overwritten.
     """
-    shebang = """#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+    shebang = """#!/usr/bin/env python3
 
 """
 
@@ -385,12 +384,12 @@ def update_headers():
         os.makedirs('tmp')
 
     # Compile list of files to modify
-    filelist = ['rmg.py', 'arkane.py', 'setup.py']
+    filelist = ['rmg.py', 'Arkane.py', 'setup.py']
 
     root_dirs = ['rmgpy', 'arkane', 'scripts']
     for root_dir in root_dirs:
         for root, dirs, files in os.walk(root_dir):
-            if 'test_data' in root or 'files' in root or '/tools/data' in root or 'arkane/data' in root:
+            if 'test_data' in root or 'files' in root or '/tools/data' in root or 'arkane/data' in root or '__' in root:
                 print('Skipping ' + root)
                 continue
             print(root)
