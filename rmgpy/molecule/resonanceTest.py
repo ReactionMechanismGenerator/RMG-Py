@@ -1419,3 +1419,11 @@ class ClarTest(unittest.TestCase):
 1 X u0 p0 c0 {2,D}
 2 O u0 p2 c0 {1,D}"""))
         self.assertEquals(len(mol_list), 1)
+
+    def test_sulfur_triple_bond(self):
+        """
+        Test the prevention of S#S formation through the find_lone_pair_multiplebond_paths and 
+        find_adj_lone_pair_multiple_bond_delocalization_paths 
+        """
+        mol_list = generate_resonance_structures(Molecule(smiles="S1SSS1"), filter_structures=False)
+        self.assertEqual(len(mol_list), 10)
