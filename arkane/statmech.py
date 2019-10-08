@@ -184,6 +184,7 @@ class StatMechJob(object):
         self.includeHinderedRotors = True
         self.useIsodesmicReactions = False
         self.isodesmicCorrection = None
+        self.isodesmicUncertainty = None
         # self.isodesmicReactionList = None
         self.isodesmicReactionsDict = None
         self.rejectedReactionsDict = None
@@ -450,6 +451,7 @@ class StatMechJob(object):
 
                 if self.isodesmicCorrection is not None:
                     isodesmic_correction = self.isodesmicCorrection
+                    isodesmic_uncertainty = self.isodesmicUncertainty
 
             if self.applyAtomEnergyCorrections:
                 atom_corrections = get_atom_correction(self.modelChemistry,
@@ -479,7 +481,10 @@ class StatMechJob(object):
             logging.debug('         Scaled ZPE (0 K) = {0:g} kcal/mol'.format(zpe / 4184.))
             logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
 
+        
         conformer.E0 = (e0 * 0.001, "kJ/mol")
+        if self.isodesmicUncertainty is not None:
+            conformer.E0.uncertainty_si = isodesmic_uncertainty
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
@@ -677,6 +682,7 @@ class StatMechJob(object):
 
             # Set the difference as the isodesmic EO correction and re-run the statmech job
             self.isodesmicCorrection = isodesmic_thermo.value_si - uncorrected_thermo
+            self.isodesmicUncertainty = isodesmic_thermo.uncertainty_si
             self.load(pdep)
 
     def write_output(self, output_directory):
@@ -715,30 +721,30 @@ class StatMechJob(object):
         f.write('{0}\n\n'.format(prettify(result)))
 
         if self.useIsodesmicReactions:
+            f.write("# Isodesmic Uncertainty in H298: {} kcal/mol \n".format(self.isodesmicUncertainty/4184))
             for reactions_dict in [self.isodesmicReactionsDict,self.rejectedReactionsDict]:
-                # print self.rejectedReactionsDict
-                # print self.isodesmicReactionsDict
                 if reactions_dict == self.isodesmicReactionsDict:
-                    f.write('\n\n#Isodesmic Reactions Used:\n#------------------------\n')
+                    f.write('\n\n#Isodesmic Reactions Used:\n#------------------------\n\n')
                 else:
-                    f.write('\n\n#Rejected Reactions:\n#------------------------\n')
+                    f.write('\n\n#Rejected Reactions:\n#------------------------\n\n')
                 if len(reactions_dict) > 0:
-                    for i,((rxn,constraint_class),(obj,fod,h298,weight)) in enumerate(reactions_dict.items()):
-                        print i,((rxn,constraint_class),(obj,h298,weight)) 
-                    # for i, rxn in enumerate(self.isodesmicReactionList):
-                        thermo = rxn.calculate_target_thermo()
-                        f.write('Reaction {}: {} kcal/mol , weight: {}\n'.format(i+1, thermo.value_si/4184.0, weight))
-                        f.write('constraint_class: {0} , objective_function_output:{1}, sum_of_fod:{2}\n#'.format(constraint_class,obj,fod))
-                        reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
-                        product_string = '\tProducts:\n#'
-                        for spcs, v in rxn.species.items():
-                            if v > 0:  # Product
-                                product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
-                            else:  # Reactant
-                                reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
-                        f.write(reactant_string + product_string + '\n#')
+                    for constraint_class,reaction_list in reactions_dict.items():
+                        for i,r in enumerate(reaction_list):
+                            rxn,obj,fod,h298 = r
+                            thermo = rxn.calculate_target_thermo()
+                            f.write('# Reaction {}: {} kcal/mol\n'.format(i+1, thermo.value_si/4184.0))
+                            f.write('# constraint_class: {0} , objective_function_output:{1}\n#'.format(constraint_class,obj))
+                            reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
+                            product_string = '\tProducts:\n#'
+                            for spcs, v in rxn.species.items():
+                                if v > 0:  # Product
+                                    product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
+                                else:  # Reactant
+                                    reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
+                            f.write(reactant_string + product_string + '\n#')
 
-                        f.write('\n\n')
+                            f.write('\n')
+            f.write("# Isodesmic Uncertainty in H298: {} kcal/mol \n".format(self.isodesmicUncertainty/4184))
 
         f.close()
 
