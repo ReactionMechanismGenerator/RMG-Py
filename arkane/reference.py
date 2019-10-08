@@ -595,15 +595,7 @@ class ReferenceDatabase(object):
             delta = uncorrected_H298 - thermo.E0.value_si
             h_correction = Hf298 - uncorrected_H298
             thermo.changeBaseEnthalpy(h_correction)
-            thermo.E0.value_si += h_correction + (2 * delta)
-
-            # nasa = NASA(
-            # polynomials=thermo.polynomials, 
-            # Tmin=thermo.Tmin, 
-            # Tmax=thermo.Tmax, 
-            # Cp0=thermo.Cp0, 
-            # CpInf=thermo.CpInf
-            # )
+            thermo.E0.value_si += h_correction
 
             ThermoLibrary.loadEntry(i,label,ref.adjacency_list,thermo,
             shortDesc='{}-{}'.format(source,model_chem), longDesc='H298 taken from {} {} and used to tweak {} calculation'.format(source,atct_id,model_chem))
