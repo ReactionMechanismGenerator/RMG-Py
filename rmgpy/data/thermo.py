@@ -1806,6 +1806,8 @@ class ThermoDatabase(object):
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
                 H298 = np.array([t.get_enthalpy(298.) for t in thermo_data_list])
                 indices = H298.argsort().tolist()
+            # Sort indices again by the Molecule.has_charge()
+            indices.sort(key=lambda index: species.molecule[index].has_charge(), reverse=False)
             # Sort indices again by the Molecule.reactive flag
             indices.sort(key=lambda index: species.molecule[index].reactive, reverse=True)
         else:
