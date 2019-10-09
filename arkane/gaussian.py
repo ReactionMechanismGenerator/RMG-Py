@@ -280,6 +280,8 @@ class GaussianLog(Log):
                     e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
                     e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4(0 K)' in line:
+                    e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
 
                 # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
                 # Gaussian defines the following as
