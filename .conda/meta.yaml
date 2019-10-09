@@ -12,7 +12,6 @@ build:
 requirements:
   build:
     - {{ compiler('c') }} # [unix]
-    - mingwpy # [win]
   host:
     - boost ==1.56.0
     - cython >=0.25.2
