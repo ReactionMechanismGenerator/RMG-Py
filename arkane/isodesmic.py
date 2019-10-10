@@ -314,7 +314,7 @@ class SpeciesConstraints(object):
         self.target = target
         self.reference_species = reference_list
 
-        all_constraint_classes = ['class_0', 'class_1', 'class_2', 'class_3', 'class_4', 'class_5', 'class_6']
+        all_constraint_classes = ['class_0','class_1', 'class_2', 'class_3', 'class_4', 'class_5', 'class_6', 'class_7']
 
         if constraint_classes:
             if isinstance(constraint_classes,str):
@@ -365,10 +365,11 @@ class SpeciesConstraints(object):
             atom_specific = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons)
             atom_specific_with_ring = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons, int(atom.props['inRing']))
 
-            descriptors['class_0'].append(atom_general)
-            descriptors['class_1'].append(atom_specific)
+            descriptors['class_0'].append(atom.number)
+            descriptors['class_1'].append(atom_general)
             descriptors['class_2'].append(atom_specific)
-            descriptors['class_4'].append(atom_specific)
+            descriptors['class_3'].append(atom_specific)
+            descriptors['class_5'].append(atom_specific)
 
             bonds_general = [] # for constraint class 3
             bonds_specific = [] # for constraint class 5
@@ -380,21 +381,21 @@ class SpeciesConstraints(object):
                 bonds_specific.append((bonded_atom.number,bonded_atom.radicalElectrons,bonded_atom.lonePairs,bonded_atom.charge,order_number))
             bonds_general.sort()
             bonds_specific.sort()
-            class_3 = atom_specific + tuple(bonds_general) #+ (radical_count,)
-            class_5 = atom_specific + tuple(bonds_specific) #+ (radical_count,)
-            class_6 = atom_specific_with_ring + tuple(bonds_specific)
-            descriptors['class_3'].append(class_3)
-            descriptors['class_5'].append(class_5)
+            class_4 = atom_specific + tuple(bonds_general) #+ (radical_count,)
+            class_6 = atom_specific + tuple(bonds_specific) #+ (radical_count,)
+            class_7 = atom_specific_with_ring + tuple(bonds_specific)
+            descriptors['class_4'].append(class_4)
             descriptors['class_6'].append(class_6)
+            descriptors['class_7'].append(class_7)
 
         for bond in mol.getAllEdges():
             atom1 = bond.atom1
             atom2 = bond.atom2
             radical_count = atom1.radicalElectrons + atom2.radicalElectrons
-            class_2 = tuple(sorted([atom1.number, atom2.number]) + [int(bond.getOrderNum())]) #+ (radical_count,)
-            class_4 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [int(bond.getOrderNum())]) #+ (radical_count,)
-            descriptors['class_2'].append(class_2)
-            descriptors['class_4'].append(class_4)
+            class_3 = tuple(sorted([atom1.number, atom2.number]) + [int(bond.getOrderNum())]) #+ (radical_count,)
+            class_5 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [int(bond.getOrderNum())]) #+ (radical_count,)
+            descriptors['class_3'].append(class_3)
+            descriptors['class_5'].append(class_5)
 
         # if self.conserve_ring_size:
         #     rings = mol.getSmallestSetOfSmallestRings()
@@ -433,12 +434,12 @@ class SpeciesConstraints(object):
         objective_vectors = defaultdict(np.array)
         error_vector = np.zeros(len(self.reference_species))
         
-        # constraint_map['class_0'] = defaultdict()
         # constraint_map['class_1'] = defaultdict()
         # constraint_map['class_2'] = defaultdict()
         # constraint_map['class_3'] = defaultdict()
         # constraint_map['class_4'] = defaultdict()
         # constraint_map['class_5'] = defaultdict()
+        # constraint_map['class_6'] = defaultdict()
         # constraint_map['class_connectivity'] = defaultdict()
 
         #all_species = self.all_reference_species + [self.target]
@@ -661,6 +662,7 @@ class ErrorCancelingScheme(object):
         if constraint_class is None:
             constraint_class = self.constraints.target_constraint_classes[-1]
         
+        n_atoms = self.target.molecule.getNumAtoms()
         #class_penalty = constraint_class_penalty[constraint_class]
         constraint_matrix = np.array(self.constraint_matrix[constraint_class], dtype=int)
         #weights = self.constraints.descriptor_weights[constraint_class]
@@ -735,8 +737,8 @@ class ErrorCancelingScheme(object):
                 lpsolve('add_constraint', lp, np.concatenate((c_matrix[:split, j], -1*c_matrix[split:, j])), EQ,
                         targets[j])
 
-            lpsolve('add_constraint', lp, np.ones(m), LE, 12)  # Use at most 20 species (including replicates)
-            lpsolve('set_timeout', lp, 2)  # Move on if lpsolve can't find a solution quickly
+            lpsolve('add_constraint', lp, np.ones(m), LE, max(12,n_atoms))  # Use at most 12 species (including replicates)
+            lpsolve('set_timeout', lp, 1)  # Move on if lpsolve can't find a solution quickly
 
             # Constrain v_i to be 4 or less
             for i in range(m):
@@ -803,7 +805,7 @@ class ErrorCancelingScheme(object):
 
         subset_queue = deque()
         subset_queue.append(full_set)
-        max_attempts = 500
+        max_attempts = 200
         attempts = 0
 
         while (len(subset_queue) != 0) and (len(reactions) < n_reactions_max) and (attempts<max_attempts):
@@ -857,7 +859,7 @@ class ErrorCancelingScheme(object):
 
         return reactions
 
-    def calculate_target_enthalpy(self, n_reactions_max=20, deviation_coeff=3, max_ref_uncertainty=2, milp_software='lpsolve'):
+    def calculate_target_enthalpy(self, n_reactions_max=20, deviation_coeff=3, max_ref_uncertainty=None, milp_software='lpsolve'):
         """
         Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
         median hf298 value from among the error canceling reactions found
