@@ -679,11 +679,11 @@ class StatMechJob(object):
                                                                       (uncorrected_thermo, 'J/mol'),
                                                                       self.modelChemistry),
                                         reference_set=reference_db.extract_model_chemistry(self.modelChemistry),
-                                        constraint_classes=self.constraint_classes,
-                                        n_reactions_max=self.n_reactions_max, 
-                                        deviation_coeff=self.deviation_coeff, 
-                                        max_ref_uncertainty=self.max_ref_uncertainty)
-            isodesmic_thermo, isodesmicReactions, rejectedReactions = scheme.calculate_target_enthalpy()
+                                        constraint_classes=self.constraint_classes)
+            isodesmic_thermo, isodesmicReactions, rejectedReactions = \
+            scheme.calculate_target_enthalpy(n_reactions_max=self.n_reactions_max, 
+                                            deviation_coeff=self.deviation_coeff, 
+                                            max_ref_uncertainty=self.max_ref_uncertainty)
             #self.isodesmicReactionList = [r[0] for r in isodesmicReactionList]
             self.isodesmicReactionsList = isodesmicReactions
             self.rejectedReactionsList = rejectedReactions

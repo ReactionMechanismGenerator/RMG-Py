@@ -617,7 +617,7 @@ class ErrorCancelingScheme(object):
     A Base class for calculating target species thermochemistry using error canceling reactions
     """
 
-    def __init__(self, target, reference_set, constraint_classes=None, n_reactions_max=20, deviation_coeff=3, max_ref_uncertainty=2):
+    def __init__(self, target, reference_set, constraint_classes=None):
         """
 
         Args:
@@ -857,7 +857,7 @@ class ErrorCancelingScheme(object):
 
         return reactions
 
-    def calculate_target_enthalpy(self, n_reactions_max=20, deviation_coeff=2, max_ref_uncertainty=2, milp_software='lpsolve'):
+    def calculate_target_enthalpy(self, n_reactions_max=20, deviation_coeff=3, max_ref_uncertainty=2, milp_software='lpsolve'):
         """
         Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
         median hf298 value from among the error canceling reactions found
