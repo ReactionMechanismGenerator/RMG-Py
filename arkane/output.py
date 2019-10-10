@@ -49,16 +49,14 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.level = level
         self.indent = indent
 
-    def visit_call(self, node):
+    def visit_Call(self, node):
         """
         Return a pretty representation of the class or function call represented by `node`.
         """
-        result = node.func.id + '(\n'
-
         keywords = []
         for keyword in node.keywords:
             keywords.append('{0}={1}'.format(keyword.arg, self.visit(keyword.value)))
-        result += '{0}({1})'.format(node.func.id, ', '.join(keywords))
+        result = '{0}({1})'.format(node.func.id, ', '.join(keywords))
 
         if len(result) > 80:
             result = node.func.id + '(\n'
@@ -75,11 +73,11 @@ class PrettifyVisitor(ast.NodeVisitor):
 
         return result
 
-    def visit_list(self, node):
+    def visit_List(self, node):
         """
         Return a pretty representation of the list represented by `node`.
         """
-        if any([not isinstance(e, (ast.Str, ast.Num)) for e in node.elts]):
+        if any([not isinstance(e, (ast.Str, ast.Num, ast.UnaryOp)) for e in node.elts]):
             # Split elements onto multiple lines
             result = '[\n'
             self.level += 1
@@ -94,14 +92,15 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_tuple(self, node):
+    def visit_Tuple(self, node):
         """
         Return a pretty representation of the tuple represented by `node`.
         """
         # If the tuple represents a quantity, keep it on one line
         is_quantity = True
         if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num, ast.List)) or (
-                isinstance(node.elts[0], ast.List) and any([not isinstance(e, ast.Num) for e in node.elts[0].elts])):
+                isinstance(node.elts[0], ast.List) and
+                any([not isinstance(e, (ast.Num, ast.UnaryOp)) for e in node.elts[0].elts])):
             is_quantity = False
         elif len(node.elts) < 2 or not isinstance(node.elts[1], ast.Str):
             is_quantity = False
@@ -121,7 +120,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_dict(self, node):
+    def visit_Dict(self, node):
         """
         Return a pretty representation of the dict represented by `node`.
         """
@@ -143,7 +142,7 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_str(self, node):
+    def visit_Str(self, node):
         """
         Return a pretty representation of the string represented by `node`.
         """
@@ -151,12 +150,24 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.string = result
         return result
 
-    def visit_num(self, node):
+    def visit_Num(self, node):
         """
         Return a pretty representation of the number represented by `node`.
         """
         result = '{0:g}'.format(node.n)
         # result = repr(node.n)
+        self.string = result
+        return result
+
+    def visit_UnaryOp(self, node):
+        """
+        Return a pretty representation of the number represented by `node`.
+        """
+        operators = {
+            ast.UAdd: '+',
+            ast.USub: '-',
+        }
+        result = '{0}{1}'.format(operators[node.op.__class__], self.visit(node.operand))
         self.string = result
         return result
 
