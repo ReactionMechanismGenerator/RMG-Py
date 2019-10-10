@@ -684,13 +684,19 @@ class StatMechJob(object):
             scheme.calculate_target_enthalpy(n_reactions_max=self.n_reactions_max, 
                                             deviation_coeff=self.deviation_coeff, 
                                             max_ref_uncertainty=self.max_ref_uncertainty)
-            #self.isodesmicReactionList = [r[0] for r in isodesmicReactionList]
-            self.isodesmicReactionsList = isodesmicReactions
-            self.rejectedReactionsList = rejectedReactions
+            if isodesmic_thermo is None:
+                logging.info('No isodesmic reactions were generated. Bond Correcitons will be applied instead')
+                self.useIsodesmicReactions = False
+                self.applyAtomEnergyCorrections = True
+                self.applyBondEnergyCorrections = True
+            else:
+                self.isodesmicReactionsList = isodesmicReactions
+                self.rejectedReactionsList = rejectedReactions
 
-            # Set the difference as the isodesmic EO correction and re-run the statmech job
-            self.isodesmicCorrection = isodesmic_thermo.value_si - uncorrected_thermo
-            self.isodesmicUncertainty = isodesmic_thermo.uncertainty_si
+                # Set the difference as the isodesmic EO correction and re-run the statmech job
+                self.isodesmicCorrection = isodesmic_thermo.value_si - uncorrected_thermo
+                self.isodesmicUncertainty = isodesmic_thermo.uncertainty_si
+
             self.load(pdep)
 
     def write_output(self, output_directory):
