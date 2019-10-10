@@ -60,7 +60,7 @@ from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
 from arkane.encorr.corr import get_atom_correction, get_bac
-from arkane.isodesmic import IsodesmicRingScheme, ErrorCancelingSpecies
+from arkane.isodesmic import ErrorCancelingSpecies, ErrorCancelingScheme
 from arkane.reference import ReferenceDatabase
 from arkane.thermo import ThermoJob
 
@@ -183,11 +183,15 @@ class StatMechJob(object):
         self.frequencyScaleFactor = 1.0
         self.includeHinderedRotors = True
         self.useIsodesmicReactions = False
+        self.constraint_classes = None
+        self.n_reactions_max = None
+        self.max_ref_uncertainty = None
+        self.deviation_coeff = None
         self.isodesmicCorrection = None
         self.isodesmicUncertainty = None
         # self.isodesmicReactionList = None
-        self.isodesmicReactionsDict = None
-        self.rejectedReactionsDict = None
+        self.isodesmicReactionsList = None
+        self.rejectedReactionsList = None
         self.referenceSets = ''
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
@@ -671,14 +675,18 @@ class StatMechJob(object):
             # Set the species thermo to None so that it re-generates the second time through
             self.species.thermo = None
 
-            scheme = IsodesmicRingScheme(target=ErrorCancelingSpecies(self.species.molecule[0],
+            scheme = ErrorCancelingScheme(target=ErrorCancelingSpecies(self.species.molecule[0],
                                                                       (uncorrected_thermo, 'J/mol'),
                                                                       self.modelChemistry),
-                                         reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
-            isodesmic_thermo, isodesmicReactionsDict, rejectedReactionsDict = scheme.calculate_target_enthalpy()
+                                        reference_set=reference_db.extract_model_chemistry(self.modelChemistry),
+                                        constraint_classes=self.constraint_classes,
+                                        n_reactions_max=self.n_reactions_max, 
+                                        deviation_coeff=self.deviation_coeff, 
+                                        max_ref_uncertainty=self.max_ref_uncertainty)
+            isodesmic_thermo, isodesmicReactions, rejectedReactions = scheme.calculate_target_enthalpy()
             #self.isodesmicReactionList = [r[0] for r in isodesmicReactionList]
-            self.isodesmicReactionsDict = isodesmicReactionsDict
-            self.rejectedReactionsDict = rejectedReactionsDict
+            self.isodesmicReactionsList = isodesmicReactions
+            self.rejectedReactionsList = rejectedReactions
 
             # Set the difference as the isodesmic EO correction and re-run the statmech job
             self.isodesmicCorrection = isodesmic_thermo.value_si - uncorrected_thermo
@@ -722,28 +730,26 @@ class StatMechJob(object):
 
         if self.useIsodesmicReactions:
             f.write("# Isodesmic Uncertainty in H298: {} kcal/mol \n".format(self.isodesmicUncertainty/4184))
-            for reactions_dict in [self.isodesmicReactionsDict,self.rejectedReactionsDict]:
-                if reactions_dict == self.isodesmicReactionsDict:
+            for reactions_list in [self.isodesmicReactionsList,self.rejectedReactionsList]:
+                if reactions_list == self.isodesmicReactionsList:
                     f.write('\n\n#Isodesmic Reactions Used:\n#------------------------\n\n')
                 else:
                     f.write('\n\n#Rejected Reactions:\n#------------------------\n\n')
-                if len(reactions_dict) > 0:
-                    for constraint_class,reaction_list in reactions_dict.items():
-                        for i,r in enumerate(reaction_list):
-                            rxn,obj,fod,h298 = r
-                            thermo = rxn.calculate_target_thermo()
-                            f.write('# Reaction {}: {} kcal/mol\n'.format(i+1, thermo.value_si/4184.0))
-                            f.write('# constraint_class: {0} , objective_function_output:{1}\n#'.format(constraint_class,obj))
-                            reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
-                            product_string = '\tProducts:\n#'
-                            for spcs, v in rxn.species.items():
-                                if v > 0:  # Product
-                                    product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
-                                else:  # Reactant
-                                    reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
-                            f.write(reactant_string + product_string + '\n#')
+                if len(reactions_list) > 0:
+                    for i,(rxn,obj,ref_uncertainty,h298) in enumerate(reactions_list):
+                        thermo = rxn.calculate_target_thermo()
+                        f.write('# Reaction {}: {} kcal/mol\n'.format(i+1, thermo.value_si/4184.0))
+                        f.write('# constraint_class: {0}, obj:{1}, reference_uncertainty: {2} kcal/mol \n#'.format(rxn.constraint_class,obj,ref_uncertainty))
+                        reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
+                        product_string = '\tProducts:\n#'
+                        for spcs, v in rxn.species.items():
+                            if v > 0:  # Product
+                                product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
+                            else:  # Reactant
+                                reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
+                        f.write(reactant_string + product_string + '\n#')
 
-                            f.write('\n')
+                        f.write('\n')
             f.write("# Isodesmic Uncertainty in H298: {} kcal/mol \n".format(self.isodesmicUncertainty/4184))
 
         f.close()

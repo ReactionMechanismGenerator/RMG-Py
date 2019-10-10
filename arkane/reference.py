@@ -233,7 +233,8 @@ class ReferenceSpecies(ArkaneSpecies):
                             (entry.thermo_data.H298.uncertainty_si < uncertainty):
                         uncertainty = entry.thermo_data.H298.uncertainty_si
                         preferred_source = sources[i]
-        high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
+        #high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
+        high_level_h298 = self.reference_data[preferred_source].thermo_data.H298
         low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
         fod = self.calculated_data[model_chemistry].fod
         error_metric = self.calculated_data[model_chemistry].error_metric

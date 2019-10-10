@@ -653,6 +653,11 @@ def loadInputFile(path):
     use_bond_corrections = local_context.get('useBondCorrections', False)
     bac_type = local_context.get('bondCorrectionType', 'p')
     use_isodesmic_reactions = local_context.get('useIsodesmicReactions', False)
+    n_reactions_max = local_context.get('n_reactions_max', 20)
+    deviation_coeff = local_context.get('deviation_coeff', None)
+    max_ref_uncertainty = local_context.get('max_ref_uncertainty', None)
+    constraint_classes = local_context.get('constraint_classes', None)
+
     reference_sets = local_context.get('referenceSets', '')
     atom_energies = local_context.get('atomEnergies', None)
     
@@ -672,6 +677,10 @@ def loadInputFile(path):
             job.bondEnergyCorrectionType = bac_type
             job.atomEnergies = atom_energies
             job.useIsodesmicReactions = use_isodesmic_reactions
+            job.n_reactions_max = n_reactions_max
+            job.max_ref_uncertainty = max_ref_uncertainty
+            job.deviation_coeff = deviation_coeff 
+            job.constraint_classes = constraint_classes
             job.referenceSets = reference_sets
         if isinstance(job, ThermoJob):
             job.arkane_species.author = author
