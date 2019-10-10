@@ -910,8 +910,6 @@ class ErrorCancelingScheme(object):
             reactions = [(rxn,float(obj),float(ref_uncertainty),float(h298)) for rxn,obj,ref_uncertainty,h298 in data.tolist()]
             discarded_reactions = [(rxn,float(obj),float(ref_uncertainty),float(h298)) for rxn,obj,ref_uncertainty,h298 in discarded_reactions]
 
-            print reactions
-
             # h298_averages = {}
             # discarded_reactions = defaultdict(list)
             # keep_reactions = defaultdict(list)
