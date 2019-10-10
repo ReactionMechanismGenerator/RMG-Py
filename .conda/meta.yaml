@@ -12,28 +12,24 @@ build:
 requirements:
   build:
     - {{ compiler('c') }} # [unix]
-    - mingwpy # [win]
   host:
-    - boost ==1.56.0
     - cython >=0.25.2
-    - jinja2
     - lpsolve55
     - numpy
-    - openbabel >=2.4.1
+    - openbabel
     - pydas >=1.0.2
     - pydqed >=1.0.1
     - pyrdl
-    - python
-    - pyzmq
+    - python >=3.7
     - quantities
     - rdkit >=2018
     - scipy
     - setuptools
   run:
-    - argparse # [py26]
     - cairo
     - cairocffi
     - cantera >=2.3.0
+    - cclib
     - chemprop
     - coolprop
     - coverage
@@ -41,25 +37,29 @@ requirements:
     - ffmpeg
     - gprof2dot
     - graphviz
-    - guppy
+    - h5py
     - jinja2
+    - jupyter
     - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - mock
     - mopac
     - mpmath
+    - networkx
     - nose
+    - numdifftools
     - {{ pin_compatible('numpy') }}
-    - openbabel >=2.4.1
+    - openbabel
     - psutil
     - pydas >=1.0.2
-    - pydot ==1.2.2
+    - pydot
     - pydqed >=1.0.1
     - pymongo
     - pyparsing
     - pyrdl
-    - python
+    - python >=3.7
+    - pyyaml
     - pyzmq
     - quantities
     - rdkit >=2018
@@ -67,7 +67,6 @@ requirements:
     - scikit-learn
     - scipy
     - symmetry
-    - textgenrnn
     - xlwt
 test:
   source_files:

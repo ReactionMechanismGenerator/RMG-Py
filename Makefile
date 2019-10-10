@@ -38,18 +38,7 @@ clean-solver:
 	@ python utilities.py clean-solver
 
 install:
-	@ echo "Checking you have PyDQED..."
-	@ python -c 'import pydqed; print(pydqed.__file__)'
-ifneq ($(DASPK),)
-	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi
-else ifneq ($(DASSL),)
-	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
-	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
-else
-	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
-	@ python -c 'import pydas.dassl'
-endif
+	@ python utilities.py check-pydas
 	python setup.py install
 
 q2dtor:
