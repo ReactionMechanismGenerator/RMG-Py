@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -27,6 +26,7 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+
 """
 This file defines functions for outputting the RMG generated mechanism to a .rms yaml file, which can be read by the
 Reaction Mechanism Simulator (RMS)
