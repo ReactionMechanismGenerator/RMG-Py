@@ -98,7 +98,7 @@ def parse_arguments():
             'radius',
             'central_reaction_count',
             'time_step')
-    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.central_reaction_count, args.tstep)
+    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
 
     return (input_file,
