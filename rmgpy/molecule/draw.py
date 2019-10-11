@@ -1638,13 +1638,13 @@ class ReactionDrawer(object):
                 molecule = reactant.molecule[0]
             elif isinstance(reactant, Molecule):
                 molecule = reactant
-            reactants.append(MoleculeDrawer().draw(molecule, format))
+            reactants.append(MoleculeDrawer().draw(molecule, file_format))
         for product in reaction.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
             elif isinstance(product, Molecule):
                 molecule = product
-            products.append(MoleculeDrawer().draw(molecule, format))
+            products.append(MoleculeDrawer().draw(molecule, file_format))
 
         # Next determine size required for surface
         rxn_width = rxn_height = rxn_top = 0
@@ -1738,7 +1738,7 @@ class ReactionDrawer(object):
             rxn_x += width
 
         # Finish Cairo drawing
-        if format == 'png':
+        if file_format == 'png':
             rxn_surface.write_to_png(path)
         else:
             rxn_surface.finish()
