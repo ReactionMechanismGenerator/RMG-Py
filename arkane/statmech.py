@@ -694,7 +694,7 @@ class StatMechJob(object):
                     self.applyBondEnergyCorrections = True
                 else:
                     logging.info('There are no bond corrections for {}, only atom energy corrections will be applied'.format(self.modelChemistry))
-                    self.applyBondEnergyCorrections = True
+                    self.applyBondEnergyCorrections = False
             else:
                 self.isodesmicReactionsList = isodesmicReactions
                 self.rejectedReactionsList = rejectedReactions
