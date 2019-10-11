@@ -916,6 +916,72 @@ multiplicity 2
 
             self.assertTrue(expected_products[i].is_isomorphic(product.molecule[0], mapping))
 
+    def test_add_atom_labels_for_reaction_r_recombination(self):
+        """Test that we can add atom labels to an existing R_Recombination reaction"""
+        reactants = [Species().from_smiles('C[CH2]'), Species().from_smiles('[CH3]')]
+        products = [Species().from_smiles('CCC')]
+
+        reaction = TemplateReaction(reactants=reactants, products=products)
+
+        self.database.kinetics.families['R_Recombination'].add_atom_labels_for_reaction(reaction)
+
+        expected_reactants = [
+            Molecule().from_adjacency_list("""
+multiplicity 2
+1   C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 * C u1 p0 c0 {1,S} {6,S} {7,S}
+3   H u0 p0 c0 {1,S}
+4   H u0 p0 c0 {1,S}
+5   H u0 p0 c0 {1,S}
+6   H u0 p0 c0 {2,S}
+7   H u0 p0 c0 {2,S}
+"""),
+            Molecule().from_adjacency_list("""
+multiplicity 2
+1 * C u1 p0 c0 {2,S} {3,S} {4,S}
+2   H u0 p0 c0 {1,S}
+3   H u0 p0 c0 {1,S}
+4   H u0 p0 c0 {1,S}
+""")]
+
+        expected_products = [
+            Molecule().from_adjacency_list("""
+1  * C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2  * C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+3    C u0 p0 c0 {1,S} {9,S} {10,S} {11,S}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {1,S}
+6    H u0 p0 c0 {2,S}
+7    H u0 p0 c0 {2,S}
+8    H u0 p0 c0 {2,S}
+9    H u0 p0 c0 {3,S}
+10   H u0 p0 c0 {3,S}
+11   H u0 p0 c0 {3,S}
+""")]
+
+        for i, reactant in enumerate(reaction.reactants):
+            mapping = {}
+            for label, atom in expected_reactants[i].get_all_labeled_atoms().items():
+                mapping[atom] = reactant.molecule[0].get_labeled_atoms(label)[0]
+
+            self.assertTrue(expected_reactants[i].is_isomorphic(reactant.molecule[0], mapping))
+
+        for i, product in enumerate(reaction.products):
+            # There are two identical labels in the product, so we need to check both mappings
+            # Only one of the mappings will result in isomorphic structures though
+            atoms_a = expected_products[i].get_labeled_atoms('*')
+            atoms_b = product.molecule[0].get_labeled_atoms('*')
+            mapping1 = {atoms_a[0]: atoms_b[0], atoms_a[1]: atoms_b[1]}
+            mapping2 = {atoms_a[0]: atoms_b[1], atoms_a[1]: atoms_b[0]}
+
+            results = [
+                expected_products[i].is_isomorphic(product.molecule[0], mapping1),
+                expected_products[i].is_isomorphic(product.molecule[0], mapping2)
+            ]
+
+            self.assertTrue(any(results))
+            self.assertFalse(all(results))
+
     def test_irreversible_reaction(self):
         """Test that the Singlet_Val6_to_triplet and 1,2-Birad_to_alkene families generate irreversible reactions."""
 
