@@ -60,6 +60,7 @@ from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
 from arkane.encorr.corr import get_atom_correction, get_bac
+from arkane.encorr.data import pbac
 from arkane.isodesmic import ErrorCancelingSpecies, ErrorCancelingScheme
 from arkane.reference import ReferenceDatabase
 from arkane.thermo import ThermoJob
@@ -685,10 +686,15 @@ class StatMechJob(object):
                                             deviation_coeff=self.deviation_coeff, 
                                             max_ref_uncertainty=self.max_ref_uncertainty)
             if isodesmic_thermo is None:
-                logging.info('No isodesmic reactions were generated. Bond Correcitons will be applied instead')
+                logging.info('No isodesmic reactions were generated.')
                 self.useIsodesmicReactions = False
                 self.applyAtomEnergyCorrections = True
-                self.applyBondEnergyCorrections = True
+                if self.modelChemistry in pbac.keys():
+                    logging.info('Petersson-type bond additivity corrections will be applied instead')
+                    self.applyBondEnergyCorrections = True
+                else:
+                    logging.info('There are no bond corrections for {}, only atom energy corrections will be applied'.format(self.modelChemistry))
+                    self.applyBondEnergyCorrections = True
             else:
                 self.isodesmicReactionsList = isodesmicReactions
                 self.rejectedReactionsList = rejectedReactions
