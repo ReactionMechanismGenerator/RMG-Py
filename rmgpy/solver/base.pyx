@@ -721,7 +721,7 @@ cdef class ReactionSystem(DASx):
             norm_sens_array = [[] for spec in self.sensitive_species]
             RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
-            sens_species_indices = numpy.array([species_index[spec] for spec in self.sensitive_species], numpy.int)  # index within coreSpecies list of the sensitive species
+            sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species], np.int)  # index within coreSpecies list of the sensitive species
                 
         
         step_time = 1e-12
@@ -799,7 +799,7 @@ cdef class ReactionSystem(DASx):
                 self.generate_edge_info(self.t,self.y)
                 
             y_core_species = self.y[:num_core_species]
-            total_moles = numpy.sum(y_core_species)
+            total_moles = np.sum(y_core_species)
             if sensitivity:
                 time_array.append(self.t)
                 mole_sens = self.y[num_core_species:]
