@@ -28,15 +28,18 @@
 ###############################################################################
 
 import contextlib
+import logging
 import os
 from argparse import Namespace
 from typing import Callable, Union
 
+logging.disable()
 try:
     import chemprop
 except ImportError as e:
     chemprop = None
     chemprop_exception = e
+logging.disable(logging.NOTSET)
 import numpy as np
 
 from rmgpy.molecule import Molecule
