@@ -2340,7 +2340,7 @@ class Molecule(Graph):
             return True
         return False
 
-    def isIdentical(self, other, strict=True):
+    def isIdentical(self, other, strict=True, include_labels=False):
         """
         Performs isomorphism checking, with the added constraint that atom IDs must match.
 
@@ -2364,6 +2364,10 @@ class Molecule(Graph):
             # Sort the atoms by ID
             atomList = sorted(self.atoms, key=lambda x: x.id)
             otherList = sorted(other.atoms, key=lambda x: x.id)
+
+            if include_labels is True:
+                if [a.label for a in atomList] != [a.label for a in otherList]:
+                    return False
 
             # If matching atom indices gives a valid mapping, then the molecules are fully identical
             mapping = {}
