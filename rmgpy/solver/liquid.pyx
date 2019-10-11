@@ -341,7 +341,7 @@ cdef class LiquidReactor(ReactionSystem):
         return delta, 1
     
     @cython.boundscheck(False)
-    def generateEdgeInfo(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y):
+    def generate_edge_info(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y):
 
         """
         Return the residual function for the governing DAE system for the
