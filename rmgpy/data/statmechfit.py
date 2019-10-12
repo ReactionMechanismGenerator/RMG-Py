@@ -84,7 +84,7 @@ def fit_statmech_to_heat_capacity(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     # You must specify at least 7 heat capacity points to use in the fitting;
     # you can specify as many as you like above that minimum
     if len(Tlist) < 7:
-        raise StatmechFitError('You must specify at least 7 heat capacity points to fitStatmechToHeatCapacity().')
+        raise StatmechFitError('You must specify at least 7 heat capacity points to fit_statmech_to_heat_capacity().')
     if len(Tlist) != len(Cvlist):
         raise StatmechFitError('The number of heat capacity points ({0:d}) does not match the number of temperatures '
                                'provided ({1:d}).'.format(len(Cvlist), len(Tlist)))
