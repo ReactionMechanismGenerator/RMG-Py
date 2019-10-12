@@ -49,7 +49,7 @@ Class                           Description
 Reaction events
 ===============
 
-.. currentmodule:: rmgpy.pdep
+.. currentmodule:: rmgpy.pdep.reaction
 
 ================================================= ================================
 Function                                          Description
