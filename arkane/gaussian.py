@@ -247,6 +247,9 @@ class GaussianLog(Log):
                         # Read the next line in the file
                         line = f.readline()
 
+                if 'Error termination' in line:
+                    raise LogError(f'The Gaussian job in {self.path} did not converge.')
+
                 # Read the next line in the file
                 line = f.readline()
 
