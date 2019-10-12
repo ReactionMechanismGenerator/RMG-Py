@@ -51,13 +51,13 @@ Reaction events
 
 .. currentmodule:: rmgpy.pdep
 
-=============================================== ================================
-Function                                        Description
-=============================================== ================================
-:func:`calculateMicrocanonicalRateCoefficient`  Return the microcanonical rate coefficient :math:`k(E)` for a reaction
-:func:`applyRRKMTheory`                         Use RRKM theory to compute :math:`k(E)` for a reaction
-:func:`applyInverseLaplaceTransformMethod`      Use the inverse Laplace transform method to compute :math:`k(E)` for a reaction
-=============================================== ================================
+================================================= ================================
+Function                                          Description
+================================================= ================================
+:func:`calculate_microcanonical_rate_coefficient` Return the microcanonical rate coefficient :math:`k(E)` for a reaction
+:func:`apply_rrkm_theory`                         Use RRKM theory to compute :math:`k(E)` for a reaction
+:func:`apply_inverse_laplace_transform_method`    Use the inverse Laplace transform method to compute :math:`k(E)` for a reaction
+================================================= ================================
 
 
 
@@ -82,7 +82,7 @@ The master equation
 =============================== ================================================
 Function                        Description
 =============================== ================================================
-:func:`generateFullMEMatrix`    Return the full master equation matrix for a network
+:func:`generate_full_me_matrix` Return the full master equation matrix for a network
 =============================== ================================================
 
 
@@ -95,9 +95,9 @@ Master equation reduction methods
 =========================================================== ====================
 Function                                                    Description
 =========================================================== ====================
-:func:`msc.applyModifiedStrongCollisionMethod`              Reduce the master equation to phenomenological rate coefficients :math:`k(T,P)` using the modified strong collision method
-:func:`rs.applyReservoirStateMethod`                        Reduce the master equation to phenomenological rate coefficients :math:`k(T,P)` using the reservoir state method
-:func:`cse.applyChemicallySignificantEigenvaluesMethod`     Reduce the master equation to phenomenological rate coefficients :math:`k(T,P)` using the chemically-significant eigenvalues method
+:func:`msc.apply_modified_strong_collision_method`          Reduce the master equation to phenomenological rate coefficients :math:`k(T,P)` using the modified strong collision method
+:func:`rs.apply_reservoir_state_method`                     Reduce the master equation to phenomenological rate coefficients :math:`k(T,P)` using the reservoir state method
+:func:`cse.apply_chemically_significant_eigenvalues_method` Reduce the master equation to phenomenological rate coefficients :math:`k(T,P)` using the chemically-significant eigenvalues method
 =========================================================== ====================
 
 
