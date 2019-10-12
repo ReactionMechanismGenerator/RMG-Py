@@ -19,7 +19,7 @@ Class/Function              Description
 :class:`LogicNode`          A node in a database that represents a logical collection of entries
 :class:`LogicAnd`           A logical collection of entries, where all entries in the collection must match
 :class:`LogicOr`            A logical collection of entries, where any entry in the collection can match
-:func:`makeLogicNode`       Create a :class:`LogicNode` based on a string representation
+:func:`make_logic_node`     Create a :class:`LogicNode` based on a string representation
 =========================== ====================================================
 
 
@@ -84,17 +84,17 @@ Statistical mechanics fitting
 
 .. currentmodule:: rmgpy.data.statmechfit
 
-=================================== ============================================
-Class/Function                      Description
-=================================== ============================================
-:class:`DirectFit`                  DQED class for fitting a small number of vibrational frequencies and hindered rotors
-:class:`PseudoFit`                  DQED class for fitting a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both
-:class:`PseudoRotorFit`             DQED class for fitting a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only
-:func:`fitStatmechDirect`           Directly fit a small number of vibrational frequencies and hindered rotors
-:func:`fitStatmechPseudo`           Fit a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both
-:func:`fitStatmechPseudoRotors`     Fit a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only
-:func:`fitStatmechToHeatCapacity`   Fit vibrational and torsional degrees of freedom to heat capacity data
-=================================== ============================================
+===================================== ============================================
+Class/Function                        Description
+===================================== ============================================
+:class:`DirectFit`                    DQED class for fitting a small number of vibrational frequencies and hindered rotors
+:class:`PseudoFit`                    DQED class for fitting a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both
+:class:`PseudoRotorFit`               DQED class for fitting a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only
+:func:`fit_statmech_direct`           Directly fit a small number of vibrational frequencies and hindered rotors
+:func:`fit_statmech_pseudo`           Fit a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both
+:func:`fit_statmech_pseudo_rotors`    Fit a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only
+:func:`fit_statmech_to_heat_capacity` Fit vibrational and torsional degrees of freedom to heat capacity data
+===================================== ============================================
 
 
 
