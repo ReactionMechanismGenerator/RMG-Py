@@ -27,7 +27,7 @@
 #                                                                             #
 ###############################################################################
 
-from rmgpy.molecule.atomtype import AtomType, ATOMTYPES
+from rmgpy.molecule.atomtype import AtomType, ATOMTYPES, get_atomtype
 from rmgpy.molecule.element import Element, PeriodicSystem, get_element
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.group import GroupAtom, GroupBond, Group
