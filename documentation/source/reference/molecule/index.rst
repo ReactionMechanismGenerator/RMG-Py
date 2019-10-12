@@ -46,9 +46,9 @@ Elements and atom types
 Class/Function          Description
 ======================= ========================================================
 :class:`Element`        A model of a chemical element
-:func:`getElement`      Return the :class:`Element` object for a given atomic number or symbol
+:func:`get_element`     Return the :class:`Element` object for a given atomic number or symbol
 :class:`AtomType`       A model of an atom type: an element and local bond structure
-:func:`getAtomType`     Return the :class:`AtomType` object for a given atom in a molecule
+:func:`get_atomtype`    Return the :class:`AtomType` object for a given atom in a molecule
 ======================= ========================================================
 
 
@@ -108,8 +108,8 @@ Adjacency lists
 =========================== ====================================================
 Function                    Description
 =========================== ====================================================
-:func:`fromAdjacencyList`   Convert an adjacency list to a set of atoms and bonds
-:func:`toAdjacencyList`     Convert a set of atoms and bonds to an adjacency list
+:func:`from_adjacency_list` Convert an adjacency list to a set of atoms and bonds
+:func:`to_adjacency_list`   Convert a set of atoms and bonds to an adjacency list
 =========================== ====================================================
 
 
@@ -119,15 +119,15 @@ Symmetry numbers
 
 .. currentmodule:: rmgpy.molecule.symmetry
 
-======================================= ========================================
-Class                                   Description
-======================================= ========================================
-:func:`calculateAtomSymmetryNumber`     Calculate the atom-centered symmetry number for an atom in a molecule
-:func:`calculateBondSymmetryNumber`     Calculate the bond-centered symmetry number for a bond in a molecule
-:func:`calculateAxisSymmetryNumber`     Calculate the axis-centered symmetry number for a double bond axis in a molecule
-:func:`calculateCyclicSymmetryNumber`   Calculate the ring-centered symmetry number for a ring in a molecule
-:func:`calculateSymmetryNumber`         Calculate the total internal + external symmetry number for a molecule
-======================================= ========================================
+======================================== ========================================
+Class                                    Description
+======================================== ========================================
+:func:`calculate_atom_symmetry_number`   Calculate the atom-centered symmetry number for an atom in a molecule
+:func:`calculate_bond_symmetry_number`   Calculate the bond-centered symmetry number for a bond in a molecule
+:func:`calculate_axis_symmetry_number`   Calculate the axis-centered symmetry number for a double bond axis in a molecule
+:func:`calculate_cyclic_symmetry_number` Calculate the ring-centered symmetry number for a ring in a molecule
+:func:`calculate_symmetry_number`        Calculate the total internal + external symmetry number for a molecule
+======================================== ========================================
 
 
 
