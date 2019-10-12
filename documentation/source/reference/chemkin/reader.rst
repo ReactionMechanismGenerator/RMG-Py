@@ -7,22 +7,22 @@ Reading Chemkin files
 Main functions
 ==============
 
-.. autofunction:: rmgpy.chemkin.loadChemkinFile
+.. autofunction:: rmgpy.chemkin.load_chemkin_file
 
-.. autofunction:: rmgpy.chemkin.loadSpeciesDictionary
+.. autofunction:: rmgpy.chemkin.load_species_dictionary
 
-.. autofunction:: rmgpy.chemkin.loadTransportFile
+.. autofunction:: rmgpy.chemkin.load_transport_file
 
 
 Helper functions
 ================
 
-.. autofunction:: rmgpy.chemkin.readKineticsEntry
+.. autofunction:: rmgpy.chemkin.read_kinetics_entry
 
-.. autofunction:: rmgpy.chemkin.readReactionComments
+.. autofunction:: rmgpy.chemkin.read_reaction_comments
 
-.. autofunction:: rmgpy.chemkin.readReactionsBlock
+.. autofunction:: rmgpy.chemkin.read_reactions_block
 
-.. autofunction:: rmgpy.chemkin.readThermoEntry
+.. autofunction:: rmgpy.chemkin.read_thermo_entry
 
-.. autofunction:: rmgpy.chemkin.removeCommentFromLine
+.. autofunction:: rmgpy.chemkin.remove_comment_from_line
