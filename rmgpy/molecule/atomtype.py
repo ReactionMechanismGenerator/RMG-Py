@@ -69,17 +69,17 @@ class AtomType:
     `decrement_lone_pair` ``list``            The atom type(s) that result when the number of lone electron pairs is decremented
 
     The following features are what are required in a given atomtype. Any int in the list is acceptable. An empty list is a wildcard
-    ----------------------------------------------------------------------------
-    'single'              ''list''            The total number of single bonds on the atom
-    'all_double'          ''list''            The total number of double bonds on the atom
-    'r_double'            ''list''            The number of double bonds to any non-oxygen, nonsulfur
-    'o_double'            ''list''            The number of double bonds to oxygen
-    's_double'            ''list''            The number of double bonds to sulfur
-    'triple'              ''list''            The total number of triple bonds on the atom
-    'quadruple'           ''list''            The total number of quadruple bonds on the atom
-    'benzene'             ''list''            The total number of benzene bonds on the atom
-    'lone_pairs'          ''list''            The number of lone pairs on the atom
-    'charge'              ''list''            The partial charge of the atom
+    ------------------------------------------------------------------------------
+    `single`              ``list``            The total number of single bonds on the atom
+    `all_double`          ``list``            The total number of double bonds on the atom
+    `r_double`            ``list``            The number of double bonds to any non-oxygen, nonsulfur
+    `o_double`            ``list``            The number of double bonds to oxygen
+    `s_double`            ``list``            The number of double bonds to sulfur
+    `triple`              ``list``            The total number of triple bonds on the atom
+    `quadruple`           ``list``            The total number of quadruple bonds on the atom
+    `benzene`             ``list``            The total number of benzene bonds on the atom
+    `lone_pairs`          ``list``            The number of lone pairs on the atom
+    `charge`              ``list``            The partial charge of the atom
     ===================== =================== ====================================
 
     """
