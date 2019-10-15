@@ -4,16 +4,16 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-#. Download and install the `Anaconda Python Platform <https://www.anaconda.com/download/>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG).
+#. Download and install the `Anaconda Python Platform <https://www.anaconda.com/download/>`_ for Python 3.7.
 
-   The download will be a .sh file with a name like ``Anaconda2-2018.12-Linux-x86_64.sh``. Open a terminal in the same
+   The download will be a .sh file with a name like ``Anaconda3-2019.07-Linux-x86_64.sh``. Open a terminal in the same
    directory as this file, and type the following to install Anaconda (replace the name of your .sh file below). ::
 
-    bash Anaconda2-2018.12-Linux-x86_64.sh
+    bash Anaconda3-2019.07-Linux-x86_64.sh
 
-   **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do NOT need to install Microsoft VSCode (but feel free to if you are looking for a lightweight IDE).
+   **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not need to install Microsoft VSCode (but feel free to if you are looking for a lightweight IDE).
 
-#. Install `Git <https://git-scm.com/>`_, the open source version control package through the Terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
+#. Install `Git <https://git-scm.com/>`_, the open source version control package through the terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
 
     sudo apt-get install git
     
@@ -29,21 +29,21 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-#. Now create the anaconda environment for RMG-Py
+#. Now create the conda environment for RMG-Py
 
    For Linux users: ::
     
     cd RMG-Py
     source ~/.bashrc
-    conda env create -f environment_linux.yml
+    conda env create -f environment.yml
     
    For Mac users: ::
          
     cd RMG-Py
     source ~/.bash_profile
-    conda env create -f environment_mac.yml
+    conda env create -f environment.yml
 
-#. Compile RMG-Py after activating the anaconda environment ::
+#. Compile RMG-Py after activating the conda environment ::
 
     source activate rmg_env
     make
@@ -63,7 +63,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     rmg.py input.py
    
-#. Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your Terminal ::
+#. Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your terminal ::
     
     mopac password_string_here    
 

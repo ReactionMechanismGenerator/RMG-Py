@@ -5,7 +5,7 @@ Installation
 ************
 
 .. NOTE::
-    It is recommended that RMG be installed with Python 2.7, although it has been previously tested that Python 2.5 and 2.6 may also work. Dependency issues render it incompatible with Python 3.x releases.
+    It is recommended that RMG be installed with Python 3.7. Legacy releases compatible with Python 2.7 are also available.
 
 For any questions related to RMG and its usage and installation, please
 post an issue at https://github.com/ReactionMechanismGenerator/RMG-Py/issues and the RMG
