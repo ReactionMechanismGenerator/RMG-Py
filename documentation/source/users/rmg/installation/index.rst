@@ -27,10 +27,11 @@ RMG in the Ubuntu subsystem now available on Windows 10.
     virtualMachineSetup
     linuxSubsystem
 
-For users unfamiliar with bash or Linux, we recommend looking at online tutorials such as the one
-`here <https://www.guru99.com/unix-linux-tutorial.html>`_. To start out
-with, we recommend looking at the following tutorials: Linux vs. Windows, Terminal vs File Manager, and Must Know
-Linux/Unix Commands.
+For users unfamiliar with bash or Linux, we recommend looking at
+`online Linux tutorials <https://www.guru99.com/unix-linux-tutorial.html>`_. To start out
+with, we recommend looking at the following tutorials: `Linux vs. Windows <https://www.guru99.com/linux-differences.html>`_,
+`Terminal vs File Manager <https://www.guru99.com/terminal-file-manager.html>`_, and
+`Must Know Linux/Unix Commands <https://www.guru99.com/must-know-linux-commands.html>`_.
 
 
 For Basic Users: Binary Installation Using Anaconda
