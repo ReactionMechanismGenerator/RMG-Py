@@ -200,9 +200,12 @@ cdef class Configuration(object):
         # Evaluate configuration integral
         tred = constants.R * T / epsilon
         omega22 = 1.16145 * tred ** (-0.14874) + 0.52487 * exp(-0.77320 * tred) + 2.16178 * exp(-2.43787 * tred)
-
         # Evaluate collision frequency
-        return omega22 * sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma*sigma * gas_concentration
+        collision_freq = omega22 * sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma*sigma * gas_concentration
+        logging.debug("Obtained the following collision parameters: sigma {0}, epsilon {1}, "
+                      "omega22 {2}, collision rate {3}".format(sigma, epsilon, omega22, collision_freq))
+
+        return collision_freq
 
     cpdef np.ndarray generate_collision_matrix(self, double T, np.ndarray dens_states, np.ndarray e_list,
                                                np.ndarray j_list=None):
