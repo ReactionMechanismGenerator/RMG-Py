@@ -748,7 +748,7 @@ Energy = Enthalpy = FreeEnergy = UnitType(
     'J/mol',
     common_units=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
     extra_dimensionality={'K': constants.R,
-                         'cm^-1': constants.h * constants.c * 100
+                         'cm^-1': constants.h * constants.c * 100 * constants.Na
                          # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
                          # so is not advisable (and fails unit tests)
                          # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
