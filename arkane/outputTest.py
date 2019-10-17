@@ -39,8 +39,11 @@ import unittest
 from nose.plugins.attrib import attr
 
 import rmgpy
+
+from arkane.gaussian import GaussianLog
 from arkane.main import Arkane
-from arkane.output import prettify
+from arkane.output import prettify, get_str_xyz
+from rmgpy.species import Species
 
 
 @attr('functional')
@@ -128,6 +131,23 @@ class OutputUnitTest(unittest.TestCase):
     optical_isomers = 1,
 )"""
         self.assertEqual(prettify(input_str), expected_output)
+
+    def test_get_str_xyz(self):
+        """Test generating an xyz string from the species.conformer object"""
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_G3.log'))
+        conformer = log.load_conformer()[0]
+        coords, number, mass = log.load_geometry()
+        conformer.coordinates, conformer.number, conformer.mass = (coords, "angstroms"), number, (mass, "amu")
+        spc1 = Species(smiles='C=C')
+        spc1.conformer = conformer
+        xyz_str = get_str_xyz(spc1)
+        expected_xyz_str = """C       0.00545100    0.00000000    0.00339700
+H       0.00118700    0.00000000    1.08823200
+H       0.97742900    0.00000000   -0.47841600
+C      -1.12745800    0.00000000   -0.70256500
+H      -1.12319800    0.00000000   -1.78740100
+H      -2.09943900    0.00000000   -0.22075700"""
+        self.assertEqual(xyz_str, expected_xyz_str)
 
 
 if __name__ == '__main__':
