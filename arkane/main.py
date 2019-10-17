@@ -153,8 +153,8 @@ class Arkane(object):
         loaded set of jobs as a list.
         """
         self.input_file = input_file
-        self.job_list, self.reaction_dict, self.species_dict, self.transition_state_dict, self.network_dict = \
-            load_input_file(self.input_file)
+        self.job_list, self.reaction_dict, self.species_dict, self.transition_state_dict, self.network_dict, \
+            self.model_chemistry = load_input_file(self.input_file)
         logging.info('')
         return self.job_list
 

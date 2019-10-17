@@ -211,7 +211,8 @@ class InputTest(unittest.TestCase):
         """Test loading an Arkane input file"""
         path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane', 'networks',
                             'acetyl+O2', 'input.py')
-        job_list, reaction_dict, species_dict, transition_state_dict, network_dict = load_input_file(path)
+        job_list, reaction_dict, species_dict, transition_state_dict, network_dict, model_chemistry \
+            = load_input_file(path)
 
         self.assertEqual(len(job_list), 1)
 
@@ -229,6 +230,8 @@ class InputTest(unittest.TestCase):
 
         self.assertEqual(len(network_dict), 1)
         self.assertTrue('acetyl + O2' in network_dict)
+
+        self.assertEqual(model_chemistry, '')
 
     def test_process_model_chemistry(self):
         """

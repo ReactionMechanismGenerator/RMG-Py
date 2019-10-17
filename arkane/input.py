@@ -645,7 +645,7 @@ def load_input_file(path):
             if atom_energies is not None:
                 job.arkane_species.atom_energies = atom_energies
 
-    return job_list, reaction_dict, species_dict, transition_state_dict, network_dict
+    return job_list, reaction_dict, species_dict, transition_state_dict, network_dict, model_chemistry
 
 
 def process_model_chemistry(model_chemistry):
