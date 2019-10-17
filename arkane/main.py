@@ -47,6 +47,7 @@ try:
 except ImportError:
     pass
 
+from rmgpy import __version__
 from rmgpy.chemkin import write_elements_section
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
@@ -57,11 +58,10 @@ from arkane.common import is_pdep
 from arkane.explorer import ExplorerJob
 from arkane.input import load_input_file
 from arkane.kinetics import KineticsJob
+from arkane.output import save_thermo_lib, save_kinetics_lib
 from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
-
-################################################################################
 
 
 class Arkane(object):
@@ -88,11 +88,12 @@ class Arkane(object):
     :meth:`parse_command_line_arguments()` method before running :meth:`execute()`.
     """
 
-    def __init__(self, input_file=None, output_directory=None, verbose=logging.INFO):
+    def __init__(self, input_file=None, output_directory=None, verbose=logging.INFO, save_rmg_libraries=True):
         self.job_list = []
         self.input_file = input_file
         self.output_directory = output_directory
         self.verbose = verbose
+        self.save_rmg_libraries = save_rmg_libraries
 
     def parse_command_line_arguments(self):
         """
@@ -280,6 +281,25 @@ class Arkane(object):
 
         # Print some information to the end of the log
         log_footer()
+
+        if self.save_rmg_libraries:
+            # save RMG thermo and kinetics libraries
+            species, reactions = list(), list()
+            for job in self.job_list:
+                if isinstance(job, ThermoJob) and len(job.species.molecule):
+                    species.append(job.species)
+                elif isinstance(job, KineticsJob) \
+                        and all([len(species.molecule) for species in job.reaction.reactants + job.reaction.products]):
+                    reactions.append(job.reaction)
+                elif isinstance(job, PressureDependenceJob):
+                    for reaction in job.network.path_reactions:
+                        if all([len(species.molecule) for species in reaction.reactants + reaction.products]):
+                            reactions.append(reaction)
+            lib_path = os.path.join(self.output_directory, 'RMG_libraries')
+            model_chemistry = f' at the {self.model_chemistry} level of theory' if self.model_chemistry else ''
+            lib_long_desc = f'Calculated using Arkane v{__version__}{model_chemistry}.'
+            save_thermo_lib(species_list=species, path=lib_path, name='thermo', lib_long_desc=lib_long_desc)
+            save_kinetics_lib(rxn_list=reactions, path=lib_path, name='kinetics', lib_long_desc=lib_long_desc)
 
     def get_libraries(self):
         """Get RMG kinetics and thermo libraries"""
