@@ -1101,7 +1101,7 @@ class ModelMatcher():
     def ask_for_match_smiles(self, chemkin_species):
             species_label = chemkin_species.label
             formula = self.formula_dict[species_label]
-            print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
+            print("Species {species} has formula {formula}".format(species=species_label, formula=formula))
             smiles = raw_input('What is its SMILES?\n')
             while formula != Molecule(smiles=smiles).get_formula():
                 smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
@@ -1119,13 +1119,13 @@ class ModelMatcher():
             #matches_dict = {species.index: species for species in possible_matches }
             matches_dict = dict((species.index, species) for species in possible_matches)
             possible_indices_str = [str(i) for i in sorted(matches_dict.keys())]
-            print "Species {0} could be one of:".format(species_label)
+            print("Species {0} could be one of:".format(species_label))
             for index in sorted(matches_dict.keys()):
                 rmg_species = matches_dict[index]
                 dH = self.get_enthalpy_discrepancy(species_label, rmg_species)
                 Nvotes = len(self.votes[species_label][rmg_species])
                 all_possible_chemkin_species = [ck for ck, matches in self.votes.iteritems() if rmg_species in matches]
-                print "{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmg_species.label, dH, Nvotes, all_possible_chemkin_species)
+                print("{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmg_species.label, dH, Nvotes, all_possible_chemkin_species))
             chosen_id = raw_input('What is it? (see voting info above)\n')
             while chosen_id not in possible_indices_str:
                 chosen_id = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possible_indices_str)))
@@ -2016,7 +2016,7 @@ class ModelMatcher():
             with codecs.open('source.txt', encoding='utf-8', errors='replace') as f:
                 source = f.read()
                 source = source.encode('ascii', 'replace')
-                print source
+                print(source)
         except IOError:
             source = "Unknown source"
 
@@ -2260,16 +2260,16 @@ class ModelMatcher():
                 logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactions_to_check)))
 
 
-        print "Finished reading"
+        print("Finished reading")
         counter = 0
         for species in self.species_list:
             counter += 1
-            print counter, species,
+            print(counter, species,)
             if species.label not in self.species_dict_rmg:
-                print ""
+                print("")
                 continue  # don't save unidentified species
-            print "\t IDENTIFIED"
-        print "done"
+            print("\t IDENTIFIED")
+        print("done")
 
     def _img(self, species):
         """Get the html tag for the image of a species"""
@@ -3023,7 +3023,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             f = urllib2.urlopen(url, timeout=4)
             response = f.read()
         except urllib2.URLError, e:
-            print "Couldn't identify {0}. NCI resolver responded {1} to request for {2}".format(smiles, e, url)
+            print("Couldn't identify {0}. NCI resolver responded {1} to request for {2}".format(smiles, e, url))
             response = "Unknown"
 
         output = [self.html_head()]
@@ -3330,7 +3330,7 @@ if __name__ == '__main__':
 
     if args.minimal:
         mm.minimal()
-        print "Done"
+        print("Done")
         exit()
 
     t2 = threading.Thread(target=run_cherry_py_server, args=(args, ))
@@ -3338,7 +3338,7 @@ if __name__ == '__main__':
     t2.start()
 
     #import webbrowser
-    print 'http://127.0.0.1:{0:d}'.format(args.port)
+    print('http://127.0.0.1:{0:d}'.format(args.port))
     #webbrowser.open('http://127.0.0.1:{0:d}'.format(args.port))
     try:
         mm.main()
