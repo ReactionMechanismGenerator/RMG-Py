@@ -26,7 +26,7 @@ import cherrypy
 from cherrypy.lib.static import serve_file
 import json
 import threading
-import urllib2
+import urllib
 
 import rmgpy
 import rmgpy.rmg
@@ -2275,7 +2275,7 @@ class ModelMatcher():
         """Get the html tag for the image of a species"""
         images_path = 'img'  # to serve via cherry_py
         #images_path = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
-        return "<img src='{path}/{file!s}.png' title='{title}'>".format(file=urllib2.quote(str(species)), path=images_path, title=str(species))
+        return "<img src='{path}/{file!s}.png' title='{title}'>".format(file=urllib.parse.quote(str(species)), path=images_path, title=str(species))
 
     @cherrypy.expose
     def index(self):
@@ -2377,11 +2377,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append("<td>{img}</td>".format(img=img(rmg_spec)))
                 output.append('<td style="border-top: 1px solid black;">{libs}</td>'.format(libs=libs))
                 if chemkin_label in self.votes :
-                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkin_label)))
+                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib.parse.quote(chemkin_label)))
                 else:
                     output.append("<td>No votes yet.</td>")
-                output.append("<td><a href='/confirmthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
-                output.append("<td><a href='/clearthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
+                output.append("<td><a href='/confirmthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>confirm</a></td>".format(ckl=urllib.parse.quote(chemkin_label), rmgl=urllib.parse.quote(str(rmg_spec))))
+                output.append("<td><a href='/clearthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>clear</a></td>".format(ckl=urllib.parse.quote(chemkin_label), rmgl=urllib.parse.quote(str(rmg_spec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -2410,7 +2410,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append("<td>{label}</td>".format(label=chemkin_label))
                 output.append("<td>{img}</td>".format(img=img(rmg_spec)))
                 if chemkin_label in self.votes :
-                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkin_label)))
+                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib.parse.quote(chemkin_label)))
                 else:
                     output.append("<td>No votes yet.</td>")
 
@@ -2418,8 +2418,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     to_confirm.append((chemkin_label, rmg_spec))
                     output.append("<td>Confirmed!</td>")
                 else:
-                    output.append("<td><a href='/confirmthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
-                    output.append("<td><a href='/clearthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
+                    output.append("<td><a href='/confirmthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>confirm</a></td>".format(ckl=urllib.parse.quote(chemkin_label), rmgl=urllib.parse.quote(str(rmg_spec))))
+                    output.append("<td><a href='/clearthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>clear</a></td>".format(ckl=urllib.parse.quote(chemkin_label), rmgl=urllib.parse.quote(str(rmg_spec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         
@@ -2468,22 +2468,22 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("</td>")
             output.append(
                 "<td><a href='/confirm.html?ck_label={ckl}&rmg_label={rmgl}'>confirm</a></td>".format(
-                    ckl=urllib2.quote(chemkin_label),
-                    rmgl=urllib2.quote(str(rmg_spec))))
+                    ckl=urllib.parse.quote(chemkin_label),
+                    rmgl=urllib.parse.quote(str(rmg_spec))))
             output.append(
                 "<td><a href='/edit.html?ck_label={ckl}&smiles={smi}'>edit</a></td>".format(
-                    ckl=urllib2.quote(chemkin_label),
-                    smi=urllib2.quote(rmg_spec.molecule[0].to_smiles())))
+                    ckl=urllib.parse.quote(chemkin_label),
+                    smi=urllib.parse.quote(rmg_spec.molecule[0].to_smiles())))
             output.append(
                 "<td><a href='/clear.html?ck_label={ckl}'>clear</a></td>".format(
-                    ckl=urllib2.quote(chemkin_label)))
+                    ckl=urllib.parse.quote(chemkin_label)))
             output.append(
                 "<td><a href='/block.html?ck_label={ckl}&rmg_label={rmgl}'>block</a></td>".format(
-                    ckl=urllib2.quote(chemkin_label),
-                    rmgl=urllib2.quote(str(rmg_spec))))
+                    ckl=urllib.parse.quote(chemkin_label),
+                    rmgl=urllib.parse.quote(str(rmg_spec))))
             output.append(
                 "<td><a href='/votes2.html#{label}'>check {num} votes</a></td>".format(
-                    label=urllib2.quote(chemkin_label),
+                    label=urllib.parse.quote(chemkin_label),
                     num=len(self.votes[chemkin_label].get(rmg_spec, [])))
                 if chemkin_label in self.votes else "<td>No votes yet.</td>")
             if username:
@@ -2557,7 +2557,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<tr><td>{label}</td>".format(label=label))
             output.append(
                 "<td><a href='/propose.html?ck_label={ckl}'>propose match</a></td></tr>".format(
-                    ckl=urllib2.quote(label), ))
+                    ckl=urllib.parse.quote(label), ))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
 
@@ -2637,14 +2637,14 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     ))
                 output.append(
                     "<td>Tentative match. <a href='/confirm.html?ck_label={ckl}&rmg_label={rmgl}'>confirm</a> / ".format(
-                        ckl=urllib2.quote(chemkin_label),
-                        rmgl=urllib2.quote(str(rmg_spec))))
+                        ckl=urllib.parse.quote(chemkin_label),
+                        rmgl=urllib.parse.quote(str(rmg_spec))))
                 votes = "/ <a href='/votes2.html#{0}'>check votes</a>".format(
-                    urllib2.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
+                    urllib.parse.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
                 output.append(
                     "<a href='/edit.html?ck_label={ckl}&smiles={smi}'>edit</a> {votes}</td></tr>".format(
-                        ckl=urllib2.quote(chemkin_label),
-                        smi=urllib2.quote(rmg_spec.molecule[0].to_smiles()),
+                        ckl=urllib.parse.quote(chemkin_label),
+                        smi=urllib.parse.quote(rmg_spec.molecule[0].to_smiles()),
                         votes=votes))
             else:
                 output.append(
@@ -2658,8 +2658,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             <td><input type=submit></td>
             </form>
             """.format(lab=chemkin_label))
-                votes = "<a href='/votes2.html#{0}'>check votes</a> / ".format(urllib2.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
-                output.append("<td>Unknown species. {votes} <a href='/propose.html?ck_label={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkin_label), votes=votes))
+                votes = "<a href='/votes2.html#{0}'>check votes</a> / ".format(urllib.parse.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
+                output.append("<td>Unknown species. {votes} <a href='/propose.html?ck_label={ckl}'>propose match</a></td></tr>".format(ckl=urllib.parse.quote(chemkin_label), votes=votes))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
 
@@ -2684,7 +2684,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     token = img(self.species_dict_rmg[token])
                 elif token in self.species_dict:
                     token = "<a href='/propose.html?ck_label={escaped}' class='unid'>{plain}</a>".format(
-                        escaped=urllib2.quote(token),
+                        escaped=urllib.parse.quote(token),
                         plain=token)
                 else:
                     token = "<span class='unid'>{0}</span>".format(token)
@@ -2762,8 +2762,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
             output.append("</td><td>{}".format(self._img(matching_species)))
             output.append("</td><td><a href='/match.html?ck_label={ckl}&rmg_label={rmgl}' class='confirm'>confirm</a></td>".format(
-                        ckl=urllib2.quote(chemkin_label),
-                        rmgl=urllib2.quote(str(matching_species))))
+                        ckl=urllib.parse.quote(chemkin_label),
+                        rmgl=urllib.parse.quote(str(matching_species))))
             if auto_confirm:
                 output.append('<td>Autoconfirm passes!</td>')
             output.append('</tr>')
@@ -2862,8 +2862,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append(
                     """<td><a href='/match.html?ck_label={ckl}&rmg_label={rmgl}' class='confirm'>confirm</a>
                 <a href='/block.html?ck_label={ckl}&rmg_label={rmgl}' class='block'>block</a></td>""".format(
-                        ckl=urllib2.quote(chemkin_label),
-                        rmgl=urllib2.quote(str(matching_species))))
+                        ckl=urllib.parse.quote(chemkin_label),
+                        rmgl=urllib.parse.quote(str(matching_species))))
             output.append("</tr>")
 
             if chemkin_label in user_proposed_matches:
@@ -2975,8 +2975,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 voting_reactions = possible_matches[matching_species]
                 output.append(
                     "<a href='/match.html?ck_label={ckl}&rmg_label={rmgl}'>{img}</a>  according to {n} reactions. ".format(
-                        ckl=urllib2.quote(chemkin_label),
-                        rmgl=urllib2.quote(str(matching_species)),
+                        ckl=urllib.parse.quote(chemkin_label),
+                        rmgl=urllib.parse.quote(str(matching_species)),
                         img=img(matching_species),
                         n=len(voting_reactions)))
                 output.append(
@@ -3018,11 +3018,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             species.thermo = generate_thermo_data(species)
 
         # get a list of names from Cactus
-        url = "http://cactus.nci.nih.gov/chemical/structure/{0}/names".format(urllib2.quote(smiles))
+        url = "http://cactus.nci.nih.gov/chemical/structure/{0}/names".format(urllib.parse.quote(smiles))
         try:
-            f = urllib2.urlopen(url, timeout=4)
+            f = urllib.request.urlopen(url, timeout=4)
             response = f.read()
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             print("Couldn't identify {0}. NCI resolver responded {1} to request for {2}".format(smiles, e, url))
             response = "Unknown"
 
