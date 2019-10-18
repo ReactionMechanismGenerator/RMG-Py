@@ -6,7 +6,7 @@ into RMG-Py style thermo library file.
 Simply pass the paths of the Chemkin files on the 
 command-line, e.g.
 
-    $ python convertThermo.py --species /path/to/chem1.inp  --thermo /path/to/therm.dat
+    $ python convert_thermo.py --species /path/to/chem1.inp  --thermo /path/to/therm.dat
 
 If you supply a --species file (containing a SPECIES block) this is used to limit
 the species converted.
@@ -42,8 +42,8 @@ from rmgpy.rmg.model import ReactionModel
 
 from rmgpy.thermo.thermoengine import generate_thermo_data
 from rmgpy.data.thermo import Entry, save_entry
-from rmgpy.data.base import Entry as kinEntry
-from rmgpy.data.kinetics.common import save_entry as kinSaveEntry
+from rmgpy.data.base import Entry as kin_entry
+from rmgpy.data.kinetics.common import save_entry as kin_save_entry
 from rmgpy.data.kinetics.common import KineticsError
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
@@ -53,14 +53,14 @@ from rmgpy.molecule.draw import MoleculeDrawer
 
 import time
 import sys
-# Put the RMG-database project at the start of the python path, so we use that importOldDatabase script!
-databaseDirectory = rmgpy.settings['database.directory']
-databaseProjectDirectory = os.path.abspath(os.path.join(databaseDirectory, '..'))
-sys.path.insert(0, databaseProjectDirectory)
+# Put the RMG-database project at the start of the python path, so we use that import_old_database script!
+database_dictionary = rmgpy.settings['database.directory']
+database_project_directory = os.path.abspath(os.path.join(database_dictionary, '..'))
+sys.path.insert(0, database_project_directory)
 
 ################################################################################
 
-def makeOrEmptyDirectory(path):
+def make_or_empty_directory(path):
     """Either create a directory at `path` or delete everything in it if it exists"""
     if os.path.exists(path):
         assert os.path.isdir(path), "Path {0} exists but is not a directory".format(path)
@@ -89,7 +89,7 @@ class MagicSpeciesDict(dict):
         return dict.__getitem__(self.dictionary, key)
 
 
-def convertFormula(formulaDict):
+def convert_formula(formula_dict):
     """
     Given a formula in dict form {'c':2, 'h':6, 'o':0}
     return a canonical formula string "C2H6"
@@ -98,18 +98,18 @@ def convertFormula(formulaDict):
     rmgpy.molecule.Molecule class.
     """
 
-#    elements = {e.capitalize(): n for e, n in formulaDict.iteritems() if n > 0}
-    elements = dict((e.capitalize(), n) for (e, n) in formulaDict.iteritems() if n > 0)
-    hasCarbon = 'C' in elements
-    hasHydrogen = 'H' in elements
+#    elements = {e.capitalize(): n for e, n in formula_dict.iteritems() if n > 0}
+    elements = dict((e.capitalize(), n) for (e, n) in formula_dict.iteritems() if n > 0)
+    has_carbon = 'C' in elements
+    has_hydrogen = 'H' in elements
     # Use the Hill system to generate the formula
     formula = ''
     # Carbon and hydrogen always come first if carbon is present
-    if hasCarbon:
+    if has_carbon:
         count = elements['C']
         formula += 'C{0:d}'.format(count) if count > 1 else 'C'
         del elements['C']
-        if hasHydrogen:
+        if has_hydrogen:
             count = elements['H']
             formula += 'H{0:d}'.format(count) if count > 1 else 'H'
             del elements['H']
@@ -224,9 +224,9 @@ def parse_command_line_arguments():
     args.walltime = '0'
     args.restart = False
 
-    inputDirectory = os.path.abspath(os.path.dirname(args.thermo))
+    input_directory = os.path.abspath(os.path.dirname(args.thermo))
     if args.output_directory == '':
-        args.output_directory = os.path.join(inputDirectory, 'RMG-Py-output')
+        args.output_directory = os.path.join(input_directory, 'RMG-Py-output')
     if args.scratch_directory == '':
         args.scratch_directory = args.output_directory
 
@@ -237,18 +237,18 @@ def parse_command_line_arguments():
     return args
 
 
-def reactionMatchesFormulas(reaction, reactantFormulas):
+def reaction_matches_formulas(reaction, reactant_formulas):
     """
-    Does the reaction match the reactantFormulas, in either direction?
+    Does the reaction match the reactant_formulas, in either direction?
     
     The reaction must contain real species with identified molecules.
-    reactantFormulas is an iterable of Strings like ('CH3','H').
+    reactant_formulas is an iterable of Strings like ('CH3','H').
     Returns 'forward', 'backward', or False.
     """
-    reactantFormulas = sorted(reactantFormulas)
-    if reactantFormulas == sorted([s.get_formula() for s in reaction.reactants]):
+    reactant_formulas = sorted(reactant_formulas)
+    if reactant_formulas == sorted([s.get_formula() for s in reaction.reactants]):
         return 'forward'
-    elif reactantFormulas == sorted([s.get_formula() for s in reaction.products]):
+    elif reactant_formulas == sorted([s.get_formula() for s in reaction.products]):
         return 'backward'
     else:
         return False
@@ -262,47 +262,47 @@ class ModelMatcher():
     def __init__(self, args=None):
         self.args = args
         self.species_dict = {}
-        self.thermoDict = {}
-        self.formulaDict = {}
-        self.smilesDict = {}
+        self.thermo_dict = {}
+        self.formula_dict = {}
+        self.smiles_dict = {}
         self.identified_labels = []
         self.identified_unprocessed_labels = []
         self.identified_by = {}
-        """Which user identified which species: self.identified_by[chemkinLabels] = username"""
+        """Which user identified which species: self.identified_by[chemkin_labels] = username"""
         self.species_list = None
-        self.speciesDict_rmg = {}
-        self.chemkinReactions = []
-        self.chemkinReactionsUnmatched = []
+        self.species_dict_rmg = {}
+        self.chemkin_reactions = []
+        self.chemkin_reactions_unmatched = []
         "Reactions that contain species that haven't been identified yet."
-        #self.chemkinReactionsUnmatchable = []
+        #self.chemkin_reactions_unmatchable = []
         #"Reactions that did not match an RMG-generated reaction, despite all the species being known"
-        self.chemkinReactionsToSave = []
+        self.chemkin_reactions_to_save = []
         """A list of chemkin reactions that have been fully identified but not yet saved to a file.
         (because the reagents may not have been properly processed yet we have to defer the saving)
         """
-        self.chemkinReactionsDict = {}
-        """A dictionary such that self.chemkinReactionsDict[chemkinLabel] = {set of chemkin reactions it is part of}"""
-        self.suggestedMatches = {}
+        self.chemkin_reactions_dict = {}
+        """A dictionary such that self.chemkin_reactions_dict[chemkin_label] = {set of chemkin reactions it is part of}"""
+        self.suggested_matches = {}
         self.votes = {}
         """
         self.votes is a dict of dicts of lists of tuples: {'ch3':{<Species CH3>: [ voting_reactions ]}}
-        so self.votes[chemkinLabel][rmgSpecies][0] = (chemkinReaction, rmgReaction)
+        so self.votes[chemkin_label][rmg_species][0] = (chemkin_reaction, rmg_reaction)
         """
-        self.prunedVotes = {}
-        self.manualMatchesToProcess = []
-        """A list of tuples of matches not yet processed: [(chemkinLabel, rmgSpecies),...]"""
-        self.tentativeMatches = []
-        self.thermoMatches = {}
+        self.pruned_votes = {}
+        self.manual_matches_to_process = []
+        """A list of tuples of matches not yet processed: [(chemkin_label, rmg_species),...]"""
+        self.tentative_matches = []
+        self.thermo_matches = {}
         self.thermo_libraries_to_check = []
-        self.blockedMatches = {}
-        """A dictionary of matches forbidden manually. blockedMatches[ckLabel][rmg Species] = username (or None)"""
+        self.blocked_matches = {}
+        """A dictionary of matches forbidden manually. blocked_matches[ck_label][rmg Species] = username (or None)"""
         self.known_species_file = ""
         """Filename of the known species file"""
         self.blocked_matches_file = ""
         """Filename of the blocked matches file"""
-        self.thermoLibrary = None
+        self.thermo_library = None
         """An rmgpy.data.thermo.ThermoLibrary object containing identified species and their chemkin-defined thermo"""
-        self.kineticsLibrary = None
+        self.kinetics_library = None
         """An rmgpy.data.kinetics.KineticsLibrary object containing chemkin-defined reactions of identified species"""
 
 
@@ -316,11 +316,11 @@ class ModelMatcher():
         self.name = name
         "The name of the model (based on its source path)"
 
-    def loadSpecies(self, species_file):
+    def load_species(self, species_file):
         """
         Load the chemkin list of species
         """
-        speciesAliases = {}
+        species_aliases = {}
         species_dict = {}
         if species_file:
             logging.info("Reading species list...")
@@ -331,24 +331,24 @@ class ModelMatcher():
                     line = remove_comment_from_line(line0)[0]
                     tokens_upper = line.upper().split()
                     if tokens_upper and tokens_upper[0] in ('SPECIES', 'SPEC'):
-                        # Unread the line (we'll re-read it in readReactionBlock())
+                        # Unread the line (we'll re-read it in read_reaction_block())
                         f.seek(-len(line0), 1)
-                        read_species_block(f, speciesDict, speciesAliases, speciesList)
+                        read_species_block(f, species_dict, species_aliases, species_list)
                     line0 = f.readline()
         else:
             logging.info("No species file to limit species. Will read everything in thermo file")
             species_list = None
-            species_dict = MagicSpeciesDict(speciesDict)
-        self.species_list = speciesList
-        self.species_dict = speciesDict
+            species_dict = MagicSpeciesDict(species_dict)
+        self.species_list = species_list
+        self.species_dict = species_dict
 
-    def loadThermo(self, thermo_file):
+    def load_thermo(self, thermo_file):
         """
         Load the chemkin thermochemistry file
         """
         logging.info("Reading thermo file...")
         species_dict = self.species_dict
-        foundThermoBlock = False
+        found_thermo_block = False
         #import codecs
         #with codecs.open(thermo_file, "r", "utf-8") as f:
         with open(thermo_file) as f:
@@ -357,39 +357,39 @@ class ModelMatcher():
                 line = remove_comment_from_line(line0)[0]
                 tokens_upper = line.upper().split()
                 if tokens_upper and tokens_upper[0].startswith('THER'):
-                    foundThermoBlock = True
+                    found_thermo_block = True
                     # Unread the line (we'll re-read it in read_thermo_block())
                     f.seek(-len(line0), 1)
                     try:
-                        formulaDict = read_thermo_block(f, speciesDict)  # updates speciesDict in place
+                        formula_dict = read_thermo_block(f, species_dict)  # updates species_dict in place
                     except:
                         logging.error("Error reading thermo block around line:\n" + f.readline())
                         raise
-                    assert formulaDict, "Didn't read any thermo data"
+                    assert formula_dict, "Didn't read any thermo data"
                 line0 = f.readline()
-        assert foundThermoBlock, "Couldn't find a line beginning with THERMO or THERM or THER in {0}".format(thermo_file)
-        assert formulaDict, "Didn't read any thermo data from {0}".format(thermo_file)
+        assert found_thermo_block, "Couldn't find a line beginning with THERMO or THERM or THER in {0}".format(thermo_file)
+        assert formula_dict, "Didn't read any thermo data from {0}".format(thermo_file)
 
-        # Save the formulaDict, converting from {'c':1,'h':4} into "CH4" in the process.
-        #self.formulaDict = {label: convertFormula(formula) for label, formula in formulaDict.iteritems()}
-        self.formulaDict = dict(
-            (label, convertFormula(formula))
-            for (label, formula) in formulaDict.iteritems())
-        # thermoDict contains original thermo as read from chemkin thermo file
-        #self.thermoDict = {s.label: s.thermo for s in speciesDict.values() }
-        self.thermoDict = dict((s.label, s.thermo)
-                               for s in speciesDict.values())
+        # Save the formula_dict, converting from {'c':1,'h':4} into "CH4" in the process.
+        #self.formula_dict = {label: convert_formula(formula) for label, formula in formula_dict.iteritems()}
+        self.formula_dict = dict(
+            (label, convert_formula(formula))
+            for (label, formula) in formula_dict.iteritems())
+        # thermo_dict contains original thermo as read from chemkin thermo file
+        #self.thermo_dict = {s.label: s.thermo for s in species_dict.values() }
+        self.thermo_dict = dict((s.label, s.thermo)
+                               for s in species_dict.values())
 
-    def loadReactions(self, reactions_file):
+    def load_reactions(self, reactions_file):
         logging.info("Reading reactions...")
         with open(reactions_file) as f:
             reaction_list = read_reactions_block(f, self.species_dict, read_comments=True)
-        logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
+        logging.info("Read {0} reactions from chemkin file.".format(len(reaction_list)))
 
         # convert from list to Library, so we can detect duplicates
         temporary_library = rmgpy.data.kinetics.library.KineticsLibrary()
         temporary_library.entries = {}
-        for index, reaction in enumerate(reactionList):
+        for index, reaction in enumerate(reaction_list):
             entry = Entry(
                 index = index+1,
                 item = reaction,
@@ -406,75 +406,75 @@ class ModelMatcher():
         temporary_library.check_for_duplicates(mark_duplicates=True)  # mark_duplicates=True
         temporary_library.convert_duplicates_to_multi()
         # convert back to list
-        newReactionList = []
+        new_reaction_list = []
         for entry in temporary_library.entries.values():
             reaction = entry.item
             reaction.kinetics = entry.data
-            newReactionList.append(reaction)
+            new_reaction_list.append(reaction)
         logging.info("Read {} reactions. After converting duplicates, have {} reactions".format(
-                                                            len(reactionList), len(newReactionList)))
-        reaction_list = newReactionList
+                                                            len(reaction_list), len(new_reaction_list)))
+        reaction_list = new_reaction_list
 
-        self.chemkinReactions = reactionList
-        self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
+        self.chemkin_reactions = reaction_list
+        self.chemkin_reactions_unmatched = self.chemkin_reactions[:]  # make a copy
 
-        # Populate the self.chemkinReactionsDict such that
-        # self.chemkinReactionsDict[chemkinLabel] = {set of reactions it is part of}
-        chemkinReactionsDict = self.chemkinReactionsDict
-        for chemkin_reaction in self.chemkinReactions:
+        # Populate the self.chemkin_reactions_dict such that
+        # self.chemkin_reactions_dict[chemkin_label] = {set of reactions it is part of}
+        chemkin_reactions_dict = self.chemkin_reactions_dict
+        for chemkin_reaction in self.chemkin_reactions:
             for reacting in [chemkin_reaction.reactants, chemkin_reaction.products]:
-                for ckSpecies in reacting:
-                    label = ckSpecies.label
-                    if label not in chemkinReactionsDict:
-                        chemkinReactionsDict[label] = set()
-                    chemkinReactionsDict[label].add(chemkin_reaction)
+                for ck_species in reacting:
+                    label = ck_species.label
+                    if label not in chemkin_reactions_dict:
+                        chemkin_reactions_dict[label] = set()
+                    chemkin_reactions_dict[label].add(chemkin_reaction)
 
-    def pruneInertSpecies(self):
+    def prune_inert_species(self):
         """
         Remove from consideration any chemkin species that don't participate in any reactions
         """
-        reactiveSpecies = set()
-        reactiveMolecules = set()
+        reactive_species = set()
+        reactive_molecules = set()
         for s in ['N#N', '[Ar]', ]:
-            reactiveMolecules.add(Molecule(SMILES=s))
-        for reaction in self.chemkinReactions:
+            reactive_molecules.add(Molecule(SMILES=s))
+        for reaction in self.chemkin_reactions:
             for species in reaction.reactants:
-                reactiveSpecies.add(species)
+                reactive_species.add(species)
             for species in reaction.products:
-                reactiveSpecies.add(species)
+                reactive_species.add(species)
             if isinstance(reaction.kinetics, rmgpy.kinetics.PDepKineticsModel):
                 for molecule in reaction.kinetics.efficiencies.keys():
-                    reactiveMolecules.add(molecule)
-        unreactiveSpecies = []
+                    reactive_molecules.add(molecule)
+        unreactive_species = []
         for species in self.species_list:
-            if species not in reactiveSpecies:
+            if species not in reactive_species:
                 label = species.label
                 if label in self.identified_labels:
-                    thisMolecule = self.speciesDict_rmg[label].molecule[0]
-                    for reactiveMolecule in reactiveMolecules:
-                        if reactiveMolecule.is_isomorphic(thisMolecule):
+                    this_molecule = self.species_dict_rmg[label].molecule[0]
+                    for reactive_molecule in reactive_molecules:
+                        if reactive_molecule.is_isomorphic(this_molecule):
                             break
                     else:
-                        unreactiveSpecies.append(species)
+                        unreactive_species.append(species)
                 else:
-                    unreactiveSpecies.append(species)
-        for species in unreactiveSpecies:
+                    unreactive_species.append(species)
+        for species in unreactive_species:
             label = species.label
             logging.info("Removing species {0} because it doesn't react".format(label))
             self.species_list.remove(species)
             del (self.species_dict[label])
-            if label in self.speciesDict_rmg:
-                del (self.speciesDict_rmg[label])
-            self.clearThermoMatch(label)
+            if label in self.species_dict_rmg:
+                del (self.species_dict_rmg[label])
+            self.clear_thermo_match(label)
             if label in self.identified_labels:
                 self.identified_labels.remove(label)
             if label in self.identified_unprocessed_labels:
                 self.identified_unprocessed_labels.remove(label)
-            del (self.formulaDict[label])
+            del (self.formula_dict[label])
         logging.info("Removed {0} species that did not react.".format(
-            len(unreactiveSpecies)))
+            len(unreactive_species)))
 
-    def loadBlockedMatches(self):
+    def load_blocked_matches(self):
         """
         Load the list of blocked matches.
         """
@@ -482,7 +482,7 @@ class ModelMatcher():
         if not os.path.exists(self.blocked_matches_file):
             logging.info("Blocked Matches file does not exist. Will create.")
             return
-        #: blocked_smiles[chemkinLabel][SMILES] = username_who_blocked_it
+        #: blocked_smiles[chemkin_label][SMILES] = username_who_blocked_it
         blocked_smiles = {}
         line = None
         with open(self.blocked_matches_file) as f:
@@ -513,28 +513,28 @@ class ModelMatcher():
                 f.write('\n')
 
         for species_label in blocked_smiles:
-            if species_label not in self.formulaDict:
+            if species_label not in self.formula_dict:
                 logging.info("{0} is not in the chemkin model. Skipping".format(species_label))
                 continue
-            formula = self.formulaDict[species_label]
+            formula = self.formula_dict[species_label]
             for smiles, username in blocked_smiles[species_label].iteritems():
                 molecule = Molecule(SMILES=smiles)
                 if formula != molecule.get_formula():
                     raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.get_formula(), formula))
                 logging.info("Blocking {0} from being {1}".format(species_label, smiles))
 
-                rmg_species, wasNew = self.rmg_object.reaction_model.make_new_species(molecule)
+                rmg_species, was_new = self.rmg_object.reaction_model.make_new_species(molecule)
                 rmg_species.generate_resonance_structures()
-                if wasNew:
-                    self.drawSpecies(rmg_species)
+                if was_new:
+                    self.draw_species(rmg_species)
                     rmg_species.thermo = generate_thermo_data(rmg_species)
 
-                if species_label not in self.blockedMatches:
-                    self.blockedMatches[species_label] = dict()
-                self.blockedMatches[species_label][rmg_species] = username
+                if species_label not in self.blocked_matches:
+                    self.blocked_matches[species_label] = dict()
+                self.blocked_matches[species_label][rmg_species] = username
 
 
-    def loadKnownSpecies(self, known_species_file):
+    def load_known_species(self, known_species_file):
         """
         Load (or make) the list of known species
         """
@@ -619,13 +619,13 @@ class ModelMatcher():
             '[C]':          "1 C u0 p2 c0",
             'excited[OH]':  """
                             multiplicity 2
-                            molecularTermSymbol A^2S+
+                            molecular_term_symbol A^2S+
                             1 O u1 p2 c0 {2,S}
                             2 H u0 p0 c0 {1,S}
                             """, # the 'A' in the molecular term symbol means first excited state
             'excited[CH]':  """
                             multiplicity 2
-                            molecularTermSymbol A^2S+
+                            molecular_term_symbol A^2S+
                             1 C u1 p1 c0 {2,S}
                             2 H u0 p0 c0 {1,S}
                             """, # the 'A' in the molecular term symbol means first excited state
@@ -657,10 +657,10 @@ class ModelMatcher():
             }
 
         for species_label in known_names:
-            if species_label not in self.formulaDict:
+            if species_label not in self.formula_dict:
                 logging.info("{0} is not in the chemkin model. Skipping".format(species_label))
                 continue
-            formula = self.formulaDict[species_label]
+            formula = self.formula_dict[species_label]
             smiles = known_smiles[species_label]
             if smiles in special_smiles_to_adj_list:
                 adjlist = special_smiles_to_adj_list[smiles]
@@ -674,7 +674,7 @@ class ModelMatcher():
             if formula != molecule.get_formula():
                 raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}. \n{4}".format(species_label, smiles, molecule.get_formula(), formula, molecule.to_adjacency_list()))
             logging.info("I think {0} is {1} based on its label".format(species_label, smiles))
-            self.smilesDict[species_label] = smiles
+            self.smiles_dict[species_label] = smiles
 
             species = self.species_dict[species_label]
             species.molecule = [molecule]
@@ -693,15 +693,15 @@ class ModelMatcher():
         
         This loads the database, makes some settings, etc.
         `args` should have attributes `output_directory` and `scratch_directory`.
-        Also needs a global variable databseDirectory
+        Also needs a global variable databse_directory
         """
         logging.info("Loading RMG database...")
         rmg = RMG()
         rmg.output_directory = args.output_directory
-        rmg.scratchDirectory = args.scratch_directory
+        rmg.scratch_directory = args.scratch_directory
         rmgpy.util.make_output_subdirectory(rmg.output_directory, 'species')
-        rmg.database_directory = databaseDirectory
-        rmg.thermo_libraries = ['primaryThermoLibrary',
+        rmg.database_directory = database_dictionary
+        rmg.thermo_libraries = ['primary_thermo_library',
                                'BurkeH2O2',
                                'DFT_QCI_thermo',
                                'CBS_QB3_1dHR',
@@ -723,7 +723,7 @@ class ModelMatcher():
             rmgpy.rmg.input.pressure_dependence(
                 method='modified strong collision',
                 maximum_grain_size=(0.5, 'kcal/mol'),
-                minimumNumberOfGrains=250,
+                minimum_number_of_grains=250,
                 temperatures=(300, 2000, 'K', 8),
                 pressures=(0.01, 100, 'atm', 3),
                 interpolation=('pdeparrhenius',),
@@ -737,10 +737,10 @@ class ModelMatcher():
             rmgpy.rmg.input.quantum_mechanics(
                 software='mopac',
                 method='pm3',
-                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMfiles'),  # ToDo: fix this
-                scratchDirectory=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMscratch'),
-                onlyCyclics=True,
-                maxRadicalNumber=0,
+                file_store=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMfiles'),  # ToDo: fix this
+                scratch_directory=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMscratch'),
+                only_cyclics=True,
+                max_radical_number=0,
             )
 
         rmg.load_database()
@@ -768,7 +768,7 @@ class ModelMatcher():
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
                 library.label = root.split('/')[-2]
                 rmg.database.thermo.libraries[library.label] = library
-                # Load them (for the checkThermoLibraries method) but don't trust them
+                # Load them (for the check_thermo_libraries method) but don't trust them
                 self.thermo_libraries_to_check.append(library.label)
                 # rmg.database.thermo.library_order.append(library.label)
 
@@ -781,9 +781,9 @@ class ModelMatcher():
         rmgpy.util.make_output_subdirectory(rmg.output_directory, 'pdep')  # deletes contents
         # This is annoying!
         if rmg.pressure_dependence:
-            rmg.pressure_dependence.outputFile = rmg.output_directory
+            rmg.pressure_dependence.output_file = rmg.output_directory
             rmg.reaction_model.pressure_dependence = rmg.pressure_dependence
-        #rmg.reaction_model.reactionGenerationOptions = rmg.reactionGenerationOptions
+        #rmg.reaction_model.reaction_generation_options = rmg.reaction_generation_options
         if rmg.quantum_mechanics:
             rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)
             rmg.reaction_model.quantum_mechanics = rmg.quantum_mechanics
@@ -801,31 +801,31 @@ class ModelMatcher():
         self.rmg_object = rmg
         return rmg
 
-    def speciesMatch(self, rmg_species, chemkin_species):
+    def species_match(self, rmg_species, chemkin_species):
         """
         Return True if the species might match, else False.
         
         i.e. if chemkin_species has been identified, it must be the rmg_species,
         but if it hasn't it must at least have the same formula.
-        If it matches based only on formula, the match it is added to the self.suggestedMatches dictionary.
+        If it matches based only on formula, the match it is added to the self.suggested_matches dictionary.
         If it is blocked, return false.
         """
         chemkin_label = chemkin_species.label
         identified_labels = self.identified_labels
         if chemkin_label in identified_labels:
-            return self.speciesDict_rmg[chemkin_label] is rmg_species
+            return self.species_dict_rmg[chemkin_label] is rmg_species
         elif rmg_species.label in identified_labels:
             return False
         else:
-            if self.formulaDict[chemkin_label] == rmg_species.formula:
-                if rmg_species in self.blockedMatches.get(chemkin_label, {}):
+            if self.formula_dict[chemkin_label] == rmg_species.formula:
+                if rmg_species in self.blocked_matches.get(chemkin_label, {}):
                     return False
-                self.suggestedMatches[chemkin_label] = rmg_species
+                self.suggested_matches[chemkin_label] = rmg_species
                 return True
             else:
                 return False
 
-    def reactionsMatch(self, rmg_reaction, chemkin_reaction, either_direction=True):
+    def reactions_match(self, rmg_reaction, chemkin_reaction, either_direction=True):
         """
         This is based on the rmg.reaction.Reaction.is_isomorphic method
  
@@ -833,7 +833,7 @@ class ModelMatcher():
         or ``False`` if they are different. 
         If `either_direction=False` then the directions must match.
         """
-        speciesMatch = self.speciesMatch
+        species_match = self.species_match
         # Compare reactants to reactants
 
         # get things we refer to a lot into the local namespace, to reduce lookups
@@ -842,43 +842,43 @@ class ModelMatcher():
         len_rmg_reactants = len(rmg_reactants)
         len_ck_reactants = len(ck_reactants)
 
-        forwardReactantsMatch = False
+        forward_reactants_match = False
         if len_rmg_reactants == 1 and len_ck_reactants == 1:
-            if speciesMatch(rmg_reactants[0], ck_reactants[0]):
-                forwardReactantsMatch = True
+            if species_match(rmg_reactants[0], ck_reactants[0]):
+                forward_reactants_match = True
         elif len_rmg_reactants == 2 and len_ck_reactants == 2:
-            if speciesMatch(rmg_reactants[0], ck_reactants[0]) and speciesMatch(rmg_reactants[1], ck_reactants[1]):
-                forwardReactantsMatch = True
-            elif speciesMatch(rmg_reactants[0], ck_reactants[1]) and speciesMatch(rmg_reactants[1], ck_reactants[0]):
-                forwardReactantsMatch = True
+            if species_match(rmg_reactants[0], ck_reactants[0]) and species_match(rmg_reactants[1], ck_reactants[1]):
+                forward_reactants_match = True
+            elif species_match(rmg_reactants[0], ck_reactants[1]) and species_match(rmg_reactants[1], ck_reactants[0]):
+                forward_reactants_match = True
         elif len_rmg_reactants == 3 and len_ck_reactants == 3:
-            if speciesMatch(rmg_reactants[0], ck_reactants[0]):
-                if (speciesMatch(rmg_reactants[1], ck_reactants[1]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[2])):
-                    forwardReactantsMatch = True
-                elif(speciesMatch(rmg_reactants[1], ck_reactants[2]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[1])):
-                    forwardReactantsMatch = True
-            elif speciesMatch(rmg_reactants[0], ck_reactants[1]):
-                if (speciesMatch(rmg_reactants[1], ck_reactants[0]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[2])):
-                    forwardReactantsMatch = True
-                elif(speciesMatch(rmg_reactants[1], ck_reactants[2]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[0])):
-                    forwardReactantsMatch = True
-            elif speciesMatch(rmg_reactants[0], ck_reactants[2]):
-                if (speciesMatch(rmg_reactants[1], ck_reactants[0]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[1])):
-                    forwardReactantsMatch = True
-                elif (speciesMatch(rmg_reactants[1], ck_reactants[1]) and
-                    speciesMatch(rmg_reactants[2], ck_reactants[0])):
-                    forwardReactantsMatch = True
+            if species_match(rmg_reactants[0], ck_reactants[0]):
+                if (species_match(rmg_reactants[1], ck_reactants[1]) and
+                    species_match(rmg_reactants[2], ck_reactants[2])):
+                    forward_reactants_match = True
+                elif(species_match(rmg_reactants[1], ck_reactants[2]) and
+                    species_match(rmg_reactants[2], ck_reactants[1])):
+                    forward_reactants_match = True
+            elif species_match(rmg_reactants[0], ck_reactants[1]):
+                if (species_match(rmg_reactants[1], ck_reactants[0]) and
+                    species_match(rmg_reactants[2], ck_reactants[2])):
+                    forward_reactants_match = True
+                elif(species_match(rmg_reactants[1], ck_reactants[2]) and
+                    species_match(rmg_reactants[2], ck_reactants[0])):
+                    forward_reactants_match = True
+            elif species_match(rmg_reactants[0], ck_reactants[2]):
+                if (species_match(rmg_reactants[1], ck_reactants[0]) and
+                    species_match(rmg_reactants[2], ck_reactants[1])):
+                    forward_reactants_match = True
+                elif (species_match(rmg_reactants[1], ck_reactants[1]) and
+                    species_match(rmg_reactants[2], ck_reactants[0])):
+                    forward_reactants_match = True
         elif len_rmg_reactants == len_ck_reactants:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
         # Return False now if we can already be sure
-        if not forwardReactantsMatch:
-            if not eitherDirection:
+        if not forward_reactants_match:
+            if not either_direction:
                 return False
 
         rmg_products = rmg_reaction.products
@@ -886,160 +886,160 @@ class ModelMatcher():
         len_rmg_products = len(rmg_products)
         len_ck_products = len(ck_products)
         # Compare products to products
-        forwardProductsMatch = False
+        forward_products_match = False
         if len_rmg_products == 1 and len_ck_products == 1:
-            if speciesMatch(rmg_products[0], ck_products[0]):
-                forwardProductsMatch = True
+            if species_match(rmg_products[0], ck_products[0]):
+                forward_products_match = True
         elif len_rmg_products == 2 and len_ck_products == 2:
-            if speciesMatch(rmg_products[0], ck_products[0]) and speciesMatch(rmg_products[1], ck_products[1]):
-                forwardProductsMatch = True
-            elif speciesMatch(rmg_products[0], ck_products[1]) and speciesMatch(rmg_products[1], ck_products[0]):
-                forwardProductsMatch = True
+            if species_match(rmg_products[0], ck_products[0]) and species_match(rmg_products[1], ck_products[1]):
+                forward_products_match = True
+            elif species_match(rmg_products[0], ck_products[1]) and species_match(rmg_products[1], ck_products[0]):
+                forward_products_match = True
         elif len_rmg_products == 3 and len_ck_products == 3:
-            if speciesMatch(rmg_products[0], ck_products[0]):
-                if (speciesMatch(rmg_products[1], ck_products[1]) and
-                    speciesMatch(rmg_products[2], ck_products[2])):
-                    forwardProductsMatch = True
-                elif (speciesMatch(rmg_products[1], ck_products[2]) and
-                    speciesMatch(rmg_products[2], ck_products[1])):
-                    forwardProductsMatch = True
-            elif speciesMatch(rmg_products[0], ck_products[1]):
-                if (speciesMatch(rmg_products[1], ck_products[0]) and
-                    speciesMatch(rmg_products[2], ck_products[2])):
-                    forwardProductsMatch = True
-                elif (speciesMatch(rmg_products[1], ck_products[2]) and
-                    speciesMatch(rmg_products[2], ck_products[0])):
-                    forwardProductsMatch = True
-            elif speciesMatch(rmg_products[0], ck_products[2]):
-                if (speciesMatch(rmg_products[1], ck_products[0]) and
-                    speciesMatch(rmg_products[2], ck_products[1])):
-                    forwardProductsMatch = True
-                elif (speciesMatch(rmg_products[1], ck_products[1]) and
-                    speciesMatch(rmg_products[2], ck_products[0])):
-                    forwardProductsMatch = True
+            if species_match(rmg_products[0], ck_products[0]):
+                if (species_match(rmg_products[1], ck_products[1]) and
+                    species_match(rmg_products[2], ck_products[2])):
+                    forward_products_match = True
+                elif (species_match(rmg_products[1], ck_products[2]) and
+                    species_match(rmg_products[2], ck_products[1])):
+                    forward_products_match = True
+            elif species_match(rmg_products[0], ck_products[1]):
+                if (species_match(rmg_products[1], ck_products[0]) and
+                    species_match(rmg_products[2], ck_products[2])):
+                    forward_products_match = True
+                elif (species_match(rmg_products[1], ck_products[2]) and
+                    species_match(rmg_products[2], ck_products[0])):
+                    forward_products_match = True
+            elif species_match(rmg_products[0], ck_products[2]):
+                if (species_match(rmg_products[1], ck_products[0]) and
+                    species_match(rmg_products[2], ck_products[1])):
+                    forward_products_match = True
+                elif (species_match(rmg_products[1], ck_products[1]) and
+                    species_match(rmg_products[2], ck_products[0])):
+                    forward_products_match = True
         elif len_rmg_products == len_ck_products:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len_rmg_products))
 
         # Return now, if we can
-        if (forwardReactantsMatch and forwardProductsMatch):
+        if (forward_reactants_match and forward_products_match):
             return True
-        if not eitherDirection:
+        if not either_direction:
             return False
 
         # Compare reactants to products
-        reverseReactantsMatch = False
+        reverse_reactants_match = False
         if len_rmg_reactants == 1 and len_ck_products == 1:
-            if speciesMatch(rmg_reactants[0], ck_products[0]):
-                reverseReactantsMatch = True
+            if species_match(rmg_reactants[0], ck_products[0]):
+                reverse_reactants_match = True
         elif len_rmg_reactants == 2 and len_ck_products == 2:
-            if speciesMatch(rmg_reactants[0], ck_products[0]) and speciesMatch(rmg_reactants[1], ck_products[1]):
-                reverseReactantsMatch = True
-            elif speciesMatch(rmg_reactants[0], ck_products[1]) and speciesMatch(rmg_reactants[1], ck_products[0]):
-                reverseReactantsMatch = True
+            if species_match(rmg_reactants[0], ck_products[0]) and species_match(rmg_reactants[1], ck_products[1]):
+                reverse_reactants_match = True
+            elif species_match(rmg_reactants[0], ck_products[1]) and species_match(rmg_reactants[1], ck_products[0]):
+                reverse_reactants_match = True
         elif len_rmg_reactants == 3 and len_ck_products == 3:
-            if (speciesMatch(rmg_reactants[0], ck_products[0]) and
-                    speciesMatch(rmg_reactants[1], ck_products[1]) and
-                    speciesMatch(rmg_reactants[2], ck_products[2])):
-                reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_products[0]) and
-                    speciesMatch(rmg_reactants[1], ck_products[2]) and
-                    speciesMatch(rmg_reactants[2], ck_products[1])):
-                reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_products[1]) and
-                    speciesMatch(rmg_reactants[1], ck_products[0]) and
-                    speciesMatch(rmg_reactants[2], ck_products[2])):
-                reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_products[2]) and
-                    speciesMatch(rmg_reactants[1], ck_products[0]) and
-                    speciesMatch(rmg_reactants[2], ck_products[1])):
-                reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_products[1]) and
-                    speciesMatch(rmg_reactants[1], ck_products[2]) and
-                    speciesMatch(rmg_reactants[2], ck_products[0])):
-                reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reactants[0], ck_products[2]) and
-                    speciesMatch(rmg_reactants[1], ck_products[1]) and
-                    speciesMatch(rmg_reactants[2], ck_products[0])):
-                reverseReactantsMatch = True
+            if (species_match(rmg_reactants[0], ck_products[0]) and
+                    species_match(rmg_reactants[1], ck_products[1]) and
+                    species_match(rmg_reactants[2], ck_products[2])):
+                reverse_reactants_match = True
+            elif (species_match(rmg_reactants[0], ck_products[0]) and
+                    species_match(rmg_reactants[1], ck_products[2]) and
+                    species_match(rmg_reactants[2], ck_products[1])):
+                reverse_reactants_match = True
+            elif (species_match(rmg_reactants[0], ck_products[1]) and
+                    species_match(rmg_reactants[1], ck_products[0]) and
+                    species_match(rmg_reactants[2], ck_products[2])):
+                reverse_reactants_match = True
+            elif (species_match(rmg_reactants[0], ck_products[2]) and
+                    species_match(rmg_reactants[1], ck_products[0]) and
+                    species_match(rmg_reactants[2], ck_products[1])):
+                reverse_reactants_match = True
+            elif (species_match(rmg_reactants[0], ck_products[1]) and
+                    species_match(rmg_reactants[1], ck_products[2]) and
+                    species_match(rmg_reactants[2], ck_products[0])):
+                reverse_reactants_match = True
+            elif (species_match(rmg_reactants[0], ck_products[2]) and
+                    species_match(rmg_reactants[1], ck_products[1]) and
+                    species_match(rmg_reactants[2], ck_products[0])):
+                reverse_reactants_match = True
         elif len_rmg_reactants == len_ck_products:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
         # Should have already returned if matched in forward direction.
         # Return False now if we can be sure it's no match.
-        if not reverseReactantsMatch:
+        if not reverse_reactants_match:
             return False
 
         # Compare products to reactants
-        reverseProductsMatch = False
+        reverse_products_match = False
         if len_rmg_products == 1 and len_ck_reactants == 1:
-            if speciesMatch(rmg_products[0], ck_reactants[0]):
-                reverseProductsMatch = True
+            if species_match(rmg_products[0], ck_reactants[0]):
+                reverse_products_match = True
         elif len_rmg_products == 2 and len_ck_reactants == 2:
-            if speciesMatch(rmg_products[0], ck_reactants[0]) and speciesMatch(rmg_products[1], ck_reactants[1]):
-                reverseProductsMatch = True
-            elif speciesMatch(rmg_products[0], ck_reactants[1]) and speciesMatch(rmg_products[1], ck_reactants[0]):
-                reverseProductsMatch = True
+            if species_match(rmg_products[0], ck_reactants[0]) and species_match(rmg_products[1], ck_reactants[1]):
+                reverse_products_match = True
+            elif species_match(rmg_products[0], ck_reactants[1]) and species_match(rmg_products[1], ck_reactants[0]):
+                reverse_products_match = True
         elif len_rmg_products == 3 and len_ck_reactants == 3:
-            if (speciesMatch(rmg_products[0], ck_reactants[0]) and
-                    speciesMatch(rmg_products[1], ck_reactants[1]) and
-                    speciesMatch(rmg_products[2], ck_reactants[2])):
-                reverseProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_reactants[0]) and
-                    speciesMatch(rmg_products[1], ck_reactants[2]) and
-                    speciesMatch(rmg_products[2], ck_reactants[1])):
-                reverseProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_reactants[1]) and
-                    speciesMatch(rmg_products[1], ck_reactants[0]) and
-                    speciesMatch(rmg_products[2], ck_reactants[2])):
-                reverseProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_reactants[2]) and
-                    speciesMatch(rmg_products[1], ck_reactants[0]) and
-                    speciesMatch(rmg_products[2], ck_reactants[1])):
-                reverseProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_reactants[1]) and
-                    speciesMatch(rmg_products[1], ck_reactants[2]) and
-                    speciesMatch(rmg_products[2], ck_reactants[0])):
-                reverseProductsMatch = True
-            elif (speciesMatch(rmg_products[0], ck_reactants[2]) and
-                    speciesMatch(rmg_products[1], ck_reactants[1]) and
-                    speciesMatch(rmg_products[2], ck_reactants[0])):
-                reverseProductsMatch = True
+            if (species_match(rmg_products[0], ck_reactants[0]) and
+                    species_match(rmg_products[1], ck_reactants[1]) and
+                    species_match(rmg_products[2], ck_reactants[2])):
+                reverse_products_match = True
+            elif (species_match(rmg_products[0], ck_reactants[0]) and
+                    species_match(rmg_products[1], ck_reactants[2]) and
+                    species_match(rmg_products[2], ck_reactants[1])):
+                reverse_products_match = True
+            elif (species_match(rmg_products[0], ck_reactants[1]) and
+                    species_match(rmg_products[1], ck_reactants[0]) and
+                    species_match(rmg_products[2], ck_reactants[2])):
+                reverse_products_match = True
+            elif (species_match(rmg_products[0], ck_reactants[2]) and
+                    species_match(rmg_products[1], ck_reactants[0]) and
+                    species_match(rmg_products[2], ck_reactants[1])):
+                reverse_products_match = True
+            elif (species_match(rmg_products[0], ck_reactants[1]) and
+                    species_match(rmg_products[1], ck_reactants[2]) and
+                    species_match(rmg_products[2], ck_reactants[0])):
+                reverse_products_match = True
+            elif (species_match(rmg_products[0], ck_reactants[2]) and
+                    species_match(rmg_products[1], ck_reactants[1]) and
+                    species_match(rmg_products[2], ck_reactants[0])):
+                reverse_products_match = True
         elif len_rmg_products == len_ck_reactants:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len_rmg_products))
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
-        return  (reverseReactantsMatch and reverseProductsMatch)
+        return  (reverse_reactants_match and reverse_products_match)
 
 
-    def speciesReactAccordingToChemkin(self, rmgSpecies1, rmgSpecies2):
+    def species_react_according_to_chemkin(self, rmg_species1, rmg_species2):
         """
         Return true if the two species have been identified and are on 
         the same side of at least one chemkin reaction. i.e. we know that
         according to the chemkin file, they react with each other.
         
-        If rmgSpecies1 and rmgSpecies2 are the same thing, it must react
+        If rmg_species1 and rmg_species2 are the same thing, it must react
         with itself to return true. (eg. A + A -> products)
         """
         try:
-            set1 = self.chemkinReactionsDict[rmgSpecies1.label]
-            set2 = self.chemkinReactionsDict[rmgSpecies2.label]
+            set1 = self.chemkin_reactions_dict[rmg_species1.label]
+            set2 = self.chemkin_reactions_dict[rmg_species2.label]
         except KeyError:
             # one of the rmg species has not yet been given a label corresponding to a chemkin species
             # therefore it has not been identified
             return False
         for chemkin_reaction in set1.intersection(set2):
             for reacting in [chemkin_reaction.reactants, chemkin_reaction.products]:
-                matchedSpecies = list()
-                for ckSpecies in reacting:
-                    if ckSpecies.label in self.identified_labels:
-                        matchedSpecies.append(self.speciesDict_rmg[ckSpecies.label])
-                if rmgSpecies1 in matchedSpecies:
-                    matchedSpecies.remove(rmgSpecies1)
-                    if rmgSpecies2 in matchedSpecies:
+                matched_species = list()
+                for ck_species in reacting:
+                    if ck_species.label in self.identified_labels:
+                        matched_species.append(self.species_dict_rmg[ck_species.label])
+                if rmg_species1 in matched_species:
+                    matched_species.remove(rmg_species1)
+                    if rmg_species2 in matched_species:
                         return True
         return False
 
-    def identifySmallMolecules(self):
+    def identify_small_molecules(self):
         """Identify anything little that is uniquely determined by its chemical formula"""
 
         known_formulas = {
@@ -1069,18 +1069,18 @@ class ModelMatcher():
              }
         identified_labels = []
 
-        # use speciesList if it is not None or empty, else the formulaDict keys.
-        for species_label in [s.label for s in self.species_list or []] or self.formulaDict.keys():
+        # use species_list if it is not None or empty, else the formula_dict keys.
+        for species_label in [s.label for s in self.species_list or []] or self.formula_dict.keys():
             if species_label in self.identified_labels:
                 continue
-            formula = self.formulaDict[species_label]
+            formula = self.formula_dict[species_label]
             if formula in known_formulas:
                 known_smiles = known_formulas[formula]
                 logging.info("I think {0} is {1} based on its formula".format(species_label, known_smiles))
                 smiles = known_smiles
             else:
                 continue
-            self.smilesDict[species_label] = smiles
+            self.smiles_dict[species_label] = smiles
             while formula != Molecule(SMILES=smiles).get_formula():
                 smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).get_formula(), formula))
             species = self.species_dict[species_label]
@@ -1090,7 +1090,7 @@ class ModelMatcher():
                 species.molecule = [Molecule(SMILES=smiles)]
             species.generate_resonance_structures()
             identified_labels.append(species_label)
-            self.saveMatchToFile(species_label, species)
+            self.save_match_to_file(species_label, species)
 
         logging.info("Identified {0} species:".format(len(identified_labels)))
         for species_label in identified_labels:
@@ -1098,58 +1098,58 @@ class ModelMatcher():
 
         self.identified_labels.extend(identified_labels)
 
-    def askForMatchSMILES(self, chemkinSpecies):
-            species_label = chemkinSpecies.label
-            formula = self.formulaDict[species_label]
+    def ask_for_matchSMILES(self, chemkin_species):
+            species_label = chemkin_species.label
+            formula = self.formula_dict[species_label]
             print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
             smiles = raw_input('What is its SMILES?\n')
             while formula != Molecule(SMILES=smiles).get_formula():
                 smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).get_formula(), formula))
-            self.smilesDict[species_label] = smiles
+            self.smiles_dict[species_label] = smiles
             species = self.species_dict[species_label]
             species.molecule = [Molecule(SMILES=smiles)]
             species.generate_resonance_structures()
             self.identified_labels.append(species_label)
 
-    def askForMatchID(self, speciesLabel, possibleMatches):
+    def ask_for_matchID(self, species_label, possible_matches):
             """
-            Ask user for a match for a given speciesLabel, choosing from the iterable possibleMatches
+            Ask user for a match for a given species_label, choosing from the iterable possible_matches
             """
             # print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
-            #matchesDict = {species.index: species for species in possibleMatches }
-            matchesDict = dict((species.index, species) for species in possibleMatches)
-            possibleIndicesStr = [str(i) for i in sorted(matchesDict.keys())]
-            print "Species {0} could be one of:".format(speciesLabel)
-            for index in sorted(matchesDict.keys()):
-                rmg_species = matchesDict[index]
-                dH = self.getEnthalpyDiscrepancy(speciesLabel, rmgSpecies)
-                Nvotes = len(self.votes[speciesLabel][rmgSpecies])
-                allPossibleChemkinSpecies = [ck for ck, matches in self.votes.iteritems() if rmgSpecies in matches]
-                print "{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmgSpecies.label, dH, Nvotes, allPossibleChemkinSpecies)
+            #matches_dict = {species.index: species for species in possible_matches }
+            matches_dict = dict((species.index, species) for species in possible_matches)
+            possible_indices_str = [str(i) for i in sorted(matches_dict.keys())]
+            print "Species {0} could be one of:".format(species_label)
+            for index in sorted(matches_dict.keys()):
+                rmg_species = matches_dict[index]
+                dH = self.get_enthalpy_discrepancy(species_label, rmg_species)
+                Nvotes = len(self.votes[species_label][rmg_species])
+                all_possible_chemkin_species = [ck for ck, matches in self.votes.iteritems() if rmg_species in matches]
+                print "{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmg_species.label, dH, Nvotes, all_possible_chemkin_species)
             chosenID = raw_input('What is it? (see voting info above)\n')
-            while chosenID not in possibleIndicesStr:
-                chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possibleIndicesStr)))
+            while chosenID not in possible_indices_str:
+                chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possible_indices_str)))
 
-            rmg_species = matchesDict[int(chosenID)]
-            logging.info("Based on user input, matching {0} with {1!s}".format(speciesLabel, rmgSpecies))
-            self.setMatch(speciesLabel, rmgSpecies)
-            return speciesLabel, rmgSpecies
+            rmg_species = matches_dict[int(chosenID)]
+            logging.info("Based on user input, matching {0} with {1!s}".format(species_label, rmg_species))
+            self.set_match(species_label, rmg_species)
+            return species_label, rmg_species
 
-    def edgeReactionsMatching(self, chemkinReaction):
+    def edge_reactions_matching(self, chemkin_reaction):
         """A generator giving edge reactions that match the given chemkin reaction"""
-        reactionsMatch = self.reactionsMatch
-        for edgeReaction in self.rmg_object.reaction_model.edge.reactions:
-            if reactionsMatch(edgeReaction, chemkinReaction):
-                yield edgeReaction
+        reactions_match = self.reactions_match
+        for edge_reaction in self.rmg_object.reaction_model.edge.reactions:
+            if reactions_match(edge_reaction, chemkin_reaction):
+                yield edge_reaction
 
-    def chemkinReactionsMatching(self, rmgReaction):
+    def chemkin_reactions_matching(self, rmg_reaction):
         """A generator giving chemkin reactions that match the given RMG reaction"""
-        reactionsMatch = self.reactionsMatch
-        for chemkinReaction in self.chemkinReactions:
-            if reactionsMatch(rmgReaction, chemkinReaction):
-                yield chemkinReaction
+        reactions_match = self.reactions_match
+        for chemkin_reaction in self.chemkin_reactions:
+            if reactions_match(rmg_reaction, chemkin_reaction):
+                yield chemkin_reaction
 
-    def drawSpecies(self, rmg_species):
+    def draw_species(self, rmg_species):
         "Draw a species, saved in 'species' directory named after its RMG name (label and id)."
         # Draw molecules if necessary
         fstr = os.path.join(self.rmg_object.output_directory, 'species',
@@ -1157,15 +1157,15 @@ class ModelMatcher():
         if not os.path.exists(fstr):
             MoleculeDrawer().draw(rmg_species.molecule[0], 'png', fstr)
 
-    def drawAllCandidateSpecies(self):
+    def draw_all_candidate_species(self):
         """Draws all the species that are in self.votes"""
-        candidateSpecies = set()
-        for possibleMatches in self.votes.itervalues():
-            candidateSpecies.update(possibleMatches.keys())
-        for rmg_species in candidateSpecies:
-            self.drawSpecies(rmg_species)
+        candidate_species = set()
+        for possible_matches in self.votes.itervalues():
+            candidate_species.update(possible_matches.keys())
+        for rmg_species in candidate_species:
+            self.draw_species(rmg_species)
 
-    def moveSpeciesDrawing(self, rmg_species):
+    def move_species_drawing(self, rmg_species):
         "Move a species drawing from 'species' directory to 'species/MATCHED' directory."
         source = os.path.join(self.rmg_object.output_directory, 'species',
                               '{0!s}.png'.format(rmg_species))
@@ -1174,29 +1174,29 @@ class ModelMatcher():
         if os.path.exists(source):
             os.renames(source, destination)
 
-    def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
+    def get_enthalpy_discrepancy(self, chemkin_label, rmg_species):
         """
         Return the difference in enthalpy at 298.15K (or lowest valid T) in kJ/mol
         
         Returns (CHEMKIN file) - (RMG estimate)
         """
-        ck_thermo = self.thermoDict[chemkinLabel]
-        rmg_thermo = rmgSpecies.thermo
+        ck_thermo = self.thermo_dict[chemkin_label]
+        rmg_thermo = rmg_species.thermo
         temperature = max(298.15, ck_thermo.Tmin.value_si, rmg_thermo.Tmin.value_si)
         ckH = ck_thermo.get_enthalpy(temperature)
         rmgH = rmg_thermo.get_enthalpy(temperature)
         return (ckH - rmgH) / 1000.
 
-    def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
+    def clear_tentative_match(self, chemkin_label, rmg_species):
         """
         Clear all tentative matches from that have either that label or species, 
         eg. because you've confirmed a match.
         """
-        for match in self.tentativeMatches:
-            if match['label'] == chemkinLabel or match['species'] == rmgSpecies:
-                self.tentativeMatches.remove(match)
+        for match in self.tentative_matches:
+            if match['label'] == chemkin_label or match['species'] == rmg_species:
+                self.tentative_matches.remove(match)
 
-    def setTentativeMatch(self, chemkinLabel, rmgSpecies, username=None):
+    def set_tentative_match(self, chemkin_label, rmg_species, username=None):
         """
         Store a tentative match, waiting for user confirmation.
         
@@ -1204,111 +1204,111 @@ class ModelMatcher():
         removes that one, and returns false. If you want to add
         the new one, call it again.
         """
-        self.drawSpecies(rmgSpecies)
-        for match in self.tentativeMatches:
-            if match['label'] == chemkinLabel:
-                if match['species'] == rmgSpecies:
+        self.draw_species(rmg_species)
+        for match in self.tentative_matches:
+            if match['label'] == chemkin_label:
+                if match['species'] == rmg_species:
                     return True  # it's already there
                 else:
                     # something else matches that label! Remove both
-                    self.tentativeMatches.remove(match)
+                    self.tentative_matches.remove(match)
                     return False
-            elif match['species'] == rmgSpecies:
-                # something else matches that rmgSpecies! Remove both
-                self.tentativeMatches.remove(match)
+            elif match['species'] == rmg_species:
+                # something else matches that rmg_species! Remove both
+                self.tentative_matches.remove(match)
                 return False
-        for (l, s) in self.manualMatchesToProcess:
-            if l == chemkinLabel:
-                if s == rmgSpecies:
+        for (l, s) in self.manual_matches_to_process:
+            if l == chemkin_label:
+                if s == rmg_species:
                     return True  # it's already matched
                 else:
                     # It's matched something else!
                     logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.")
                     return False
-            elif s == rmgSpecies:
+            elif s == rmg_species:
                 logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.")
                 return False
         for l in self.identified_labels:
             s = self.species_dict[l]
-            if l == chemkinLabel:
-                if s == rmgSpecies:
+            if l == chemkin_label:
+                if s == rmg_species:
                     return True  # it's already matched
                 else:
                     # It's matched something else!
                     logging.info("Tentative match conflicts with earlier match! Ignoring.")
                     return False
-            elif s == rmgSpecies:
+            elif s == rmg_species:
                 logging.info("Tentative match conflicts with earlier match! Ignoring.")
                 return False
 
         # haven't already returned? then
         # that tentative match is new, add it
-        self.tentativeMatches.append({
-            'label': chemkinLabel,
-            'species': rmgSpecies,
-            'enthalpy': self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies),
+        self.tentative_matches.append({
+            'label': chemkin_label,
+            'species': rmg_species,
+            'enthalpy': self.get_enthalpy_discrepancy(chemkin_label, rmg_species),
             'username': username,
         })
         return True
 
-    def checkThermoLibraries(self):
+    def check_thermo_libraries(self):
         """Compares the thermo data of species to be imported
         to all previously identified species in other libraries"""
 
-        formulaToLabelsDict = {}
-        for label, formula in self.formulaDict.iteritems():
-            if formula not in formulaToLabelsDict:
-                formulaToLabelsDict[formula] = [label]
+        formula_to_labels_dict = {}
+        for label, formula in self.formula_dict.iteritems():
+            if formula not in formula_to_labels_dict:
+                formula_to_labels_dict[formula] = [label]
             else:
-                formulaToLabelsDict[formula].append(label)
+                formula_to_labels_dict[formula].append(label)
 
         for library_name in self.thermo_libraries_to_check:
             logging.info("Looking for matches in thermo library "+library_name)
             library = self.rmg_object.database.thermo.libraries[library_name]
             for __, entry in library.entries.iteritems():
                 formula = entry.item.get_formula()
-                if formula in formulaToLabelsDict:
-                    for ck_label in formulaToLabelsDict[formula]:
+                if formula in formula_to_labels_dict:
+                    for ck_label in formula_to_labels_dict[formula]:
                         #Skip already identified species
                         if ck_label in self.identified_labels:
                             continue
-                        ck_thermo = self.thermoDict[ck_label]
+                        ck_thermo = self.thermo_dict[ck_label]
                         try:
-                            match = entry.data.is_identical_to(ck_thermo)  #isIdenticalTo requires improvement before this should be fully implemented
+                            match = entry.data.is_identical_to(ck_thermo)  #is_identical_to requires improvement before this should be fully implemented
                         except ValueError:
                             logging.info("Error comparing two thermo entries, skipping entry for chemkin species {0} in the thermo library {1}".format(ck_label, library_name))
                             match = False
                         if match:
                             # Successfully found a tentative match, set the match and report.
-                            rmg_species, wasNew = self.rmg_object.reaction_model.make_new_species(entry.item, label=entry.label)
-                            if wasNew:
-                                self.drawSpecies(rmg_species)
+                            rmg_species, was_new = self.rmg_object.reaction_model.make_new_species(entry.item, label=entry.label)
+                            if was_new:
+                                self.draw_species(rmg_species)
                             else:
                                 pass
                                 # logging.info("Thermo matches {0}, from {1}, but it's already in the model.".format(ck_label, library_name))
                             rmg_species.thermo = generate_thermo_data(rmg_species)
 
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
-                            self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
+                            self.set_thermo_match(ck_label, rmg_species, library_name, entry.label)
 
-    def saveBlockedMatchToFile(self, ckLabel, rmgSpecies, username=None):
+    def save_blocked_match_to_file(self, ck_label, rmg_species, username=None):
         """
         Save the blocked match to the blocked_matches_file
         """
         if username:
             user_text = "\t! Blocked by {0}".format(username)
-            self.identified_by[ckLabel] = username
+            self.identified_by[ck_label] = username
         else:
             user_text = ""
 
         with open(self.blocked_matches_file, 'a') as f:
             f.write("{name}\t{smi}{user}\n".format(
-                name=ckLabel,
-                smi=rmgSpecies.molecule[0].to_smiles(),
+                name=ck_label,
+                smi=rmg_species.molecule[0].to_smiles(),
                 user=user_text))
         return True
 
-    def saveMatchToFile(self, ckLabel, rmgSpecies, username=None):
+    def save_match_to_file(self, ck_label, rmg_species, username=None):
         """
         Save the match to the known_species_file
         """
@@ -1318,146 +1318,146 @@ class ModelMatcher():
                 if not line.strip():
                     continue
                 label, smiles = line.split()
-                if label == ckLabel:
+                if label == ck_label:
                     logging.info("Trying to confirm match {0!s} but already matched to {1!s}".format(label, smiles))
                     return False
         if username:
             user_text = "\t! Confirmed by {0}".format(username)
-            self.identified_by[ckLabel] = username
+            self.identified_by[ck_label] = username
         else:
             user_text = ""
 
         with open(self.known_species_file, 'a') as f:
             f.write("{name}\t{smi}{user}\n".format(
-                name=ckLabel,
-                smi=rmgSpecies.molecule[0].to_smiles(),
+                name=ck_label,
+                smi=rmg_species.molecule[0].to_smiles(),
                 user=user_text))
         return True
 
-    def setThermoMatch(self, chemkinLabel, rmgSpecies, libraryName,
-                       librarySpeciesName):
+    def set_thermo_match(self, chemkin_label, rmg_species, library_name,
+                       library_species_name):
         """
         Store a match made by recognizing identical thermo from a library.
         """
-        if chemkinLabel not in self.thermoMatches:
-            self.thermoMatches[chemkinLabel] = dict()
-        d = self.thermoMatches[chemkinLabel]
-        if rmgSpecies not in d: d[rmgSpecies] = list()
-        d[rmgSpecies].append((libraryName, librarySpeciesName))
+        if chemkin_label not in self.thermo_matches:
+            self.thermo_matches[chemkin_label] = dict()
+        d = self.thermo_matches[chemkin_label]
+        if rmg_species not in d: d[rmg_species] = list()
+        d[rmg_species].append((library_name, library_species_name))
 
-    def clearThermoMatch(self, chemkinLabel, rmgName=None):
+    def clear_thermo_match(self, chemkin_label, rmg_name=None):
         """
         Clear any thermo matches for that chemkin label,
-        or only that rmgLabel if supplied.
+        or only that rmg_label if supplied.
         """
-        if chemkinLabel in self.thermoMatches:
-            if rmgName is None:
-                del (self.thermoMatches[chemkinLabel])
+        if chemkin_label in self.thermo_matches:
+            if rmg_name is None:
+                del (self.thermo_matches[chemkin_label])
                 return
-            for rmgSpecies in self.thermoMatches[chemkinLabel].keys():
-                if str(rmgSpecies) == rmgName:
-                    del (self.thermoMatches[chemkinLabel][rmgSpecies])
-            if len(self.thermoMatches[chemkinLabel]) == 0:
-                del (self.thermoMatches[chemkinLabel])
+            for rmg_species in self.thermo_matches[chemkin_label].keys():
+                if str(rmg_species) == rmg_name:
+                    del (self.thermo_matches[chemkin_label][rmg_species])
+            if len(self.thermo_matches[chemkin_label]) == 0:
+                del (self.thermo_matches[chemkin_label])
 
-    def blockMatch(self, chemkinLabel, rmgSpecies, username=None):
+    def block_match(self, chemkin_label, rmg_species, username=None):
         """Store a blocked match"""
-        for match in self.tentativeMatches:
-            if match['label'] == chemkinLabel:
-                if match['species'] == rmgSpecies:
-                    self.tentativeMatches.remove(match)
+        for match in self.tentative_matches:
+            if match['label'] == chemkin_label:
+                if match['species'] == rmg_species:
+                    self.tentative_matches.remove(match)
                 break
-        self.clearThermoMatch(chemkinLabel, str(rmgSpecies))
-        self.saveBlockedMatchToFile(chemkinLabel, rmgSpecies,
+        self.clear_thermo_match(chemkin_label, str(rmg_species))
+        self.save_blocked_match_to_file(chemkin_label, rmg_species,
                                     username=username)
-        if chemkinLabel not in self.blockedMatches:
-            self.blockedMatches[chemkinLabel] = dict()
-        self.blockedMatches[chemkinLabel][rmgSpecies] = username
+        if chemkin_label not in self.blocked_matches:
+            self.blocked_matches[chemkin_label] = dict()
+        self.blocked_matches[chemkin_label][rmg_species] = username
 
-        self.votes[chemkinLabel].pop(rmgSpecies, None)
+        self.votes[chemkin_label].pop(rmg_species, None)
 
-    def setMatch(self, chemkinLabel, rmgSpecies):
+    def set_match(self, chemkin_label, rmg_species):
         """Store a match, once you've identified it"""
-        self.clearTentativeMatch(chemkinLabel, rmgSpecies)
-        self.identified_labels.append(chemkinLabel)
-        self.identified_unprocessed_labels.append(chemkinLabel)
-        self.clearThermoMatch(chemkinLabel)
+        self.clear_tentative_match(chemkin_label, rmg_species)
+        self.identified_labels.append(chemkin_label)
+        self.identified_unprocessed_labels.append(chemkin_label)
+        self.clear_thermo_match(chemkin_label)
 
         # For kinetics purposes, we convert the thermo to Wilhoit
         # This allows us to extrapolating H to 298 to find deltaH rxn
         # for ArrheniusEP kinetics,
         # and to 0K so we can do barrier height checks with E0.
-        Cp0 = rmgSpecies.calculate_cp0(), 'J/mol/K'
-        CpInf = rmgSpecies.calculate_cpinf(), 'J/mol/K'
-        thermo = self.thermoDict[chemkinLabel]
+        Cp0 = rmg_species.calculate_cp0(), 'J/mol/K'
+        CpInf = rmg_species.calculate_cpinf(), 'J/mol/K'
+        thermo = self.thermo_dict[chemkin_label]
         # pretend it was valid down to 298 K
-        oldLowT = thermo.Tmin.value_si
-        if oldLowT > 298.0:
+        old_lowT = thermo.Tmin.value_si
+        if old_lowT > 298.0:
             thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
-            thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
+            thermo.comment += "\n_low T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(old_lowT, 298.0)
         thermo.Cp0 = Cp0
         thermo.CpInf = CpInf
-        newThermo = thermo.to_wilhoit()
-        # thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
-        self.thermoDict[chemkinLabel].E0 = newThermo.E0
+        new_thermo = thermo.to_wilhoit()
+        # thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = old_lowT  # put it back
+        self.thermo_dict[chemkin_label].E0 = new_thermo.E0
 
-        enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
-        logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
-        logging.info("  On match, Enthalpies at 298K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
-        if abs(enthalpyDiscrepancy) > 300:
-            logging.warning("Very large thermo difference for identified species {0}".format(chemkinLabel))
-        display(rmgSpecies)
-        self.moveSpeciesDrawing(rmgSpecies)
+        enthalpy_discrepancy = self.get_enthalpy_discrepancy(chemkin_label, rmg_species)
+        logging.info("Storing match: {0} = {1!s}".format(chemkin_label, rmg_species))
+        logging.info("  On match, Enthalpies at 298K differ by {0:.1f} kJ/mol".format(enthalpy_discrepancy))
+        if abs(enthalpy_discrepancy) > 300:
+            logging.warning("Very large thermo difference for identified species {0}".format(chemkin_label))
+        display(rmg_species)
+        self.move_species_drawing(rmg_species)
 
         duplicate = False
-        if rmgSpecies.label in self.speciesDict_rmg:
-            otherSpecies = self.speciesDict_rmg[rmgSpecies.label]
-            if otherSpecies is rmgSpecies:
+        if rmg_species.label in self.species_dict_rmg:
+            other_species = self.species_dict_rmg[rmg_species.label]
+            if other_species is rmg_species:
                 logging.warning(("This RMG species has already been matched to the chemkin label"
-                                 " {0}").format(otherSpecies.label))
-                duplicate = otherSpecies.label
-                self.identified_unprocessed_labels.remove(chemkinLabel)
+                                 " {0}").format(other_species.label))
+                duplicate = other_species.label
+                self.identified_unprocessed_labels.remove(chemkin_label)
             else:
                 logging.warning(("Coincidence that RMG made a species with the same label "
-                                 "as some other chemkin species: {0}.").format(rmgSpecies.label))
+                                 "as some other chemkin species: {0}.").format(rmg_species.label))
         if duplicate:
             logging.warning(("Will not rename the RMG species with duplicate chemkin labels;"
-                             "leaving as it's first match: {0}").format(rmgSpecies.label))
+                             "leaving as it's first match: {0}").format(rmg_species.label))
         else:
-            rmgSpecies.label = chemkinLabel
+            rmg_species.label = chemkin_label
 
-        self.speciesDict_rmg[chemkinLabel] = rmgSpecies
+        self.species_dict_rmg[chemkin_label] = rmg_species
 
-        with open(self.dictionaryFile, 'a') as f:
+        with open(self.dictionary_file, 'a') as f:
             f.write("{0}\t{1}\t{2:.1f}{3}\n".format(
-                        chemkinLabel,
-                        rmgSpecies.molecule[0].to_smiles(),
-                        enthalpyDiscrepancy,
+                        chemkin_label,
+                        rmg_species.molecule[0].to_smiles(),
+                        enthalpy_discrepancy,
                         '\tDUPLICATE of ' + duplicate if duplicate else ''))
 
         with open(self.RMGdictionaryFile, 'a') as f:
             f.write("{2}{0}\n{1}\n\n".format(
-                         chemkinLabel,
-                         rmgSpecies.molecule[0].to_adjacency_list(remove_h=True),
+                         chemkin_label,
+                         rmg_species.molecule[0].to_adjacency_list(remove_h=True),
                         '// Warning! Duplicate of ' + duplicate + '\n' if duplicate else ''))
 
-        self.drawSpecies(rmgSpecies)
+        self.draw_species(rmg_species)
 
         # Make an entry for the thermo database
         entry = Entry()
         entry.index = len(self.identified_labels)
-        entry.label = chemkinLabel
+        entry.label = chemkin_label
         source = os.path.join(self.name, self.args.thermo)
 
         # Look for the lowest energy resonance isomer that isn't aromatic,
         # because saving aromatic adjacency lists can cause problems downstream.
-        for molecule in rmgSpecies.molecule:
+        for molecule in rmg_species.molecule:
             if not molecule.is_aromatic():
                 break
         else:
             logging.warning(("All resonance isomers of {0} are aromatic?! "
-                            "Unsafe saving to thermo.py file.").format(chemkinLabel))
+                            "Unsafe saving to thermo.py file.").format(chemkin_label))
             return
         entry.item = molecule
         entry.data = thermo
@@ -1470,115 +1470,115 @@ class ModelMatcher():
         if duplicate:
             entry.long_desc += ("Duplicate of species {0} (i.e. same molecular structure"
                                " according to RMG)\n").format(duplicate)
-        entry.long_desc += '{smiles}\nImported from {source}.'.format(source=source,
+        entry.long_desc += '{smiles}\n_imported from {source}.'.format(source=source,
                                                                      smiles=molecule.to_smiles())
         entry.short_desc = comment.split('\n')[0].strip()
 
-        # store in the thermoLibrary
-        self.thermoLibrary.entries[entry.label] = entry
+        # store in the thermo_library
+        self.thermo_library.entries[entry.label] = entry
 
 
-    def getInvalidatedReactionsAndRemoveVotes(self, chemkinLabel, rmgSpecies):
+    def get_invalidated_reactions_and_remove_votes(self, chemkin_label, rmg_species):
         """
-        Remove the votes cast by/for that chemkinLabel and rmgSpecies,
+        Remove the votes cast by/for that chemkin_label and rmg_species,
         and return the list of voting reactions that need to be re-checked.
         """
-        reactionsToReCheck = set()
-        # First remove the chemkinLabel voting dictionary
-        possibles = self.votes.pop(chemkinLabel, {})
+        reactions_to_re_check = set()
+        # First remove the chemkin_label voting dictionary
+        possibles = self.votes.pop(chemkin_label, {})
         for rxns in possibles.itervalues():
             for rxn in rxns:
-                reactionsToReCheck.add(rxn[1])
-        # Then remove the rmgSpecies from any voting dictionaries it is in
+                reactions_to_re_check.add(rxn[1])
+        # Then remove the rmg_species from any voting dictionaries it is in
         for ck, possibles in self.votes.iteritems():
-            for rxn in possibles.pop(rmgSpecies, {}):
-                reactionsToReCheck.add(rxn[1])
-        return reactionsToReCheck
+            for rxn in possibles.pop(rmg_species, {}):
+                reactions_to_re_check.add(rxn[1])
+        return reactions_to_re_check
 
-    def checkReactionsForMatches(self, reactionsToCheck):
+    def check_reactions_for_matches(self, reactions_to_check):
         """
         Checks the given list of edge reactions for corresponding
-        chemkin reactions in the self.chemkinReactionsUnmatched list.
+        chemkin reactions in the self.chemkin_reactions_unmatched list.
         Updates the votes in self.votes,
-        and removes fully matched things from self.chemkinReactionsUnmatched
+        and removes fully matched things from self.chemkin_reactions_unmatched
         also prunes reactions from self.rmg_object.edge if they can't match anything ever.
         """
-        chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
-        reactionsMatch = self.reactionsMatch
+        chemkin_reactions_unmatched = self.chemkin_reactions_unmatched
+        reactions_match = self.reactions_match
         votes = self.votes
 
-        reactionsToPrune = set()
-        for edgeReaction in reactionsToCheck:
-            edgeReactionMatchesSomething = False
-            for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list
-                self.suggestedMatches = {}
-                if reactionsMatch(edgeReaction, chemkinReaction):
-                    edgeReactionMatchesSomething = True
+        reactions_to_prune = set()
+        for edge_reaction in reactions_to_check:
+            edge_reaction_matches_something = False
+            for chemkin_reaction in chemkin_reactions_unmatched[:]:  # iterate over a copy of the list
+                self.suggested_matches = {}
+                if reactions_match(edge_reaction, chemkin_reaction):
+                    edge_reaction_matches_something = True
                     logging.info("Chemkin reaction     {0}\n matches RMG {1} reaction  {2}".format(
-                        chemkinReaction, edgeReaction.family, edgeReaction))
-                    if self.suggestedMatches:
+                        chemkin_reaction, edge_reaction.family, edge_reaction))
+                    if self.suggested_matches:
                         logging.info(" suggesting new species match: {0!r}".format(
-                           dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
+                           dict((l, str(s)) for (l, s) in self.suggested_matches.iteritems())))
                     else:
                         logging.info(" suggesting no new species matches.")
 
-                    for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
-                        if chemkinLabel not in votes:
-                            votes[chemkinLabel] = {rmgSpecies: set([(chemkinReaction, edgeReaction)])}
+                    for chemkin_label, rmg_species in self.suggested_matches.iteritems():
+                        if chemkin_label not in votes:
+                            votes[chemkin_label] = {rmg_species: set([(chemkin_reaction, edge_reaction)])}
                         else:
-                            if rmgSpecies not in votes[chemkinLabel]:
-                                votes[chemkinLabel][rmgSpecies] = set([(chemkinReaction, edgeReaction)])
+                            if rmg_species not in votes[chemkin_label]:
+                                votes[chemkin_label][rmg_species] = set([(chemkin_reaction, edge_reaction)])
                             else:
-                                votes[chemkinLabel][rmgSpecies].add((chemkinReaction, edgeReaction))
+                                votes[chemkin_label][rmg_species].add((chemkin_reaction, edge_reaction))
                         # now votes is a dict of dicts of lists of tuples {'ch3':{<Species CH3>: [ voting_reactions ]}}
-            if not edgeReactionMatchesSomething:
-                reactionsToPrune.add(edgeReaction)
+            if not edge_reaction_matches_something:
+                reactions_to_prune.add(edge_reaction)
         # remove those reactions
-        logging.info("Removing {0} edge reactions that didn't match anything.".format(len(reactionsToPrune)))
+        logging.info("Removing {0} edge reactions that didn't match anything.".format(len(reactions_to_prune)))
         prune = self.rmg_object.reaction_model.edge.reactions.remove
-        for rxn in reactionsToPrune:
+        for rxn in reactions_to_prune:
             try:
                 prune(rxn)
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
-        for chemkinReaction in self.chemkinReactionsUnmatched[:]:  # iterate over a copy
-            if self.reagentsAreAllIdentified(chemkinReaction):
+        for chemkin_reaction in self.chemkin_reactions_unmatched[:]:  # iterate over a copy
+            if self.reagents_are_all_identified(chemkin_reaction):
                 # remove it from the list of useful unmatched reactions.
-                self.chemkinReactionsUnmatched.remove(chemkinReaction)
-                self.chemkinReactionsToSave.append(chemkinReaction)
+                self.chemkin_reactions_unmatched.remove(chemkin_reaction)
+                self.chemkin_reactions_to_save.append(chemkin_reaction)
 
-    def saveLibraries(self):
+    def save_libraries(self):
         """
         Save the thermo and kinetics libraries in new and old format
         """
-        self.savePyThermoLibrary()
-        self.savePyKineticsLibrary()
+        self.save_py_thermo_library()
+        self.save_py_kinetics_library()
 
-    def savePyThermoLibrary(self):
+    def save_py_thermo_library(self):
         "Save an RMG-Py style thermo library"
-        library_path = os.path.join(self.outputPath, 'RMG-Py-thermo-library')
-        makeOrEmptyDirectory(library_path)
-        self.thermoLibrary.save(os.path.join(library_path, 'ThermoLibrary.py'))
+        library_path = os.path.join(self.output_path, 'RMG-Py-thermo-library')
+        make_or_empty_directory(library_path)
+        self.thermo_library.save(os.path.join(library_path, 'ThermoLibrary.py'))
 
-    def savePyKineticsLibrary(self):
+    def save_py_kinetics_library(self):
         "Save an RMG-Py style kinetics library"
-        library_path = os.path.join(self.outputPath, 'RMG-Py-kinetics-library')
-        makeOrEmptyDirectory(library_path)
-        self.kineticsLibrary.check_for_duplicates(mark_duplicates=True)
-        self.kineticsLibrary.convert_duplicates_to_multi()
-        self.kineticsLibrary.save(os.path.join(library_path, 'reactions.py'))
+        library_path = os.path.join(self.output_path, 'RMG-Py-kinetics-library')
+        make_or_empty_directory(library_path)
+        self.kinetics_library.check_for_duplicates(mark_duplicates=True)
+        self.kinetics_library.convert_duplicates_to_multi()
+        self.kinetics_library.save(os.path.join(library_path, 'reactions.py'))
         for species in self.species_list:
             if species.molecule:
                 species.molecule[0].clear_labeled_atoms()  # don't want '*1' labels in the dictionary
-        self.kineticsLibrary.save_dictionary(os.path.join(library_path, 'dictionary.txt'))
+        self.kinetics_library.save_dictionary(os.path.join(library_path, 'dictionary.txt'))
 
-        savedReactions = [self.kineticsLibrary.entries[key].item 
-                          for key in sorted(self.kineticsLibrary.entries.keys())
+        saved_reactions = [self.kinetics_library.entries[key].item 
+                          for key in sorted(self.kinetics_library.entries.keys())
                           ]
         
         with open(os.path.join(library_path, 'reversed_rates.txt'), 'w') as out_file:
-            for reaction in savedReactions:
+            for reaction in saved_reactions:
                 out_file.write("Forwards reaction:   {!s}".format(reaction.to_chemkin(species_list=self.species_list)))
                 out_file.write("Forwards rate:       {!r}\n".format(reaction.kinetics))
                 try:
@@ -1598,8 +1598,8 @@ class ModelMatcher():
         with open(os.path.join(library_path, 'unidentified_reactions.txt'), 'w') as out_file:
             out_file.write("// Couldn't use these reactions because not yet identified all species\n")
             count = 0
-            for index, reaction in enumerate(self.chemkinReactions):
-                if reaction in savedReactions:
+            for index, reaction in enumerate(self.chemkin_reactions):
+                if reaction in saved_reactions:
                     continue
                 count += 1
                 out_file.write('//{0:4d}\n'.format(index + 1))
@@ -1610,22 +1610,22 @@ class ModelMatcher():
                 out_file.write('\n')
             out_file.write("// Total {} reactions unidentified\n".format(count))
         
-        extraInfoFilePath = os.path.join(self.outputPath, 'RMG-Py-kinetics-library', 'extra_info.py')
+        extra_info_file_path = os.path.join(self.output_path, 'RMG-Py-kinetics-library', 'extra_info.py')
         if 'RMG_MAKE_INFO_FILES' not in os.environ:
             # By default don't write it, because it's slow (and not always helpful)
-            with open(extraInfoFilePath, 'w') as out_file:
+            with open(extra_info_file_path, 'w') as out_file:
                 out_file.write('"To generate extra information file, '
                                'run with RMG_MAKE_INFO_FILES environment variable"')
         else:
-            with open(extraInfoFilePath, 'w') as out_file:
+            with open(extra_info_file_path, 'w') as out_file:
                 out_file.write('"Extra information about kinetics, as a list of dicts"\n\n')
                 out_file.write("info = [\n")
-            for reaction in savedReactions:
-                self.saveReactionToKineticsInfoFile(reaction, extraInfoFilePath)
-            with open(extraInfoFilePath, 'a') as out_file:
+            for reaction in saved_reactions:
+                self.save_reaction_to_kinetics_info_file(reaction, extra_info_file_path)
+            with open(extra_info_file_path, 'a') as out_file:
                 out_file.write(']\n\n')
 
-    def reagentsAreAllIdentified(self, chemkinReaction, require_molecules=False):
+    def reagents_are_all_identified(self, chemkin_reaction, require_molecules=False):
         """
         Determines if a reaction contains only species that have been identified
         by default by comparing against the list in self.identified_labels.
@@ -1635,7 +1635,7 @@ class ModelMatcher():
         structure.        
         Returns True if all the reagents have been identified, else False.
         """
-        for reagents in (chemkinReaction.reactants, chemkinReaction.products):
+        for reagents in (chemkin_reaction.reactants, chemkin_reaction.products):
             for reagent in reagents:
                 if reagent.label not in self.identified_labels:
                     return False
@@ -1644,41 +1644,41 @@ class ModelMatcher():
         return True
 
 
-    def addReactionToKineticsLibrary(self, chemkinReaction):
+    def add_reaction_to_kinetics_library(self, chemkin_reaction):
         """
-        Add the chemkin reaction (once species are identified) to the reactionLibrary
+        Add the chemkin reaction (once species are identified) to the reaction_library
         """
-        entry = kinEntry()
+        entry = kin_entry()
         #source = self.args.reactions
-        #entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
-        entry.index = self.chemkinReactions.index(chemkinReaction) + 1
-        entry.item = chemkinReaction
-        entry.label = str(chemkinReaction)
-        entry.data = chemkinReaction.kinetics
-        comment = getattr(chemkinReaction, 'comment', '')  # This should ideally return the chemkin file comment but currently does not
+        #entry.index = len(self.chemkin_reactions) - len(self.chemkin_reactions_unmatched)
+        entry.index = self.chemkin_reactions.index(chemkin_reaction) + 1
+        entry.item = chemkin_reaction
+        entry.label = str(chemkin_reaction)
+        entry.data = chemkin_reaction.kinetics
+        comment = getattr(chemkin_reaction, 'comment', '')  # This should ideally return the chemkin file comment but currently does not
         if comment:
             entry.long_desc = comment + '.\n'
         else:
             entry.long_desc = ''
-        entry.short_desc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
+        entry.short_desc = 'The chemkin file reaction is {0}'.format(str(chemkin_reaction))
 
-        self.kineticsLibrary.entries[entry.index] = entry
+        self.kinetics_library.entries[entry.index] = entry
 
-    def saveReactionToKineticsInfoFile(self, chemkinReaction, filePath):
+    def save_reaction_to_kinetics_info_file(self, chemkin_reaction, file_path):
         """
         Output to the kinetics.py information file
         """
         from arkane.output import prettify
-        with open(filePath, 'a') as f:
+        with open(file_path, 'a') as f:
             f.write('{\n')
-            f.write(' "reaction": {!r},\n'.format(str(chemkinReaction)))
-            f.write(' "chemkinKinetics": """\n{!s}""",\n'.format(rmgpy.chemkin.write_kinetics_entry(chemkinReaction, self.species_list, verbose=False)))
-            f.write(' "rmgPyKinetics": {!s},\n'.format(prettify(repr(chemkinReaction.kinetics))))
-            f.write(' "possibleReactionFamilies": [')
-            reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
-            product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
+            f.write(' "reaction": {!r},\n'.format(str(chemkin_reaction)))
+            f.write(' "chemkin_kinetics": """\n{!s}""",\n'.format(rmgpy.chemkin.write_kinetics_entry(chemkin_reaction, self.species_list, verbose=False)))
+            f.write(' "rmg_py_kinetics": {!s},\n'.format(prettify(repr(chemkin_reaction.kinetics))))
+            f.write(' "possible_reaction_families": [')
+            reactant_molecules = [s.molecule[0] for s in chemkin_reaction.reactants if s.reactive]
+            product_molecules = [s.molecule[0] for s in chemkin_reaction.products if s.reactive]
             f.flush()
-            # logging.info("Trying to generate reactions for " + str(chemkinReaction))
+            # logging.info("Trying to generate reactions for " + str(chemkin_reaction))
             try:
                 generated_reactions = self.rmg_object.database.kinetics.generate_reactions_from_families(reactant_molecules, product_molecules)
             except KineticsError as e:
@@ -1692,7 +1692,7 @@ class ModelMatcher():
         return True
 
 
-    def pruneVoting(self):
+    def prune_voting(self):
         """
         Return a pruned voting matrix with only significant (unique) votes,
         for making tentative matches.
@@ -1701,101 +1701,101 @@ class ModelMatcher():
         If a match has a large enthalpy discrepancy, remove it.
         """
         votes = self.votes
-        prunedVotes = {}
+        pruned_votes = {}
 
         # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
-        ckVotes = dict()
-        for chemkinLabel, possibleMatches in votes.iteritems():
-            ckVotes[chemkinLabel] = dict(
-                    (matchingSpecies, set([r[0] for r in votingReactions]))
-                    for (matchingSpecies, votingReactions) in possibleMatches.iteritems()
+        ck_votes = dict()
+        for chemkin_label, possible_matches in votes.iteritems():
+            ck_votes[chemkin_label] = dict(
+                    (matching_species, set([r[0] for r in voting_reactions]))
+                    for (matching_species, voting_reactions) in possible_matches.iteritems()
                    )
 
-        for chemkinLabel, possibleMatches in ckVotes.iteritems():
-            for rmgSpecies in possibleMatches.keys():
-                dH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
+        for chemkin_label, possible_matches in ck_votes.iteritems():
+            for rmg_species in possible_matches.keys():
+                dH = self.get_enthalpy_discrepancy(chemkin_label, rmg_species)
                 if abs(dH) > 150:
                     logging.info(("Removing possible match {0} : {1!s} "
                                   " because enthalpy discrepancy is {2:.1f} kJ/mol"
-                                  ).format(chemkinLabel, rmgSpecies, dH))
-                    del(possibleMatches[rmgSpecies])
+                                  ).format(chemkin_label, rmg_species, dH))
+                    del(possible_matches[rmg_species])
 
-        for chemkinLabel, possibleMatches in ckVotes.iteritems():
-            if len(possibleMatches) == 0:
-                logging.info("No remaining matches for {0}".format(chemkinLabel))
+        for chemkin_label, possible_matches in ck_votes.iteritems():
+            if len(possible_matches) == 0:
+                logging.info("No remaining matches for {0}".format(chemkin_label))
                 continue
-            if len(possibleMatches) == 1:
-                prunedVotes[chemkinLabel] = possibleMatches
+            if len(possible_matches) == 1:
+                pruned_votes[chemkin_label] = possible_matches
                 continue
-            commonVotes = None
-            mostVotes = 0
-            for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                mostVotes = max(mostVotes, len(votingReactions))
-                if commonVotes is None:
-                    commonVotes = set(votingReactions)  # make a copy!!
+            common_votes = None
+            most_votes = 0
+            for matching_species, voting_reactions in possible_matches.iteritems():
+                most_votes = max(most_votes, len(voting_reactions))
+                if common_votes is None:
+                    common_votes = set(voting_reactions)  # make a copy!!
                 else:
-                    commonVotes.intersection_update(votingReactions)
-            if len(commonVotes) < mostVotes:
+                    common_votes.intersection_update(voting_reactions)
+            if len(common_votes) < most_votes:
                 logging.info(
                     "Removing {0} voting reactions that are common to all {1} matches for {2}".format(
-                        len(commonVotes), len(possibleMatches), chemkinLabel))
-                prunedVotes[chemkinLabel] = dict(
-                    (matchingSpecies, votingReactions.difference(commonVotes))
-                    for (matchingSpecies, votingReactions) in possibleMatches.iteritems()
-                    if votingReactions.difference(commonVotes))
+                        len(common_votes), len(possible_matches), chemkin_label))
+                pruned_votes[chemkin_label] = dict(
+                    (matching_species, voting_reactions.difference(common_votes))
+                    for (matching_species, voting_reactions) in possible_matches.iteritems()
+                    if voting_reactions.difference(common_votes))
             else:
-                prunedVotes[chemkinLabel] = possibleMatches
-        self.prunedVotes = prunedVotes
-        return prunedVotes
+                pruned_votes[chemkin_label] = possible_matches
+        self.pruned_votes = pruned_votes
+        return pruned_votes
 
-    def printVoting(self, votes):
+    def print_voting(self, votes):
         """
         Log the passed in voting matrix to the console.
         """
         logging.info("Current voting:::")
-        chemkinControversy = dict((label, 0) for label in votes.iterkeys())
-        rmgControversy = {}
-        flatVotes = {}
-        for chemkinLabel, possibleMatches in votes.iteritems():
-            for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                self.drawSpecies(matchingSpecies)
-                flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
-                chemkinControversy[chemkinLabel] += len(votingReactions)
-                rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+        chemkin_controversy = dict((label, 0) for label in votes.iterkeys())
+        rmg_controversy = {}
+        flat_votes = {}
+        for chemkin_label, possible_matches in votes.iteritems():
+            for matching_species, voting_reactions in possible_matches.iteritems():
+                self.draw_species(matching_species)
+                flat_votes[(chemkin_label, matching_species)] = voting_reactions
+                chemkin_controversy[chemkin_label] += len(voting_reactions)
+                rmg_controversy[matching_species] = rmg_controversy.get(matching_species, 0) + len(voting_reactions)
 
-        for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
-            possibleMatches = votes[chemkinLabel]
-            logging.info("{0} matches {1} RMG species:".format(chemkinLabel, len(possibleMatches)))
-            for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
-                votingReactions = possibleMatches[matchingSpecies]
-                logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
-                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies)))
-                display(matchingSpecies)
-                for rxn in votingReactions:
+        for chemkin_label in sorted(chemkin_controversy.keys(), key=lambda label:-chemkin_controversy[label]):
+            possible_matches = votes[chemkin_label]
+            logging.info("{0} matches {1} RMG species:".format(chemkin_label, len(possible_matches)))
+            for matching_species in sorted(possible_matches.iterkeys(), key=lambda species:-len(possible_matches[species])) :
+                voting_reactions = possible_matches[matching_species]
+                logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkin_label, matching_species, len(voting_reactions)))
+                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format(self.get_enthalpy_discrepancy(chemkin_label, matching_species)))
+                display(matching_species)
+                for rxn in voting_reactions:
                     if isinstance(rxn, tuple):
                         logging.info("    {0!s}     //    {1!s}".format(rxn[0], rxn[1]))
                     else:
                         logging.info("    {0!s}".format(rxn))
 
-    def constrainReactionFamilies(self):
+    def constrain_reaction_families(self):
         """
         Add restraints to the reaction families so they do not produce 
         edge species that cannot possibly be in the chemkin file.
         """
         import rmgpy.data.rmg
-        old_isMoleculeForbidden = rmgpy.data.rmg.database.forbidden_structures.is_molecule_forbidden
-        chemkin_formulas = set(self.formulaDict.values())
+        old_is_molecule_forbidden = rmgpy.data.rmg.database.forbidden_structures.is_molecule_forbidden
+        chemkin_formulas = set(self.formula_dict.values())
 
-        def new_isMoleculeForbidden(molecule):
+        def new_is_molecule_forbidden(molecule):
             # return True (Forbidden) if we forbid it,
             if molecule.get_formula() not in chemkin_formulas:
                 return True
             # otherwise return whatever we would have returned
-            return old_isMoleculeForbidden(molecule)
+            return old_is_molecule_forbidden(molecule)
 
-        rmgpy.data.rmg.database.forbidden_structures.is_molecule_forbidden = new_isMoleculeForbidden
+        rmgpy.data.rmg.database.forbidden_structures.is_molecule_forbidden = new_is_molecule_forbidden
 
-    def limitEnlarge(self, newObject):
+    def limit_enlarge(self, new_object):
         """
         Enlarges the rmg reaction model, but only reacts the new species with
         species it is predicted to react with in the chemkin reaction file
@@ -1811,85 +1811,85 @@ class ModelMatcher():
 
         database = rmgpy.data.rmg.database
 
-        obj = newObject
+        obj = new_object
 
-        numOldCoreSpecies = len(rm.core.species)
-        numOldCoreReactions = len(rm.core.reactions)
-        numOldEdgeSpecies = len(rm.edge.species)
-        numOldEdgeReactions = len(rm.edge.reactions)
+        num_old_core_species = len(rm.core.species)
+        num_old_core_reactions = len(rm.core.reactions)
+        num_old_edge_species = len(rm.edge.species)
+        num_old_edge_reactions = len(rm.edge.reactions)
         reactions_moved_from_edge = []
-        newReactionList = []
-        newSpeciesList = []
+        new_reaction_list = []
+        new_species_list = []
 
         rm.new_reaction_list = []
         rm.new_species_list = []
         new_reactions = []
         pdep_network = None
-        objectWasInEdge = False
+        object_was_in_edge = False
 
         new_species = obj
 
-        objectWasInEdge = newSpecies in rm.edge.species
+        object_was_in_edge = new_species in rm.edge.species
 
-        if not newSpecies.reactive:
-            logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
+        if not new_species.reactive:
+            logging.info('NOT generating reactions for unreactive species {0}'.format(new_species))
         else:
-            logging.info('Adding species {0} to model core'.format(newSpecies))
+            logging.info('Adding species {0} to model core'.format(new_species))
 
             # Find reactions involving the new species as unimolecular reactant
             # or product (e.g. A <---> products)
             try:
-                newReactions.extend([i for l in rmgpy.rmg.react.react([((newSpecies,),)]) for i in l])
+                new_reactions.extend([i for l in rmgpy.rmg.react.react([((new_species,),)]) for i in l])
                 # the [i for l in thing for i in l] flattens the list of lists
             except KineticsError as e:
                 logging.error(str(e))
-                logging.error("Not reacting {0!r} on its own".format(newSpecies))
+                logging.error("Not reacting {0!r} on its own".format(new_species))
                 
             # Find reactions involving the new species as bimolecular reactants
             # or products with other core species (e.g. A + B <---> products)
             # This is the primary difference from a standard enlarge, where
             # normally it would react with all things in the core, this just
             # finds reactions in the chemkin file and creates those
-            for coreSpecies in rm.core.species:
-                if coreSpecies.reactive:
-                    if self.speciesReactAccordingToChemkin(newSpecies, coreSpecies):
+            for core_species in rm.core.species:
+                if core_species.reactive:
+                    if self.species_react_according_to_chemkin(new_species, core_species):
                         try:
-                            newReactions.extend([i for l in rmgpy.rmg.react.react([((newSpecies, coreSpecies),)]) for i in l])
+                            new_reactions.extend([i for l in rmgpy.rmg.react.react([((new_species, core_species),)]) for i in l])
                         except KineticsError as e:
                             logging.error(str(e))
-                            logging.error("Not reacting {0!r} with {1!r}".format(newSpecies, coreSpecies))
+                            logging.error("Not reacting {0!r} with {1!r}".format(new_species, core_species))
             # Find reactions involving the new species as bimolecular reactants
             # or products with itself (e.g. A + A <---> products)
             # This is also limited to only reactions that occur in the chemkin file.
-            if self.speciesReactAccordingToChemkin(newSpecies, newSpecies):
+            if self.species_react_according_to_chemkin(new_species, new_species):
                 try:
-                    newReactions.extend([i for l in rmgpy.rmg.react.react([((newSpecies, newSpecies.copy(deep=True)),)]) for i in l])
+                    new_reactions.extend([i for l in rmgpy.rmg.react.react([((new_species, new_species.copy(deep=True)),)]) for i in l])
                 except KineticsError as e:
                     logging.error(str(e))
-                    logging.error("Not reacting {0!r} with itself".format(newSpecies))
+                    logging.error("Not reacting {0!r} with itself".format(new_species))
 
         # Add new species
-        reactions_moved_from_edge = rm.add_species_to_core(newSpecies)
+        reactions_moved_from_edge = rm.add_species_to_core(new_species)
 
         # Process the new reactions
         # While adding to core/edge/pdep network, this clears atom labels:
-        rm.process_new_reactions(newReactions, newSpecies, pdepNetwork)
+        rm.process_new_reactions(new_reactions, new_species, pdep_network)
         # this will call rm.check_for_existing_species to see if it already
         # exists in rm.species_dict and if not there, will add to rm.new_species_list
         # and call .generate_resonance_structures on each Species.
 
-        if objectWasInEdge:
+        if object_was_in_edge:
             # moved one species from edge to core
-            numOldEdgeSpecies -= 1
+            num_old_edge_species -= 1
             # moved these reactions from edge to core
-            numOldEdgeReactions -= len(reactionsMovedFromEdge)
+            num_old_edge_reactions -= len(reactions_moved_from_edge)
 
-        newSpeciesList.extend(rm.new_species_list)
-        newReactionList.extend(rm.new_reaction_list)
+        new_species_list.extend(rm.new_species_list)
+        new_reaction_list.extend(rm.new_reaction_list)
 
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-        for spec in newSpeciesList:
+        for spec in new_species_list:
             try:
                 spec.thermo = generate_thermo_data(spec)
             except:
@@ -1902,26 +1902,26 @@ class ModelMatcher():
                     self.rmg_object.quantum_mechanics = qm # restore original setting
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
-        for reaction in newReactionList:
+        for reaction in new_reaction_list:
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
                 # Set the reaction kinetics
-                kinetics, source, entry, isForward = rm.generate_kinetics(reaction)
+                kinetics, source, entry, is_forward = rm.generate_kinetics(reaction)
                 reaction.kinetics = kinetics
                 # Flip the reaction direction if the kinetics are defined in the reverse direction
-                if not isForward:
+                if not is_forward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p, r) for r, p in reaction.pairs]
                 if rmgpy.rmg.model.get_family_library_object(reaction.family).own_reverse and hasattr(reaction, 'reverse'):
-                    if not isForward:
+                    if not is_forward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
                     delattr(reaction, 'reverse')
 
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # rm.new_reaction_list only contains *actually* new reactions, all in the forward direction.
-        for reaction in newReactionList:
+        for reaction in new_reaction_list:
             # convert KineticsData to Arrhenius forms
             if isinstance(reaction.kinetics, KineticsData):
                 reaction.kinetics = reaction.kinetics.to_arrhenius()
@@ -1935,19 +1935,19 @@ class ModelMatcher():
                 reaction.fix_barrier_height(force_positive=True)
 
         # Check new core reactions for Chemkin duplicates
-        new_core_reactions = rm.core.reactions[numOldCoreReactions:]
-        checkedCoreReactions = rm.core.reactions[:numOldCoreReactions]
+        new_core_reactions = rm.core.reactions[num_old_core_reactions:]
+        checked_core_reactions = rm.core.reactions[:num_old_core_reactions]
         from rmgpy.chemkin import mark_duplicate_reaction
-        for rxn in newCoreReactions:
-            mark_duplicate_reaction(rxn, itertools.chain(checkedCoreReactions, rm.output_reaction_list))
-            checkedCoreReactions.append(rxn)
+        for rxn in new_core_reactions:
+            mark_duplicate_reaction(rxn, itertools.chain(checked_core_reactions, rm.output_reaction_list))
+            checked_core_reactions.append(rxn)
 
         rm.log_enlarge_summary(
-            new_core_species=rm.core.species[numOldCoreSpecies:],
-            new_core_reactions=rm.core.reactions[numOldCoreReactions:],
-            reactions_moved_from_edge=reactionsMovedFromEdge,
-            new_edge_species=rm.edge.species[numOldEdgeSpecies:],
-            new_edge_reactions=rm.edge.reactions[numOldEdgeReactions:]
+            new_core_species=rm.core.species[num_old_core_species:],
+            new_core_reactions=rm.core.reactions[num_old_core_reactions:],
+            reactions_moved_from_edge=reactions_moved_from_edge,
+            new_edge_species=rm.edge.species[num_old_edge_species:],
+            new_edge_reactions=rm.edge.reactions[num_old_edge_reactions:]
         )
 
         logging.info('')
@@ -1963,20 +1963,20 @@ class ModelMatcher():
         known_species_file = args.known or species_file + '.SMILES.txt'
         self.known_species_file = known_species_file
         self.blocked_matches_file = os.path.splitext(known_species_file)[0] + '-BLOCKED.txt'
-        self.outputPath = os.path.dirname(os.path.abspath(reactions_file))
+        self.output_path = os.path.dirname(os.path.abspath(reactions_file))
 
-        self.loadSpecies(species_file)
+        self.load_species(species_file)
         self.load_thermo(thermo_file)
-        self.loadKnownSpecies(known_species_file)
+        self.load_known_species(known_species_file)
 
         for species in self.species_list:
-            if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
+            if species.label not in self.thermo_dict or self.thermo_dict[species.label] is None:
                 message = ("Species {sp} in the species file {spf} does not have a valid thermo entry "
                            "in the thermo file {th}").format(sp=species.label, spf=species_file, th=thermo_file)
                 logging.error(message)
                 raise Exception(message)
 
-        self.loadReactions(reactions_file)
+        self.load_reactions(reactions_file)
 
 
 
@@ -1989,14 +1989,14 @@ class ModelMatcher():
         known_species_file = args.known or species_file + '.SMILES.txt'
         self.known_species_file = known_species_file
         self.blocked_matches_file = os.path.splitext(known_species_file)[0] + '-BLOCKED.txt'
-        self.outputPath = os.path.dirname(os.path.abspath(reactions_file))
+        self.output_path = os.path.dirname(os.path.abspath(reactions_file))
 
-        self.loadSpecies(species_file)
+        self.load_species(species_file)
         self.load_thermo(thermo_file)
-        self.loadKnownSpecies(known_species_file)
+        self.load_known_species(known_species_file)
         
         for species in self.species_list:
-            if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
+            if species.label not in self.thermo_dict or self.thermo_dict[species.label] is None:
                 message = ("Species {sp} in the species file {spf} does not have a valid thermo entry "
                            "in the thermo file {th}").format(sp=species.label, spf=species_file, th=thermo_file)
                 logging.error(message)
@@ -2005,11 +2005,11 @@ class ModelMatcher():
         logging.info("Initializing RMG")
         self.initializeRMG(args)
         rm = self.rmg_object.reaction_model
-        self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
+        self.dictionary_file = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
         self.RMGdictionaryFile = os.path.join(args.output_directory, 'Original_RMG_dictionary.txt')
 
-        with open(self.dictionaryFile, 'w') as f:
-            f.write("Species name\tSMILES\tEnthaply discrepancy at 298K\n")
+        with open(self.dictionary_file, 'w') as f:
+            f.write("Species name\tSMILES\t_enthaply discrepancy at 298K\n")
         with open(self.RMGdictionaryFile, 'w') as f:
             f.write("\n")
         try:
@@ -2020,7 +2020,7 @@ class ModelMatcher():
         except IOError:
             source = "Unknown source"
 
-        self.thermoLibrary = rmgpy.data.thermo.ThermoLibrary(
+        self.thermo_library = rmgpy.data.thermo.ThermoLibrary(
             label=thermo_file.replace('"', ''),
             name=self.name,
             solvent=None,
@@ -2028,7 +2028,7 @@ class ModelMatcher():
             long_desc=source.strip(),
             )
 
-        self.kineticsLibrary = rmgpy.data.kinetics.KineticsLibrary(
+        self.kinetics_library = rmgpy.data.kinetics.KineticsLibrary(
             label=reactions_file.replace('"', ''),
             name=self.name,
             solvent=None,
@@ -2036,24 +2036,24 @@ class ModelMatcher():
             long_desc=source.strip(),
             )
 
-        self.loadBlockedMatches()
+        self.load_blocked_matches()
 
-        self.identifySmallMolecules()
+        self.identify_small_molecules()
 
-        self.checkThermoLibraries()
+        self.check_thermo_libraries()
 
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
-        newSpeciesDict = {}
+        new_species_dict = {}
         for species_label in self.identified_labels:
             old_species = self.species_dict[species_label]
             logging.info(species_label)
-            rmg_species, wasNew = rm.make_new_species(old_species, label=old_species.label)
-            if not wasNew:
+            rmg_species, was_new = rm.make_new_species(old_species, label=old_species.label)
+            if not was_new:
                 logging.warning("Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label))
 
-            newSpeciesDict[species_label] = rmg_species
-            if self.formulaDict[species_label] in ['N2', 'Ar', 'He']:
+            new_species_dict[species_label] = rmg_species
+            if self.formula_dict[species_label] in ['N2', 'Ar', 'He']:
                 rmg_species.reactive = False
                 old_species.reactive = False
                 # when this occurs in collider lists it's still the old species?
@@ -2064,129 +2064,129 @@ class ModelMatcher():
                 logging.error("Couldn't generate thermo for RMG species {}".format(rmg_species))
                 raise
         # Set match using the function to get all the side-effects.
-        labelsToProcess = self.identified_labels
+        labels_to_process = self.identified_labels
         self.identified_labels = []
-        for chemkinLabel in labelsToProcess:
+        for chemkin_label in labels_to_process:
             # this adds it back into self.identified_labels
-            self.setMatch(chemkinLabel, newSpeciesDict[chemkinLabel])
+            self.set_match(chemkin_label, new_species_dict[chemkin_label])
 
-        chemkinFormulas = set(self.formulaDict.values())
+        chemkin_formulas = set(self.formula_dict.values())
 
-        self.loadReactions(reactions_file)
-        chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
+        self.load_reactions(reactions_file)
+        chemkin_reactions_unmatched = self.chemkin_reactions_unmatched
         votes = self.votes
 
         # Now would be a good time to save identified reactions?
         # All the species in self.identified_labels should have been through generate_resonance_structures and generate_thermo_data
-        for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
-            if self.reagentsAreAllIdentified(chemkinReaction):
-                chemkinReactionsUnmatched.remove(chemkinReaction)
-                assert self.reagentsAreAllIdentified(chemkinReaction, require_molecules=True)
-                self.addReactionToKineticsLibrary(chemkinReaction)
+        for chemkin_reaction in chemkin_reactions_unmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
+            if self.reagents_are_all_identified(chemkin_reaction):
+                chemkin_reactions_unmatched.remove(chemkin_reaction)
+                assert self.reagents_are_all_identified(chemkin_reaction, require_molecules=True)
+                self.add_reaction_to_kinetics_library(chemkin_reaction)
 
         self.save_libraries()
 
-        self.pruneInertSpecies()
+        self.prune_inert_species()
 
         # Let's reduce the number of edge reactions producing things that can't possibly match
-        self.constrainReactionFamilies()
+        self.constrain_reaction_families()
 
         # Let's put things in the core by size, smallest first.
-        self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecular_weight.value_si)
+        self.identified_unprocessed_labels.sort(key=lambda x: new_species_dict[x].molecular_weight.value_si)
         # We want to put inert things in the core first, so we can do PDep calculations with inert colliders.
-        self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].reactive)
-        reactionsToCheck = set()
+        self.identified_unprocessed_labels.sort(key=lambda x: new_species_dict[x].reactive)
+        reactions_to_check = set()
         while self.identified_unprocessed_labels:
 
-            labelToProcess = self.identified_unprocessed_labels.pop(0)
-            logging.info("Processing species {0}...".format(labelToProcess))
+            label_to_process = self.identified_unprocessed_labels.pop(0)
+            logging.info("Processing species {0}...".format(label_to_process))
 
             # Add species to RMG core.
-            self.limitEnlarge(self.speciesDict_rmg[labelToProcess])
+            self.limit_enlarge(self.species_dict_rmg[label_to_process])
 
             # do a partial prune of new reactions that definitely aren't going to be useful
-            reactionsToPrune = set()
-            for newSpecies in rm.new_species_list:
-                if newSpecies.molecule[0].get_formula() in chemkinFormulas:
+            reactions_to_prune = set()
+            for new_species in rm.new_species_list:
+                if new_species.molecule[0].get_formula() in chemkin_formulas:
                     # This allows us to extrapolating H to 298 for comparison
-                    thermo = newSpecies.thermo
-                    oldLowT = thermo.Tmin.value_si
-                    if oldLowT > 298.0:
+                    thermo = new_species.thermo
+                    old_lowT = thermo.Tmin.value_si
+                    if old_lowT > 298.0:
                         thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
                         thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
-                        thermo.comment += "\nExtrapolated from Tmin={0} to {1} for comparison.".format(oldLowT, 298.0)
-                        logging.warning ("Changing Tmin from {0} to {1} for RMG-generated thermo for {2}".format(oldLowT, 298.0, newSpecies))
+                        thermo.comment += "\n_extrapolated from Tmin={0} to {1} for comparison.".format(old_lowT, 298.0)
+                        logging.warning ("Changing Tmin from {0} to {1} for RMG-generated thermo for {2}".format(old_lowT, 298.0, new_species))
                     continue
                 # else it's not useful to us
                 # identify any reactions it's involved in
                 for rxn in rm.new_reaction_list:
-                    if newSpecies in rxn.reactants or newSpecies in rxn.products:
-                        reactionsToPrune.add(rxn)
-            logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
+                    if new_species in rxn.reactants or new_species in rxn.products:
+                        reactions_to_prune.add(rxn)
+            logging.info("Removing {0} edge reactions that aren't useful".format(len(reactions_to_prune)))
             # this should only be library reactions, because we prevented reaction families from making un-helpful things
             # remove those reactions
-            for rxn in reactionsToPrune:
+            for rxn in reactions_to_prune:
                 try:
                     rm.edge.reactions.remove(rxn)
                 except ValueError:
                     pass  # "It wasn't in the edge. Presumably leaking from a pdep network"
                 rm.new_reaction_list.remove(rxn)
-            reactionsToPrune.clear()
+            reactions_to_prune.clear()
 
             logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.new_reaction_list)))
-            reactionsToCheck.update(rm.new_reaction_list)
-            logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
-            logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
+            reactions_to_check.update(rm.new_reaction_list)
+            logging.info("In total will check {0} edge reactions".format(len(reactions_to_check)))
+            logging.info("against {0} unmatched chemkin reactions.".format(len(chemkin_reactions_unmatched)))
 
             if len(self.identified_unprocessed_labels) == 0:
                 logging.info("** Running out of things to process!")
 
-            while reactionsToCheck:
-                self.checkReactionsForMatches(reactionsToCheck)
-                # Have just checked all those reactions, so clear the reactionsToCheck,
+            while reactions_to_check:
+                self.check_reactions_for_matches(reactions_to_check)
+                # Have just checked all those reactions, so clear the reactions_to_check,
                 # ready to start adding to it again based on new matches.
-                reactionsToCheck.clear()
+                reactions_to_check.clear()
 
-                # self.printVoting(votes)
-                prunedVotes = self.pruneVoting()
-                # self.printVoting(prunedVotes)
+                # self.print_voting(votes)
+                pruned_votes = self.prune_voting()
+                # self.print_voting(pruned_votes)
 
-                self.drawAllCandidateSpecies()
+                self.draw_all_candidate_species()
 
-                newMatches = []
-                for chemkinLabel, possibleMatches in prunedVotes.iteritems():
-                    if len(possibleMatches) == 1:
-                        matchingSpecies, votingReactions = possibleMatches.items()[0]
-                        logging.info("\nOnly one suggested match for {0}: {1!s}".format(chemkinLabel, matchingSpecies))
-                        display(matchingSpecies)
-                        logging.info("With {0} unique voting reactions:".format(len(votingReactions)))
-                        for reaction in votingReactions:
+                new_matches = []
+                for chemkin_label, possible_matches in pruned_votes.iteritems():
+                    if len(possible_matches) == 1:
+                        matching_species, voting_reactions = possible_matches.items()[0]
+                        logging.info("\n_only one suggested match for {0}: {1!s}".format(chemkin_label, matching_species))
+                        display(matching_species)
+                        logging.info("With {0} unique voting reactions:".format(len(voting_reactions)))
+                        for reaction in voting_reactions:
                             logging.info("  {0!s}".format(reaction))
-                        allPossibleChemkinSpecies = [ck for ck, matches in prunedVotes.iteritems() if matchingSpecies in matches]
-                        if len(allPossibleChemkinSpecies) == 1:
+                        all_possible_chemkin_species = [ck for ck, matches in pruned_votes.iteritems() if matching_species in matches]
+                        if len(all_possible_chemkin_species) == 1:
                             logging.info("Only one chemkin species has this match (after pruning).")
-                            self.setTentativeMatch(chemkinLabel, matchingSpecies)
-                            #newMatches.append((chemkinLabel, matchingSpecies))
+                            self.set_tentative_match(chemkin_label, matching_species)
+                            #new_matches.append((chemkin_label, matching_species))
                         else:
-                            logging.info("Other Chemkin species that also match {0} (after pruning) are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
+                            logging.info("Other Chemkin species that also match {0} (after pruning) are {1!r}".format(matching_species.label, all_possible_chemkin_species))
                             logging.info("Will not make match at this time.")
 
-                for chemkinLabel, matchingSpecies in newMatches:
-                    invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(
-                        chemkinLabel, matchingSpecies)
-                    reactionsToCheck.update(invalidatedReactions)
-                logging.info("After making {0} matches, will have to re-check {1} edge reactions".format(len(newMatches), len(reactionsToCheck)))
+                for chemkin_label, matching_species in new_matches:
+                    invalidated_reactions = self.get_invalidated_reactions_and_remove_votes(
+                        chemkin_label, matching_species)
+                    reactions_to_check.update(invalidated_reactions)
+                logging.info("After making {0} matches, will have to re-check {1} edge reactions".format(len(new_matches), len(reactions_to_check)))
 
             logging.info("Finished processing species {0}!".format(
-                            labelToProcess))
+                            label_to_process))
             logging.info("Have now identified {0} of {1} species ({2:.1%}).".format(
                             len(self.identified_labels),
                             len(self.species_list),
                             float(len(self.identified_labels)) / len(self.species_list)))
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(
-                            len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched),
-                            len(self.chemkinReactions),
-                            1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
+                            len(self.chemkin_reactions) - len(self.chemkin_reactions_unmatched),
+                            len(self.chemkin_reactions),
+                            1 - float(len(self.chemkin_reactions_unmatched)) / len(self.chemkin_reactions)))
             logging.info("Still to process {0} matches: {1!r}".format(
                             len(self.identified_unprocessed_labels),
                             self.identified_unprocessed_labels))
@@ -2198,7 +2198,7 @@ class ModelMatcher():
                                os.path.join(self.rmg_object.output_directory, 'identified_RMG_dictionary.txt'))
 
             while len(self.identified_unprocessed_labels) == 0:
-                if not self.manualMatchesToProcess :
+                if not self.manual_matches_to_process :
                     logging.info("Updating exported library files...")
                     self.save_libraries()
 
@@ -2208,56 +2208,56 @@ class ModelMatcher():
                         break
                     logging.info(("Waiting for input from the web front end..."
                                  " (port {0})").format(self.args.port))
-                while not self.manualMatchesToProcess:
+                while not self.manual_matches_to_process:
                     time.sleep(1)
 
-                while self.manualMatchesToProcess:
-                    chemkinLabel, matchingSpecies = self.manualMatchesToProcess.pop(0)
+                while self.manual_matches_to_process:
+                    chemkin_label, matching_species = self.manual_matches_to_process.pop(0)
                     logging.info("There is a manual match to process: {0} is {1!s}".format(
-                                    chemkinLabel, matchingSpecies))
-                    if chemkinLabel in self.identified_labels:
-                        assert self.speciesDict_rmg[chemkinLabel] == matchingSpecies, \
+                                    chemkin_label, matching_species))
+                    if chemkin_label in self.identified_labels:
+                        assert self.species_dict_rmg[chemkin_label] == matching_species, \
                             "Manual match disagrees with an automatic match!"
                         continue  # don't match something that's already matched.
-                    self.setMatch(chemkinLabel, matchingSpecies)
-                    invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(
-                                                        chemkinLabel, matchingSpecies)
-                    reactionsToCheck.update(invalidatedReactions)
+                    self.set_match(chemkin_label, matching_species)
+                    invalidated_reactions = self.get_invalidated_reactions_and_remove_votes(
+                                                        chemkin_label, matching_species)
+                    reactions_to_check.update(invalidated_reactions)
                     logging.info(("After making that match, "
-                        "will have to re-check {0} edge reactions").format(len(reactionsToCheck)))
+                        "will have to re-check {0} edge reactions").format(len(reactions_to_check)))
 
                 #After processing all matches, now is a good time to save reactions.
                 couldnt_save = []
-                while self.chemkinReactionsToSave:
-                    chemkinReaction = self.chemkinReactionsToSave.pop(0)
-                    if self.reagentsAreAllIdentified(chemkinReaction, require_molecules=True):
-                        self.addReactionToKineticsLibrary(chemkinReaction)
+                while self.chemkin_reactions_to_save:
+                    chemkin_reaction = self.chemkin_reactions_to_save.pop(0)
+                    if self.reagents_are_all_identified(chemkin_reaction, require_molecules=True):
+                        self.add_reaction_to_kinetics_library(chemkin_reaction)
                     else:
-                        couldnt_save.append(chemkinReaction)
-                self.chemkinReactionsToSave = couldnt_save  # try again later!
+                        couldnt_save.append(chemkin_reaction)
+                self.chemkin_reactions_to_save = couldnt_save  # try again later!
 
             terminal_input_enabled = False
             if (len(self.identified_unprocessed_labels) == 0
             and self.votes
             and terminal_input_enabled):
-                self.printVoting(prunedVotes)
+                self.print_voting(pruned_votes)
                 logging.info("Run out of options. Asking for help!")
-                speciesLabel = raw_input('Which label would you like to identify? (see voting info above)\n')
+                species_label = raw_input('Which label would you like to identify? (see voting info above)\n')
                 while True:
-                    if speciesLabel not in self.formulaDict:
+                    if species_label not in self.formula_dict:
                         print("That's not a known species label")
-                    elif speciesLabel in self.identified_labels:
+                    elif species_label in self.identified_labels:
                         print("That's already been identified")
-                    elif speciesLabel not in votes:
+                    elif species_label not in votes:
                         print("We have no candidate matches for that label.")
                     else:  # label is valid, break out of while loop.
                         break
-                    speciesLabel = raw_input("Try again:\n")
-                possibleMatches = votes[speciesLabel].keys()
-                chemkinLabel, matchingSpecies = self.askForMatchID(speciesLabel, possibleMatches)
-                invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
-                reactionsToCheck.update(invalidatedReactions)
-                logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactionsToCheck)))
+                    species_label = raw_input("Try again:\n")
+                possible_matches = votes[species_label].keys()
+                chemkin_label, matching_species = self.ask_for_matchID(species_label, possible_matches)
+                invalidated_reactions = self.get_invalidated_reactions_and_remove_votes(chemkin_label, matching_species)
+                reactions_to_check.update(invalidated_reactions)
+                logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactions_to_check)))
 
 
         print "Finished reading"
@@ -2265,7 +2265,7 @@ class ModelMatcher():
         for species in self.species_list:
             counter += 1
             print counter, species,
-            if species.label not in self.speciesDict_rmg:
+            if species.label not in self.species_dict_rmg:
                 print ""
                 continue  # don't save unidentified species
             print "\t IDENTIFIED"
@@ -2273,9 +2273,9 @@ class ModelMatcher():
 
     def _img(self, species):
         """Get the html tag for the image of a species"""
-        imagesPath = 'img'  # to serve via cherryPy
-        #imagesPath = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
-        return "<img src='{path}/{file!s}.png' title='{title}'>".format(file=urllib2.quote(str(species)), path=imagesPath, title=str(species))
+        images_path = 'img'  # to serve via cherry_py
+        #images_path = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
+        return "<img src='{path}/{file!s}.png' title='{title}'>".format(file=urllib2.quote(str(species)), path=images_path, title=str(species))
 
     @cherrypy.expose
     def index(self):
@@ -2284,7 +2284,7 @@ class ModelMatcher():
         name = self.name
         output = [self.html_head() , """
 <script>
-function alsoUpdate(json) {
+function also_update(json) {
 $('#identified_count').html("("+json.confirmed+(json.unprocessed?"; "+json.unprocessed+" unprocessed":"")+")");
 $('#tentative_count').html("("+json.tentative+")");
 $('#unmatchedreactions_count').html("("+json.unmatchedreactions+")");
@@ -2310,7 +2310,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 </ul>
         """]
         
-        output.append("""Your name: <a href="setname.html">{0}</a><br/>""".format(self.getUsername()))
+        output.append("""Your name: <a href="setname.html">{0}</a><br/>""".format(self.get_username()))
         output.append("""Model: <a href="chemkin.inp">{0}</a><br/>""".format(location))
         output.append("""Thermo: <a href="therm.dat">{0}</a><br/>""".format(thermo_location))
         output.append(self.html_tail)
@@ -2319,19 +2319,19 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     @cherrypy.expose
     def blocked_html(self):
         img = self._img
-        blockedMatches = self.blockedMatches
+        blocked_matches = self.blocked_matches
         output = [self.html_head()]
 
-        count = sum([len(blocks) for label, blocks in blockedMatches.iteritems()])
+        count = sum([len(blocks) for label, blocks in blocked_matches.iteritems()])
         output.append('<h1>{0} Blocked Matches</h1><table style="width:500px">'.format(count))
 
-        blocked_labels = sorted(blockedMatches.keys())
-        for ckLabel in blocked_labels:
-            blocks = blockedMatches[ckLabel]
-            for rmgSpecies, username in blocks.iteritems():
+        blocked_labels = sorted(blocked_matches.keys())
+        for ck_label in blocked_labels:
+            blocks = blocked_matches[ck_label]
+            for rmg_species, username in blocks.iteritems():
                 output.append("<tr><td>{label}</td><td>{img}</td><td>{user}</td></tr>".format(
-                                img=img(rmgSpecies),
-                                label=ckLabel,
+                                img=img(rmg_species),
+                                label=ck_label,
                                 user=(username or '-')
                                 ))
         output.append('</table>')
@@ -2344,7 +2344,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return (self.html_head() + '<h1>{0} Identified Species</h1><table style="width:500px"><tr>'.format(len(self.identified_labels)) +
                 "</tr>\n<tr>".join([
                         "<td>{number}</td><td>{label}</td><td>{img}</td><td>{user}</td>".format(
-                                img=img(self.speciesDict_rmg[lab]),
+                                img=img(self.species_dict_rmg[lab]),
                                 label=lab,
                                 number=n + 1,
                                 user = self.identified_by.get(lab,"-"),
@@ -2355,33 +2355,33 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     @cherrypy.expose
     def thermomatches_html(self):
         img = self._img
-        output = [self.html_head(), '<h1>{0} Thermochemistry Matches</h1>'.format(len(self.thermoMatches))]
+        output = [self.html_head(), '<h1>{0} Thermochemistry Matches</h1>'.format(len(self.thermo_matches))]
         output.append('<table style="width:800px; border-collapse:collapse;">')
-        for chemkinLabel, rmgSpecsDict in self.thermoMatches.iteritems():
-            label = chemkinLabel
-            if len(rmgSpecsDict) > 1:
+        for chemkin_label, rmg_specs_dict in self.thermo_matches.iteritems():
+            label = chemkin_label
+            if len(rmg_specs_dict) > 1:
                 label = "<span class='badmatch'>{0}</span>".format(label)
-            def formatSpec(name):
+            def format_spec(name):
                 "Makes 'name' green if it matches 'label'"
-                if name.upper() == chemkinLabel.upper():
+                if name.upper() == chemkin_label.upper():
                     return "<span class='goodmatch'>{0}</span>".format(name)
                 else:
                     return "<span class='badmatch'>{0}</span>".format(name)
 
             first_of_this_name = True
-            for rmgSpec, libraries in rmgSpecsDict.iteritems():
-                libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
+            for rmg_spec, libraries in rmg_specs_dict.iteritems():
+                libs = '<br>'.join(["{spec} ({lib})".format(spec=format_spec(spec), lib=lib) for (lib, spec) in libraries])
                 output.append('<tr style="border-top: 1px solid black;">' if first_of_this_name else '<tr>')
                 first_of_this_name = False
                 output.append("<td>{label}</td>".format(label=label))
-                output.append("<td>{img}</td>".format(img=img(rmgSpec)))
+                output.append("<td>{img}</td>".format(img=img(rmg_spec)))
                 output.append('<td style="border-top: 1px solid black;">{libs}</td>'.format(libs=libs))
-                if chemkinLabel in self.votes :
-                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)))
+                if chemkin_label in self.votes :
+                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkin_label)))
                 else:
                     output.append("<td>No votes yet.</td>")
-                output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
-                output.append("<td><a href='/clearthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                output.append("<td><a href='/confirmthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
+                output.append("<td><a href='/clearthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -2399,36 +2399,36 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output = [self.html_head(), '<h1>Thermochemistry Matches with model {}</h1>'.format(model)]
         output.append('<table style="width:800px; border-collapse:collapse;">')
         to_confirm = []
-        for chemkinLabel, rmgSpecsDict in self.thermoMatches.iteritems():
-            for rmgSpec, libraries in rmgSpecsDict.iteritems():
+        for chemkin_label, rmg_specs_dict in self.thermo_matches.iteritems():
+            for rmg_spec, libraries in rmg_specs_dict.iteritems():
                 for library_name, species_name in libraries:
-                    if library_name == model and species_name == chemkinLabel:
+                    if library_name == model and species_name == chemkin_label:
                         break
                 else: # didn't break
                     continue # to next thermo match
                 output.append('<tr style="border-top: 1px solid black;">')
-                output.append("<td>{label}</td>".format(label=chemkinLabel))
-                output.append("<td>{img}</td>".format(img=img(rmgSpec)))
-                if chemkinLabel in self.votes :
-                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)))
+                output.append("<td>{label}</td>".format(label=chemkin_label))
+                output.append("<td>{img}</td>".format(img=img(rmg_spec)))
+                if chemkin_label in self.votes :
+                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkin_label)))
                 else:
                     output.append("<td>No votes yet.</td>")
 
                 if confirm == 'all':
-                    to_confirm.append((chemkinLabel, rmgSpec))
+                    to_confirm.append((chemkin_label, rmg_spec))
                     output.append("<td>Confirmed!</td>")
                 else:
-                    output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
-                    output.append("<td><a href='/clearthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                    output.append("<td><a href='/confirmthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
+                    output.append("<td><a href='/clearthermomatch.html?ck_label={ckl}&rmg_name={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkin_label), rmgl=urllib2.quote(str(rmg_spec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         
         if confirm == 'all':
-            for chemkinLabel, rmgSpec in to_confirm:
-                self.clearThermoMatch(chemkinLabel, None)
-                self.manualMatchesToProcess.append((str(chemkinLabel), rmgSpec))
-                self.clearTentativeMatch(chemkinLabel, None)
-                self.saveMatchToFile(chemkinLabel, rmgSpec, username=self.getUsername()+' (because it matches thermo/name in {})'.format(model))
+            for chemkin_label, rmg_spec in to_confirm:
+                self.clear_thermo_match(chemkin_label, None)
+                self.manual_matches_to_process.append((str(chemkin_label), rmg_spec))
+                self.clear_tentative_match(chemkin_label, None)
+                self.save_match_to_file(chemkin_label, rmg_spec, username=self.get_username()+' (because it matches thermo/name in {})'.format(model))
         else:
             output.append("<a href='/thermomatchesmodel.html?model={model}&confirm=all'><button>Confirm all</button></a>".format(model=model))
 
@@ -2440,52 +2440,52 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output = [
             self.html_head(),
             '<h1>{0} Tentative Matches</h1><table style="width:800px">'.format(
-                len(self.tentativeMatches))
+                len(self.tentative_matches))
         ]
         output.append(
             "<tr><th>Name</th><th>Molecule</th><th>&Delta;H&deg;<sub>f</sub>(298K)</th><th>Matching Thermo</th></tr>")
-        for match in self.tentativeMatches:
-            chemkinLabel = match['label']
-            rmgSpec = match['species']
+        for match in self.tentative_matches:
+            chemkin_label = match['label']
+            rmg_spec = match['species']
             deltaH = match['enthalpy']
             username = match['username']
             output.append(
                 "<tr><td>{label}</td><td>{img}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
-                    img=img(rmgSpec),
-                    label=chemkinLabel,
+                    img=img(rmg_spec),
+                    label=chemkin_label,
                     delH=deltaH,
-                    Hsource=rmgSpec.thermo.comment))
+                    Hsource=rmg_spec.thermo.comment))
             output.append("<td>")
             try:
-                for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][rmgSpec]:
+                for library_name, library_species_name in self.thermo_matches[chemkin_label][rmg_spec]:
                     output.append("<span title='{spec}' class='{match}'>{lib}</span><br>".format(
-                                        lib=libraryName,
-                                        spec=librarySpeciesName,
-                                        match=('goodmatch' if librarySpeciesName.upper() == chemkinLabel.upper() else 'badmatch'),
+                                        lib=library_name,
+                                        spec=library_species_name,
+                                        match=('goodmatch' if library_species_name.upper() == chemkin_label.upper() else 'badmatch'),
                                         ))
             except KeyError:
                 output.append('-')
             output.append("</td>")
             output.append(
-                "<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(
-                    ckl=urllib2.quote(chemkinLabel),
-                    rmgl=urllib2.quote(str(rmgSpec))))
+                "<td><a href='/confirm.html?ck_label={ckl}&rmg_label={rmgl}'>confirm</a></td>".format(
+                    ckl=urllib2.quote(chemkin_label),
+                    rmgl=urllib2.quote(str(rmg_spec))))
             output.append(
-                "<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(
-                    ckl=urllib2.quote(chemkinLabel),
-                    smi=urllib2.quote(rmgSpec.molecule[0].to_smiles())))
+                "<td><a href='/edit.html?ck_label={ckl}&SMILES={smi}'>edit</a></td>".format(
+                    ckl=urllib2.quote(chemkin_label),
+                    smi=urllib2.quote(rmg_spec.molecule[0].to_smiles())))
             output.append(
-                "<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(
-                    ckl=urllib2.quote(chemkinLabel)))
+                "<td><a href='/clear.html?ck_label={ckl}'>clear</a></td>".format(
+                    ckl=urllib2.quote(chemkin_label)))
             output.append(
-                "<td><a href='/block.html?ckLabel={ckl}&rmgLabel={rmgl}'>block</a></td>".format(
-                    ckl=urllib2.quote(chemkinLabel),
-                    rmgl=urllib2.quote(str(rmgSpec))))
+                "<td><a href='/block.html?ck_label={ckl}&rmg_label={rmgl}'>block</a></td>".format(
+                    ckl=urllib2.quote(chemkin_label),
+                    rmgl=urllib2.quote(str(rmg_spec))))
             output.append(
                 "<td><a href='/votes2.html#{label}'>check {num} votes</a></td>".format(
-                    label=urllib2.quote(chemkinLabel),
-                    num=len(self.votes[chemkinLabel].get(rmgSpec, [])))
-                if chemkinLabel in self.votes else "<td>No votes yet.</td>")
+                    label=urllib2.quote(chemkin_label),
+                    num=len(self.votes[chemkin_label].get(rmg_spec, [])))
+                if chemkin_label in self.votes else "<td>No votes yet.</td>")
             if username:
                 output.append("<td>Proposed by {0}</td>".format(username))
             else:
@@ -2494,7 +2494,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
 
-    def getUsername(self):
+    def get_username(self):
         try:
             username = cherrypy.request.cookie['username'].value.strip()
             username = username.encode('ascii', 'ignore')
@@ -2516,7 +2516,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             cookie['username']['version'] = 1
             raise cherrypy.HTTPRedirect("/")
         else:
-            username = self.getUsername()
+            username = self.get_username()
             output = [self.html_head()]
             output.append("<h1>Edit your name</h1>")
             output.append("""
@@ -2546,17 +2546,17 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             self.html_head(),
             '<h1>{0} Unconfirmed species</h1><table style="width:500px">'.format(
                 len(self.species_list) - len(self.identified_labels) -
-                len(self.manualMatchesToProcess))
+                len(self.manual_matches_to_process))
         ]
         for label in [s.label for s in self.species_list]:
             if label in self.identified_labels:
                 continue
-            for pair in self.manualMatchesToProcess:
+            for pair in self.manual_matches_to_process:
                 if pair[0] == label:
                     continue
             output.append("<tr><td>{label}</td>".format(label=label))
             output.append(
-                "<td><a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(
+                "<td><a href='/propose.html?ck_label={ckl}'>propose match</a></td></tr>".format(
                     ckl=urllib2.quote(label), ))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -2580,86 +2580,86 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             self.html_head(),
             '<h1>All {0} Species</h1><table>'.format(len(self.species_list))
         ]
-        tentativeDict = dict((match['label'],
+        tentative_dict = dict((match['label'],
                               (match['species'], match['enthalpy']))
-                             for match in self.tentativeMatches)
-        manualDict = dict(
-            (chemkinLabel, rmgSpec)
-            for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess)
+                             for match in self.tentative_matches)
+        manual_dict = dict(
+            (chemkin_label, rmg_spec)
+            for (chemkin_label, rmg_spec) in self.manual_matches_to_process)
 
         labels = [s.label for s in self.species_list]
         if sort == 'name':
             labels.sort()
             output.append('Sorted by name. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=formula">formula</a>.')
         elif sort == 'formula':
-            labels.sort(key=lambda l: self.formulaDict[l])
+            labels.sort(key=lambda l: self.formula_dict[l])
             output.append('Sorted by formula. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=name">name</a>.')
         else:
             output.append('Sorted by chemkin file. Sort by <a href="?sort=name">name</a> or <a href="?sort=formula">formula</a>.')
-        for chemkinLabel in labels:
-            if (chemkinLabel in self.identified_labels) or (chemkinLabel in manualDict):
+        for chemkin_label in labels:
+            if (chemkin_label in self.identified_labels) or (chemkin_label in manual_dict):
                 try:
-                    rmgSpec = self.speciesDict_rmg[chemkinLabel]
+                    rmg_spec = self.species_dict_rmg[chemkin_label]
                     pending = False
                 except KeyError:
-                    rmgSpec = manualDict[chemkinLabel]
+                    rmg_spec = manual_dict[chemkin_label]
                     pending = True
-                deltaH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpec)
+                deltaH = self.get_enthalpy_discrepancy(chemkin_label, rmg_spec)
                 output.append(
                     ("<tr><td class='confirmed'>{label}</td>"
                      "<td class='centered'>{img}</td>"
                      "<td>{smi}</td>"
                      "<td title='{Hsource}'>{delH:.1f} kJ/mol</td>").format(
-                        img=img(rmgSpec),
-                        label=chemkinLabel,
+                        img=img(rmg_spec),
+                        label=chemkin_label,
                         delH=deltaH,
-                        Hsource=rmgSpec.thermo.comment,
-                        smi='<br/>'.join((m.to_smiles() for m in rmgSpec.molecule))
+                        Hsource=rmg_spec.thermo.comment,
+                        smi='<br/>'.join((m.to_smiles() for m in rmg_spec.molecule))
                     ))
-                if chemkinLabel in self.identified_unprocessed_labels:
+                if chemkin_label in self.identified_unprocessed_labels:
                     output.append("<td>Identified, waiting to react.</td>")
                 elif pending:
                     output.append("<td>Identified, pending processing.</td>")
                 else:
                     output.append("<td>Identified, reacted, in model.</td>")
-            elif chemkinLabel in tentativeDict:
-                rmgSpec, deltaH = tentativeDict[chemkinLabel]
+            elif chemkin_label in tentative_dict:
+                rmg_spec, deltaH = tentative_dict[chemkin_label]
                 output.append(
                     ("<tr><td class='tentative'>{label}</td>"
                      "<td class='centered'>{img}</td>"
                      "<td>{smi}</td>"
                      "<td title='{Hsource}'>{delH:.1f} kJ/mol</td>").format(
-                        img=img(rmgSpec),
-                        label=chemkinLabel,
+                        img=img(rmg_spec),
+                        label=chemkin_label,
                         delH=deltaH,
-                        Hsource=rmgSpec.thermo.comment,
-                        smi='<br/>'.join((m.to_smiles() for m in rmgSpec.molecule))
+                        Hsource=rmg_spec.thermo.comment,
+                        smi='<br/>'.join((m.to_smiles() for m in rmg_spec.molecule))
                     ))
                 output.append(
-                    "<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(
-                        ckl=urllib2.quote(chemkinLabel),
-                        rmgl=urllib2.quote(str(rmgSpec))))
+                    "<td>Tentative match. <a href='/confirm.html?ck_label={ckl}&rmg_label={rmgl}'>confirm</a> / ".format(
+                        ckl=urllib2.quote(chemkin_label),
+                        rmgl=urllib2.quote(str(rmg_spec))))
                 votes = "/ <a href='/votes2.html#{0}'>check votes</a>".format(
-                    urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
+                    urllib2.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
                 output.append(
-                    "<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a> {votes}</td></tr>".format(
-                        ckl=urllib2.quote(chemkinLabel),
-                        smi=urllib2.quote(rmgSpec.molecule[0].to_smiles()),
+                    "<a href='/edit.html?ck_label={ckl}&SMILES={smi}'>edit</a> {votes}</td></tr>".format(
+                        ckl=urllib2.quote(chemkin_label),
+                        smi=urllib2.quote(rmg_spec.molecule[0].to_smiles()),
                         votes=votes))
             else:
                 output.append(
                     ("<tr><td class='unknown'>{label}</td>"
                      "<td class='centered'>?</td>").format(
-                        label=chemkinLabel))
+                        label=chemkin_label))
                 output.append("""
             <form action="edit.html" method="get"><td>
-            <input type=hidden name="ckLabel" value="{lab}">
+            <input type=hidden name="ck_label" value="{lab}">
             <input type=text name="SMILES"></td>
             <td><input type=submit></td>
             </form>
-            """.format(lab=chemkinLabel))
-                votes = "<a href='/votes2.html#{0}'>check votes</a> / ".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
-                output.append("<td>Unknown species. {votes} <a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), votes=votes))
+            """.format(lab=chemkin_label))
+                votes = "<a href='/votes2.html#{0}'>check votes</a> / ".format(urllib2.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
+                output.append("<td>Unknown species. {votes} <a href='/propose.html?ck_label={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkin_label), votes=votes))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
 
@@ -2673,17 +2673,17 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output = [
             self.html_head(),
             '<h1>{0} Unmatched Reactions</h1><table style="width:500px"><tr>'.format(
-                len(self.chemkinReactionsUnmatched))
+                len(self.chemkin_reactions_unmatched))
         ]
-        for i, reaction in enumerate(self.chemkinReactionsUnmatched):
+        for i, reaction in enumerate(self.chemkin_reactions_unmatched):
             reaction_string = []
             for token in str(reaction).split():
                 if token in ['+', '<=>', '=>']:
                     pass
-                elif token in self.speciesDict_rmg:
-                    token = img(self.speciesDict_rmg[token])
+                elif token in self.species_dict_rmg:
+                    token = img(self.species_dict_rmg[token])
                 elif token in self.species_dict:
-                    token = "<a href='/propose.html?ckLabel={escaped}' class='unid'>{plain}</a>".format(
+                    token = "<a href='/propose.html?ck_label={escaped}' class='unid'>{plain}</a>".format(
                         escaped=urllib2.quote(token),
                         plain=token)
                 else:
@@ -2700,7 +2700,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     @cherrypy.expose
     def ThermoLibrary_py(self):
         """The thermo database in py format"""
-        return serve_file(os.path.join(self.outputPath, 'RMG-Py-thermo-library', 'ThermoLibrary.py'),
+        return serve_file(os.path.join(self.output_path, 'RMG-Py-thermo-library', 'ThermoLibrary.py'),
                           content_type='application/octet-stream')
 
     @cherrypy.expose
@@ -2717,54 +2717,54 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             '</tr>'
             ]
         votes = self.votes.copy()
-        for chemkinLabel in sorted(votes.keys(), key=lambda label:len(votes[label])):
-            possibleMatches = votes[chemkinLabel]
-            output.append('\n<tr><td>{}</td>'.format(chemkinLabel))
-            if len(possibleMatches) != 1:
-                output.append('<td>{} possible matches.'.format(len(possibleMatches)))
+        for chemkin_label in sorted(votes.keys(), key=lambda label:len(votes[label])):
+            possible_matches = votes[chemkin_label]
+            output.append('\n<tr><td>{}</td>'.format(chemkin_label))
+            if len(possible_matches) != 1:
+                output.append('<td>{} possible matches.'.format(len(possible_matches)))
                 output.append('Not confirming</td></tr>')
                 continue
-            autoConfirm = True  # for now...
-            chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
-            for matchingSpecies, votingReactions in possibleMatches.iteritems():
+            auto_confirm = True  # for now...
+            chemkin_reactions = self.chemkin_reactions_dict[chemkin_label]
+            for matching_species, voting_reactions in possible_matches.iteritems():
                 pass  # we know at this point there is only one iteritem
-            fractionMatched = float(len(votingReactions)) / len(chemkinReactions)
-            output.append('<td>{} of {} = {:.0f}%</td>'.format(len(votingReactions), len(chemkinReactions), fractionMatched * 100))
-            if fractionMatched < 0.5:
-                autoConfirm = False
+            fraction_matched = float(len(voting_reactions)) / len(chemkin_reactions)
+            output.append('<td>{} of {} = {:.0f}%</td>'.format(len(voting_reactions), len(chemkin_reactions), fraction_matched * 100))
+            if fraction_matched < 0.5:
+                auto_confirm = False
             try:
-                thermoMatches = []
+                thermo_matches = []
                 output.append('<td>')
-                for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
-                    namesMatch = ( librarySpeciesName.upper() == chemkinLabel.upper() )
-                    thermoMatches.append(int(namesMatch))
+                for library_name, library_species_name in self.thermo_matches[chemkin_label][matching_species]:
+                    names_match = ( library_species_name.upper() == chemkin_label.upper() )
+                    thermo_matches.append(int(names_match))
                     output.append("<span title='{spec}' class='{match}'>{lib}</span>".format(
-                                        lib=libraryName,
-                                        spec=librarySpeciesName,
-                                        match=('goodmatch' if namesMatch else 'badmatch'),
+                                        lib=library_name,
+                                        spec=library_species_name,
+                                        match=('goodmatch' if names_match else 'badmatch'),
                                         ))
                 output.append("</td>")
             except KeyError:
                 output.append("None</td>")
-                autoConfirm = False
-            output.append('<td>{} libraries'.format(len(thermoMatches)))
-            if len(thermoMatches) < 2:
+                auto_confirm = False
+            output.append('<td>{} libraries'.format(len(thermo_matches)))
+            if len(thermo_matches) < 2:
                 output.append(" is insufficient")
-                autoConfirm = False
-            if thermoMatches:
-                fractionMatched = float(sum(thermoMatches)) / len(thermoMatches)
+                auto_confirm = False
+            if thermo_matches:
+                fraction_matched = float(sum(thermo_matches)) / len(thermo_matches)
             else:
-                fractionMatched = 0
-            output.append("</td><td>{0:.0f}% name matches ".format(fractionMatched * 100))
-            if fractionMatched < 0.5:
+                fraction_matched = 0
+            output.append("</td><td>{0:.0f}% name matches ".format(fraction_matched * 100))
+            if fraction_matched < 0.5:
                 output.append(" is insufficient")
-                autoConfirm = False
+                auto_confirm = False
 
-            output.append("</td><td>{}".format(self._img(matchingSpecies)))
-            output.append("</td><td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a></td>".format(
-                        ckl=urllib2.quote(chemkinLabel),
-                        rmgl=urllib2.quote(str(matchingSpecies))))
-            if autoConfirm:
+            output.append("</td><td>{}".format(self._img(matching_species)))
+            output.append("</td><td><a href='/match.html?ck_label={ckl}&rmg_label={rmgl}' class='confirm'>confirm</a></td>".format(
+                        ckl=urllib2.quote(chemkin_label),
+                        rmgl=urllib2.quote(str(matching_species))))
+            if auto_confirm:
                 output.append('<td>Autoconfirm passes!</td>')
             output.append('</tr>')
         output.append("</table>")
@@ -2775,147 +2775,147 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def votes2_html(self):
         votes = self.votes.copy()
         img = self._img
-        chemkinControversy = dict((label, 0) for label in votes.iterkeys())
-        rmgControversy = {}
-        flatVotes = {}
+        chemkin_controversy = dict((label, 0) for label in votes.iterkeys())
+        rmg_controversy = {}
+        flat_votes = {}
 
-        labelsWaitingToProcess = [item[0] for item in self.manualMatchesToProcess]
-        speciesWaitingToProcess = [item[1] for item in self.manualMatchesToProcess]
+        labels_waiting_to_process = [item[0] for item in self.manual_matches_to_process]
+        species_waiting_to_process = [item[1] for item in self.manual_matches_to_process]
         # to turn reactions into pictures
         searcher = re.compile('(\S+\(\d+\))\s')
         def replacer(match):
             return self._img(match.group(1))
 
-        userProposedMatches = {}
-        for match in self.tentativeMatches:
+        user_proposed_matches = {}
+        for match in self.tentative_matches:
             label = match['label']
             species = match['species']
             user = match['username']
-            userProposedMatches[label] = (species, user)
+            user_proposed_matches[label] = (species, user)
 
-        for chemkinLabel, possibleMatches in votes.iteritems():
-            for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
-                chemkinControversy[chemkinLabel] += len(votingReactions)
-                rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+        for chemkin_label, possible_matches in votes.iteritems():
+            for matching_species, voting_reactions in possible_matches.iteritems():
+                flat_votes[(chemkin_label, matching_species)] = voting_reactions
+                chemkin_controversy[chemkin_label] += len(voting_reactions)
+                rmg_controversy[matching_species] = rmg_controversy.get(matching_species, 0) + len(voting_reactions)
         output = [self.html_head()]
         output.append("<h1>Votes Tables</h1>")
-        for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
-            output.append("<hr id='{0}' />".format(chemkinLabel))
-            if chemkinLabel in labelsWaitingToProcess:
-                output.append("<h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
+        for chemkin_label in sorted(chemkin_controversy.keys(), key=lambda label:-chemkin_controversy[label]):
+            output.append("<hr id='{0}' />".format(chemkin_label))
+            if chemkin_label in labels_waiting_to_process:
+                output.append("<h2>{0} has just been identified but not yet processed.</h2>".format(chemkin_label))
                 continue
-            possibleMatches = votes[chemkinLabel]
-            output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
-            chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
+            possible_matches = votes[chemkin_label]
+            output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkin_label, len(possible_matches)))
+            chemkin_reactions = self.chemkin_reactions_dict[chemkin_label]
 
-            thermoComment = self.thermoDict[chemkinLabel].comment
-            if thermoComment:
+            thermo_comment = self.thermo_dict[chemkin_label].comment
+            if thermo_comment:
                 output.append("""<table><tr><td>Thermo comment:</td>
                 <td style='font-size: small;'>{}</td>
-                </tr></table>""".format(thermoComment))
+                </tr></table>""".format(thermo_comment))
 
-            myVotingChemkinReactions = dict()
+            my_voting_chemkin_reactions = dict()
             
-            sortedMatchingSpeciesList = sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])+0.001*abs(self.getEnthalpyDiscrepancy(chemkinLabel, species)))
+            sorted_matching_species_list = sorted(possible_matches.iterkeys(), key=lambda species:-len(possible_matches[species])+0.001*abs(self.get_enthalpy_discrepancy(chemkin_label, species)))
             
-            for s in speciesWaitingToProcess:
-                if s in sortedMatchingSpeciesList:
+            for s in species_waiting_to_process:
+                if s in sorted_matching_species_list:
                     # structure already matched, so remove from possible matches
-                    sortedMatchingSpeciesList.remove(s)
+                    sorted_matching_species_list.remove(s)
             
             # Add thermo matches to the start of the table even if no voting reactions
-            for thermoMatch in self.thermoMatches.get(chemkinLabel, []):
-                if thermoMatch not in sortedMatchingSpeciesList:
-                    sortedMatchingSpeciesList.insert(0, thermoMatch)
+            for thermo_match in self.thermo_matches.get(chemkin_label, []):
+                if thermo_match not in sorted_matching_species_list:
+                    sorted_matching_species_list.insert(0, thermo_match)
             # Add user-proposed matches to the start
-            if chemkinLabel in userProposedMatches:
-                species, proposer = userProposedMatches[chemkinLabel]
-                if species not in sortedMatchingSpeciesList:
-                    sortedMatchingSpeciesList.insert(0, species)
+            if chemkin_label in user_proposed_matches:
+                species, proposer = user_proposed_matches[chemkin_label]
+                if species not in sorted_matching_species_list:
+                    sorted_matching_species_list.insert(0, species)
 
-            for chemkinReaction in chemkinReactions:
+            for chemkin_reaction in chemkin_reactions:
                 this_reaction_votes_for = dict()
-                myVotingChemkinReactions[chemkinReaction] = this_reaction_votes_for
-                for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                    for (chemkinRxn, rmgRxn) in votingReactions:
-                        if (chemkinReaction == chemkinRxn):
-                            if matchingSpecies in this_reaction_votes_for:
-                                this_reaction_votes_for[matchingSpecies].append(rmgRxn)
+                my_voting_chemkin_reactions[chemkin_reaction] = this_reaction_votes_for
+                for matching_species, voting_reactions in possible_matches.iteritems():
+                    for (chemkin_rxn, rmg_rxn) in voting_reactions:
+                        if (chemkin_reaction == chemkin_rxn):
+                            if matching_species in this_reaction_votes_for:
+                                this_reaction_votes_for[matching_species].append(rmg_rxn)
                             else:
-                                this_reaction_votes_for[matchingSpecies] = [rmgRxn]
+                                this_reaction_votes_for[matching_species] = [rmg_rxn]
 
             output.append("<table>")
             output.append("<tr><td>Structure</td>")
-            for matchingSpecies in sortedMatchingSpeciesList:
-                output.append("<td>{img}</td>".format(img=img(matchingSpecies)))
+            for matching_species in sorted_matching_species_list:
+                output.append("<td>{img}</td>".format(img=img(matching_species)))
             output.append("</tr>")
 
             output.append("<tr><td>SMILES</td>")
-            for matchingSpecies in sortedMatchingSpeciesList:
+            for matching_species in sorted_matching_species_list:
                 output.append("<td style='font-size: small; white-space: nowrap;'>{smiles}</td>".format(smiles='<br />'.join(
-                    [m.to_smiles() for m in matchingSpecies.molecule])))
+                    [m.to_smiles() for m in matching_species.molecule])))
             output.append("</tr>")
 
             output.append("<tr><td>Action</td>")
-            for matchingSpecies in sortedMatchingSpeciesList:
+            for matching_species in sorted_matching_species_list:
                 output.append(
-                    """<td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a>
-                <a href='/block.html?ckLabel={ckl}&rmgLabel={rmgl}' class='block'>block</a></td>""".format(
-                        ckl=urllib2.quote(chemkinLabel),
-                        rmgl=urllib2.quote(str(matchingSpecies))))
+                    """<td><a href='/match.html?ck_label={ckl}&rmg_label={rmgl}' class='confirm'>confirm</a>
+                <a href='/block.html?ck_label={ckl}&rmg_label={rmgl}' class='block'>block</a></td>""".format(
+                        ckl=urllib2.quote(chemkin_label),
+                        rmgl=urllib2.quote(str(matching_species))))
             output.append("</tr>")
 
-            if chemkinLabel in userProposedMatches:
-                proposedSpecies, proposer = userProposedMatches[chemkinLabel]
+            if chemkin_label in user_proposed_matches:
+                proposed_species, proposer = user_proposed_matches[chemkin_label]
                 output.append("<tr><td>Proposed by...</td>")
-                for matchingSpecies in sortedMatchingSpeciesList:
-                    if matchingSpecies == proposedSpecies:
+                for matching_species in sorted_matching_species_list:
+                    if matching_species == proposed_species:
                         output.append("<td class='goodmatch'>{0}</td>".format(proposer))
                     else:
                         output.append("<td></td>")
                 output.append("</tr>")
 
             output.append("<tr><td>&Delta;H(298K)</td>")
-            for matchingSpecies in sortedMatchingSpeciesList:
+            for matching_species in sorted_matching_species_list:
                 output.append(
                     "<td><span title='{Hsource}'>{0:.1f} kJ/mol</span></td>".format(
-                        self.getEnthalpyDiscrepancy(chemkinLabel,
-                                                    matchingSpecies),
-                        Hsource=matchingSpecies.thermo.comment))
+                        self.get_enthalpy_discrepancy(chemkin_label,
+                                                    matching_species),
+                        Hsource=matching_species.thermo.comment))
             output.append("</tr>")
 
             output.append("<tr><td></td>")
-            for matchingSpecies in sortedMatchingSpeciesList:
+            for matching_species in sorted_matching_species_list:
                 output.append("<td style='font-size: small; width: 150px';>")
                 try:
-                    for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
+                    for library_name, library_species_name in self.thermo_matches[chemkin_label][matching_species]:
                         output.append("<span title='{spec}' class='{match}'>{lib}</span>".format(
-                                            lib=libraryName,
-                                            spec=librarySpeciesName,
-                                            match=('goodmatch' if librarySpeciesName.upper() == chemkinLabel.upper() else 'badmatch'),
+                                            lib=library_name,
+                                            spec=library_species_name,
+                                            match=('goodmatch' if library_species_name.upper() == chemkin_label.upper() else 'badmatch'),
                                             ))
                     output.append("have the same thermo.</td>")
                 except KeyError:
                     output.append("</td>")
             output.append("</tr>")
 
-            output.append("<tr><td>{num} Reactions</td>".format(num=len(chemkinReactions)))
-            for matchingSpecies in sortedMatchingSpeciesList:
+            output.append("<tr><td>{num} Reactions</td>".format(num=len(chemkin_reactions)))
+            for matching_species in sorted_matching_species_list:
                 try:
-                    output.append("<td>{n}</td>".format(n=len(possibleMatches[matchingSpecies])))
+                    output.append("<td>{n}</td>".format(n=len(possible_matches[matching_species])))
                 except KeyError:
                     output.append("<td>{n}</td>".format(n=0))
             output.append("</tr>")
                 
-            for chemkinReaction in sorted(chemkinReactions, key=lambda rxn:-len(myVotingChemkinReactions[rxn])):
+            for chemkin_reaction in sorted(chemkin_reactions, key=lambda rxn:-len(my_voting_chemkin_reactions[rxn])):
                 reaction_string = []
-                for token in str(chemkinReaction).split():
+                for token in str(chemkin_reaction).split():
                     if token in ['+', '<=>', '=>']:
                         pass
-                    elif token in self.speciesDict_rmg:
-                        token = img(self.speciesDict_rmg[token])
-                    elif token == chemkinLabel:
+                    elif token in self.species_dict_rmg:
+                        token = img(self.species_dict_rmg[token])
+                    elif token == chemkin_label:
                         token = "<span class='unid'>{0}</span>".format(token)
                     elif token in votes:
                         token = "<a href='#{0}' class='species'>{0}</a>".format(token)
@@ -2923,12 +2923,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 reaction_string = ' '.join(reaction_string)
                 
                 output.append("<tr><td style='white-space: nowrap;'>{rxn!s}</td>".format(rxn=reaction_string))
-                this_reaction_votes_for = myVotingChemkinReactions[chemkinReaction]
-                for matchingSpecies in sortedMatchingSpeciesList :
-                    if matchingSpecies in this_reaction_votes_for:
-                        rmgRxns = this_reaction_votes_for[matchingSpecies]
+                this_reaction_votes_for = my_voting_chemkin_reactions[chemkin_reaction]
+                for matching_species in sorted_matching_species_list :
+                    if matching_species in this_reaction_votes_for:
+                        rmg_rxns = this_reaction_votes_for[matching_species]
                         output.append("<td style='font-size: small;'>{family}</td>".format(
-                            family='<br/>'.join([r.family for r in rmgRxns])))
+                            family='<br/>'.join([r.family for r in rmg_rxns])))
                     else:
                         output.append("<td>-</td>")
                 output.append("</tr>")
@@ -2941,66 +2941,66 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def votes_html(self):
         votes = self.votes.copy()
         img = self._img
-        chemkinControversy = dict((label, 0) for label in votes.iterkeys())
-        rmgControversy = {}
-        flatVotes = {}
+        chemkin_controversy = dict((label, 0) for label in votes.iterkeys())
+        rmg_controversy = {}
+        flat_votes = {}
 
-        labelsWaitingToProcess = [item[0] for item in self.manualMatchesToProcess]
-        speciesWaitingToProcess = [item[1] for item in self.manualMatchesToProcess]
+        labels_waiting_to_process = [item[0] for item in self.manual_matches_to_process]
+        species_waiting_to_process = [item[1] for item in self.manual_matches_to_process]
         # to turn reactions into pictures
         searcher = re.compile('(\S+\(\d+\))\s')
 
         def replacer(match):
             return self._img(match.group(1))
 
-        for chemkinLabel, possibleMatches in votes.iteritems():
-            for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
-                chemkinControversy[chemkinLabel] += len(votingReactions)
-                rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+        for chemkin_label, possible_matches in votes.iteritems():
+            for matching_species, voting_reactions in possible_matches.iteritems():
+                flat_votes[(chemkin_label, matching_species)] = voting_reactions
+                chemkin_controversy[chemkin_label] += len(voting_reactions)
+                rmg_controversy[matching_species] = rmg_controversy.get(matching_species, 0) + len(voting_reactions)
         output = [self.html_head()]
         output.append("<h1>Votes</h1>")
-        for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
-            output.append("<hr id='{0}' />".format(chemkinLabel))
-            if chemkinLabel in labelsWaitingToProcess:
-                output.append("<h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
+        for chemkin_label in sorted(chemkin_controversy.keys(), key=lambda label:-chemkin_controversy[label]):
+            output.append("<hr id='{0}' />".format(chemkin_label))
+            if chemkin_label in labels_waiting_to_process:
+                output.append("<h2>{0} has just been identified but not yet processed.</h2>".format(chemkin_label))
                 continue
-            possibleMatches = votes[chemkinLabel]
-            output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
+            possible_matches = votes[chemkin_label]
+            output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkin_label, len(possible_matches)))
             
-            for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
-                if matchingSpecies in speciesWaitingToProcess:
-                    output.append("{img} which has just been identified but not yet processed.<br>".format(img=img(matchingSpecies)))
+            for matching_species in sorted(possible_matches.iterkeys(), key=lambda species:-len(possible_matches[species])) :
+                if matching_species in species_waiting_to_process:
+                    output.append("{img} which has just been identified but not yet processed.<br>".format(img=img(matching_species)))
                     continue
-                votingReactions = possibleMatches[matchingSpecies]
+                voting_reactions = possible_matches[matching_species]
                 output.append(
-                    "<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(
-                        ckl=urllib2.quote(chemkinLabel),
-                        rmgl=urllib2.quote(str(matchingSpecies)),
-                        img=img(matchingSpecies),
-                        n=len(votingReactions)))
+                    "<a href='/match.html?ck_label={ckl}&rmg_label={rmgl}'>{img}</a>  according to {n} reactions. ".format(
+                        ckl=urllib2.quote(chemkin_label),
+                        rmgl=urllib2.quote(str(matching_species)),
+                        img=img(matching_species),
+                        n=len(voting_reactions)))
                 output.append(
                     "  Enthalpies at 298K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format(
-                        self.getEnthalpyDiscrepancy(chemkinLabel,
-                                                    matchingSpecies),
-                        Hsource=matchingSpecies.thermo.comment))
+                        self.get_enthalpy_discrepancy(chemkin_label,
+                                                    matching_species),
+                        Hsource=matching_species.thermo.comment))
                 try:
-                    for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
+                    for library_name, library_species_name in self.thermo_matches[chemkin_label][matching_species]:
                         output.append("<span title='{spec}' class='{match}'>{lib}</span>, ".format(
-                                            lib=libraryName,
-                                            spec=librarySpeciesName,
-                                            match=('goodmatch' if librarySpeciesName.upper() == chemkinLabel.upper() else 'badmatch'),
+                                            lib=library_name,
+                                            spec=library_species_name,
+                                            match=('goodmatch' if library_species_name.upper() == chemkin_label.upper() else 'badmatch'),
                                             ))
                     output.append("have the same thermo.<br>")
                 except KeyError:
                     pass
                 output.append('<table  style="width:800px">')
-                for n, rxn in enumerate(votingReactions):
+                for n, rxn in enumerate(voting_reactions):
                     if isinstance(rxn, tuple):
                         chemkinrxn = str(rxn[0])
                         rmgrxn = str(rxn[1])
-                        rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
-                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family))
+                        rmg_rxn_pics = searcher.sub(replacer, rmgrxn + ' ')
+                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmg_rxn_pics, rxn[1].family))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
@@ -3008,12 +3008,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return '\n'.join(output)
 
     @cherrypy.expose
-    def edit_html(self, ckLabel=None, SMILES=None):
+    def edit_html(self, ck_label=None, SMILES=None):
         smiles = str(SMILES)
         proposal = Molecule(SMILES=str(smiles))
         species, isnew = self.rmg_object.reaction_model.make_new_species(proposal)
         species.generate_resonance_structures()
-        self.drawSpecies(species)
+        self.draw_species(species)
         if isnew:
             species.thermo = generate_thermo_data(species)
 
@@ -3027,33 +3027,33 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             response = "Unknown"
 
         output = [self.html_head()]
-        output.append("<h1>Edit {0}</h1>".format(ckLabel))
+        output.append("<h1>Edit {0}</h1>".format(ck_label))
         output.append("""
             <form action="edit.html" method="get">
-            <input type=hidden name="ckLabel" value="{lab}">
+            <input type=hidden name="ck_label" value="{lab}">
             <input type=text name="SMILES" value="{smi}">
             <input type=submit label="Edit">
             </form>
-            """.format(lab=ckLabel, smi=smiles))
-        username = self.getUsername()
-        if self.formulaDict[ckLabel] == species.molecule[0].get_formula():
-            if not self.setTentativeMatch(ckLabel, species, username=username):
+            """.format(lab=ck_label, smi=smiles))
+        username = self.get_username()
+        if self.formula_dict[ck_label] == species.molecule[0].get_formula():
+            if not self.set_tentative_match(ck_label, species, username=username):
                 # first attempt removed the old tentative match
                 # second attempt should add the new!
-                self.setTentativeMatch(ckLabel, species, username=username)
+                self.set_tentative_match(ck_label, species, username=username)
             output.append("Return to <a href='tentative.html'>Tentative matches</a> to confirm.")
         else:
             output.append(
                 '<p><b>Invalid match!</b></p>Species "{lab}" has formula {f1}<br/>\n but SMILES "{smi}" has formula {f2}'.format(
-                    lab=ckLabel,
-                    f1=self.formulaDict[ckLabel],
+                    lab=ck_label,
+                    f1=self.formula_dict[ck_label],
                     smi=smiles,
                     f2=species.molecule[0].get_formula()))
         output.append("<div style='margin: 2em;'>{img}</div>".format(
             img=self._img(species)))
         output.append(
             "Thermo difference at 298K: {dh:.1f} kJ/mol<br/><br/>".format(
-                dh=self.getEnthalpyDiscrepancy(ckLabel, species)))
+                dh=self.get_enthalpy_discrepancy(ck_label, species)))
         output.append("Names:")
         for name in response.splitlines():
             output.append("<li>{name}</li>".format(name=name))
@@ -3063,120 +3063,120 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return '\n'.join(output)
 
     @cherrypy.expose
-    def propose_html(self, ckLabel=None):
+    def propose_html(self, ck_label=None):
         output = [self.html_head()]
-        output.append("<h1>Propose {0}</h1>".format(ckLabel))
+        output.append("<h1>Propose {0}</h1>".format(ck_label))
         output.append("""
             <form action="edit.html" method="get">
-            <input type=hidden name="ckLabel" value="{lab}">
+            <input type=hidden name="ck_label" value="{lab}">
             <input type=text name="SMILES">
             <input type=submit>
             </form>
-            """.format(lab=ckLabel))
+            """.format(lab=ck_label))
         output.append(self.html_tail)
         return '\n'.join(output)
 
     @cherrypy.expose
-    def block_html(self, ckLabel=None, rmgLabel=None):
-        #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
-        chemical_formula = self.formulaDict[ckLabel]
-        for rmgSpecies in self.rmg_object.reaction_model.species_dict[chemical_formula]:
-            if str(rmgSpecies) == rmgLabel:
+    def block_html(self, ck_label=None, rmg_label=None):
+        #rmg_name = re.match('^(.*)\(\d+\)$',rmg_label).group(1)
+        chemical_formula = self.formula_dict[ck_label]
+        for rmg_species in self.rmg_object.reaction_model.species_dict[chemical_formula]:
+            if str(rmg_species) == rmg_label:
                 break
         else:
-            raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmgLabel))
+            raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmg_label))
 
-        if ckLabel not in self.votes:
-            logging.warning("Blocking a match that had no votes for anything: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
-        elif rmgSpecies not in self.votes[ckLabel] :
-            logging.warning("Blocking a match that had no votes for this match: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
-        assert str(rmgSpecies) == rmgLabel, "Didn't find the right RMG species!"
+        if ck_label not in self.votes:
+            logging.warning("Blocking a match that had no votes for anything: {0} is {1} with SMILES {2}".format(ck_label, rmg_label, rmg_species.molecule[0].to_smiles()))
+        elif rmg_species not in self.votes[ck_label] :
+            logging.warning("Blocking a match that had no votes for this match: {0} is {1} with SMILES {2}".format(ck_label, rmg_label, rmg_species.molecule[0].to_smiles()))
+        assert str(rmg_species) == rmg_label, "Didn't find the right RMG species!"
 
-        self.blockMatch(ckLabel, rmgSpecies, username=self.getUsername())
+        self.block_match(ck_label, rmg_species, username=self.get_username())
 
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
         raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
-    def confirm_html(self, ckLabel=None, rmgLabel=None):
-        #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
-        chemical_formula = self.formulaDict[ckLabel]
-        for rmgSpecies in self.rmg_object.reaction_model.species_dict[chemical_formula]:
-            if str(rmgSpecies) == rmgLabel:
+    def confirm_html(self, ck_label=None, rmg_label=None):
+        #rmg_name = re.match('^(.*)\(\d+\)$',rmg_label).group(1)
+        chemical_formula = self.formula_dict[ck_label]
+        for rmg_species in self.rmg_object.reaction_model.species_dict[chemical_formula]:
+            if str(rmg_species) == rmg_label:
                 break
         else:
-            raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmgLabel))
+            raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmg_label))
 
-        if ckLabel not in self.votes:
+        if ck_label not in self.votes:
             logging.warning(
                 "Confirming a match that had no votes for anything: {0} is {1} with SMILES {2}".format(
-                    ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
-        elif rmgSpecies not in self.votes[ckLabel]:
+                    ck_label, rmg_label, rmg_species.molecule[0].to_smiles()))
+        elif rmg_species not in self.votes[ck_label]:
             logging.warning(
                 "Confirming a match that had no votes for this match: {0} is {1} with SMILES {2}".format(
-                    ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
+                    ck_label, rmg_label, rmg_species.molecule[0].to_smiles()))
 
-        assert str(rmgSpecies) == rmgLabel, "Didn't find the right RMG species!"
+        assert str(rmg_species) == rmg_label, "Didn't find the right RMG species!"
 
-        for match in self.tentativeMatches:
-            if match['label'] == ckLabel:
-                if str(match['species']) != rmgLabel:
+        for match in self.tentative_matches:
+            if match['label'] == ck_label:
+                if str(match['species']) != rmg_label:
                     raise cherrypy.HTTPError(message="Trying to confirm something that wasn't a tentative match!")
-                self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
-                self.tentativeMatches.remove(match)
+                self.manual_matches_to_process.append((str(ck_label), rmg_species))
+                self.tentative_matches.remove(match)
                 break
         else:
             raise cherrypy.HTTPError(message="Trying to confirm something that has no tentative matches!")
-        self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
+        self.save_match_to_file(ck_label, rmg_species, username=self.get_username())
 
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
         raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
-    def clearthermomatch_html(self, ckLabel=None, rmgName=None):
+    def clearthermomatch_html(self, ck_label=None, rmg_name=None):
         "Clear the specified thermo match"
-        if ckLabel:
-            self.clearThermoMatch(ckLabel, rmgName)
+        if ck_label:
+            self.clear_thermo_match(ck_label, rmg_name)
         referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
         raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
-    def confirmthermomatch_html(self, ckLabel=None, rmgName=None):
-        for rmgSpecies in self.thermoMatches[ckLabel].iterkeys():
-            if str(rmgSpecies) == rmgName:
+    def confirmthermomatch_html(self, ck_label=None, rmg_name=None):
+        for rmg_species in self.thermo_matches[ck_label].iterkeys():
+            if str(rmg_species) == rmg_name:
                 break
         else:
             return "Trying to confirm something that wasn't a thermo match"
-        self.clearThermoMatch(ckLabel, None)
-        self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
-        self.clearTentativeMatch(ckLabel, None)
-        self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
+        self.clear_thermo_match(ck_label, None)
+        self.manual_matches_to_process.append((str(ck_label), rmg_species))
+        self.clear_tentative_match(ck_label, None)
+        self.save_match_to_file(ck_label, rmg_species, username=self.get_username())
         referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
         raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
-    def clear_html(self, ckLabel=None):
-        logging.info("Clearing the tentative match for {0} at user's request".format(ckLabel))
-        self.clearTentativeMatch(ckLabel, None)
+    def clear_html(self, ck_label=None):
+        logging.info("Clearing the tentative match for {0} at user's request".format(ck_label))
+        self.clear_tentative_match(ck_label, None)
         raise cherrypy.HTTPRedirect("/tentative.html")
 
     @cherrypy.expose
-    def match_html(self, ckLabel=None, rmgLabel=None):
-        if ckLabel not in self.votes:
-            return "ckLabel not valid"
-        for rmgSpecies in self.votes[ckLabel].iterkeys():
-            if str(rmgSpecies) == rmgLabel:
-                self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
+    def match_html(self, ck_label=None, rmg_label=None):
+        if ck_label not in self.votes:
+            return "ck_label not valid"
+        for rmg_species in self.votes[ck_label].iterkeys():
+            if str(rmg_species) == rmg_label:
+                self.manual_matches_to_process.append((str(ck_label), rmg_species))
                 break
         else:
             # Maybe it was just a thermo match with no votes?
-            self.confirmthermomatch_html(ckLabel, rmgLabel)
+            self.confirmthermomatch_html(ck_label, rmg_label)
             # If that didn't raise a HTTPRedirect, then it wasn't a thermo match either
-            return "rmgLabel not a candidate for that ckLabel"
+            return "rmg_label not a candidate for that ck_label"
 
-        self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
+        self.save_match_to_file(ck_label, rmg_species, username=self.get_username())
         ## Wait for it to be processed:
-        #while self.manualMatchesToProcess:
+        #while self.manual_matches_to_process:
         #    time.sleep(1)
         referer = cherrypy.request.headers.get("Referer", "/votes2.html")
         raise cherrypy.HTTPRedirect(referer)
@@ -3184,12 +3184,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     @cherrypy.expose
     def progress_json(self):
         total = len(self.species_list)
-        identified = len(self.identified_labels) + len(self.manualMatchesToProcess)
-        unprocessed = len(self.identified_unprocessed_labels) + len(self.manualMatchesToProcess)
-        tentative = len(self.tentativeMatches)
-        unmatchedreactions = len(self.chemkinReactionsUnmatched)
-        totalreactions = len(self.chemkinReactions)
-        thermomatches = len(self.thermoMatches)
+        identified = len(self.identified_labels) + len(self.manual_matches_to_process)
+        unprocessed = len(self.identified_unprocessed_labels) + len(self.manual_matches_to_process)
+        tentative = len(self.tentative_matches)
+        unmatchedreactions = len(self.chemkin_reactions_unmatched)
+        totalreactions = len(self.chemkin_reactions)
+        thermomatches = len(self.thermo_matches)
         answer = {
             'processed': identified - unprocessed,
             'unprocessed': unprocessed,
@@ -3212,12 +3212,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <head>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
-function alsoUpdate(json) {
+function also_update(json) {
  // replace this with another <script> block on a specific page if you want it to do something
  }
-var lastAlert = """ + str(min(len(self.identified_labels) - len(self.identified_unprocessed_labels), 5)) + """;
-var progressUpdates = 0;
-function updateStats() {
+var last_alert = """ + str(min(len(self.identified_labels) - len(self.identified_unprocessed_labels), 5)) + """;
+var progress_updates = 0;
+function update_stats() {
     $.getJSON( "progress.json", function( json ) {
             var total = json.total;
             console.log('Updating stats.. Unidentified now ' + json.unidentified );
@@ -3225,20 +3225,20 @@ function updateStats() {
             $('#unprocessed').html(json.unprocessed+json.processed).width(100*json.unprocessed/total+'%');
             $('#tentative').html(json.unprocessed+json.processed+json.tentative).width(100*json.tentative/total+'%');
             $('#unidentified').html(total).width(100*json.unidentified/total+'%');
-            alsoUpdate(json); // any other update scripts for specific pages
-            if ((json.processed>lastAlert) && (json.unprocessed==0) && (progressUpdates > 0)) {
+            also_update(json); // any other update scripts for specific pages
+            if ((json.processed>last_alert) && (json.unprocessed==0) && (progress_updates > 0)) {
                 $("title").text("Input needed! Please confirm a match.");
-                lastAlert = json.processed;
+                last_alert = json.processed;
             }
-            repeater = setTimeout(updateStats, 10000); // do again in 10 seconds
-            progressUpdates++;
-        }).fail(function( jqxhr, textStatus, error ) {
-              var err = textStatus + ', ' + error;
+            repeater = set_timeout(update_stats, 10000); // do again in 10 seconds
+            progress_updates++;
+        }).fail(function( jqxhr, text_status, error ) {
+              var err = text_status + ', ' + error;
               console.log( "Request Failed: " + err);
         });
 }
 $( document ).ready(function() {
-    updateStats();
+    update_stats();
 });
 </script>
 <style>
@@ -3285,7 +3285,7 @@ document.write('<a href="//' + window.location.hostname + ':8000" >Dashboard</a>
     """
 
 
-def runCherryPyServer(args):
+def run_cherry_py_server(args):
     import cherrypy
     cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.server.socket_port = args.port
@@ -3333,7 +3333,7 @@ if __name__ == '__main__':
         print "Done"
         exit()
 
-    t2 = threading.Thread(target=runCherryPyServer, args=(args, ))
+    t2 = threading.Thread(target=run_cherry_py_server, args=(args, ))
     t2.daemon = True
     t2.start()
 
