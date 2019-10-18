@@ -44,7 +44,7 @@ from rmgpy.thermo.thermoengine import generate_thermo_data
 from rmgpy.data.thermo import Entry, save_entry
 from rmgpy.data.base import Entry as kin_entry
 from rmgpy.data.kinetics.common import save_entry as kin_save_entry
-from rmgpy.data.kinetics.common import KineticsError
+from rmgpy.exceptions import KineticsError
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
 
