@@ -193,6 +193,12 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
+    def test_radical_solute_group(self):
+        """Test that the existing radical group is found for the radical species when using group additivity"""
+        species = Species(molecule=[Molecule(smiles='[OH]')])
+        solute_data = self.database.get_solute_data_from_groups(species)
+        self.assertTrue('radical' in solute_data.comment)
+
     def test_correction_generation(self):
         """Test we can estimate solvation thermochemistry."""
         self.testCases = [
