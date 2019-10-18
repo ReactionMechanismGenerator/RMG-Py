@@ -3022,7 +3022,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         try:
             f = urllib2.urlopen(url, timeout=4)
             response = f.read()
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             print("Couldn't identify {0}. NCI resolver responded {1} to request for {2}".format(smiles, e, url))
             response = "Unknown"
 
