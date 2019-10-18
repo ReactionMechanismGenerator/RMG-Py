@@ -1111,7 +1111,7 @@ class ModelMatcher():
             species.generate_resonance_structures()
             self.identified_labels.append(species_label)
 
-    def ask_for_matchID(self, species_label, possible_matches):
+    def ask_for_match_id(self, species_label, possible_matches):
             """
             Ask user for a match for a given species_label, choosing from the iterable possible_matches
             """
@@ -1126,11 +1126,11 @@ class ModelMatcher():
                 Nvotes = len(self.votes[species_label][rmg_species])
                 all_possible_chemkin_species = [ck for ck, matches in self.votes.iteritems() if rmg_species in matches]
                 print "{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmg_species.label, dH, Nvotes, all_possible_chemkin_species)
-            chosenID = raw_input('What is it? (see voting info above)\n')
-            while chosenID not in possible_indices_str:
-                chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possible_indices_str)))
+            chosen_id = raw_input('What is it? (see voting info above)\n')
+            while chosen_id not in possible_indices_str:
+                chosen_id = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possible_indices_str)))
 
-            rmg_species = matches_dict[int(chosenID)]
+            rmg_species = matches_dict[int(chosen_id)]
             logging.info("Based on user input, matching {0} with {1!s}".format(species_label, rmg_species))
             self.set_match(species_label, rmg_species)
             return species_label, rmg_species
@@ -2254,7 +2254,7 @@ class ModelMatcher():
                         break
                     species_label = raw_input("Try again:\n")
                 possible_matches = votes[species_label].keys()
-                chemkin_label, matching_species = self.ask_for_matchID(species_label, possible_matches)
+                chemkin_label, matching_species = self.ask_for_match_id(species_label, possible_matches)
                 invalidated_reactions = self.get_invalidated_reactions_and_remove_votes(chemkin_label, matching_species)
                 reactions_to_check.update(invalidated_reactions)
                 logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactions_to_check)))
