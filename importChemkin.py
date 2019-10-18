@@ -37,18 +37,18 @@ import rmgpy.kinetics
 import rmgpy.chemkin
 import rmgpy.data
 import rmgpy.data.kinetics
-from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
+from rmgpy.chemkin import load_chemkin_file, read_species_block, read_thermo_block, read_reactions_block, remove_comment_from_line
 from rmgpy.rmg.model import ReactionModel
 
-from rmgpy.thermo.thermoengine import generateThermoData
-from rmgpy.data.thermo import Entry, saveEntry
+from rmgpy.thermo.thermoengine import generate_thermo_data
+from rmgpy.data.thermo import Entry, save_entry
 from rmgpy.data.base import Entry as kinEntry
-from rmgpy.data.kinetics.common import saveEntry as kinSaveEntry
+from rmgpy.data.kinetics.common import save_entry as kinSaveEntry
 from rmgpy.data.kinetics.common import KineticsError
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
 
-from rmgpy.rmg.main import RMG, initializeLog
+from rmgpy.rmg.main import RMG, initialize_log
 from rmgpy.molecule.draw import MoleculeDrawer
 
 import time
@@ -123,7 +123,7 @@ def convertFormula(formulaDict):
     return formula
 
 
-def parseCommandLineArguments():
+def parse_command_line_arguments():
 
     parser = argparse.ArgumentParser(description="""
         Import a set of chemkin files, identifying the species therin.
@@ -246,9 +246,9 @@ def reactionMatchesFormulas(reaction, reactantFormulas):
     Returns 'forward', 'backward', or False.
     """
     reactantFormulas = sorted(reactantFormulas)
-    if reactantFormulas == sorted([s.getFormula() for s in reaction.reactants]):
+    if reactantFormulas == sorted([s.get_formula() for s in reaction.reactants]):
         return 'forward'
-    elif reactantFormulas == sorted([s.getFormula() for s in reaction.products]):
+    elif reactantFormulas == sorted([s.get_formula() for s in reaction.products]):
         return 'backward'
     else:
         return False
@@ -261,7 +261,7 @@ class ModelMatcher():
 
     def __init__(self, args=None):
         self.args = args
-        self.speciesDict = {}
+        self.species_dict = {}
         self.thermoDict = {}
         self.formulaDict = {}
         self.smilesDict = {}
@@ -269,7 +269,7 @@ class ModelMatcher():
         self.identified_unprocessed_labels = []
         self.identified_by = {}
         """Which user identified which species: self.identified_by[chemkinLabels] = username"""
-        self.speciesList = None
+        self.species_list = None
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
         self.chemkinReactionsUnmatched = []
@@ -321,47 +321,47 @@ class ModelMatcher():
         Load the chemkin list of species
         """
         speciesAliases = {}
-        speciesDict = {}
+        species_dict = {}
         if species_file:
             logging.info("Reading species list...")
-            speciesList = []
+            species_list = []
             with open(species_file) as f:
                 line0 = f.readline()
                 while line0 != '':
-                    line = removeCommentFromLine(line0)[0]
+                    line = remove_comment_from_line(line0)[0]
                     tokens_upper = line.upper().split()
                     if tokens_upper and tokens_upper[0] in ('SPECIES', 'SPEC'):
                         # Unread the line (we'll re-read it in readReactionBlock())
                         f.seek(-len(line0), 1)
-                        readSpeciesBlock(f, speciesDict, speciesAliases, speciesList)
+                        read_species_block(f, speciesDict, speciesAliases, speciesList)
                     line0 = f.readline()
         else:
             logging.info("No species file to limit species. Will read everything in thermo file")
-            speciesList = None
-            speciesDict = MagicSpeciesDict(speciesDict)
-        self.speciesList = speciesList
-        self.speciesDict = speciesDict
+            species_list = None
+            species_dict = MagicSpeciesDict(speciesDict)
+        self.species_list = speciesList
+        self.species_dict = speciesDict
 
     def loadThermo(self, thermo_file):
         """
         Load the chemkin thermochemistry file
         """
         logging.info("Reading thermo file...")
-        speciesDict = self.speciesDict
+        species_dict = self.species_dict
         foundThermoBlock = False
         #import codecs
         #with codecs.open(thermo_file, "r", "utf-8") as f:
         with open(thermo_file) as f:
             line0 = f.readline()
             while line0 != '':
-                line = removeCommentFromLine(line0)[0]
+                line = remove_comment_from_line(line0)[0]
                 tokens_upper = line.upper().split()
                 if tokens_upper and tokens_upper[0].startswith('THER'):
                     foundThermoBlock = True
-                    # Unread the line (we'll re-read it in readThermoBlock())
+                    # Unread the line (we'll re-read it in read_thermo_block())
                     f.seek(-len(line0), 1)
                     try:
-                        formulaDict = readThermoBlock(f, speciesDict)  # updates speciesDict in place
+                        formulaDict = read_thermo_block(f, speciesDict)  # updates speciesDict in place
                     except:
                         logging.error("Error reading thermo block around line:\n" + f.readline())
                         raise
@@ -383,7 +383,7 @@ class ModelMatcher():
     def loadReactions(self, reactions_file):
         logging.info("Reading reactions...")
         with open(reactions_file) as f:
-            reactionList = readReactionsBlock(f, self.speciesDict, readComments=True)
+            reaction_list = read_reactions_block(f, self.species_dict, read_comments=True)
         logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
 
         # convert from list to Library, so we can detect duplicates
@@ -397,14 +397,14 @@ class ModelMatcher():
                 label = str(reaction)
             )
             if reaction.kinetics.comment:
-                entry.longDesc = unicode(reaction.kinetics.comment, 'utf-8', 'replace')
+                entry.long_desc = unicode(reaction.kinetics.comment, 'utf-8', 'replace')
             else:
-                entry.longDesc = ''
+                entry.long_desc = ''
             reaction.kinetics.comment = ''
             temporary_library.entries[index+1] = entry
             reaction.kinetics = None
-        temporary_library.checkForDuplicates(markDuplicates=True)  # markDuplicates=True
-        temporary_library.convertDuplicatesToMulti()
+        temporary_library.check_for_duplicates(mark_duplicates=True)  # mark_duplicates=True
+        temporary_library.convert_duplicates_to_multi()
         # convert back to list
         newReactionList = []
         for entry in temporary_library.entries.values():
@@ -413,7 +413,7 @@ class ModelMatcher():
             newReactionList.append(reaction)
         logging.info("Read {} reactions. After converting duplicates, have {} reactions".format(
                                                             len(reactionList), len(newReactionList)))
-        reactionList = newReactionList
+        reaction_list = newReactionList
 
         self.chemkinReactions = reactionList
         self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
@@ -446,13 +446,13 @@ class ModelMatcher():
                 for molecule in reaction.kinetics.efficiencies.keys():
                     reactiveMolecules.add(molecule)
         unreactiveSpecies = []
-        for species in self.speciesList:
+        for species in self.species_list:
             if species not in reactiveSpecies:
                 label = species.label
                 if label in self.identified_labels:
                     thisMolecule = self.speciesDict_rmg[label].molecule[0]
                     for reactiveMolecule in reactiveMolecules:
-                        if reactiveMolecule.isIsomorphic(thisMolecule):
+                        if reactiveMolecule.is_isomorphic(thisMolecule):
                             break
                     else:
                         unreactiveSpecies.append(species)
@@ -461,8 +461,8 @@ class ModelMatcher():
         for species in unreactiveSpecies:
             label = species.label
             logging.info("Removing species {0} because it doesn't react".format(label))
-            self.speciesList.remove(species)
-            del (self.speciesDict[label])
+            self.species_list.remove(species)
+            del (self.species_dict[label])
             if label in self.speciesDict_rmg:
                 del (self.speciesDict_rmg[label])
             self.clearThermoMatch(label)
@@ -519,15 +519,15 @@ class ModelMatcher():
             formula = self.formulaDict[species_label]
             for smiles, username in blocked_smiles[species_label].iteritems():
                 molecule = Molecule(SMILES=smiles)
-                if formula != molecule.getFormula():
-                    raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.getFormula(), formula))
+                if formula != molecule.get_formula():
+                    raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.get_formula(), formula))
                 logging.info("Blocking {0} from being {1}".format(species_label, smiles))
 
-                rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(molecule)
+                rmg_species, wasNew = self.rmg_object.reaction_model.make_new_species(molecule)
                 rmg_species.generate_resonance_structures()
                 if wasNew:
                     self.drawSpecies(rmg_species)
-                    rmg_species.thermo = generateThermoData(rmg_species)
+                    rmg_species.thermo = generate_thermo_data(rmg_species)
 
                 if species_label not in self.blockedMatches:
                     self.blockedMatches[species_label] = dict()
@@ -666,17 +666,17 @@ class ModelMatcher():
                 adjlist = special_smiles_to_adj_list[smiles]
                 molecule = Molecule()
                 try:
-                    molecule.fromAdjacencyList(adjlist)
+                    molecule.from_adjacency_list(adjlist)
                 except:
                     logging.exception(adjlist)
             else:
                 molecule = Molecule(SMILES=smiles)
-            if formula != molecule.getFormula():
-                raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}. \n{4}".format(species_label, smiles, molecule.getFormula(), formula, molecule.toAdjacencyList()))
+            if formula != molecule.get_formula():
+                raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}. \n{4}".format(species_label, smiles, molecule.get_formula(), formula, molecule.to_adjacency_list()))
             logging.info("I think {0} is {1} based on its label".format(species_label, smiles))
             self.smilesDict[species_label] = smiles
 
-            species = self.speciesDict[species_label]
+            species = self.species_dict[species_label]
             species.molecule = [molecule]
             species.generate_resonance_structures()
             identified_labels.append(species_label)
@@ -697,11 +697,11 @@ class ModelMatcher():
         """
         logging.info("Loading RMG database...")
         rmg = RMG()
-        rmg.outputDirectory = args.output_directory
+        rmg.output_directory = args.output_directory
         rmg.scratchDirectory = args.scratch_directory
-        rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'species')
-        rmg.databaseDirectory = databaseDirectory
-        rmg.thermoLibraries = ['primaryThermoLibrary',
+        rmgpy.util.make_output_subdirectory(rmg.output_directory, 'species')
+        rmg.database_directory = databaseDirectory
+        rmg.thermo_libraries = ['primaryThermoLibrary',
                                'BurkeH2O2',
                                'DFT_QCI_thermo',
                                'CBS_QB3_1dHR',
@@ -709,8 +709,8 @@ class ModelMatcher():
                                'GRI-Mech3.0-N',
                                'JetSurF2.0',
                                'CurranPentane', ]
-        rmg.kineticsFamilies = ['default','fake_for_importer']
-        rmg.reactionLibraries = [('BurkeH2O2inN2', False),
+        rmg.kinetics_families = ['default','fake_for_importer']
+        rmg.reaction_libraries = [('BurkeH2O2inN2', False),
                                  ('FFCM1(-)', False),
                                  ('JetSurF2.0', False),
                                  ('CurranPentane', False),
@@ -720,9 +720,9 @@ class ModelMatcher():
         rmgpy.rmg.input.rmg = rmg  # put it in this scope so these functions can modify it
 
         if args.pdep:
-            rmgpy.rmg.input.pressureDependence(
+            rmgpy.rmg.input.pressure_dependence(
                 method='modified strong collision',
-                maximumGrainSize=(0.5, 'kcal/mol'),
+                maximum_grain_size=(0.5, 'kcal/mol'),
                 minimumNumberOfGrains=250,
                 temperatures=(300, 2000, 'K', 8),
                 pressures=(0.01, 100, 'atm', 3),
@@ -734,19 +734,19 @@ class ModelMatcher():
             logging.warning("RDKit installed without InChI support so running without QM calculations!")
         elif args.mopac:
             logging.info("Using MOPAC semiemprical quantum calculations for cyclic species.")
-            rmgpy.rmg.input.quantumMechanics(
+            rmgpy.rmg.input.quantum_mechanics(
                 software='mopac',
                 method='pm3',
-                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),  # ToDo: fix this
-                scratchDirectory=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMscratch'),
+                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMfiles'),  # ToDo: fix this
+                scratchDirectory=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMscratch'),
                 onlyCyclics=True,
                 maxRadicalNumber=0,
             )
 
-        rmg.loadDatabase()
+        rmg.load_database()
         logging.info("Loaded database.")
 
-        self.thermo_libraries_to_check.extend(rmg.database.thermo.libraryOrder) # add the RMG libraries
+        self.thermo_libraries_to_check.extend(rmg.database.thermo.library_order) # add the RMG libraries
         
         # Should probably look elsewhere, but this is where they tend to be for now...
         directory = os.path.abspath(os.path.join(os.path.split(os.path.abspath(args.thermo))[0], '..'))
@@ -770,33 +770,33 @@ class ModelMatcher():
                 rmg.database.thermo.libraries[library.label] = library
                 # Load them (for the checkThermoLibraries method) but don't trust them
                 self.thermo_libraries_to_check.append(library.label)
-                # rmg.database.thermo.libraryOrder.append(library.label)
+                # rmg.database.thermo.library_order.append(library.label)
 
-        rmg.reactionModel = rmgpy.rmg.model.CoreEdgeReactionModel()
-        rmg.reactionModel.kineticsEstimator = 'rate rules'
-        rmg.reactionModel.verboseComments = True
-        rmg.initialSpecies = []
-        rmg.reactionSystems = []
+        rmg.reaction_model = rmgpy.rmg.model.CoreEdgeReactionModel()
+        rmg.reaction_model.kinetics_estimator = 'rate rules'
+        rmg.reaction_model.verbose_comments = True
+        rmg.initial_species = []
+        rmg.reaction_systems = []
 
-        rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'pdep')  # deletes contents
+        rmgpy.util.make_output_subdirectory(rmg.output_directory, 'pdep')  # deletes contents
         # This is annoying!
-        if rmg.pressureDependence:
-            rmg.pressureDependence.outputFile = rmg.outputDirectory
-            rmg.reactionModel.pressureDependence = rmg.pressureDependence
-        #rmg.reactionModel.reactionGenerationOptions = rmg.reactionGenerationOptions
-        if rmg.quantumMechanics:
-            rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
-            rmg.reactionModel.quantumMechanics = rmg.quantumMechanics
-            rmg.quantumMechanics.initialize()
+        if rmg.pressure_dependence:
+            rmg.pressure_dependence.outputFile = rmg.output_directory
+            rmg.reaction_model.pressure_dependence = rmg.pressure_dependence
+        #rmg.reaction_model.reactionGenerationOptions = rmg.reactionGenerationOptions
+        if rmg.quantum_mechanics:
+            rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)
+            rmg.reaction_model.quantum_mechanics = rmg.quantum_mechanics
+            rmg.quantum_mechanics.initialize()
 
         # We need to properly initialize the database so that we can
         # find kinetics without crashing.
         logging.info('Adding rate rules from training set in kinetics families...')
         for family in rmg.database.kinetics.families.values():
-            family.addKineticsRulesFromTrainingSet(thermoDatabase=rmg.database.thermo)
+            family.add_rules_from_training(thermo_database=rmg.database.thermo)
         logging.info('Filling in rate rules in kinetics families by averaging...')
         for family in rmg.database.kinetics.families.values():
-            family.fillKineticsRulesByAveragingUp()
+            family.fill_rules_by_averaging_up()
 
         self.rmg_object = rmg
         return rmg
@@ -825,13 +825,13 @@ class ModelMatcher():
             else:
                 return False
 
-    def reactionsMatch(self, rmg_reaction, chemkin_reaction, eitherDirection=True):
+    def reactionsMatch(self, rmg_reaction, chemkin_reaction, either_direction=True):
         """
-        This is based on the rmg.reaction.Reaction.isIsomorphic method
+        This is based on the rmg.reaction.Reaction.is_isomorphic method
  
         Return ``True`` if rmg_reaction is the same as the chemkin_reaction reaction,
         or ``False`` if they are different. 
-        If `eitherDirection=False` then the directions must match.
+        If `either_direction=False` then the directions must match.
         """
         speciesMatch = self.speciesMatch
         # Compare reactants to reactants
@@ -1070,7 +1070,7 @@ class ModelMatcher():
         identified_labels = []
 
         # use speciesList if it is not None or empty, else the formulaDict keys.
-        for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
+        for species_label in [s.label for s in self.species_list or []] or self.formulaDict.keys():
             if species_label in self.identified_labels:
                 continue
             formula = self.formulaDict[species_label]
@@ -1081,11 +1081,11 @@ class ModelMatcher():
             else:
                 continue
             self.smilesDict[species_label] = smiles
-            while formula != Molecule(SMILES=smiles).getFormula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formula))
-            species = self.speciesDict[species_label]
+            while formula != Molecule(SMILES=smiles).get_formula():
+                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).get_formula(), formula))
+            species = self.species_dict[species_label]
             if smiles == '[C]':  # The SMILES is interpreted as a quintuplet and we can't estimate the thermo
-                species.molecule = [Molecule().fromAdjacencyList('1 C u0 p2 c0')]
+                species.molecule = [Molecule().from_adjacency_list('1 C u0 p2 c0')]
             else:
                 species.molecule = [Molecule(SMILES=smiles)]
             species.generate_resonance_structures()
@@ -1103,10 +1103,10 @@ class ModelMatcher():
             formula = self.formulaDict[species_label]
             print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
             smiles = raw_input('What is its SMILES?\n')
-            while formula != Molecule(SMILES=smiles).getFormula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formula))
+            while formula != Molecule(SMILES=smiles).get_formula():
+                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).get_formula(), formula))
             self.smilesDict[species_label] = smiles
-            species = self.speciesDict[species_label]
+            species = self.species_dict[species_label]
             species.molecule = [Molecule(SMILES=smiles)]
             species.generate_resonance_structures()
             self.identified_labels.append(species_label)
@@ -1121,7 +1121,7 @@ class ModelMatcher():
             possibleIndicesStr = [str(i) for i in sorted(matchesDict.keys())]
             print "Species {0} could be one of:".format(speciesLabel)
             for index in sorted(matchesDict.keys()):
-                rmgSpecies = matchesDict[index]
+                rmg_species = matchesDict[index]
                 dH = self.getEnthalpyDiscrepancy(speciesLabel, rmgSpecies)
                 Nvotes = len(self.votes[speciesLabel][rmgSpecies])
                 allPossibleChemkinSpecies = [ck for ck, matches in self.votes.iteritems() if rmgSpecies in matches]
@@ -1130,7 +1130,7 @@ class ModelMatcher():
             while chosenID not in possibleIndicesStr:
                 chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possibleIndicesStr)))
 
-            rmgSpecies = matchesDict[int(chosenID)]
+            rmg_species = matchesDict[int(chosenID)]
             logging.info("Based on user input, matching {0} with {1!s}".format(speciesLabel, rmgSpecies))
             self.setMatch(speciesLabel, rmgSpecies)
             return speciesLabel, rmgSpecies
@@ -1138,7 +1138,7 @@ class ModelMatcher():
     def edgeReactionsMatching(self, chemkinReaction):
         """A generator giving edge reactions that match the given chemkin reaction"""
         reactionsMatch = self.reactionsMatch
-        for edgeReaction in self.rmg_object.reactionModel.edge.reactions:
+        for edgeReaction in self.rmg_object.reaction_model.edge.reactions:
             if reactionsMatch(edgeReaction, chemkinReaction):
                 yield edgeReaction
 
@@ -1152,7 +1152,7 @@ class ModelMatcher():
     def drawSpecies(self, rmg_species):
         "Draw a species, saved in 'species' directory named after its RMG name (label and id)."
         # Draw molecules if necessary
-        fstr = os.path.join(self.rmg_object.outputDirectory, 'species',
+        fstr = os.path.join(self.rmg_object.output_directory, 'species',
                             '{0!s}.png'.format(rmg_species))
         if not os.path.exists(fstr):
             MoleculeDrawer().draw(rmg_species.molecule[0], 'png', fstr)
@@ -1167,9 +1167,9 @@ class ModelMatcher():
 
     def moveSpeciesDrawing(self, rmg_species):
         "Move a species drawing from 'species' directory to 'species/MATCHED' directory."
-        source = os.path.join(self.rmg_object.outputDirectory, 'species',
+        source = os.path.join(self.rmg_object.output_directory, 'species',
                               '{0!s}.png'.format(rmg_species))
-        destination = os.path.join(self.rmg_object.outputDirectory, 'species',
+        destination = os.path.join(self.rmg_object.output_directory, 'species',
                                    'MATCHED', '{0!s}.png'.format(rmg_species))
         if os.path.exists(source):
             os.renames(source, destination)
@@ -1183,8 +1183,8 @@ class ModelMatcher():
         ck_thermo = self.thermoDict[chemkinLabel]
         rmg_thermo = rmgSpecies.thermo
         temperature = max(298.15, ck_thermo.Tmin.value_si, rmg_thermo.Tmin.value_si)
-        ckH = ck_thermo.getEnthalpy(temperature)
-        rmgH = rmg_thermo.getEnthalpy(temperature)
+        ckH = ck_thermo.get_enthalpy(temperature)
+        rmgH = rmg_thermo.get_enthalpy(temperature)
         return (ckH - rmgH) / 1000.
 
     def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
@@ -1229,7 +1229,7 @@ class ModelMatcher():
                 logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.")
                 return False
         for l in self.identified_labels:
-            s = self.speciesDict[l]
+            s = self.species_dict[l]
             if l == chemkinLabel:
                 if s == rmgSpecies:
                     return True  # it's already matched
@@ -1266,7 +1266,7 @@ class ModelMatcher():
             logging.info("Looking for matches in thermo library "+library_name)
             library = self.rmg_object.database.thermo.libraries[library_name]
             for __, entry in library.entries.iteritems():
-                formula = entry.item.getFormula()
+                formula = entry.item.get_formula()
                 if formula in formulaToLabelsDict:
                     for ck_label in formulaToLabelsDict[formula]:
                         #Skip already identified species
@@ -1274,19 +1274,19 @@ class ModelMatcher():
                             continue
                         ck_thermo = self.thermoDict[ck_label]
                         try:
-                            match = entry.data.isIdenticalTo(ck_thermo)  #isIdenticalTo requires improvement before this should be fully implemented
+                            match = entry.data.is_identical_to(ck_thermo)  #isIdenticalTo requires improvement before this should be fully implemented
                         except ValueError:
                             logging.info("Error comparing two thermo entries, skipping entry for chemkin species {0} in the thermo library {1}".format(ck_label, library_name))
                             match = False
                         if match:
                             # Successfully found a tentative match, set the match and report.
-                            rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(entry.item, label=entry.label)
+                            rmg_species, wasNew = self.rmg_object.reaction_model.make_new_species(entry.item, label=entry.label)
                             if wasNew:
                                 self.drawSpecies(rmg_species)
                             else:
                                 pass
                                 # logging.info("Thermo matches {0}, from {1}, but it's already in the model.".format(ck_label, library_name))
-                            rmg_species.thermo = generateThermoData(rmg_species)
+                            rmg_species.thermo = generate_thermo_data(rmg_species)
 
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
@@ -1304,7 +1304,7 @@ class ModelMatcher():
         with open(self.blocked_matches_file, 'a') as f:
             f.write("{name}\t{smi}{user}\n".format(
                 name=ckLabel,
-                smi=rmgSpecies.molecule[0].toSMILES(),
+                smi=rmgSpecies.molecule[0].to_smiles(),
                 user=user_text))
         return True
 
@@ -1330,7 +1330,7 @@ class ModelMatcher():
         with open(self.known_species_file, 'a') as f:
             f.write("{name}\t{smi}{user}\n".format(
                 name=ckLabel,
-                smi=rmgSpecies.molecule[0].toSMILES(),
+                smi=rmgSpecies.molecule[0].to_smiles(),
                 user=user_text))
         return True
 
@@ -1387,19 +1387,19 @@ class ModelMatcher():
         # This allows us to extrapolating H to 298 to find deltaH rxn
         # for ArrheniusEP kinetics,
         # and to 0K so we can do barrier height checks with E0.
-        Cp0 = rmgSpecies.calculateCp0(), 'J/mol/K'
-        CpInf = rmgSpecies.calculateCpInf(), 'J/mol/K'
+        Cp0 = rmgSpecies.calculate_cp0(), 'J/mol/K'
+        CpInf = rmgSpecies.calculate_cpinf(), 'J/mol/K'
         thermo = self.thermoDict[chemkinLabel]
         # pretend it was valid down to 298 K
         oldLowT = thermo.Tmin.value_si
         if oldLowT > 298.0:
-            thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+            thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
         thermo.Cp0 = Cp0
         thermo.CpInf = CpInf
-        newThermo = thermo.toWilhoit()
-        # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
+        newThermo = thermo.to_wilhoit()
+        # thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
 
         enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
@@ -1432,14 +1432,14 @@ class ModelMatcher():
         with open(self.dictionaryFile, 'a') as f:
             f.write("{0}\t{1}\t{2:.1f}{3}\n".format(
                         chemkinLabel,
-                        rmgSpecies.molecule[0].toSMILES(),
+                        rmgSpecies.molecule[0].to_smiles(),
                         enthalpyDiscrepancy,
                         '\tDUPLICATE of ' + duplicate if duplicate else ''))
 
         with open(self.RMGdictionaryFile, 'a') as f:
             f.write("{2}{0}\n{1}\n\n".format(
                          chemkinLabel,
-                         rmgSpecies.molecule[0].toAdjacencyList(removeH=True),
+                         rmgSpecies.molecule[0].to_adjacency_list(remove_h=True),
                         '// Warning! Duplicate of ' + duplicate + '\n' if duplicate else ''))
 
         self.drawSpecies(rmgSpecies)
@@ -1453,7 +1453,7 @@ class ModelMatcher():
         # Look for the lowest energy resonance isomer that isn't aromatic,
         # because saving aromatic adjacency lists can cause problems downstream.
         for molecule in rmgSpecies.molecule:
-            if not molecule.isAromatic():
+            if not molecule.is_aromatic():
                 break
         else:
             logging.warning(("All resonance isomers of {0} are aromatic?! "
@@ -1464,15 +1464,15 @@ class ModelMatcher():
         comment = getattr(thermo, 'comment', '')
         if comment:
             comment = unicode(comment, 'utf-8', 'replace')
-            entry.longDesc = comment + '.\n'
+            entry.long_desc = comment + '.\n'
         else:
-            entry.longDesc = ''
+            entry.long_desc = ''
         if duplicate:
-            entry.longDesc += ("Duplicate of species {0} (i.e. same molecular structure"
+            entry.long_desc += ("Duplicate of species {0} (i.e. same molecular structure"
                                " according to RMG)\n").format(duplicate)
-        entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source,
-                                                                     smiles=molecule.toSMILES())
-        entry.shortDesc = comment.split('\n')[0].strip()
+        entry.long_desc += '{smiles}\nImported from {source}.'.format(source=source,
+                                                                     smiles=molecule.to_smiles())
+        entry.short_desc = comment.split('\n')[0].strip()
 
         # store in the thermoLibrary
         self.thermoLibrary.entries[entry.label] = entry
@@ -1535,7 +1535,7 @@ class ModelMatcher():
                 reactionsToPrune.add(edgeReaction)
         # remove those reactions
         logging.info("Removing {0} edge reactions that didn't match anything.".format(len(reactionsToPrune)))
-        prune = self.rmg_object.reactionModel.edge.reactions.remove
+        prune = self.rmg_object.reaction_model.edge.reactions.remove
         for rxn in reactionsToPrune:
             try:
                 prune(rxn)
@@ -1565,13 +1565,13 @@ class ModelMatcher():
         "Save an RMG-Py style kinetics library"
         library_path = os.path.join(self.outputPath, 'RMG-Py-kinetics-library')
         makeOrEmptyDirectory(library_path)
-        self.kineticsLibrary.checkForDuplicates(markDuplicates=True)
-        self.kineticsLibrary.convertDuplicatesToMulti()
+        self.kineticsLibrary.check_for_duplicates(mark_duplicates=True)
+        self.kineticsLibrary.convert_duplicates_to_multi()
         self.kineticsLibrary.save(os.path.join(library_path, 'reactions.py'))
-        for species in self.speciesList:
+        for species in self.species_list:
             if species.molecule:
-                species.molecule[0].clearLabeledAtoms()  # don't want '*1' labels in the dictionary
-        self.kineticsLibrary.saveDictionary(os.path.join(library_path, 'dictionary.txt'))
+                species.molecule[0].clear_labeled_atoms()  # don't want '*1' labels in the dictionary
+        self.kineticsLibrary.save_dictionary(os.path.join(library_path, 'dictionary.txt'))
 
         savedReactions = [self.kineticsLibrary.entries[key].item 
                           for key in sorted(self.kineticsLibrary.entries.keys())
@@ -1579,16 +1579,16 @@ class ModelMatcher():
         
         with open(os.path.join(library_path, 'reversed_rates.txt'), 'w') as out_file:
             for reaction in savedReactions:
-                out_file.write("Forwards reaction:   {!s}".format(reaction.toChemkin(speciesList=self.speciesList)))
+                out_file.write("Forwards reaction:   {!s}".format(reaction.to_chemkin(species_list=self.species_list)))
                 out_file.write("Forwards rate:       {!r}\n".format(reaction.kinetics))
                 try:
-                    reverse_rate = reaction.generateReverseRateCoefficient()
+                    reverse_rate = reaction.generate_reverse_rate_coefficient()
                 except (rmgpy.reaction.ReactionError, AttributeError, ValueError):
                     out_file.write("Couldn't reverse reaction rate of type {}\n\n".format(type(reaction.kinetics)))
                 else:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.kinetics, reverse_rate = reverse_rate, reaction.kinetics
-                    out_file.write("Reversed reaction:   {!s}".format(reaction.toChemkin(speciesList=self.speciesList)))
+                    out_file.write("Reversed reaction:   {!s}".format(reaction.to_chemkin(species_list=self.species_list)))
                     out_file.write("Reversed rate:       {!r}\n\n".format(reaction.kinetics))
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.kinetics, reverse_rate = reverse_rate, reaction.kinetics
@@ -1603,10 +1603,10 @@ class ModelMatcher():
                     continue
                 count += 1
                 out_file.write('//{0:4d}\n'.format(index + 1))
-                out_file.write(rmgpy.chemkin.writeKineticsEntry(reaction,
-                                                                speciesList=self.speciesList,
+                out_file.write(rmgpy.chemkin.write_kinetics_entry(reaction,
+                                                                species_list=self.species_list,
                                                                 verbose=False,
-                                                                javaLibrary=False))
+                                                                java_library=False))
                 out_file.write('\n')
             out_file.write("// Total {} reactions unidentified\n".format(count))
         
@@ -1657,10 +1657,10 @@ class ModelMatcher():
         entry.data = chemkinReaction.kinetics
         comment = getattr(chemkinReaction, 'comment', '')  # This should ideally return the chemkin file comment but currently does not
         if comment:
-            entry.longDesc = comment + '.\n'
+            entry.long_desc = comment + '.\n'
         else:
-            entry.longDesc = ''
-        entry.shortDesc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
+            entry.long_desc = ''
+        entry.short_desc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
 
         self.kineticsLibrary.entries[entry.index] = entry
 
@@ -1672,7 +1672,7 @@ class ModelMatcher():
         with open(filePath, 'a') as f:
             f.write('{\n')
             f.write(' "reaction": {!r},\n'.format(str(chemkinReaction)))
-            f.write(' "chemkinKinetics": """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
+            f.write(' "chemkinKinetics": """\n{!s}""",\n'.format(rmgpy.chemkin.write_kinetics_entry(chemkinReaction, self.species_list, verbose=False)))
             f.write(' "rmgPyKinetics": {!s},\n'.format(prettify(repr(chemkinReaction.kinetics))))
             f.write(' "possibleReactionFamilies": [')
             reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
@@ -1783,17 +1783,17 @@ class ModelMatcher():
         edge species that cannot possibly be in the chemkin file.
         """
         import rmgpy.data.rmg
-        old_isMoleculeForbidden = rmgpy.data.rmg.database.forbiddenStructures.isMoleculeForbidden
+        old_isMoleculeForbidden = rmgpy.data.rmg.database.forbidden_structures.is_molecule_forbidden
         chemkin_formulas = set(self.formulaDict.values())
 
         def new_isMoleculeForbidden(molecule):
             # return True (Forbidden) if we forbid it,
-            if molecule.getFormula() not in chemkin_formulas:
+            if molecule.get_formula() not in chemkin_formulas:
                 return True
             # otherwise return whatever we would have returned
             return old_isMoleculeForbidden(molecule)
 
-        rmgpy.data.rmg.database.forbiddenStructures.isMoleculeForbidden = new_isMoleculeForbidden
+        rmgpy.data.rmg.database.forbidden_structures.is_molecule_forbidden = new_isMoleculeForbidden
 
     def limitEnlarge(self, newObject):
         """
@@ -1802,7 +1802,7 @@ class ModelMatcher():
         
         Follows a similar procedure to rmg.CoreEdgeReactionModel.enlarge
         """
-        rm = self.rmg_object.reactionModel
+        rm = self.rmg_object.reaction_model
 
         import rmgpy.data.rmg
         import itertools
@@ -1817,17 +1817,17 @@ class ModelMatcher():
         numOldCoreReactions = len(rm.core.reactions)
         numOldEdgeSpecies = len(rm.edge.species)
         numOldEdgeReactions = len(rm.edge.reactions)
-        reactionsMovedFromEdge = []
+        reactions_moved_from_edge = []
         newReactionList = []
         newSpeciesList = []
 
-        rm.newReactionList = []
-        rm.newSpeciesList = []
-        newReactions = []
-        pdepNetwork = None
+        rm.new_reaction_list = []
+        rm.new_species_list = []
+        new_reactions = []
+        pdep_network = None
         objectWasInEdge = False
 
-        newSpecies = obj
+        new_species = obj
 
         objectWasInEdge = newSpecies in rm.edge.species
 
@@ -1869,13 +1869,13 @@ class ModelMatcher():
                     logging.error("Not reacting {0!r} with itself".format(newSpecies))
 
         # Add new species
-        reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
+        reactions_moved_from_edge = rm.add_species_to_core(newSpecies)
 
         # Process the new reactions
         # While adding to core/edge/pdep network, this clears atom labels:
-        rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
-        # this will call rm.checkForExistingSpecies to see if it already
-        # exists in rm.speciesDict and if not there, will add to rm.newSpeciesList
+        rm.process_new_reactions(newReactions, newSpecies, pdepNetwork)
+        # this will call rm.check_for_existing_species to see if it already
+        # exists in rm.species_dict and if not there, will add to rm.new_species_list
         # and call .generate_resonance_structures on each Species.
 
         if objectWasInEdge:
@@ -1884,22 +1884,22 @@ class ModelMatcher():
             # moved these reactions from edge to core
             numOldEdgeReactions -= len(reactionsMovedFromEdge)
 
-        newSpeciesList.extend(rm.newSpeciesList)
-        newReactionList.extend(rm.newReactionList)
+        newSpeciesList.extend(rm.new_species_list)
+        newReactionList.extend(rm.new_reaction_list)
 
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
             try:
-                spec.thermo = generateThermoData(spec)
+                spec.thermo = generate_thermo_data(spec)
             except:
-                logging.exception("Error generating thermo for species:\n{0!s}".format(spec.toAdjacencyList()))
-                if self.rmg_object.quantumMechanics:
+                logging.exception("Error generating thermo for species:\n{0!s}".format(spec.to_adjacency_list()))
+                if self.rmg_object.quantum_mechanics:
                     logging.info("Trying again without QM")
-                    qm = self.rmg_object.quantumMechanics # save for later
-                    self.rmg_object.quantumMechanics = None
-                    pec.thermo = generateThermoData(spec)
-                    self.rmg_object.quantumMechanics = qm # restore original setting
+                    qm = self.rmg_object.quantum_mechanics # save for later
+                    self.rmg_object.quantum_mechanics = None
+                    pec.thermo = generate_thermo_data(spec)
+                    self.rmg_object.quantum_mechanics = qm # restore original setting
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
@@ -1907,47 +1907,47 @@ class ModelMatcher():
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
                 # Set the reaction kinetics
-                kinetics, source, entry, isForward = rm.generateKinetics(reaction)
+                kinetics, source, entry, isForward = rm.generate_kinetics(reaction)
                 reaction.kinetics = kinetics
                 # Flip the reaction direction if the kinetics are defined in the reverse direction
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p, r) for r, p in reaction.pairs]
-                if rmgpy.rmg.model.getFamilyLibraryObject(reaction.family).ownReverse and hasattr(reaction, 'reverse'):
+                if rmgpy.rmg.model.get_family_library_object(reaction.family).own_reverse and hasattr(reaction, 'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
                     delattr(reaction, 'reverse')
 
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
-        # rm.newReactionList only contains *actually* new reactions, all in the forward direction.
+        # rm.new_reaction_list only contains *actually* new reactions, all in the forward direction.
         for reaction in newReactionList:
             # convert KineticsData to Arrhenius forms
             if isinstance(reaction.kinetics, KineticsData):
-                reaction.kinetics = reaction.kinetics.toArrhenius()
+                reaction.kinetics = reaction.kinetics.to_arrhenius()
             #  correct barrier heights of estimated kinetics
             if isinstance(reaction, TemplateReaction) or isinstance(reaction, DepositoryReaction):  # i.e. not LibraryReaction
-                reaction.fixBarrierHeight()  # also converts ArrheniusEP to Arrhenius.
+                reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
 
-            if rm.pressureDependence and reaction.isUnimolecular():
+            if rm.pressure_dependence and reaction.is_unimolecular():
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
-                reaction.fixBarrierHeight(forcePositive=True)
+                reaction.fix_barrier_height(force_positive=True)
 
         # Check new core reactions for Chemkin duplicates
-        newCoreReactions = rm.core.reactions[numOldCoreReactions:]
+        new_core_reactions = rm.core.reactions[numOldCoreReactions:]
         checkedCoreReactions = rm.core.reactions[:numOldCoreReactions]
-        from rmgpy.chemkin import markDuplicateReaction
+        from rmgpy.chemkin import mark_duplicate_reaction
         for rxn in newCoreReactions:
-            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions, rm.outputReactionList))
+            mark_duplicate_reaction(rxn, itertools.chain(checkedCoreReactions, rm.output_reaction_list))
             checkedCoreReactions.append(rxn)
 
-        rm.printEnlargeSummary(
-            newCoreSpecies=rm.core.species[numOldCoreSpecies:],
-            newCoreReactions=rm.core.reactions[numOldCoreReactions:],
-            reactionsMovedFromEdge=reactionsMovedFromEdge,
-            newEdgeSpecies=rm.edge.species[numOldEdgeSpecies:],
-            newEdgeReactions=rm.edge.reactions[numOldEdgeReactions:]
+        rm.log_enlarge_summary(
+            new_core_species=rm.core.species[numOldCoreSpecies:],
+            new_core_reactions=rm.core.reactions[numOldCoreReactions:],
+            reactions_moved_from_edge=reactionsMovedFromEdge,
+            new_edge_species=rm.edge.species[numOldEdgeSpecies:],
+            new_edge_reactions=rm.edge.reactions[numOldEdgeReactions:]
         )
 
         logging.info('')
@@ -1966,10 +1966,10 @@ class ModelMatcher():
         self.outputPath = os.path.dirname(os.path.abspath(reactions_file))
 
         self.loadSpecies(species_file)
-        self.loadThermo(thermo_file)
+        self.load_thermo(thermo_file)
         self.loadKnownSpecies(known_species_file)
 
-        for species in self.speciesList:
+        for species in self.species_list:
             if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
                 message = ("Species {sp} in the species file {spf} does not have a valid thermo entry "
                            "in the thermo file {th}").format(sp=species.label, spf=species_file, th=thermo_file)
@@ -1992,10 +1992,10 @@ class ModelMatcher():
         self.outputPath = os.path.dirname(os.path.abspath(reactions_file))
 
         self.loadSpecies(species_file)
-        self.loadThermo(thermo_file)
+        self.load_thermo(thermo_file)
         self.loadKnownSpecies(known_species_file)
         
-        for species in self.speciesList:
+        for species in self.species_list:
             if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
                 message = ("Species {sp} in the species file {spf} does not have a valid thermo entry "
                            "in the thermo file {th}").format(sp=species.label, spf=species_file, th=thermo_file)
@@ -2004,7 +2004,7 @@ class ModelMatcher():
 
         logging.info("Initializing RMG")
         self.initializeRMG(args)
-        rm = self.rmg_object.reactionModel
+        rm = self.rmg_object.reaction_model
         self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
         self.RMGdictionaryFile = os.path.join(args.output_directory, 'Original_RMG_dictionary.txt')
 
@@ -2024,16 +2024,16 @@ class ModelMatcher():
             label=thermo_file.replace('"', ''),
             name=self.name,
             solvent=None,
-            shortDesc=os.path.abspath(thermo_file).replace('"', ''),
-            longDesc=source.strip(),
+            short_desc=os.path.abspath(thermo_file).replace('"', ''),
+            long_desc=source.strip(),
             )
 
         self.kineticsLibrary = rmgpy.data.kinetics.KineticsLibrary(
             label=reactions_file.replace('"', ''),
             name=self.name,
             solvent=None,
-            shortDesc=os.path.abspath(reactions_file).replace('"', ''),
-            longDesc=source.strip(),
+            short_desc=os.path.abspath(reactions_file).replace('"', ''),
+            long_desc=source.strip(),
             )
 
         self.loadBlockedMatches()
@@ -2046,9 +2046,9 @@ class ModelMatcher():
         # Add identified species to the reaction model complete species list
         newSpeciesDict = {}
         for species_label in self.identified_labels:
-            old_species = self.speciesDict[species_label]
+            old_species = self.species_dict[species_label]
             logging.info(species_label)
-            rmg_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
+            rmg_species, wasNew = rm.make_new_species(old_species, label=old_species.label)
             if not wasNew:
                 logging.warning("Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label))
 
@@ -2059,7 +2059,7 @@ class ModelMatcher():
                 # when this occurs in collider lists it's still the old species?
             rmg_species.generate_resonance_structures()
             try:
-                rmg_species.thermo = generateThermoData(rmg_species)
+                rmg_species.thermo = generate_thermo_data(rmg_species)
             except:
                 logging.error("Couldn't generate thermo for RMG species {}".format(rmg_species))
                 raise
@@ -2077,14 +2077,14 @@ class ModelMatcher():
         votes = self.votes
 
         # Now would be a good time to save identified reactions?
-        # All the species in self.identified_labels should have been through generate_resonance_structures and generateThermoData
+        # All the species in self.identified_labels should have been through generate_resonance_structures and generate_thermo_data
         for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
             if self.reagentsAreAllIdentified(chemkinReaction):
                 chemkinReactionsUnmatched.remove(chemkinReaction)
                 assert self.reagentsAreAllIdentified(chemkinReaction, require_molecules=True)
                 self.addReactionToKineticsLibrary(chemkinReaction)
 
-        self.saveLibraries()
+        self.save_libraries()
 
         self.pruneInertSpecies()
 
@@ -2092,7 +2092,7 @@ class ModelMatcher():
         self.constrainReactionFamilies()
 
         # Let's put things in the core by size, smallest first.
-        self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecularWeight.value_si)
+        self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecular_weight.value_si)
         # We want to put inert things in the core first, so we can do PDep calculations with inert colliders.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].reactive)
         reactionsToCheck = set()
@@ -2106,20 +2106,20 @@ class ModelMatcher():
 
             # do a partial prune of new reactions that definitely aren't going to be useful
             reactionsToPrune = set()
-            for newSpecies in rm.newSpeciesList:
-                if newSpecies.molecule[0].getFormula() in chemkinFormulas:
+            for newSpecies in rm.new_species_list:
+                if newSpecies.molecule[0].get_formula() in chemkinFormulas:
                     # This allows us to extrapolating H to 298 for comparison
                     thermo = newSpecies.thermo
                     oldLowT = thermo.Tmin.value_si
                     if oldLowT > 298.0:
-                        thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+                        thermo.select_polynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
                         thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
                         thermo.comment += "\nExtrapolated from Tmin={0} to {1} for comparison.".format(oldLowT, 298.0)
                         logging.warning ("Changing Tmin from {0} to {1} for RMG-generated thermo for {2}".format(oldLowT, 298.0, newSpecies))
                     continue
                 # else it's not useful to us
                 # identify any reactions it's involved in
-                for rxn in rm.newReactionList:
+                for rxn in rm.new_reaction_list:
                     if newSpecies in rxn.reactants or newSpecies in rxn.products:
                         reactionsToPrune.add(rxn)
             logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
@@ -2130,11 +2130,11 @@ class ModelMatcher():
                     rm.edge.reactions.remove(rxn)
                 except ValueError:
                     pass  # "It wasn't in the edge. Presumably leaking from a pdep network"
-                rm.newReactionList.remove(rxn)
+                rm.new_reaction_list.remove(rxn)
             reactionsToPrune.clear()
 
-            logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.newReactionList)))
-            reactionsToCheck.update(rm.newReactionList)
+            logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.new_reaction_list)))
+            reactionsToCheck.update(rm.new_reaction_list)
             logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
             logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
 
@@ -2181,8 +2181,8 @@ class ModelMatcher():
                             labelToProcess))
             logging.info("Have now identified {0} of {1} species ({2:.1%}).".format(
                             len(self.identified_labels),
-                            len(self.speciesList),
-                            float(len(self.identified_labels)) / len(self.speciesList)))
+                            len(self.species_list),
+                            float(len(self.identified_labels)) / len(self.species_list)))
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(
                             len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched),
                             len(self.chemkinReactions),
@@ -2192,15 +2192,15 @@ class ModelMatcher():
                             self.identified_unprocessed_labels))
 
             logging.info("Saving chemkin files")
-            rmgpy.chemkin.saveChemkin(rm,
-                               os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
-                               os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin_verbose.txt'),
-                               os.path.join(self.rmg_object.outputDirectory, 'identified_RMG_dictionary.txt'))
+            rmgpy.chemkin.save_chemkin(rm,
+                               os.path.join(self.rmg_object.output_directory, 'identified_chemkin.txt'),
+                               os.path.join(self.rmg_object.output_directory, 'identified_chemkin_verbose.txt'),
+                               os.path.join(self.rmg_object.output_directory, 'identified_RMG_dictionary.txt'))
 
             while len(self.identified_unprocessed_labels) == 0:
                 if not self.manualMatchesToProcess :
                     logging.info("Updating exported library files...")
-                    self.saveLibraries()
+                    self.save_libraries()
 
                     if self.args.quit_when_exhausted:
                         logging.warning("--quit_when_exhausted option detected."
@@ -2262,7 +2262,7 @@ class ModelMatcher():
 
         print "Finished reading"
         counter = 0
-        for species in self.speciesList:
+        for species in self.species_list:
             counter += 1
             print counter, species,
             if species.label not in self.speciesDict_rmg:
@@ -2473,7 +2473,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append(
                 "<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(
                     ckl=urllib2.quote(chemkinLabel),
-                    smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
+                    smi=urllib2.quote(rmgSpec.molecule[0].to_smiles())))
             output.append(
                 "<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(
                     ckl=urllib2.quote(chemkinLabel)))
@@ -2545,10 +2545,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output = [
             self.html_head(),
             '<h1>{0} Unconfirmed species</h1><table style="width:500px">'.format(
-                len(self.speciesList) - len(self.identified_labels) -
+                len(self.species_list) - len(self.identified_labels) -
                 len(self.manualMatchesToProcess))
         ]
-        for label in [s.label for s in self.speciesList]:
+        for label in [s.label for s in self.species_list]:
             if label in self.identified_labels:
                 continue
             for pair in self.manualMatchesToProcess:
@@ -2578,7 +2578,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         img = self._img
         output = [
             self.html_head(),
-            '<h1>All {0} Species</h1><table>'.format(len(self.speciesList))
+            '<h1>All {0} Species</h1><table>'.format(len(self.species_list))
         ]
         tentativeDict = dict((match['label'],
                               (match['species'], match['enthalpy']))
@@ -2587,7 +2587,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             (chemkinLabel, rmgSpec)
             for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess)
 
-        labels = [s.label for s in self.speciesList]
+        labels = [s.label for s in self.species_list]
         if sort == 'name':
             labels.sort()
             output.append('Sorted by name. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=formula">formula</a>.')
@@ -2614,7 +2614,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         label=chemkinLabel,
                         delH=deltaH,
                         Hsource=rmgSpec.thermo.comment,
-                        smi='<br/>'.join((m.toSMILES() for m in rmgSpec.molecule))
+                        smi='<br/>'.join((m.to_smiles() for m in rmgSpec.molecule))
                     ))
                 if chemkinLabel in self.identified_unprocessed_labels:
                     output.append("<td>Identified, waiting to react.</td>")
@@ -2633,7 +2633,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         label=chemkinLabel,
                         delH=deltaH,
                         Hsource=rmgSpec.thermo.comment,
-                        smi='<br/>'.join((m.toSMILES() for m in rmgSpec.molecule))
+                        smi='<br/>'.join((m.to_smiles() for m in rmgSpec.molecule))
                     ))
                 output.append(
                     "<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(
@@ -2644,7 +2644,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append(
                     "<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a> {votes}</td></tr>".format(
                         ckl=urllib2.quote(chemkinLabel),
-                        smi=urllib2.quote(rmgSpec.molecule[0].toSMILES()),
+                        smi=urllib2.quote(rmgSpec.molecule[0].to_smiles()),
                         votes=votes))
             else:
                 output.append(
@@ -2682,7 +2682,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     pass
                 elif token in self.speciesDict_rmg:
                     token = img(self.speciesDict_rmg[token])
-                elif token in self.speciesDict:
+                elif token in self.species_dict:
                     token = "<a href='/propose.html?ckLabel={escaped}' class='unid'>{plain}</a>".format(
                         escaped=urllib2.quote(token),
                         plain=token)
@@ -2854,7 +2854,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<tr><td>SMILES</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
                 output.append("<td style='font-size: small; white-space: nowrap;'>{smiles}</td>".format(smiles='<br />'.join(
-                    [m.toSMILES() for m in matchingSpecies.molecule])))
+                    [m.to_smiles() for m in matchingSpecies.molecule])))
             output.append("</tr>")
 
             output.append("<tr><td>Action</td>")
@@ -3011,11 +3011,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def edit_html(self, ckLabel=None, SMILES=None):
         smiles = str(SMILES)
         proposal = Molecule(SMILES=str(smiles))
-        species, isnew = self.rmg_object.reactionModel.makeNewSpecies(proposal)
+        species, isnew = self.rmg_object.reaction_model.make_new_species(proposal)
         species.generate_resonance_structures()
         self.drawSpecies(species)
         if isnew:
-            species.thermo = generateThermoData(species)
+            species.thermo = generate_thermo_data(species)
 
         # get a list of names from Cactus
         url = "http://cactus.nci.nih.gov/chemical/structure/{0}/names".format(urllib2.quote(smiles))
@@ -3036,7 +3036,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             </form>
             """.format(lab=ckLabel, smi=smiles))
         username = self.getUsername()
-        if self.formulaDict[ckLabel] == species.molecule[0].getFormula():
+        if self.formulaDict[ckLabel] == species.molecule[0].get_formula():
             if not self.setTentativeMatch(ckLabel, species, username=username):
                 # first attempt removed the old tentative match
                 # second attempt should add the new!
@@ -3048,7 +3048,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     lab=ckLabel,
                     f1=self.formulaDict[ckLabel],
                     smi=smiles,
-                    f2=species.molecule[0].getFormula()))
+                    f2=species.molecule[0].get_formula()))
         output.append("<div style='margin: 2em;'>{img}</div>".format(
             img=self._img(species)))
         output.append(
@@ -3080,16 +3080,16 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def block_html(self, ckLabel=None, rmgLabel=None):
         #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
         chemical_formula = self.formulaDict[ckLabel]
-        for rmgSpecies in self.rmg_object.reactionModel.speciesDict[chemical_formula]:
+        for rmgSpecies in self.rmg_object.reaction_model.species_dict[chemical_formula]:
             if str(rmgSpecies) == rmgLabel:
                 break
         else:
             raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmgLabel))
 
         if ckLabel not in self.votes:
-            logging.warning("Blocking a match that had no votes for anything: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+            logging.warning("Blocking a match that had no votes for anything: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
         elif rmgSpecies not in self.votes[ckLabel] :
-            logging.warning("Blocking a match that had no votes for this match: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+            logging.warning("Blocking a match that had no votes for this match: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
         assert str(rmgSpecies) == rmgLabel, "Didn't find the right RMG species!"
 
         self.blockMatch(ckLabel, rmgSpecies, username=self.getUsername())
@@ -3101,7 +3101,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def confirm_html(self, ckLabel=None, rmgLabel=None):
         #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
         chemical_formula = self.formulaDict[ckLabel]
-        for rmgSpecies in self.rmg_object.reactionModel.speciesDict[chemical_formula]:
+        for rmgSpecies in self.rmg_object.reaction_model.species_dict[chemical_formula]:
             if str(rmgSpecies) == rmgLabel:
                 break
         else:
@@ -3110,11 +3110,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         if ckLabel not in self.votes:
             logging.warning(
                 "Confirming a match that had no votes for anything: {0} is {1} with SMILES {2}".format(
-                    ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+                    ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
         elif rmgSpecies not in self.votes[ckLabel]:
             logging.warning(
                 "Confirming a match that had no votes for this match: {0} is {1} with SMILES {2}".format(
-                    ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+                    ckLabel, rmgLabel, rmgSpecies.molecule[0].to_smiles()))
 
         assert str(rmgSpecies) == rmgLabel, "Didn't find the right RMG species!"
 
@@ -3183,7 +3183,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
     @cherrypy.expose
     def progress_json(self):
-        total = len(self.speciesList)
+        total = len(self.species_list)
         identified = len(self.identified_labels) + len(self.manualMatchesToProcess)
         unprocessed = len(self.identified_unprocessed_labels) + len(self.manualMatchesToProcess)
         tentative = len(self.tentativeMatches)
@@ -3311,7 +3311,7 @@ def runCherryPyServer(args):
 if __name__ == '__main__':
 
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    args = parse_command_line_arguments()
     os.path.exists(args.output_directory) or os.makedirs(args.output_directory)
 
     # Initialize the logging system (resets the RMG.log file)
@@ -3319,7 +3319,7 @@ if __name__ == '__main__':
     if args.debug: level = 0
     elif args.verbose: level = logging.DEBUG
     elif args.quiet: level = logging.WARNING
-    initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
+    initialize_log(level, os.path.join(args.output_directory, 'RMG.log'))
 
 
     mm = ModelMatcher(args)
