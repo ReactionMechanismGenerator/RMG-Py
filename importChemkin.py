@@ -397,7 +397,7 @@ class ModelMatcher():
                 label = str(reaction)
             )
             if reaction.kinetics.comment:
-                entry.long_desc = unicode(reaction.kinetics.comment, 'utf-8', 'replace')
+                entry.long_desc = str(reaction.kinetics.comment, 'utf-8', 'replace')
             else:
                 entry.long_desc = ''
             reaction.kinetics.comment = ''
@@ -1463,7 +1463,7 @@ class ModelMatcher():
         entry.data = thermo
         comment = getattr(thermo, 'comment', '')
         if comment:
-            comment = unicode(comment, 'utf-8', 'replace')
+            comment = str(comment, 'utf-8', 'replace')
             entry.long_desc = comment + '.\n'
         else:
             entry.long_desc = ''
