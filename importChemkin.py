@@ -6,7 +6,7 @@ into RMG-Py style thermo library file.
 Simply pass the paths of the Chemkin files on the 
 command-line, e.g.
 
-    $ python convert_thermo.py --species /path/to/chem1.inp  --thermo /path/to/therm.dat
+    $ python importChemkin.py --species /path/to/chem1.inp  --thermo /path/to/therm.dat
 
 If you supply a --species file (containing a SPECIES block) this is used to limit
 the species converted.
@@ -701,7 +701,7 @@ class ModelMatcher():
         rmg.scratch_directory = args.scratch_directory
         rmgpy.util.make_output_subdirectory(rmg.output_directory, 'species')
         rmg.database_directory = database_dictionary
-        rmg.thermo_libraries = ['primary_thermo_library',
+        rmg.thermo_libraries = ['primaryThermoLibrary',
                                'BurkeH2O2',
                                'DFT_QCI_thermo',
                                'CBS_QB3_1dHR',
@@ -723,7 +723,7 @@ class ModelMatcher():
             rmgpy.rmg.input.pressure_dependence(
                 method='modified strong collision',
                 maximum_grain_size=(0.5, 'kcal/mol'),
-                minimum_number_of_grains=250,
+                minimumNumberOfGrains=250,
                 temperatures=(300, 2000, 'K', 8),
                 pressures=(0.01, 100, 'atm', 3),
                 interpolation=('pdeparrhenius',),
@@ -737,10 +737,10 @@ class ModelMatcher():
             rmgpy.rmg.input.quantum_mechanics(
                 software='mopac',
                 method='pm3',
-                file_store=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMfiles'),  # ToDo: fix this
-                scratch_directory=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMscratch'),
-                only_cyclics=True,
-                max_radical_number=0,
+                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMfiles'),  # ToDo: fix this
+                scratchDirectory=os.path.join(os.path.normpath(os.path.join(rmgpy.get_path(), '..')), 'QMscratch'),
+                onlyCyclics=True,
+                maxRadicalNumber=0,
             )
 
         rmg.load_database()
