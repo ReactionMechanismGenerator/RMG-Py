@@ -436,7 +436,7 @@ class ModelMatcher():
         reactive_species = set()
         reactive_molecules = set()
         for s in ['N#N', '[Ar]', ]:
-            reactive_molecules.add(Molecule(SMILES=s))
+            reactive_molecules.add(Molecule(smiles=s))
         for reaction in self.chemkin_reactions:
             for species in reaction.reactants:
                 reactive_species.add(species)
@@ -518,7 +518,7 @@ class ModelMatcher():
                 continue
             formula = self.formula_dict[species_label]
             for smiles, username in blocked_smiles[species_label].iteritems():
-                molecule = Molecule(SMILES=smiles)
+                molecule = Molecule(smiles=smiles)
                 if formula != molecule.get_formula():
                     raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.get_formula(), formula))
                 logging.info("Blocking {0} from being {1}".format(species_label, smiles))
@@ -670,7 +670,7 @@ class ModelMatcher():
                 except:
                     logging.exception(adjlist)
             else:
-                molecule = Molecule(SMILES=smiles)
+                molecule = Molecule(smiles=smiles)
             if formula != molecule.get_formula():
                 raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}. \n{4}".format(species_label, smiles, molecule.get_formula(), formula, molecule.to_adjacency_list()))
             logging.info("I think {0} is {1} based on its label".format(species_label, smiles))
@@ -1081,13 +1081,13 @@ class ModelMatcher():
             else:
                 continue
             self.smiles_dict[species_label] = smiles
-            while formula != Molecule(SMILES=smiles).get_formula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).get_formula(), formula))
+            while formula != Molecule(smiles=smiles).get_formula():
+                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
             species = self.species_dict[species_label]
             if smiles == '[C]':  # The SMILES is interpreted as a quintuplet and we can't estimate the thermo
                 species.molecule = [Molecule().from_adjacency_list('1 C u0 p2 c0')]
             else:
-                species.molecule = [Molecule(SMILES=smiles)]
+                species.molecule = [Molecule(smiles=smiles)]
             species.generate_resonance_structures()
             identified_labels.append(species_label)
             self.save_match_to_file(species_label, species)
@@ -1103,11 +1103,11 @@ class ModelMatcher():
             formula = self.formula_dict[species_label]
             print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
             smiles = raw_input('What is its SMILES?\n')
-            while formula != Molecule(SMILES=smiles).get_formula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).get_formula(), formula))
+            while formula != Molecule(smiles=smiles).get_formula():
+                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
             self.smiles_dict[species_label] = smiles
             species = self.species_dict[species_label]
-            species.molecule = [Molecule(SMILES=smiles)]
+            species.molecule = [Molecule(smiles=smiles)]
             species.generate_resonance_structures()
             self.identified_labels.append(species_label)
 
@@ -2471,7 +2471,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     ckl=urllib2.quote(chemkin_label),
                     rmgl=urllib2.quote(str(rmg_spec))))
             output.append(
-                "<td><a href='/edit.html?ck_label={ckl}&SMILES={smi}'>edit</a></td>".format(
+                "<td><a href='/edit.html?ck_label={ckl}&smiles={smi}'>edit</a></td>".format(
                     ckl=urllib2.quote(chemkin_label),
                     smi=urllib2.quote(rmg_spec.molecule[0].to_smiles())))
             output.append(
@@ -2642,7 +2642,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 votes = "/ <a href='/votes2.html#{0}'>check votes</a>".format(
                     urllib2.quote(chemkin_label)) if chemkin_label in self.votes else "No votes yet. "
                 output.append(
-                    "<a href='/edit.html?ck_label={ckl}&SMILES={smi}'>edit</a> {votes}</td></tr>".format(
+                    "<a href='/edit.html?ck_label={ckl}&smiles={smi}'>edit</a> {votes}</td></tr>".format(
                         ckl=urllib2.quote(chemkin_label),
                         smi=urllib2.quote(rmg_spec.molecule[0].to_smiles()),
                         votes=votes))
@@ -3008,9 +3008,9 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return '\n'.join(output)
 
     @cherrypy.expose
-    def edit_html(self, ck_label=None, SMILES=None):
+    def edit_html(self, ck_label=None, smiles=None):
         smiles = str(SMILES)
-        proposal = Molecule(SMILES=str(smiles))
+        proposal = Molecule(smiles=str(smiles))
         species, isnew = self.rmg_object.reaction_model.make_new_species(proposal)
         species.generate_resonance_structures()
         self.draw_species(species)
