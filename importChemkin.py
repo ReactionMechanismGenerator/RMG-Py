@@ -1082,7 +1082,7 @@ class ModelMatcher():
                 continue
             self.smiles_dict[species_label] = smiles
             while formula != Molecule(smiles=smiles).get_formula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
+                smiles = input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
             species = self.species_dict[species_label]
             if smiles == '[C]':  # The SMILES is interpreted as a quintuplet and we can't estimate the thermo
                 species.molecule = [Molecule().from_adjacency_list('1 C u0 p2 c0')]
@@ -1102,9 +1102,9 @@ class ModelMatcher():
             species_label = chemkin_species.label
             formula = self.formula_dict[species_label]
             print("Species {species} has formula {formula}".format(species=species_label, formula=formula))
-            smiles = raw_input('What is its SMILES?\n')
+            smiles = input('What is its SMILES?\n')
             while formula != Molecule(smiles=smiles).get_formula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
+                smiles = input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(smiles=smiles).get_formula(), formula))
             self.smiles_dict[species_label] = smiles
             species = self.species_dict[species_label]
             species.molecule = [Molecule(smiles=smiles)]
@@ -1126,9 +1126,9 @@ class ModelMatcher():
                 Nvotes = len(self.votes[species_label][rmg_species])
                 all_possible_chemkin_species = [ck for ck, matches in self.votes.iteritems() if rmg_species in matches]
                 print("{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmg_species.label, dH, Nvotes, all_possible_chemkin_species))
-            chosen_id = raw_input('What is it? (see voting info above)\n')
+            chosen_id = input('What is it? (see voting info above)\n')
             while chosen_id not in possible_indices_str:
-                chosen_id = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possible_indices_str)))
+                chosen_id = input("That wasn't one of {0}. Try again:\n".format(','.join(possible_indices_str)))
 
             rmg_species = matches_dict[int(chosen_id)]
             logging.info("Based on user input, matching {0} with {1!s}".format(species_label, rmg_species))
@@ -2242,7 +2242,7 @@ class ModelMatcher():
             and terminal_input_enabled):
                 self.print_voting(pruned_votes)
                 logging.info("Run out of options. Asking for help!")
-                species_label = raw_input('Which label would you like to identify? (see voting info above)\n')
+                species_label = input('Which label would you like to identify? (see voting info above)\n')
                 while True:
                     if species_label not in self.formula_dict:
                         print("That's not a known species label")
@@ -2252,7 +2252,7 @@ class ModelMatcher():
                         print("We have no candidate matches for that label.")
                     else:  # label is valid, break out of while loop.
                         break
-                    species_label = raw_input("Try again:\n")
+                    species_label = input("Try again:\n")
                 possible_matches = votes[species_label].keys()
                 chemkin_label, matching_species = self.ask_for_match_id(species_label, possible_matches)
                 invalidated_reactions = self.get_invalidated_reactions_and_remove_votes(chemkin_label, matching_species)
