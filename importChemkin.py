@@ -482,7 +482,7 @@ class ModelMatcher():
         if not os.path.exists(self.blocked_matches_file):
             logging.info("Blocked Matches file does not exist. Will create.")
             return
-        #: blocked_smiles[chemkin_label][SMILES] = username_who_blocked_it
+        #: blocked_smiles[chemkin_label][smiles] = username_who_blocked_it
         blocked_smiles = {}
         line = None
         with open(self.blocked_matches_file) as f:
@@ -1098,7 +1098,7 @@ class ModelMatcher():
 
         self.identified_labels.extend(identified_labels)
 
-    def ask_for_matchSMILES(self, chemkin_species):
+    def ask_for_match_smiles(self, chemkin_species):
             species_label = chemkin_species.label
             formula = self.formula_dict[species_label]
             print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
@@ -3009,7 +3009,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
     @cherrypy.expose
     def edit_html(self, ck_label=None, smiles=None):
-        smiles = str(SMILES)
+        smiles = str(smiles)
         proposal = Molecule(smiles=str(smiles))
         species, isnew = self.rmg_object.reaction_model.make_new_species(proposal)
         species.generate_resonance_structures()
