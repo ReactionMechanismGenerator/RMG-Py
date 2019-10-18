@@ -98,8 +98,8 @@ def convert_formula(formula_dict):
     rmgpy.molecule.Molecule class.
     """
 
-#    elements = {e.capitalize(): n for e, n in formula_dict.iteritems() if n > 0}
-    elements = dict((e.capitalize(), n) for (e, n) in formula_dict.iteritems() if n > 0)
+#    elements = {e.capitalize(): n for e, n in formula_dict.items() if n > 0}
+    elements = dict((e.capitalize(), n) for (e, n) in formula_dict.items() if n > 0)
     has_carbon = 'C' in elements
     has_hydrogen = 'H' in elements
     # Use the Hill system to generate the formula
@@ -371,10 +371,10 @@ class ModelMatcher():
         assert formula_dict, "Didn't read any thermo data from {0}".format(thermo_file)
 
         # Save the formula_dict, converting from {'c':1,'h':4} into "CH4" in the process.
-        #self.formula_dict = {label: convert_formula(formula) for label, formula in formula_dict.iteritems()}
+        #self.formula_dict = {label: convert_formula(formula) for label, formula in formula_dict.items()}
         self.formula_dict = dict(
             (label, convert_formula(formula))
-            for (label, formula) in formula_dict.iteritems())
+            for (label, formula) in formula_dict.items())
         # thermo_dict contains original thermo as read from chemkin thermo file
         #self.thermo_dict = {s.label: s.thermo for s in species_dict.values() }
         self.thermo_dict = dict((s.label, s.thermo)
@@ -517,7 +517,7 @@ class ModelMatcher():
                 logging.info("{0} is not in the chemkin model. Skipping".format(species_label))
                 continue
             formula = self.formula_dict[species_label]
-            for smiles, username in blocked_smiles[species_label].iteritems():
+            for smiles, username in blocked_smiles[species_label].items():
                 molecule = Molecule(smiles=smiles)
                 if formula != molecule.get_formula():
                     raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.get_formula(), formula))
@@ -1124,7 +1124,7 @@ class ModelMatcher():
                 rmg_species = matches_dict[index]
                 dH = self.get_enthalpy_discrepancy(species_label, rmg_species)
                 Nvotes = len(self.votes[species_label][rmg_species])
-                all_possible_chemkin_species = [ck for ck, matches in self.votes.iteritems() if rmg_species in matches]
+                all_possible_chemkin_species = [ck for ck, matches in self.votes.items() if rmg_species in matches]
                 print("{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmg_species.label, dH, Nvotes, all_possible_chemkin_species))
             chosen_id = input('What is it? (see voting info above)\n')
             while chosen_id not in possible_indices_str:
@@ -1256,7 +1256,7 @@ class ModelMatcher():
         to all previously identified species in other libraries"""
 
         formula_to_labels_dict = {}
-        for label, formula in self.formula_dict.iteritems():
+        for label, formula in self.formula_dict.items():
             if formula not in formula_to_labels_dict:
                 formula_to_labels_dict[formula] = [label]
             else:
@@ -1265,7 +1265,7 @@ class ModelMatcher():
         for library_name in self.thermo_libraries_to_check:
             logging.info("Looking for matches in thermo library "+library_name)
             library = self.rmg_object.database.thermo.libraries[library_name]
-            for __, entry in library.entries.iteritems():
+            for __, entry in library.entries.items():
                 formula = entry.item.get_formula()
                 if formula in formula_to_labels_dict:
                     for ck_label in formula_to_labels_dict[formula]:
@@ -1490,7 +1490,7 @@ class ModelMatcher():
             for rxn in rxns:
                 reactions_to_re_check.add(rxn[1])
         # Then remove the rmg_species from any voting dictionaries it is in
-        for ck, possibles in self.votes.iteritems():
+        for ck, possibles in self.votes.items():
             for rxn in possibles.pop(rmg_species, {}):
                 reactions_to_re_check.add(rxn[1])
         return reactions_to_re_check
@@ -1518,11 +1518,11 @@ class ModelMatcher():
                         chemkin_reaction, edge_reaction.family, edge_reaction))
                     if self.suggested_matches:
                         logging.info(" suggesting new species match: {0!r}".format(
-                           dict((l, str(s)) for (l, s) in self.suggested_matches.iteritems())))
+                           dict((l, str(s)) for (l, s) in self.suggested_matches.items())))
                     else:
                         logging.info(" suggesting no new species matches.")
 
-                    for chemkin_label, rmg_species in self.suggested_matches.iteritems():
+                    for chemkin_label, rmg_species in self.suggested_matches.items():
                         if chemkin_label not in votes:
                             votes[chemkin_label] = {rmg_species: set([(chemkin_reaction, edge_reaction)])}
                         else:
@@ -1705,13 +1705,13 @@ class ModelMatcher():
 
         # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
         ck_votes = dict()
-        for chemkin_label, possible_matches in votes.iteritems():
+        for chemkin_label, possible_matches in votes.items():
             ck_votes[chemkin_label] = dict(
                     (matching_species, set([r[0] for r in voting_reactions]))
-                    for (matching_species, voting_reactions) in possible_matches.iteritems()
+                    for (matching_species, voting_reactions) in possible_matches.items()
                    )
 
-        for chemkin_label, possible_matches in ck_votes.iteritems():
+        for chemkin_label, possible_matches in ck_votes.items():
             for rmg_species in possible_matches.keys():
                 dH = self.get_enthalpy_discrepancy(chemkin_label, rmg_species)
                 if abs(dH) > 150:
@@ -1720,7 +1720,7 @@ class ModelMatcher():
                                   ).format(chemkin_label, rmg_species, dH))
                     del(possible_matches[rmg_species])
 
-        for chemkin_label, possible_matches in ck_votes.iteritems():
+        for chemkin_label, possible_matches in ck_votes.items():
             if len(possible_matches) == 0:
                 logging.info("No remaining matches for {0}".format(chemkin_label))
                 continue
@@ -1729,7 +1729,7 @@ class ModelMatcher():
                 continue
             common_votes = None
             most_votes = 0
-            for matching_species, voting_reactions in possible_matches.iteritems():
+            for matching_species, voting_reactions in possible_matches.items():
                 most_votes = max(most_votes, len(voting_reactions))
                 if common_votes is None:
                     common_votes = set(voting_reactions)  # make a copy!!
@@ -1741,7 +1741,7 @@ class ModelMatcher():
                         len(common_votes), len(possible_matches), chemkin_label))
                 pruned_votes[chemkin_label] = dict(
                     (matching_species, voting_reactions.difference(common_votes))
-                    for (matching_species, voting_reactions) in possible_matches.iteritems()
+                    for (matching_species, voting_reactions) in possible_matches.items()
                     if voting_reactions.difference(common_votes))
             else:
                 pruned_votes[chemkin_label] = possible_matches
@@ -1756,8 +1756,8 @@ class ModelMatcher():
         chemkin_controversy = dict((label, 0) for label in votes.iterkeys())
         rmg_controversy = {}
         flat_votes = {}
-        for chemkin_label, possible_matches in votes.iteritems():
-            for matching_species, voting_reactions in possible_matches.iteritems():
+        for chemkin_label, possible_matches in votes.items():
+            for matching_species, voting_reactions in possible_matches.items():
                 self.draw_species(matching_species)
                 flat_votes[(chemkin_label, matching_species)] = voting_reactions
                 chemkin_controversy[chemkin_label] += len(voting_reactions)
@@ -2154,7 +2154,7 @@ class ModelMatcher():
                 self.draw_all_candidate_species()
 
                 new_matches = []
-                for chemkin_label, possible_matches in pruned_votes.iteritems():
+                for chemkin_label, possible_matches in pruned_votes.items():
                     if len(possible_matches) == 1:
                         matching_species, voting_reactions = possible_matches.items()[0]
                         logging.info("\n_only one suggested match for {0}: {1!s}".format(chemkin_label, matching_species))
@@ -2162,7 +2162,7 @@ class ModelMatcher():
                         logging.info("With {0} unique voting reactions:".format(len(voting_reactions)))
                         for reaction in voting_reactions:
                             logging.info("  {0!s}".format(reaction))
-                        all_possible_chemkin_species = [ck for ck, matches in pruned_votes.iteritems() if matching_species in matches]
+                        all_possible_chemkin_species = [ck for ck, matches in pruned_votes.items() if matching_species in matches]
                         if len(all_possible_chemkin_species) == 1:
                             logging.info("Only one chemkin species has this match (after pruning).")
                             self.set_tentative_match(chemkin_label, matching_species)
@@ -2322,13 +2322,13 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         blocked_matches = self.blocked_matches
         output = [self.html_head()]
 
-        count = sum([len(blocks) for label, blocks in blocked_matches.iteritems()])
+        count = sum([len(blocks) for label, blocks in blocked_matches.items()])
         output.append('<h1>{0} Blocked Matches</h1><table style="width:500px">'.format(count))
 
         blocked_labels = sorted(blocked_matches.keys())
         for ck_label in blocked_labels:
             blocks = blocked_matches[ck_label]
-            for rmg_species, username in blocks.iteritems():
+            for rmg_species, username in blocks.items():
                 output.append("<tr><td>{label}</td><td>{img}</td><td>{user}</td></tr>".format(
                                 img=img(rmg_species),
                                 label=ck_label,
@@ -2357,7 +2357,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         img = self._img
         output = [self.html_head(), '<h1>{0} Thermochemistry Matches</h1>'.format(len(self.thermo_matches))]
         output.append('<table style="width:800px; border-collapse:collapse;">')
-        for chemkin_label, rmg_specs_dict in self.thermo_matches.iteritems():
+        for chemkin_label, rmg_specs_dict in self.thermo_matches.items():
             label = chemkin_label
             if len(rmg_specs_dict) > 1:
                 label = "<span class='badmatch'>{0}</span>".format(label)
@@ -2369,7 +2369,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     return "<span class='badmatch'>{0}</span>".format(name)
 
             first_of_this_name = True
-            for rmg_spec, libraries in rmg_specs_dict.iteritems():
+            for rmg_spec, libraries in rmg_specs_dict.items():
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=format_spec(spec), lib=lib) for (lib, spec) in libraries])
                 output.append('<tr style="border-top: 1px solid black;">' if first_of_this_name else '<tr>')
                 first_of_this_name = False
@@ -2399,8 +2399,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output = [self.html_head(), '<h1>Thermochemistry Matches with model {}</h1>'.format(model)]
         output.append('<table style="width:800px; border-collapse:collapse;">')
         to_confirm = []
-        for chemkin_label, rmg_specs_dict in self.thermo_matches.iteritems():
-            for rmg_spec, libraries in rmg_specs_dict.iteritems():
+        for chemkin_label, rmg_specs_dict in self.thermo_matches.items():
+            for rmg_spec, libraries in rmg_specs_dict.items():
                 for library_name, species_name in libraries:
                     if library_name == model and species_name == chemkin_label:
                         break
@@ -2726,7 +2726,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 continue
             auto_confirm = True  # for now...
             chemkin_reactions = self.chemkin_reactions_dict[chemkin_label]
-            for matching_species, voting_reactions in possible_matches.iteritems():
+            for matching_species, voting_reactions in possible_matches.items():
                 pass  # we know at this point there is only one iteritem
             fraction_matched = float(len(voting_reactions)) / len(chemkin_reactions)
             output.append('<td>{} of {} = {:.0f}%</td>'.format(len(voting_reactions), len(chemkin_reactions), fraction_matched * 100))
@@ -2793,8 +2793,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             user = match['username']
             user_proposed_matches[label] = (species, user)
 
-        for chemkin_label, possible_matches in votes.iteritems():
-            for matching_species, voting_reactions in possible_matches.iteritems():
+        for chemkin_label, possible_matches in votes.items():
+            for matching_species, voting_reactions in possible_matches.items():
                 flat_votes[(chemkin_label, matching_species)] = voting_reactions
                 chemkin_controversy[chemkin_label] += len(voting_reactions)
                 rmg_controversy[matching_species] = rmg_controversy.get(matching_species, 0) + len(voting_reactions)
@@ -2837,7 +2837,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             for chemkin_reaction in chemkin_reactions:
                 this_reaction_votes_for = dict()
                 my_voting_chemkin_reactions[chemkin_reaction] = this_reaction_votes_for
-                for matching_species, voting_reactions in possible_matches.iteritems():
+                for matching_species, voting_reactions in possible_matches.items():
                     for (chemkin_rxn, rmg_rxn) in voting_reactions:
                         if (chemkin_reaction == chemkin_rxn):
                             if matching_species in this_reaction_votes_for:
@@ -2953,8 +2953,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         def replacer(match):
             return self._img(match.group(1))
 
-        for chemkin_label, possible_matches in votes.iteritems():
-            for matching_species, voting_reactions in possible_matches.iteritems():
+        for chemkin_label, possible_matches in votes.items():
+            for matching_species, voting_reactions in possible_matches.items():
                 flat_votes[(chemkin_label, matching_species)] = voting_reactions
                 chemkin_controversy[chemkin_label] += len(voting_reactions)
                 rmg_controversy[matching_species] = rmg_controversy.get(matching_species, 0) + len(voting_reactions)
