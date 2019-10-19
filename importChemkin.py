@@ -326,14 +326,17 @@ class ModelMatcher():
             logging.info("Reading species list...")
             species_list = []
             with open(species_file) as f:
+                position_before_line = f.tell()
                 line0 = f.readline()
                 while line0 != '':
                     line = remove_comment_from_line(line0)[0]
                     tokens_upper = line.upper().split()
                     if tokens_upper and tokens_upper[0] in ('SPECIES', 'SPEC'):
+                        # We've found the start of the SPECIES block
                         # Unread the line (we'll re-read it in read_reaction_block())
-                        f.seek(-len(line0), 1)
+                        f.seek(position_before_line)
                         read_species_block(f, species_dict, species_aliases, species_list)
+                    position_before_line = f.tell()
                     line0 = f.readline()
         else:
             logging.info("No species file to limit species. Will read everything in thermo file")
@@ -352,6 +355,7 @@ class ModelMatcher():
         #import codecs
         #with codecs.open(thermo_file, "r", "utf-8") as f:
         with open(thermo_file) as f:
+            position_before_line = f.tell()
             line0 = f.readline()
             while line0 != '':
                 line = remove_comment_from_line(line0)[0]
@@ -359,13 +363,14 @@ class ModelMatcher():
                 if tokens_upper and tokens_upper[0].startswith('THER'):
                     found_thermo_block = True
                     # Unread the line (we'll re-read it in read_thermo_block())
-                    f.seek(-len(line0), 1)
+                    f.seek(position_before_line)
                     try:
                         formula_dict = read_thermo_block(f, species_dict)  # updates species_dict in place
                     except:
                         logging.error("Error reading thermo block around line:\n" + f.readline())
                         raise
                     assert formula_dict, "Didn't read any thermo data"
+                position_before_line = f.tell()
                 line0 = f.readline()
         assert found_thermo_block, "Couldn't find a line beginning with THERMO or THERM or THER in {0}".format(thermo_file)
         assert formula_dict, "Didn't read any thermo data from {0}".format(thermo_file)
