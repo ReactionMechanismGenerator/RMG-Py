@@ -2159,7 +2159,7 @@ class ModelMatcher():
                 new_matches = []
                 for chemkin_label, possible_matches in pruned_votes.items():
                     if len(possible_matches) == 1:
-                        matching_species, voting_reactions = possible_matches.items()[0]
+                        matching_species, voting_reactions = list(possible_matches.items())[0]
                         logging.info("\n_only one suggested match for {0}: {1!s}".format(chemkin_label, matching_species))
                         display(matching_species)
                         logging.info("With {0} unique voting reactions:".format(len(voting_reactions)))
