@@ -401,10 +401,7 @@ class ModelMatcher():
                 data = reaction.kinetics,
                 label = str(reaction)
             )
-            if reaction.kinetics.comment:
-                entry.long_desc = str(reaction.kinetics.comment, 'utf-8', 'replace')
-            else:
-                entry.long_desc = ''
+            entry.long_desc = reaction.kinetics.comment or ''
             reaction.kinetics.comment = ''
             temporary_library.entries[index+1] = entry
             reaction.kinetics = None
@@ -2019,7 +2016,7 @@ class ModelMatcher():
         try:
             with codecs.open('source.txt', encoding='utf-8', errors='replace') as f:
                 source = f.read()
-                source = source.encode('ascii', 'replace')
+                source = str(source.encode('ascii', 'replace'))
                 print(source)
         except IOError:
             source = "Unknown source"
