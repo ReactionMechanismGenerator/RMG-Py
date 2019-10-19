@@ -1808,7 +1808,9 @@ class ModelMatcher():
         import rmgpy.data.rmg
         import itertools
         from rmgpy.rmg.pdep import PDepNetwork
-        from rmgpy.data.kinetics import TemplateReaction, DepositoryReaction, KineticsData
+        from rmgpy.kinetics import KineticsData
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.data.kinetics.depository import DepositoryReaction
 
         database = rmgpy.data.rmg.database
 
