@@ -1713,7 +1713,7 @@ class ModelMatcher():
                    )
 
         for chemkin_label, possible_matches in ck_votes.items():
-            for rmg_species in possible_matches.keys():
+            for rmg_species in list(possible_matches.keys()):
                 dH = self.get_enthalpy_discrepancy(chemkin_label, rmg_species)
                 if abs(dH) > 150:
                     logging.info(("Removing possible match {0} : {1!s} "
