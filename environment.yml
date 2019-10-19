@@ -12,6 +12,7 @@ dependencies:
   - cantera >=2.3.0
   - cclib
   - chemprop
+  - cherrypy
   - coolprop
   - coverage
   - cython >=0.25.2
