@@ -115,7 +115,7 @@ def convert_formula(formula_dict):
             del elements['H']
     # Other atoms are in alphabetical order
     # (This includes hydrogen if carbon is not present)
-    keys = elements.keys()
+    keys = list(elements.keys())
     keys.sort()
     for key in keys:
         count = elements[key]
@@ -2258,7 +2258,7 @@ class ModelMatcher():
                     else:  # label is valid, break out of while loop.
                         break
                     species_label = input("Try again:\n")
-                possible_matches = votes[species_label].keys()
+                possible_matches = list(votes[species_label].keys())
                 chemkin_label, matching_species = self.ask_for_match_id(species_label, possible_matches)
                 invalidated_reactions = self.get_invalidated_reactions_and_remove_votes(chemkin_label, matching_species)
                 reactions_to_check.update(invalidated_reactions)
