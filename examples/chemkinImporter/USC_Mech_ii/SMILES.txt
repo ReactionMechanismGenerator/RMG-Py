@@ -14,3 +14,25 @@ H2C4O	C=C=C=C=O
 pC3H4	CC#C
 CH3CHCH	CC=[CH]
 
+AR	[Ar]
+N2	N#N
+H	[H]
+O	[O]
+OH	[OH]
+HO2	[O]O
+H2	[H][H]
+H2O	O
+H2O2	OO
+O2	[O][O]
+C	[C]
+CH	[CH]
+CH3	[CH3]
+CH4	C
+CH3OH	CO
+CO	[C-]#[O+]
+CO2	O=C=O
+C2H	[C]#C
+C2H4	C=C
+C2H5	C[CH2]
+C2H6	CC
+C3H8	CCC
