@@ -858,6 +858,13 @@ molecular_term_symbol A^2S+
         self.assertEqual(OH_excited1.molecular_term_symbol, 'A^2S+')
         self.assertTrue(OH_excited1.is_isomorphic(OH_excited2))
 
+    def test_from_adjacency_list_none(self):
+        """
+        adjlist: Test that InvalidAdjacencyListError is raised when given an empty adjacency list
+        """
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().from_adjacency_list("")
+
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
     def test_check_hund_rule_fail(self):
