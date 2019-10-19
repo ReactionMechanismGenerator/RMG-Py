@@ -2500,7 +2500,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def get_username(self):
         try:
             username = cherrypy.request.cookie['username'].value.strip()
-            username = username.encode('ascii', 'ignore')
+            username = str(username.encode('ascii', 'ignore'),'ascii','replace')
             username = re.sub(r'\s+', ' ', username)
             username = re.sub(r'[^A-Za-z ]+', '_', username)
             return username
