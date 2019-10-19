@@ -9,6 +9,7 @@ dependencies:
   - rmg::cantera >=2.3.0
   - conda-forge::cclib >=1.6.3
   - rmg::chemprop
+  - cherrypy
   - coolprop
   - coverage
   - cython >=0.25.2
