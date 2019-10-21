@@ -11,52 +11,69 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     bash Anaconda3-2019.07-Linux-x86_64.sh
 
-   **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not need to install Microsoft VSCode (but feel free to if you are looking for a lightweight IDE).
+   **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home
+   directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not
+   need to install Microsoft VSCode (but feel free to if you are looking for a lightweight IDE).
 
-#. Install `Git <https://git-scm.com/>`_, the open source version control package through the terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
+   Note that you should restart your terminal in order for the changes to take effect, as the installer will tell you.
 
-    sudo apt-get install git
-    
+#. There are a few system-level dependencies which are required and should not be installed via Anaconda. These include
+   `Git <https://git-scm.com/>`_ for version control and GNU ``make``, ``gcc``, and ``g++`` for compiling RMG.
 
-#. Make sure that you also have gcc and g++, and make installed (run the lines below if you are uncertain). ::
+   For Linux users, you can check whether these are already installed by simply calling them via the command line, which
+   will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
+   for your system. For example, on Ubuntu you would use the ``apt`` package manager. For Ubuntu 16 and newer, the
+   necessary commands would be ::
 
+    sudo apt install git
     sudo apt install gcc
     sudo apt install g++
     sudo apt install make
 
-#. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an appropriate local directory where you want both RMG-Py and RMG-database folders to exist. ::
+   For MacOS users, these packages will not come preinstalled, but can be easily obtained by installing the XCode Command Line Tools.
+   These are a set of packages relevant for software development which have been bundled together by Apple. The easiest way
+   to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
+   whether or not you would like to install the Command Line Tools.
+
+#. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
+   appropriate local directory where you want both RMG-Py and RMG-database folders to exist. ::
 
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-#. Now create the conda environment for RMG-Py
+#. Now create the conda environment for RMG-Py ::
 
-   For Linux users: ::
-    
     cd RMG-Py
-    source ~/.bashrc
     conda env create -f environment.yml
-    
-   For Mac users: ::
-         
-    cd RMG-Py
-    source ~/.bash_profile
-    conda env create -f environment.yml
+
+   If the command errors due to being unable to find the `conda` command, try closing and re-opening your terminal
+   window in order for the Anaconda settings to take effect.
 
 #. Compile RMG-Py after activating the conda environment ::
 
-    source activate rmg_env
+    conda activate rmg_env
     make
-    
-#. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder. Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder. **Modify your** ``~/.bashrc`` **file by adding the following lines**: ::
 
-    export PYTHONPATH=$PYTHONPATH:YourFolder/RMG-Py/
-    export PATH=$PATH:YourFolder/RMG-Py/
+   Note regarding differences between conda versions: Prior to Anaconda 4.4, the command to activate an environment was
+   ``source activate rmg_env``. It has since been changed to ``conda activate rmg_env`` due to underlying changes to
+   standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
+   run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
+
+#. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
+   Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
+
+   In general, these commands should be placed in the appropriate shell initialization file. For Linux users using
+   bash (the default on Ubuntu), these should be placed in ``~/.bashrc``. For MacOS users using bash (default before MacOS Catalina),
+   these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist. For MacOS users using zsh
+   (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::
+
+    export PYTHONPATH=YourFolder/RMG-Py/:$PYTHONPATH
+    export PATH=YourFolder/RMG-Py/:$PATH
 
    NOTE: Make sure to change ``YourFolder`` to the path leading to the ``RMG-Py`` code. Not doing so will lead to an error stating that python cannot find the module ``rmgpy``.
 
-   be sure to either close and reopen your terminal to refresh your environment variables, or type the following command ::
- 
+   Be sure to either close and reopen your terminal to refresh your environment variables, or type the following command ::
+
     source ~/.bashrc
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
@@ -77,12 +94,17 @@ Test Suite
 
 There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.  
 
-#. **Unit test suite**: this will run all the unit tests in the ``rmgpy`` package ::
+#. **Unit test suite**: this will run all the unit tests in the ``rmgpy`` and ``arkane`` packages ::
 
     cd RMG-Py
     make test
     
-    
+#. **Functional test suite**: this will run all the functional tests in the ``rmgpy`` and ``arkane`` packages ::
+
+    cd RMG-Py
+    make test-functional
+
+
 #. **Database test suite**: this will run the database unit tests to ensure that groups, rate rules, and libraries are well formed ::
 
     cd RMG-Py
