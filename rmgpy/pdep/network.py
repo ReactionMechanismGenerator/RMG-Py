@@ -401,8 +401,8 @@ class Network(object):
             # Update parameters that depend on temperature and pressure if necessary
             if temperature_changed or pressure_changed:
                 self.calculate_collision_model()
-        logging.debug('Finished setting conditions for network {0}.'.format(self.label))
-        logging.debug('The network now has values of {0}'.format(repr(self)))
+        logging.debug('Finished setting conditions for network %s.', self.label)
+        logging.debug('The network now has values of %r', self)
 
     def _get_energy_grains(self, Emin, Emax, grain_size=0.0, grain_count=0):
         """
@@ -781,17 +781,18 @@ class Network(object):
             # If the k(E) values are invalid (in that they give the wrong 
             # kf(T) or kr(T) when integrated), then raise an exception
             if error or warning:
-                logging.warning('For path reaction {0!s}:'.format(rxn))
-                logging.warning('    Expected kf({0:g} K) = {1:g}'.format(temperature, kf_expected))
-                logging.warning('      Actual kf({0:g} K) = {1:g}'.format(temperature, kf_actual))
-                logging.warning('    Expected Keq({0:g} K) = {1:g}'.format(temperature, Keq_expected))
-                logging.warning('      Actual Keq({0:g} K) = {1:g}'.format(temperature, Keq_actual))
+                level = logging.WARNING if error else logging.DEBUG
+                logging.log(level, 'For path reaction %s:', rxn)
+                logging.log(level, '    Expected kf(%g K) = %g', temperature, kf_expected)
+                logging.log(level, '      Actual kf(%g K) = %g', temperature, kf_actual)
+                logging.log(level, '    Expected Keq(%g K) = %g', temperature, Keq_expected)
+                logging.log(level, '      Actual Keq(%g K) = %g', temperature, Keq_actual)
                 if error:
                     raise InvalidMicrocanonicalRateError(
                         'Invalid k(E) values computed for path reaction "{0}".'.format(rxn), k_ratio, Keq_ratio)
                 else:
                     logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for '
-                                    'path reaction "{0}".'.format(rxn))
+                                    'path reaction "%s".', rxn)
 
         # import pylab
         # for prod in range(n_isom):
