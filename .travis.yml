@@ -67,7 +67,7 @@ jobs:
         - conda install -y sphinx
         - conda list
         # Modify setup.py
-        - sed -i '/embedsignature/s/^#//g' setup.py
+        - sed -i '/embedsignature/s/# //g' setup.py
         - make
         - cd documentation
         - export COMMITMESSAGE="Automatic documentation rebuild"
