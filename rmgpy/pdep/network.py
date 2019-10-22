@@ -35,6 +35,7 @@ import logging
 import math
 
 import numpy as np
+from scipy.optimize import curve_fit, brentq
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import NetworkError, InvalidMicrocanonicalRateError
@@ -86,7 +87,7 @@ class Network(object):
     def __init__(self, label='', isomers=None, reactants=None, products=None,
                  path_reactions=None, bath_gas=None, net_reactions=None, T=0.0, P=0.0,
                  e_list=None, j_list=None, n_grains=0, n_j=0, active_k_rotor=True,
-                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None):
+                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None, Emax=None):
         """
         To initialize a Network object for running a pressure dependent job,
         only label, isomers, reactants, products path_reactions and bath_gas are useful,
@@ -120,6 +121,7 @@ class Network(object):
         self.grain_size = grain_size
         self.grain_count = grain_count
         self.E0 = E0
+        self.Emax = Emax
 
         self.valid = False
 
@@ -231,7 +233,8 @@ class Network(object):
         self.active_k_rotor = active_k_rotor
         self.rmgmode = rmgmode
 
-        self.calculate_densities_of_states()
+        self.select_e_max()
+
         logging.debug('Finished initialization for network {0}.'.format(self.label))
         logging.debug('The network now has values of {0}'.format(repr(self)))
 
@@ -436,7 +439,7 @@ class Network(object):
 
         return e_list
 
-    def select_energy_grains(self, T, grain_size=0.0, grain_count=0):
+    def select_energy_grains(self, T, grain_size=0.0, grain_count=0, factor=40.):
         """
         Select a suitable list of energies to use for subsequent calculations.
         This is done by finding the minimum and maximum energies on the 
@@ -459,19 +462,93 @@ class Network(object):
         e_min = np.min(self.E0)
         e_min = math.floor(e_min)  # Round to nearest whole number
 
-        # Use the highest energy on the PES as the initial guess for Emax0
-        e_max = np.max(self.E0)
-        for rxn in self.path_reactions:
-            E0 = float(rxn.transition_state.conformer.E0.value_si)
-            if E0 > e_max: e_max = E0
+        if self.Emax is None:
+            # Use the highest energy on the PES as the initial guess for Emax0
+            e_max = np.max(self.E0)
+            for rxn in self.path_reactions:
+                E0 = float(rxn.transition_state.conformer.E0.value_si)
+                if E0 > e_max:
+                    e_max = E0
 
-        # Choose the actual e_max as many kB * T above the maximum energy on the PES
-        # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
-        e_max += 40. * constants.R * T
+            # Choose the actual Emax as many kB * T above the maximum energy on the PES
+            # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
+            e_max += factor * constants.R * T
+        else:
+            e_max = self.Emax
 
         return self._get_energy_grains(e_min, e_max, grain_size, grain_count)
 
-    def calculate_densities_of_states(self):
+    def select_e_max(self, factor=None, tolerance=0.001):
+        """
+        Select a suitable value for Emax such that the tail of equilibrium
+        distribution has reached a sufficiently small value.
+
+        Args:
+            factor: initial guess for the Emax as a multiple of RT
+            tolerance: desired fraction of the peak value of the distribution
+
+        Returns None, sets self.Emax
+        """
+
+        # Pick the highest energy isomer for analysis
+        isom = self.isomers[np.argmax(self.E0[0:self.n_isom])]
+
+        # Guess a factor based on molecule size
+        if factor is None:
+            if isom.species[0].molecule:
+                heavy_atoms = sum(not atom.is_hydrogen() for atom in isom.species[0].molecule[0].atoms)
+                factor = 5. * heavy_atoms
+            else:
+                factor = 40.
+
+        # Calculate density of states
+        e_list = self.calculate_densities_of_states(factor=factor)
+
+        # Scale e_list for easier fitting
+        e_list_scaled = e_list * 1e-6
+        e_max = e_list[-1]
+        e_max_new = e_max  # Initialize as same value as guess
+
+        # Get the equilibrium distribution for an isomer
+        eq_dist = self.isomers[0].dens_states * np.exp(-e_list / constants.R / self.Tmax)
+
+        max_y = eq_dist.max()
+        max_x = e_list_scaled[np.argmax(eq_dist)]
+
+        # Check if the last point is past the peak of the distribution
+        if eq_dist[-1] < max_y:
+            # Check if the last point is within the tolerance relative to the max
+            if eq_dist[-1] / max_y > tolerance:
+                # Fit a curve to the distribution, y = a*^2 * exp(b*x^2)
+                popt, pcov = curve_fit(
+                    lambda x, a, b, c: a * (np.maximum(x - c, 0)) ** 2 * np.exp(b * (np.maximum(x - c, 0)) ** 2),
+                    e_list_scaled, eq_dist, p0=[max_y, -10, 0]
+                )
+
+                # Find the energy at which we reach the tolerance
+                target = max_y * tolerance
+                a, b, c = popt
+                e_max_scaled = brentq(
+                    lambda x: target - a * (np.maximum(x - c, 0)) ** 2 * np.exp(b * (np.maximum(x - c, 0)) ** 2),
+                    max_x, 5*max_x
+                )
+                e_max_new = e_max_scaled * 1e6
+                # Adjust the factor to reach this energy
+                factor += (e_max_new - e_max) / constants.R / self.Tmax
+
+                # Recalculate density of states
+                e_list = self.calculate_densities_of_states(factor=factor)
+        else:
+            # Manually increment the factor for more accurate fitting
+            factor += 10
+            self.select_e_max(factor=factor)
+
+        # Save Emax
+        self.Emax = e_max_new
+
+        return e_list
+
+    def calculate_densities_of_states(self, factor=40.):
         """
         Calculate the densities of states of each configuration that has states
         data. The densities of states are computed such that they can be
@@ -491,11 +568,11 @@ class Network(object):
 
         # Choose the energies used to compute the densities of states
         # Use Tmin to select the minimum energy and grain size
-        e_list0 = self.select_energy_grains(Tmin, grain_size, grain_count)
+        e_list0 = self.select_energy_grains(Tmin, grain_size, grain_count, factor)
         e_min0 = np.min(e_list0)
         grain_size0 = e_list0[1] - e_list0[0]
         # Use Tmax to select the maximum energy and grain count
-        e_list0 = self.select_energy_grains(Tmax, grain_size, grain_count)
+        e_list0 = self.select_energy_grains(Tmax, grain_size, grain_count, factor)
         grain_count0 = len(e_list0)
         e_max0 = np.max(e_list0)
 
@@ -551,6 +628,8 @@ class Network(object):
         #    if self.products[n].dens_states is not None:
         #        pylab.semilogy(e_list*0.001, self.products[n].dens_states)
         # pylab.show()
+
+        return e_list
 
     def map_densities_of_states(self):
         """
