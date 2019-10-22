@@ -64,6 +64,7 @@ def main():
         'restart': args.restart,
         'walltime': args.walltime,
         'log': level,
+        'maxproc': args.maxproc,
         'kineticsdatastore': args.kineticsdatastore
     }
 
