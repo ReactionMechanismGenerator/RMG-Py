@@ -1,0 +1,24 @@
+Global RMG Settings:
+   database.directory   = /Users/kevin/Documents/Green_Lab/RMG-database/input (Default, relative to RMG-Py source code)
+   test_data.directory  = /Users/kevin/Documents/Green_Lab/RMG-Py/rmgpy/test_data (Default, relative to RMG-Py source code)
+RMG execution initiated at Wed Oct 16 10:08:15 2019
+
+#########################################################
+# RMG-Py - Reaction Mechanism Generator in Python       #
+# Version: 2.4.1                                        #
+# Authors: RMG Developers (rmg_dev@mit.edu)             #
+# P.I.s:   William H. Green (whgreen@mit.edu)           #
+#          Richard H. West (r.west@neu.edu)             #
+# Website: http://reactionmechanismgenerator.github.io/ #
+#########################################################
+
+The current git HEAD for RMG-Py is:
+	b'447ff5e144cffaceb9c6192d6da24c551cbc73b3'
+	b'Mon Oct 14 10:18:14 2019 -0400'
+
+The current git HEAD for RMG-database is:
+	b'77b2c1c599ca17a0fcdf009e993d011128367238'
+	b'Thu Sep 26 15:47:28 2019 -0400'
+
+Error: The input file "/Users/kevin/Documents/Green_Lab/RMG-Py/eg1" could not be opened.
+Check that the file exists and that you have read access.

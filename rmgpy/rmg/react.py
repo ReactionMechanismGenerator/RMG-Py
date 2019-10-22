@@ -31,10 +31,16 @@
 Contains functions for generating reactions.
 """
 import logging
-from multiprocessing import Pool
+# from multiprocessing import Pool
+import multiprocessing as mp
 
 from rmgpy.data.rmg import get_db
 
+
+# import ray 		# from me!
+# ray.shutdown()
+# ray.init()
+# ray.init(ignore_reinit_error=True)
 
 ################################################################################
 
@@ -66,14 +72,35 @@ def react(spc_fam_tuples, procnum=1):
         reactions = list(map(_react_species_star, spc_fam_tuples))
     else:
         logging.info('For reaction generation {0} processes are used.'.format(procnum))
-        p = Pool(processes=procnum)
+        p = mp.Pool(processes=procnum)
         reactions = p.map(_react_species_star, spc_fam_tuples)
+
+
+        # reactions = p.imap(_react_species_star, spc_fam_tuples)		# works!!!	
+        # reactions = p.imap(_react_species_star, spc_fam_tuples[, 2])	# try chunksize = 10. Fails
+
+        ## reactions = p.starmap(_react_species_star(spc_fam_tuples)) 	# doesn't work!
         p.close()
         p.join()
+        
+        #### The below doesn't work
+        # with mp.Pool(processes=procnum) as p:
+        # 	p.map(_react_species_star, spc_fam_tuples)
 
+        # also doesn't work..
+        # p = mp.Process(target=_react_species_star, args = spc_fam_tuples )
+        # p.start()
+        # p.join()
+
+
+
+        ## Testing Ray
+        # reactions = list(map(_react_species_star.remote(spc_fam_tuples),spc_fam_tuples ))
+        # reactions = list(_react_species_star.remote(i) for i in spc_fam_tuples)
+		# ray.get(reactions)
     return reactions
 
-
+# @ray.remote
 def _react_species_star(args):
     """Wrapper to unpack zipped arguments for use with map"""
     return react_species(*args)

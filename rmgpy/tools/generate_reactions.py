@@ -43,6 +43,7 @@ from rmgpy.rmg.main import initialize_log, RMG
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.util import parse_command_line_arguments
 
+import time     # added by me!
 
 def main():
     """
@@ -92,6 +93,8 @@ def execute(rmg, **kwargs):
     """
     rmg.initialize(**kwargs)
 
+    start_time = time.time()    # added by me!
+
     rmg.reaction_model.enlarge(react_edge=True,
                                unimolecular_react=rmg.unimolecular_react,
                                bimolecular_react=rmg.bimolecular_react,
@@ -99,6 +102,10 @@ def execute(rmg, **kwargs):
     # Show all core and edge species and reactions in the output
     rmg.reaction_model.output_species_list.extend(rmg.reaction_model.edge.species)
     rmg.reaction_model.output_reaction_list.extend(rmg.reaction_model.edge.reactions)
+
+    end_time = time.time()      # added by me!
+    print('Elapsed time for reaction was {}'.format(end_time - start_time)) # added by me!
+
 
     rmg.save_everything()
 
