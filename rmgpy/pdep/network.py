@@ -327,7 +327,7 @@ class Network(object):
 
         n_isom = self.n_isom
         n_reac = self.n_reac
-        n_proc = self.n_prod
+        n_prod = self.n_prod
 
         E0 = self.E0
         grain_size = self.grain_size
