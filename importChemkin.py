@@ -325,7 +325,7 @@ class ModelMatcher():
         if species_file:
             logging.info("Reading species list...")
             species_list = []
-            with codecs.open(species_file, errors='replace') as f:
+            with codecs.open(species_file, errors='ignore') as f:
                 position_before_line = f.tell()
                 line0 = f.readline()
                 while line0 != '':
@@ -336,6 +336,8 @@ class ModelMatcher():
                         # Unread the line (we'll re-read it in read_reaction_block())
                         f.seek(position_before_line)
                         read_species_block(f, species_dict, species_aliases, species_list)
+                        # end of species block. Assume there's only one!
+                        break
                     position_before_line = f.tell()
                     line0 = f.readline()
         else:
