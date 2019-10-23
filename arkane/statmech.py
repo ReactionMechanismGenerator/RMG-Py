@@ -742,7 +742,7 @@ class StatMechJob(object):
             ['$0$', '$\pi/4$', '$\pi/2$', '$3\pi/4$', '$\pi$', '$5\pi/4$', '$3\pi/2$', '$7\pi/4$', '$2\pi$'])
 
         self.hindered_rotor_plots.append((fig, rotor_index))
-        fig.close()
+        plt.close(fig)
 
     def save_hindered_rotor_figures(self, directory):
         """
