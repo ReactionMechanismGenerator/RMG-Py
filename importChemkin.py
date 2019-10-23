@@ -325,7 +325,7 @@ class ModelMatcher():
         if species_file:
             logging.info("Reading species list...")
             species_list = []
-            with open(species_file) as f:
+            with codecs.open(species_file, errors='replace') as f:
                 position_before_line = f.tell()
                 line0 = f.readline()
                 while line0 != '':
