@@ -545,7 +545,7 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
             continue
 
         # If the first line is molecular_term_symbol, skip it
-        if "molecular_term_symbol" in data[0]:
+        if "molecularTermSymbol" in data[0]:
             continue
 
         # First item is index for atom
@@ -818,13 +818,13 @@ def to_adjacency_list(atoms, multiplicity, molecular_term_symbol="", label=None,
             # If the list is empty, then it does not need to be written
             adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
         if molecular_term_symbol:
-            adjlist += 'molecular_term_symbol [{0!s}]\n'.format(','.join(str(i) for i in molecular_term_symbol))
+            adjlist += 'molecularTermSymbol [{0!s}]\n'.format(','.join(str(i) for i in molecular_term_symbol))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any(atom.radical_electrons for atom in atoms):
             adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
         if molecular_term_symbol and (molecular_term_symbol != ''):
-            adjlist += 'molecular_term_symbol {0!s}\n'.format(molecular_term_symbol)
+            adjlist += 'molecularTermSymbol {0!s}\n'.format(molecular_term_symbol)
 
     # Determine the numbers to use for each atom
     atom_numbers = {}
