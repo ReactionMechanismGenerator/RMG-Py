@@ -80,9 +80,10 @@ cpdef apply_reservoir_state_method(network):
     # Start by simply placing it at the lowest reactive grain
     n_res = np.zeros((n_isom, n_j), np.int)
     for i in range(n_isom):
+        target_rate = network.get_rate_at_lowest_barrier_for_isomer(i)
         for s in range(n_j):
             for r in range(n_grains):
-                if dens_states[i, r, s] != 0 and ((k_ij[:, i, r, s] > 0).any() or (g_nj[:, i, r, s] > 0).any()):
+                if dens_states[i, r, s] != 0 and ((k_ij[:, i, r, s] > target_rate / 100).any() or (g_nj[:, i, r, s] > target_rate / 100).any()):
                     # We need at least one reservoir grain for the RS method to be successful
                     if r == 0 or dens_states[i, r - 1, s] == 0:
                         n_res[i, s] = r + 1
@@ -92,16 +93,16 @@ cpdef apply_reservoir_state_method(network):
     n_act = n_grains - n_res
 
     # Check the grain cuttoffs to warn user of inaccuracies
+    energy_warning_cutoff = 2 * network.T * constants.R  # holds 85% of boltzmann distribution
     for i in range(n_isom):
         reservoir_well_depth = e_list[n_res[i, 0]] - network.isomers[i].E0  # J/mol
-        energy_warning_cutoff = 2 * network.T * constants.R  # holds 85% of boltzmann distribution
         if  energy_warning_cutoff > reservoir_well_depth:
-            logging.warning("Isomer {0} has a well depth of {1.2f} kJ/mol which is below a 2*kb*T cutoff of {2.2f} kJ/mol, "
+            logging.warning("Isomer {0} has a well depth of {1:.2f} kJ/mol which is below a 2*kb*T cutoff of {2:.2f} kJ/mol, "
                             "Stabilized {0} formation may be underpredicted by reservoir state method."
                             "".format(network.isomers[i].species[0].label, reservoir_well_depth / 1000, energy_warning_cutoff / 1000))
         logging.debug('Energy cutoff for {0} is {1:.2f} kJ/mol and {2:.2f} kJ/mol above ground state'.format(network.isomers[i].species[0].label,
                                                                 e_list[n_res[i, 0]] / 1000,
-                                                                (e_list[n_res[i, 0]] - network.isomers[i].E0) / 1000))
+                                                                reservoir_well_depth / 1000))
 
     # Determine equilibrium distributions
     eq_dist = np.zeros((n_isom + n_reac, n_grains, n_j), np.float64)

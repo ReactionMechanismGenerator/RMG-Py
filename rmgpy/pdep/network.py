@@ -1104,3 +1104,31 @@ class Network(object):
             logging.log(level, '    {0!s:<48}'.format(rxn))
         logging.log(level, '========================================================================')
         logging.log(level, '')
+
+    def get_rate_at_lowest_barrier_for_isomer(self, isomer_index):
+        """
+        Returns the microcanonical rate (s-1) at the lowest barrier reaction
+        for a particular isomer. This is used in reservoir state to determine
+        the cutoff between Boltzmann distributed states and active states.
+        """
+        isomer = self.isomers[isomer_index]
+        reaction_list = []
+        lowest_e = np.inf
+        energy_index = None
+        microcanonical_rate = 0
+        for rxn_index, pr in enumerate(self.path_reactions):
+            if isomer.species[0].label == pr.reactants[0].label or isomer.species[0].label == pr.products[0].label:
+                reaction_list.append(pr)
+                if pr.transition_state.conformer.E0.value_si < lowest_e:
+                    lowest_e = pr.transition_state.conformer.E0.value_si
+                    energy_index = len(self.e_list[self.e_list < lowest_e]) - 1
+                    if isomer.species[0].label == pr.reactants[0].label:
+                        microcanonical_rate = self.path_micro_rates[2*rxn_index, energy_index+2, 0]
+                    elif isomer.species[0].label == pr.products[0].label:
+                        microcanonical_rate = self.path_micro_rates[2*rxn_index + 1, energy_index+2, 0]
+                    else:
+                        raise Exception('Unable to set microcanonical rate')
+        logging.debug('lowest energy found: {0}, index: {1},microcanonical_rate: {2}'.format(lowest_e, energy_index, microcanonical_rate))
+        if microcanonical_rate == 0:
+            raise Exception("Could not find barrier with lowest rate.")
+        return microcanonical_rate
