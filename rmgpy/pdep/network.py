@@ -83,6 +83,7 @@ class Network(object):
     `Kij`                   The microcanonical rates to go from isomer $j$ to isomer $i$. 4D array with indexes: i, j, energies, rotational energies
     `Gnj`                   The microcanonical rates to go from isomer $j$ to reactant/product $n$. 4D array with indexes: n, j, energies, rotational energies
     `Fim`                   The microcanonical rates to go from reactant $m$ to isomer $i$. 4D array with indexes: n, j, energies, rotational energies
+    `path_micro_rates`      The microcanonical rates for the forward and reverse reactions for each reaction. 3D array with indexes: 2*reaction index (+ 1 if reverse), energies, rotational energies
     ----------------------- ----------------------------------------------------
     `K`                     2D Array of phenomenological rates at the specified T and P
     `p0`                    Pseudo-steady state population distributions
@@ -621,12 +622,13 @@ class Network(object):
         self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], np.float64)
         self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], np.float64)
         self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], np.float64)
+        self.path_micro_rates = np.zeros([2*len(self.path_reactions), n_grains, n_j], np.float64)
 
         isomers = [isomer.species[0] for isomer in self.isomers]
         reactants = [reactant.species for reactant in self.reactants]
         products = [product.species for product in self.products]
 
-        for rxn in self.path_reactions:
+        for path_index, rxn in enumerate(self.path_reactions):
             if rxn.reactants[0] in isomers and rxn.products[0] in isomers:
                 # Isomerization
                 reac = isomers.index(rxn.reactants[0])
@@ -808,7 +810,8 @@ class Network(object):
                 else:
                     logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for '
                                     'path reaction "%s".', rxn)
-
+            self.path_micro_rates[2*path_index, :, :] = kf
+            self.path_micro_rates[2*path_index + 1, :, :] = kr
         # import pylab
         # for prod in range(n_isom):
         #    for reac in range(prod):
