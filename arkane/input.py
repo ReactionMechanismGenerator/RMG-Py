@@ -290,12 +290,13 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
     products = sorted([species_dict[spec] for spec in products])
     if transitionState:
         transitionState = transition_state_dict[transitionState]
-    if tunneling.lower() == 'wigner':
+    if transitionState and (tunneling == '' or tunneling is None):
+        transitionState.tunneling = None
+    elif tunneling.lower() == 'wigner':
         transitionState.tunneling = Wigner(frequency=None)
     elif tunneling.lower() == 'eckart':
         transitionState.tunneling = Eckart(frequency=None, E0_reac=None, E0_TS=None, E0_prod=None)
-    elif transitionState and (tunneling == '' or tunneling is None):
-        transitionState.tunneling = None
+
     elif transitionState and not isinstance(tunneling, TunnelingModel):
         raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
     rxn = Reaction(label=label, reactants=reactants, products=products, transition_state=transitionState,
