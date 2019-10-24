@@ -50,16 +50,16 @@ class Network(object):
     ======================= ====================================================
     Attribute               Description
     ======================= ====================================================
-    `isomers`               A list of the unimolecular isomers in the network
+    `isomers`               A list of the unimolecular isomers (Configuration objects) in the network
     `reactants`             A list of the bimolecular reactant channels (Configuration objects) in the network
     `products`              A list of the bimolecular product channels (Configuration objects) in the network
-    `path_reactions`        A list of "path" reaction objects that connect adjacent isomers (the high-pressure-limit)
+    `path_reactions`        A list of Reaction objects that connect isomers to their unimolecular and bimolecular products (the high-pressure-limit)
     `bath_gas`              A dictionary of the bath gas species (keys) and their mole fractions (values)
-    `net_reactions`         A list of "net" reaction objects that connect any pair of isomers
+    `net_reactions`         A list of Reaction objects that connect any pair of isomers (pressure dependent reactions)
     ----------------------- ----------------------------------------------------
     `T`                     The current temperature in K
-    `P`                     The current pressure in bar
-    `e_list`                The current array of energy grains in kJ/mol
+    `P`                     The current pressure in Pa
+    `e_list`                The current array of energy grains in J/mol
     `j_list`                The current array of total angular momentum quantum numbers
     ----------------------- ----------------------------------------------------
     `n_isom`                 The number of unimolecular isomers in the network
@@ -70,17 +70,23 @@ class Network(object):
     ----------------------- ----------------------------------------------------
     `grain_size`            Maximum size of separation between energies
     `grain_count`           Minimum number of descrete energies separated
-    `E0`                    A list of ground state energies of isomers, reactants, and products
+    `E0`                    A list of ground state energies of isomers, reactants, and products (J/mol)
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
     ----------------------- ----------------------------------------------------
     `eq_ratios`             An array containing concentration of each isomer and reactant channel present at equilibrium
-    `coll_freq`             An array of the frequency of collision between
+    `coll_freq`             An array of the frequency of collision between isomers and the bath gas
     `Mcoll`                 Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer
     `dens_states`           3D np array of stable configurations, number of grains, and number of J
+    ----------------------- ----------------------------------------------------
+    `Kij`                   The microcanonical rates to go from isomer $j$ to isomer $i$. 4D array with indexes: i, j, energies, rotational energies
+    `Gnj`                   The microcanonical rates to go from isomer $j$ to reactant/product $n$. 4D array with indexes: n, j, energies, rotational energies
+    `Fim`                   The microcanonical rates to go from reactant $m$ to isomer $i$. 4D array with indexes: n, j, energies, rotational energies
+    ----------------------- ----------------------------------------------------
+    `K`                     2D Array of phenomenological rates at the specified T and P
+    `p0`                    Pseudo-steady state population distributions
     ======================= ====================================================
-    
     """
 
     def __init__(self, label='', isomers=None, reactants=None, products=None,
