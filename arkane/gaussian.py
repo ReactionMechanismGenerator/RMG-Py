@@ -276,7 +276,7 @@ class GaussianLog(Log):
                 elif 'E(CORR)=' in line:
                     e_elect = float(line.split()[3]) * constants.E_h * constants.Na
                     elect_energy_source = 'CCSD'
-                elif 'CCSD(T)=' in line:
+                elif 'CCSD(T)= ' in line:
                     e_elect = float(line.split()[1].replace('D','E')) * constants.E_h * constants.Na
                     elect_energy_source = 'CCSD(T)'
                 elif 'CBS-QB3 (0 K)' in line:
