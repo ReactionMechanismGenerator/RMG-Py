@@ -34,6 +34,7 @@ import scipy.linalg
 
 import numpy as np
 cimport numpy as np
+import logging
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ReservoirStateError
@@ -89,6 +90,18 @@ cpdef apply_reservoir_state_method(network):
                         n_res[i, s] = r
                     break
     n_act = n_grains - n_res
+
+    # Check the grain cuttoffs to warn user of inaccuracies
+    for i in range(n_isom):
+        reservoir_well_depth = e_list[n_res[i, 0]] - network.isomers[i].E0  # J/mol
+        energy_warning_cutoff = 2 * network.T * constants.R  # holds 85% of boltzmann distribution
+        if  energy_warning_cutoff > reservoir_well_depth:
+            logging.warning("Isomer {0} has a well depth of {1.2f} kJ/mol which is below a 2*kb*T cutoff of {2.2f} kJ/mol, "
+                            "Stabilized {0} formation may be underpredicted by reservoir state method."
+                            "".format(network.isomers[i].species[0].label, reservoir_well_depth / 1000, energy_warning_cutoff / 1000))
+        logging.debug('Energy cutoff for {0} is {1:.2f} kJ/mol and {2:.2f} kJ/mol above ground state'.format(network.isomers[i].species[0].label,
+                                                                e_list[n_res[i, 0]] / 1000,
+                                                                (e_list[n_res[i, 0]] - network.isomers[i].E0) / 1000))
 
     # Determine equilibrium distributions
     eq_dist = np.zeros((n_isom + n_reac, n_grains, n_j), np.float64)
