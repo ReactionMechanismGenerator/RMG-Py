@@ -64,7 +64,9 @@ class ChemkinError(Exception):
     An exception class for exceptional behavior involving Chemkin files. Pass a
     string describing the circumstances that caused the exceptional behavior.
     """
-    pass
+    def __init__(self, message='', *args):
+        self.message = message
+        super(ChemkinError, self).__init__(message, *args)
 
 
 class CollisionError(Exception):
