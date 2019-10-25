@@ -325,7 +325,7 @@ class ModelMatcher():
         if species_file:
             logging.info("Reading species list...")
             species_list = []
-            with codecs.open(species_file, errors='ignore') as f:
+            with open(species_file, encoding='utf-8', errors='ignore') as f:
                 position_before_line = f.tell()
                 line0 = f.readline()
                 while line0 != '':
@@ -356,7 +356,7 @@ class ModelMatcher():
         found_thermo_block = False
         #import codecs
         #with codecs.open(thermo_file, "r", "utf-8") as f:
-        with open(thermo_file) as f:
+        with open(thermo_file, 'r', encoding='utf-8', errors='ignore') as f:
             position_before_line = f.tell()
             line0 = f.readline()
             while line0 != '':
@@ -389,7 +389,7 @@ class ModelMatcher():
 
     def load_reactions(self, reactions_file):
         logging.info("Reading reactions...")
-        with open(reactions_file) as f:
+        with open(reactions_file, encoding='utf-8', errors='ignore') as f:
             reaction_list = read_reactions_block(f, self.species_dict, read_comments=True)
         logging.info("Read {0} reactions from chemkin file.".format(len(reaction_list)))
 
@@ -2018,7 +2018,7 @@ class ModelMatcher():
         with open(self.RMGdictionaryFile, 'w') as f:
             f.write("\n")
         try:
-            with codecs.open('source.txt', encoding='utf-8', errors='replace') as f:
+            with open('source.txt', encoding='utf-8', errors='replace') as f:
                 source = f.read()
                 source = str(source.encode('ascii', 'replace'))
                 print(source)
