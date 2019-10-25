@@ -37,9 +37,9 @@ import multiprocessing as mp
 from rmgpy.data.rmg import get_db
 
 
-# import ray 		# from me!
+import ray 		# from me!
 # ray.shutdown()
-# ray.init()
+# ray.init(num_cpus=2)
 # ray.init(ignore_reinit_error=True)
 
 ################################################################################
@@ -72,16 +72,16 @@ def react(spc_fam_tuples, procnum=1):
         reactions = list(map(_react_species_star, spc_fam_tuples))
     else:
         logging.info('For reaction generation {0} processes are used.'.format(procnum))
-        p = mp.Pool(processes=procnum)
-        reactions = p.map(_react_species_star, spc_fam_tuples)
+        # p = mp.Pool(processes=procnum)
+        # reactions = p.map(_react_species_star, spc_fam_tuples)
 
 
-        # reactions = p.imap(_react_species_star, spc_fam_tuples)		# works!!!	
-        # reactions = p.imap(_react_species_star, spc_fam_tuples[, 2])	# try chunksize = 10. Fails
+        ## reactions = p.imap(_react_species_star, spc_fam_tuples)		# works!!!	
+        ## reactions = p.imap(_react_species_star, spc_fam_tuples[, 2])	# try chunksize = 10. Fails
 
         ## reactions = p.starmap(_react_species_star(spc_fam_tuples)) 	# doesn't work!
-        p.close()
-        p.join()
+        # p.close()
+        # p.join()
         
         #### The below doesn't work
         # with mp.Pool(processes=procnum) as p:
@@ -92,15 +92,16 @@ def react(spc_fam_tuples, procnum=1):
         # p.start()
         # p.join()
 
-
-
         ## Testing Ray
+        ray.shutdown()
+        ray.init(num_cpus=2)        
+        reactions = _react_species_star.remote(spc_fam_tuples)
         # reactions = list(map(_react_species_star.remote(spc_fam_tuples),spc_fam_tuples ))
         # reactions = list(_react_species_star.remote(i) for i in spc_fam_tuples)
 		# ray.get(reactions)
-    return reactions
+    return ray.get(reactions) # reactions
 
-# @ray.remote
+@ray.remote
 def _react_species_star(args):
     """Wrapper to unpack zipped arguments for use with map"""
     return react_species(*args)
