@@ -1272,7 +1272,16 @@ class RMG(util.Subject):
             if os.path.exists(seed_dir):  # This is a seed from a previous RMG run. Delete it
                 shutil.rmtree(seed_dir)
         else:  # This is a seed from the previous iteration. Move it to a temporary directory in case we run into errors
-            os.rename(seed_dir, os.path.join(temp_seed_dir))
+            try:
+                os.rename(seed_dir, os.path.join(temp_seed_dir))
+            except PermissionError:  # The Windows Subsystem for Linux (WSL) can have problems with renaming
+                # Try copying over the files instead. Unfortunately, this takes more time
+                if os.path.exists(temp_seed_dir):  # First, delete the contents of the old folder if it exists
+                    shutil.rmtree(temp_seed_dir)
+                shutil.copytree(seed_dir, temp_seed_dir)
+
+                # Now remove the contents of the seed directory
+                shutil.rmtree(seed_dir)
 
         # Now that we have either deleted or moved the seed mechanism folder, create a new one
         os.mkdir(seed_dir)
