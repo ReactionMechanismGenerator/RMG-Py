@@ -1273,7 +1273,7 @@ class RMG(util.Subject):
                 shutil.rmtree(seed_dir)
         else:  # This is a seed from the previous iteration. Move it to a temporary directory in case we run into errors
             try:
-                os.rename(seed_dir, os.path.join(temp_seed_dir))
+                os.rename(seed_dir, temp_seed_dir)
             except PermissionError:  # The Windows Subsystem for Linux (WSL) can have problems with renaming
                 # Try copying over the files instead. Unfortunately, this takes more time
                 if os.path.exists(temp_seed_dir):  # First, delete the contents of the old folder if it exists
