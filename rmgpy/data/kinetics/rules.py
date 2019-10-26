@@ -429,13 +429,10 @@ class KineticsRules(Database):
         if len(entries) == 1:
             return entries[0]
         elif len(entries) > 1:
-            if any([entry.rank > 0 for entry in entries]):
-                entries = [entry for entry in entries if entry.rank > 0]
-                entries.sort(key=lambda x: (x.rank, x.index))
-                return entries[0]
-            else:
-                entries.sort(key=lambda x: x.index)
-                return entries[0]
+            # Take the entry with the highest rank (smaller numbers are higher) and smallest index
+            # If an entry has rank 0 or None, give it an effective rank of 1000 for sorting
+            entries.sort(key=lambda x: (1000 if not x.rank else x.rank, x.index))
+            return entries[0]
         else:
             return None
 

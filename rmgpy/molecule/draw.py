@@ -62,7 +62,6 @@ from rdkit.Chem import AllChem
 
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.molecule import Geometry
-from rmgpy.species import Species
 
 
 ################################################################################
@@ -150,7 +149,7 @@ class MoleculeDrawer(object):
 
     def draw(self, molecule, file_format, target=None):
         """
-        Draw the given `molecule` using the given image `format` - pdf, svg, ps, or
+        Draw the given `molecule` using the given image `file_format` - pdf, svg, ps, or
         png. If `path` is given, the drawing is saved to that location on disk. The
         `options` dict is an optional set of key-value pairs that can be used to
         control the generated drawing.
@@ -1614,7 +1613,7 @@ class ReactionDrawer(object):
 
     def draw(self, reaction, file_format, path=None):
         """
-        Draw the given `reaction` using the given image `format` - pdf, svg, 
+        Draw the given `reaction` using the given image `file_format` - pdf, svg,
         ps, or png. If `path` is given, the drawing is saved to that location
         on disk.
         
@@ -1634,17 +1633,21 @@ class ReactionDrawer(object):
         # First draw each of the reactants and products
         reactants, products = [], []
         for reactant in reaction.reactants:
-            if isinstance(reactant, Species):
-                molecule = reactant.molecule[0]
-            elif isinstance(reactant, Molecule):
+            if isinstance(reactant, Molecule):
                 molecule = reactant
-            reactants.append(MoleculeDrawer().draw(molecule, format))
+            elif hasattr(reactant, 'molecule'):
+                molecule = reactant.molecule[0]
+            else:
+                raise TypeError('Expected Molecule or Species object, not {0}'.format(reactant.__class__.__name__))
+            reactants.append(MoleculeDrawer().draw(molecule, file_format))
         for product in reaction.products:
-            if isinstance(product, Species):
-                molecule = product.molecule[0]
-            elif isinstance(product, Molecule):
+            if isinstance(product, Molecule):
                 molecule = product
-            products.append(MoleculeDrawer().draw(molecule, format))
+            elif hasattr(product, 'molecule'):
+                molecule = product.molecule[0]
+            else:
+                raise TypeError('Expected Molecule or Species object, not {0}'.format(product.__class__.__name__))
+            products.append(MoleculeDrawer().draw(molecule, file_format))
 
         # Next determine size required for surface
         rxn_width = rxn_height = rxn_top = 0
@@ -1738,7 +1741,7 @@ class ReactionDrawer(object):
             rxn_x += width
 
         # Finish Cairo drawing
-        if format == 'png':
+        if file_format == 'png':
             rxn_surface.write_to_png(path)
         else:
             rxn_surface.finish()

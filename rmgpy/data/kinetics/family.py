@@ -2619,9 +2619,24 @@ class KineticsFamily(Database):
         template = self.forward_template
         reactants0 = [reactant.copy(deep=True) for reactant in reactants]
 
+        if self.auto_generated and self.reactant_num != len(reactants):
+            return None, None
+
+        if len(reactants) > len(template.reactants):
+            # if the family has one template and is bimolecular split template into multiple reactants
+            try:
+                grps = template.reactants[0].item.split()
+                template_reactants = []
+                for grp in grps:
+                    template_reactants.append(grp)
+            except AttributeError:
+                template_reactants = [x.item for x in template.reactants]
+        else:
+            template_reactants = [x.item for x in template.reactants]
+
         if len(reactants0) == 1:
             molecule = reactants0[0]
-            mappings = self._match_reactant_to_template(molecule, template.reactants[0].item)
+            mappings = self._match_reactant_to_template(molecule, template_reactants[0])
             mappings = [[map0] for map0 in mappings]
             num_mappings = len(mappings)
             reactant_structures = [molecule]
@@ -2629,12 +2644,12 @@ class KineticsFamily(Database):
             molecule_a = reactants0[0]
             molecule_b = reactants0[1]
             # get mappings in forward direction
-            mappings_a = self._match_reactant_to_template(molecule_a, template.reactants[0].item)
-            mappings_b = self._match_reactant_to_template(molecule_b, template.reactants[1].item)
+            mappings_a = self._match_reactant_to_template(molecule_a, template_reactants[0])
+            mappings_b = self._match_reactant_to_template(molecule_b, template_reactants[1])
             mappings = list(itertools.product(mappings_a, mappings_b))
             # get mappings in the reverse direction
-            mappings_a = self._match_reactant_to_template(molecule_a, template.reactants[1].item)
-            mappings_b = self._match_reactant_to_template(molecule_b, template.reactants[0].item)
+            mappings_a = self._match_reactant_to_template(molecule_a, template_reactants[1])
+            mappings_b = self._match_reactant_to_template(molecule_b, template_reactants[0])
             mappings.extend(list(itertools.product(mappings_a, mappings_b)))
 
             reactant_structures = [molecule_a, molecule_b]
@@ -2646,9 +2661,9 @@ class KineticsFamily(Database):
             # Get mappings for all permutations of reactants
             mappings = []
             for order in itertools.permutations(range(3), 3):
-                mappings_a = self._match_reactant_to_template(molecule_a, template.reactants[order[0]].item)
-                mappings_b = self._match_reactant_to_template(molecule_b, template.reactants[order[1]].item)
-                mappings_c = self._match_reactant_to_template(molecule_c, template.reactants[order[2]].item)
+                mappings_a = self._match_reactant_to_template(molecule_a, template_reactants[order[0]])
+                mappings_b = self._match_reactant_to_template(molecule_b, template_reactants[order[1]])
+                mappings_c = self._match_reactant_to_template(molecule_c, template_reactants[order[2]])
                 mappings.extend(list(itertools.product(mappings_a, mappings_b, mappings_c)))
 
             reactant_structures = [molecule_a, molecule_b, molecule_c]
@@ -4238,12 +4253,15 @@ class KineticsFamily(Database):
         full_comment_string = reaction.kinetics.comment.replace('\n', ' ')
 
         # The rate rule string is right after the phrase 'for rate rule'
-        rate_rule_string = full_comment_string.split("for rate rule", 1)[1].split()[0]
+        rate_rule_string = full_comment_string.split("for rate rule", 1)[1].strip()
 
         if rate_rule_string[0] == '[':
-            template_label = re.split(regex, rate_rule_string)[1]
+            # Get the contents of the capture group in the regex
+            # Remove any spaces which may be left over as a result of a line break
+            template_label = re.split(regex, rate_rule_string)[1].replace(' ', '')
         else:
-            template_label = rate_rule_string  # if has the line 'From training reaction # for rate rule node1;node2'
+            # If this has the line 'From training reaction # for rate rule node1;node2'
+            template_label = rate_rule_string.split()[0]
 
         template = self.retrieve_template(template_label.split(';'))
         rules, training_entries = self.get_sources_for_template(template)
