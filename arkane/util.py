@@ -31,42 +31,49 @@
 This module contains different utilities used in Arkane.
 """
 
+import os
+
 from rmgpy.exceptions import InputError
 
 from arkane.logs.gaussian import GaussianLog
 from arkane.logs.molpro import MolproLog
 from arkane.logs.orca import OrcaLog
 from arkane.logs.qchem import QChemLog
+from arkane.logs.terachem import TeraChemLog
 
 ################################################################################
 
 
 def determine_qm_software(fullpath):
     """
-    Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
+    Given a path to the log file of a QM software, determine whether it is
+    Gaussian, Molpro, QChem, or TeraChem
     """
     with open(fullpath, 'r') as f:
-        line = f.readline()
         software_log = None
-        while line != '':
+        if os.path.splitext(fullpath)[1] in ['.xyz', '.dat', '.geometry']:
+            software_log = TeraChemLog(fullpath)
+        line = f.readline()
+        while software_log is None and line != '':
             if 'gaussian' in line.lower():
-                f.close()
                 software_log = GaussianLog(fullpath)
                 break
+            elif 'molpro' in line.lower():
+                software_log = MolproLog(fullpath)
+                break
             elif 'qchem' in line.lower():
-                f.close()
                 software_log = QChemLog(fullpath)
                 break
-            elif 'molpro' in line.lower():
-                f.close()
-                software_log = MolproLog(fullpath)
+            elif 'terachem' in line.lower():
+                software_log = TeraChemLog(fullpath)
                 break
             elif 'orca' in line.lower():
                 f.close()
                 software_log = OrcaLog(fullpath)
                 break
             line = f.readline()
-        else:
-            raise InputError('File at {0} could not be identified as a Gaussian, '
-                             'QChem or Molpro log file.'.format(fullpath))
+        if software_log is None:
+            f.close()
+            raise InputError(f'The file at {fullpath} could not be identified as a '
+                             'Gaussian, Molpro, QChem, or TeraChem log file.')
     return software_log
