@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.exceptions import InputError, ElementError
+from rmgpy.exceptions import InputError, ElementError, StatmechError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import TransitionState, Species
 from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
@@ -51,8 +51,7 @@ from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.quantity import Quantity
 
-from arkane.common import ArkaneSpecies
-from arkane.common import symbol_by_number
+from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments_of_inertia
 from arkane.encorr.corr import get_atom_correction, get_bac
 from arkane.logs.gaussian import GaussianLog
 from arkane.logs.log import Log
@@ -429,6 +428,36 @@ class StatMechJob(object):
 
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geom_log.load_geometry()
+
+        if self.species.conformer is not None and len(self.species.conformer.modes):
+            # check that conformer has an IdealGasTranslation mode, append one if it doesn't
+            for mode in self.species.conformer.modes:
+                if isinstance(mode, IdealGasTranslation):
+                    break
+            else:
+                self.species.conformer.modes.append(IdealGasTranslation(mass=(mass, "amu")))
+            # check that conformer has a LinearRotor or a NonlinearRotor mode, append one if it doesn't
+            for mode in self.species.conformer.modes:
+                if isinstance(mode, (LinearRotor, NonlinearRotor)):
+                    break
+            else:
+                # get the moments of inertia and the external symmetry
+                moments_of_inertia = get_principal_moments_of_inertia(coords=self.species.conformer.coordinates,
+                                                                      numbers=self.species.conformer.number)
+                symmetry = geom_log.get_symmetry_properties()[1]
+                if any([moment_of_inertia == 0.0 for moment_of_inertia in moments_of_inertia]):
+                    # this is a linear rotor
+                    moments_of_inertia = [moment_of_inertia for moment_of_inertia in moments_of_inertia
+                                          if moment_of_inertia != 0.0]
+                    if abs(moments_of_inertia[0] - moments_of_inertia[1]) > 0.01:
+                        raise StatmechError(f'Expected two identical moments of inertia for a linear rigis rotor, '
+                                            f'but got {moments_of_inertia}')
+                    self.species.conformer.modes.append(LinearRotor(inertia=(moments_of_inertia[0], "amu*angstrom^2"),
+                                                                    symmetry=symmetry))
+                else:
+                    # this is a non-linear rotor
+                    self.species.conformer.modes.append(NonlinearRotor(inertia=(moments_of_inertia, "amu*angstrom^2"),
+                                                                       symmetry=symmetry))
 
         # Infer atoms from geometry
         atoms = {}
