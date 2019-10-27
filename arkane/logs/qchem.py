@@ -123,7 +123,7 @@ class QChemLog(Log):
         atom, coord, number, mass = [], [], [], []
 
         with open(self.path) as f:
-            log = f.read().splitlines()
+            log = f.readlines()
 
         # First check that the QChem job file (not necessarily a geometry optimization)
         # has successfully completed, if not an error is thrown
