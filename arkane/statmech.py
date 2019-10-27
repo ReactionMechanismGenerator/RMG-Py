@@ -59,6 +59,7 @@ from arkane.logs.log import Log
 from arkane.logs.molpro import MolproLog
 from arkane.logs.orca import OrcaLog
 from arkane.logs.qchem import QChemLog
+from arkane.logs.terachem import TeraChemLog
 from arkane.output import prettify
 from arkane.util import determine_qm_software
 
@@ -264,9 +265,10 @@ class StatMechJob(object):
             'HinderedRotorClassicalND': hinderedRotorClassicalND,
             # File formats
             'GaussianLog': GaussianLog,
-            'QChemLog': QChemLog,
-            'OrcaLog': OrcaLog,
             'MolproLog': MolproLog,
+            'OrcaLog': OrcaLog,
+            'QChemLog': QChemLog,
+            'TeraChemLog': TeraChemLog,
             'ScanLog': ScanLog,
             'Log': Log
         }
