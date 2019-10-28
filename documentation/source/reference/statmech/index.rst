@@ -88,12 +88,12 @@ The Schrodinger equation
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:func:`getPartitionFunction`    Calculate the partition function at a given temperature from energy levels and degeneracies
-:func:`getHeatCapacity`         Calculate the dimensionless heat capacity at a given temperature from energy levels and degeneracies
-:func:`getEnthalpy`             Calculate the enthalpy at a given temperature from energy levels and degeneracies
-:func:`getEntropy`              Calculate the entropy at a given temperature from energy levels and degeneracies
-:func:`getSumOfStates`          Calculate the sum of states for a given energy domain from energy levels and degeneracies
-:func:`getDensityOfStates`      Calculate the density of states for a given energy domain from energy levels and degeneracies
+:func:`get_partition_function`  Calculate the partition function at a given temperature from energy levels and degeneracies
+:func:`get_heat_capacity`       Calculate the dimensionless heat capacity at a given temperature from energy levels and degeneracies
+:func:`get_enthalpy`            Calculate the enthalpy at a given temperature from energy levels and degeneracies
+:func:`get_entropy`             Calculate the entropy at a given temperature from energy levels and degeneracies
+:func:`get_sum_of_states`       Calculate the sum of states for a given energy domain from energy levels and degeneracies
+:func:`get_density_of_states`   Calculate the density of states for a given energy domain from energy levels and degeneracies
 =============================== ================================================
 
 
@@ -107,8 +107,8 @@ Convolution
 Class                   Description
 ======================= ========================================================
 :func:`convolve`        Return the convolution of two arrays
-:func:`convolveBS`      Convolve a degree of freedom into a density or sum of states using the Beyer-Swinehart (BS) direct count algorithm
-:func:`convolveBSSR`    Convolve a degree of freedom into a density or sum of states using the Beyer-Swinehart-Stein-Rabinovitch (BSSR) direct count algorithm
+:func:`convolve_bs`     Convolve a degree of freedom into a density or sum of states using the Beyer-Swinehart (BS) direct count algorithm
+:func:`convolve_bssr`   Convolve a degree of freedom into a density or sum of states using the Beyer-Swinehart-Stein-Rabinovitch (BSSR) direct count algorithm
 ======================= ========================================================
 
 
