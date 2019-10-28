@@ -1758,7 +1758,7 @@ class RMG(util.Subject):
         Saves the output HTML and the Chemkin file. If the job is being profiled this is saved as well.
         """
         # If the user specifies it, add unused reaction library reactions to
-        # an additional output species and reaction list which is written to the ouput HTML
+        # an additional output species and reaction list which is written to the output HTML
         # file as well as the chemkin file
 
         if self.reaction_libraries:
