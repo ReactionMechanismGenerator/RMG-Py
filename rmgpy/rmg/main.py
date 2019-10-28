@@ -975,7 +975,6 @@ class RMG(util.Subject):
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(
                     model_settings.max_num_species, q + 1))
                 max_num_spcs_hit = False
-                continue
 
         # Save the final seed mechanism
         if self.generate_seed_each_iteration:
@@ -1768,7 +1767,7 @@ class RMG(util.Subject):
         Saves the output HTML and the Chemkin file. If the job is being profiled this is saved as well.
         """
         # If the user specifies it, add unused reaction library reactions to
-        # an additional output species and reaction list which is written to the ouput HTML
+        # an additional output species and reaction list which is written to the output HTML
         # file as well as the chemkin file
 
         if self.reaction_libraries:
