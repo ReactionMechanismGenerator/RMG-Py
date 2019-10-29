@@ -21,21 +21,21 @@ Installing the Linux Subsystem
 
 2. Once the Linux subsystem is installed, open a web browser in Windows and go to the
    `Anaconda Python Platform Downloads Page <https://www.anaconda.com/download/#linux>`_. Go to the tab for the
-   **Linux Installer**, and **right click** on the download icon for Python 2.7 to copy the link location. Open an Ubuntu
+   **Linux Installer**, and **right click** on the download icon for Python 3.7 to copy the link location. Open an Ubuntu
    terminal (type in ``Ubuntu`` into the Windows search bar if you are unsure where to find it) and paste the link
    into the terminal immediately after typing the ``wget`` command, so that your terminal looks like the following: ::
 
-    wget https://repo.continuum.io/archive/Anaconda2-2018.12-Linux-x86_64.sh
+    wget https://repo.anaconda.com/archive/Anaconda3-2019.07-Linux-x86_64.sh
 
    Your exact link will look similar to the one above, but may be a more recent version of the installer. Execute this
    command in the terminal to begin downloading the installer.
 
 3. Once the Anaconda installer has downloaded, execute the following commands in the Ubuntu terminal, changing the name
-   of ``Anaconda2-2018.12-Linux-x86_64.sh`` to match the name of the script you downloaded. ::
+   of ``Anaconda3-2019.07-Linux-x86_64.sh`` to match the name of the script you downloaded. ::
 
-    bash Anaconda2-2018.12-Linux-x86_64.sh
+    bash Anaconda3-2019.07-Linux-x86_64.sh
 
-   Install the anaconda2 folder inside your home directory (it should be the default location when it asks for a location
+   Install the anaconda3 folder inside your home directory (it should be the default location when it asks for a location
    to install). **When prompted to append Anaconda to your PATH, select or type Yes**. When prompted, do NOT install
    Microsoft VSCode. If you are interested in this lightweight IDE then you will want to install this into Windows 10
    instead of inside the linux subsystem.

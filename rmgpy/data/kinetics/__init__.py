@@ -28,8 +28,8 @@
 ###############################################################################
 
 from rmgpy.data.kinetics.database import KineticsDatabase
-from rmgpy.data.kinetics.depository import KineticsDepository
-from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+from rmgpy.data.kinetics.depository import KineticsDepository, DepositoryReaction
+from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, ReactionRecipe
 from rmgpy.data.kinetics.groups import KineticsGroups
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.rules import KineticsRules

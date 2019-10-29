@@ -251,5 +251,6 @@ Setting up a Linux Virtual Machine using VirtualBox
     startup).
 
 18. After installation is complete, the virtual machine should be up and running. To continue with installing RMG,
-    follow the instructions for Linux and Mac OSX systems.
+    follow the instructions either for binary (:ref:`anacondaUser`) or source installation (:ref:`anacondaDeveloper`)
+    for the Linux Operating system.
 

@@ -55,17 +55,17 @@ class Element(object):
     """
     A chemical element. The attributes are:
 
-    ============= =============== ================================================
-    Attribute     Type            Description
-    ============= =============== ================================================
-    `number`      ``int``         The atomic number of the element
-    `symbol`      ``str``         The symbol used for the element
-    `name`        ``str``         The IUPAC name of the element
-    `mass`        ``float``       The mass of the element in kg/mol
-    `covRadius`   ``float``       Covalent bond radius in Angstrom
-    `isotope`     ``int``         The isotope integer of the element
+    ============== =============== ================================================
+    Attribute      Type            Description
+    ============== =============== ================================================
+    `number`       ``int``         The atomic number of the element
+    `symbol`       ``str``         The symbol used for the element
+    `name`         ``str``         The IUPAC name of the element
+    `mass`         ``float``       The mass of the element in kg/mol
+    `cov_radius`   ``float``       Covalent bond radius in Angstrom
+    `isotope`      ``int``         The isotope integer of the element
     `chemkin_name` ``str``         The chemkin compatible representation of the element
-    ============= =============== ================================================
+    ============== =============== ================================================
 
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
