@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.GroupAtom<a class="headerlink" href="#rmgpy-molecule-groupatom" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.GroupAtom">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">GroupAtom</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">GroupAtom</code><span class="sig-paren">(</span><em class="sig-param">atomtype=None</em>, <em class="sig-param">radical_electrons=None</em>, <em class="sig-param">charge=None</em>, <em class="sig-param">label=u''</em>, <em class="sig-param">lone_pairs=None</em>, <em class="sig-param">props=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom group. This class is based on the <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> class, except that
 it uses <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom types</span></a> instead of elements, and all
 attributes are lists rather than individual values. The attributes are:</p>
@@ -134,6 +134,61 @@ required parameters. The available actions can be found
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.atomtype">
+<code class="sig-name descname">atomtype</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.atomtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>atomtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.charge">
+<code class="sig-name descname">charge</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>charge</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.connectivity1">
+<code class="sig-name descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.connectivity1" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>connectivity1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.connectivity2">
+<code class="sig-name descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.connectivity2" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>connectivity2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.connectivity3">
+<code class="sig-name descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.connectivity3" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>connectivity3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.GroupAtom.copy">
 <code class="sig-name descname">copy</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a deep copy of the <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a> object. Modifying the
@@ -157,6 +212,17 @@ options for bond orders will not be counted</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.edges">
+<code class="sig-name descname">edges</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>edges</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.GroupAtom.equivalent">
 <code class="sig-name descname">equivalent</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is equivalent to <cite>self</cite> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not,
@@ -171,6 +237,17 @@ respects wildcards, e.g. <code class="docutils literal notranslate"><span class=
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom has wildcards in any of the attributes:
 atomtype, radical electrons, lone pairs, charge, and bond order. Returns
 ‘’False’’ if no attribute has wildcards.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.ignore">
+<code class="sig-name descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ignore</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -212,6 +289,28 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.lone_pairs">
+<code class="sig-name descname">lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.lone_pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>lone_pairs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.GroupAtom.make_sample_atom">
 <code class="sig-name descname">make_sample_atom</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.make_sample_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Atom: object analagous to the GroupAtom</p>
@@ -228,9 +327,97 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.mapping">
+<code class="sig-name descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>mapping</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.props">
+<code class="sig-name descname">props</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.props" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>props</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.radical_electrons">
+<code class="sig-name descname">radical_electrons</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.radical_electrons" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>radical_electrons</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.reg_dim_atm">
+<code class="sig-name descname">reg_dim_atm</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reg_dim_atm" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reg_dim_atm</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.reg_dim_r">
+<code class="sig-name descname">reg_dim_r</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reg_dim_r" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reg_dim_r</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.reg_dim_u">
+<code class="sig-name descname">reg_dim_u</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reg_dim_u" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reg_dim_u</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.GroupAtom.reset_connectivity_values">
 <code class="sig-name descname">reset_connectivity_values</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.sorting_label">
+<code class="sig-name descname">sorting_label</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.sorting_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>sorting_label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.terminal">
+<code class="sig-name descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.terminal" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>terminal</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

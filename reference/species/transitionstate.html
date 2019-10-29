@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.species.TransitionState<a class="headerlink" href="#rmgpy-species-transitionstate" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.species.TransitionState">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.species.</code><code class="sig-name descname">TransitionState</code><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.species.</code><code class="sig-name descname">TransitionState</code><span class="sig-paren">(</span><em class="sig-param">label=u''</em>, <em class="sig-param">conformer=None</em>, <em class="sig-param">frequency=None</em>, <em class="sig-param">tunneling=None</em>, <em class="sig-param">degeneracy=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical transition state, representing a first-order saddle point on a
 potential energy surface. The attributes are:</p>
 <table class="docutils align-default">
@@ -103,6 +103,28 @@ factor for the reaction at the given temperature <cite>T</cite> in K.</p>
 <code class="sig-name descname">calculate_tunneling_function</code><a class="headerlink" href="#rmgpy.species.TransitionState.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the microcanonical tunneling
 correction for the reaction at the given energies <cite>e_list</cite> in J/mol.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.species.TransitionState.conformer">
+<code class="sig-name descname">conformer</code><a class="headerlink" href="#rmgpy.species.TransitionState.conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.statmech.conformer.Conformer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>conformer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.species.TransitionState.degeneracy">
+<code class="sig-name descname">degeneracy</code><a class="headerlink" href="#rmgpy.species.TransitionState.degeneracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>degeneracy</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -158,6 +180,28 @@ specified temperature <cite>T</cite> in K.</p>
 <code class="sig-name descname">get_sum_of_states</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in J/mol.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.species.TransitionState.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.species.TransitionState.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.species.TransitionState.tunneling">
+<code class="sig-name descname">tunneling</code><a class="headerlink" href="#rmgpy.species.TransitionState.tunneling" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.kinetics.model.TunnelingModel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>tunneling</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

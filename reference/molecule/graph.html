@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.graph.Graph<a class="headerlink" href="#rmgpy-molecule-graph-graph" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.graph.Graph">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.graph.</code><code class="sig-name descname">Graph</code><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.graph.</code><code class="sig-name descname">Graph</code><span class="sig-paren">(</span><em class="sig-param">vertices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>A graph data type. The vertices of the graph are stored in a list
 <cite>vertices</cite>; this provides a consistent traversal order. A single edge can
 be accessed using the <a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edge" title="rmgpy.molecule.graph.Graph.get_edge"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_edge()</span></code></a> method or by accessing specific
@@ -339,6 +339,17 @@ cycles in the graph, or <code class="docutils literal notranslate"><span class="
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.graph.Graph.ordered_vertices">
+<code class="sig-name descname">ordered_vertices</code><a class="headerlink" href="#rmgpy.molecule.graph.Graph.ordered_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ordered_vertices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.graph.Graph.remove_edge">
 <code class="sig-name descname">remove_edge</code><a class="headerlink" href="#rmgpy.molecule.graph.Graph.remove_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the specified <cite>edge</cite> from the graph.
@@ -395,6 +406,17 @@ into separate graphs.</p>
 <code class="sig-name descname">update_connectivity_values</code><a class="headerlink" href="#rmgpy.molecule.graph.Graph.update_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the connectivity values for each vertex in the graph. These are
 used to accelerate the isomorphism checking.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Graph.vertices">
+<code class="sig-name descname">vertices</code><a class="headerlink" href="#rmgpy.molecule.graph.Graph.vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertices</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

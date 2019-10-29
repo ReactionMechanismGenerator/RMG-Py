@@ -74,6 +74,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -90,6 +91,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.a3">a3 (rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ActionError">ActionError</a>
+</li>
+      <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.active_j_rotor">active_j_rotor (rmgpy.pdep.Configuration attribute)</a>
+</li>
+      <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.active_k_rotor">active_k_rotor (rmgpy.pdep.Configuration attribute)</a>
+</li>
+      <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.add_action">add_action() (rmgpy.data.kinetics.ReactionRecipe method)</a>
 </li>
       <li><a href="reference/molecule/pathfinder.html#rmgpy.molecule.pathfinder.add_allyls">add_allyls (in module rmgpy.molecule.pathfinder)</a>
 </li>
@@ -177,6 +184,32 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.advance">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.all_double">all_double (rmgpy.molecule.AtomType attribute)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.allow_max_rate_violation">allow_max_rate_violation (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.allow_max_rate_violation">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.allow_max_rate_violation">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.allow_max_rate_violation">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.allow_max_rate_violation">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.allow_pdep_route">allow_pdep_route (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.allow_pdep_route">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.allow_pdep_route">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.allow_pdep_route">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.allow_pdep_route">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.alpha">alpha (rmgpy.kinetics.Troe attribute)</a>
 </li>
       <li><a href="reference/pdep/singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown.alpha0">alpha0 (rmgpy.pdep.SingleExponentialDown attribute)</a>
@@ -221,28 +254,42 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.apply_chemically_significant_eigenvalues_method">apply_chemically_significant_eigenvalues_method() (rmgpy.pdep.Network method)</a>
+      <li><a href="reference/pdep/methods.html#rmgpy.pdep.cse.apply_chemically_significant_eigenvalues_method">apply_chemically_significant_eigenvalues_method() (in module rmgpy.pdep.cse)</a>
 
       <ul>
+        <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.apply_chemically_significant_eigenvalues_method">(rmgpy.pdep.Network method)</a>
+</li>
         <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.apply_chemically_significant_eigenvalues_method">(rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.apply_forward">apply_forward() (rmgpy.data.kinetics.ReactionRecipe method)</a>
+</li>
+      <li><a href="reference/pdep/reaction.html#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">apply_inverse_laplace_transform_method() (in module rmgpy.pdep.reaction)</a>
+</li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction">apply_kinetics_to_reaction() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
-      <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.apply_modified_strong_collision_method">apply_modified_strong_collision_method() (rmgpy.pdep.Network method)</a>
+      <li><a href="reference/pdep/methods.html#rmgpy.pdep.msc.apply_modified_strong_collision_method">apply_modified_strong_collision_method() (in module rmgpy.pdep.msc)</a>
 
       <ul>
+        <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.apply_modified_strong_collision_method">(rmgpy.pdep.Network method)</a>
+</li>
         <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.apply_modified_strong_collision_method">(rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.apply_recipe">apply_recipe() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
-      <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.apply_reservoir_state_method">apply_reservoir_state_method() (rmgpy.pdep.Network method)</a>
+      <li><a href="reference/pdep/methods.html#rmgpy.pdep.rs.apply_reservoir_state_method">apply_reservoir_state_method() (in module rmgpy.pdep.rs)</a>
 
       <ul>
+        <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.apply_reservoir_state_method">(rmgpy.pdep.Network method)</a>
+</li>
         <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.apply_reservoir_state_method">(rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.apply_reverse">apply_reverse() (rmgpy.data.kinetics.ReactionRecipe method)</a>
+</li>
+      <li><a href="reference/pdep/reaction.html#rmgpy.pdep.reaction.apply_rrkm_theory">apply_rrkm_theory() (in module rmgpy.pdep.reaction)</a>
+</li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species">apply_thermo_to_species() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/data/database.html#rmgpy.data.base.Database.are_siblings">are_siblings() (rmgpy.data.base.Database method)</a>
@@ -339,6 +386,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.assign_atom_ids">assign_atom_ids (rmgpy.molecule.Molecule attribute)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.atol_array">atol_array (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.atol_array">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.atol_array">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom">Atom (class in rmgpy.molecule)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.atom_ids_valid">atom_ids_valid (rmgpy.molecule.Molecule attribute)</a>
@@ -346,13 +401,27 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.atoms">atoms (rmgpy.molecule.Group attribute)</a>
 
       <ul>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.atoms">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.atoms">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType">AtomType (class in rmgpy.molecule)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.atomtype">atomtype (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.atomtype">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.AtomTypeError">AtomTypeError</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.aug_inchi">aug_inchi (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.aug_inchi">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -363,11 +432,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.InvalidMicrocanonicalRateError.badness">badness() (rmgpy.exceptions.InvalidMicrocanonicalRateError method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.barrier">barrier (rmgpy.statmech.HinderedRotor attribute)</a>
 </li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.benzene">benzene (rmgpy.molecule.AtomType attribute)</a>
+</li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.bimolecular_threshold">bimolecular_threshold (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.bimolecular_threshold">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.bimolecular_threshold">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond">Bond (class in rmgpy.molecule)</a>
+</li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.bond">bond (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.break_bond">break_bond (rmgpy.molecule.AtomType attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -391,6 +474,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/qm/symmetry.html#rmgpy.qm.symmetry.SymmetryJob.calculate">calculate() (rmgpy.qm.symmetry.SymmetryJob method)</a>
 </li>
+      <li><a href="reference/molecule/symmetry.html#rmgpy.molecule.symmetry.calculate_atom_symmetry_number">calculate_atom_symmetry_number() (in module rmgpy.molecule.symmetry)</a>
+</li>
+      <li><a href="reference/molecule/symmetry.html#rmgpy.molecule.symmetry.calculate_axis_symmetry_number">calculate_axis_symmetry_number() (in module rmgpy.molecule.symmetry)</a>
+</li>
+      <li><a href="reference/molecule/symmetry.html#rmgpy.molecule.symmetry.calculate_bond_symmetry_number">calculate_bond_symmetry_number() (in module rmgpy.molecule.symmetry)</a>
+</li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.calculate_chirality_correction">calculate_chirality_correction() (rmgpy.qm.gaussian.GaussianMol method)</a>
 
       <ul>
@@ -409,9 +498,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.calculate_chirality_correction">(rmgpy.qm.mopac.MopacMolPM7 method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_coll_limit">calculate_coll_limit (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.calculate_coll_limit">calculate_coll_limit (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_coll_limit">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.calculate_coll_limit">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.calculate_coll_limit">(rmgpy.reaction.Reaction attribute)</a>
@@ -445,6 +536,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.calculate_cpinf">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/symmetry.html#rmgpy.molecule.symmetry.calculate_cyclic_symmetry_number">calculate_cyclic_symmetry_number() (in module rmgpy.molecule.symmetry)</a>
+</li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy">calculate_degeneracy() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
       <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.calculate_densities_of_states">calculate_densities_of_states() (rmgpy.pdep.Network method)</a>
@@ -463,9 +556,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.calculate_equilibrium_ratios">(rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_microcanonical_rate_coefficient">calculate_microcanonical_rate_coefficient (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.calculate_microcanonical_rate_coefficient">calculate_microcanonical_rate_coefficient (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_microcanonical_rate_coefficient">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.calculate_microcanonical_rate_coefficient">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.calculate_microcanonical_rate_coefficient">(rmgpy.reaction.Reaction attribute)</a>
@@ -473,6 +568,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.calculate_microcanonical_rate_coefficient">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/pdep/reaction.html#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient">calculate_microcanonical_rate_coefficient() (in module rmgpy.pdep.reaction)</a>
+</li>
       <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.calculate_microcanonical_rates">calculate_microcanonical_rates() (rmgpy.pdep.Network method)</a>
 
       <ul>
@@ -480,6 +577,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.calculate_symmetry_number">calculate_symmetry_number (rmgpy.molecule.Molecule attribute)</a>
+</li>
+      <li><a href="reference/molecule/symmetry.html#rmgpy.molecule.symmetry.calculate_symmetry_number">calculate_symmetry_number() (in module rmgpy.molecule.symmetry)</a>
 </li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.calculate_thermo_data">calculate_thermo_data() (rmgpy.qm.gaussian.GaussianMol method)</a>
 
@@ -499,14 +598,28 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.calculate_thermo_data">(rmgpy.qm.mopac.MopacMolPM7 method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficient">calculate_tst_rate_coefficient (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.calculate_tst_rate_coefficient">calculate_tst_rate_coefficient (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficient">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.calculate_tst_rate_coefficient">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.calculate_tst_rate_coefficient">(rmgpy.reaction.Reaction attribute)</a>
 </li>
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.calculate_tst_rate_coefficient">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.calculate_tst_rate_coefficients">calculate_tst_rate_coefficients (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficients">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.calculate_tst_rate_coefficients">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.calculate_tst_rate_coefficients">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.calculate_tst_rate_coefficients">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/kinetics/eckart.html#rmgpy.kinetics.Eckart.calculate_tunneling_factor">calculate_tunneling_factor (rmgpy.kinetics.Eckart attribute)</a>
@@ -525,9 +638,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/transitionstate.html#rmgpy.species.TransitionState.calculate_tunneling_function">(rmgpy.species.TransitionState attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.can_tst">can_tst (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.can_tst">can_tst (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.can_tst">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.can_tst">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.can_tst">(rmgpy.reaction.Reaction attribute)</a>
@@ -567,13 +682,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.change_t0">change_t0 (rmgpy.kinetics.Arrhenius attribute)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.charge">charge (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.charge">(rmgpy.molecule.AtomType attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.charge">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev">Chebyshev (class in rmgpy.kinetics)</a>
 </li>
       <li><a href="reference/qm/main.html#rmgpy.qm.main.QMSettings.check_all_set">check_all_set() (rmgpy.qm.main.QMSettings method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.check_collision_limit_violation">check_collision_limit_violation (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.check_collision_limit_violation">check_collision_limit_violation (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.check_collision_limit_violation">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.check_collision_limit_violation">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.check_collision_limit_violation">(rmgpy.reaction.Reaction attribute)</a>
@@ -635,9 +760,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.check_ready">(rmgpy.qm.mopac.MopacMolPM7 method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ChemicallySignificantEigenvaluesError">ChemicallySignificantEigenvaluesError</a>
+</li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.chemkin_name">chemkin_name (rmgpy.molecule.Element attribute)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ChemkinError">ChemkinError</a>
 </li>
@@ -657,6 +782,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.clear_labeled_atoms">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.clear_reg_dims">clear_reg_dims (rmgpy.molecule.Group attribute)</a>
 </li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.clear_surface_adjustments">clear_surface_adjustments() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
@@ -671,11 +798,19 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/nasapolynomial.html#rmgpy.thermo.NASAPolynomial.coeffs">(rmgpy.thermo.NASAPolynomial attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.collider_efficiencies">collider_efficiencies (rmgpy.solver.SimpleReactor attribute)</a>
+</li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.CollisionError">CollisionError</a>
 </li>
-      <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.comment">comment (rmgpy.kinetics.Arrhenius attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.comment">comment (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.comment">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.comment">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.comment">(rmgpy.kinetics.Arrhenius attribute)</a>
+</li>
         <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev.comment">(rmgpy.kinetics.Chebyshev attribute)</a>
 </li>
         <li><a href="reference/kinetics/kineticsdata.html#rmgpy.kinetics.KineticsData.comment">(rmgpy.kinetics.KineticsData attribute)</a>
@@ -693,6 +828,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.comment">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.comment">(rmgpy.kinetics.Troe attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.comment">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.comment">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
         <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.comment">(rmgpy.thermo.NASA attribute)</a>
 </li>
@@ -727,8 +866,58 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer">Conformer (class in rmgpy.statmech)</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.conformer">conformer (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.conformer">(rmgpy.species.Species attribute)</a>
+</li>
+        <li><a href="reference/species/transitionstate.html#rmgpy.species.TransitionState.conformer">(rmgpy.species.TransitionState attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.connect_the_dots">connect_the_dots (rmgpy.molecule.Molecule attribute)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.connectivity1">connectivity1 (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.connectivity1">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.connectivity1">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.connectivity2">connectivity2 (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.connectivity2">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.connectivity2">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.connectivity3">connectivity3 (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.connectivity3">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.connectivity3">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.const_spc_indices">const_spc_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.const_spc_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.const_spc_names">const_spc_names (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.const_spc_names">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.constant_volume">constant_volume (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.constant_volume">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.contains_labeled_atom">contains_labeled_atom (rmgpy.molecule.Group attribute)</a>
 
       <ul>
@@ -761,9 +950,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer.coordinates">coordinates (rmgpy.statmech.Conformer attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.copy">copy (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.coords">coords (rmgpy.molecule.Atom attribute)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.copy">copy (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.copy">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.copy">(rmgpy.molecule.Atom attribute)</a>
 </li>
         <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.copy">(rmgpy.molecule.Bond attribute)</a>
@@ -813,6 +1006,46 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/thermogroups.html#rmgpy.data.thermo.ThermoGroups.copy_data">copy_data() (rmgpy.data.thermo.ThermoGroups method)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.core_reaction_rates">core_reaction_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.core_reaction_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.core_reaction_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.core_species_concentrations">core_species_concentrations (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.core_species_concentrations">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.core_species_concentrations">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.core_species_consumption_rates">core_species_consumption_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.core_species_consumption_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.core_species_consumption_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.core_species_production_rates">core_species_production_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.core_species_production_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.core_species_production_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.core_species_rates">core_species_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.core_species_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.core_species_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel">CoreEdgeReactionModel (class in rmgpy.rmg.model)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.CoreError">CoreError</a>
@@ -824,6 +1057,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.count_bonds">count_bonds (rmgpy.molecule.GroupAtom attribute)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.count_internal_rotors">count_internal_rotors (rmgpy.molecule.Molecule attribute)</a>
+</li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.cov_radius">cov_radius (rmgpy.molecule.Element attribute)</a>
 </li>
       <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.Cp0">Cp0 (rmgpy.thermo.NASA attribute)</a>
 
@@ -869,6 +1104,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/arkane/statmech.html#arkane.StatMechJob.create_hindered_rotor_figure">create_hindered_rotor_figure() (arkane.StatMechJob method)</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.creation_iteration">creation_iteration (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.creation_iteration">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.cross_validate">cross_validate() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.cross_validate_old">cross_validate_old() (rmgpy.data.kinetics.KineticsFamily method)</a>
@@ -885,20 +1126,32 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.debug_rdkit_mol">debug_rdkit_mol (in module rmgpy.molecule.converter)</a>
 </li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.decrement_bond">decrement_bond (rmgpy.molecule.AtomType attribute)</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.decrement_lone_pair">decrement_lone_pair (rmgpy.molecule.AtomType attribute)</a>
+</li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.decrement_lone_pairs">decrement_lone_pairs (rmgpy.molecule.Atom attribute)</a>
 </li>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.decrement_order">decrement_order (rmgpy.molecule.Bond attribute)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.decrement_radical">decrement_radical (rmgpy.molecule.Atom attribute)</a>
-</li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.degeneracy">degeneracy (rmgpy.data.kinetics.LibraryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.decrement_radical">(rmgpy.molecule.AtomType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.degeneracy">degeneracy (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.degeneracy">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.degeneracy">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.degeneracy">(rmgpy.reaction.Reaction attribute)</a>
 </li>
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.degeneracy">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+        <li><a href="reference/species/transitionstate.html#rmgpy.species.TransitionState.degeneracy">(rmgpy.species.TransitionState attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev.degreeP">degreeP (rmgpy.kinetics.Chebyshev attribute)</a>
@@ -907,7 +1160,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.delete_hydrogens">delete_hydrogens (rmgpy.molecule.Molecule attribute)</a>
 </li>
+      <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.dens_states">dens_states (rmgpy.pdep.Configuration attribute)</a>
+</li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.DependencyError">DependencyError</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction">DepositoryReaction (class in rmgpy.data.kinetics)</a>
 </li>
       <li><a href="reference/data/database.html#rmgpy.data.base.Database.descend_tree">descend_tree() (rmgpy.data.base.Database method)</a>
 
@@ -1015,9 +1272,15 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.distribute_tree_distances">distribute_tree_distances() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.draw">draw (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.double_possible">double_possible (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+</li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.double_required">double_required (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.draw">draw (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.draw">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.draw">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.draw">(rmgpy.molecule.Group attribute)</a>
@@ -1037,6 +1300,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/moleculedrawer.html#rmgpy.molecule.draw.MoleculeDrawer.draw">(rmgpy.molecule.draw.MoleculeDrawer method)</a>
 </li>
         <li><a href="reference/molecule/reactiondrawer.html#rmgpy.molecule.draw.ReactionDrawer.draw">(rmgpy.molecule.draw.ReactionDrawer method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.duplicate">duplicate (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.duplicate">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.duplicate">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.duplicate">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.duplicate">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.dydt0">dydt0 (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.dydt0">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.dydt0">(rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1065,12 +1348,38 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/kinetics/eckart.html#rmgpy.kinetics.Eckart.E0_TS">E0_TS (rmgpy.kinetics.Eckart attribute)</a>
 </li>
+      <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.e_list">e_list (rmgpy.pdep.Configuration attribute)</a>
+</li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.Ea">Ea (rmgpy.kinetics.Arrhenius attribute)</a>
 </li>
       <li><a href="reference/kinetics/eckart.html#rmgpy.kinetics.Eckart">Eckart (class in rmgpy.kinetics)</a>
 </li>
       <li><a href="reference/molecule/edge.html#rmgpy.molecule.graph.Edge">Edge (class in rmgpy.molecule.graph)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.edge_reaction_rates">edge_reaction_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.edge_reaction_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.edge_reaction_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.edge_species_rates">edge_species_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.edge_species_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.edge_species_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.edges">edges (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.edges">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.edges">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev.efficiencies">efficiencies (rmgpy.kinetics.Chebyshev attribute)</a>
 
       <ul>
@@ -1089,17 +1398,49 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/molecule/element.html#rmgpy.molecule.Element">Element (class in rmgpy.molecule)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.element">element (rmgpy.molecule.Atom attribute)</a>
+</li>
       <li><a href="reference/arkane/thermo.html#arkane.ThermoJob.element_count_from_conformer">element_count_from_conformer() (arkane.ThermoJob method)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.elementary_high_p">elementary_high_p (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.elementary_high_p">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.elementary_high_p">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.elementary_high_p">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.elementary_high_p">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.elementCount">elementCount (rmgpy.molecule.Group attribute)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ElementError">ElementError</a>
 </li>
-      <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.energies">energies (rmgpy.statmech.HinderedRotor attribute)</a>
-</li>
-      <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">enlarge() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
-</li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.ensure_species">ensure_species (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.endo_dof">endo_dof (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
 
       <ul>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.endo_dof">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.energies">energies (rmgpy.statmech.HinderedRotor attribute)</a>
+</li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.energy_transfer_model">energy_transfer_model (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.energy_transfer_model">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">enlarge() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.ensure_species">ensure_species (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.ensure_species">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.ensure_species">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.ensure_species">(rmgpy.reaction.Reaction attribute)</a>
@@ -1111,8 +1452,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.enumerate_bonds">enumerate_bonds (rmgpy.molecule.Molecule attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.equals">equals (rmgpy.quantity.ArrayQuantity attribute)</a>
 
       <ul>
@@ -1171,6 +1510,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/arkane/thermo.html#arkane.ThermoJob.execute">(arkane.ThermoJob method)</a>
 </li>
         <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.execute">(rmgpy.rmg.main.RMG method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.exo_dof">exo_dof (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.exo_dof">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.explicitly_allowed">explicitly_allowed (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.explicitly_allowed">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.explore_isomer">explore_isomer() (rmgpy.rmg.pdep.PDepNetwork method)</a>
@@ -1235,6 +1586,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/pathfinder.html#rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths">find_N5dc_radical_delocalization_paths (in module rmgpy.molecule.pathfinder)</a>
 </li>
+      <li><a href="reference/molecule/pathfinder.html#rmgpy.molecule.pathfinder.find_shortest_path">find_shortest_path (in module rmgpy.molecule.pathfinder)</a>
+</li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.find_subgraph_isomorphisms">find_subgraph_isomorphisms (rmgpy.molecule.graph.Graph attribute)</a>
 
       <ul>
@@ -1263,6 +1616,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.fit_interpolation_models">fit_interpolation_models() (arkane.PressureDependenceJob method)</a>
 </li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_direct">fit_statmech_direct() (in module rmgpy.data.statmechfit)</a>
+</li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_pseudo">fit_statmech_pseudo() (in module rmgpy.data.statmechfit)</a>
+</li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors">fit_statmech_pseudo_rotors() (in module rmgpy.data.statmechfit)</a>
+</li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity">fit_statmech_to_heat_capacity() (in module rmgpy.data.statmechfit)</a>
+</li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.fit_to_data">fit_to_data (rmgpy.kinetics.Arrhenius attribute)</a>
 
       <ul>
@@ -1277,9 +1638,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.fit_to_data_for_constant_b">fit_to_data_for_constant_b (rmgpy.thermo.Wilhoit attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.fix_barrier_height">fix_barrier_height (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.fix_barrier_height">fix_barrier_height (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.fix_barrier_height">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.fix_barrier_height">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.fix_barrier_height">(rmgpy.reaction.Reaction attribute)</a>
@@ -1287,9 +1650,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.fix_barrier_height">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.fix_diffusion_limited_a_factor">fix_diffusion_limited_a_factor (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.fix_diffusion_limited_a_factor">fix_diffusion_limited_a_factor (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.fix_diffusion_limited_a_factor">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.fix_diffusion_limited_a_factor">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.fix_diffusion_limited_a_factor">(rmgpy.reaction.Reaction attribute)</a>
@@ -1298,6 +1663,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ForbiddenStructureException">ForbiddenStructureException</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.form_bond">form_bond (rmgpy.molecule.AtomType attribute)</a>
 </li>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.fourier">fourier (rmgpy.statmech.HinderedRotor attribute)</a>
 </li>
@@ -1323,6 +1690,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.from_adjacency_list">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/adjlist.html#rmgpy.molecule.adjlist.from_adjacency_list">from_adjacency_list() (in module rmgpy.molecule.adjlist)</a>
+</li>
       <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.from_augmented_inchi">from_augmented_inchi (in module rmgpy.molecule.translator)</a>
 
       <ul>
@@ -1373,9 +1742,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMolPM6">GaussianMolPM6 (class in rmgpy.qm.gaussian)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.generate_3d_ts">generate_3d_ts (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.generate_3d_ts">generate_3d_ts (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.generate_3d_ts">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.generate_3d_ts">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.generate_3d_ts">(rmgpy.reaction.Reaction attribute)</a>
@@ -1395,6 +1766,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/resonance.html#rmgpy.molecule.resonance.generate_aryne_resonance_structures">generate_aryne_resonance_structures (in module rmgpy.molecule.resonance)</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.generate_aug_inchi">generate_aug_inchi (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.generate_aug_inchi">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.generate_cantera_files">generate_cantera_files() (rmgpy.rmg.main.RMG method)</a>
 </li>
       <li><a href="reference/molecule/resonance.html#rmgpy.molecule.resonance.generate_clar_structures">generate_clar_structures (in module rmgpy.molecule.resonance)</a>
@@ -1413,13 +1790,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/groupfrequencies.html#rmgpy.data.statmech.GroupFrequencies.generate_frequencies">generate_frequencies() (rmgpy.data.statmech.GroupFrequencies method)</a>
 </li>
+      <li><a href="reference/pdep/mastereqn.html#rmgpy.pdep.me.generate_full_me_matrix">generate_full_me_matrix() (in module rmgpy.pdep.me)</a>
+</li>
       <li><a href="reference/data/kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups.generate_group_additivity_values">generate_group_additivity_values() (rmgpy.data.kinetics.KineticsGroups method)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.generate_h_bonded_structures">generate_h_bonded_structures (rmgpy.molecule.Molecule attribute)</a>
 </li>
-      <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.generate_high_p_limit_kinetics">generate_high_p_limit_kinetics (rmgpy.data.kinetics.TemplateReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.generate_high_p_limit_kinetics">generate_high_p_limit_kinetics (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.generate_high_p_limit_kinetics">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.generate_high_p_limit_kinetics">(rmgpy.reaction.Reaction attribute)</a>
 </li>
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.generate_high_p_limit_kinetics">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
@@ -1481,9 +1862,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.generate_P_list">generate_P_list() (arkane.PressureDependenceJob method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.generate_pairs">generate_pairs (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.generate_pairs">generate_pairs (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.generate_pairs">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.generate_pairs">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.generate_pairs">(rmgpy.reaction.Reaction attribute)</a>
@@ -1557,9 +1940,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.generate_resonance_structures">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.generate_reverse_rate_coefficient">generate_reverse_rate_coefficient (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.generate_reverse_rate_coefficient">generate_reverse_rate_coefficient (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.generate_reverse_rate_coefficient">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.generate_reverse_rate_coefficient">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.generate_reverse_rate_coefficient">(rmgpy.reaction.Reaction attribute)</a>
@@ -1614,6 +1999,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.generate_tree">generate_tree() (rmgpy.data.kinetics.KineticsFamily method)</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.generic">generic (rmgpy.molecule.AtomType attribute)</a>
 </li>
       <li><a href="reference/arkane/output.html#arkane.output.PrettifyVisitor.generic_visit">generic_visit() (arkane.output.PrettifyVisitor method)</a>
 </li>
@@ -1691,6 +2078,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_aromatic_rings">get_aromatic_rings (rmgpy.molecule.Molecule attribute)</a>
 </li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.get_atomtype">get_atomtype() (in module rmgpy.molecule)</a>
+</li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.get_augmented_inchi">get_augmented_inchi (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.get_augmented_inchi">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.get_augmented_inchi_key">get_augmented_inchi_key() (rmgpy.qm.gaussian.GaussianMol method)</a>
 
       <ul>
@@ -1873,6 +2268,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.get_effective_pressure">(rmgpy.kinetics.Troe attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.get_element">get_element() (in module rmgpy.molecule)</a>
+</li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.get_element_count">get_element_count (rmgpy.molecule.Group attribute)</a>
 
       <ul>
@@ -1883,9 +2280,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions">get_energy_filtered_reactions() (rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_enthalpies_of_reaction">get_enthalpies_of_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_enthalpies_of_reaction">get_enthalpies_of_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_enthalpies_of_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_enthalpies_of_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_enthalpies_of_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -1929,9 +2328,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.get_enthalpy">(rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_enthalpy_of_reaction">get_enthalpy_of_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_enthalpy_of_reaction">get_enthalpy_of_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_enthalpy_of_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_enthalpy_of_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_enthalpy_of_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -1967,9 +2368,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.get_entries_to_save">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_entropies_of_reaction">get_entropies_of_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_entropies_of_reaction">get_entropies_of_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_entropies_of_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_entropies_of_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_entropies_of_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -2013,9 +2416,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.get_entropy">(rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_entropy_of_reaction">get_entropy_of_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_entropy_of_reaction">get_entropy_of_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_entropy_of_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_entropy_of_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_entropy_of_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -2023,9 +2428,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.get_entropy_of_reaction">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constant">get_equilibrium_constant (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_equilibrium_constant">get_equilibrium_constant (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constant">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_equilibrium_constant">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_equilibrium_constant">(rmgpy.reaction.Reaction attribute)</a>
@@ -2035,9 +2442,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constants">get_equilibrium_constants (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_equilibrium_constants">get_equilibrium_constants (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constants">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_equilibrium_constants">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_equilibrium_constants">(rmgpy.reaction.Reaction attribute)</a>
@@ -2075,9 +2484,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.get_forward_reaction_for_family_entry">get_forward_reaction_for_family_entry() (rmgpy.data.kinetics.KineticsDatabase method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_free_energies_of_reaction">get_free_energies_of_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_free_energies_of_reaction">get_free_energies_of_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_free_energies_of_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_free_energies_of_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_free_energies_of_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -2105,9 +2516,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.get_free_energy">(rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_free_energy_of_reaction">get_free_energy_of_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_free_energy_of_reaction">get_free_energy_of_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_free_energy_of_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_free_energy_of_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_free_energy_of_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -2227,9 +2640,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.get_maximum_leak_species">get_maximum_leak_species() (rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_mean_sigma_and_epsilon">get_mean_sigma_and_epsilon (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_mean_sigma_and_epsilon">get_mean_sigma_and_epsilon (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_mean_sigma_and_epsilon">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_mean_sigma_and_epsilon">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_mean_sigma_and_epsilon">(rmgpy.reaction.Reaction attribute)</a>
@@ -2371,9 +2786,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_radical_count">get_radical_count (rmgpy.molecule.Molecule attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_rate_coefficient">get_rate_coefficient (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_rate_coefficient">get_rate_coefficient (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_rate_coefficient">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_rate_coefficient">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.get_rate_coefficient">(rmgpy.kinetics.Arrhenius attribute)</a>
@@ -2417,9 +2834,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.get_reaction_template_labels">get_reaction_template_labels() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_reduced_mass">get_reduced_mass (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_reduced_mass">get_reduced_mass (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_reduced_mass">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_reduced_mass">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_reduced_mass">(rmgpy.reaction.Reaction attribute)</a>
@@ -2443,6 +2862,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.get_resonance_hybrid">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.get_reverse">get_reverse() (rmgpy.data.kinetics.ReactionRecipe method)</a>
+</li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.get_ring_groups_from_comments">get_ring_groups_from_comments() (rmgpy.data.thermo.ThermoDatabase method)</a>
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.get_root_template">get_root_template() (rmgpy.data.kinetics.KineticsFamily method)</a>
@@ -2461,9 +2882,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_smallest_set_of_smallest_rings">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_source">get_source() (rmgpy.data.kinetics.LibraryReaction method)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_source">get_source() (rmgpy.data.kinetics.DepositoryReaction method)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_source">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_source">(rmgpy.data.kinetics.TemplateReaction method)</a>
 </li>
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.get_source">(rmgpy.rmg.pdep.PDepReaction method)</a>
@@ -2497,6 +2920,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.get_species">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.get_species_identifier">get_species_identifier() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.get_species_index">get_species_index() (rmgpy.solver.LiquidReactor method)</a>
 
       <ul>
@@ -2519,9 +2944,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/data/statmechdatabase.html#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_library">get_statmech_data_from_library() (rmgpy.data.statmech.StatmechDatabase method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_stoichiometric_coefficient">get_stoichiometric_coefficient (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_stoichiometric_coefficient">get_stoichiometric_coefficient (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_stoichiometric_coefficient">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_stoichiometric_coefficient">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_stoichiometric_coefficient">(rmgpy.reaction.Reaction attribute)</a>
@@ -2557,9 +2984,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/statmech/sphericaltoprotor.html#rmgpy.statmech.SphericalTopRotor.get_sum_of_states">(rmgpy.statmech.SphericalTopRotor attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_surface_rate_coefficient">get_surface_rate_coefficient (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_surface_rate_coefficient">get_surface_rate_coefficient (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_surface_rate_coefficient">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_surface_rate_coefficient">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_surface_rate_coefficient">(rmgpy.reaction.Reaction attribute)</a>
@@ -2657,9 +3086,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.get_transport_data">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_url">get_url (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_url">get_url (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_url">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_url">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_url">(rmgpy.molecule.Molecule attribute)</a>
@@ -2693,6 +3124,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/thermo/thermodata.html#rmgpy.thermo.ThermoData.H298">H298 (rmgpy.thermo.ThermoData attribute)</a>
 </li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq">harmonic_oscillator_d_heat_capacity_d_freq() (in module rmgpy.data.statmechfit)</a>
+</li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity">harmonic_oscillator_heat_capacity() (in module rmgpy.data.statmechfit)</a>
+</li>
       <li><a href="reference/statmech/harmonicoscillator.html#rmgpy.statmech.HarmonicOscillator">HarmonicOscillator (class in rmgpy.statmech)</a>
 </li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.has_atom">has_atom (rmgpy.molecule.Group attribute)</a>
@@ -2707,6 +3142,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.has_bond">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.has_charge">has_charge (rmgpy.molecule.Molecule attribute)</a>
+</li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.has_edge">has_edge (rmgpy.molecule.graph.Graph attribute)</a>
 
       <ul>
@@ -2735,11 +3172,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.has_statmech">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.has_template">has_template (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.has_template">has_template (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.has_template">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.has_template">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.has_template">(rmgpy.reaction.Reaction attribute)</a>
@@ -2747,6 +3184,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.has_template">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.has_thermo">has_thermo (rmgpy.pdep.Configuration attribute)</a>
 
       <ul>
@@ -2781,6 +3220,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.highPlimit">(rmgpy.kinetics.Troe attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr">hindered_rotor_d_heat_capacity_d_barr() (in module rmgpy.data.statmechfit)</a>
+</li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq">hindered_rotor_d_heat_capacity_d_freq() (in module rmgpy.data.statmechfit)</a>
+</li>
+      <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.hindered_rotor_heat_capacity">hindered_rotor_heat_capacity() (in module rmgpy.data.statmechfit)</a>
+</li>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor">HinderedRotor (class in rmgpy.statmech)</a>
 </li>
   </ul></td>
@@ -2789,10 +3234,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.id">id (rmgpy.molecule.Atom attribute)</a>
+</li>
       <li><a href="reference/statmech/idealgastranslation.html#rmgpy.statmech.IdealGasTranslation">IdealGasTranslation (class in rmgpy.statmech)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.identify_ring_membership">identify_ring_membership (rmgpy.molecule.Molecule attribute)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.ignore">ignore (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.ignore">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.ignore">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ILPSolutionError">ILPSolutionError</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ImplicitBenzeneError">ImplicitBenzeneError</a>
@@ -2807,12 +3262,36 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.InchiException">InchiException</a>
 </li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.increment_bond">increment_bond (rmgpy.molecule.AtomType attribute)</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.increment_lone_pair">increment_lone_pair (rmgpy.molecule.AtomType attribute)</a>
+</li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.increment_lone_pairs">increment_lone_pairs (rmgpy.molecule.Atom attribute)</a>
 </li>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.increment_order">increment_order (rmgpy.molecule.Bond attribute)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.increment_radical">increment_radical (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.increment_radical">(rmgpy.molecule.AtomType attribute)</a>
 </li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.index">index (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.index">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.index">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.index">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.index">(rmgpy.rmg.model.Species attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.index">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.index">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.inertia">inertia (rmgpy.statmech.HinderedRotor attribute)</a>
 
       <ul>
@@ -2825,6 +3304,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/statmech/sphericaltoprotor.html#rmgpy.statmech.SphericalTopRotor.inertia">(rmgpy.statmech.SphericalTopRotor attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.initial_concentrations">initial_concentrations (rmgpy.solver.LiquidReactor attribute)</a>
+</li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.initial_mole_fractions">initial_mole_fractions (rmgpy.solver.SimpleReactor attribute)</a>
+</li>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.initialize">initialize() (arkane.PressureDependenceJob method)</a>
 
       <ul>
@@ -2867,12 +3350,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.initialize_index_species_dict">initialize_index_species_dict() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
+      <li><a href="reference/rmg/main.html#rmgpy.rmg.main.initialize_log">initialize_log() (in module rmgpy.rmg.main)</a>
+</li>
       <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.initialize_model">initialize_model() (rmgpy.solver.LiquidReactor method)</a>
 
       <ul>
         <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.initialize_model">(rmgpy.solver.ReactionSystem method)</a>
 </li>
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.initialize_model">(rmgpy.solver.SimpleReactor method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.initialize_solver">initialize_solver() (rmgpy.solver.LiquidReactor method)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.initialize_solver">(rmgpy.solver.ReactionSystem method)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.initialize_solver">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
       <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.initialize_surface">initialize_surface() (rmgpy.solver.LiquidReactor method)</a>
@@ -2947,9 +3440,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_aryl_radical">is_aryl_radical (rmgpy.molecule.Molecule attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_association">is_association (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_association">is_association (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_association">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_association">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_association">(rmgpy.reaction.Reaction attribute)</a>
@@ -2963,9 +3458,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_atom_in_cycle">is_atom_in_cycle (rmgpy.molecule.Molecule attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_balanced">is_balanced (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_balanced">is_balanced (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_balanced">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_balanced">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_balanced">(rmgpy.reaction.Reaction attribute)</a>
@@ -3001,9 +3498,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_cyclic">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_dissociation">is_dissociation (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_dissociation">is_dissociation (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_dissociation">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_dissociation">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_dissociation">(rmgpy.reaction.Reaction attribute)</a>
@@ -3029,6 +3528,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_fluorine">is_fluorine (rmgpy.molecule.Atom attribute)</a>
 </li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_forward">is_forward (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_forward">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_forward">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_forward">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.is_forward">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_heterocyclic">is_heterocyclic (rmgpy.molecule.Molecule attribute)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_hydrogen">is_hydrogen (rmgpy.molecule.Atom attribute)</a>
@@ -3083,9 +3594,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_iodine">is_iodine (rmgpy.molecule.Atom attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_isomerization">is_isomerization (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_isomerization">is_isomerization (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_isomerization">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_isomerization">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_isomerization">(rmgpy.reaction.Reaction attribute)</a>
@@ -3093,9 +3606,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.is_isomerization">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_isomorphic">is_isomorphic (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_isomorphic">is_isomorphic (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_isomorphic">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_isomorphic">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.is_isomorphic">(rmgpy.molecule.graph.Graph attribute)</a>
@@ -3229,6 +3744,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.is_single">(rmgpy.molecule.GroupBond attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.is_solvent">is_solvent (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.is_solvent">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_specific_case_of">is_specific_case_of (rmgpy.molecule.Atom attribute)</a>
 
       <ul>
@@ -3267,9 +3788,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.is_sulfur">(rmgpy.molecule.GroupAtom attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_surface_reaction">is_surface_reaction (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_surface_reaction">is_surface_reaction (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_surface_reaction">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_surface_reaction">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_surface_reaction">(rmgpy.reaction.Reaction attribute)</a>
@@ -3343,9 +3866,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.is_uncertainty_multiplicative">(rmgpy.quantity.ScalarQuantity attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_unimolecular">is_unimolecular (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_unimolecular">is_unimolecular (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_unimolecular">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_unimolecular">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.is_unimolecular">(rmgpy.pdep.Configuration attribute)</a>
@@ -3369,6 +3894,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_vertex_in_cycle">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.isotope">isotope (rmgpy.molecule.Element attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -3382,11 +3909,41 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.jacobian_matrix">jacobian_matrix (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.jacobian_matrix">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.jacobian_matrix">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
 </tr></table>
 
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.k_effective_cache">k_effective_cache (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.k_effective_cache">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.k_effective_cache">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.k_effective_cache">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.k_effective_cache">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.kb">kb (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.kb">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.kb">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/kinetics/kineticsdata.html#rmgpy.kinetics.KineticsData.kdata">kdata (rmgpy.kinetics.KineticsData attribute)</a>
 
       <ul>
@@ -3403,6 +3960,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.kekulize">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.Keq">Keq (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.Keq">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.Keq">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMolPM3.keywords">keywords (rmgpy.qm.gaussian.GaussianMolPM3 attribute)</a>
 
       <ul>
@@ -3411,10 +3976,30 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMol.keywords">(rmgpy.qm.mopac.MopacMol attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/kinetics/kineticsdata.html#rmgpy.kinetics.KineticsData">KineticsData (class in rmgpy.kinetics)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.kf">kf (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.kf">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.kf">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.kinetics">kinetics (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.kinetics">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.kinetics">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.kinetics">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.kinetics">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/kinetics/kineticsdata.html#rmgpy.kinetics.KineticsData">KineticsData (class in rmgpy.kinetics)</a>
+</li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase">KineticsDatabase (class in rmgpy.data.kinetics)</a>
 </li>
       <li><a href="reference/data/kineticsdepository.html#rmgpy.data.kinetics.KineticsDepository">KineticsDepository (class in rmgpy.data.kinetics)</a>
@@ -3441,9 +4026,31 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.label">label (rmgpy.thermo.NASA attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.label">label (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.label">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.label">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.label">(rmgpy.molecule.Atom attribute)</a>
+</li>
+        <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.label">(rmgpy.molecule.AtomType attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.label">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.label">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.label">(rmgpy.rmg.model.Species attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.label">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.label">(rmgpy.species.Species attribute)</a>
+</li>
+        <li><a href="reference/species/transitionstate.html#rmgpy.species.TransitionState.label">(rmgpy.species.TransitionState attribute)</a>
+</li>
+        <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.label">(rmgpy.thermo.NASA attribute)</a>
+</li>
         <li><a href="reference/thermo/nasapolynomial.html#rmgpy.thermo.NASAPolynomial.label">(rmgpy.thermo.NASAPolynomial attribute)</a>
 </li>
         <li><a href="reference/thermo/thermodata.html#rmgpy.thermo.ThermoData.label">(rmgpy.thermo.ThermoData attribute)</a>
@@ -3493,6 +4100,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.load">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.load_chemkin_file">load_chemkin_file() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/arkane/gaussianlog.html#arkane.gaussian.GaussianLog.load_conformer">load_conformer() (arkane.gaussian.GaussianLog method)</a>
 
       <ul>
@@ -3566,7 +4175,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.load_input">load_input() (rmgpy.rmg.main.RMG method)</a>
 </li>
       <li><a href="reference/arkane/main.html#arkane.Arkane.load_input_file">load_input_file() (arkane.Arkane method)</a>
+
+      <ul>
+        <li><a href="reference/arkane/input.html#arkane.input.load_input_file">(in module arkane.input)</a>
 </li>
+      </ul></li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.load_libraries">load_libraries() (rmgpy.data.kinetics.KineticsDatabase method)</a>
 
       <ul>
@@ -3727,6 +4340,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/arkane/qchemlog.html#arkane.qchem.QChemLog.load_scan_pivot_atoms">(arkane.qchem.QChemLog method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.load_species_dictionary">load_species_dictionary() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.load_template">load_template() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.load_thermo_data">load_thermo_data() (rmgpy.qm.gaussian.GaussianMol method)</a>
@@ -3748,6 +4363,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       </ul></li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.load_thermo_input">load_thermo_input() (rmgpy.rmg.main.RMG method)</a>
+</li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.load_transport_file">load_transport_file() (in module rmgpy.chemkin)</a>
 </li>
       <li><a href="reference/arkane/gaussianlog.html#arkane.gaussian.GaussianLog.load_zero_point_energy">load_zero_point_energy() (arkane.gaussian.GaussianLog method)</a>
 
@@ -3789,6 +4406,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/data/logicnode.html#rmgpy.data.base.LogicOr">LogicOr (class in rmgpy.data.base)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.lone_pairs">lone_pairs (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.lone_pairs">(rmgpy.molecule.AtomType attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.lone_pairs">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -3796,6 +4421,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.make_bond">make_bond (rmgpy.molecule.GroupBond attribute)</a>
+</li>
+      <li><a href="reference/data/logicnode.html#rmgpy.data.base.make_logic_node">make_logic_node() (in module rmgpy.data.base)</a>
 </li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_pdep_reaction">make_new_pdep_reaction() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
@@ -3835,6 +4462,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.make_object">(rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/rmg/main.html#rmgpy.rmg.main.make_profile_graph">make_profile_graph() (in module rmgpy.rmg.main)</a>
+</li>
       <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.make_sample_atom">make_sample_atom (rmgpy.molecule.GroupAtom attribute)</a>
 </li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.make_sample_molecule">make_sample_molecule (rmgpy.molecule.Group attribute)</a>
@@ -3855,13 +4484,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.map_sum_of_states">map_sum_of_states (rmgpy.pdep.Configuration attribute)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.mapping">mapping (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.mapping">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.mapping">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.mark_chemkin_duplicates">mark_chemkin_duplicates() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
+</li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.mark_duplicate_reactions">mark_duplicate_reactions() (in module rmgpy.chemkin)</a>
 </li>
       <li><a href="reference/data/kineticslibrary.html#rmgpy.data.kinetics.KineticsLibrary.mark_valid_duplicates">mark_valid_duplicates() (rmgpy.data.kinetics.KineticsLibrary method)</a>
 </li>
-      <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer.mass">mass (rmgpy.statmech.Conformer attribute)</a>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.mass">mass (rmgpy.molecule.Element attribute)</a>
 
       <ul>
+        <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer.mass">(rmgpy.statmech.Conformer attribute)</a>
+</li>
         <li><a href="reference/statmech/idealgastranslation.html#rmgpy.statmech.IdealGasTranslation.mass">(rmgpy.statmech.IdealGasTranslation attribute)</a>
 </li>
       </ul></li>
@@ -3953,9 +4594,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/logicnode.html#rmgpy.data.base.LogicOr.match_to_structure">(rmgpy.data.base.LogicOr method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.matches_species">matches_species (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.matches_species">matches_species (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.matches_species">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.matches_species">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.matches_species">(rmgpy.reaction.Reaction attribute)</a>
@@ -3979,6 +4622,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM6.max_attempts">(rmgpy.qm.mopac.MopacMolPM6 property)</a>
 </li>
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.max_attempts">(rmgpy.qm.mopac.MopacMolPM7 property)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.max_edge_species_rate_ratios">max_edge_species_rate_ratios (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.max_edge_species_rate_ratios">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.max_edge_species_rate_ratios">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.max_network_leak_rate_ratios">max_network_leak_rate_ratios (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.max_network_leak_rate_ratios">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.max_network_leak_rate_ratios">(rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.maximum_grain_size">maximum_grain_size() (arkane.PressureDependenceJob property)</a>
@@ -4011,6 +4670,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule">Molecule (class in rmgpy.molecule)</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.molecule">molecule (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.molecule">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/moleculedrawer.html#rmgpy.molecule.draw.MoleculeDrawer">MoleculeDrawer (class in rmgpy.molecule.draw)</a>
 </li>
       <li><a href="reference/arkane/molprolog.html#arkane.molpro.MolproLog">MolproLog (class in arkane.molpro)</a>
@@ -4029,9 +4694,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/kinetics/multipdeparrhenius.html#rmgpy.kinetics.MultiPDepArrhenius">MultiPDepArrhenius (class in rmgpy.kinetics)</a>
 </li>
-      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.multiplicity">multiplicity (rmgpy.rmg.model.Species attribute)</a>
+      <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.multiplicity">multiplicity (rmgpy.molecule.Group attribute)</a>
 
       <ul>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.multiplicity">(rmgpy.molecule.Molecule attribute)</a>
+</li>
+        <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.multiplicity">(rmgpy.rmg.model.Species attribute)</a>
+</li>
         <li><a href="reference/species/species.html#rmgpy.species.Species.multiplicity">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
@@ -4047,22 +4716,118 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/pdep/singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown.n">(rmgpy.pdep.SingleExponentialDown attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.n_sims">n_sims (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.n_sims">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.name">name (rmgpy.molecule.Element attribute)</a>
+</li>
       <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA">NASA (class in rmgpy.thermo)</a>
 </li>
       <li><a href="reference/thermo/nasapolynomial.html#rmgpy.thermo.NASAPolynomial">NASAPolynomial (class in rmgpy.thermo)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.NegativeBarrierException">NegativeBarrierException</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.neq">neq (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.neq">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.neq">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/pdep/network.html#rmgpy.pdep.Network">Network (class in rmgpy.pdep)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.network_indices">network_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.network_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.network_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.network_kinetics">network_kinetics (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.network_kinetics">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.network_kinetics">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.network_kinetics">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.network_kinetics">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.network_leak_coefficients">network_leak_coefficients (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.network_leak_coefficients">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.network_leak_coefficients">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.network_leak_rates">network_leak_rates (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.network_leak_rates">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.network_leak_rates">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.NetworkError">NetworkError</a>
 </li>
       <li><a href="reference/statmech/nonlinearrotor.html#rmgpy.statmech.NonlinearRotor">NonlinearRotor (class in rmgpy.statmech)</a>
 </li>
-      <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer.number">number (rmgpy.statmech.Conformer attribute)</a>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.num_core_reactions">num_core_reactions (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.num_core_reactions">(rmgpy.solver.ReactionSystem attribute)</a>
 </li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.num_core_reactions">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.num_core_species">num_core_species (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.num_core_species">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.num_core_species">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.num_edge_reactions">num_edge_reactions (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.num_edge_reactions">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.num_edge_reactions">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.num_edge_species">num_edge_species (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.num_edge_species">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.num_edge_species">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.num_pdep_networks">num_pdep_networks (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.num_pdep_networks">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.num_pdep_networks">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.number">number (rmgpy.molecule.Element attribute)</a>
+
+      <ul>
+        <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer.number">(rmgpy.statmech.Conformer attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/qmdata.html#rmgpy.qm.qmdata.QMData.numberOfAtoms">numberOfAtoms (rmgpy.qm.qmdata.QMData attribute)</a>
 </li>
   </ul></td>
@@ -4071,8 +4836,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.o_double">o_double (rmgpy.molecule.AtomType attribute)</a>
+</li>
       <li><a href="reference/statmech/conformer.html#rmgpy.statmech.Conformer.optical_isomers">optical_isomers (rmgpy.statmech.Conformer attribute)</a>
 </li>
+      <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.order">order (rmgpy.molecule.Bond attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.order">(rmgpy.molecule.GroupBond attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.ordered_vertices">ordered_vertices (rmgpy.molecule.graph.Graph attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.ordered_vertices">(rmgpy.molecule.Group attribute)</a>
+</li>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.ordered_vertices">(rmgpy.molecule.Molecule attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.output_file_path">output_file_path() (rmgpy.qm.gaussian.GaussianMol property)</a>
 
       <ul>
@@ -4101,6 +4882,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.P">P (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.P">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.pairs">pairs (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.pairs">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.pairs">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.pairs">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.pairs">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.Gaussian.parse">parse() (rmgpy.qm.gaussian.Gaussian method)</a>
 
       <ul>
@@ -4153,6 +4952,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.Pdata">Pdata (rmgpy.kinetics.PDepKineticsData attribute)</a>
 </li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.pdep_collider_kinetics">pdep_collider_kinetics (rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.pdep_collision_reaction_indices">pdep_collision_reaction_indices (rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.pdep_specific_collider_kinetics">pdep_specific_collider_kinetics (rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.pdep_specific_collider_reaction_indices">pdep_specific_collider_reaction_indices (rmgpy.solver.SimpleReactor attribute)</a>
+</li>
       <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius">PDepArrhenius (class in rmgpy.kinetics)</a>
 </li>
       <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData">PDepKineticsData (class in rmgpy.kinetics)</a>
@@ -4195,8 +5002,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.Pmax">(rmgpy.kinetics.Troe attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.Pmax">Pmax() (arkane.PressureDependenceJob property)</a>
 </li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.Pmin">Pmin (rmgpy.kinetics.Arrhenius attribute)</a>
@@ -4221,6 +5026,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.Pmin">(rmgpy.kinetics.Troe attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.Pmin">Pmin() (arkane.PressureDependenceJob property)</a>
 </li>
       <li><a href="reference/qm/symmetry.html#rmgpy.qm.symmetry.PointGroup">PointGroup (class in rmgpy.qm.symmetry)</a>
@@ -4236,6 +5043,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.polynomials">polynomials (rmgpy.thermo.NASA attribute)</a>
 </li>
       <li><a href="reference/molecule/resonance.html#rmgpy.molecule.resonance.populate_resonance_algorithms">populate_resonance_algorithms (in module rmgpy.molecule.resonance)</a>
+</li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.Prange">Prange (rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.PressureDependenceError">PressureDependenceError</a>
 </li>
@@ -4267,10 +5076,78 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.process_pdep_networks">process_pdep_networks() (rmgpy.rmg.main.RMG method)</a>
 </li>
+      <li><a href="reference/rmg/main.html#rmgpy.rmg.main.process_profile_stats">process_profile_stats() (in module rmgpy.rmg.main)</a>
+</li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.process_reactions_to_species">process_reactions_to_species() (rmgpy.rmg.main.RMG method)</a>
 </li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.process_to_species_networks">process_to_species_networks() (rmgpy.rmg.main.RMG method)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.product_indices">product_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.product_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.product_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.products">products (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.products">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.products">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.products">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.products">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.props">props (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.props">(rmgpy.molecule.Group attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.props">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.props">(rmgpy.molecule.Molecule attribute)</a>
+</li>
+        <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.props">(rmgpy.rmg.model.Species attribute)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.props">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.prunable_network_indices">prunable_network_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.prunable_network_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.prunable_network_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.prunable_networks">prunable_networks (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.prunable_networks">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.prunable_networks">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.prunable_species">prunable_species (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.prunable_species">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.prunable_species">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.prunable_species_indices">prunable_species_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.prunable_species_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.prunable_species_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.prune">prune() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.prune_heteroatoms">prune_heteroatoms() (rmgpy.data.thermo.ThermoDatabase method)</a>
@@ -4298,6 +5175,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/qm/main.html#rmgpy.qm.main.QMSettings">QMSettings (class in rmgpy.qm.main)</a>
 </li>
       <li><a href="reference/qm/qmverifier.html#rmgpy.qm.qmverifier.QMVerifier">QMVerifier (class in rmgpy.qm.qmverifier)</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.quadruple">quadruple (rmgpy.molecule.AtomType attribute)</a>
 </li>
       <li><a href="reference/quantity/quantity.html#rmgpy.quantity.Quantity">Quantity() (in module rmgpy.quantity)</a>
 </li>
@@ -4327,14 +5206,64 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.r_double">r_double (rmgpy.molecule.AtomType attribute)</a>
+</li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.radical_electrons">radical_electrons (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.radical_electrons">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.radicalCount">radicalCount (rmgpy.molecule.Group attribute)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.rank">rank (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.rank">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.rank">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.rank">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.rank">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/molecule.html#rmgpy.qm.molecule.Geometry.rd_build">rd_build() (rmgpy.qm.molecule.Geometry method)</a>
 </li>
       <li><a href="reference/qm/molecule.html#rmgpy.qm.molecule.Geometry.rd_embed">rd_embed() (rmgpy.qm.molecule.Geometry method)</a>
 </li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.react_molecules">react_molecules() (rmgpy.data.kinetics.KineticsDatabase method)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.reactant_indices">reactant_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.reactant_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.reactant_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.reactants">reactants (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.reactants">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.reactants">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.reactants">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reactants">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction">Reaction (class in rmgpy.reaction)</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.reaction_index">reaction_index (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.reaction_index">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.reaction_index">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/reactiondrawer.html#rmgpy.molecule.draw.ReactionDrawer">ReactionDrawer (class in rmgpy.molecule.draw)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ReactionError">ReactionError</a>
@@ -4343,15 +5272,43 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ReactionPairsError">ReactionPairsError</a>
 </li>
+      <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe">ReactionRecipe (class in rmgpy.data.kinetics)</a>
+</li>
       <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem">ReactionSystem (class in rmgpy.solver)</a>
 </li>
+      <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.reactive">reactive (rmgpy.molecule.Molecule attribute)</a>
+
+      <ul>
+        <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.reactive">(rmgpy.rmg.model.Species attribute)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.reactive">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rmg/input.html#rmgpy.rmg.input.read_input_file">read_input_file() (in module rmgpy.rmg.input)</a>
+</li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.read_kinetics_entry">read_kinetics_entry() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.read_meaningful_line_java">read_meaningful_line_java() (rmgpy.rmg.main.RMG method)</a>
+</li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.read_reaction_comments">read_reaction_comments() (in module rmgpy.chemkin)</a>
+</li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.read_reactions_block">read_reactions_block() (in module rmgpy.chemkin)</a>
+</li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.read_thermo_entry">read_thermo_entry() (in module rmgpy.chemkin)</a>
 </li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.reconstruct_kinetics_from_source">reconstruct_kinetics_from_source() (rmgpy.data.kinetics.KineticsDatabase method)</a>
 </li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.record_polycylic_generic_nodes">record_polycylic_generic_nodes() (rmgpy.data.thermo.ThermoDatabase method)</a>
 </li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.record_ring_generic_nodes">record_ring_generic_nodes() (rmgpy.data.thermo.ThermoDatabase method)</a>
+</li>
+      <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.reg_dim">reg_dim (rmgpy.molecule.GroupBond attribute)</a>
+</li>
+      <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.reg_dim_atm">reg_dim_atm (rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.reg_dim_r">reg_dim_r (rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.reg_dim_u">reg_dim_u (rmgpy.molecule.GroupAtom attribute)</a>
 </li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.register_listeners">register_listeners() (rmgpy.rmg.main.RMG method)</a>
 </li>
@@ -4371,6 +5328,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.remove_bond">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/chemkin/reader.html#rmgpy.chemkin.remove_comment_from_line">remove_comment_from_line() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.remove_disconnected_reactions">remove_disconnected_reactions() (rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.remove_edge">remove_edge (rmgpy.molecule.graph.Graph attribute)</a>
@@ -4415,6 +5374,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.remove_species_from_edge">remove_species_from_edge() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.remove_van_der_waals_bonds">remove_van_der_waals_bonds (rmgpy.molecule.Group attribute)</a>
 
       <ul>
@@ -4447,8 +5408,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.reset_connectivity_values">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.reset_max_edge_species_rate_ratios">reset_max_edge_species_rate_ratios() (rmgpy.solver.LiquidReactor method)</a>
 
       <ul>
@@ -4467,6 +5426,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.residual">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.resolved">resolved (rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ResonanceError">ResonanceError</a>
 </li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.restore_vertex_order">restore_vertex_order (rmgpy.molecule.graph.Graph attribute)</a>
@@ -4483,9 +5444,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.retrieve_template">retrieve_template() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.reverse_arrhenius_rate">reverse_arrhenius_rate (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.reverse_arrhenius_rate">reverse_arrhenius_rate (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.reverse_arrhenius_rate">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.reverse_arrhenius_rate">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.reverse_arrhenius_rate">(rmgpy.reaction.Reaction attribute)</a>
@@ -4493,6 +5456,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_rate">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.reversible">reversible (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.reversible">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.reversible">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.reversible">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reversible">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.ring_bonds">ring_bonds (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+</li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG">RMG (class in rmgpy.rmg.main)</a>
 </li>
       <li><a href="reference/chemkin/index.html#module-rmgpy.chemkin">rmgpy.chemkin (module)</a>
@@ -4551,6 +5528,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/statmech/sphericaltoprotor.html#rmgpy.statmech.SphericalTopRotor.rotationalConstant">(rmgpy.statmech.SphericalTopRotor attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.rtol_array">rtol_array (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.rtol_array">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.rtol_array">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/symmetry.html#rmgpy.qm.symmetry.SymmetryJob.run">run() (rmgpy.qm.symmetry.SymmetryJob method)</a>
 </li>
       <li><a href="reference/qm/main.html#rmgpy.qm.main.QMCalculator.run_jobs">run_jobs() (rmgpy.qm.main.QMCalculator method)</a>
@@ -4568,6 +5553,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.S0">S0 (rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       <li><a href="reference/thermo/thermodata.html#rmgpy.thermo.ThermoData.S298">S298 (rmgpy.thermo.ThermoData attribute)</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.s_double">s_double (rmgpy.molecule.AtomType attribute)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.saturate_radicals">saturate_radicals (rmgpy.molecule.Molecule attribute)</a>
 </li>
@@ -4607,6 +5594,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.save">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.save_chemkin_file">save_chemkin_file() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/qm/molecule.html#rmgpy.qm.molecule.Geometry.save_coordinates_from_qm_data">save_coordinates_from_qm_data() (rmgpy.qm.molecule.Geometry method)</a>
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.save_depository">save_depository() (rmgpy.data.kinetics.KineticsFamily method)</a>
@@ -4643,6 +5632,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.save_dictionary">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/rmg/output.html#rmgpy.rmg.output.save_diff_html">save_diff_html() (in module rmgpy.rmg.output)</a>
+</li>
       <li><a href="reference/data/kineticsdepository.html#rmgpy.data.kinetics.KineticsDepository.save_entry">save_entry() (rmgpy.data.kinetics.KineticsDepository method)</a>
 
       <ul>
@@ -4681,9 +5672,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/arkane/statmech.html#arkane.StatMechJob.save_hindered_rotor_figures">save_hindered_rotor_figures() (arkane.StatMechJob method)</a>
 </li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.save_html_file">save_html_file() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.save_input">save_input() (rmgpy.rmg.main.RMG method)</a>
 </li>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.save_input_file">save_input_file() (arkane.PressureDependenceJob method)</a>
+
+      <ul>
+        <li><a href="reference/rmg/input.html#rmgpy.rmg.input.save_input_file">(in module rmgpy.rmg.input)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.save_java_kinetics_library">save_java_kinetics_library() (in module rmgpy.chemkin)</a>
 </li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.save_libraries">save_libraries() (rmgpy.data.kinetics.KineticsDatabase method)</a>
 
@@ -4805,7 +5804,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.save_old_tree">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/rmg/output.html#rmgpy.rmg.output.save_output_html">save_output_html() (in module rmgpy.rmg.output)</a>
+</li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.save_recommended_families">save_recommended_families() (rmgpy.data.kinetics.KineticsDatabase method)</a>
+</li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.save_species_dictionary">save_species_dictionary() (in module rmgpy.chemkin)</a>
 </li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.save_thermo_data">save_thermo_data() (rmgpy.qm.gaussian.GaussianMol method)</a>
 
@@ -4825,9 +5828,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.save_thermo_data">(rmgpy.qm.mopac.MopacMolPM7 method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.save_training_reactions">save_training_reactions() (rmgpy.data.kinetics.KineticsFamily method)</a>
+</li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.save_transport_file">save_transport_file() (in module rmgpy.chemkin)</a>
 </li>
       <li><a href="reference/arkane/kinetics.html#arkane.KineticsJob.save_yaml">save_yaml() (arkane.KineticsJob method)</a>
 </li>
@@ -4862,6 +5865,40 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.select_polynomial">select_polynomial (rmgpy.thermo.NASA attribute)</a>
 </li>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.semiclassical">semiclassical (rmgpy.statmech.HinderedRotor attribute)</a>
+</li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.sens_conditions">sens_conditions (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.sens_conditions">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.sensitive_species">sensitive_species (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.sensitive_species">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.sensitive_species">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.sensitivity_coefficients">sensitivity_coefficients (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.sensitivity_coefficients">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.sensitivity_coefficients">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.sensitivity_threshold">sensitivity_threshold (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.sensitivity_threshold">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.sensitivity_threshold">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.set_actions">set_actions (rmgpy.molecule.AtomType attribute)</a>
 </li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.set_cantera_kinetics">set_cantera_kinetics (rmgpy.kinetics.Arrhenius attribute)</a>
 
@@ -4919,6 +5956,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.set_initial_derivative">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.set_initial_reaction_thresholds">set_initial_reaction_thresholds() (rmgpy.solver.LiquidReactor method)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.set_initial_reaction_thresholds">(rmgpy.solver.ReactionSystem method)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.set_initial_reaction_thresholds">(rmgpy.solver.SimpleReactor method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.set_lone_pairs">set_lone_pairs (rmgpy.molecule.Atom attribute)</a>
 </li>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.set_order_num">set_order_num (rmgpy.molecule.Bond attribute)</a>
@@ -4931,6 +5976,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
       <ul>
         <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.set_order_str">(rmgpy.molecule.GroupBond attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.set_prunable_indices">set_prunable_indices() (rmgpy.solver.LiquidReactor method)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.set_prunable_indices">(rmgpy.solver.ReactionSystem method)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.set_prunable_indices">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
       <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.set_structure">set_structure (rmgpy.rmg.model.Species attribute)</a>
@@ -4955,6 +6008,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.simulate">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.single">single (rmgpy.molecule.AtomType attribute)</a>
+</li>
       <li><a href="reference/pdep/singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown">SingleExponentialDown (class in rmgpy.pdep)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.smiles">smiles (rmgpy.molecule.Molecule attribute)</a>
@@ -4963,6 +6018,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.smiles">(rmgpy.rmg.model.Species attribute)</a>
 </li>
         <li><a href="reference/species/species.html#rmgpy.species.Species.smiles">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.snapshots">snapshots (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.snapshots">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.snapshots">(rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.DirectFit.solve">solve() (rmgpy.data.statmechfit.DirectFit method)</a>
@@ -5025,13 +6088,47 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.sorting_key">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.sorting_label">sorting_label (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.sorting_label">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.sorting_label">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species">Species (class in rmgpy.rmg.model)</a>
 
       <ul>
         <li><a href="reference/species/species.html#rmgpy.species.Species">(class in rmgpy.species)</a>
 </li>
       </ul></li>
+      <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.species">species (rmgpy.pdep.Configuration attribute)</a>
+</li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.species_index">species_index (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.species_index">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.species_index">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.SpeciesError">SpeciesError</a>
+</li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.specific">specific (rmgpy.molecule.AtomType attribute)</a>
+</li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.specific_collider">specific_collider (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.specific_collider">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.specific_collider">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.specific_collider">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.specific_collider">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.specific_collider_species">specific_collider_species (rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.specify_atom_extensions">specify_atom_extensions (rmgpy.molecule.Group attribute)</a>
 </li>
@@ -5091,6 +6188,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.Mopac.successKeys">(rmgpy.qm.mopac.Mopac attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.sum_states">sum_states (rmgpy.pdep.Configuration attribute)</a>
+</li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.surface_reaction_indices">surface_reaction_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.surface_reaction_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.surface_reaction_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.surface_species_indices">surface_species_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.surface_species_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.surface_species_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.symbol">symbol (rmgpy.molecule.Element attribute)</a>
+</li>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.symmetry">symmetry (rmgpy.statmech.HinderedRotor attribute)</a>
 
       <ul>
@@ -5103,6 +6220,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/statmech/sphericaltoprotor.html#rmgpy.statmech.SphericalTopRotor.symmetry">(rmgpy.statmech.SphericalTopRotor attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.symmetry_number">symmetry_number (rmgpy.molecule.Molecule attribute)</a>
+
+      <ul>
+        <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.symmetry_number">(rmgpy.rmg.model.Species attribute)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.symmetry_number">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/symmetry.html#rmgpy.qm.symmetry.SymmetryJob">SymmetryJob (class in rmgpy.qm.symmetry)</a>
 </li>
   </ul></td>
@@ -5111,10 +6236,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.T">T (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.T">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.T0">T0 (rmgpy.kinetics.Arrhenius attribute)</a>
 
       <ul>
         <li><a href="reference/pdep/singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown.T0">(rmgpy.pdep.SingleExponentialDown attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.t0">t0 (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.t0">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.t0">(rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.T1">T1 (rmgpy.kinetics.Troe attribute)</a>
@@ -5133,10 +6272,32 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction">TemplateReaction (class in rmgpy.data.kinetics)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.terminal">terminal (rmgpy.molecule.Atom attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex.terminal">(rmgpy.molecule.graph.Vertex attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.terminal">(rmgpy.molecule.GroupAtom attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.termination">termination (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.termination">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.termination">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/solver/termination.html#rmgpy.solver.TerminationConversion">TerminationConversion (class in rmgpy.solver)</a>
 </li>
       <li><a href="reference/solver/termination.html#rmgpy.solver.TerminationTime">TerminationTime (class in rmgpy.solver)</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.thermo">thermo (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.thermo">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_down">thermo_filter_down() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_species">thermo_filter_species() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
@@ -5243,6 +6404,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.to_adjacency_list">(rmgpy.species.Species attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/adjlist.html#rmgpy.molecule.adjlist.to_adjacency_list">to_adjacency_list() (in module rmgpy.molecule.adjlist)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/kinetics/multiarrhenius.html#rmgpy.kinetics.MultiArrhenius.to_arrhenius">to_arrhenius (rmgpy.kinetics.MultiArrhenius attribute)</a>
@@ -5253,9 +6416,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.to_augmented_inchi_key">to_augmented_inchi_key (rmgpy.molecule.Molecule attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.to_cantera">to_cantera (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.to_cantera">to_cantera (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.to_cantera">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.to_cantera">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.to_cantera">(rmgpy.reaction.Reaction attribute)</a>
@@ -5271,9 +6436,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.to_cantera_kinetics">to_cantera_kinetics (rmgpy.kinetics.Arrhenius attribute)</a>
 </li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.to_chemkin">to_chemkin (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.to_chemkin">to_chemkin (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.to_chemkin">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.to_chemkin">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.to_chemkin">(rmgpy.reaction.Reaction attribute)</a>
@@ -5321,9 +6488,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.to_inchi_key">(rmgpy.molecule.Molecule attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.to_labeled_str">to_labeled_str (rmgpy.data.kinetics.LibraryReaction attribute)</a>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.to_labeled_str">to_labeled_str (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
 
       <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.to_labeled_str">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.to_labeled_str">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
 </li>
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.to_labeled_str">(rmgpy.reaction.Reaction attribute)</a>
@@ -5371,9 +6540,53 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/thermodata.html#rmgpy.thermo.ThermoData.to_wilhoit">(rmgpy.thermo.ThermoData attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.Trange">Trange (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.Trange">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.transition_state">transition_state (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.transition_state">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.transition_state">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.transition_state">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.transition_state">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/species/transitionstate.html#rmgpy.species.TransitionState">TransitionState (class in rmgpy.species)</a>
 </li>
+      <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.transport_data">transport_data (rmgpy.rmg.model.Species attribute)</a>
+
+      <ul>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.transport_data">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.trimolecular">trimolecular (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.trimolecular">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.trimolecular">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.trimolecular_threshold">trimolecular_threshold (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.trimolecular_threshold">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.trimolecular_threshold">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.triple">triple (rmgpy.molecule.AtomType attribute)</a>
+</li>
       <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe">Troe (class in rmgpy.kinetics)</a>
+</li>
+      <li><a href="reference/species/transitionstate.html#rmgpy.species.TransitionState.tunneling">tunneling (rmgpy.species.TransitionState attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -5407,6 +6620,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.uncertainty">(rmgpy.quantity.ScalarQuantity attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.uncertainty_si">uncertainty_si (rmgpy.quantity.ArrayQuantity attribute)</a>
+
+      <ul>
+        <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.uncertainty_si">(rmgpy.quantity.ScalarQuantity attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.uncertainty_type">uncertainty_type (rmgpy.quantity.ArrayQuantity attribute)</a>
 
       <ul>
@@ -5417,6 +6636,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.UnexpectedChargeError">UnexpectedChargeError</a>
 </li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.unimolecular_threshold">unimolecular_threshold (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.unimolecular_threshold">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.unimolecular_threshold">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/qm/molecule.html#rmgpy.qm.molecule.Geometry.unique_id">unique_id (rmgpy.qm.molecule.Geometry attribute)</a>
 
       <ul>
@@ -5429,9 +6656,19 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/statmech/schrodinger.html#rmgpy.statmech.schrodinger.unit_degeneracy">unit_degeneracy (in module rmgpy.statmech.schrodinger)</a>
 </li>
-      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.update">update (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+      <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.units">units (rmgpy.quantity.ArrayQuantity attribute)</a>
 
       <ul>
+        <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.units">(rmgpy.quantity.ScalarQuantity attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.unresolved">unresolved (rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
+      <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.update">update (rmgpy.molecule.Group attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.update">(rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+</li>
         <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.update">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
 </li>
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.update">(rmgpy.molecule.Molecule attribute)</a>
@@ -5475,10 +6712,30 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.V">V (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.V">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.valid_layering_indices">valid_layering_indices (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.valid_layering_indices">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.valid_layering_indices">(rmgpy.solver.SimpleReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.value">value (rmgpy.quantity.ArrayQuantity attribute)</a>
 
       <ul>
         <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.value">(rmgpy.quantity.ScalarQuantity attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.value_si">value_si (rmgpy.quantity.ArrayQuantity attribute)</a>
+
+      <ul>
+        <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.value_si">(rmgpy.quantity.ScalarQuantity attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.Gaussian.verify_output_file">verify_output_file() (rmgpy.qm.gaussian.Gaussian method)</a>
@@ -5501,13 +6758,39 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.verify_output_file">(rmgpy.qm.mopac.MopacMolPM7 method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/vertex.html#rmgpy.molecule.graph.Vertex">Vertex (class in rmgpy.molecule.graph)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.vertex1">vertex1 (rmgpy.molecule.Bond attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/edge.html#rmgpy.molecule.graph.Edge.vertex1">(rmgpy.molecule.graph.Edge attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.vertex1">(rmgpy.molecule.GroupBond attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.vertex2">vertex2 (rmgpy.molecule.Bond attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/edge.html#rmgpy.molecule.graph.Edge.vertex2">(rmgpy.molecule.graph.Edge attribute)</a>
+</li>
+        <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.vertex2">(rmgpy.molecule.GroupBond attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.vertices">vertices (rmgpy.molecule.graph.Graph attribute)</a>
+
+      <ul>
+        <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.vertices">(rmgpy.molecule.Group attribute)</a>
+</li>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.vertices">(rmgpy.molecule.Molecule attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/vf2.html#rmgpy.molecule.vf2.VF2">VF2 (class in rmgpy.molecule.vf2)</a>
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.VF2Error">VF2Error</a>
+</li>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.viscosity">viscosity (rmgpy.solver.LiquidReactor attribute)</a>
 </li>
       <li><a href="reference/arkane/output.html#arkane.output.PrettifyVisitor.visit">visit() (arkane.output.PrettifyVisitor method)</a>
 </li>
@@ -5635,12 +6918,30 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/symmetry.html#rmgpy.qm.symmetry.SymmetryJob.write_input_file">(rmgpy.qm.symmetry.SymmetryJob method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.write_kinetics_entry">write_kinetics_entry() (in module rmgpy.chemkin)</a>
+</li>
       <li><a href="reference/arkane/kinetics.html#arkane.KineticsJob.write_output">write_output() (arkane.KineticsJob method)</a>
 
       <ul>
         <li><a href="reference/arkane/statmech.html#arkane.StatMechJob.write_output">(arkane.StatMechJob method)</a>
 </li>
         <li><a href="reference/arkane/thermo.html#arkane.ThermoJob.write_output">(arkane.ThermoJob method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/chemkin/writer.html#rmgpy.chemkin.write_thermo_entry">write_thermo_entry() (in module rmgpy.chemkin)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.y0">y0 (rmgpy.solver.LiquidReactor attribute)</a>
+
+      <ul>
+        <li><a href="reference/solver/reactionsystem.html#rmgpy.solver.ReactionSystem.y0">(rmgpy.solver.ReactionSystem attribute)</a>
+</li>
+        <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.y0">(rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       </ul></li>
   </ul></td>

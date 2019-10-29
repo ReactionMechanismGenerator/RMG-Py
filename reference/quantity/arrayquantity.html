@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.quantity.ArrayQuantity<a class="headerlink" href="#rmgpy-quantity-arrayquantity" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.quantity.ArrayQuantity">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.quantity.</code><code class="sig-name descname">ArrayQuantity</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.quantity.</code><code class="sig-name descname">ArrayQuantity</code><span class="sig-paren">(</span><em class="sig-param">value=None</em>, <em class="sig-param">units=u''</em>, <em class="sig-param">uncertainty=None</em>, <em class="sig-param">uncertainty_type=u'+|-'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> class provides a representation of an array of
 physical quantity values, with optional units and uncertainty information.
 The attributes are:</p>
@@ -189,6 +189,17 @@ format and <code class="docutils literal notranslate"><span class="pre">False</s
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.quantity.ArrayQuantity.uncertainty_si">
+<code class="sig-name descname">uncertainty_si</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.uncertainty_si" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>uncertainty_si</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.quantity.ArrayQuantity.uncertainty_type">
 <code class="sig-name descname">uncertainty_type</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.uncertainty_type" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal notranslate"><span class="pre">'*|/'</span></code> for multiplicative</p>
@@ -200,9 +211,31 @@ format and <code class="docutils literal notranslate"><span class="pre">False</s
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.quantity.ArrayQuantity.units">
+<code class="sig-name descname">units</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>units</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.quantity.ArrayQuantity.value">
 <code class="sig-name descname">value</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The numeric value of the array quantity, in the given units.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.quantity.ArrayQuantity.value_si">
+<code class="sig-name descname">value_si</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.value_si" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>value_si</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

@@ -2,6 +2,6 @@
 RMG input files
 ***************
 
-.. autofunction:: rmgpy.rmg.input.readInputFile
+.. autofunction:: rmgpy.rmg.input.read_input_file
 
-.. autofunction:: rmgpy.rmg.input.saveInputFile
+.. autofunction:: rmgpy.rmg.input.save_input_file

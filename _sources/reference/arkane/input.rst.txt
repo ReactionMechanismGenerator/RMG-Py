@@ -2,4 +2,4 @@
 Arkane input files
 ******************
 
-.. autofunction:: arkane.input.loadInputFile
+.. autofunction:: arkane.input.load_input_file

@@ -364,6 +364,30 @@ found in the RMG input file.</p>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="rmgpy.rmg.main.initialize_log">
+<code class="sig-prename descclassname">rmgpy.rmg.main.</code><code class="sig-name descname">initialize_log</code><span class="sig-paren">(</span><em class="sig-param">verbose</em>, <em class="sig-param">log_file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.initialize_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a logger for RMG to use to print output to stdout. The
+<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
+at the console; the levels correspond to those of the <code class="xref py py-data docutils literal notranslate"><span class="pre">logging</span></code> module.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.rmg.main.make_profile_graph">
+<code class="sig-prename descclassname">rmgpy.rmg.main.</code><code class="sig-name descname">make_profile_graph</code><span class="sig-paren">(</span><em class="sig-param">stats_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.make_profile_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses gprof2dot to create a graphviz dot file of the profiling information.</p>
+<p>This requires the gprof2dot package available via <cite>pip install gprof2dot</cite>.
+Render the result using the program ‘dot’ via a command like
+<cite>dot -Tps2 input.dot -o output.ps2</cite>.</p>
+<p>Rendering the ps2 file to pdf requires an external pdf converter
+<cite>ps2pdf output.ps2</cite> which produces a <cite>output.ps2.pdf</cite> file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.rmg.main.process_profile_stats">
+<code class="sig-prename descclassname">rmgpy.rmg.main.</code><code class="sig-name descname">process_profile_stats</code><span class="sig-paren">(</span><em class="sig-param">stats_file</em>, <em class="sig-param">log_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.process_profile_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 

@@ -96,6 +96,28 @@ following attributes:</p>
 </tbody>
 </table>
 <dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.allow_max_rate_violation">
+<code class="sig-name descname">allow_max_rate_violation</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.allow_max_rate_violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>allow_max_rate_violation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.allow_pdep_route">
+<code class="sig-name descname">allow_pdep_route</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.allow_pdep_route" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>allow_pdep_route</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.data.kinetics.TemplateReaction.calculate_coll_limit">
 <code class="sig-name descname">calculate_coll_limit</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.calculate_coll_limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the collision limit rate for the given temperature
@@ -145,6 +167,11 @@ correction.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.calculate_tst_rate_coefficients">
+<code class="sig-name descname">calculate_tst_rate_coefficients</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.calculate_tst_rate_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.data.kinetics.TemplateReaction.can_tst">
 <code class="sig-name descname">can_tst</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.can_tst" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the necessary parameters are available for using
@@ -159,6 +186,17 @@ theory – to compute the rate coefficient for this reaction, or
 <dd><p>Warn if a core reaction violates the collision limit rate in either the forward or reverse direction
 at the relevant extreme T/P conditions. Assuming a monotonic behaviour of the kinetics.
 Returns a list with the reaction object and the direction in which the violation was detected.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.comment">
+<code class="sig-name descname">comment</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>comment</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -185,6 +223,28 @@ the generated image to; the image type is automatically determined by
 extension. Valid extensions are <code class="docutils literal notranslate"><span class="pre">.png</span></code>, <code class="docutils literal notranslate"><span class="pre">.svg</span></code>, <code class="docutils literal notranslate"><span class="pre">.pdf</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">.ps</span></code>; of these, the first is a raster format and the remainder are
 vector formats.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.duplicate">
+<code class="sig-name descname">duplicate</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>duplicate</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.elementary_high_p">
+<code class="sig-name descname">elementary_high_p</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.elementary_high_p" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>elementary_high_p</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -412,6 +472,17 @@ and <cite>products</cite>, which are both lists of <code class="xref py py-class
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.index">
+<code class="sig-name descname">index</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.data.kinetics.TemplateReaction.is_association">
 <code class="sig-name descname">is_association</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.is_association" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction represents an association reaction
@@ -430,6 +501,17 @@ each side of the reaction equation, or <code class="docutils literal notranslate
 <code class="sig-name descname">is_dissociation</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.is_dissociation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction represents a dissociation reaction
 <span class="math notranslate nohighlight">\(\ce{A &lt;=&gt; B + C}\)</span> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.is_forward">
+<code class="sig-name descname">is_forward</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.is_forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>is_forward</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -477,6 +559,39 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.k_effective_cache">
+<code class="sig-name descname">k_effective_cache</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.k_effective_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>k_effective_cache</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.kinetics">
+<code class="sig-name descname">kinetics</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.kinetics.model.KineticsModel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>kinetics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.data.kinetics.TemplateReaction.matches_species">
 <code class="sig-name descname">matches_species</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.matches_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compares the provided reactants and products against the reactants
@@ -492,11 +607,88 @@ and products of this reaction. Both directions are checked.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.network_kinetics">
+<code class="sig-name descname">network_kinetics</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.network_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.kinetics.arrhenius.Arrhenius</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>network_kinetics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.pairs">
+<code class="sig-name descname">pairs</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pairs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.products">
+<code class="sig-name descname">products</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.products" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>products</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.rank">
+<code class="sig-name descname">rank</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>rank</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.reactants">
+<code class="sig-name descname">reactants</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.reactants" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reactants</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.data.kinetics.TemplateReaction.reverse_arrhenius_rate">
 <code class="sig-name descname">reverse_arrhenius_rate</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.reverse_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given k_forward, which must be an Arrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.reversible">
+<code class="sig-name descname">reversible</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.reversible" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reversible</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.specific_collider">
+<code class="sig-name descname">specific_collider</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.specific_collider" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.species.Species</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>specific_collider</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -522,6 +714,17 @@ Otherwise, only the reaction string will be returned.</p>
 <code class="sig-name descname">to_labeled_str</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.to_labeled_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than
 the labels plus the index in parentheses</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.TemplateReaction.transition_state">
+<code class="sig-name descname">transition_state</code><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.transition_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.species.TransitionState</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>transition_state</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

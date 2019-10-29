@@ -85,7 +85,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-even"><td><p><a class="reference internal" href="logicnode.html#rmgpy.data.base.LogicOr" title="rmgpy.data.base.LogicOr"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicOr</span></code></a></p></td>
 <td><p>A logical collection of entries, where any entry in the collection can match</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">makeLogicNode()</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="logicnode.html#rmgpy.data.base.make_logic_node" title="rmgpy.data.base.make_logic_node"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_logic_node()</span></code></a></p></td>
 <td><p>Create a <a class="reference internal" href="logicnode.html#rmgpy.data.base.LogicNode" title="rmgpy.data.base.LogicNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicNode</span></code></a> based on a string representation</p></td>
 </tr>
 </tbody>
@@ -132,7 +132,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DepositoryReaction</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction" title="rmgpy.data.kinetics.DepositoryReaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DepositoryReaction</span></code></a></p></td>
 <td><p>A reaction with kinetics determined from querying a kinetics depository</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="libraryreaction.html#rmgpy.data.kinetics.LibraryReaction" title="rmgpy.data.kinetics.LibraryReaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">LibraryReaction</span></code></a></p></td>
@@ -141,7 +141,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-even"><td><p><a class="reference internal" href="templatereaction.html#rmgpy.data.kinetics.TemplateReaction" title="rmgpy.data.kinetics.TemplateReaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateReaction</span></code></a></p></td>
 <td><p>A reaction with kinetics determined from querying a kinetics group additivity or rate rules method</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactionRecipe</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe" title="rmgpy.data.kinetics.ReactionRecipe"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactionRecipe</span></code></a></p></td>
 <td><p>A sequence of actions that represent the process of a chemical reaction</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="kineticsdepository.html#rmgpy.data.kinetics.KineticsDepository" title="rmgpy.data.kinetics.KineticsDepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsDepository</span></code></a></p></td>
@@ -200,8 +200,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>Statistical mechanics fitting<a class="headerlink" href="#statistical-mechanics-fitting" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 20%" />
-<col style="width: 80%" />
+<col style="width: 21%" />
+<col style="width: 79%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Class/Function</p></th>
@@ -218,16 +218,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-even"><td><p><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.PseudoRotorFit" title="rmgpy.data.statmechfit.PseudoRotorFit"><code class="xref py py-class docutils literal notranslate"><span class="pre">PseudoRotorFit</span></code></a></p></td>
 <td><p>DQED class for fitting a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">fitStatmechDirect()</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fit_statmech_direct" title="rmgpy.data.statmechfit.fit_statmech_direct"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_statmech_direct()</span></code></a></p></td>
 <td><p>Directly fit a small number of vibrational frequencies and hindered rotors</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">fitStatmechPseudo()</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fit_statmech_pseudo" title="rmgpy.data.statmechfit.fit_statmech_pseudo"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_statmech_pseudo()</span></code></a></p></td>
 <td><p>Fit a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">fitStatmechPseudoRotors()</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors" title="rmgpy.data.statmechfit.fit_statmech_pseudo_rotors"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_statmech_pseudo_rotors()</span></code></a></p></td>
 <td><p>Fit a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">fitStatmechToHeatCapacity()</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity" title="rmgpy.data.statmechfit.fit_statmech_to_heat_capacity"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_statmech_to_heat_capacity()</span></code></a></p></td>
 <td><p>Fit vibrational and torsional degrees of freedom to heat capacity data</p></td>
 </tr>
 </tbody>

@@ -794,18 +794,12 @@ tops and sigmas instead of individual values. These rotor objects enable calcula
 multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular hydrogen
 bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the
 .evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime to seconds.
-This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the HinderedRotor2D</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">/home/travis/build/ReactionMechanismGenerator/RMG-Py/documentation/source/users/arkane/input.rst</span>, line 461)</p>
-<p>Unexpected indentation.</p>
-</div>
-<blockquote>
-<div><p>you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions.</p>
-</div></blockquote>
+This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the HinderedRotor2D
+you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions.</p>
 </div>
 <div class="section" id="additional-parameters-for-pressure-dependent-networks">
 <h4>3.4.1.4. Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>
-<p>Additional parameters apply only to molecules in pressure depedent networks</p>
+<p>Additional parameters apply only to molecules in pressure dependent networks</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 15%" />
@@ -1147,7 +1141,7 @@ function from <a class="reference internal" href="#option-1-automatically-parse-
 </tbody>
 </table>
 <p>The parameters <code class="docutils literal notranslate"><span class="pre">structure</span></code>, <code class="docutils literal notranslate"><span class="pre">molecularWeight</span></code>, <code class="docutils literal notranslate"><span class="pre">collisionModel</span></code> and <code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code> were already discussed
-above in <a href="#id2"><span class="problematic" id="id3">`Species Parameters`_</span></a>.</p>
+above in <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a>.</p>
 <p>When the <code class="docutils literal notranslate"><span class="pre">thermo</span></code> parameter is specified, Arkane will approximate the modes
 of vibration and energy from the thermodynamic parameters, and will utilize this
 in its solution of the pressure dependent network. This is analygous to how RMG

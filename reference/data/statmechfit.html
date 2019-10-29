@@ -60,9 +60,94 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.statmechfit<a class="headerlink" href="#rmgpy-data-statmechfit" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="fitting-functions">
 <h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fit_statmech_to_heat_capacity">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">fit_statmech_to_heat_capacity</code><span class="sig-paren">(</span><em class="sig-param">Tlist</em>, <em class="sig-param">Cvlist</em>, <em class="sig-param">n_vib</em>, <em class="sig-param">n_rot</em>, <em class="sig-param">molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given set of dimensionless heat capacity data <cite>Cvlist</cite> corresponding
+to temperature list <cite>Tlist</cite> in K, fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite>
+hindered internal rotor modes. External and other previously-known modes
+should have already been removed from <cite>Cvlist</cite> prior to calling this
+function. You must provide at least 7 values for <cite>Cvlist</cite>.</p>
+<p>This function returns a list containing the fitted vibrational frequencies
+in a <code class="xref py py-class docutils literal notranslate"><span class="pre">HarmonicOscillator</span></code> object and the fitted 1D hindered rotors
+in <code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor</span></code> objects.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fit_statmech_direct">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">fit_statmech_direct</code><span class="sig-paren">(</span><em class="sig-param">Tlist</em>, <em class="sig-param">Cvlist</em>, <em class="sig-param">n_vib</em>, <em class="sig-param">n_rot</em>, <em class="sig-param">molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_direct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are enough heat capacity points
+provided that the vibrational frequencies and hindered rotation frequency-
+barrier pairs can be fit directly.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fit_statmech_pseudo_rotors">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">fit_statmech_pseudo_rotors</code><span class="sig-paren">(</span><em class="sig-param">Tlist</em>, <em class="sig-param">Cvlist</em>, <em class="sig-param">n_vib</em>, <em class="sig-param">n_rot</em>, <em class="sig-param">molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are enough heat capacity points
+provided that the vibrational frequencies can be fit directly, but the
+hindered rotors must be combined into a single “pseudo-rotor”.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fit_statmech_pseudo">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">fit_statmech_pseudo</code><span class="sig-paren">(</span><em class="sig-param">Tlist</em>, <em class="sig-param">Cvlist</em>, <em class="sig-param">n_vib</em>, <em class="sig-param">n_rot</em>, <em class="sig-param">molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_pseudo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are relatively few heat capacity points
+provided, so the vibrations must be combined into one real vibration and
+two “pseudo-vibrations” and the hindered rotors must be combined into a
+single “pseudo-rotor”.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">harmonic_oscillator_heat_capacity</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">freq</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
+in K for the harmonic oscillator with a frequency <cite>freq</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">harmonic_oscillator_d_heat_capacity_d_freq</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">freq</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
+temperatures <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hindered_rotor_heat_capacity">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">hindered_rotor_heat_capacity</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">freq</em>, <em class="sig-param">barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
+in K for the 1D hindered rotor with a frequency <cite>freq</cite> in cm^-1 and a
+barrier height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">hindered_rotor_d_heat_capacity_d_freq</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">freq</em>, <em class="sig-param">barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
+<cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
+height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr">
+<code class="sig-prename descclassname">rmgpy.data.statmechfit.</code><code class="sig-name descname">hindered_rotor_d_heat_capacity_d_barr</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">freq</em>, <em class="sig-param">barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
+<cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
+height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="helper-classes">
 <h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this headline">¶</a></h2>

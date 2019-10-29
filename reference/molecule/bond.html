@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Bond<a class="headerlink" href="#rmgpy-molecule-bond" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Bond">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Bond</code><a class="headerlink" href="#rmgpy.molecule.Bond" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Bond</code><span class="sig-paren">(</span><em class="sig-param">atom1</em>, <em class="sig-param">atom2</em>, <em class="sig-param">order=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical bond. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -229,6 +229,17 @@ not.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.Bond.order">
+<code class="sig-name descname">order</code><a class="headerlink" href="#rmgpy.molecule.Bond.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘float’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>order</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.Bond.set_order_num">
 <code class="sig-name descname">set_order_num</code><a class="headerlink" href="#rmgpy.molecule.Bond.set_order_num" title="Permalink to this definition">¶</a></dt>
 <dd><p>change the bond order with a number</p>
@@ -244,6 +255,28 @@ not.</p>
 <dt id="rmgpy.molecule.Bond.sorting_key">
 <code class="sig-name descname">sorting_key</code><a class="headerlink" href="#rmgpy.molecule.Bond.sorting_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sorting key for comparing Bond objects. Read-only</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Bond.vertex1">
+<code class="sig-name descname">vertex1</code><a class="headerlink" href="#rmgpy.molecule.Bond.vertex1" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertex1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Bond.vertex2">
+<code class="sig-name descname">vertex2</code><a class="headerlink" href="#rmgpy.molecule.Bond.vertex2" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertex2</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

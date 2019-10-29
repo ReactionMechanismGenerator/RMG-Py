@@ -73,21 +73,21 @@ subsystem from a powershell <strong>run as an administrator</strong>, and downlo
 distributions.</p></li>
 <li><p>Once the Linux subsystem is installed, open a web browser in Windows and go to the
 <a class="reference external" href="https://www.anaconda.com/download/#linux">Anaconda Python Platform Downloads Page</a>. Go to the tab for the
-<strong>Linux Installer</strong>, and <strong>right click</strong> on the download icon for Python 2.7 to copy the link location. Open an Ubuntu
+<strong>Linux Installer</strong>, and <strong>right click</strong> on the download icon for Python 3.7 to copy the link location. Open an Ubuntu
 terminal (type in <code class="docutils literal notranslate"><span class="pre">Ubuntu</span></code> into the Windows search bar if you are unsure where to find it) and paste the link
 into the terminal immediately after typing the <code class="docutils literal notranslate"><span class="pre">wget</span></code> command, so that your terminal looks like the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo</span><span class="o">.</span><span class="n">continuum</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">Anaconda2</span><span class="o">-</span><span class="mf">2018.12</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">Anaconda3</span><span class="o">-</span><span class="mf">2019.07</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>Your exact link will look similar to the one above, but may be a more recent version of the installer. Execute this
 command in the terminal to begin downloading the installer.</p>
 </li>
 <li><p>Once the Anaconda installer has downloaded, execute the following commands in the Ubuntu terminal, changing the name
-of <code class="docutils literal notranslate"><span class="pre">Anaconda2-2018.12-Linux-x86_64.sh</span></code> to match the name of the script you downloaded.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">Anaconda2</span><span class="o">-</span><span class="mf">2018.12</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+of <code class="docutils literal notranslate"><span class="pre">Anaconda3-2019.07-Linux-x86_64.sh</span></code> to match the name of the script you downloaded.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">Anaconda3</span><span class="o">-</span><span class="mf">2019.07</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-<p>Install the anaconda2 folder inside your home directory (it should be the default location when it asks for a location
+<p>Install the anaconda3 folder inside your home directory (it should be the default location when it asks for a location
 to install). <strong>When prompted to append Anaconda to your PATH, select or type Yes</strong>. When prompted, do NOT install
 Microsoft VSCode. If you are interested in this lightweight IDE then you will want to install this into Windows 10
 instead of inside the linux subsystem.</p>

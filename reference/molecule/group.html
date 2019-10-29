@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Group<a class="headerlink" href="#rmgpy-molecule-group" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Group">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Group</code><a class="headerlink" href="#rmgpy.molecule.Group" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Group</code><span class="sig-paren">(</span><em class="sig-param">atoms=None</em>, <em class="sig-param">props=None</em>, <em class="sig-param">multiplicity=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular substructure group using a graph data
 type, extending the <code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code> class. The attributes are:</p>
 <table class="docutils align-default">
@@ -247,6 +247,17 @@ connects it to one atom of the group, ‘connecting_atom’. This is useful for 
 <code class="sig-name descname">draw</code><a class="headerlink" href="#rmgpy.molecule.Group.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use pydot to draw a basic graph of the group.</p>
 <p>Use format to specify the desired output file_format, eg. ‘png’, ‘svg’, ‘ps’, ‘pdf’, ‘plain’, etc.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Group.elementCount">
+<code class="sig-name descname">elementCount</code><a class="headerlink" href="#rmgpy.molecule.Group.elementCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>elementCount</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -627,6 +638,28 @@ if keep_identical_labels=True merge_groups will not try to merge atoms with the 
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.Group.multiplicity">
+<code class="sig-name descname">multiplicity</code><a class="headerlink" href="#rmgpy.molecule.Group.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>multiplicity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Group.ordered_vertices">
+<code class="sig-name descname">ordered_vertices</code><a class="headerlink" href="#rmgpy.molecule.Group.ordered_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ordered_vertices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.Group.pick_wildcards">
 <code class="sig-name descname">pick_wildcards</code><a class="headerlink" href="#rmgpy.molecule.Group.pick_wildcards" title="Permalink to this definition">¶</a></dt>
 <dd><p>class:Group object without wildcards in either atomtype or bonding</p>
@@ -638,6 +671,28 @@ to pick bond orders that make sense given the selected atomtypes</p>
 </dd>
 <dt class="field-even">Type</dt>
 <dd class="field-even"><p>the</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Group.props">
+<code class="sig-name descname">props</code><a class="headerlink" href="#rmgpy.molecule.Group.props" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>props</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Group.radicalCount">
+<code class="sig-name descname">radicalCount</code><a class="headerlink" href="#rmgpy.molecule.Group.radicalCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>radicalCount</p>
 </dd>
 </dl>
 </dd></dl>
@@ -811,6 +866,11 @@ have explicit O2d/S2d ligands. Other functions can be added as necessary</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.Group.update">
+<code class="sig-name descname">update</code><a class="headerlink" href="#rmgpy.molecule.Group.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.Group.update_charge">
 <code class="sig-name descname">update_charge</code><a class="headerlink" href="#rmgpy.molecule.Group.update_charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the partial charge according to the valence electron, total bond order, lone pairs
@@ -829,6 +889,17 @@ used to accelerate the isomorphism checking.</p>
 <code class="sig-name descname">update_fingerprint</code><a class="headerlink" href="#rmgpy.molecule.Group.update_fingerprint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the molecular fingerprint used to accelerate the subgraph
 isomorphism checks.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Group.vertices">
+<code class="sig-name descname">vertices</code><a class="headerlink" href="#rmgpy.molecule.Group.vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertices</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

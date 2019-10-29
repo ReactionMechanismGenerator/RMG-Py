@@ -60,12 +60,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.pdep.Configuration<a class="headerlink" href="#rmgpy-pdep-configuration" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.pdep.Configuration">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.pdep.</code><code class="sig-name descname">Configuration</code><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.pdep.</code><code class="sig-name descname">Configuration</code><span class="sig-paren">(</span><em class="sig-param">*species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular configuration on a potential energy surface.</p>
 <dl class="attribute">
 <dt id="rmgpy.pdep.Configuration.E0">
 <code class="sig-name descname">E0</code><a class="headerlink" href="#rmgpy.pdep.Configuration.E0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground-state energy of the configuration in J/mol.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.active_j_rotor">
+<code class="sig-name descname">active_j_rotor</code><a class="headerlink" href="#rmgpy.pdep.Configuration.active_j_rotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>active_j_rotor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.active_k_rotor">
+<code class="sig-name descname">active_k_rotor</code><a class="headerlink" href="#rmgpy.pdep.Configuration.active_k_rotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>active_k_rotor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -94,6 +116,28 @@ arrays are stored on the object for future use.</p>
 <dt id="rmgpy.pdep.Configuration.cleanup">
 <code class="sig-name descname">cleanup</code><a class="headerlink" href="#rmgpy.pdep.Configuration.cleanup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete intermediate arrays used in computing k(T,P) values.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.dens_states">
+<code class="sig-name descname">dens_states</code><a class="headerlink" href="#rmgpy.pdep.Configuration.dens_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dens_states</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.e_list">
+<code class="sig-name descname">e_list</code><a class="headerlink" href="#rmgpy.pdep.Configuration.e_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>e_list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -188,6 +232,28 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.species">
+<code class="sig-name descname">species</code><a class="headerlink" href="#rmgpy.pdep.Configuration.species" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.sum_states">
+<code class="sig-name descname">sum_states</code><a class="headerlink" href="#rmgpy.pdep.Configuration.sum_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>sum_states</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

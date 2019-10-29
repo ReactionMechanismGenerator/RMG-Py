@@ -60,9 +60,77 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Reading Chemkin files<a class="headerlink" href="#reading-chemkin-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="main-functions">
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.chemkin.load_chemkin_file">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">load_chemkin_file</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">dictionary_path=None</em>, <em class="sig-param">transport_path=None</em>, <em class="sig-param">read_comments=True</em>, <em class="sig-param">thermo_path=None</em>, <em class="sig-param">use_chemkin_names=False</em>, <em class="sig-param">check_duplicates=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.load_chemkin_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a Chemkin input file located at <cite>path</cite> on disk to <cite>path</cite>, returning lists of the species
+and reactions in the Chemkin file. The ‘thermo_path’ point to a separate thermo file, or, if ‘None’ is
+specified, the function will look for the thermo database within the chemkin mechanism file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.load_species_dictionary">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">load_species_dictionary</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.load_species_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an RMG dictionary - containing species identifiers and the associated
+adjacency lists - from the file located at <cite>path</cite> on disk. Returns a dict
+mapping the species identifiers to the loaded species. Resonance isomers
+for each species are automatically generated.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.load_transport_file">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">load_transport_file</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">species_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.load_transport_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a Chemkin transport properties file located at <cite>path</cite> and store the
+properties on the species in <cite>species_dict</cite>.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.chemkin.read_kinetics_entry">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">read_kinetics_entry</code><span class="sig-paren">(</span><em class="sig-param">entry</em>, <em class="sig-param">species_dict</em>, <em class="sig-param">Aunits</em>, <em class="sig-param">Eunits</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.read_kinetics_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a kinetics <cite>entry</cite> for a single reaction as loaded from a Chemkin
+file. The associated mapping of labels to species <cite>species_dict</cite> should also
+be provided. Returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code> object with the reaction and its
+associated kinetics.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.read_reaction_comments">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">read_reaction_comments</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">comments</em>, <em class="sig-param">read=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.read_reaction_comments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the <cite>comments</cite> associated with a given <cite>reaction</cite>. If the comments
+come from RMG (Py or Java), parse them and extract the useful information.
+Return the reaction object based on the information parsed from these
+comments. If <cite>read</cite> if False, the reaction is returned as an “Unclassified”
+LibraryReaction.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.read_reactions_block">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">read_reactions_block</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">species_dict</em>, <em class="sig-param">read_comments=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.read_reactions_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a reactions block from a Chemkin file stream.</p>
+<p>This function can also read the <code class="docutils literal notranslate"><span class="pre">reactions.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">pdepreactions.txt</span></code>
+files from RMG-Java kinetics libraries, which have a similar syntax.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.read_thermo_entry">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">read_thermo_entry</code><span class="sig-paren">(</span><em class="sig-param">entry</em>, <em class="sig-param">Tmin=0</em>, <em class="sig-param">Tint=0</em>, <em class="sig-param">Tmax=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.read_thermo_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a thermodynamics <cite>entry</cite> for one species in a Chemkin file. Returns
+the label of the species and the thermodynamics model as a <code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code>
+object.</p>
+<p>Format specification at <a class="reference external" href="http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html">http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.remove_comment_from_line">
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">remove_comment_from_line</code><span class="sig-paren">(</span><em class="sig-param">line</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.remove_comment_from_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a comment from a line of a Chemkin file or species dictionary file.</p>
+<p>Returns the line and the comment.
+If the comment is encoded with latin-1, it is converted to utf-8.</p>
+</dd></dl>
+
 </div>
 </div>
 

@@ -60,12 +60,98 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Reaction events<a class="headerlink" href="#reaction-events" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="microcanonical-rate-coefficients">
 <h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient">
+<code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">calculate_microcanonical_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray reac_dens_states</em>, <em class="sig-param">ndarray prod_dens_states=None</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> for the reaction
+<cite>reaction</cite> at the energies <cite>e_list</cite> in J/mol. <cite>reac_dens_states</cite> and
+<cite>prod_dens_states</cite> are the densities of states of the reactant and product
+configurations for this reaction. If the reaction is irreversible, only the
+reactant density of states is required; if the reaction is reversible, then
+both are required. This function will try to use the best method that it
+can based on the input data available:</p>
+<ul class="simple">
+<li><p>If detailed information has been provided for the transition state (i.e.
+the molecular degrees of freedom), then RRKM theory will be used.</p></li>
+<li><p>If the above is not possible but high-pressure limit kinetics
+<span class="math notranslate nohighlight">\(k_\infty(T)\)</span> have been provided, then the inverse Laplace
+transform method will be used.</p></li>
+</ul>
+<p>The density of states for the product <cite>prod_dens_states</cite> and the temperature
+of interest <cite>T</cite> in K can also be provided. For isomerization and association
+reactions <cite>prod_dens_states</cite> is required; for dissociation reactions it is
+optional. The temperature is used if provided in the detailed balance
+expression to determine the reverse kinetics, and in certain cases in the
+inverse Laplace transform method.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="rrkm-theory">
 <h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.pdep.reaction.apply_rrkm_theory">
+<code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">apply_rrkm_theory</code><span class="sig-paren">(</span><em class="sig-param">transition_state</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the microcanonical rate coefficient for a reaction using RRKM
+theory, where <cite>transition_state</cite> is the transition state of the reaction,
+<cite>e_list</cite> is the array of energies in J/mol at which to evaluate the
+microcanonial rate, and <cite>dens_states</cite> is the density of states of the
+reactant.</p>
+<p>RRKM (Rice-Ramsperger-Kassel-Marcus) theory is the microcanonical analogue of
+transition state theory. The microcanonical rate coefficient as a function of
+total energy <span class="math notranslate nohighlight">\(E\)</span> and total angular momentum quantum number <span class="math notranslate nohighlight">\(J\)</span> is
+given by</p>
+<div class="math notranslate nohighlight">
+\[k(E,J) = \frac{N^\ddagger(E, J)}{h \rho(E, J)}\]</div>
+<p>where <span class="math notranslate nohighlight">\(N^\ddagger(E, J)\)</span> is the sum of states of the transition state and
+<span class="math notranslate nohighlight">\(\rho(E, J)\)</span> is the density of states of the reactant. If the J-rotor is
+treated as active, the J-dependence can be averaged in the above expression to
+give</p>
+<div class="math notranslate nohighlight">
+\[k(E) = \frac{N^\ddagger(E)}{h \rho(E)}\]</div>
+<p>as a function of total energy alone. This is reasonable at high temperatures,
+but less accurate at low temperatures.</p>
+<p>Use of RRKM theory requires detailed information about the statistical mechanics
+of the reactant <em>and</em> transition state. However, it is generally more accurate
+than the inverse Laplace transform method.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="inverse-laplace-transform-method">
 <h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">
+<code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">apply_inverse_laplace_transform_method</code><span class="sig-paren">(</span><em class="sig-param">transition_state</em>, <em class="sig-param">Arrhenius kinetics</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the microcanonical rate coefficient for a reaction using the
+inverse Laplace transform method, where <cite>kinetics</cite> is the high pressure
+limit rate coefficient, <cite>E0</cite> is the ground-state energy of the transition
+state, <cite>e_list</cite> is the array of energies in kJ/mol at which to evaluate the
+microcanonial rate, and <cite>dens_states</cite> is the density of states of the
+reactant. The temperature <cite>T</cite> in K is not required, and is only used when
+the temperature exponent of the Arrhenius expression is negative (for which
+the inverse transform is undefined).</p>
+<p>The inverse Laplace transform method exploits the following relationship to
+determine the microcanonical rate coefficient:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L} \left[k(E) \rho(E) \right] = \int_0^\infty k(E) \rho(E) e^{-E/k_\mathrm{B} T} \ dE = k_\infty(T) Q(T)\]</div>
+<p>Given a high-pressure limit rate coefficient <span class="math notranslate nohighlight">\(k_\infty(T)\)</span> represented as
+an Arrhenius expression with positive <span class="math notranslate nohighlight">\(n\)</span> and <span class="math notranslate nohighlight">\(E_\mathrm{a}\)</span>,
+the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> can be determined via an
+inverse Laplace transform. For <span class="math notranslate nohighlight">\(n = 0\)</span> the transform can be defined
+analytically:</p>
+<div class="math notranslate nohighlight">
+\[k(E) = A \frac{\rho(E - E_\mathrm{a})}{\rho(E)} \ \ \ \ (n = 0)\]</div>
+<p>For <span class="math notranslate nohighlight">\(n &gt; 0\)</span> the transform is defined numerically. For <span class="math notranslate nohighlight">\(n &lt; 0\)</span> or
+<span class="math notranslate nohighlight">\(E_\mathrm{a} &lt; 0\)</span> the transform is not defined; in this case we
+approximate by simply lumping the <span class="math notranslate nohighlight">\(T^n\)</span> or <span class="math notranslate nohighlight">\(e^{-E_\mathrm{a}/RT}\)</span>
+terms into the preexponential factor, and use a different <span class="math notranslate nohighlight">\(k(E)\)</span> at each
+temperature.</p>
+<p>The ILT method does not required detailed transition state information, but only
+the high-pressure limit kinetics. However, it assumes that (1)
+<span class="math notranslate nohighlight">\(k_\infty(T)\)</span> is valid over the temperature range from zero to infinity
+and (2) the activation energy <span class="math notranslate nohighlight">\(E_\mathrm{a}\)</span> is physically identical to
+the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger - E_0\)</span>.</p>
+</dd></dl>
+
 </div>
 </div>
 

@@ -65,13 +65,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>This script will generate an Evans-Polanyi plot for a single kinetics
 depository.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">evansPolanyi</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">DEPOSITORY</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">evansPolanyi</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">family</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">kinetics_depository</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">kinetics_depository</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Positional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DEPOSITORY</span>    <span class="n">the</span> <span class="n">depository</span> <span class="n">to</span> <span class="n">use</span>
-</pre></div>
-</div>
+<dl class="simple">
+<dt>Positional arguments::</dt><dd><p>&lt;family&gt;              the family to use
+&lt;kinetics_depository&gt; the kineticsDepository to use, e.g., training, NIST</p>
+</dd>
+</dl>
 <p>Optional arguments:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>    <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
@@ -97,22 +98,8 @@ chem.inp and species_dictionary.txt files in the local directory.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="exportolddatabase-py">
-<h2>9.9.3. exportOldDatabase.py<a class="headerlink" href="#exportolddatabase-py" title="Permalink to this headline">¶</a></h2>
-<p>This script exports the database to the old RMG-Java format. The script
-requires two command-line arguments: the path to the database to import, and
-the path to save the old RMG-Java database to.</p>
-<p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">exportOldDatabase</span><span class="o">.</span><span class="n">py</span> <span class="n">OUTPUT</span>
-</pre></div>
-</div>
-<p>Positional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OUTPUT</span>   <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">database</span> <span class="n">should</span> <span class="n">be</span> <span class="n">saved</span>
-</pre></div>
-</div>
-</div>
 <div class="section" id="importchemkinlibrary-py">
-<h2>9.9.4. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.3. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
 RMG-Py kinetics library and thermo library files.  These py files are automatically added to the
 input/kinetics/libraries and input/thermo/libraries folder under the user-specified <cite>name</cite> for the chemkin library.</p>
@@ -131,61 +118,24 @@ input/kinetics/libraries and input/thermo/libraries folder under the user-specif
 </pre></div>
 </div>
 </div>
-<div class="section" id="importjavakineticslibrary-py">
-<h2>9.9.5. importJavaKineticsLibrary.py<a class="headerlink" href="#importjavakineticslibrary-py" title="Permalink to this headline">¶</a></h2>
-<p>This script imports an individual RMG-Java kinetics library from a local directory and saves the output
-kinetics library py file into a path of the user’s choosing.  This library will be automatically
-added to the ‘libraryname’ folder in the input/kinetics/libraries directory and can
-be used directly as an RMG-Py kinetics library.</p>
+<div class="section" id="process-family-images-py">
+<h2>9.9.4. process_family_images.py<a class="headerlink" href="#process-family-images-py" title="Permalink to this headline">¶</a></h2>
+<p>This script processes reaction family template images (saved as eps files) into user friendly files (pdf and pngs).
+This should typically be run whenever a new family is added or an existing family is updated.</p>
+<dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>Make sure you have a working LaTeX installation with pdflatex</p></li>
+<li><p>Make sure you have a working GhostScript installation for epstopdf</p></li>
+<li><p>Make sure you have ImageMagick installed for png generation</p></li>
+<li><p>ImageMagick may have security limitations in place which prevent reading
+eps files. To circumvent these, edit the <code class="docutils literal notranslate"><span class="pre">/etc/ImageMagick-6/policy.xml</span></code>
+file by changing <code class="docutils literal notranslate"><span class="pre">&lt;policy</span> <span class="pre">domain=&quot;coder&quot;</span> <span class="pre">rights=&quot;none&quot;</span> <span class="pre">pattern=&quot;EPS&quot;</span> <span class="pre">/&gt;</span></code>
+to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span> <span class="pre">domain=&quot;coder&quot;</span> <span class="pre">rights=&quot;read|write&quot;</span> <span class="pre">pattern=&quot;EPS&quot;</span> <span class="pre">/&gt;</span></code></p></li>
+</ul>
+</dd>
+</dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importJavaKineticsLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">INPUT</span> <span class="n">LIBRARYNAME</span>
-</pre></div>
-</div>
-<p>Positional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">kinetics</span> <span class="n">library</span> <span class="n">directory</span>
-<span class="n">LIBRARYNAME</span>    <span class="n">the</span> <span class="n">libraryname</span> <span class="k">for</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="nb">format</span> <span class="n">kinetics</span> <span class="n">library</span>
-</pre></div>
-</div>
-<p>Optional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="importjavathermolibrary-py">
-<h2>9.9.6. importJavaThermoLibrary.py<a class="headerlink" href="#importjavathermolibrary-py" title="Permalink to this headline">¶</a></h2>
-<p>This script imports an individual RMG-Java themo library from a local directory and saves the output
-thermo library py file into a path of the user’s choosing.  This library will be automatically
-saved to libraryname.py in the input/thermo/libraries directory and can
-be used directly as an RMG-Py thermo library.</p>
-<p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importJavaThermoLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">INPUT</span> <span class="n">LIBRARYNAME</span>
-</pre></div>
-</div>
-<p>Positional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">thermo</span> <span class="n">library</span> <span class="n">directory</span>
-<span class="n">LIBRARYNAME</span>    <span class="n">the</span> <span class="n">libraryname</span> <span class="k">for</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="nb">format</span> <span class="n">thermo</span> <span class="n">library</span>
-</pre></div>
-</div>
-<p>Optional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="importolddatabase-py">
-<h2>9.9.7. importOldDatabase.py<a class="headerlink" href="#importolddatabase-py" title="Permalink to this headline">¶</a></h2>
-<p>This script imports an RMG-Java database from the output directory and saves
-it in the input directory. Only recommended for use in extreme circumstances.</p>
-<p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importOldDatabase</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>  <span class="n">INPUT</span> <span class="n">OUTPUT</span>
-</pre></div>
-</div>
-<p>Positional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">database</span> <span class="n">directory</span>
-<span class="n">LIBRARYNAME</span>    <span class="n">output</span> <span class="n">path</span> <span class="k">for</span> <span class="n">the</span> <span class="n">desired</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="n">database</span> <span class="n">directory</span>
-</pre></div>
-</div>
-<p>Optional arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">process_family_images</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -223,11 +173,8 @@ it in the input directory. Only recommended for use in extreme circumstances.</p
 <li><a class="reference internal" href="#">9.9. Database Scripts</a><ul>
 <li><a class="reference internal" href="#evanspolanyi-py">9.9.1. evansPolanyi.py</a></li>
 <li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">9.9.2. exportKineticsLibraryToChemkin.py</a></li>
-<li><a class="reference internal" href="#exportolddatabase-py">9.9.3. exportOldDatabase.py</a></li>
-<li><a class="reference internal" href="#importchemkinlibrary-py">9.9.4. importChemkinLibrary.py</a></li>
-<li><a class="reference internal" href="#importjavakineticslibrary-py">9.9.5. importJavaKineticsLibrary.py</a></li>
-<li><a class="reference internal" href="#importjavathermolibrary-py">9.9.6. importJavaThermoLibrary.py</a></li>
-<li><a class="reference internal" href="#importolddatabase-py">9.9.7. importOldDatabase.py</a></li>
+<li><a class="reference internal" href="#importchemkinlibrary-py">9.9.3. importChemkinLibrary.py</a></li>
+<li><a class="reference internal" href="#process-family-images-py">9.9.4. process_family_images.py</a></li>
 </ul>
 </li>
 </ul>

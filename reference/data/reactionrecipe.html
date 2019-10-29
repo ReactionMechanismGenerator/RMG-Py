@@ -58,6 +58,90 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-kinetics-reactionrecipe">
 <h1>rmgpy.data.kinetics.ReactionRecipe<a class="headerlink" href="#rmgpy-data-kinetics-reactionrecipe" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.kinetics.ReactionRecipe">
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">ReactionRecipe</code><span class="sig-paren">(</span><em class="sig-param">actions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a list of actions that, when executed, result in the conversion
+of a set of reactants to a set of products. There are currently five such
+actions:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 20%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Action Name</p></th>
+<th class="head"><p>Arguments</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CHANGE_BOND</p></td>
+<td><p><cite>center1</cite>, <cite>order</cite>, <cite>center2</cite></p></td>
+<td><p>change the bond order of the bond between <cite>center1</cite> and <cite>center2</cite> by <cite>order</cite>; do not break or form bonds</p></td>
+</tr>
+<tr class="row-odd"><td><p>FORM_BOND</p></td>
+<td><p><cite>center1</cite>, <cite>order</cite>, <cite>center2</cite></p></td>
+<td><p>form a new bond between <cite>center1</cite> and <cite>center2</cite> of type <cite>order</cite></p></td>
+</tr>
+<tr class="row-even"><td><p>BREAK_BOND</p></td>
+<td><p><cite>center1</cite>, <cite>order</cite>, <cite>center2</cite></p></td>
+<td><p>break the bond between <cite>center1</cite> and <cite>center2</cite>, which should be of type <cite>order</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p>GAIN_RADICAL</p></td>
+<td><p><cite>center</cite>, <cite>radical</cite></p></td>
+<td><p>increase the number of free electrons on <cite>center</cite> by <cite>radical</cite></p></td>
+</tr>
+<tr class="row-even"><td><p>LOSE_RADICAL</p></td>
+<td><p><cite>center</cite>, <cite>radical</cite></p></td>
+<td><p>decrease the number of free electrons on <cite>center</cite> by <cite>radical</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p>GAIN_PAIR</p></td>
+<td><p><cite>center</cite>, <cite>pair</cite></p></td>
+<td><p>increase the number of lone electron pairs on <cite>center</cite> by <cite>pair</cite></p></td>
+</tr>
+<tr class="row-even"><td><p>LOSE_PAIR</p></td>
+<td><p><cite>center</cite>, <cite>pair</cite></p></td>
+<td><p>decrease the number of lone electron pairs on <cite>center</cite> by <cite>pair</cite></p></td>
+</tr>
+</tbody>
+</table>
+<p>The actions are stored as a list in the <cite>actions</cite> attribute. Each action is
+a list of items; the first is the action name, while the rest are the
+action parameters as indicated above.</p>
+<dl class="method">
+<dt id="rmgpy.data.kinetics.ReactionRecipe.add_action">
+<code class="sig-name descname">add_action</code><span class="sig-paren">(</span><em class="sig-param">action</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.add_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an <cite>action</cite> to the reaction recipe, where <cite>action</cite> is a list
+containing the action name and the required parameters, as indicated in
+the table above.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.ReactionRecipe.apply_forward">
+<code class="sig-name descname">apply_forward</code><span class="sig-paren">(</span><em class="sig-param">struct</em>, <em class="sig-param">unique=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the forward reaction recipe to <cite>molecule</cite>, a single
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.ReactionRecipe.apply_reverse">
+<code class="sig-name descname">apply_reverse</code><span class="sig-paren">(</span><em class="sig-param">struct</em>, <em class="sig-param">unique=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_reverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the reverse reaction recipe to <cite>molecule</cite>, a single
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.ReactionRecipe.get_reverse">
+<code class="sig-name descname">get_reverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.get_reverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a reaction recipe that, when applied, does the opposite of
+what the current recipe does, i.e., it is the recipe for the reverse
+of the reaction that this is the recipe for.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

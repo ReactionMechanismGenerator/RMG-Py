@@ -458,12 +458,12 @@ multidimensional torsions that are particularly important for QOOH molecules and
 bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the 
 .evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime to seconds. 
 This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the HinderedRotor2D
- you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions. 
+you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions.
 
 Additional parameters for pressure dependent networks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Additional parameters apply only to molecules in pressure depedent networks
+Additional parameters apply only to molecules in pressure dependent networks
 
 ======================= =================================== ====================================
 Parameter               Required?                           Description
@@ -709,7 +709,7 @@ Parameter               Required?                           Description
 ======================= =================================== ====================================
 
 The parameters ``structure``, ``molecularWeight``, ``collisionModel`` and ``energyTransferModel`` were already discussed
-above in `Species Parameters`_.
+above in `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_.
 
 When the ``thermo`` parameter is specified, Arkane will approximate the modes
 of vibration and energy from the thermodynamic parameters, and will utilize this

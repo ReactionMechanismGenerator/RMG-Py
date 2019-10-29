@@ -60,48 +60,191 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.AtomType<a class="headerlink" href="#rmgpy-molecule-atomtype" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="atom-types"></span><dl class="class">
 <dt id="rmgpy.molecule.AtomType">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">AtomType</code><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">AtomType</code><span class="sig-paren">(</span><em class="sig-param">label=u''</em>, <em class="sig-param">generic=None</em>, <em class="sig-param">specific=None</em>, <em class="sig-param">single=None</em>, <em class="sig-param">all_double=None</em>, <em class="sig-param">r_double=None</em>, <em class="sig-param">o_double=None</em>, <em class="sig-param">s_double=None</em>, <em class="sig-param">triple=None</em>, <em class="sig-param">quadruple=None</em>, <em class="sig-param">benzene=None</em>, <em class="sig-param">lone_pairs=None</em>, <em class="sig-param">charge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for internal representation of atom types. Using unique objects
 rather than strings allows us to use fast pointer comparisons instead of
 slow string comparisons, as well as store extra metadata. In particular,
 we store metadata describing the atom type’s hierarchy with regard to other
 atom types, and the atom types that can result when various actions
 involving this atom type are taken. The attributes are:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">docstring of rmgpy.molecule.AtomType</span>, line 24)</p>
-<p>Malformed table.
-Column span incomplete in table line 17.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>===================== =================== ====================================
-Attribute             Type                Description
-===================== =================== ====================================
-`label`               ``str``             A unique label for the atom type
-`generic`             ``list``            The atom types that are more generic than this one
-`specific`            ``list``            The atom types that are more specific than this one
-`increment_bond`      ``list``            The atom type(s) that result when an adjacent bond&#39;s order is incremented
-`decrement_bond`      ``list``            The atom type(s) that result when an adjacent bond&#39;s order is decremented
-`form_bond`           ``list``            The atom type(s) that result when a new single bond is formed to this atom type
-`break_bond`          ``list``            The atom type(s) that result when an existing single bond to this atom type is broken
-`increment_radical`   ``list``            The atom type(s) that result when the number of radical electrons is incremented
-`decrement_radical`   ``list``            The atom type(s) that result when the number of radical electrons is decremented
-`increment_lone_pair` ``list``            The atom type(s) that result when the number of lone electron pairs is incremented
-`decrement_lone_pair` ``list``            The atom type(s) that result when the number of lone electron pairs is decremented
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>label</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>A unique label for the atom type</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>generic</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom types that are more generic than this one</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>specific</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom types that are more specific than this one</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>increment_bond</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when an adjacent bond’s order is incremented</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>decrement_bond</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when an adjacent bond’s order is decremented</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>form_bond</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when a new single bond is formed to this atom type</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>break_bond</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when an existing single bond to this atom type is broken</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>increment_radical</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when the number of radical electrons is incremented</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>decrement_radical</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when the number of radical electrons is decremented</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>increment_lone_pair</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when the number of lone electron pairs is incremented</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>decrement_lone_pair</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The atom type(s) that result when the number of lone electron pairs is decremented</p></td>
+</tr>
+<tr class="row-odd"><td colspan="3"><p>The following features are what are required in a given atomtype. Any int in the list is acceptable. An empty list is a wildcard</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>single</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The total number of single bonds on the atom</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>all_double</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The total number of double bonds on the atom</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>r_double</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The number of double bonds to any non-oxygen, nonsulfur</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>o_double</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The number of double bonds to oxygen</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>s_double</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The number of double bonds to sulfur</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>triple</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The total number of triple bonds on the atom</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>quadruple</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The total number of quadruple bonds on the atom</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>benzene</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The total number of benzene bonds on the atom</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>lone_pairs</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The number of lone pairs on the atom</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>charge</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The partial charge of the atom</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.all_double">
+<code class="sig-name descname">all_double</code><a class="headerlink" href="#rmgpy.molecule.AtomType.all_double" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>all_double</p>
+</dd>
+</dl>
+</dd></dl>
 
-The following features are what are required in a given atomtype. Any int in the list is acceptable. An empty list is a wildcard
-----------------------------------------------------------------------------
-&#39;single&#39;              &#39;&#39;list&#39;&#39;            The total number of single bonds on the atom
-&#39;all_double&#39;          &#39;&#39;list&#39;&#39;            The total number of double bonds on the atom
-&#39;r_double&#39;            &#39;&#39;list&#39;&#39;            The number of double bonds to any non-oxygen, nonsulfur
-&#39;o_double&#39;            &#39;&#39;list&#39;&#39;            The number of double bonds to oxygen
-&#39;s_double&#39;            &#39;&#39;list&#39;&#39;            The number of double bonds to sulfur
-&#39;triple&#39;              &#39;&#39;list&#39;&#39;            The total number of triple bonds on the atom
-&#39;quadruple&#39;           &#39;&#39;list&#39;&#39;            The total number of quadruple bonds on the atom
-&#39;benzene&#39;             &#39;&#39;list&#39;&#39;            The total number of benzene bonds on the atom
-&#39;lone_pairs&#39;          &#39;&#39;list&#39;&#39;            The number of lone pairs on the atom
-&#39;charge&#39;              &#39;&#39;list&#39;&#39;            The partial charge of the atom
-===================== =================== ====================================
-</pre></div>
-</div>
-</div>
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.benzene">
+<code class="sig-name descname">benzene</code><a class="headerlink" href="#rmgpy.molecule.AtomType.benzene" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>benzene</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.break_bond">
+<code class="sig-name descname">break_bond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.break_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>break_bond</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.charge">
+<code class="sig-name descname">charge</code><a class="headerlink" href="#rmgpy.molecule.AtomType.charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>charge</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.decrement_bond">
+<code class="sig-name descname">decrement_bond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>decrement_bond</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.decrement_lone_pair">
+<code class="sig-name descname">decrement_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_lone_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>decrement_lone_pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.decrement_radical">
+<code class="sig-name descname">decrement_radical</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_radical" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>decrement_radical</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.equivalent">
 <code class="sig-name descname">equivalent</code><a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
@@ -111,9 +254,64 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.form_bond">
+<code class="sig-name descname">form_bond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.form_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>form_bond</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.generic">
+<code class="sig-name descname">generic</code><a class="headerlink" href="#rmgpy.molecule.AtomType.generic" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>generic</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.get_features">
 <code class="sig-name descname">get_features</code><a class="headerlink" href="#rmgpy.molecule.AtomType.get_features" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of the features that are checked to determine atomtype</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.increment_bond">
+<code class="sig-name descname">increment_bond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>increment_bond</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.increment_lone_pair">
+<code class="sig-name descname">increment_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_lone_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>increment_lone_pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.increment_radical">
+<code class="sig-name descname">increment_radical</code><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_radical" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>increment_radical</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -123,6 +321,117 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><span class="pre">False</span></code>  otherwise.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.molecule.AtomType.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.lone_pairs">
+<code class="sig-name descname">lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.AtomType.lone_pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>lone_pairs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.o_double">
+<code class="sig-name descname">o_double</code><a class="headerlink" href="#rmgpy.molecule.AtomType.o_double" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>o_double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.quadruple">
+<code class="sig-name descname">quadruple</code><a class="headerlink" href="#rmgpy.molecule.AtomType.quadruple" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>quadruple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.r_double">
+<code class="sig-name descname">r_double</code><a class="headerlink" href="#rmgpy.molecule.AtomType.r_double" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>r_double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.s_double">
+<code class="sig-name descname">s_double</code><a class="headerlink" href="#rmgpy.molecule.AtomType.s_double" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>s_double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.set_actions">
+<code class="sig-name descname">set_actions</code><a class="headerlink" href="#rmgpy.molecule.AtomType.set_actions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.single">
+<code class="sig-name descname">single</code><a class="headerlink" href="#rmgpy.molecule.AtomType.single" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>single</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.specific">
+<code class="sig-name descname">specific</code><a class="headerlink" href="#rmgpy.molecule.AtomType.specific" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>specific</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.triple">
+<code class="sig-name descname">triple</code><a class="headerlink" href="#rmgpy.molecule.AtomType.triple" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>triple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.get_atomtype">
+<code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">get_atomtype</code><span class="sig-paren">(</span><em class="sig-param">atom</em>, <em class="sig-param">dict bonds</em><span class="sig-paren">)</span> &#x2192; AtomType<a class="headerlink" href="#rmgpy.molecule.get_atomtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the appropriate atom type for an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object <cite>atom</cite>
+with local bond structure <cite>bonds</cite>, a <code class="docutils literal notranslate"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
 
 <p>The atom type of an atom describes the atom itself and (often) something about

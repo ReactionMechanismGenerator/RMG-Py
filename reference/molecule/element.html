@@ -60,28 +60,139 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Element<a class="headerlink" href="#rmgpy-molecule-element" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Element">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Element</code><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Element</code><span class="sig-paren">(</span><em class="sig-param">number</em>, <em class="sig-param">symbol</em>, <em class="sig-param">name</em>, <em class="sig-param">mass</em>, <em class="sig-param">isotope=-1</em>, <em class="sig-param">chemkin_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical element. The attributes are:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">docstring of rmgpy.molecule.Element</span>, line 12)</p>
-<p>Malformed table.
-Text in column margin in table line 10.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>============= =============== ================================================
-Attribute     Type            Description
-============= =============== ================================================
-`number`      ``int``         The atomic number of the element
-`symbol`      ``str``         The symbol used for the element
-`name`        ``str``         The IUPAC name of the element
-`mass`        ``float``       The mass of the element in kg/mol
-`covRadius`   ``float``       Covalent bond radius in Angstrom
-`isotope`     ``int``         The isotope integer of the element
-`chemkin_name` ``str``         The chemkin compatible representation of the element
-============= =============== ================================================
-</pre></div>
-</div>
-</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 19%" />
+<col style="width: 64%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>number</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>The atomic number of the element</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>symbol</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>The symbol used for the element</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>name</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>The IUPAC name of the element</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>mass</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>The mass of the element in kg/mol</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>cov_radius</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>Covalent bond radius in Angstrom</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>isotope</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>The isotope integer of the element</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>chemkin_name</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>The chemkin compatible representation of the element</p></td>
+</tr>
+</tbody>
+</table>
 <p>This class is specifically for properties that all atoms of the same element
 share. Ideally there is only one instance of this class for each element.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.chemkin_name">
+<code class="sig-name descname">chemkin_name</code><a class="headerlink" href="#rmgpy.molecule.Element.chemkin_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>chemkin_name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.cov_radius">
+<code class="sig-name descname">cov_radius</code><a class="headerlink" href="#rmgpy.molecule.Element.cov_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘float’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>cov_radius</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.isotope">
+<code class="sig-name descname">isotope</code><a class="headerlink" href="#rmgpy.molecule.Element.isotope" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>isotope</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.mass">
+<code class="sig-name descname">mass</code><a class="headerlink" href="#rmgpy.molecule.Element.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘float’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>mass</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#rmgpy.molecule.Element.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.number">
+<code class="sig-name descname">number</code><a class="headerlink" href="#rmgpy.molecule.Element.number" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>number</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.symbol">
+<code class="sig-name descname">symbol</code><a class="headerlink" href="#rmgpy.molecule.Element.symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>symbol</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.get_element">
+<code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">get_element</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">int isotope=-1</em><span class="sig-paren">)</span> &#x2192; Element<a class="headerlink" href="#rmgpy.molecule.get_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <a class="reference internal" href="#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a> object corresponding to the given parameter
+<cite>value</cite>. If an integer is provided, the value is treated as the atomic
+number. If a string is provided, the value is treated as the symbol. An
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ElementError</span></code> is raised if no matching element is found.</p>
 </dd></dl>
 
 </div>

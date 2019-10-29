@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Molecule<a class="headerlink" href="#rmgpy-molecule-molecule" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Molecule">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Molecule</code><a class="headerlink" href="#rmgpy.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Molecule</code><span class="sig-paren">(</span><em class="sig-param">atoms=None</em>, <em class="sig-param">symmetry=-1</em>, <em class="sig-param">multiplicity=-187</em>, <em class="sig-param">reactive=True</em>, <em class="sig-param">props=None</em>, <em class="sig-param">inchi=u''</em>, <em class="sig-param">smiles=u''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular structure using a graph data type, extending
 the <code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code> class. Attributes are:</p>
 <table class="docutils align-default">
@@ -689,6 +689,11 @@ by an bond, or <code class="docutils literal notranslate"><span class="pre">Fals
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.has_charge">
+<code class="sig-name descname">has_charge</code><a class="headerlink" href="#rmgpy.molecule.Molecule.has_charge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.Molecule.has_edge">
 <code class="sig-name descname">has_edge</code><a class="headerlink" href="#rmgpy.molecule.Molecule.has_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
@@ -865,6 +870,50 @@ object. The merged <a class="reference internal" href="#rmgpy.molecule.Molecule"
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.multiplicity">
+<code class="sig-name descname">multiplicity</code><a class="headerlink" href="#rmgpy.molecule.Molecule.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>multiplicity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.ordered_vertices">
+<code class="sig-name descname">ordered_vertices</code><a class="headerlink" href="#rmgpy.molecule.Molecule.ordered_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ordered_vertices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.props">
+<code class="sig-name descname">props</code><a class="headerlink" href="#rmgpy.molecule.Molecule.props" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>props</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.reactive">
+<code class="sig-name descname">reactive</code><a class="headerlink" href="#rmgpy.molecule.Molecule.reactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reactive</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.Molecule.remove_atom">
 <code class="sig-name descname">remove_atom</code><a class="headerlink" href="#rmgpy.molecule.Molecule.remove_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove <cite>atom</cite> and all bonds associated with it from the graph. Does
@@ -977,6 +1026,17 @@ the isomorphism functions, much more efficient.</p>
 <code class="sig-name descname">split</code><a class="headerlink" href="#rmgpy.molecule.Molecule.split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a single <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></a> object containing two or more
 unconnected molecules into separate class:<cite>Molecule</cite> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.symmetry_number">
+<code class="sig-name descname">symmetry_number</code><a class="headerlink" href="#rmgpy.molecule.Molecule.symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘float’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>symmetry_number</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -1101,6 +1161,17 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <dt id="rmgpy.molecule.Molecule.update_multiplicity">
 <code class="sig-name descname">update_multiplicity</code><a class="headerlink" href="#rmgpy.molecule.Molecule.update_multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the multiplicity of a newly formed molecule.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Molecule.vertices">
+<code class="sig-name descname">vertices</code><a class="headerlink" href="#rmgpy.molecule.Molecule.vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertices</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

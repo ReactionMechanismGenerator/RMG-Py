@@ -100,11 +100,55 @@ useful for accelerating isomorphism searches, as proposed by
 </tbody>
 </table>
 <dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.connectivity1">
+<code class="sig-name descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity1" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>connectivity1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.connectivity2">
+<code class="sig-name descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity2" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>connectivity2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.connectivity3">
+<code class="sig-name descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity3" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>connectivity3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.graph.Vertex.copy">
 <code class="sig-name descname">copy</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the vertex. The default implementation assumes that no
 semantic information is associated with each vertex, and therefore
 simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vertex</span></code></a> object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.edges">
+<code class="sig-name descname">edges</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>edges</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -116,6 +160,17 @@ function in a derived class if your vertices have semantic information.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.ignore">
+<code class="sig-name descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ignore</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.graph.Vertex.is_specific_case_of">
 <code class="sig-name descname">is_specific_case_of</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
@@ -124,9 +179,42 @@ class if your edges have semantic information.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.mapping">
+<code class="sig-name descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>mapping</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.graph.Vertex.reset_connectivity_values">
 <code class="sig-name descname">reset_connectivity_values</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.sorting_label">
+<code class="sig-name descname">sorting_label</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.sorting_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘short’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>sorting_label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.terminal">
+<code class="sig-name descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.terminal" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>terminal</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.rmg.model.Species<a class="headerlink" href="#rmgpy-rmg-model-species" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.model.Species">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.rmg.model.</code><code class="sig-name descname">Species</code><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.rmg.model.</code><code class="sig-name descname">Species</code><span class="sig-paren">(</span><em class="sig-param">index=-1</em>, <em class="sig-param">label=u''</em>, <em class="sig-param">thermo=None</em>, <em class="sig-param">conformer=None</em>, <em class="sig-param">molecule=None</em>, <em class="sig-param">transport_data=None</em>, <em class="sig-param">molecular_weight=None</em>, <em class="sig-param">energy_transfer_model=None</em>, <em class="sig-param">reactive=True</em>, <em class="sig-param">props=None</em>, <em class="sig-param">smiles=u''</em>, <em class="sig-param">inchi=u''</em>, <em class="sig-param">aug_inchi=None</em>, <em class="sig-param">symmetry_number=-1</em>, <em class="sig-param">creation_iteration=0</em>, <em class="sig-param">explicitly_allowed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical species, representing a local minimum on a potential energy
 surface. The attributes are:</p>
 <table class="docutils align-default">
@@ -124,6 +124,17 @@ always considered regardless of this variable</p>
 </tbody>
 </table>
 <dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.aug_inchi">
+<code class="sig-name descname">aug_inchi</code><a class="headerlink" href="#rmgpy.rmg.model.Species.aug_inchi" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>aug_inchi</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.calculate_cp0">
 <code class="sig-name descname">calculate_cp0</code><a class="headerlink" href="#rmgpy.rmg.model.Species.calculate_cp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
@@ -133,6 +144,17 @@ always considered regardless of this variable</p>
 <dt id="rmgpy.rmg.model.Species.calculate_cpinf">
 <code class="sig-name descname">calculate_cpinf</code><a class="headerlink" href="#rmgpy.rmg.model.Species.calculate_cpinf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at infinite temperature in J/mol*K.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.conformer">
+<code class="sig-name descname">conformer</code><a class="headerlink" href="#rmgpy.rmg.model.Species.conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.statmech.conformer.Conformer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>conformer</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -148,6 +170,39 @@ always considered regardless of this variable</p>
 kw argument ‘deep’ is True, then a deep copy will be made of the
 Molecule objects in self.molecule.</p>
 <p>For other complex attributes, a deep copy will always be made.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.creation_iteration">
+<code class="sig-name descname">creation_iteration</code><a class="headerlink" href="#rmgpy.rmg.model.Species.creation_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>creation_iteration</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.energy_transfer_model">
+<code class="sig-name descname">energy_transfer_model</code><a class="headerlink" href="#rmgpy.rmg.model.Species.energy_transfer_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>energy_transfer_model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.explicitly_allowed">
+<code class="sig-name descname">explicitly_allowed</code><a class="headerlink" href="#rmgpy.rmg.model.Species.explicitly_allowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>explicitly_allowed</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -173,6 +228,11 @@ given SMILES string <cite>smiles</cite> and store it as the first entry of a
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
 of the loaded molecule.</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.generate_aug_inchi">
+<code class="sig-name descname">generate_aug_inchi</code><a class="headerlink" href="#rmgpy.rmg.model.Species.generate_aug_inchi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.generate_energy_transfer_model">
@@ -203,6 +263,11 @@ have already provided a thermodynamics model using e.g.
 <code class="sig-name descname">generate_transport_data</code><a class="headerlink" href="#rmgpy.rmg.model.Species.generate_transport_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the transport_data parameters for the species.</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.get_augmented_inchi">
+<code class="sig-name descname">get_augmented_inchi</code><a class="headerlink" href="#rmgpy.rmg.model.Species.get_augmented_inchi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.get_density_of_states">
@@ -315,6 +380,17 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.index">
+<code class="sig-name descname">index</code><a class="headerlink" href="#rmgpy.rmg.model.Species.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.is_identical">
 <code class="sig-name descname">is_identical</code><a class="headerlink" href="#rmgpy.rmg.model.Species.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one molecule of the species is identical to <cite>other</cite>,
@@ -338,6 +414,17 @@ either a <code class="xref py py-class docutils literal notranslate"><span class
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.is_solvent">
+<code class="sig-name descname">is_solvent</code><a class="headerlink" href="#rmgpy.rmg.model.Species.is_solvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>is_solvent</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.is_structure_in_list">
 <code class="sig-name descname">is_structure_in_list</code><a class="headerlink" href="#rmgpy.rmg.model.Species.is_structure_in_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one Molecule in self is isomorphic with at least one other Molecule in at least
@@ -348,6 +435,17 @@ one Species in species list.</p>
 <dt id="rmgpy.rmg.model.Species.is_surface_site">
 <code class="sig-name descname">is_surface_site</code><a class="headerlink" href="#rmgpy.rmg.model.Species.is_surface_site" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is a vacant surface site.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.rmg.model.Species.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>label</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -362,9 +460,42 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.molecule">
+<code class="sig-name descname">molecule</code><a class="headerlink" href="#rmgpy.rmg.model.Species.molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>molecule</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.multiplicity">
 <code class="sig-name descname">multiplicity</code><a class="headerlink" href="#rmgpy.rmg.model.Species.multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fingerprint of this species, taken from molecule attribute. Read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.props">
+<code class="sig-name descname">props</code><a class="headerlink" href="#rmgpy.rmg.model.Species.props" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>props</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.reactive">
+<code class="sig-name descname">reactive</code><a class="headerlink" href="#rmgpy.rmg.model.Species.reactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reactive</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="attribute">
@@ -393,6 +524,28 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.symmetry_number">
+<code class="sig-name descname">symmetry_number</code><a class="headerlink" href="#rmgpy.rmg.model.Species.symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘float’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>symmetry_number</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.thermo">
+<code class="sig-name descname">thermo</code><a class="headerlink" href="#rmgpy.rmg.model.Species.thermo" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>thermo</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.to_adjacency_list">
 <code class="sig-name descname">to_adjacency_list</code><a class="headerlink" href="#rmgpy.rmg.model.Species.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing each of the molecules’ adjacency lists.</p>
@@ -411,6 +564,17 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 <dt id="rmgpy.rmg.model.Species.to_chemkin">
 <code class="sig-name descname">to_chemkin</code><a class="headerlink" href="#rmgpy.rmg.model.Species.to_chemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this species.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.transport_data">
+<code class="sig-name descname">transport_data</code><a class="headerlink" href="#rmgpy.rmg.model.Species.transport_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>transport_data</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

@@ -58,6 +58,65 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-molecule-symmetry">
 <h1>rmgpy.molecule.symmetry<a class="headerlink" href="#rmgpy-molecule-symmetry" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculate_atom_symmetry_number">
+<code class="sig-prename descclassname">rmgpy.molecule.symmetry.</code><code class="sig-name descname">calculate_atom_symmetry_number</code><span class="sig-paren">(</span><em class="sig-param">Molecule molecule</em>, <em class="sig-param">Atom atom</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_atom_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the symmetry number centered at <cite>atom</cite> in the structure. The
+<cite>atom</cite> of interest must not be in a cycle.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculate_bond_symmetry_number">
+<code class="sig-prename descclassname">rmgpy.molecule.symmetry.</code><code class="sig-name descname">calculate_bond_symmetry_number</code><span class="sig-paren">(</span><em class="sig-param">Molecule molecule</em>, <em class="sig-param">Atom atom1</em>, <em class="sig-param">Atom atom2</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_bond_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the symmetry number centered at <cite>bond</cite> in the structure.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculate_axis_symmetry_number">
+<code class="sig-prename descclassname">rmgpy.molecule.symmetry.</code><code class="sig-name descname">calculate_axis_symmetry_number</code><span class="sig-paren">(</span><em class="sig-param">Molecule molecule</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_axis_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the axis symmetry number correction. The “axis” refers to a series
+of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
+for single C=C bonds are handled in getBondSymmetryNumber().</p>
+<p>Each axis (C=C=C) has the potential to double the symmetry number.
+If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot
+alter the axis symmetry and is disregarded:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">..</span>        <span class="n">A</span><span class="o">-</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">-</span><span class="n">A</span>
+
+  <span class="n">s</span><span class="o">=</span><span class="mi">1</span>                <span class="n">s</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>If an end has 2 groups that are different then it breaks the symmetry
+and the symmetry for that axis is 1, no matter what’s at the other end:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>\               <span class="n">A</span>\         <span class="o">/</span><span class="n">A</span>
+  <span class="n">T</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">-</span><span class="n">A</span>      <span class="n">T</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">T</span>
+<span class="n">B</span><span class="o">/</span>               <span class="n">A</span><span class="o">/</span>         \<span class="n">B</span>
+      <span class="n">s</span><span class="o">=</span><span class="mi">1</span>             <span class="n">s</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>If you have one or more ends with 2 groups, and neither end breaks the
+symmetry, then you have an axis symmetry number of 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>\         <span class="o">/</span><span class="n">B</span>      <span class="n">A</span>\
+  <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span>          <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="o">-</span><span class="n">B</span>
+<span class="n">A</span><span class="o">/</span>         \<span class="n">B</span>      <span class="n">A</span><span class="o">/</span>
+      <span class="n">s</span><span class="o">=</span><span class="mi">2</span>                <span class="n">s</span><span class="o">=</span><span class="mi">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculate_cyclic_symmetry_number">
+<code class="sig-prename descclassname">rmgpy.molecule.symmetry.</code><code class="sig-name descname">calculate_cyclic_symmetry_number</code><span class="sig-paren">(</span><em class="sig-param">Molecule molecule</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_cyclic_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the symmetry number correction for cyclic regions of a molecule.
+For complicated fused rings the smallest set of smallest rings is used.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculate_symmetry_number">
+<code class="sig-prename descclassname">rmgpy.molecule.symmetry.</code><code class="sig-name descname">calculate_symmetry_number</code><span class="sig-paren">(</span><em class="sig-param">Molecule molecule</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the symmetry number for the structure. The symmetry number
+includes both external and internal modes.</p>
+</dd></dl>
+
 </div>
 
 

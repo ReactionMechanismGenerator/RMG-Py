@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.graph.Edge<a class="headerlink" href="#rmgpy-molecule-graph-edge" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.graph.Edge">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.graph.</code><code class="sig-name descname">Edge</code><a class="headerlink" href="#rmgpy.molecule.graph.Edge" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.graph.</code><code class="sig-name descname">Edge</code><span class="sig-paren">(</span><em class="sig-param">vertex1</em>, <em class="sig-param">vertex2</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for edges in a graph. The vertices which comprise the edge can be
 accessed using the <cite>vertex1</cite> and <cite>vertex2</cite> attributes.</p>
 <dl class="attribute">
@@ -94,6 +94,28 @@ edge.</p>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
 class if your edges have semantic information.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Edge.vertex1">
+<code class="sig-name descname">vertex1</code><a class="headerlink" href="#rmgpy.molecule.graph.Edge.vertex1" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertex1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Edge.vertex2">
+<code class="sig-name descname">vertex2</code><a class="headerlink" href="#rmgpy.molecule.graph.Edge.vertex2" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertex2</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

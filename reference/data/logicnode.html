@@ -105,6 +105,20 @@ atomLabel in the node.</p>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="rmgpy.data.base.make_logic_node">
+<code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">make_logic_node</code><span class="sig-paren">(</span><em class="sig-param">string</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.make_logic_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a node in the tree which is a logic node.</p>
+<p>String should be of the form:</p>
+<ul class="simple">
+<li><p>OR{}</p></li>
+<li><p>AND{}</p></li>
+<li><p>NOT OR{}</p></li>
+<li><p>NOT AND{}</p></li>
+</ul>
+<p>And the returned object will be of class LogicOr or LogicAnd</p>
+</dd></dl>
+
 </div>
 
 

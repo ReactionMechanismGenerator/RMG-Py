@@ -58,6 +58,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="saving-rmg-output">
 <h1>Saving RMG output<a class="headerlink" href="#saving-rmg-output" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="rmgpy.rmg.output.save_output_html">
+<code class="sig-prename descclassname">rmgpy.rmg.output.</code><code class="sig-name descname">save_output_html</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">reaction_model</em>, <em class="sig-param">part_core_edge='core'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.output.save_output_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current set of  species and reactions of <cite>reactionModel</cite> to
+an HTML file <cite>path</cite> on disk. As part of this process, drawings of all
+species are created in the species folder (if they don’t already exist)
+using the <code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule.draw</span></code> module. The <code class="xref py py-mod docutils literal notranslate"><span class="pre">jinja</span></code>
+package is used to generate the HTML; if this package is not found, no
+HTML will be generated (but the program will carry on).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.rmg.output.save_diff_html">
+<code class="sig-prename descclassname">rmgpy.rmg.output.</code><code class="sig-name descname">save_diff_html</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">common_species_list</em>, <em class="sig-param">species_list1</em>, <em class="sig-param">species_list2</em>, <em class="sig-param">common_reactions</em>, <em class="sig-param">unique_reactions1</em>, <em class="sig-param">unique_reactions2</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.output.save_diff_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function outputs the species and reactions on an HTML page
+for the comparison of two RMG models.</p>
+</dd></dl>
+
 </div>
 
 

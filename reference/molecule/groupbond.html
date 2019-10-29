@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.GroupBond<a class="headerlink" href="#rmgpy-molecule-groupbond" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.GroupBond">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">GroupBond</code><a class="headerlink" href="#rmgpy.molecule.GroupBond" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">GroupBond</code><span class="sig-paren">(</span><em class="sig-param">atom1</em>, <em class="sig-param">atom2</em>, <em class="sig-param">order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>A bond group. This class is based on the <a class="reference internal" href="bond.html#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code></a> class, except that
 all attributes are lists rather than individual values. The allowed bond
 types are given <a class="reference internal" href="bond.html#id1"><span class="std std-ref">here</span></a>. The attributes are:</p>
@@ -224,6 +224,28 @@ are van der Waals.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.order">
+<code class="sig-name descname">order</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>order</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.reg_dim">
+<code class="sig-name descname">reg_dim</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.reg_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reg_dim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.GroupBond.set_order_num">
 <code class="sig-name descname">set_order_num</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.set_order_num" title="Permalink to this definition">¶</a></dt>
 <dd><p>change the bond order with a list of numbers</p>
@@ -233,6 +255,28 @@ are van der Waals.</p>
 <dt id="rmgpy.molecule.GroupBond.set_order_str">
 <code class="sig-name descname">set_order_str</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.set_order_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>set the bond order using a valid bond-order character list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.vertex1">
+<code class="sig-name descname">vertex1</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.vertex1" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertex1</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.vertex2">
+<code class="sig-name descname">vertex2</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.vertex2" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>vertex2</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

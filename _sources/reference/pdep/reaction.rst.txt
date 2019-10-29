@@ -5,12 +5,12 @@ Reaction events
 Microcanonical rate coefficients
 ================================
 
-.. autofunction:: rmgpy.pdep.calculateMicrocanonicalRateCoefficient
+.. autofunction:: rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient
 
 RRKM theory
 ===========
 
-.. autofunction:: rmgpy.pdep.applyRRKMTheory
+.. autofunction:: rmgpy.pdep.reaction.apply_rrkm_theory
 
     RRKM (Rice-Ramsperger-Kassel-Marcus) theory is the microcanonical analogue of
     transition state theory. The microcanonical rate coefficient as a function of
@@ -37,7 +37,7 @@ RRKM theory
 Inverse Laplace transform method
 ================================
 
-.. autofunction:: rmgpy.pdep.applyInverseLaplaceTransformMethod
+.. autofunction:: rmgpy.pdep.reaction.apply_inverse_laplace_transform_method
 
     The inverse Laplace transform method exploits the following relationship to
     determine the microcanonical rate coefficient:
