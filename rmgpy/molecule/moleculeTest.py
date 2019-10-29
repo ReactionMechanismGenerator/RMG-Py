@@ -2687,6 +2687,18 @@ multiplicity 2
 
         self.assertEqual(result, [2, 1, 0])
 
+    def test_remove_van_der_waals_bonds(self):
+        """Test we can remove a van-der-Waals bond"""
+        adjlist = """
+1 X  u0 p0 c0 {2,vdW}
+2 H  u0 p0 c0 {1,vdW}, {3,S}
+3 H  u0 p0 c0 {2,S}
+"""
+        mol = Molecule().from_adjacency_list(adjlist)
+        self.assertEqual(len(mol.get_all_edges()), 2)
+        mol.remove_van_der_waals_bonds()
+        self.assertEqual(len(mol.get_all_edges()), 1)
+
 ################################################################################
 
 if __name__ == '__main__':
