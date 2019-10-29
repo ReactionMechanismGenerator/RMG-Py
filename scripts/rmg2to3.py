@@ -82,6 +82,21 @@ import sys
 from tqdm import tqdm
 
 
+# Module names
+MODULES = {
+    'canteraModel': 'canteramodel',
+    'canteraTest': 'canteramodelTest',
+    'extractInfoFromckcsv': 'ckcsvparser',
+    'diff_models': 'diffmodels',
+    'diff_modelsTest': 'diffmodelsTest',
+    'fluxtest': 'fluxdiagramTest',
+    'generate_reactions': 'generatereactions',
+    'testGenerateReactions': 'generatereactionsTest',
+    'merge_models': 'mergemodels',
+    'merge_modelsTest': 'mergemodelsTest',
+    'observablesRegression': 'observablesregression',
+}
+
 # Global variables and functions
 GLOBALS1 = {
     # Arkane
@@ -1818,6 +1833,7 @@ ARGUMENTS2 = {
     'terminationTime': 'termination_time',
 }
 
+# Names which are risky to replace using regex
 DANGEROUS = ['SMILES', 'InChI', 'R', 'Run', 'atomTypes', 'format', 'F']
 
 
@@ -1947,6 +1963,7 @@ if __name__ == '__main__':
 
     replacements = []
     if arguments.both_stages or arguments.stage1:
+        replacements.extend(compile_regex(MODULES, args=False, attr=False, words=words, avoid_danger=avoid_danger))
         replacements.extend(compile_regex(GLOBALS1, args=False, attr=False, words=words, avoid_danger=avoid_danger))
         replacements.extend(compile_regex(METHODS1, args=False, attr=attr, words=words, avoid_danger=avoid_danger))
         replacements.extend(compile_regex(ATTRIBUTES1, args=False, attr=attr, words=words, avoid_danger=avoid_danger))
