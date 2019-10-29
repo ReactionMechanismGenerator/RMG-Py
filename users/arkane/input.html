@@ -763,39 +763,85 @@ for specifying the same <code class="docutils literal notranslate"><span class="
 </div>
 <div class="section" id="multidimensional-hindered-rotors">
 <h4>3.4.1.3. Multidimensional Hindered Rotors<a class="headerlink" href="#multidimensional-hindered-rotors" title="Permalink to this headline">¶</a></h4>
-<p>For multidimensional hindered rotors, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> need to be specified in the same way described in detail in the last section. However,
-rotor files may be specified by either a 1D rotor scan file as in the last section (1D rotors only) or as a directory.
-The directory must contain a list of energy files in the format <code class="docutils literal notranslate"><span class="pre">something_name_rotorAngle1_rotorAngle2_rotorAngle3(...).log</span></code>.</p>
-<p>For HinderedRotor2D (Quantum Mechanical 2D using Q2DTor):
-======================= ====================================
-Parameter               Description
-======================= ====================================
-<code class="docutils literal notranslate"><span class="pre">scandir</span></code>             file or directory containing scan energies
-<code class="docutils literal notranslate"><span class="pre">pivots1</span></code>             The indices of the atoms in the first rotor torsional bond
-<code class="docutils literal notranslate"><span class="pre">top1</span></code>                The indices of all atoms on one side of the first torsional bond (including the pivot atom)
-<code class="docutils literal notranslate"><span class="pre">symmetry1</span></code>           The symmetry number of the first rotor
-<code class="docutils literal notranslate"><span class="pre">pivots2</span></code>             The indices of the atoms in the second rotor torsional bond
-<code class="docutils literal notranslate"><span class="pre">top2</span></code>                The indices of all atoms on one side of the second torsional bond (including the pivot atom)
-<code class="docutils literal notranslate"><span class="pre">symmetry2</span></code>           The symmetry number of the second rotor
-<code class="docutils literal notranslate"><span class="pre">symmetry</span></code>            Q2DTor simplifying symmetry code, default is <code class="docutils literal notranslate"><span class="pre">none</span></code>
-======================= ===================================</p>
-<p>For HinderedRotorClassicalND (Classical and Semiclassical ND rotors):
-======================= ====================================
-Parameter               Description
-======================= ====================================
-<code class="docutils literal notranslate"><span class="pre">scandir</span></code>             file or directory containing scan energies
-<code class="docutils literal notranslate"><span class="pre">pivots</span></code>              The list of the indices of the atoms in each rotor torsional bond
-<code class="docutils literal notranslate"><span class="pre">tops</span></code>                The list of the indices of all atoms on one side of each torsional bond (including the pivot atom)
-<code class="docutils literal notranslate"><span class="pre">sigmas</span></code>              The list of symmetry numbers for each torsional bond
-<code class="docutils literal notranslate"><span class="pre">semiclassical</span></code>       Indicates whether to use the semiclassical rotor correction (highly recommended)
-======================= ====================================</p>
+<p>For multidimensional hindered rotors, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> need to be specified in the same way described
+in detail in the last section. However, rotor files may be specified by either a 1D rotor scan file as in the last
+section (1D rotors only) or as a directory. The directory must contain a list of energy files in the format
+<code class="docutils literal notranslate"><span class="pre">something_name_rotorAngle1_rotorAngle2_rotorAngle3(...).log</span></code>.</p>
+<p>For HinderedRotor2D (Quantum Mechanical 2D using Q2DTor):</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scandir</span></code></p></td>
+<td><p>file or directory containing scan energies</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pivots1</span></code></p></td>
+<td><p>The indices of the atoms in the first rotor torsional bond</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top1</span></code></p></td>
+<td><p>The indices of all atoms on one side of the first torsional bond (including the pivot atom)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">symmetry1</span></code></p></td>
+<td><p>The symmetry number of the first rotor</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pivots2</span></code></p></td>
+<td><p>The indices of the atoms in the second rotor torsional bond</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top2</span></code></p></td>
+<td><p>The indices of all atoms on one side of the second torsional bond (including the pivot atom)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">symmetry2</span></code></p></td>
+<td><p>The symmetry number of the second rotor</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">symmetry</span></code></p></td>
+<td><p>Q2DTor simplifying symmetry code, default is <code class="docutils literal notranslate"><span class="pre">none</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>For HinderedRotorClassicalND (Classical and Semiclassical ND rotors):</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scandir</span></code></p></td>
+<td><p>file or directory containing scan energies</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pivots</span></code></p></td>
+<td><p>The list of the indices of the atoms in each rotor torsional bond</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tops</span></code></p></td>
+<td><p>The list of the indices of all atoms on one side of each torsional bond (including the pivot atom)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sigmas</span></code></p></td>
+<td><p>The list of symmetry numbers for each torsional bond</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">semiclassical</span></code></p></td>
+<td><p>Indicates whether to use the semiclassical rotor correction (highly recommended)</p></td>
+</tr>
+</tbody>
+</table>
 <p>The inputs are mostly the same as the last section except that HinderedRotorClassicalND takes lists of pivots,
 tops and sigmas instead of individual values. These rotor objects enable calculation of partition functions for
-multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular hydrogen
-bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the
-.evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime to seconds.
-This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the HinderedRotor2D
-you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions.</p>
+multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular
+hydrogen bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the
+.evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime
+to seconds. This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the
+HinderedRotor2D you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower
+dimensional torsions.</p>
 </div>
 <div class="section" id="additional-parameters-for-pressure-dependent-networks">
 <h4>3.4.1.4. Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>

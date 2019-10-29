@@ -423,12 +423,14 @@ Note that the atom labels identified within the rotor section should correspond 
 
 Multidimensional Hindered Rotors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-For multidimensional hindered rotors, ``geometry``, ``frequencies`` need to be specified in the same way described in detail in the last section. However,
-rotor files may be specified by either a 1D rotor scan file as in the last section (1D rotors only) or as a directory. 
-The directory must contain a list of energy files in the format ``something_name_rotorAngle1_rotorAngle2_rotorAngle3(...).log``.  
+For multidimensional hindered rotors, ``geometry``, ``frequencies`` need to be specified in the same way described
+in detail in the last section. However, rotor files may be specified by either a 1D rotor scan file as in the last
+section (1D rotors only) or as a directory. The directory must contain a list of energy files in the format
+``something_name_rotorAngle1_rotorAngle2_rotorAngle3(...).log``.
 
-For HinderedRotor2D (Quantum Mechanical 2D using Q2DTor):  
-======================= ==================================== 
+For HinderedRotor2D (Quantum Mechanical 2D using Q2DTor):
+
+======================= ====================================
 Parameter               Description
 ======================= ====================================
 ``scandir``             file or directory containing scan energies
@@ -439,9 +441,10 @@ Parameter               Description
 ``top2``                The indices of all atoms on one side of the second torsional bond (including the pivot atom)
 ``symmetry2``           The symmetry number of the second rotor 
 ``symmetry``            Q2DTor simplifying symmetry code, default is ``none``
-======================= =================================== 
+======================= ====================================
 
-For HinderedRotorClassicalND (Classical and Semiclassical ND rotors):  
+For HinderedRotorClassicalND (Classical and Semiclassical ND rotors):
+
 ======================= ====================================
 Parameter               Description
 ======================= ====================================
@@ -453,12 +456,13 @@ Parameter               Description
 ======================= ====================================
 
 The inputs are mostly the same as the last section except that HinderedRotorClassicalND takes lists of pivots,
-tops and sigmas instead of individual values. These rotor objects enable calculation of partition functions for 
-multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular hydrogen 
-bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the 
-.evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime to seconds. 
-This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the HinderedRotor2D
-you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions.
+tops and sigmas instead of individual values. These rotor objects enable calculation of partition functions for
+multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular
+hydrogen bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the
+.evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime
+to seconds. This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the
+HinderedRotor2D you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower
+dimensional torsions.
 
 Additional parameters for pressure dependent networks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
