@@ -177,6 +177,17 @@ class GaussianTest(unittest.TestCase):
         log = determine_qm_software(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
         self.assertIsInstance(log, GaussianLog)
 
+    def test_gap_in_scan(self):
+        """
+        Ensures when an error occurs in the hindered rotors, proper distribution occurs
+        """
+        # load gaussian log with 10 degree separations, which has a failed optimization
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        with self.assertLogs(level=30):  # warnings only
+            vlist, angles = log.load_scan_energies()
+        self.assertAlmostEqual(angles[1], 10. * np.pi / 180)
+        self.assertAlmostEqual(angles[-1], 2 * np.pi)
+
 
 ################################################################################
 
