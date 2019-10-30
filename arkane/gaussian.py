@@ -425,6 +425,7 @@ class GaussianLog(Log):
         More information about the syntax can be found http://gaussian.com/opt/
         """
         output = []
+        rigid_scan = False
         reached_input_spec_section = False
         with open(self.path, 'r') as f:
             line = f.readline()
@@ -456,7 +457,44 @@ class GaussianLog(Log):
                             output.append(terms[1:action_index])
                 if " The following ModRedundant input section has been read:" in line:
                     reached_input_spec_section = True
+                if '# scan' in line:
+                    rigid_scan = True
+                    break  # used rigid scan, so need to use alternative method.
                 line = f.readline()
+        if rigid_scan and letter_spec == 'S':
+            # used a rigid scan
+            reached_variables = False
+            with open(self.path, 'r') as f:
+                line = f.readline()
+                zmat_section = []
+                while line != '':
+                    if reached_input_spec_section and not reached_variables:
+                        # save section to lookup pivot points
+                        zmat_section.append(line)
+                        if 'Variables:' in line:
+                            reached_variables = True
+                    elif reached_variables:
+                        terms = line.split()
+                        if len(terms) == 0:
+                            # finished reading specs
+                            break
+                        elif len(terms) == 4:
+                            # take the scan parameters
+                            if get_after_letter_spec:
+                                output.append(terms[2:])
+                            else:
+                                variable_name = terms[0]
+                                for index_num, zmat_line in enumerate(zmat_section):
+                                    #print zmat_line
+                                    if ' {0} '.format(variable_name) in zmat_line:
+                                        zmat_terms = zmat_line.split()
+                                        output.append([index_num, int(zmat_terms[1]),
+                                                       int(zmat_terms[3]), int(zmat_terms[5])])
+                    elif 'Symbolic Z-matrix:' in line:
+                        reached_input_spec_section = True
+                    line = f.readline()
+        elif rigid_scan and letter_spec == 'F':
+            output.append('rigid scan')
         return output
 
     def load_scan_pivot_atoms(self):

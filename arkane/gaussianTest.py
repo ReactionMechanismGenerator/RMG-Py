@@ -196,6 +196,39 @@ class GaussianTest(unittest.TestCase):
         with self.assertLogs(level=30):  # warnings only
             log.load_scan_energies()
 
+    def test_rigid_scan_pivots(self):
+        """
+        Tests that load_scan_pivot_atoms returns correct value for rigid scans
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'frozen_scan.log'))
+        pivots = log.load_scan_pivot_atoms()
+        self.assertEqual(pivots[0], 13)
+        self.assertEqual(pivots[1], 12)
+        self.assertEqual(pivots[2], 1)
+        self.assertEqual(pivots[3], 4)
+
+    def test_rigid_scan_frozen(self):
+        """
+        Tests that load_scan_frozen_atoms returns 'rigid scan' for rigid scans
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'frozen_scan.log'))
+        pivots = log.load_scan_frozen_atoms()
+        self.assertEqual(pivots[0], 'rigid scan')
+
+    def test_load_scan_angle_on_rigid(self):
+        """
+        Ensures proper scan angle found in Gaussian rigid scan job
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'frozen_scan.log'))
+        self.assertAlmostEqual(log.load_scan_angle(), 10.0)
+
+    def test_load_number_scans_on_rigid(self):
+        """
+        Ensures proper scan angle found in Gaussian rigid scan job
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'frozen_scan.log'))
+        self.assertAlmostEqual(log.load_number_scans(), 36)
+
 ################################################################################
 
 if __name__ == '__main__':
