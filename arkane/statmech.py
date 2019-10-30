@@ -318,7 +318,7 @@ class StatMechJob(object):
             except KeyError:
                 raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
                                  '{1!r}.'.format(self.modelChemistry, path))
-        if not os.path.isfile(energy.path):
+        if isinstance(energy, Log) and not os.path.isfile(energy.path):
             modified_energy_path = os.path.join(directory, energy.path)
             if not os.path.isfile(modified_energy_path):
                 raise InputError('Could not find single point energy file for species {0} '
