@@ -699,7 +699,7 @@ class PressureDependenceJob(object):
                         for mode in ts.conformer.modes:
                             f.write('        {0!r},\n'.format(mode))
                         f.write('    ],\n')
-                    f.write('    spin_multiplicity = {0:d},\n'.format(ts.conformer.spin_multiplicity))
+                    f.write('    spinMultiplicity = {0:d},\n'.format(ts.conformer.spin_multiplicity))
                     f.write('    opticalIsomers = {0:d},\n'.format(ts.conformer.optical_isomers))
                 if ts.frequency is not None:
                     f.write('    frequency = {0!r},\n'.format(ts.frequency))
