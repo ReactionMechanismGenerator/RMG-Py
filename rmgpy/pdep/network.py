@@ -75,8 +75,8 @@ class Network(object):
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
     ----------------------- ----------------------------------------------------
-    `eqRatios`              An array containing concentration of each isomer and reactant channel present at equilibrium
-    `coll_freq`              An array of the frequency of collision between
+    `eq_ratios`             An array containing concentration of each isomer and reactant channel present at equilibrium
+    `coll_freq`             An array of the frequency of collision between
     `Mcoll`                 Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer
     `dens_states`           3D np array of stable configurations, number of grains, and number of J
     ======================= ====================================================
@@ -269,7 +269,7 @@ class Network(object):
                 K[t, p, :, :] = self.K
 
                 # Check that the k(T,P) values satisfy macroscopic equilibrium
-                eq_ratios = self.eqRatios
+                eq_ratios = self.eq_ratios
                 for i in range(n_isom + n_reac):
                     for j in range(i):
                         Keq0 = K[t, p, j, i] / K[t, p, i, j]
@@ -693,7 +693,7 @@ class Network(object):
                     rxn.network_kinetics.get_rate_coefficient(temperature)
 
             # Determine the expected value of the equilibrium constant (Kc)
-            Keq_expected = self.eqRatios[prod] / self.eqRatios[reac]
+            Keq_expected = self.eq_ratios[prod] / self.eq_ratios[reac]
 
             # Determine the actual values of k(T) and Keq
             C0 = 1e5 / (constants.R * temperature)
@@ -831,7 +831,7 @@ class Network(object):
             if self.products[i].has_statmech() or self.products[i].has_thermo():
                 G = self.products[i].get_free_energy(temperature)
                 eq_ratios[n_isom + n_reac + i] = math.exp(-G / constants.R / temperature) * conc ** (len(self.products[i].species) - 1)
-        self.eqRatios = eq_ratios
+        self.eq_ratios = eq_ratios
         return eq_ratios / np.sum(eq_ratios)
 
     def calculate_collision_model(self):
