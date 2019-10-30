@@ -3,9 +3,14 @@
 plugins = Cython.Coverage
 branch = True
 source =
+    arkane
+    Arkane.py
     rmgpy
     rmg.py
-omit = *Test.py
+omit =
+    *Test.py
+    */test_data/*
+    arkane/data/*
 
 [report]
 show_missing = False
@@ -18,7 +23,13 @@ exclude_lines =
     raise NotImplementedError
     if 0:
     if __name__ == .__main__.:
-omit = *Test.py
+include =
+    arkane/*
+    rmgpy/*
+omit =
+    *Test.py
+    */test_data/*
+    arkane/data/*
 
 [html]
 directory = testing/coverage
