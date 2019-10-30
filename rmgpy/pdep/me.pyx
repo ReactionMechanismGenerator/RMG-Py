@@ -104,7 +104,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
             if k_ij[i, j, n_grains - 1,0] > 0 or k_ij[j, i, n_grains - 1,0] > 0:
                 for r in range(n_grains):
                     for s in range(n_j):
-                        u, v = indices[i, r, s], v = indices[j,r,s]
+                        u, v = indices[i, r, s], indices[j, r, s]
                         if u > -1 and v > -1:
                             me_mat[u, v] = k_ij[j, i, r, s]
                             me_mat[u, u] -= k_ij[j, i, r, s]
