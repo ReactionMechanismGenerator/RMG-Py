@@ -179,6 +179,20 @@ class GaussianTest(unittest.TestCase):
                 found_rotor = True
         self.assertTrue(found_rotor)
 
+    def test_load_scan_angle(self):
+        """
+        Ensures proper scan angle found in Gaussian scan job
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        self.assertAlmostEqual(log._load_scan_angle(), 10.0)
+
+    def test_load_number_scans(self):
+        """
+        Ensures proper scan angle found in Gaussian scan job
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        self.assertAlmostEqual(log._load_number_scans(), 36)
+
     def test_determine_qm_software(self):
         """
         Ensures that determine_qm_software returns a GaussianLog object
