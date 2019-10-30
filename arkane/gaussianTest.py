@@ -188,6 +188,13 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(angles[1], 10. * np.pi / 180)
         self.assertAlmostEqual(angles[-1], 2 * np.pi)
 
+    def test_uncompleted_runs_throw_warning(self):
+        """
+        Ensures a warning is thrown when the gaussian scan file is not complete
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'alcohol_ether_scan.log'))
+        with self.assertLogs(level=30):  # warnings only
+            log.load_scan_energies()
 
 ################################################################################
 
