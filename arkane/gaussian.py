@@ -351,7 +351,7 @@ class GaussianLog(Log):
                 # iteration (even the intermediate ones)
                 if 'SCF Done:' in line:
                     line = line.split('SCF Done:')[-1]
-                    E = float(line.split()[2])
+                    energy = float(line.split()[2])
                     # rigid scans will only not optimize, so just append every time it finds an energy.
                     if rigid_scan:
                         vlist.append(energy)
