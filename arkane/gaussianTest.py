@@ -229,6 +229,16 @@ class GaussianTest(unittest.TestCase):
         log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'frozen_scan.log'))
         self.assertAlmostEqual(log.load_number_scans(), 36)
 
+    def test_load_scan_with_freq(self):
+        """
+        Ensures that the length of enegies with hr scans and freq calc is correct
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'hr_scan_with_freq.log'))
+        self.assertAlmostEqual(log.load_number_scans(), 36)
+        self.assertAlmostEqual(log.load_scan_angle(), 10.0)
+        vlist, angles = log.load_scan_energies()
+        self.assertEqual(len(vlist), 37)
+
 ################################################################################
 
 if __name__ == '__main__':
