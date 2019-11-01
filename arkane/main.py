@@ -260,10 +260,10 @@ class Arkane(object):
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(['species', 'rotor_number', 'symmetry', 'resolution (degrees)',
                                  'pivot_atoms', 'frozen_atoms'] +
-                                ['energy (J/mol) {}'.format(i) for i in range(max_energy_length)])
+                                ['angle-energy tuple (degree, J/mol) {}'.format(i) for i in range(max_energy_length)],)
                 for row in hindered_rotor_info:
-                    writer.writerow([row[0], row[1], row[2], row[3][1] * 180 / np.pi,
-                                     row[5], row[6]] + [a for a in row[4]])
+                    writer.writerow([row[0], row[1], row[2], (row[3][1] - row[3][0]) * 180 / np.pi,
+                                     row[5], row[6]] + [(row[3][i]* 180 / np.pi, row[4][i]) for i in range(len(row[4]))])
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.job_list:
             if isinstance(job, KineticsJob):
