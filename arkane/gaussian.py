@@ -360,7 +360,7 @@ class GaussianLog(Log):
             line = f.readline()
             while line != '':
                 # If the job contains a "freq" then we want to ignore the last energy
-                if ' freq ' in line:
+                if ' Freq' in line and ' Geom=' in line:
                     opt_freq = True
                 # if # scan is keyword instead of # opt, then this is a rigid scan job
                 # and parsing the energies is done a little differently
