@@ -356,9 +356,9 @@ def check_conformer_energy(energies, path):
     energies = np.array(energies, np.float64)
     e_diff = (energies[0] - np.min(energies)) * constants.E_h * constants.Na / 1000
     if e_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
-        logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
-                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
-                        .format(path=os.path.basename(path), diff=e_diff))
+        logging.warning(f'The species corresponding to {os.path.basename(path)} is different in energy from the '
+                        f'lowest energy conformer by {e_diff:.2f} kJ/mol. This can cause significant errors in '
+                        f'your computed thermodynamic properties and rate coefficients.')
 
 
 def get_element_mass(input_element, isotope=None):
