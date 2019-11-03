@@ -1121,16 +1121,17 @@ cdef class ReactionSystem(DASx):
             
             if pdepNetworks:
                 for ind,obj in enumerate(pdepNetworks):
-                    LR = networkLeakRateRatios[ind]
-                    if LR > toleranceMoveToCore:
-                        if not(obj in newObjects or obj in invalidObjects):
-                            tempNewObjects.append(pdepNetworks[ind])
-                            tempNewObjectInds.append(ind)
-                            tempNewObjectVals.append(LR)
-                            tempNewObjectType.append('pdep')
-                    if LR > toleranceInterruptSimulation:
-                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj.index,LR,toleranceInterruptSimulation))
-                        interrupt = True
+                    if len(obj.isomers) < 12:
+                        LR = networkLeakRateRatios[ind]
+                        if LR > toleranceMoveToCore:
+                            if not(obj in newObjects or obj in invalidObjects):
+                                tempNewObjects.append(pdepNetworks[ind])
+                                tempNewObjectInds.append(ind)
+                                tempNewObjectVals.append(LR)
+                                tempNewObjectType.append('pdep')
+                        if LR > toleranceInterruptSimulation:
+                            logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj.index,LR,toleranceInterruptSimulation))
+                            interrupt = True
                 
                 sortedInds = numpy.argsort(numpy.array(tempNewObjectVals)).tolist()[::-1]
                 
