@@ -42,6 +42,7 @@ from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, Har
 
 from arkane.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -162,6 +163,16 @@ class GaussianTest(unittest.TestCase):
         """
         log = determine_qm_software(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
         self.assertIsInstance(log, GaussianLog)
+
+    def test_gaussian_log_error_termination(self):
+        """
+        Ensures that error termination gaussian log file raises an logError
+        """
+        file_path = os.path.join(os.path.dirname(__file__), 'data', 'error_termination.out')
+        log = GaussianLog(file_path)
+        with self.assertRaises(LogError) as log_error:
+            log.load_conformer()
+        self.assertTrue(f'The Gaussian job in {file_path} did not converge.' in str(log_error.exception))
 
 
 ################################################################################
