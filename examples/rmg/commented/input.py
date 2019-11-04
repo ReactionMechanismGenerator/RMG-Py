@@ -17,6 +17,9 @@ database(
     # if species exist in multiple libraries, the earlier libraries overwrite the
     # previous values
     thermoLibraries=['BurkeH2O2', 'primaryThermoLibrary', 'DFT_QCI_thermo', 'CBS_QB3_1dHR'],
+    # overrides RMG transport calculations with these values.
+    # if species exist in multiple libraries, the earlier libraries overwrite the previous values
+    transportLibraries=['PrimaryTransportLibrary.py'],
     # overrides RMG kinetics estimation if needed in the core of RMG.
     # list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
     # libraries can be input as either a string or tuple of form ('library_name',True/False)
@@ -30,13 +33,13 @@ database(
     # This is helpful for reducing run time for species you know will appear in
     # the mechanism.
     seedMechanisms=['BurkeH2O2inN2', 'ERC-FoundationFuelv0.9'],
-    # this is normally not changed in general RMG runs.  Usually used for testing with
-    # outside kinetics databases
-    kineticsDepositories='default',
     # lists specific families used to generate the model. 'default' uses a list of
     # families from RMG-Database/input/kinetics/families/recommended.py
     # a visual list of families is available in PDF form at RMG-database/families
     kineticsFamilies='default',
+    # this is normally not changed in general RMG runs.  Usually used for testing with
+    # outside kinetics databases
+    kineticsDepositories='default',
     # specifies how RMG calculates rates.  currently, the only option is 'rate rules'
     kineticsEstimator='rate rules',
 )
@@ -91,6 +94,8 @@ simpleReactor(
         "O2": 1,
         "butane": 1. / 6.5,
     },
+    # number of simulations used to explore variable temperature and pressure reactors
+    nSims=6,
     # the following two values specify when to determine the final output model
     # only one must be specified
     # the first condition to be satisfied will terminate the process
