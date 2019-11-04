@@ -974,7 +974,6 @@ class RMG(util.Subject):
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(
                     model_settings.max_num_species, q + 1))
                 max_num_spcs_hit = False
-                continue
 
         # Save the final seed mechanism
         if self.generate_seed_each_iteration:
