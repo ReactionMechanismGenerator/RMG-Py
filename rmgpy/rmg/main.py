@@ -140,6 +140,7 @@ class RMG(util.Subject):
     `ml_estimator`                      To use thermo estimation with machine learning
     `ml_settings`                       Settings for ML estimation
     `walltime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
+    `max_iterations`                    The maximum number of RMG iterations allowed, after which the job will terminate
     `kinetics_datastore`                ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initialization_time`               The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
@@ -155,6 +156,7 @@ class RMG(util.Subject):
         self.clear()
         self.model_settings_list = []
         self.simulator_settings_list = []
+        self.max_iterations = None
         self.Tmin = 0.0
         self.Tmax = 0.0
         self.Pmin = 0.0
@@ -213,6 +215,7 @@ class RMG(util.Subject):
         self.ml_settings = None
         self.species_constraints = {}
         self.walltime = '00:00:00:00'
+        self.max_iterations = None
         self.initialization_time = 0
         self.kinetics_datastore = None
         self.restart = False
@@ -519,6 +522,11 @@ class RMG(util.Subject):
 
         try:
             self.walltime = kwargs['walltime']
+        except KeyError:
+            pass
+
+        try:
+            self.max_iterations = kwargs['max_iterations']
         except KeyError:
             pass
 
@@ -944,6 +952,17 @@ class RMG(util.Subject):
                         logging.info('The current model edge has %s species and %s reactions' % (edge_spec, edge_reac))
                         return
 
+                if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
+                    logging.info('MODEL GENERATION TERMINATED')
+                    logging.info('')
+                    logging.info('The maximum number of iterations of {0} has been reached'.format(self.max_iterations))
+                    logging.info('The output model may be incomplete.')
+                    logging.info('')
+                    core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+                    logging.info('The current model core has %s species and %s reactions' % (core_spec, core_reac))
+                    logging.info('The current model edge has %s species and %s reactions' % (edge_spec, edge_reac))
+                    return
+                    
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(
                     model_settings.max_num_species, q + 1))

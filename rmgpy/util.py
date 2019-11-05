@@ -176,6 +176,9 @@ def parse_command_line_arguments(command_line_args=None):
     parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
                         metavar='DD:HH:MM:SS', help='set the maximum execution time')
 
+    parser.add_argument('-i', '--iterations', type=int, nargs=1, default=None,
+                        help='set the maximum number of RMG iterations')
+
     # Add option to select max number of processes for reaction generation
     parser.add_argument('-n', '--maxproc', type=int, nargs=1, default=1,
                         help='max number of processes used during reaction generation')
