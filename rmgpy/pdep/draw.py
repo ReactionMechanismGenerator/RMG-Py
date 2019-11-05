@@ -238,7 +238,7 @@ class NetworkDrawer(object):
     def draw(self, network, file_format, path=None):
         """
         Draw the potential energy surface for the given `network` as a Cairo
-        surface of the given `format`. If `path` is given, the surface is
+        surface of the given `file_format`. If `path` is given, the surface is
         saved to that location on disk.
         """
         try:
@@ -513,7 +513,7 @@ class NetworkDrawer(object):
             self._draw_label(well, cr, x, y, file_format=file_format)
 
         # Finish Cairo drawing
-        if format == 'png':
+        if file_format == 'png':
             surface.write_to_png(path)
         else:
             surface.finish()
