@@ -97,8 +97,24 @@ def main():
         # postprocess the stats
         log_file = os.path.join(args.output_directory, 'RMG.log')
         process_profile_stats(stats_file, log_file)
-        make_profile_graph(stats_file)
 
+        # Making the profile graph requires a display. See if one is available first
+        display_found = False
+
+        try:
+            display_found = bool(os.environ['DISPLAY'])
+        except KeyError:  # This means that no display was found
+            logging.warning('Could not find a display, which is required in order to generate the profile graph. This '
+                            'is likely due to this job being run on a remote server without performing X11 forwarding '
+                            'or running the job through a job manager like SLURM.\n\n The graph can be generated later '
+                            'by running with the postprocessing flag `rmg.py -P input.py` from any directory/computer '
+                            'where both the input file and RMG.profile file are located and a display is available.\n\n'
+                            'Note that if the postprocessing flag is specified, this will force the graph generation '
+                            'regardless of if a display was found, which could cause this program to crash or freeze.')
+
+        if display_found or args.postprocess:  # If postprocessing was specified, assume the user wants to force this
+            make_profile_graph(stats_file)
+        
     else:
 
         rmg = RMG(input_file=args.file, output_directory=args.output_directory)
