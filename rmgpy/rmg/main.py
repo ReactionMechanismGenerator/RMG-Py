@@ -2326,7 +2326,7 @@ def make_profile_graph(stats_file):
     `ps2pdf output.ps2` which produces a `output.ps2.pdf` file.
     """
     try:
-        from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes
+        from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes, TIME, TIME_RATIO, TOTAL_TIME, TOTAL_TIME_RATIO
     except ImportError:
         logging.warning('Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.')
         logging.warning('Try getting the latest version with something like `pip install --upgrade gprof2dot`.')
@@ -2356,6 +2356,9 @@ def make_profile_graph(stats_file):
     dot = DotWriter(output)
     dot.strip = options.strip
     dot.wrap = options.wrap
+
+    # Add both total time and self time in seconds to the graph output
+    dot.show_function_events = [TOTAL_TIME, TOTAL_TIME_RATIO, TIME, TIME_RATIO]
 
     if options.show_samples:
         dot.show_function_events.append(SAMPLES)
