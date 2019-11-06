@@ -208,6 +208,7 @@ class TestRMGScript(unittest.TestCase):
         self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname('./')))
         self.assertEqual(args.debug, False)
         self.assertEqual(args.file, 'input.py')
+        self.assertEqual(args.maxiter, None)
         self.assertEqual(args.kineticsdatastore, False)
         self.assertEqual(args.postprocess, False)
         self.assertEqual(args.profile, False)
@@ -222,13 +223,14 @@ class TestRMGScript(unittest.TestCase):
 
         # Acquire arguments
         args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', 'test/seed/', '-P',
-                                             '-t', '01:20:33:45', '-k'])
+                                             '-t', '01:20:33:45', '-k', '-i', '100'])
 
         # Test expected values
         self.assertEqual(args.walltime, '01:20:33:45')
         self.assertEqual(args.output_directory, '/test/output/dir/')
         self.assertEqual(args.debug, True)
         self.assertEqual(args.file, 'other_name.py')
+        self.assertEqual(args.maxiter, 100)
         self.assertEqual(args.kineticsdatastore, True)
         self.assertEqual(args.postprocess, True)
         self.assertEqual(args.profile, True)
