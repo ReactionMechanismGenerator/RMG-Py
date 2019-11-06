@@ -58,6 +58,7 @@ from arkane.gaussian import GaussianLog
 from arkane.log import Log
 from arkane.molpro import MolproLog
 from arkane.output import prettify
+from arkane.orca import OrcaLog
 from arkane.qchem import QChemLog
 from arkane.util import determine_qm_software
 
@@ -264,6 +265,7 @@ class StatMechJob(object):
             # File formats
             'GaussianLog': GaussianLog,
             'QChemLog': QChemLog,
+            'OrcaLog': OrcaLog,
             'MolproLog': MolproLog,
             'ScanLog': ScanLog,
             'Log': Log
