@@ -75,7 +75,7 @@ def main():
         'walltime': args.walltime,
         'maxproc': args.maxproc,
         'kineticsdatastore': args.kineticsdatastore,
-        'max_iterations': args.iterations,
+        'max_iterations': args.maxiter,
     }
 
     if args.profile:
