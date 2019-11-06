@@ -101,7 +101,6 @@ class RMG(util.Subject):
     =================================== ================================================
     `input_file`                        The path to the input file
     `profiler`                          A cProfile.Profile object for time profiling RMG
-    `stats_file`                        File path to store the profile stats, usually RMG.profile
     ----------------------------------- ------------------------------------------------
     `database_directory`                The directory containing the RMG database
     `thermo_libraries`                  The thermodynamics libraries to load
@@ -157,7 +156,6 @@ class RMG(util.Subject):
         self.input_file = input_file
         self.output_directory = output_directory
         self.profiler = profiler
-        self.stats_file = stats_file
         self.clear()
         self.model_settings_list = []
         self.simulator_settings_list = []
@@ -1784,7 +1782,7 @@ class RMG(util.Subject):
         self.notify()
 
         if self.profiler:  # Save the profile information in case the job crashes
-            with open(self.stats_file, 'wb') as f:
+            with open(os.path.join(self.output_directory, 'RMG.profile'), 'wb') as f:
                 self.profiler.snapshot_stats()
                 marshal.dump(self.profiler.stats, f)
 
