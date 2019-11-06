@@ -1433,13 +1433,10 @@ class RMG(util.Subject):
                 yaml.dump(data=spcs_map, stream=f)
 
             # Also, save the seed to the previous_seeds directory on specified iterations
-            if self.save_seed_modulus != -1:
-                if np.mod(self.reaction_model.iteration_num, self.save_seed_modulus) == 0:
-                    dst = os.path.join(previous_seeds_dir,
-                                       'iteration_number_{0}'.format(self.reaction_model.iteration_num))
-                    logging.info('Copying seed from seed directory to '
-                                 'previous_seeds/iteration_number_{0}'.format(self.reaction_model.iteration_num))
-                    shutil.copytree(seed_dir, dst)
+            if self.save_seed_modulus != -1 and self.reaction_model.iteration_num % self.save_seed_modulus == 0:
+                dst = os.path.join(previous_seeds_dir, 'iteration_number_{0}'.format(self.reaction_model.iteration_num))
+                logging.info('Copying seed from seed directory to {0}'.format(dst))
+                shutil.copytree(seed_dir, dst)
 
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(temp_seed_dir):
