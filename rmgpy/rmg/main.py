@@ -1036,7 +1036,7 @@ class RMG(util.Subject):
             else:
                 import re
                 import random
-                from rmgpy.tools.canteraModel import Cantera
+                from rmgpy.tools.canteramodel import Cantera
                 from rmgpy.tools.muq import ReactorPCEFactory
 
         if self.uncertainty is not None and self.uncertainty['local']:

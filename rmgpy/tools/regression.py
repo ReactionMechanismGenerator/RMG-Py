@@ -39,8 +39,8 @@ import argparse
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-from rmgpy.tools.observablesRegression import ObservablesTestCase
-from rmgpy.tools.canteraModel import CanteraCondition
+from rmgpy.tools.observablesregression import ObservablesTestCase
+from rmgpy.tools.canteramodel import CanteraCondition
 
 observables = []
 setups = None

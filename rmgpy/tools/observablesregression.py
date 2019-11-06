@@ -32,7 +32,7 @@ import os.path
 import numpy as np
 
 from rmgpy.chemkin import load_chemkin_file
-from rmgpy.tools.canteraModel import Cantera, generate_cantera_conditions, get_rmg_species_from_user_species
+from rmgpy.tools.canteramodel import Cantera, generate_cantera_conditions, get_rmg_species_from_user_species
 from rmgpy.tools.plot import GenericPlot, SimulationPlot, find_nearest
 
 

@@ -34,7 +34,7 @@ import numpy as np
 
 import rmgpy
 from rmgpy.quantity import Quantity
-from rmgpy.tools.canteraModel import find_ignition_delay, CanteraCondition, Cantera
+from rmgpy.tools.canteramodel import find_ignition_delay, CanteraCondition, Cantera
 
 
 class CanteraTest(unittest.TestCase):
@@ -115,7 +115,7 @@ class RMGToCanteraTest(unittest.TestCase):
         """
         Test that species objects convert properly
         """
-        from rmgpy.tools.canteraModel import check_equivalent_cantera_species
+        from rmgpy.tools.canteramodel import check_equivalent_cantera_species
         for i in range(len(self.ctSpecies)):
             self.assertTrue(check_equivalent_cantera_species(self.ctSpecies[i], self.rmg_ctSpecies[i]))
 
@@ -123,6 +123,6 @@ class RMGToCanteraTest(unittest.TestCase):
         """
         Test that species objects convert properly
         """
-        from rmgpy.tools.canteraModel import check_equivalent_cantera_reaction
+        from rmgpy.tools.canteramodel import check_equivalent_cantera_reaction
         for i in range(len(self.ctReactions)):
             self.assertTrue(check_equivalent_cantera_reaction(self.ctReactions[i], self.rmg_ctReactions[i]))

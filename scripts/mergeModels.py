@@ -39,7 +39,7 @@ The resulting merged files are placed in ``chem.inp`` and
 ``species_dictionary.txt`` in the execution directory.
 """
 
-import rmgpy.tools.merge_models as merge_models
+import rmgpy.tools.mergemodels as merge_models
 
 
 ################################################################################
