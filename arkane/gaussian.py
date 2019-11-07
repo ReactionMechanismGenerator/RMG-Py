@@ -45,6 +45,7 @@ from arkane.common import check_conformer_energy, get_element_mass
 from arkane.exceptions import LogError
 from arkane.log import Log
 
+
 ################################################################################
 
 
@@ -212,7 +213,7 @@ class GaussianLog(Log):
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
                             inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) \
-                                * constants.Na * 1e23
+                                         * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 
@@ -273,14 +274,17 @@ class GaussianLog(Log):
                 if 'SCF Done:' in line:
                     e_elect = float(line.split()[4]) * constants.E_h * constants.Na
                     elect_energy_source = 'SCF'
+                elif ' E2(' in line:
+                    e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
+                    elect_energy_source = 'doublehybrd or MP2'
                 elif 'MP2 =' in line:
-                    e_elect = float(line.split()[-1].replace('D','E')) * constants.E_h * constants.Na
+                    e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
                     elect_energy_source = 'MP2'
                 elif 'E(CORR)=' in line:
                     e_elect = float(line.split()[3]) * constants.E_h * constants.Na
                     elect_energy_source = 'CCSD'
-                elif 'CCSD(T)=' in line:
-                    e_elect = float(line.split()[1].replace('D','E')) * constants.E_h * constants.Na
+                elif 'CCSD(T)= ' in line:
+                    e_elect = float(line.split()[1].replace('D', 'E')) * constants.E_h * constants.Na
                     elect_energy_source = 'CCSD(T)'
                 elif 'CBS-QB3 (0 K)' in line:
                     e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
