@@ -36,7 +36,7 @@ import unittest
 
 from rmgpy.species import Species
 
-from arkane.gaussian import GaussianLog
+from arkane.logs.gaussian import GaussianLog
 from arkane.thermo import ThermoJob
 
 ################################################################################
@@ -51,7 +51,7 @@ class TestThermo(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         spc = Species().from_smiles('CCO')
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'gaussian', 'ethylene.log'))
         spc.conformer = log.load_conformer()[0]
         coords, numbers, masses = log.load_geometry()
         spc.conformer.coordinates = coords, 'angstroms'

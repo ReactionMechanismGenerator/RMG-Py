@@ -33,12 +33,10 @@ This module contains different utilities used in Arkane.
 
 from rmgpy.exceptions import InputError
 
-from arkane.gaussian import GaussianLog
-from arkane.molpro import MolproLog
-from arkane.orca import OrcaLog
-from arkane.qchem import QChemLog
-
-################################################################################
+from arkane.logs.gaussian import GaussianLog
+from arkane.logs.molpro import MolproLog
+from arkane.logs.orca import OrcaLog
+from arkane.logs.qchem import QChemLog
 
 
 def determine_qm_software(fullpath):

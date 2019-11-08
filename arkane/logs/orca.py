@@ -38,7 +38,7 @@ import numpy
 import rmgpy.constants as constants
 
 from arkane.common import get_element_mass
-from arkane.log import Log
+from arkane.logs.log import Log
 from arkane.exceptions import LogError
 
 

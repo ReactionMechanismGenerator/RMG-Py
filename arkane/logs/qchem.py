@@ -42,8 +42,8 @@ import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
-from arkane.log import Log
 from arkane.exceptions import LogError
+from arkane.logs.log import Log
 
 ################################################################################
 

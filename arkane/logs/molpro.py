@@ -42,7 +42,7 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 
 from arkane.common import get_element_mass
 from arkane.exceptions import LogError
-from arkane.log import Log
+from arkane.logs.log import Log
 
 ################################################################################
 

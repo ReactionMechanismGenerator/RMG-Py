@@ -54,15 +54,13 @@ from rmgpy.quantity import Quantity
 from arkane.common import ArkaneSpecies
 from arkane.common import symbol_by_number
 from arkane.encorr.corr import get_atom_correction, get_bac
-from arkane.gaussian import GaussianLog
-from arkane.log import Log
-from arkane.molpro import MolproLog
+from arkane.logs.gaussian import GaussianLog
+from arkane.logs.log import Log
+from arkane.logs.molpro import MolproLog
+from arkane.logs.orca import OrcaLog
+from arkane.logs.qchem import QChemLog
 from arkane.output import prettify
-from arkane.orca import OrcaLog
-from arkane.qchem import QChemLog
 from arkane.util import determine_qm_software
-
-################################################################################
 
 
 class ScanLog(object):
