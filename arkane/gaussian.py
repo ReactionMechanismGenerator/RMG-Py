@@ -274,7 +274,7 @@ class GaussianLog(Log):
                 if 'SCF Done:' in line:
                     e_elect = float(line.split()[4]) * constants.E_h * constants.Na
                     elect_energy_source = 'SCF'
-                elif ' E2(' in line:
+                elif ' E2(' in line and ' E(' in line:
                     e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
                     elect_energy_source = 'doublehybrd or MP2'
                 elif 'MP2 =' in line:
