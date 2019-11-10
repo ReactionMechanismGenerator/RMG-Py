@@ -35,6 +35,7 @@ Generator (RMG).
 import copy
 import gc
 import logging
+import marshal
 import os
 import resource
 import shutil
@@ -99,6 +100,7 @@ class RMG(util.Subject):
     Attribute                           Description
     =================================== ================================================
     `input_file`                        The path to the input file
+    `profiler`                          A cProfile.Profile object for time profiling RMG
     ----------------------------------- ------------------------------------------------
     `database_directory`                The directory containing the RMG database
     `thermo_libraries`                  The thermodynamics libraries to load
@@ -149,10 +151,11 @@ class RMG(util.Subject):
     
     """
 
-    def __init__(self, input_file=None, output_directory=None):
+    def __init__(self, input_file=None, output_directory=None, profiler=None, stats_file=None):
         super(RMG, self).__init__()
         self.input_file = input_file
         self.output_directory = output_directory
+        self.profiler = profiler
         self.clear()
         self.model_settings_list = []
         self.simulator_settings_list = []
@@ -1738,9 +1741,15 @@ class RMG(util.Subject):
                             for k in range(prev_num_core_species, num_core_species):
                                 self.trimolecular_react[i, j, k] = True
 
+    def save_profiler_info(self):
+        if self.profiler:  # Save the profile information in case the job crashes
+            with open(os.path.join(self.output_directory, 'RMG.profile'), 'wb') as f:
+                self.profiler.snapshot_stats()
+                marshal.dump(self.profiler.stats, f)
+
     def save_everything(self):
         """
-        Saves the output HTML and the Chemkin file
+        Saves the output HTML and the Chemkin file. If the job is being profiled this is saved as well.
         """
         # If the user specifies it, add unused reaction library reactions to
         # an additional output species and reaction list which is written to the ouput HTML
@@ -1758,6 +1767,8 @@ class RMG(util.Subject):
 
         # Notify registered listeners:
         self.notify()
+
+        self.save_profiler_info()
 
     def finish(self):
         """
