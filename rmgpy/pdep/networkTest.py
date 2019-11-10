@@ -266,6 +266,16 @@ class TestNetwork(unittest.TestCase):
         except:
             pass
 
+    def test_get_all_species(self):
+        """
+        Ensures all species are in the get_species_list
+        """
+        species_list = self.network.get_all_species()
+        self.assertIn(self.nC4H10O, species_list)
+        self.assertIn(self.nC4H8, species_list)
+        self.assertIn(self.H2O, species_list)
+        self.assertIn(self.N2, species_list)
+
 
 ################################################################################
 
