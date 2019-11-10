@@ -92,8 +92,7 @@ def main():
             'rmg_profiler': rmg_profiler,
         }
 
-        command = """rmg = RMG(input_file=inputFile, output_directory=output_dir, profiler=rmg_profiler); 
-        rmg.execute(**kwargs)"""
+        command = """rmg = RMG(input_file=inputFile, output_directory=output_dir, profiler=rmg_profiler); rmg.execute(**kwargs)"""
 
         print("Running under cProfile")
         if not args.postprocess:
