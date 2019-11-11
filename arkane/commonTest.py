@@ -46,9 +46,12 @@ from rmgpy.species import Species, TransitionState
 from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
-from arkane.common import ArkaneSpecies, get_element_mass
+from arkane.common import ArkaneSpecies, get_element_mass, get_center_of_mass, \
+    get_moment_of_inertia_tensor, get_principal_moments_of_inertia
 from arkane.input import job_list
 from arkane.statmech import InputError, StatMechJob
+
+################################################################################
 
 
 class CommonTest(unittest.TestCase):
@@ -441,9 +444,9 @@ H      -1.80315400   -1.20387400   -0.22872900"""
                     shutil.rmtree(item_path)
 
 
-class TestGetMass(unittest.TestCase):
+class TestMomentOfInertia(unittest.TestCase):
     """
-    Contains unit tests of common.py
+    Contains unit tests for attaining moments of inertia from the 3D coordinates.
     """
 
     def test_get_mass(self):
@@ -452,6 +455,102 @@ class TestGetMass(unittest.TestCase):
         self.assertEquals(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
         self.assertEquals(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
         self.assertEquals(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
+
+    def test_get_center_of_mass(self):
+        """Test attaining the center of mass"""
+        symbols = ['C', 'H', 'H', 'H', 'H']
+        coords = np.array([[0.0000000, 0.0000000, 0.0000000],
+                           [0.6269510, 0.6269510, 0.6269510],
+                           [-0.6269510, -0.6269510, 0.6269510],
+                           [-0.6269510, 0.6269510, -0.6269510],
+                           [0.6269510, -0.6269510, -0.6269510]], np.float64)
+        center_of_mass = get_center_of_mass(coords=coords, symbols=symbols)
+        for cm_coord in center_of_mass:
+            self.assertEqual(cm_coord, 0.0)
+
+        symbols = ['O', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H']
+        coords = np.array([[1.28706525, 0.52121353, 0.04219198],
+                           [0.39745682, -0.35265044, -0.63649234],
+                           [0.36441173, -1.68197093, 0.08682400],
+                           [-0.59818222, 0.10068325, -0.65235399],
+                           [0.74799641, -0.48357798, -1.66461710],
+                           [0.03647269, -1.54932006, 1.12314420],
+                           [-0.31340646, -2.38081353, -0.41122551],
+                           [1.36475837, -2.12581592, 0.12433596],
+                           [2.16336803, 0.09985803, 0.03295192]], np.float64)
+        center_of_mass = get_center_of_mass(coords=coords, symbols=symbols)
+        self.assertAlmostEqual(center_of_mass[0], 0.7201, 3)
+        self.assertAlmostEqual(center_of_mass[1], -0.4880, 3)
+        self.assertAlmostEqual(center_of_mass[2], -0.1603, 3)
+
+        numbers = [6, 6, 8, 1, 1, 1, 1, 1, 1]
+        coords = np.array([[1.1714680, -0.4048940, 0.0000000],
+                           [0.0000000, 0.5602500, 0.0000000],
+                           [-1.1945070, -0.2236470, 0.0000000],
+                           [-1.9428910, 0.3834580, 0.0000000],
+                           [2.1179810, 0.1394450, 0.0000000],
+                           [1.1311780, -1.0413680, 0.8846660],
+                           [1.1311780, -1.0413680, -0.8846660],
+                           [0.0448990, 1.2084390, 0.8852880],
+                           [0.0448990, 1.2084390, -0.8852880]], np.float64)
+        center_of_mass = get_center_of_mass(coords=coords, numbers=numbers)
+        self.assertAlmostEqual(center_of_mass[0], -0.0540, 3)
+        self.assertAlmostEqual(center_of_mass[1], -0.0184, 3)
+        self.assertAlmostEqual(center_of_mass[2], -0.0000, 3)
+
+    def test_get_moment_of_inertia_tensor(self):
+        """Test calculating the moment of inertia tensor"""
+        symbols = ['O', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H']
+        coords = np.array([[1.28706525, 0.52121353, 0.04219198],
+                           [0.39745682, -0.35265044, -0.63649234],
+                           [0.36441173, -1.68197093, 0.08682400],
+                           [-0.59818222, 0.10068325, -0.65235399],
+                           [0.74799641, -0.48357798, -1.66461710],
+                           [0.03647269, -1.54932006, 1.12314420],
+                           [-0.31340646, -2.38081353, -0.41122551],
+                           [1.36475837, -2.12581592, 0.12433596],
+                           [2.16336803, 0.09985803, 0.03295192]], np.float64)
+        tensor = get_moment_of_inertia_tensor(coords=coords, symbols=symbols)
+        expected_tensor = [[50.24197604, -15.43600683, -3.07977736],
+                           [-15.43600683, 22.20416597, 2.5935549],
+                           [-3.07977736, 2.5935549, 55.49144794]]
+        np.testing.assert_almost_equal(tensor, expected_tensor)
+
+    def test_get_principal_moments_of_inertia(self):
+        """Test calculating the principal moments of inertia"""
+        numbers = [6, 6, 8, 1, 1, 1, 1, 1, 1]
+        coords = np.array([[1.235366, -0.257231, -0.106315],
+                           [0.083698, 0.554942, 0.046628],
+                           [-1.210594, -0.239505, -0.021674],
+                           [0.132571, 1.119728, 0.987719],
+                           [0.127795, 1.278999, -0.769346],
+                           [-1.272620, -0.962700, 0.798216],
+                           [-2.074974, 0.426198, 0.055846],
+                           [-1.275744, -0.785745, -0.965493],
+                           [1.241416, -0.911257, 0.593856]], np.float64)
+        principal_moments_of_inertia = get_principal_moments_of_inertia(coords=coords, numbers=numbers)[0]
+        expected_principal_moments_of_inertia = [60.98026894, 53.83156297, 14.48858465]
+        for moment, expected_moment in zip(principal_moments_of_inertia, expected_principal_moments_of_inertia):
+            self.assertAlmostEqual(moment, expected_moment)
+
+        symbols = ['N', 'O', 'O']  # test a linear molecule
+        coords = np.array([[0.000000, 0.000000, 1.106190],
+                           [0.000000, 0.000000, -0.072434],
+                           [0.000000, 0.000000, -1.191782]], np.float64)
+        with self.assertRaises(InputError):
+            get_principal_moments_of_inertia(coords=coords, numbers=numbers)
+        principal_moments_of_inertia, axes = get_principal_moments_of_inertia(coords=coords, symbols=symbols)
+        expected_principal_moments_of_inertia = [39.4505153, 39.4505153, 0.0]
+        expected_axes = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        for moment, expected_moment in zip(principal_moments_of_inertia, expected_principal_moments_of_inertia):
+            self.assertAlmostEqual(moment, expected_moment)
+        for axis, expected_axis in zip(axes, expected_axes):
+            for entry, expected_entry in zip(axis, expected_axis):
+                self.assertAlmostEqual(entry, expected_entry)
+        self.assertIsInstance(principal_moments_of_inertia, tuple)
+        self.assertIsInstance(axes, tuple)
+
+################################################################################
 
 
 if __name__ == '__main__':
