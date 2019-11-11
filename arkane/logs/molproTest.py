@@ -41,14 +41,12 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillat
 
 from arkane.logs.molpro import MolproLog
 
-
 ################################################################################
 
 
-class MolproTest(unittest.TestCase):
+class MolproLogTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.io.gaussian module, used for reading
-    and writing Molpro files.
+    Contains unit tests for the molpro module, used for parsing Molpro log files.
     """
     @classmethod
     def setUpClass(cls):
@@ -161,8 +159,8 @@ class MolproTest(unittest.TestCase):
         t1_diagnostic = log.get_T1_diagnostic()
         self.assertAlmostEqual(t1_diagnostic, 0.01152184)
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

@@ -50,8 +50,6 @@ from arkane.common import ArkaneSpecies, get_element_mass
 from arkane.input import job_list
 from arkane.statmech import InputError, StatMechJob
 
-################################################################################
-
 
 class CommonTest(unittest.TestCase):
     """
@@ -455,8 +453,6 @@ class TestGetMass(unittest.TestCase):
         self.assertEquals(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
         self.assertEquals(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
 
-
-################################################################################
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

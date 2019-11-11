@@ -38,6 +38,8 @@ from arkane.logs.molpro import MolproLog
 from arkane.logs.orca import OrcaLog
 from arkane.logs.qchem import QChemLog
 
+################################################################################
+
 
 def determine_qm_software(fullpath):
     """

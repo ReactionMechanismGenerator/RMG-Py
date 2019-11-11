@@ -48,10 +48,9 @@ from arkane.exceptions import LogError
 ################################################################################
 
 
-class GaussianTest(unittest.TestCase):
+class GaussianLogTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.io.gaussian module, used for reading
-    and writing Gaussian files.
+    Contains unit tests for the gaussian module, used for parsing Gaussian log files.
     """
     @classmethod
     def setUpClass(cls):
@@ -216,7 +215,6 @@ class GaussianTest(unittest.TestCase):
             log.load_conformer()
         self.assertTrue(f'The Gaussian job in {file_path} did not converge.' in str(log_error.exception))
 
-
     def test_load_scan_with_freq(self):
         """
         Ensures that the length of enegies with hr scans and freq calc is correct
@@ -228,6 +226,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(len(vlist), 37)
 
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

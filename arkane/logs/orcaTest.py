@@ -42,8 +42,7 @@ from arkane.logs.orca import OrcaLog
 
 class OrcaTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.io.orca module, used for reading
-    and writing Orca files.
+    Contains unit tests for the orca module, used for parsing Orca log files.
     """
 
     def test_number_of_atoms_from_orca_log(self):
@@ -106,8 +105,8 @@ class OrcaTest(unittest.TestCase):
         log = OrcaLog(os.path.join(os.path.dirname(__file__), 'data', 'Orca_dlpno_test.log'))
         self.assertAlmostEqual(log.get_T1_diagnostic(), 0.009872238, delta=1e-3)
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

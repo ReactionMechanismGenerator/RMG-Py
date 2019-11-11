@@ -133,8 +133,8 @@ class ArkaneTest(unittest.TestCase):
             if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

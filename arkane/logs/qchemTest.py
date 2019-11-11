@@ -41,10 +41,9 @@ from arkane.logs.qchem import QChemLog
 ################################################################################
 
 
-class QChemTest(unittest.TestCase):
+class QChemLogTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.io.qchem module, used for reading
-    and writing QChem files.
+    Contains unit tests for the qchem module, used for parsing QChem log files.
     """
     @classmethod
     def setUpClass(cls):
@@ -129,8 +128,8 @@ class QChemTest(unittest.TestCase):
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

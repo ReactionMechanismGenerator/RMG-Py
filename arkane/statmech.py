@@ -62,6 +62,8 @@ from arkane.logs.qchem import QChemLog
 from arkane.output import prettify
 from arkane.util import determine_qm_software
 
+################################################################################
+
 
 class ScanLog(object):
     """

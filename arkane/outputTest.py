@@ -45,6 +45,8 @@ from arkane.main import Arkane
 from arkane.output import prettify, get_str_xyz
 from rmgpy.species import Species
 
+################################################################################
+
 
 @attr('functional')
 class OutputTest(unittest.TestCase):
@@ -155,6 +157,8 @@ C      -1.12745800    0.00000000   -0.70256500
 H      -1.12319800    0.00000000   -1.78740100
 H      -2.09943900    0.00000000   -0.22075700"""
         self.assertEqual(xyz_str, expected_xyz_str)
+
+################################################################################
 
 
 if __name__ == '__main__':

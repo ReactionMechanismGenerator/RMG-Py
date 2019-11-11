@@ -68,6 +68,8 @@ from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob, assign_frequency_scale_factor
 from arkane.thermo import ThermoJob
 
+################################################################################
+
 
 species_dict, transition_state_dict, reaction_dict, network_dict = dict(), dict(), dict(), dict()
 job_list = list()
