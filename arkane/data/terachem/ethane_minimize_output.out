@@ -1,0 +1,479 @@
+Startfile from command line: input.in
+
+
+       ***********************************************************
+       *                    TeraChem v1.9-2018.07-dev            *
+       *                 Hg Version: 83b657a651d5                *
+       *                   Development Version                   *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+
+
+       ***********************************************************
+       *  Compiled by toddmtz      Tue Sep 18 21:35:53 PDT 2018  *
+       *  Supported architectures: sm_30 sm_50 sm_61 sm_70       *
+       *  Cuda compilation tools, release 9.2, V9.2.148          *
+       ***********************************************************
+
+
+ Job started   Wed Jun 12 13:44:51 2019
+ On g001 (available memory: 369298 MB)
+
+######################################### RUNTIME INFO ##########################################
+terachem input.in 
+
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  396.44  Wed Jul 11 16:51:49 PDT 2018
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-28) (GCC) 
+
+	linux-vdso.so.1 =>  (0x00002aaaaaacd000)
+	libcurl.so.4 => /lib64/libcurl.so.4 (0x00002aaaaaccf000)
+	libintbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libintbox.so.1 (0x00002aaaaaf38000)
+	libthcbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libthcbox.so.1 (0x00002aaac92f2000)
+	libgridbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libgridbox.so.1 (0x00002aaacac0c000)
+	libdftbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libdftbox.so.1 (0x00002aaacb0f1000)
+	libcibox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcibox.so.1 (0x00002aaacb3d6000)
+	libcuda.so.1 => /cm/local/apps/cuda/libs/current/lib64/libcuda.so.1 (0x00002aaacb7ad000)
+	libcudart.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcudart.so.9.2 (0x00002aaacc728000)
+	libcublas.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcublas.so.9.2 (0x00002aaacc992000)
+	libcusparse.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcusparse.so.9.2 (0x00002aaad03e0000)
+	libcufft.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcufft.so.9.2 (0x00002aaad46fb000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00002aaad9d55000)
+	libssl.so.10 => /lib64/libssl.so.10 (0x00002aaada1b6000)
+	libm.so.6 => /lib64/libm.so.6 (0x00002aaada427000)
+	libcilkrts.so.5 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcilkrts.so.5 (0x00002aaada729000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00002aaada96a000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00002aaadac71000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00002aaadae87000)
+	libc.so.6 => /lib64/libc.so.6 (0x00002aaadb0a3000)
+	/lib64/ld-linux-x86-64.so.2 (0x00002aaaaaaab000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00002aaadb470000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x00002aaadb674000)
+	libssh2.so.1 => /lib64/libssh2.so.1 (0x00002aaadb8a7000)
+	libssl3.so => /lib64/libssl3.so (0x00002aaadbad1000)
+	libsmime3.so => /lib64/libsmime3.so (0x00002aaadbd1f000)
+	libnss3.so => /lib64/libnss3.so (0x00002aaadbf46000)
+	libnssutil3.so => /lib64/libnssutil3.so (0x00002aaadc273000)
+	libplds4.so => /lib64/libplds4.so (0x00002aaadc4a2000)
+	libplc4.so => /lib64/libplc4.so (0x00002aaadc6a6000)
+	libnspr4.so => /lib64/libnspr4.so (0x00002aaadc8ab000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00002aaadcae9000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00002aaadcd36000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00002aaadd01e000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00002aaadd251000)
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00002aaadd455000)
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00002aaadd664000)
+	libz.so.1 => /lib64/libz.so.1 (0x00002aaadd8b9000)
+	librt.so.1 => /lib64/librt.so.1 (0x00002aaaddacf000)
+	libnvidia-fatbinaryloader.so.396.44 => /cm/local/apps/cuda/libs/current/lib64/libnvidia-fatbinaryloader.so.396.44 (0x00002aaaddcd7000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00002aaaddf23000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00002aaade131000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x00002aaade335000)
+	libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00002aaade54e000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00002aaade76b000)
+	libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00002aaade992000)
+	libpcre.so.1 => /lib64/libpcre.so.1 (0x00002aaadebc9000)
+	libfreebl3.so => /lib64/libfreebl3.so (0x00002aaadee2b000)
+#################################################################################################
+
+Cannot find license.dat file in the TeraChem installation directory /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem
+
+
+TRYING THE NETWORK LICENSE...
+Cannot find license.key file in the TeraChem installation directory /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem
+
+
+*************************** WARNING **************************
+*                 Running in Demo mode.                      *
+**************************************************************
+
+Scratch directory: scr
+Random number seed: 1806172401
+
+XYZ coordinates coord.xyz
+Jobname: output
+Molden File Output: scr/output.molden
+Using basis set: 6-31+gs
+dmrgstart not found
+Spin multiplicity: 1
+DIIS will use up to 10 vectors.
+WF convergence threshold: 3.00e-05
+Using DIIS algorithm to converge WF
+Maximum number of SCF iterations: 100
+Incremental fock with rebuild every 8 iterations
+Will switch to conventional Fock if diffuse functions are detected
+X-matrix tolerance: 1.00e-04
+PRECISION: DYNAMIC
+DFT Functional requested: b3lyp
+Method: B3LYP 
+  Hartree-Fock exact exchange:          0.20 
+  Slater exchange functional:           0.80 
+  Becke 1988 exchange functional:       0.72 
+  Lee-Yang-Parr correlation functional: 0.81 
+  VWN(I) correlation functional:        0.19 
+Wavefunction: RESTRICTED
+DFT grid type: 1
+Using a single DFT grid.
+Initial guess generated by maximum overlap
+
+********************************************
+******* RUNNING GEOMETRY OPTMIZATION *******
+********************************************
+
+Geometry optimization parameters:
+Max number of optimization cycles: 1000
+Convergence threshold (Max grad component): 4.50e-04
+Convergence threshold (energy change): 1.00e-06
+Maximum of RMSD change allowed between steps is 0.500000
+using L-BFGS method
+Optimization checkpoint file will be dumped every 10 cycles
+Atomic displacement in finite-difference Hessian (Bohr) 0.003000
+Each step will be scaled by 1.00
+Maximum step size in internal coordinates 0.50
+Minimization SCF guess will be regenerated every 10 steps
+Job started from scratch
+SCF:   Initial guess is taken from previous step
+
+using 2 out of 2 CUDA devices
+   Device 0: Tesla V100-SXM2-32GB, 32510MB, CC 7.0 -- CPU THREAD 0
+   Device 1: Tesla V100-SXM2-32GB, 32510MB, CC 7.0 -- CPU THREAD 1
+-------------------------------------------------------------------
+Compiled with MAGMA support.  MAGMA parameters:
+    Matrices larger than 5000 square will be treated with MAGMA
+       (Change by setting the MagmaMinN environment variable)
+    Magma will use 1 out of 2 GPUs
+       (Change by setting the MagmaNGPUs environment variable)
+-------------------------------------------------------------------
+ CPU Memory Available: 48201.38 MegaWords 
+ GPU Memory Available: 3807.81 MegaWords 
+ Maximum recommended basis set size: 23500 basis functions
+ (limited by GPU memory)
+-------------------------------------------------------------------
+Using d-functions. Configuring GPUs accordingly.
+0: CUBLAS initialized, available GPU memory: 26631MB
+1: CUBLAS initialized, available GPU memory: 26631MB
+
+****** QM coordinates ******
+C         0.6640965100         0.0039526500         0.0710079300  
+C        -0.6640964700        -0.0039525300        -0.0710079000  
+H         1.2467586600         0.8898386900        -0.1613784000  
+H         1.1948397200        -0.8753068000         0.4224441400  
+H        -1.1948397500         0.8753067300        -0.4224442100  
+H        -1.2467586800        -0.8898387300         0.1613784400  
+
+Basis set:       6-31+gs
+Total atoms:     6
+Total charge:    0
+Total electrons: 16 (8-alpha, 8-beta)
+Number electrons modeled by ECPs: 0
+Total orbitals:  46
+Total AO shells: 24 (16 S-shells; 6 P-shells; 2 D-shells; 0 F-shells; 0 G-shells)
+Spin multiplicity: 1
+Nuclear repulsion energy (QM atoms): 33.319972681095 a.u.
+
+
+No optimization coordinates found in the configuration file
+Determining the type of coordinates based on the number of individual fragments...
+Analyzing structure...
+Found 6 atoms, 5 bonds
+Building HDLC residues...
+Found 1 HDLC residues
+done.
+Optimization will be performed in DLC coordinates
+
+-------------------------------------------------------
+0 additional frames found in coord.xyz
+-------------------------------------------------------
+***********************************************************************
+**                                                                   **
+**                              DL-FIND                              **
+**                       Geometry Optimisation                       **
+**               written by Johannes Kaestner, in 2006               **
+**               Copyright:  STFC Daresbury Laboratory               **
+**                           Revision:  406 $                        **
+**                                                                   **
+***********************************************************************
+Residue member list:
+    0 :     1    1    1    1    1    1
+
+Generating new HDLC for    1 residues
+
+Located a new residue for HDLC
+   Residue number is    1
+   Number of atoms it contains     6
+   Atoms:      1     2     3     4     5     6
+   Generating HDLC for residue    1
+       Dot-product about     1 is   1.00000000
+       System near planar - making improper
+       Dot-product about     2 is   1.00000000
+       System near planar - making improper
+
+     The system has    12 degrees of freedom, and    12 non-zero eigenvalues
+
+ call dlf_formstep_init...
+ needhessian =  F
+
+DL-FIND Report:
+===============
+Optimisation algorithm: L-BFGS
+Number of steps in L-BFGS memory ...............         18
+
+Trust radius based on energy
+Maximum step length ............................  5.000E-01
+
+Coordinate system: Delocalised internal coordinates (DLC)
+
+Number of atoms ................................          6
+Number of input geometries .....................          2
+Variables to be optimised ......................         12
+Restart information is written every ...........         10 steps
+This run has not been restarted.
+Maximum number of steps ........................       1000
+Maximum number of energy evaluations ...........     100000
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 17480 (2913 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.99e-15 <<<
+THRESPDP set to 1.00e+00
+   1     0.7172061129     -77.2537376376    16.0003090047    -9.0428719168     -77.2537376376     0.06  
+   2     0.6942971133      -0.3456179207    15.9999911443   -10.6610715477     -77.5993555583     0.05  
+   3     0.0382136614      -0.9898993951    15.9999908535    -9.9691953848     -78.5892549535     0.05  
+   4     0.0056915814      -0.0038163067    15.9999961036    -9.9301507091     -78.5930712602     0.04  
+   5     0.0019197012      -0.0000671443    15.9999966414    -9.9325304612     -78.5931384045     0.05  
+   6     0.0001063833      -0.0000037131    15.9999965169    -9.9330811447     -78.5931421176     0.05  
+THRESPDP set to 8.64e-02
+   7     0.0000057928      -0.0000010105    15.9999966640    -9.9332392517     -78.5931431281     0.05  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -78.5931431281 a.u.
+CENTER OF MASS: {0.000000, 0.000000, 0.000000} ANGS
+DIPOLE MOMENT: {-0.000064, 0.000010, -0.000010} (|D| = 0.000066) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26527 Mb
+GPU Memory: 26527 Mb
+ Energy calculation finished, energy: -7.859314313E+01
+
+Converting Cartesians to HDLC
+Testing convergence  in cycle    1
+  Max grad  8.0695E-03 Target: 4.5000E-04 converged?   no
+  RMS grad  2.6037E-03 Target: 3.0000E-04 converged?   no
+ Predicted step length 2.0000E-02
+ Trust radius          1.0000E-01
+
+Converting HDLC to Cartesians
+RMSD coordinate change for step 1 is  9.590e-03
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 17478 (2913 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 5.95e-03 <<<
+         >>> Purifying P... IDMP = 4.51e-05 <<<
+         >>> Purifying P... IDMP = 2.55e-09 <<<
+         >>> Purifying P... IDMP = 4.44e-16 <<<
+THRESPDP set to 8.64e-02
+   1     0.0024504320     -78.5932414629    15.9999998063    -9.9314420781     -78.5932414629     0.05  
+   2     0.0009730563      -0.0000126088    15.9999998789    -9.9299565832     -78.5932540717     0.05  
+   3     0.0005669488      -0.0000007439    15.9999998220    -9.9312406582     -78.5932548156     0.06  
+   4     0.0000303269      -0.0000006887    15.9999998053    -9.9306536017     -78.5932555044     0.04  
+   5     0.0000094424      -0.0000000156    15.9999998141    -9.9306865323     -78.5932555200     0.04  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -78.5932555200 a.u.
+CENTER OF MASS: {-0.000001, 0.000000, -0.000000} ANGS
+DIPOLE MOMENT: {-0.000116, -0.000005, -0.000011} (|D| = 0.000116) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26527 Mb
+GPU Memory: 26527 Mb
+ Energy calculation finished, energy: -7.859325552E+01
+
+Converting Cartesians to HDLC
+ Wolfe conditions fulfilled, increasing trust radius
+Testing convergence  in cycle    2
+    Energy  1.1239E-04 Target: 1.0000E-06 converged?   no
+  Max step  1.7893E-02 Target: 1.8000E-03 converged?   no
+  RMS step  5.7735E-03 Target: 1.2000E-03 converged?   no
+  Max grad  2.3491E-03 Target: 4.5000E-04 converged?   no
+  RMS grad  7.8300E-04 Target: 3.0000E-04 converged?   no
+ Predicted step length 9.7201E-03
+ Trust radius          2.0000E-01
+
+Converting HDLC to Cartesians
+RMSD coordinate change for step 2 is  2.625e-03
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 17476 (2912 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 3.09e-03 <<<
+         >>> Purifying P... IDMP = 9.85e-06 <<<
+         >>> Purifying P... IDMP = 9.97e-11 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 8.64e-02
+   1     0.0013153921     -78.5932589676    16.0000015625    -9.9312133539     -78.5932589676     0.05  
+   2     0.0002692498      -0.0000052711    16.0000016880    -9.9314362458     -78.5932642387     0.04  
+   3     0.0001963081      +0.0000000511    16.0000015481    -9.9310763562     -78.5932641876     0.04  
+   4     0.0000180130      -0.0000000916    16.0000015368    -9.9312917546     -78.5932642792     0.04  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -78.5932642792 a.u.
+CENTER OF MASS: {-0.000002, 0.000000, -0.000000} ANGS
+DIPOLE MOMENT: {0.000207, 0.000000, 0.000022} (|D| = 0.000208) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26527 Mb
+GPU Memory: 26527 Mb
+ Energy calculation finished, energy: -7.859326428E+01
+
+Converting Cartesians to HDLC
+ Wolfe conditions fulfilled, increasing trust radius
+Testing convergence  in cycle    3
+    Energy  8.7592E-06 Target: 1.0000E-06 converged?   no
+  Max step  8.3799E-03 Target: 1.8000E-03 converged?   no
+  RMS step  2.8059E-03 Target: 1.2000E-03 converged?   no
+  Max grad  1.1370E-03 Target: 4.5000E-04 converged?   no
+  RMS grad  4.1690E-04 Target: 3.0000E-04 converged?   no
+ Predicted step length 2.5680E-03
+ Trust radius          4.0000E-01
+
+Converting HDLC to Cartesians
+RMSD coordinate change for step 3 is  5.538e-04
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 17478 (2913 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.48e-04 <<<
+         >>> Purifying P... IDMP = 8.14e-07 <<<
+         >>> Purifying P... IDMP = 8.11e-13 <<<
+         >>> Purifying P... IDMP = 2.22e-16 <<<
+THRESPDP set to 8.64e-02
+   1     0.0003990512     -78.5932642101    16.0000013871    -9.9307869498     -78.5932642101     0.05  
+   2     0.0002590316      -0.0000003802    16.0000013585    -9.9303981663     -78.5932645902     0.04  
+   3     0.0000806022      -0.0000001008    16.0000013788    -9.9307018051     -78.5932646911     0.04  
+   4     0.0000250849      +0.0000000160    16.0000012751    -9.9306033547     -78.5932646751     0.05  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -78.5932646751 a.u.
+CENTER OF MASS: {0.000001, 0.000000, 0.000000} ANGS
+DIPOLE MOMENT: {-0.000303, -0.000001, -0.000033} (|D| = 0.000305) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26527 Mb
+GPU Memory: 26527 Mb
+ Energy calculation finished, energy: -7.859326468E+01
+
+Converting Cartesians to HDLC
+ Wolfe conditions fulfilled, increasing trust radius
+Testing convergence  in cycle    4
+    Energy  3.9593E-07 Target: 1.0000E-06 converged?  yes
+  Max step  2.1641E-03 Target: 1.8000E-03 converged?   no
+  RMS step  7.4133E-04 Target: 1.2000E-03 converged?  yes
+  Max grad  1.2708E-04 Target: 4.5000E-04 converged?  yes
+  RMS grad  4.4134E-05 Target: 3.0000E-04 converged?  yes
+ Predicted step length 2.7067E-04
+ Trust radius          5.0000E-01
+
+Converting HDLC to Cartesians
+RMSD coordinate change for step 4 is  1.366e-04
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 17478 (2913 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.87e-05 <<<
+         >>> Purifying P... IDMP = 9.30e-09 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 8.64e-02
+   1     0.0000381678     -78.5932651168    16.0000013064    -9.9306595785     -78.5932651168     0.09  
+   2     0.0000489886      +0.0000000389    16.0000012355    -9.9307121304     -78.5932650778     0.04  
+   3     0.0000143063      -0.0000000370    16.0000013049    -9.9306868701     -78.5932651148     0.04  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -78.5932651148 a.u.
+CENTER OF MASS: {-0.000001, 0.000000, -0.000000} ANGS
+DIPOLE MOMENT: {-0.000178, -0.000003, -0.000019} (|D| = 0.000179) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26527 Mb
+GPU Memory: 26527 Mb
+ Energy calculation finished, energy: -7.859326511E+01
+
+Converting Cartesians to HDLC
+ Wolfe conditions fulfilled, increasing trust radius
+Testing convergence  in cycle    5
+    Energy  4.3970E-07 Target: 1.0000E-06 converged?  yes
+  Max step  2.5265E-04 Target: 1.8000E-03 converged?  yes
+  RMS step  7.8136E-05 Target: 1.2000E-03 converged?  yes
+  Max grad  1.2788E-06 Target: 4.5000E-04 converged?  yes
+  RMS grad  7.0093E-07 Target: 3.0000E-04 converged?  yes
+Converged!
+ converged
+Destroying all HDLC residues
+
+
+DL-FIND Report:
+===============
+Optimisation algorithm: L-BFGS
+Number of steps in L-BFGS memory ...............         18
+
+Trust radius based on energy
+Maximum step length ............................  5.000E-01
+
+Coordinate system: Delocalised internal coordinates (DLC)
+
+Number of atoms ................................          6
+Number of input geometries .....................          2
+Variables to be optimised ......................         12
+Restart information is written every ...........         10 steps
+This run has not been restarted.
+Number of energy evaluations on this processor .          5
+Number of steps ................................          5
+Number of accepted steps / line searches .......          5
+
+
+Timing report
+=============
+Module                                      CPU time            Wall clock time
+Total .................................     3.723 (100.00%)     2.000 (100.00%) seconds
+Energy and Gradient ...................     3.717 ( 99.86%)     2.000 (100.00%) seconds
+Step direction ........................     0.000 (  0.00%)     0.000 (  0.00%) seconds
+Coordinate transformation .............     0.002 (  0.05%)     0.000 (  0.00%) seconds
+Checkpoint file I/O ...................     0.000 (  0.00%)     0.000 (  0.00%) seconds
+XYZ-file I/O ..........................     0.000 (  0.00%)     0.000 (  0.00%) seconds
+Maximum memory usage ........................... 2.1926E+01 kB
+Writing out molden info
+Total processing time: 1.54 sec 
+
+ Job finished: Wed Jun 12 13:44:57 2019
