@@ -1497,6 +1497,15 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
     if element_counts is None:
         element_counts = get_element_count(species.molecule[0])
 
+    # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
+    # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system
+    # done by Molecule.get_formula
+    if 'C' in element_counts:
+        sorted_elements = sorted(element_counts, key = lambda e: {'C':'0','H':'1'}.get(e, e))
+    else:
+        sorted_elements = sorted(element_counts)
+    element_counts = {e: element_counts[e] for e in sorted_elements}
+
     string = ''
     # Write thermo comments
     if verbose:

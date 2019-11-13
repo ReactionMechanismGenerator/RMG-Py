@@ -1144,7 +1144,9 @@ class Molecule(Graph):
             symbol = atom.element.symbol
             element_dict[symbol] = element_dict.get(symbol, 0) + 1
 
-        # Use the Hill system to generate the formula
+        # Use the Hill system to generate the formula.
+        # If you change this algorithm consider also updating 
+        # the chemkin.write_thermo_entry method
         formula = ''
 
         # Carbon and hydrogen always come first if carbon is present
