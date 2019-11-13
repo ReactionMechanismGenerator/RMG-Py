@@ -718,7 +718,7 @@ class Bond(Edge):
         Return ``True`` if the bond represents a van der Waals bond or 
         ``False`` if not.
         """
-        return self.is_order(0) or self.order == 'vdW'  # todo: remove 'vdW'
+        return self.is_order(0)
 
     def is_order(self, other_order):
         """
