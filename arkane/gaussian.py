@@ -45,6 +45,7 @@ from arkane.common import check_conformer_energy, get_element_mass
 from arkane.exceptions import LogError
 from arkane.log import Log
 
+
 ################################################################################
 
 
@@ -212,7 +213,7 @@ class GaussianLog(Log):
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
                             inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) \
-                                * constants.Na * 1e23
+                                         * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 
@@ -265,13 +266,26 @@ class GaussianLog(Log):
         CBS-QB3 value.
         """
         e_elect, e0_composite, scaled_zpe = None, None, None
-
+        elect_energy_source = ''
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
 
                 if 'SCF Done:' in line:
                     e_elect = float(line.split()[4]) * constants.E_h * constants.Na
+                    elect_energy_source = 'SCF'
+                elif ' E2(' in line and ' E(' in line:
+                    e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
+                    elect_energy_source = 'doublehybrd or MP2'
+                elif 'MP2 =' in line:
+                    e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
+                    elect_energy_source = 'MP2'
+                elif 'E(CORR)=' in line:
+                    e_elect = float(line.split()[3]) * constants.E_h * constants.Na
+                    elect_energy_source = 'CCSD'
+                elif 'CCSD(T)= ' in line:
+                    e_elect = float(line.split()[1].replace('D', 'E')) * constants.E_h * constants.Na
+                    elect_energy_source = 'CCSD(T)'
                 elif 'CBS-QB3 (0 K)' in line:
                     e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
@@ -294,10 +308,12 @@ class GaussianLog(Log):
                 line = f.readline()
 
         if e0_composite is not None:
+            logging.debug("Using the composite energy from the gaussian output file")
             if scaled_zpe is None:
                 raise LogError('Unable to find zero-point energy in Gaussian log file.')
             return e0_composite - scaled_zpe
         elif e_elect is not None:
+            logging.debug("Using the {0} energy from the gaussian output file".format(elect_energy_source))
             return e_elect
         else:
             raise LogError('Unable to find energy in Gaussian log file.')

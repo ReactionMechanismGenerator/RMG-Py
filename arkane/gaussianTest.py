@@ -44,6 +44,7 @@ from arkane.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
 from arkane.exceptions import LogError
 
+
 ################################################################################
 
 
@@ -80,6 +81,27 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.467452, 4)
         self.assertEqual(conformer.spin_multiplicity, 1)
         self.assertEqual(conformer.optical_isomers, 1)
+
+    def test_gaussian_energies(self):
+        """
+        test parsing double hydride, MP2, CCSD, CCSD(T) form Gaussian log
+        """
+        log_doublehybrid = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'B2PLYP.LOG'))
+        log_mp2 = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'UMP2_C_ATOM.LOG'))
+        log_ccsd = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'UCCSD_C_ATOM.LOG'))
+        log_ccsdt = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'UCCSDT_C_ATOM.LOG'))
+        log_qb3 = GaussianLog(os.path.join(os.path.dirname(__file__), '../examples/arkane/species/C2H5/', 'ethyl_cbsqb3.log'))
+
+        self.assertAlmostEqual(log_doublehybrid.load_energy() / constants.Na / constants.E_h, -0.40217794572194e+02,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_mp2.load_energy() / constants.Na / constants.E_h, -0.37504683723025e+02,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_ccsd.load_energy() / constants.Na / constants.E_h, -37.517151426,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_ccsdt.load_energy() / constants.Na / constants.E_h, -0.37517454469e+02,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_qb3.load_energy() / constants.Na / constants.E_h, -79.029798,
+                               delta=1e-6)
 
     def test_load_oxygen_from_gaussian_log(self):
         """
