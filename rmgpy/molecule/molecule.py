@@ -718,7 +718,7 @@ class Bond(Edge):
         Return ``True`` if the bond represents a van der Waals bond or 
         ``False`` if not.
         """
-        return self.is_order(0) or self.order == 'vdW'  # todo: remove 'vdW'
+        return self.is_order(0)
 
     def is_order(self, other_order):
         """
@@ -1092,11 +1092,10 @@ class Molecule(Graph):
         """
         Remove all van der Waals bonds.
         """
-        cython.declare(atom=Atom, bond=Bond)
-        for atom in self.atoms:
-            for bond in atom.edges.values():
-                if bond.is_van_der_waals():
-                    self.remove_bond(bond)
+        cython.declare(bond=Bond)
+        for bond in self.get_all_edges():
+            if bond.is_van_der_waals():
+                self.remove_bond(bond)
 
     def sort_atoms(self):
         """
