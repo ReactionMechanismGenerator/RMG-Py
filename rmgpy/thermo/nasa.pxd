@@ -25,8 +25,6 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy as np
-
 from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.thermo.thermodata cimport ThermoData
 from rmgpy.thermo.wilhoit cimport Wilhoit
