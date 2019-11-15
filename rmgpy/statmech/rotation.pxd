@@ -36,6 +36,8 @@ cdef class Rotation(Mode):
 
     cdef public int symmetry
 
+    cpdef make_object(self, dict data, dict class_dict)
+
 ################################################################################
 
 cdef class LinearRotor(Rotation):

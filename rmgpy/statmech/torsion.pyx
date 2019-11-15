@@ -90,7 +90,7 @@ cdef class Torsion(Mode):
         """
         return (Torsion, (self.symmetry, self.quantum))
 
-    def make_object(self, data, class_dict):
+    cpdef make_object(self, dict data, dict class_dict):
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
         if ('inertia' in kwargs) and ('rotationalConstant' in kwargs):  # Only one of these can be specified
             del kwargs['inertia']
