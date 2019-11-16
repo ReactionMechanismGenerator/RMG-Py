@@ -50,16 +50,16 @@ class Network(object):
     ======================= ====================================================
     Attribute               Description
     ======================= ====================================================
-    `isomers`               A list of the unimolecular isomers in the network
+    `isomers`               A list of the unimolecular isomers (Configuration objects) in the network
     `reactants`             A list of the bimolecular reactant channels (Configuration objects) in the network
     `products`              A list of the bimolecular product channels (Configuration objects) in the network
-    `path_reactions`        A list of "path" reaction objects that connect adjacent isomers (the high-pressure-limit)
+    `path_reactions`        A list of Reaction objects that connect isomers to their unimolecular and bimolecular products (the high-pressure-limit)
     `bath_gas`              A dictionary of the bath gas species (keys) and their mole fractions (values)
-    `net_reactions`         A list of "net" reaction objects that connect any pair of isomers
+    `net_reactions`         A list of Reaction objects that connect any pair of isomers (pressure dependent reactions)
     ----------------------- ----------------------------------------------------
     `T`                     The current temperature in K
-    `P`                     The current pressure in bar
-    `e_list`                The current array of energy grains in kJ/mol
+    `P`                     The current pressure in Pa
+    `e_list`                The current array of energy grains in J/mol
     `j_list`                The current array of total angular momentum quantum numbers
     ----------------------- ----------------------------------------------------
     `n_isom`                 The number of unimolecular isomers in the network
@@ -70,17 +70,23 @@ class Network(object):
     ----------------------- ----------------------------------------------------
     `grain_size`            Maximum size of separation between energies
     `grain_count`           Minimum number of descrete energies separated
-    `E0`                    A list of ground state energies of isomers, reactants, and products
+    `E0`                    A list of ground state energies of isomers, reactants, and products (J/mol)
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
     ----------------------- ----------------------------------------------------
     `eq_ratios`             An array containing concentration of each isomer and reactant channel present at equilibrium
-    `coll_freq`             An array of the frequency of collision between
+    `coll_freq`             An array of the frequency of collision between isomers and the bath gas
     `Mcoll`                 Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer
     `dens_states`           3D np array of stable configurations, number of grains, and number of J
+    ----------------------- ----------------------------------------------------
+    `Kij`                   The microcanonical rates to go from isomer $j$ to isomer $i$. 4D array with indexes: i, j, energies, rotational energies
+    `Gnj`                   The microcanonical rates to go from isomer $j$ to reactant/product $n$. 4D array with indexes: n, j, energies, rotational energies
+    `Fim`                   The microcanonical rates to go from reactant $m$ to isomer $i$. 4D array with indexes: n, j, energies, rotational energies
+    ----------------------- ----------------------------------------------------
+    `K`                     2D Array of phenomenological rates at the specified T and P
+    `p0`                    Pseudo-steady state population distributions
     ======================= ====================================================
-    
     """
 
     def __init__(self, label='', isomers=None, reactants=None, products=None,
@@ -327,7 +333,7 @@ class Network(object):
 
         n_isom = self.n_isom
         n_reac = self.n_reac
-        n_proc = self.n_prod
+        n_prod = self.n_prod
 
         E0 = self.E0
         grain_size = self.grain_size
@@ -391,12 +397,27 @@ class Network(object):
 
                 # Rescale densities of states such that, when they are integrated
                 # using the Boltzmann factor as a weighting factor, the result is unity
-                for i in range(n_isom + n_reac):
+                # this converts the denisty of states into a population distribution
+                # as described in Allen 2012, equation 1
+                # check for numerical errors in Boltzman distribution
+                if np.exp(-self.e_list.max() / constants.R / self.T) == 0.0 or\
+                   np.exp(-self.e_list.min() / constants.R / self.T) * self.dens_states.max() == np.inf:
+                    logging.warning("The energies of range ({0}, {1}) J/mol result in numerical rounding errors in the Bolzman distribution. "
+                                    "Check that your energy corrections are accurate.".format(self.e_list.min(), self.e_list.max()))
+                self.dens_states_raw = self.dens_states.copy()
+                for i in range(n_isom + n_reac + n_prod):
                     Q = 0.0
                     for s in range(n_j):
                         Q += np.sum(
                             self.dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list / constants.R / T))
-                    self.dens_states[i, :, :] /= Q
+                    if Q == 0.:
+                        logging.warning('No density of states found for structure {1} in network {0}. '
+                                        'possibly a product witout any thermo.'.format(self.label, i))
+                    else:
+                        self.dens_states[i, :, :] /= Q
+                if np.isnan(self.dens_states).any():
+                    logging.warning('Density of states for network {0} has NaN values after '
+                                    'rescaling densities. Double check issues with network.'.format(self.label))
 
             # Update parameters that depend on temperature and pressure if necessary
             if temperature_changed or pressure_changed:
@@ -581,10 +602,8 @@ class Network(object):
                 logging.debug('Mapping density of states for product channel "{0}"'.format(self.products[n]))
                 self.dens_states[n + n_isom + n_reac, :, :] = self.products[n].map_density_of_states(self.e_list, self.j_list)
 
-        # import pylab
-        # for i in range(n_isom + n_reac + n_prod):
-        #    pylab.semilogy(self.e_list*0.001, self.dens_states[i,:])
-        # pylab.show()
+        if np.isnan(self.dens_states).any():
+            raise Exception('Density of states has a NaN value.\n{0}'.format(self.dens_states))
 
     def calculate_microcanonical_rates(self):
         """

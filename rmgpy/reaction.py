@@ -1264,7 +1264,7 @@ class Reaction:
 
     def calculate_coll_limit(self, temp, reverse=False):
         """
-        Calculate the collision limit rate for the given temperature
+        Calculate the collision limit rate in m3/mol-s for the given temperature
         implemented as recommended in Wang et al. doi 10.1016/j.combustflame.2017.08.005 (Eq. 1)
         """
         reduced_mass = self.get_reduced_mass(reverse)

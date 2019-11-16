@@ -179,6 +179,20 @@ class GaussianTest(unittest.TestCase):
                 found_rotor = True
         self.assertTrue(found_rotor)
 
+    def test_load_scan_angle(self):
+        """
+        Ensures proper scan angle found in Gaussian scan job
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        self.assertAlmostEqual(log._load_scan_angle(), 10.0)
+
+    def test_load_number_scans(self):
+        """
+        Ensures proper scan angle found in Gaussian scan job
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        self.assertAlmostEqual(log._load_number_scans(), 36)
+
     def test_determine_qm_software(self):
         """
         Ensures that determine_qm_software returns a GaussianLog object
@@ -196,6 +210,16 @@ class GaussianTest(unittest.TestCase):
             log.load_conformer()
         self.assertTrue(f'The Gaussian job in {file_path} did not converge.' in str(log_error.exception))
 
+
+    def test_load_scan_with_freq(self):
+        """
+        Ensures that the length of enegies with hr scans and freq calc is correct
+        """
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'hr_scan_with_freq.log'))
+        self.assertAlmostEqual(log._load_number_scans(), 36)
+        self.assertAlmostEqual(log._load_scan_angle(), 10.0)
+        vlist, _ = log.load_scan_energies()
+        self.assertEqual(len(vlist), 37)
 
 ################################################################################
 

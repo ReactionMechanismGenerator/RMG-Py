@@ -360,7 +360,7 @@ class GaussianLog(Log):
             line = f.readline()
             while line != '':
                 # If the job contains a "freq" then we want to ignore the last energy
-                if ' freq ' in line:
+                if ' Freq' in line and ' Geom=' in line:
                     opt_freq = True
                 # if # scan is keyword instead of # opt, then this is a rigid scan job
                 # and parsing the energies is done a little differently
@@ -404,7 +404,7 @@ class GaussianLog(Log):
 
         return vlist, angle
 
-    def _load_scan_specs(self, letter_spec):
+    def _load_scan_specs(self, letter_spec, get_after_letter_spec=False):
         """
         This method reads the ouptput file for optional parameters
         sent to gaussian, and returns the list of optional parameters
@@ -412,6 +412,10 @@ class GaussianLog(Log):
 
         `letter_spec` is a character used to identify whether a specification
         defines pivot atoms ('S'), frozen atoms ('F') or other attributes.
+
+        `get_after_letter_spec` is a boolean that, if True, will return the
+        parameters after letter_spec is found. If not specified or False, it will
+        return the preceeding letters, which are typically the atom numbers.
 
         More information about the syntax can be found http://gaussian.com/opt/
         """
@@ -437,7 +441,10 @@ class GaussianLog(Log):
                     if len(terms) > action_index:
                         # specified type explicitly
                         if terms[action_index] == letter_spec:
-                            output.append(terms[1:action_index])
+                            if get_after_letter_spec:
+                                output.append(terms[action_index+1:])
+                            else:
+                                output.append(terms[1:action_index])
                     else:
                         # no specific specification, assume freezing
                         if letter_spec == 'F':
@@ -465,6 +472,20 @@ class GaussianLog(Log):
         Inner lists with length 4 represent frozen dihedral angles
         """
         return self._load_scan_specs('F')
+
+    def _load_scan_angle(self):
+        """
+        Return the angle difference (degrees) for a gaussian scan.
+        """
+        output = self._load_scan_specs('S', get_after_letter_spec=True)
+        return float(output[0][1])
+
+    def _load_number_scans(self):
+        """
+        Return the number of scans for a gaussian scan specified in the input file
+        """
+        output = self._load_scan_specs('S', get_after_letter_spec=True)
+        return int(output[0][0])
 
     def load_negative_frequency(self):
         """
