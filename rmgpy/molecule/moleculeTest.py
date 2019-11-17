@@ -312,7 +312,10 @@ class TestAtom(unittest.TestCase):
             atom = atom0.copy()
             atom.apply_action(action)
             self.assertEqual(atom0.element, atom.element)
-            self.assertEqual(atom0.radical_electrons, atom.radical_electrons - 1)
+            if element.symbol == 'X':
+                self.assertEqual(atom0.radical_electrons, atom.radical_electrons)
+            else:
+                self.assertEqual(atom0.radical_electrons, atom.radical_electrons - 1)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
 
@@ -326,7 +329,10 @@ class TestAtom(unittest.TestCase):
             atom = atom0.copy()
             atom.apply_action(action)
             self.assertEqual(atom0.element, atom.element)
-            self.assertEqual(atom0.radical_electrons, atom.radical_electrons + 1)
+            if element.symbol == 'X':
+                self.assertEqual(atom0.radical_electrons, atom.radical_electrons)
+            else:
+                self.assertEqual(atom0.radical_electrons, atom.radical_electrons + 1)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
 

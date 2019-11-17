@@ -410,6 +410,7 @@ class Atom(Vertex):
         where `radical` specifies the number of radical electrons to add.
         """
         # Set the new radical electron count
+        if self.is_surface_site(): return # do nothing
         self.radical_electrons += 1
         if self.radical_electrons <= 0:
             raise gr.ActionError('Unable to update Atom due to GAIN_RADICAL action: '
@@ -421,6 +422,7 @@ class Atom(Vertex):
         where `radical` specifies the number of radical electrons to remove.
         """
         cython.declare(radical_electrons=cython.short)
+        if self.is_surface_site(): return # do nothing
         # Set the new radical electron count
         radical_electrons = self.radical_electrons = self.radical_electrons - 1
         if radical_electrons < 0:
@@ -443,6 +445,7 @@ class Atom(Vertex):
         Update the lone electron pairs pattern as a result of applying a GAIN_PAIR action.
         """
         # Set the new lone electron pairs count
+        if self.is_surface_site(): return # do nothing
         self.lone_pairs += 1
         if self.lone_pairs <= 0:
             raise gr.ActionError('Unable to update Atom due to GAIN_PAIR action: '
@@ -453,6 +456,7 @@ class Atom(Vertex):
         """
         Update the lone electron pairs pattern as a result of applying a LOSE_PAIR action.
         """
+        if self.is_surface_site(): return # do nothing
         # Set the new lone electron pairs count
         self.lone_pairs -= 1
         if self.lone_pairs < 0:
