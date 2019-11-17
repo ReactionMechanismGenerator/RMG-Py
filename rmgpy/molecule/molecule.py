@@ -490,9 +490,9 @@ class Atom(Vertex):
             for i in range(action[2]): self.increment_radical()
         elif act == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrement_radical()
-        elif action[0].upper() == 'GAIN_PAIR':
+        elif act == 'GAIN_PAIR':
             for i in range(action[2]): self.increment_lone_pairs()
-        elif action[0].upper() == 'LOSE_PAIR':
+        elif act == 'LOSE_PAIR':
             for i in range(abs(action[2])): self.decrement_lone_pairs()
         else:
             raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
