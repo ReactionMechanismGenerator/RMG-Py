@@ -82,7 +82,7 @@ class ArkaneSpecies(RMGObject):
 
     def __init__(self, species=None, conformer=None, author='', level_of_theory='', model_chemistry='',
                  frequency_scale_factor=None, use_hindered_rotors=None, use_bond_corrections=None, atom_energies='',
-                 chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
+                 use_isodesmic_reactions = None, chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
                  molecular_weight=None, symmetry_number=None, transport_data=None, energy_transfer_model=None,
                  thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None, reactants=None,
                  products=None, reaction_label=None, is_ts=None, charge=None, formula=None, multiplicity=None):
@@ -105,6 +105,7 @@ class ArkaneSpecies(RMGObject):
         self.frequency_scale_factor = frequency_scale_factor
         self.use_hindered_rotors = use_hindered_rotors
         self.use_bond_corrections = use_bond_corrections
+        self.use_isodemic_reactions = use_isodesmic_reactions
         self.atom_energies = atom_energies
         self.xyz = xyz
         self.molecular_weight = molecular_weight
