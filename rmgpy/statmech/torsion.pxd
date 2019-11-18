@@ -33,7 +33,7 @@ from rmgpy.statmech.mode cimport Mode
 ################################################################################
 
 cdef class Torsion(Mode):
-    pass
+    cpdef make_object(self, dict data, dict class_dict)
 
 ################################################################################
 
