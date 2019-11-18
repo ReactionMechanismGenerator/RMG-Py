@@ -86,7 +86,7 @@ class ReferenceSpecies(ArkaneSpecies):
 
         if species is None:
             if adjacency_list:
-                species = Species().fromAdjacencyList(adjacency_list)
+                species = Species().from_adjacency_list(adjacency_list)
             elif smiles:
                 species = Species(SMILES=smiles)
             elif inchi:
@@ -216,7 +216,7 @@ class ReferenceSpecies(ArkaneSpecies):
             raise ValueError('No reference data is included for species {0}'.format(self))
 
         #molecule = Molecule(SMILES=self.smiles)
-        molecule = Molecule().fromAdjacencyList(self.adjacency_list)
+        molecule = Molecule().from_adjacency_list(self.adjacency_list)
         preferred_source = source
 
         if not preferred_source:
@@ -476,7 +476,7 @@ class ReferenceDatabase(object):
                     if model_chem not in model_chemistries:
                         model_chemistries.append(model_chem)
 
-                molecule = Molecule().fromAdjacencyList(ref_spcs.adjacency_list)
+                molecule = Molecule().from_adjacency_list(ref_spcs.adjacency_list)
                
                 # if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
                 #     logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
@@ -484,7 +484,7 @@ class ReferenceDatabase(object):
                 #     continue
                 #perform isomorphism checks to prevent duplicate species
                 for mol in molecule_list:
-                    if molecule.isIsomorphic(mol):
+                    if molecule.is_isomorphic(mol):
                         logging.warning('Molecule {0} from reference set `{1}` already exists in the reference '
                                         'database. The entry from this reference set will not '
                                         'be added'.format(ref_spcs.smiles, set_name))
@@ -532,8 +532,8 @@ class ReferenceDatabase(object):
         A method to check is reference species is isomorphic to calculated data
         """
         try:
-            reference_mol = Molecule().fromAdjacencyList(ref.adjacency_list)
-            reference_mol = reference_mol.toSingleBonds()
+            reference_mol = Molecule().from_adjacency_list(ref.adjacency_list)
+            reference_mol = reference_mol.to_single_bonds()
         except AtomTypeError:
             logging.warning("Could not create RMG Molecule for {}".format(ref))
             return True
@@ -541,11 +541,11 @@ class ReferenceDatabase(object):
         numbers = ref.calculated_data[model_chem].conformer.number.value
         model_chem_mol = Molecule()
         try:
-            model_chem_mol.fromXYZ(numbers,coords)
+            model_chem_mol.from_xyz(numbers,coords)
         except AtomTypeError:
             logging.warning("The {} conformer for {} raised an AtomTypeError and will not be used".format(model_chem,ref))
             return False
-        if not model_chem_mol.isIsomorphic(reference_mol):
+        if not model_chem_mol.is_isomorphic(reference_mol):
             logging.warning("Since {0} {1} is not isomorphic to reference species, {0} and will not be used".format(ref,model_chem))
             return False
         return True
@@ -567,7 +567,7 @@ class ReferenceDatabase(object):
             for model_chem in model_chemistry_preference:
                 if model_chem not in ref.calculated_data.keys():
                     continue
-                if ref.multiplicity != ref.calculated_data[model_chem].conformer.spinMultiplicity:
+                if ref.multiplicity != ref.calculated_data[model_chem].conformer.spin_multiplicity:
                     logging.warning("{} has different spin mult than reference {}!".format(model_chem,ref))
                     continue
                 isomorphic = self.check_isomorphism(ref,model_chem)
@@ -592,14 +592,14 @@ class ReferenceDatabase(object):
             i = index
             index += 1
             label = str(ref.formula) + '_' + str(ref.label)
-            uncorrected_H298 = thermo.getEnthalpy(298)
+            uncorrected_H298 = thermo.get_enthalpy(298)
             delta = uncorrected_H298 - thermo.E0.value_si
             h_correction = Hf298 - uncorrected_H298
-            thermo.changeBaseEnthalpy(h_correction)
+            thermo.change_base_enthalpy(h_correction)
             thermo.E0.value_si += h_correction
 
-            ThermoLibrary.loadEntry(i,label,ref.adjacency_list,thermo,
-            shortDesc='{}-{}'.format(source,model_chem), longDesc='H298 taken from {} {} and used to tweak {} calculation'.format(source,atct_id,model_chem))
+            ThermoLibrary.load_entry(i,label,ref.adjacency_list,thermo,
+            short_desc='{}-{}'.format(source,model_chem), long_desc='H298 taken from {} {} and used to tweak {} calculation'.format(source,atct_id,model_chem))
 
         return ThermoLibrary
 
@@ -623,24 +623,24 @@ class ReferenceDatabase(object):
             """
             try:
                 reference_mol_smiles = Molecule(SMILES=ref.smiles)
-                reference_mol_smiles = reference_mol_smiles.toSingleBonds()
-                reference_mol_adj = Molecule().fromAdjacencyList(ref.adjacency_list)
-                reference_mol_adj = reference_mol_adj.toSingleBonds()
+                reference_mol_smiles = reference_mol_smiles.to_single_bonds()
+                reference_mol_adj = Molecule().from_adjacency_list(ref.adjacency_list)
+                reference_mol_adj = reference_mol_adj.to_single_bonds()
             except AtomTypeError:
                 logging.info("Could not create RMG Molecule for {}".format(ref))
                 return True
-            if not reference_mol_adj.isIsomorphic(reference_mol_smiles):
+            if not reference_mol_adj.is_isomorphic(reference_mol_smiles):
                 logging.info("RMG Molecule created from SMILES is not isomorphic to adjacency list mol for {}".format(ref))
                 return False
             coords = ref.calculated_data[model_chem].conformer.coordinates.getValue()
             numbers = ref.calculated_data[model_chem].conformer.number.value
             model_chem_mol = Molecule()
             try:
-                model_chem_mol.fromXYZ(numbers,coords)
+                model_chem_mol.from_xyz(numbers,coords)
             except AtomTypeError:
                 logging.info("The {} conformer for {} raised an AtomTypeError and will not be used".format(model_chem,ref))
                 return False
-            if not model_chem_mol.isIsomorphic(reference_mol_adj):
+            if not model_chem_mol.is_isomorphic(reference_mol_adj):
                 logging.info("Since {0} {1} is not isomorphic to reference species, {0} and will not be used".format(ref,model_chem))
                 return False
             return True
@@ -659,7 +659,7 @@ class ReferenceDatabase(object):
                     continue
                 if not ref_spcs.reference_data or len(ref_spcs.reference_data) == 0:  # This reference species does not have any sources, continue on
                     continue
-                model_chem_mult = ref_spcs.calculated_data[model_chemistry].conformer.spinMultiplicity
+                model_chem_mult = ref_spcs.calculated_data[model_chemistry].conformer.spin_multiplicity
                 if model_chem_mult != ref_spcs.multiplicity:
                     logging.warning("reference species {} has multiplicity {}, but the {} calculation has multiplicity {}"
                                     "reference species will not be used".format(ref_spcs,ref_spcs.multiplicity,model_chemistry,model_chem_mult))
@@ -739,7 +739,7 @@ class ReferenceDatabase(object):
         for i,error_canceling_spcs in enumerate(reference_list):
             if i not in subset_indicies:
                 continue
-            print('calculating thermo for {}, {} of {}'.format(error_canceling_spcs.molecule.toSMILES(),i+1,len(reference_list)))
+            print('calculating thermo for {}, {} of {}'.format(error_canceling_spcs.molecule.to_smiles(),i+1,len(reference_list)))
             reference_set = reference_list[:]
             target_spcs = error_canceling_spcs
             reference_set.remove(target_spcs)
@@ -758,7 +758,7 @@ class ReferenceDatabase(object):
             h298_calc, reactions, rejected_reactions = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=number_of_reactions, milp_software='lpsolve')
             if h298_calc:
                 h298 = h298_calc.value_si/h298_calc.conversionFactors['kcal/mol']
-                print(target_spcs.molecule.toSMILES(),h298-ref_h298)
+                print(target_spcs.molecule.to_smiles(),h298-ref_h298)
                 obj_fod_h298_weight = []
                 for (reaction,constraint_class),(obj,fod,h,weight) in reactions.items():
                     h_rxn = h.value_si/h.conversionFactors['kcal/mol']
@@ -776,9 +776,9 @@ class ReferenceDatabase(object):
                     reaction_vector[-4] = int(constaint_class.split('_')[-1])
                     reactions_matrix.append(reaction_vector)
                 #     obj_fod_h298_weight.append((constraint_class,obj,fod,h_rxn-ref_h298))
-                # species_data = [target_spcs.molecule.toSMILES(),reactions,target_fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298,obj_fod_h298_weight]
+                # species_data = [target_spcs.molecule.to_smiles(),reactions,target_fod,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298,obj_fod_h298_weight]
                 # data.append(species_data)
-                # print(target_spcs.molecule.toSMILES(),h298-ref_h298)
+                # print(target_spcs.molecule.to_smiles(),h298-ref_h298)
                 # print('-------------------------------------------')
                 # print('constraint_class  objective   fod_sum    h-refh    ')
                 # for x in obj_fod_h298_weight:

@@ -49,13 +49,13 @@ from collections import deque,defaultdict,OrderedDict
 
 from lpsolve55 import lpsolve, EQ, LE
 import numpy as np
-import pyomo.environ as pyo
+#import pyomo.environ as pyo
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import ScalarQuantity
-from rmgpy.molecule.graph import getVertexConnectivityValue
+from rmgpy.molecule.graph import get_vertex_connectivity_value
 import logging
 
 def descriptor_to_group(descriptor,constraint_class=5):
@@ -86,9 +86,9 @@ def descriptor_to_group(descriptor,constraint_class=5):
     group_bonds = []
     for index,info in descriptor_dict.items():
         group_atom = GroupAtom()
-        group_atom.atomType.append(atomTypes[info[0]])
-        group_atom.radicalElectrons.append(info[1])
-        group_atom.lonePairs.append(info[2])
+        group_atom.atomtype.append(atomTypes[info[0]])
+        group_atom.radical_electrons.append(info[1])
+        group_atom.lone_pairs.append(info[2])
         group_atom.charge.append(info[3])
         group_atom.label = str(index)
         if index != 0:
@@ -98,9 +98,9 @@ def descriptor_to_group(descriptor,constraint_class=5):
         group_atoms.append(group_atom)
 
     g = Group()
-    for atom in group_atoms: g.addAtom(atom)
-    for bond in group_bonds: g.addBond(bond)
-    g.clearLabeledAtoms()
+    for atom in group_atoms: g.add_atom(atom)
+    for bond in group_bonds: g.add_bond(bond)
+    g.clear_labeled_atoms()
 
     return g
 
@@ -144,7 +144,7 @@ class ErrorCancelingSpecies(object):
 
 
     def __repr__(self):
-        return '<ErrorCancelingSpecies {0}>'.format(self.molecule.toSMILES())
+        return '<ErrorCancelingSpecies {0}>'.format(self.molecule.to_smiles())
 
 
     def classify(self):
@@ -152,10 +152,10 @@ class ErrorCancelingSpecies(object):
         group = ""
 
         atom_symbols = sorted(list(set([a.symbol for a in self.molecule.atoms])))
-        #bond_orders = list(set([b.getOrderNum() for b in self.molecule.getAllEdges()]))
-        radical_count = self.molecule.getRadicalCount()
+        #bond_orders = list(set([b.get_order_num() for b in self.molecule.get_all_edges()]))
+        radical_count = self.molecule.get_radical_count()
         if radical_count > 0:
-            radical_atoms = sorted(list(set([(a.symbol,a.radicalElectrons) for a in self.molecule.getRadicalAtoms()])))
+            radical_atoms = sorted(list(set([(a.symbol,a.radical_electrons) for a in self.molecule.get_radical_atoms()])))
         
         for symbol in atom_symbols:
             if symbol not in ['F','Cl','Br']:
@@ -165,7 +165,7 @@ class ErrorCancelingSpecies(object):
                 group += '_hal'
                 break
 
-        rings = self.molecule.getSmallestSetOfSmallestRings()
+        rings = self.molecule.get_smallest_set_of_smallest_rings()
         if len(rings) > 0:
             group += '_ring'
 
@@ -223,13 +223,13 @@ class ErrorCancelingReaction(object):
         self.reference_uncertainty = self.calculate_ref_uncertainty()
 
     def __repr__(self):
-        reactant_string = '1.0*{0} + '.format(self.target.molecule.toSMILES())
+        reactant_string = '1.0*{0} + '.format(self.target.molecule.to_smiles())
         product_string = ''
         for spcs, coeff in self.species.items():
             if coeff > 0:
-                product_string += '{0}*{1} + '.format(coeff, spcs.molecule.toSMILES())
+                product_string += '{0}*{1} + '.format(coeff, spcs.molecule.to_smiles())
             else:
-                reactant_string += '{0}*{1} + '.format(-1*coeff, spcs.molecule.toSMILES())
+                reactant_string += '{0}*{1} + '.format(-1*coeff, spcs.molecule.to_smiles())
 
         return '<ErrorCancelingReaction {0}== {1}>'.format(reactant_string[:-2], product_string[:-2])
 
@@ -358,12 +358,12 @@ class SpeciesConstraints(object):
             type(Molecule), type(species)))
         
         descriptors = defaultdict(list)
-        mol.identifyRingMembership()
+        mol.identify_ring_membership()
         for atom in mol.atoms:
             
-            atom_general = (atom.number, atom.radicalElectrons)
-            atom_specific = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons)
-            atom_specific_with_ring = (atom.number, atom.lonePairs, atom.charge, atom.radicalElectrons, int(atom.props['inRing']))
+            atom_general = (atom.number, atom.radical_electrons)
+            atom_specific = (atom.number, atom.lone_pairs, atom.charge, atom.radical_electrons)
+            atom_specific_with_ring = (atom.number, atom.lone_pairs, atom.charge, atom.radical_electrons, int(atom.props['inRing']))
 
             descriptors['class_0'].append(atom.number)
             descriptors['class_1'].append(atom_general)
@@ -373,12 +373,12 @@ class SpeciesConstraints(object):
 
             bonds_general = [] # for constraint class 3
             bonds_specific = [] # for constraint class 5
-            radical_count = atom.radicalElectrons
+            radical_count = atom.radical_electrons
             for bonded_atom, bond in atom.bonds.items():
-                radical_count += bonded_atom.radicalElectrons
-                order_number = int(bond.getOrderNum())
+                radical_count += bonded_atom.radical_electrons
+                order_number = int(bond.get_order_num())
                 bonds_general.append((bonded_atom.number,order_number))
-                bonds_specific.append((bonded_atom.number,bonded_atom.radicalElectrons,bonded_atom.lonePairs,bonded_atom.charge,order_number))
+                bonds_specific.append((bonded_atom.number,bonded_atom.radical_electrons,bonded_atom.lone_pairs,bonded_atom.charge,order_number))
             bonds_general.sort()
             bonds_specific.sort()
             class_4 = atom_specific + tuple(bonds_general) #+ (radical_count,)
@@ -388,17 +388,17 @@ class SpeciesConstraints(object):
             descriptors['class_6'].append(class_6)
             descriptors['class_7'].append(class_7)
 
-        for bond in mol.getAllEdges():
+        for bond in mol.get_all_edges():
             atom1 = bond.atom1
             atom2 = bond.atom2
-            radical_count = atom1.radicalElectrons + atom2.radicalElectrons
-            class_3 = tuple(sorted([atom1.number, atom2.number]) + [int(bond.getOrderNum())]) #+ (radical_count,)
-            class_5 = tuple(sorted((a.number, a.radicalElectrons, a.lonePairs, a.charge) for a in (atom1, atom2)) + [int(bond.getOrderNum())]) #+ (radical_count,)
+            radical_count = atom1.radical_electrons + atom2.radical_electrons
+            class_3 = tuple(sorted([atom1.number, atom2.number]) + [int(bond.get_order_num())]) #+ (radical_count,)
+            class_5 = tuple(sorted((a.number, a.radical_electrons, a.lone_pairs, a.charge) for a in (atom1, atom2)) + [int(bond.get_order_num())]) #+ (radical_count,)
             descriptors['class_3'].append(class_3)
             descriptors['class_5'].append(class_5)
 
         # if self.conserve_ring_size:
-        #     rings = mol.getSmallestSetOfSmallestRings()
+        #     rings = mol.get_smallest_set_of_smallest_rings()
         #     if len(rings) > 0:
         #         for ring in rings:
         #             for key in descriptors.keys():
@@ -419,7 +419,7 @@ class SpeciesConstraints(object):
         # if self.conserve_ring_size:
         #     j = len(constraint_map)
         #     possible_rings_sizes = set(map(lambda x: '{0}_ring'.format(len(x)),
-        #                                    self.target.molecule.getSmallestSetOfSmallestRings()))
+        #                                    self.target.molecule.get_smallest_set_of_smallest_rings()))
         #     constraint_map.update({label: j + i for i, label in enumerate(possible_rings_sizes)})
 
         # constraint_map = []
@@ -536,7 +536,7 @@ class SpeciesConstraints(object):
         #             constraint_vector[self.constraint_map[bond_label]] += count
 
         # if self.conserve_ring_size:
-        #     rings = molecule.getSmallestSetOfSmallestRings()
+        #     rings = molecule.get_smallest_set_of_smallest_rings()
         #     if len(rings) > 0:
         #         for ring in rings:
         #             constraint_vector[self.constraint_map[constraint_class].keys().index(descriptor)] += 1
@@ -562,8 +562,8 @@ class SpeciesConstraints(object):
         #     for atom,bond in atom.bonds.items():
         #         descriptor2 = list(atom.get_descriptor())
         #         descriptor2.pop(1)
-        #         descriptor2.append(bond.getOrderNum())
-        #         #bonds.append((atom.number,bond.getOrderNum()))
+        #         descriptor2.append(bond.get_order_num())
+        #         #bonds.append((atom.number,bond.get_order_num()))
         #         bonds.append(descriptor2)
         #     bonds.sort()
         #     descriptor.extend(bonds)
@@ -662,7 +662,7 @@ class ErrorCancelingScheme(object):
         if constraint_class is None:
             constraint_class = self.constraints.target_constraint_classes[-1]
         
-        n_atoms = self.target.molecule.getNumAtoms()
+        n_atoms = self.target.molecule.get_num_atoms()
         #class_penalty = constraint_class_penalty[constraint_class]
         constraint_matrix = np.array(self.constraint_matrix[constraint_class], dtype=int)
         #weights = self.constraints.descriptor_weights[constraint_class]

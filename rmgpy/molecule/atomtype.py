@@ -540,15 +540,15 @@ ATOMTYPES['Cl1s'] = AtomType('Cl1s', generic=['R','Cl','Val7'],  specific=[],
                              single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 
 ATOMTYPES['F'  ] = AtomType('F',   generic=['R','Val7'],      specific=['F1s'],
-                            single=[], all_double=[], r_double=[], o_double=[], s_double=[], triple=[], quadruple=[], benzene=[], lonePairs=[3], charge=[0])
+                            single=[], all_double=[], r_double=[], o_double=[], s_double=[], triple=[], quadruple=[], benzene=[], lone_pairs=[3], charge=[0])
 ATOMTYPES['F1s'] = AtomType('F1s', generic=['R','F','Val7'],  specific=[],
-                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lonePairs=[3], charge=[0])
+                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
 
 ATOMTYPES['Br'  ] = AtomType('Br',   generic=['R','Val7'],      specific=['Br1s'],
-                            single=[], all_double=[], r_double=[], o_double=[], s_double=[], triple=[], quadruple=[], benzene=[], lonePairs=[3], charge=[0])
+                            single=[], all_double=[], r_double=[], o_double=[], s_double=[], triple=[], quadruple=[], benzene=[], lone_pairs=[3], charge=[0])
 ATOMTYPES['Br1s'] = AtomType('Br1s', generic=['R','Br','Val7'],  specific=[],
-                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lonePairs=[3], charge=[0])
+                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for Cl1s: HCl, [Cl]
 ATOMTYPES['Ar'] = AtomType('Ar', generic=['R', 'R!H'], specific=[])
 

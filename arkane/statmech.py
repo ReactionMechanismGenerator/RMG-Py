@@ -723,10 +723,10 @@ class StatMechJob(object):
             reference_db = ReferenceDatabase()
             reference_db.load(paths=self.referenceSets)
 
-            uncorrected_thermo_job = ThermoJob(species=self.species, thermoClass='nasa')
-            uncorrected_thermo_job.generateThermo()
+            uncorrected_thermo_job = ThermoJob(species=self.species, thermo_class='nasa')
+            uncorrected_thermo_job.generate_thermo()
 
-            uncorrected_thermo = self.species.thermo.getEnthalpy(298)
+            uncorrected_thermo = self.species.thermo.get_enthalpy(298)
 
             # Set the species thermo to None so that it re-generates the second time through
             self.species.thermo = None
@@ -807,13 +807,13 @@ class StatMechJob(object):
                         thermo = rxn.calculate_target_thermo()
                         f.write('# Reaction {}: {} kcal/mol\n'.format(i+1, thermo.value_si/4184.0))
                         f.write('# constraint_class: {0}, obj:{1}, reference_uncertainty: {2} kcal/mol \n#'.format(rxn.constraint_class,obj,ref_uncertainty))
-                        reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
+                        reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.to_smiles())
                         product_string = '\tProducts:\n#'
                         for spcs, v in rxn.species.items():
                             if v > 0:  # Product
-                                product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
+                                product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.to_smiles())
                             else:  # Reactant
-                                reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
+                                reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.to_smiles())
                         f.write(reactant_string + product_string + '\n#')
 
                         f.write('\n')
