@@ -35,6 +35,7 @@ import gc
 import itertools
 import logging
 import os
+import yaml
 
 import numpy as np
 
@@ -1245,6 +1246,15 @@ class CoreEdgeReactionModel:
                     logging.warning('Attempted to prune a species that exceeded tol_move_to_core, pruning settings '
                                     'for this run are likely bad, either maximum_edge_species needs to be set higher '
                                     '(~100000) or min_species_exist_iterations_for_prune should be reduced (~2)')
+                    debug_data_dump = {i: (prunable_species[i].smiles,
+                                           prunable_species[i].label,
+                                           max_edge_species_rate_ratios[i]) for i in indices}
+                    path = os.path.join(os.getcwd(), 'pruning_debug_dump.yml')
+                    with open(path, 'r') as f:
+                        yaml.safe_dump(debug_data_dump, f)
+
+                    raise RuntimeError('Pruning is not working as expected. A debug dictionary has been saved at '
+                                       '{0}'.format(path))
                     break
             else:
                 break
