@@ -83,7 +83,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
-    def as_dict(self):
+    cpdef dict as_dict(self):
         output_dictionary = super(NASAPolynomial, self).as_dict()
 
         # Remove redundant entries for the coefficients
