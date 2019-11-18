@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-initialize imports
-"""
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -32,9 +27,13 @@ initialize imports
 #                                                                             #
 ###############################################################################
 
+"""
+initialize imports
+"""
+
+from arkane.common import ArkaneSpecies
+from arkane.kinetics import KineticsJob
 from arkane.main import Arkane
+from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
-from arkane.kinetics import KineticsJob
-from arkane.pdep import PressureDependenceJob
-from arkane.common import ArkaneSpecies

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,7 +27,7 @@
 #                                                                             #
 ###############################################################################
 
-from .atomtype import *
-from .element import *
-from .molecule import *
-from .group import *
+from rmgpy.molecule.atomtype import AtomType, ATOMTYPES, get_atomtype
+from rmgpy.molecule.element import Element, PeriodicSystem, get_element
+from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.group import GroupAtom, GroupBond, Group

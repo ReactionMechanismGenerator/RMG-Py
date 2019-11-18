@@ -63,6 +63,11 @@ th {
     background-color: transparent;
 }
 
+table.align-default {
+    margin-left: unset;
+    margin-right: unset;
+}
+
 table.rmg {
     border-top: 2px solid #000000;
     border-bottom: 2px solid #000000;

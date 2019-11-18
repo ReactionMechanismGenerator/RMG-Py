@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -40,14 +39,14 @@ The resulting merged files are placed in ``chem.inp`` and
 ``species_dictionary.txt`` in the execution directory.
 """
 
-import rmgpy.tools.merge_models as merge_models
+import rmgpy.tools.mergemodels as merge_models
+
 
 ################################################################################
 
 def main():
     merge_models.main()
 
+
 if __name__ == '__main__':
     main()
-    
-    

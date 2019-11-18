@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -27,15 +24,16 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
-import numpy as np
-from libc.math cimport exp, log, sqrt, log10
-from rmgpy.constants import R
-from rmgpy.quantity import Quantity
-import logging
 
 """
 This module contains information related to kinetic uncertainties
 """
+
+import numpy as np
+cimport numpy as np
+
+from rmgpy.quantity import Quantity
+
 
 cdef class RateUncertainty(object):
     """
@@ -47,7 +45,7 @@ cdef class RateUncertainty(object):
     Note that correlated errors are expected to be associated only with mu (the bias of the distribution)
     """
 
-    def __init__(self,mu,var,Tref,N=None,correlation=None):
+    def __init__(self, mu, var, Tref, N=None, correlation=None):
         self.Tref = Tref
         self.correlation = correlation
         self.mu = mu
@@ -55,7 +53,7 @@ cdef class RateUncertainty(object):
         self.N = N
 
     def __repr__(self):
-        s = "RateUncertainty(mu={mu}, var={var}, Tref={Tref},".format(mu=self.mu,var=self.var,Tref=self.Tref)
+        s = "RateUncertainty(mu={mu}, var={var}, Tref={Tref},".format(mu=self.mu, var=self.var, Tref=self.Tref)
         if self.N is not None:
             s += " N={0!r},".format(self.N)
         if self.correlation is not None:
@@ -63,27 +61,25 @@ cdef class RateUncertainty(object):
         s += ")"
         return s
 
-    cpdef double getExpectedLogUncertainty(self):
+    cpdef double get_expected_log_uncertainty(self):
         """
         The expected uncertainty in Log(k) at Tref
         """
-        return np.sqrt(self.var*2.0/np.pi)+abs(self.mu)
+        return np.sqrt(self.var * 2.0 / np.pi) + abs(self.mu)
 
-
-
-rank_accuracy_map ={1:(0.0,'kcal/mol'),
-                  2:(0.5,'kcal/mol'),
-                  3:(1.0,'kcal/mol'),
-                  4:(1.5,'kcal/mol'),
-                  5:(2.5,'kcal/mol'),
-                  6:(3.5,'kcal/mol'),
-                  7:(4.0,'kcal/mol'),
-                  8:(5.0,'kcal/mol'),
-                  9:(14.0,'kcal/mol'),
-                  10:(14.0,'kcal/mol'),
-                  None:(14.0,'kcal/mol'),
-                  0:(14.0,'kcal/mol'),
-                  '':(14.0,'kcal/mol'),
-                  11:(14.0,'kcal/mol'),
-                  }
-rank_accuracy_map = {i:Quantity(rank_accuracy_map[i]) for i in rank_accuracy_map.keys()}
+rank_accuracy_map = {1: (0.0, 'kcal/mol'),
+                     2: (0.5, 'kcal/mol'),
+                     3: (1.0, 'kcal/mol'),
+                     4: (1.5, 'kcal/mol'),
+                     5: (2.5, 'kcal/mol'),
+                     6: (3.5, 'kcal/mol'),
+                     7: (4.0, 'kcal/mol'),
+                     8: (5.0, 'kcal/mol'),
+                     9: (14.0, 'kcal/mol'),
+                     10: (14.0, 'kcal/mol'),
+                     None: (14.0, 'kcal/mol'),
+                     0: (14.0, 'kcal/mol'),
+                     '': (14.0, 'kcal/mol'),
+                     11: (14.0, 'kcal/mol'),
+                     }
+rank_accuracy_map = {i: Quantity(rank_accuracy_map[i]) for i in rank_accuracy_map.keys()}

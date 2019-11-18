@@ -27,17 +27,17 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
 import cython
-
+import numpy as np
+cimport numpy as np
+import scipy.linalg
 from libc.math cimport sqrt, log
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-import scipy.linalg
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
-RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 ################################################################################
 
@@ -125,7 +125,7 @@ cdef class Wilhoit(HeatCapacityModel):
         For the Wilhoit class, this is calculated as the Enthalpy at 0.001 Kelvin."""
         def __get__(self):
             cdef double E0
-            E0 = self.getEnthalpy(0.001) # in J/mol
+            E0 = self.get_enthalpy(0.001) # in J/mol
             return quantity.Enthalpy(E0 * 0.001, "kJ/mol")
         def __set__(self, value):
             assert value is None, "You should not be setting E0 on a Wilhoit object - it is determined from the Enthalpy at 0.001 Kelvin."
@@ -137,7 +137,7 @@ cdef class Wilhoit(HeatCapacityModel):
         def __set__(self, value):
             self._S0 = quantity.Entropy(value)
 
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
@@ -150,7 +150,7 @@ cdef class Wilhoit(HeatCapacityModel):
             1 + (y - 1) * (a0 + y * (a1 + y * (a2 + y * a3))) 
         )
             
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
@@ -166,7 +166,7 @@ cdef class Wilhoit(HeatCapacityModel):
             (2 + a0 + a1 + a2 + a3) * (y / 2. - 1 + (1.0 / y - 1.) * log(B + T))
         )
     
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
@@ -180,12 +180,12 @@ cdef class Wilhoit(HeatCapacityModel):
             logy + y * (1 + y * (a0 / 2. + y * (a1 / 3. + y * (a2 / 4. + y * a3 / 5.))))
         )
     
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K.
         """
-        return self.getEnthalpy(T) - T * self.getEntropy(T)
+        return self.get_enthalpy(T) - T * self.get_entropy(T)
     
     cpdef Wilhoit copy(self):
         """
@@ -200,25 +200,25 @@ cdef class Wilhoit(HeatCapacityModel):
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def __residual(self, B, Tdata, Cpdata, Cp0, CpInf, H298, S298):
-        # The residual corresponding to the fitToData() method
+    def _residual(self, B, Tdata, Cpdata, Cp0, CpInf, H298, S298):
+        # The residual corresponding to the fit_to_data() method
         # Parameters are the same as for that method
         cdef double res = 0.0, diff
         cdef int i
-        self.fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B)
+        self.fit_to_data_for_constant_b(Tdata, Cpdata, Cp0, CpInf, H298, S298, B)
         # Objective function is linear least-squares
         for i in range(Cpdata.shape[0]):
-            diff = self.getHeatCapacity(Tdata[i]) - Cpdata[i]
+            diff = self.get_heat_capacity(Tdata[i]) - Cpdata[i]
             res += diff * diff
         return res
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def fitToData(self, 
-                  numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
-                  numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
-                  double Cp0, double CpInf,
-                  double H298, double S298, double B0=500.0):
+    def fit_to_data(self,
+                    np.ndarray[np.float64_t, ndim=1] Tdata,
+                    np.ndarray[np.float64_t, ndim=1] Cpdata,
+                    double Cp0, double CpInf,
+                    double H298, double S298, double B0=500.0):
         """
         Fit a Wilhoit model to the data points provided, allowing the 
         characteristic temperature `B` to vary so as to improve the fit. This
@@ -233,16 +233,16 @@ cdef class Wilhoit(HeatCapacityModel):
         """
         self.B = (B0,"K")
         import scipy.optimize
-        scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tdata, Cpdata, Cp0, CpInf, H298, S298))
+        scipy.optimize.fminbound(self._residual, 300.0, 3000.0, args=(Tdata, Cpdata, Cp0, CpInf, H298, S298))
         return self
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def fitToDataForConstantB(self, 
-                              numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
-                              numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
-                              double Cp0, double CpInf,
-                              double H298, double S298, double B):
+    def fit_to_data_for_constant_b(self,
+                                   np.ndarray[np.float64_t, ndim=1] Tdata,
+                                   np.ndarray[np.float64_t, ndim=1] Cpdata,
+                                   double Cp0, double CpInf,
+                                   double H298, double S298, double B):
         """
         Fit a Wilhoit model to the data points provided using a specified value
         of the characteristic temperature `B`. The data consists of a set
@@ -251,8 +251,8 @@ cdef class Wilhoit(HeatCapacityModel):
         at zero and infinite temperature, the dimensionless enthalpy `H298` at 
         298 K, and the dimensionless entropy `S298` at 298 K. 
         """
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] b, x
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] A
+        cdef np.ndarray[np.float64_t, ndim=1] b, x
+        cdef np.ndarray[np.float64_t, ndim=2] A
         cdef double y
         cdef int i, j
         
@@ -273,14 +273,14 @@ cdef class Wilhoit(HeatCapacityModel):
                 
             # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
             # This can be done directly - no iteration required
-            A = numpy.empty((Cpdata.shape[0],4), numpy.float64)
-            b = numpy.empty(Cpdata.shape[0], numpy.float64)
+            A = np.empty((Cpdata.shape[0],4), np.float64)
+            b = np.empty(Cpdata.shape[0], np.float64)
             for i in range(Cpdata.shape[0]):
                 y = Tdata[i] / (Tdata[i] + B)
                 for j in range(4):
                     A[i,j] = (y*y*y - y*y) * y**j
                 b[i] = ((Cpdata[i] - Cp0) / (CpInf - Cp0) - y*y)
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
+            x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
             
             self.B = (float(B),"K")
             self.a0 = float(x[0])
@@ -290,8 +290,8 @@ cdef class Wilhoit(HeatCapacityModel):
 
         self.H0 = (0.0,"kJ/mol")
         self.S0 = (0.0,"J/(mol*K)")
-        self._H0.value_si = H298 - self.getEnthalpy(298)
-        self._S0.value_si = S298 - self.getEntropy(298)
+        self._H0.value_si = H298 - self.get_enthalpy(298)
+        self._S0.value_si = S298 - self.get_entropy(298)
 
         return self
 
@@ -461,27 +461,27 @@ cdef class Wilhoit(HeatCapacityModel):
             (B*(Cp0 - CpInf)*(Cp0 - (3 + 2*a0 + 2*a1 + 2*a2 + 2*a3)*CpInf))/(B + T) + Cp0**2*logT + (-Cp0**2 + CpInf**2)*logBplusT)
         return result
 
-    cpdef ThermoData toThermoData(self):
+    cpdef ThermoData to_thermo_data(self):
         """
         Convert the Wilhoit model to a :class:`ThermoData` object.
         """
         from rmgpy.thermo.thermodata import ThermoData
         
         Tdata = [300,400,500,600,800,1000,1500]
-        Cpdata = [self.getHeatCapacity(T) for T in Tdata]
+        Cpdata = [self.get_heat_capacity(T) for T in Tdata]
         
         return ThermoData(
             Tdata = (Tdata,"K"),
             Cpdata = (Cpdata,"J/(mol*K)"),
-            H298 = (self.getEnthalpy(298)*0.001,"kJ/mol"),
-            S298 = (self.getEntropy(298),"J/(mol*K)"),
+            H298 = (self.get_enthalpy(298)*0.001,"kJ/mol"),
+            S298 = (self.get_entropy(298),"J/(mol*K)"),
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
             comment = self.comment
         )
     
-    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
+    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """
         Convert the Wilhoit object to a :class:`NASA` object. You must specify
         the minimum and maximum temperatures of the fit `Tmin` and `Tmax` in K,
@@ -519,7 +519,7 @@ cdef class Wilhoit(HeatCapacityModel):
         cdef double iseUnw, rmsUnw, iseWei, rmsWei, T
         cdef str rmsStr
         
-        from rmgpy.thermo.nasa import NASA, NASAPolynomial
+        from rmgpy.thermo.nasa import NASA
 
         # Scale the temperatures to kK
         Tmin /= 1000.
@@ -535,14 +535,14 @@ cdef class Wilhoit(HeatCapacityModel):
         
         # If we are using fixed Tint, do not allow Tint to float
         if fixedTint:
-            nasa_low, nasa_high = Wilhoit_to_NASA(wilhoit_scaled, Tmin, Tmax, Tint, weighting, continuity)
+            nasa_low, nasa_high = wilhoit_to_nasa(wilhoit_scaled, Tmin, Tmax, Tint, weighting, continuity)
         else:
-            nasa_low, nasa_high, Tint = Wilhoit_to_NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting, continuity)
-        iseUnw = Wilhoit_to_NASA_TintOpt_objFun(Tint, wilhoit_scaled, Tmin, Tmax, 0, continuity) #the scaled, unweighted ISE (integral of squared error)
+            nasa_low, nasa_high, Tint = wilhoit_to_nasa_t_int_opt(wilhoit_scaled, Tmin, Tmax, weighting, continuity)
+        iseUnw = wilhoit_to_nasa_t_int_opt_obj_fun(Tint, wilhoit_scaled, Tmin, Tmax, 0, continuity) #the scaled, unweighted ISE (integral of squared error)
         rmsUnw = sqrt(iseUnw/(Tmax-Tmin))
         rmsStr = 'Unweighted RMS error = %.3f*R; '%(rmsUnw)
         if (weighting == 1):
-            iseWei = Wilhoit_to_NASA_TintOpt_objFun(Tint, wilhoit_scaled, Tmin, Tmax, weighting, continuity) #the scaled, weighted ISE
+            iseWei = wilhoit_to_nasa_t_int_opt_obj_fun(Tint, wilhoit_scaled, Tmin, Tmax, weighting, continuity) #the scaled, weighted ISE
             rmsWei = sqrt(iseWei/log(Tmax/Tmin))
             rmsStr = 'Weighted RMS error = %.3f*R; '%(rmsWei)+rmsStr
     
@@ -567,12 +567,12 @@ cdef class Wilhoit(HeatCapacityModel):
         # comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
     
         # For the low polynomial, we want the results to match the Wilhoit value at 298 K
-        nasa_low.c5 = (self.getEnthalpy(298) - nasa_low.getEnthalpy(298)) / constants.R
-        nasa_low.c6 = (self.getEntropy(298) - nasa_low.getEntropy(298)) / constants.R
+        nasa_low.c5 = (self.get_enthalpy(298) - nasa_low.get_enthalpy(298)) / constants.R
+        nasa_low.c6 = (self.get_entropy(298) - nasa_low.get_entropy(298)) / constants.R
         
         # For the high polynomial, we want the results to match the low polynomial value at tint
-        nasa_high.c5 = (nasa_low.getEnthalpy(Tint) - nasa_high.getEnthalpy(Tint)) / constants.R
-        nasa_high.c6 = (nasa_low.getEntropy(Tint) - nasa_high.getEntropy(Tint)) / constants.R
+        nasa_high.c5 = (nasa_low.get_enthalpy(Tint) - nasa_high.get_enthalpy(Tint)) / constants.R
+        nasa_high.c6 = (nasa_low.get_entropy(Tint) - nasa_high.get_entropy(Tint)) / constants.R
     
         nasa = NASA(
             polynomials = [nasa_low, nasa_high],
@@ -591,7 +591,7 @@ cdef class Wilhoit(HeatCapacityModel):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint weighting, int contCons):
+cpdef wilhoit_to_nasa(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint weighting, int cont_cons):
     """
     Convert a Wilhoit polynomial to a pair of NASA polynomials.
     
@@ -604,8 +604,8 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
     :param Tint:    The intermediate temperature dividing the low-temperature
                     and high-temperature NASA polynomials, in kK
     :param weighting: ``True`` to weight the fit by inverse temperature, ``False`` to apply no weighting
-    :param contCons:  The number of continuity constraints to apply to the 
-                      fitted NASA polynomials at `Tint`:
+    :param cont_cons:  The number of continuity constraints to apply to the 
+                       fitted NASA polynomials at `Tint`:
         0: no constraints on continuity of Cp(T) at Tint
         1: constrain Cp to be continuous at Tint
         2: constrain Cp and dCp/dT to be continuous at Tint
@@ -617,8 +617,8 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
                      
     :result: The pair of NASA polynomials with scaled parameters
     """
-    cdef numpy.ndarray[numpy.float64_t, ndim=2] A
-    cdef numpy.ndarray[numpy.float64_t, ndim=1] b, x
+    cdef np.ndarray[np.float64_t, ndim=2] A
+    cdef np.ndarray[np.float64_t, ndim=1] b, x
     cdef double w0min, w1min, w2min, w3min, w4min, wM1min
     cdef double w0int, w1int, w2int, w3int, w4int, wM1int
     cdef double w0max, w1max, w2max, w3max, w4max, wM1max
@@ -626,8 +626,8 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
     cdef int i, j
     
     #construct (typically 13*13) symmetric A matrix (in A*x = b); other elements will be zero
-    A = numpy.zeros([10+contCons,10+contCons])
-    b = numpy.zeros([10+contCons])
+    A = np.zeros([10 + cont_cons, 10 + cont_cons])
+    b = np.zeros([10 + cont_cons])
 
     if weighting:
         A[0,0] = 2*log(Tint/Tmin)
@@ -683,7 +683,7 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
     A[7,8] = A[6,9]
     A[8,8] = A[7,9]
 
-    if(contCons > 0):#set non-zero elements in the 11th column for Cp(T) continuity contraint
+    if(cont_cons > 0):#set non-zero elements in the 11th column for Cp(T) continuity contraint
         A[0,10] = 1.
         A[1,10] = Tint
         A[2,10] = Tint*Tint
@@ -694,7 +694,7 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
         A[7,10] = -A[2,10]
         A[8,10] = -A[3,10]
         A[9,10] = -A[4,10]
-        if(contCons > 1): #set non-zero elements in the 12th column for dCp/dT continuity constraint
+        if(cont_cons > 1): #set non-zero elements in the 12th column for dCp/dT continuity constraint
             A[1,11] = 1.
             A[2,11] = 2*Tint
             A[3,11] = 3*A[2,10]
@@ -703,24 +703,24 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
             A[7,11] = -A[2,11]
             A[8,11] = -A[3,11]
             A[9,11] = -A[4,11]
-            if(contCons > 2): #set non-zero elements in the 13th column for d2Cp/dT2 continuity constraint
+            if(cont_cons > 2): #set non-zero elements in the 13th column for d2Cp/dT2 continuity constraint
                 A[2,12] = 2.
                 A[3,12] = 6*Tint
                 A[4,12] = 12*A[2,10]
                 A[7,12] = -A[2,12]
                 A[8,12] = -A[3,12]
                 A[9,12] = -A[4,12]
-                if(contCons > 3): #set non-zero elements in the 14th column for d3Cp/dT3 continuity constraint
+                if(cont_cons > 3): #set non-zero elements in the 14th column for d3Cp/dT3 continuity constraint
                     A[3,13] = 6
                     A[4,13] = 24*Tint
                     A[8,13] = -A[3,13]
                     A[9,13] = -A[4,13]
-                    if(contCons > 4): #set non-zero elements in the 15th column for d4Cp/dT4 continuity constraint
+                    if(cont_cons > 4): #set non-zero elements in the 15th column for d4Cp/dT4 continuity constraint
                         A[4,14] = 24
                         A[9,14] = -A[4,14]
 
     # make the matrix symmetric
-    for i in range(1,10+contCons):
+    for i in range(1, 10 + cont_cons):
         for j in range(0, i):
             A[i,j] = A[j,i]
 
@@ -787,31 +787,31 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
 
     return nasa_low, nasa_high
 
-cpdef Wilhoit_to_NASA_TintOpt(Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int contCons):
+cpdef wilhoit_to_nasa_t_int_opt(Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int cont_cons):
     """
     Convert a Wilhoit polynomial to a pair of NASA polynomials, using an
     optimization algorithm to choose the best value of the intermediate
-    temperature. The parameters are the same as for the :func:`Wilhoit_to_NASA`
+    temperature. The parameters are the same as for the :func:`wilhoit_to_nasa`
     function.
     """
     import scipy.optimize
-    Tint = scipy.optimize.fminbound(Wilhoit_to_NASA_TintOpt_objFun, Tmin, Tmax, args=(wilhoit, Tmin, Tmax, weighting, contCons))
+    Tint = scipy.optimize.fminbound(wilhoit_to_nasa_t_int_opt_obj_fun, Tmin, Tmax, args=(wilhoit, Tmin, Tmax, weighting, cont_cons))
     Tint = float(Tint) # fminbound returns a numpy.ndarray object
     #note that we have not used any guess when using this minimization routine
-    #2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have Wilhoit_to_NASA_TintOpt_objFun also return these parameters, along with the objective function, which would avoid an extra calculation)
-    nasa_low, nasa_high = Wilhoit_to_NASA(wilhoit, Tmin, Tmax, Tint, weighting, contCons)
+    #2. determine the bi parameters based on the optimized Tint (alternatively, maybe we could have wilhoit_to_nasa_t_int_opt_obj_fun also return these parameters, along with the objective function, which would avoid an extra calculation)
+    nasa_low, nasa_high = wilhoit_to_nasa(wilhoit, Tmin, Tmax, Tint, weighting, cont_cons)
     return nasa_low, nasa_high, Tint
 
-cpdef double Wilhoit_to_NASA_TintOpt_objFun(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int contCons):
+cpdef double wilhoit_to_nasa_t_int_opt_obj_fun(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int cont_cons):
     """
     Evaluate the objective function used to convert a Wilhoit polynomial to a
     pair of NASA polynomials. The parameters are the same as for the 
-    :func:`Wilhoit_to_NASA` function.
+    :func:`wilhoit_to_nasa` function.
     """
     if (weighting == 1):
-        result = Wilhoit_to_NASA_TintOpt_objFun_W(Tint, wilhoit, Tmin, Tmax, contCons)
+        result = wilhoit_to_nasa_t_int_opt_obj_fun_w(Tint, wilhoit, Tmin, Tmax, cont_cons)
     else:
-        result = Wilhoit_to_NASA_TintOpt_objFun_NW(Tint, wilhoit, Tmin, Tmax, contCons)
+        result = wilhoit_to_nasa_t_int_opt_obj_fun_nw(Tint, wilhoit, Tmin, Tmax, cont_cons)
 
     # numerical errors could accumulate to give a slightly negative result
     # this is unphysical (it's the integral of a *squared* error) so we
@@ -822,17 +822,17 @@ cpdef double Wilhoit_to_NASA_TintOpt_objFun(double Tint, Wilhoit wilhoit, double
 
     return result
 
-cpdef double Wilhoit_to_NASA_TintOpt_objFun_NW(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int contCons):
+cpdef double wilhoit_to_nasa_t_int_opt_obj_fun_nw(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int cont_cons):
     """
     Evaluate the unweighted objective function used to convert a Wilhoit 
     polynomial to a pair of NASA polynomials. The parameters are the same as 
-    for the :func:`Wilhoit_to_NASA` function.
+    for the :func:`wilhoit_to_nasa` function.
     """
     cdef NASAPolynomial nasa_low, nasa_high
     cdef double b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
     cdef double qM1, q0, q1, q2, q3, result
 
-    nasa_low, nasa_high = Wilhoit_to_NASA(wilhoit,Tmin,Tmax,Tint, 0, contCons)
+    nasa_low, nasa_high = wilhoit_to_nasa(wilhoit, Tmin, Tmax, Tint, 0, cont_cons)
     b1 = nasa_low.c0
     b2 = nasa_low.c1
     b3 = nasa_low.c2
@@ -860,11 +860,11 @@ cpdef double Wilhoit_to_NASA_TintOpt_objFun_NW(double Tint, Wilhoit wilhoit, dou
 
     return result
 
-cpdef double Wilhoit_to_NASA_TintOpt_objFun_W(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int contCons):
+cpdef double wilhoit_to_nasa_t_int_opt_obj_fun_w(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int cont_cons):
     """
     Evaluate the weighted objective function used to convert a Wilhoit 
     polynomial to a pair of NASA polynomials. The parameters are the same as 
-    for the :func:`Wilhoit_to_NASA` function. The weighting is by inverse
+    for the :func:`wilhoit_to_nasa` function. The weighting is by inverse
     temperature, to bias the fit towards the lower temperatures, where the
     heat capacity is changing more rapidly.
     
@@ -875,7 +875,7 @@ cpdef double Wilhoit_to_NASA_TintOpt_objFun_W(double Tint, Wilhoit wilhoit, doub
     cdef double b1, b2, b3, b4, b5, b6, b7, b8, b9, b10
     cdef double qM1, q0, q1, q2, q3, result
     
-    nasa_low, nasa_high = Wilhoit_to_NASA(wilhoit,Tmin,Tmax,Tint, 1, contCons)
+    nasa_low, nasa_high = wilhoit_to_nasa(wilhoit, Tmin, Tmax, Tint, 1, cont_cons)
     b1 = nasa_low.c0
     b2 = nasa_low.c1
     b3 = nasa_low.c2

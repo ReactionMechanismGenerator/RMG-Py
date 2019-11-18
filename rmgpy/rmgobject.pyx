@@ -54,7 +54,9 @@ cdef class RMGObject(object):
         all_attributes = [attr for attr in dir(self) if not attr.startswith('_')]
         for attr in all_attributes:
             val = getattr(self, attr)
-            if val is not None and not callable(val) and val != '':
+
+            # Check if val is a numpy array first to prevent elementwise comparisons with ''
+            if isinstance(val, np.ndarray) or (val is not None and not callable(val) and val != ''):
                 output_dict[attr] = expand_to_dict(val)
 
         return output_dict
@@ -93,7 +95,7 @@ cpdef expand_to_dict(obj):
         # Create a new dictionary to store the expanded objects
         new_obj = dict()
 
-        for key, value in obj.iteritems():
+        for key, value in obj.items():
             new_key = expand_to_dict(key)
             new_value = expand_to_dict(value)
             try:
@@ -136,7 +138,7 @@ cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
         # Create a new dictionary object to store recreated keys and values
         new_obj = dict()
 
-        for key, value in obj.iteritems():
+        for key, value in obj.items():
             if key != 'class':
                 new_key = recursive_make_object(key, class_dictionary)
                 new_value = recursive_make_object(value, class_dictionary)

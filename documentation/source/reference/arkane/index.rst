@@ -31,7 +31,7 @@ Reading Q-Chem log files
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`QchemLog`               Extract chemical parameters from Q-Chem log files
+:class:`QChemLog`               Extract chemical parameters from Q-Chem log files
 =============================== ================================================
 
 
@@ -57,7 +57,7 @@ Input
 =============================== ================================================
 Function                        Description
 =============================== ================================================
-:func:`loadInputFile`           Load an Arkane job input file
+:func:`load_input_file`         Load an Arkane job input file
 =============================== ================================================
 
 

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -40,8 +39,8 @@ import argparse
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-from rmgpy.tools.observablesRegression import ObservablesTestCase
-from rmgpy.tools.canteraModel import CanteraCondition
+from rmgpy.tools.observablesregression import ObservablesTestCase
+from rmgpy.tools.canteramodel import CanteraCondition
 
 observables = []
 setups = None
@@ -49,7 +48,8 @@ casetitle = ''
 initialSpecies = {}
 tol = 0.05
 
-def readInputFile(path):
+
+def read_input_file(path):
     """
     Read an regression input file at `path` on disk.
     """
@@ -65,9 +65,9 @@ def readInputFile(path):
 
     logging.info('Reading input file "{0}"...'.format(full_path))
     logging.info(f.read())
-    f.seek(0)# return to beginning of file
+    f.seek(0)  # return to beginning of file
 
-    global_context = { '__builtins__': None }
+    global_context = {'__builtins__': None}
     local_context = {
         '__builtins__': None,
         'True': True,
@@ -81,7 +81,7 @@ def readInputFile(path):
     }
 
     try:
-        exec f in global_context, local_context
+        exec(f.read(), global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
@@ -91,25 +91,27 @@ def readInputFile(path):
 
     # convert keys of the initial mole fraction dictionaries from labels into Species objects.
     imfs = setups[3]
-    newImfs = []
+    new_imfs = []
     for imf in imfs:
-        newDict = convert(imf, initialSpecies)
-        newImfs.append(newDict)
-    setups[3] = newImfs
+        new_dict = convert(imf, initialSpecies)
+        new_imfs.append(new_dict)
+    setups[3] = new_imfs
 
     return casetitle, observables, setups, tol
+
 
 def observable(label, structure):
     spc = species(label, structure)
     observables.append(spc)
+
 
 def species(label, structure):
     spc = Species(label=label, molecule=[structure])
     initialSpecies[label] = spc
     return spc
 
-def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes):
 
+def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes):
     global setups
 
     terminationTimes = Quantity(terminationTimes)
@@ -118,17 +120,20 @@ def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsLis
 
     setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes]
 
+
 def SMILES(string):
-    return Molecule().fromSMILES(string)
+    return Molecule().from_smiles(string)
+
 
 def adjacencyList(string):
-    return Molecule().fromAdjacencyList(string)
+    return Molecule().from_adjacency_list(string)
 
-def options(title = '', tolerance=0.05):
 
+def options(title='', tolerance=0.05):
     global casetitle, tol
     casetitle = title
     tol = tolerance
+
 
 def convert(origDict, initialSpecies):
     """
@@ -136,59 +141,59 @@ def convert(origDict, initialSpecies):
     into a new dictionary with species objects as keys,
     using the given dictionary of species.
     """
-    newDict = {}
-    
-    for label, value in origDict.iteritems():
-        newDict[initialSpecies[label]] = value
+    new_dict = {}
 
-    return newDict
+    for label, value in origDict.items():
+        new_dict[initialSpecies[label]] = value
+
+    return new_dict
+
 
 def run(benchmarkDir, testDir, title, observables, setups, tol):
-    
     case = ObservablesTestCase(
-        title = title,
-        oldDir = benchmarkDir,
-        newDir = testDir,
-        observables = {'species': observables}
-        )
+        title=title,
+        old_dir=benchmarkDir,
+        new_dir=testDir,
+        observables={'species': observables}
+    )
 
-    reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes = setups
-    case.generateConditions(
-        reactorTypeList = reactorTypes,
-        reactionTimeList = terminationTimes,
-        molFracList = initialMoleFractionsList,
-        Tlist = temperatures,
-        Plist = pressures
-        )
+    reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times = setups
+    case.generate_conditions(
+        reactor_type_list=reactor_types,
+        reaction_time_list=termination_times,
+        mol_frac_list=initial_mole_fractions_list,
+        Tlist=temperatures,
+        Plist=pressures
+    )
 
     case.compare(tol)
 
-def parseArguments():
 
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
-        help='regression input file')
+                        help='regression input file')
     parser.add_argument('benchmark', metavar='BENCHMARK', type=str, nargs=1,
-        help='folder of the benchmark model')
+                        help='folder of the benchmark model')
     parser.add_argument('tested', metavar='TESTED', type=str, nargs=1,
-        help='folder of the tested model')
+                        help='folder of the tested model')
 
     args = parser.parse_args()
-    
-    inputFile = os.path.abspath(args.input[0])
+
+    input_file = os.path.abspath(args.input[0])
     benchmark = os.path.abspath(args.benchmark[0])
     tested = os.path.abspath(args.tested[0])
 
-    return inputFile, benchmark, tested
+    return input_file, benchmark, tested
 
 
 def main():
-    inputFile, benchmark, tested = parseArguments()
+    input_file, benchmark, tested = parse_command_line_arguments()
 
-    args = readInputFile(inputFile)
+    args = read_input_file(input_file)
 
     run(benchmark, tested, *args)
 
+
 if __name__ == '__main__':
     main()
-    

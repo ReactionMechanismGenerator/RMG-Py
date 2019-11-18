@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "R_Addition_COm/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 .. [MRHCBSQB31DHR] M.R. Harper (mrharper_at_mit_dot_edu or michael_dot_harper_dot_jr_at_gmail_dot_com)
 The geometries of all reactants, products, and the transition state were optimized using the CBS-QB3 method.
 The zero-point energy is that computed by the CBS-QB3 calculations.  The frequencies were computed with B3LYP/CBSB7.
@@ -36,9 +36,9 @@ entry(
         Tmax = (449, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Arai et al [102].""",
+    shortDesc = """Arai et al [102].""",
     longDesc = 
-u"""
+"""
 [102] Arai, H.; Nagai, S.; Hatada, M.; Radiat. Phys. Chem. 1981, 17, 211.
 CO + H --> HCO. Data estimated
 
@@ -104,9 +104,9 @@ entry(
         Tmax = (375, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""Gordon et al [103].""",
+    shortDesc = """Gordon et al [103].""",
     longDesc = 
-u"""
+"""
 [103] Gordon, E.B.; Ivanov, B.I; Perminov, A.P; Balalaev, V.E. Chem. Phys. 1978, 35, 79.
 CO + H --> HCO.
 
@@ -142,9 +142,9 @@ entry(
         Tmax = (500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Baulch et al. [94]""",
+    shortDesc = """Baulch et al. [94]""",
     longDesc = 
-u"""
+"""
 [94] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Frank, P.; Hayman, G,; Just, T.; Kerr, J.A.; Murrells, T.; Pilling, M.J.; 
 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
 
@@ -178,9 +178,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang et al [89] literature review.""",
+    shortDesc = """Tsang et al [89] literature review.""",
     longDesc = 
-u"""
+"""
 [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 CO + C2H5 --> C2H5CO.
 
@@ -212,9 +212,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""Tsang et al [89] literature review.""",
+    shortDesc = """Tsang et al [89] literature review.""",
     longDesc = 
-u"""
+"""
 [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 CO + C2H3 --> CH2=CHCO.
 
@@ -248,9 +248,9 @@ entry(
         Tmax = (500, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""Nam et al [104].""",
+    shortDesc = """Nam et al [104].""",
     longDesc = 
-u"""
+"""
 [104] Nam, G.-J.; Xia, W.; Park, J.; Lin, M. Phys. Chem. A 2000, 104, 1233.	
 Phenyl + CO --> Benzoyl. Original deltaA = 2.8E+11
 
@@ -330,9 +330,9 @@ entry(
         Tmax = (2500, 'K'),
     ),
     rank = 5,
-    shortDesc = u"""Wang et al. [105].""",
+    shortDesc = """Wang et al. [105].""",
     longDesc = 
-u"""
+"""
 [105] Wang, B.; Hou, H.; Gu, Y. Phys. Chem. A 1999, 103, 8021.
 RRK(M) extrapolation. CH3O + CO --> CH3OCO, 250K and 2500K
 
@@ -361,9 +361,9 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""MRH CBS-QB3 calculations with 1dHR corrections""",
+    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
     longDesc = 
-u"""
+"""
 CH3 + CO = CH3CO
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -386,9 +386,9 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""MRH CBS-QB3 calculations with 1dHR corrections""",
+    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
     longDesc = 
-u"""
+"""
 CH3CH2 + CO = CH3CH2CO
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -411,9 +411,9 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""MRH CBS-QB3 calculations with 1dHR corrections""",
+    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
     longDesc = 
-u"""
+"""
 CH3CH2CH2 + CO = CH3CH2CH2CO
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -436,9 +436,9 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 3,
-    shortDesc = u"""MRH CBS-QB3 calculations with 1dHR corrections""",
+    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
     longDesc = 
-u"""
+"""
 CH3CHCH3 + CO = CH3CH(CO)CH3
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -461,6 +461,6 @@ entry(
         Tmax = (2000, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""CAC CBS-QB3 calcs, HO""",
+    shortDesc = """CAC CBS-QB3 calcs, HO""",
 )
 

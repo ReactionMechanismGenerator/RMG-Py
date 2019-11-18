@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -33,14 +32,14 @@ This module provides methods for applying energy and bond additivity
 corrections.
 """
 
-import rmgpy.constants as constants
 import logging
 
-from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectionError
+import rmgpy.constants as constants
 
 import arkane.encorr.data as data
-import arkane.encorr.pbac as pbac
 import arkane.encorr.mbac as mbac
+import arkane.encorr.pbac as pbac
+from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectionError
 
 
 def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplicity=1,

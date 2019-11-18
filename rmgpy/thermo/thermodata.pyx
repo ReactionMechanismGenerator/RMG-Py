@@ -27,13 +27,13 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-import cython
 import logging
 
-from libc.math cimport sqrt, log
+import cython
+import numpy as np
+cimport numpy as np
+from libc.math cimport log
 
-cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 
 ################################################################################
@@ -117,12 +117,12 @@ cdef class ThermoData(HeatCapacityModel):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double Cp
@@ -169,11 +169,11 @@ cdef class ThermoData(HeatCapacityModel):
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double H, slope, intercept, T0
@@ -242,11 +242,11 @@ cdef class ThermoData(HeatCapacityModel):
         
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double S, slope, intercept, T0
@@ -318,12 +318,12 @@ cdef class ThermoData(HeatCapacityModel):
 
         return S
     
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature
         `T` in K.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata
         cdef double Cp0, CpInf
         cdef int N
 
@@ -341,9 +341,9 @@ cdef class ThermoData(HeatCapacityModel):
         elif T > Tdata[N-1] + 5 and CpInf == 0.0:
             raise ValueError('Unable to compute Gibbs free energy at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
-        return self.getEnthalpy(T) - T * self.getEntropy(T)
+        return self.get_enthalpy(T) - T * self.get_entropy(T)
 
-    cpdef Wilhoit toWilhoit(self, B=None):
+    cpdef Wilhoit to_wilhoit(self, B=None):
         """
         Convert the Benson model to a Wilhoit model. For the conversion to
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
@@ -357,18 +357,18 @@ cdef class ThermoData(HeatCapacityModel):
         
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
-        H298 = self.getEnthalpy(298)
-        S298 = self.getEntropy(298)
+        H298 = self.get_enthalpy(298)
+        S298 = self.get_entropy(298)
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
         
         
         if B:
-            return Wilhoit(label=self.label,comment=self.comment).fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
+            return Wilhoit(label=self.label,comment=self.comment).fit_to_data_for_constant_b(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
         else:
-            return Wilhoit(label=self.label,comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+            return Wilhoit(label=self.label,comment=self.comment).fit_to_data(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
-    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
+    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """
         Convert the object to a :class:`NASA` object. You must specify the
         minimum and maximum temperatures of the fit `Tmin` and `Tmax` in K, as
@@ -401,4 +401,4 @@ cdef class ThermoData(HeatCapacityModel):
         Returns the fitted :class:`NASA` object containing the two fitted
         :class:`NASAPolynomial` objects.
         """
-        return self.toWilhoit().toNASA(Tmin, Tmax, Tint, fixedTint, weighting, continuity)
+        return self.to_wilhoit().to_nasa(Tmin, Tmax, Tint, fixedTint, weighting, continuity)

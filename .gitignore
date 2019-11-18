@@ -69,3 +69,6 @@ bin/symmetry
 # ipython folder except for notebooks
 ipython/*
 !ipython/*.ipynb
+
+# Q2DTor
+external/Q2DTor

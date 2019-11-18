@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "R_Recombination/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 For some reason the definition of Cs_rad::
 
  Cs_rad
@@ -30,6 +30,6 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 0,
-    shortDesc = u"""Default""",
+    shortDesc = """Default""",
 )
 

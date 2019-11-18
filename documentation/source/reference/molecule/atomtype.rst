@@ -7,7 +7,7 @@ rmgpy.molecule.AtomType
 .. autoclass:: rmgpy.molecule.AtomType
     :members:
 
-.. autofunction:: rmgpy.molecule.getAtomType
+.. autofunction:: rmgpy.molecule.get_atomtype
 
 The atom type of an atom describes the atom itself and (often) something about
 the local bond structure around that atom. This is a useful semantic tool for

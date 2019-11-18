@@ -286,7 +286,6 @@ This is an example of an input file for a liquid-phase system::
 
     options(
         units='si',
-        saveRestartPeriod=None,
         generateOutputHTML=False,
         generatePlots=False,
         saveSimulationProfiles=True,
@@ -348,7 +347,6 @@ This is an example of an input file for a liquid-phase system with constant spec
 
     options(
         units='si',
-        saveRestartPeriod=None,
         generateOutputHTML=False,
         generatePlots=False,
         saveSimulationProfiles=True,

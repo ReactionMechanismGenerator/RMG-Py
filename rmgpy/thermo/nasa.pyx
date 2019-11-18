@@ -27,13 +27,13 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
 import cython
+import numpy as np
+cimport numpy as np
 
 from libc.math cimport log
 
 cimport rmgpy.constants as constants
-import rmgpy.quantity as quantity
 
 ################################################################################
 
@@ -94,9 +94,9 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """The set of seven or nine NASA polynomial coefficients."""
         def __get__(self):
             if self.cm2 == 0 and self.cm1 == 0:
-                return numpy.array([self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+                return np.array([self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
             else:
-                return numpy.array([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+                return np.array([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
         def __set__(self, value):
             if value is None:
                 value = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -108,14 +108,14 @@ cdef class NASAPolynomial(HeatCapacityModel):
             else:
                 raise ValueError('Invalid number of NASA polynomial coefficients; expected 7 or 9, got {0:d}.'.format(len(value)))
     
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified 
         temperature `T` in K.
         """
         return ((self.cm2 / T + self.cm1) / T + self.c0 + T*(self.c1 + T*(self.c2 + T*(self.c3 + self.c4*T)))) * constants.R
     
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
@@ -123,7 +123,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         cdef double T4 = T2 * T2
         return ((-self.cm2 / T + self.cm1 * log(T)) / T + self.c0 + self.c1*T/2. + self.c2*T2/3. + self.c3*T2*T/4. + self.c4*T4/5. + self.c5/T) * constants.R * T
     
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
@@ -131,20 +131,20 @@ cdef class NASAPolynomial(HeatCapacityModel):
         cdef double T4 = T2 * T2
         return ((-self.cm2 / T / 2. - self.cm1) / T + self.c0*log(T) + self.c1*T + self.c2*T2/2. + self.c3*T2*T/3. + self.c4*T4/4. + self.c6) * constants.R
     
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K.
         """
-        return self.getEnthalpy(T) - T * self.getEntropy(T)
+        return self.get_enthalpy(T) - T * self.get_entropy(T)
     
-    cpdef changeBaseEnthalpy(self, double deltaH):
+    cpdef change_base_enthalpy(self, double deltaH):
         """
         Add deltaH in J/mol to the base enthalpy of formation H298.
         """
         self.c5 += deltaH / constants.R
 
-    cpdef changeBaseEntropy(self, double deltaS):
+    cpdef change_base_entropy(self, double deltaS):
         """
         Add deltaS in J/molK to the base entropy of formation S298.
         """
@@ -218,7 +218,7 @@ cdef class NASA(HeatCapacityModel):
     def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         if isinstance(polynomials, dict):
-            self.polynomials = polynomials.values()
+            self.polynomials = list(polynomials.values())
         else:
             self.polynomials = polynomials
     
@@ -290,45 +290,45 @@ cdef class NASA(HeatCapacityModel):
                 elif len(value) > 3:
                     raise ValueError('Only one, two, or three NASA polynomials can be stored in a single NASA object.')
 
-    cpdef NASAPolynomial selectPolynomial(self, double T):
-        if self.poly1 is not None and self.poly1.isTemperatureValid(T):
+    cpdef NASAPolynomial select_polynomial(self, double T):
+        if self.poly1 is not None and self.poly1.is_temperature_valid(T):
             return self.poly1
-        elif self.poly2 is not None and self.poly2.isTemperatureValid(T):
+        elif self.poly2 is not None and self.poly2.is_temperature_valid(T):
             return self.poly2
-        elif self.poly3 is not None and self.poly3.isTemperatureValid(T):
+        elif self.poly3 is not None and self.poly3.is_temperature_valid(T):
             return self.poly3
         else:
             raise ValueError('No valid NASA polynomial at temperature {0:g} K.'.format(T))
     
-    cpdef double getHeatCapacity(self, double T) except -1000000000:
+    cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity
         :math:`C_\\mathrm{p}(T)` in J/mol*K at the specified temperature `T` in K.
         """
-        return self.selectPolynomial(T).getHeatCapacity(T)
+        return self.select_polynomial(T).get_heat_capacity(T)
     
-    cpdef double getEnthalpy(self, double T) except 1000000000:
+    cpdef double get_enthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy :math:`H(T)` in J/mol at the specified
         temperature `T` in K.
         """
-        return self.selectPolynomial(T).getEnthalpy(T)
+        return self.select_polynomial(T).get_enthalpy(T)
     
-    cpdef double getEntropy(self, double T) except -1000000000:
+    cpdef double get_entropy(self, double T) except -1000000000:
         """
         Return the entropy :math:`S(T)` in J/mol*K at the specified
         temperature `T` in K.
         """
-        return self.selectPolynomial(T).getEntropy(T)
+        return self.select_polynomial(T).get_entropy(T)
     
-    cpdef double getFreeEnergy(self, double T) except 1000000000:
+    cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy :math:`G(T)` in J/mol at the
         specified temperature `T` in K.
         """
-        return self.selectPolynomial(T).getFreeEnergy(T)
+        return self.select_polynomial(T).get_free_energy(T)
 
-    cpdef ThermoData toThermoData(self):
+    cpdef ThermoData to_thermo_data(self):
         """
         Convert the NASAPolynomial model to a :class:`ThermoData` object.
         
@@ -337,13 +337,13 @@ cdef class NASA(HeatCapacityModel):
         from rmgpy.thermo.thermodata import ThermoData
         
         Tdata = [300,400,500,600,800,1000,1500]
-        Cpdata = [self.getHeatCapacity(T) for T in Tdata]
+        Cpdata = [self.get_heat_capacity(T) for T in Tdata]
         
         return ThermoData(
             Tdata = (Tdata,"K"),
             Cpdata = (Cpdata,"J/(mol*K)"),
-            H298 = (self.getEnthalpy(298)*0.001,"kJ/mol"),
-            S298 = (self.getEntropy(298),"J/(mol*K)"),
+            H298 = (self.get_enthalpy(298)*0.001,"kJ/mol"),
+            S298 = (self.get_entropy(298),"J/(mol*K)"),
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
@@ -351,7 +351,7 @@ cdef class NASA(HeatCapacityModel):
         )
 
     @cython.boundscheck(False)
-    cpdef Wilhoit toWilhoit(self):
+    cpdef Wilhoit to_wilhoit(self):
         """
         Convert a :class:`MultiNASA` object `multiNASA` to a :class:`Wilhoit` 
         object. You must specify the linearity of the molecule `linear`, the number
@@ -360,7 +360,7 @@ cdef class NASA(HeatCapacityModel):
         limits at zero and infinite temperature.
         """
         cdef double Tmin, Tmax, dT, H298, S298, Cp0, CpInf
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Cpdata
         cdef int i
         
         from rmgpy.thermo.wilhoit import Wilhoit
@@ -371,42 +371,42 @@ cdef class NASA(HeatCapacityModel):
         CpInf = self.CpInf.value_si
         dT = min(50.0, (Tmax - Tmin) / 100.)
         
-        Tdata = numpy.arange(Tmin, Tmax, dT)
-        Cpdata = numpy.zeros_like(Tdata)
+        Tdata = np.arange(Tmin, Tmax, dT)
+        Cpdata = np.zeros_like(Tdata)
         
         for i in range(Tdata.shape[0]):
-            Cpdata[i] = self.getHeatCapacity(Tdata[i])
-        H298 = self.getEnthalpy(298)
-        S298 = self.getEntropy(298)
+            Cpdata[i] = self.get_heat_capacity(Tdata[i])
+        H298 = self.get_enthalpy(298)
+        S298 = self.get_entropy(298)
         
-        return Wilhoit(label=self.label,comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        return Wilhoit(label=self.label,comment=self.comment).fit_to_data(Tdata, Cpdata, Cp0, CpInf, H298, S298)
     
-    cpdef NASA changeBaseEnthalpy(self, double deltaH):
+    cpdef NASA change_base_enthalpy(self, double deltaH):
         """
         Add deltaH in J/mol to the base enthalpy of formation H298 and return the
         modified NASA object.  
         """
         for poly in self.polynomials:
-            poly.changeBaseEnthalpy(deltaH)
+            poly.change_base_enthalpy(deltaH)
         return self
 
-    cpdef NASA changeBaseEntropy(self, double deltaS):
+    cpdef NASA change_base_entropy(self, double deltaS):
         """
         Add deltaS in J/molK to the base entropy of formation S298 and return the
         modified NASA object
         """
         for poly in self.polynomials:
-            poly.changeBaseEntropy(deltaS)
+            poly.change_base_entropy(deltaS)
         return self
 
-    def toCantera(self):
+    def to_cantera(self):
         """
         Return the cantera equivalent NasaPoly2 object from this NASA object.
         """
         
         from cantera import NasaPoly2
 
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coeffs
+        cdef np.ndarray[np.float64_t, ndim=1] coeffs
         
         polys = self.polynomials
         assert len(polys) == 2, "Cantera NasaPoly2 objects only accept 2 polynomials"
@@ -414,7 +414,7 @@ cdef class NASA(HeatCapacityModel):
         
         # In RMG's NASA object, the first polynoamial is low temperature, and the second is 
         # high temperature
-        coeffs = numpy.zeros(15)
+        coeffs = np.zeros(15)
         coeffs[0] = polys[0].Tmax.value_si # mid point temperature between two polynomials
         coeffs[1:8] = polys[1].coeffs # 7 coefficients of the high temperature polynomial
         coeffs[8:15] = polys[0].coeffs # 7 coefficients of the low temperature polynomial

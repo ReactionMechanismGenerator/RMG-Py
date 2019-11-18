@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "H_Abstraction/rules"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 General comments go at the top of the file,
 
 or in a section(s) titled 'General'
@@ -33,9 +33,9 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 0,
-    shortDesc = u"""Default""",
+    shortDesc = """Default""",
     longDesc = 
-u"""
+"""
 If a biradical CH2JJ can abstract from RCH4 to make RCH3J and CH3J 
 then a Y_rad CH3J should be able to abstract from RCH3J which means X_H needs 
 to include Xrad_H. I.e. you can abstract from a radical. To make this possible

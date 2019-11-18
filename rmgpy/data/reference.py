@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -44,9 +43,10 @@ also be used if the reference does not fit into any of the above categories.
 
 import re
 
+
 ################################################################################
 
-class Reference:
+class Reference(object):
     """
     A base class for representing bibliographic information. The attributes are:
 
@@ -68,13 +68,13 @@ class Reference:
         self.year = year
         self.doi = doi
         self.url = url
-        
+
     def __repr__(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = self.toPrettyRepr()
+        string = self.to_pretty_repr()
         string = re.sub(r'\(\n    ', '(', string)
         string = re.sub(r',\n    ', ', ', string)
         string = re.sub(r',\n\)', ')', string)
@@ -86,28 +86,35 @@ class Reference:
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' *{0}*'.format(self.title)
         if self.year != '':
             string += u' ({0})'.format(self.year)
-        if string and string[-1] != '.': string += '.'
+        if string and string[-1] != '.':
+            string += '.'
         return string
 
-    def toPrettyRepr(self):
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
         string = u'Reference(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
-        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
-        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
-        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
+        if len(self.authors) != 0:
+            string += u'    authors = [{0}],\n'.format(
+                ', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':
+            string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.year != '':
+            string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':
+            string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':
+            string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
 
-    def getAuthorString(self):
+    def get_author_string(self):
         """
         Return a pretty, reStructuredText-formatted string of the authors.
         """
@@ -130,6 +137,7 @@ class Reference:
             if authors[-2:] == '..':
                 authors = authors[:-1]
         return authors
+
 
 ################################################################################
 
@@ -166,7 +174,7 @@ class Article(Reference):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' "{0}."'.format(self.title)
         if self.journal != '':
@@ -179,26 +187,38 @@ class Article(Reference):
             string += u', p. {0}'.format(self.pages)
         if self.year != '':
             string += u' ({0})'.format(self.year)
-        if string and string[-1] != '.': string += u'.'
+        if string and string[-1] != '.':
+            string += u'.'
         return string
-    
-    def toPrettyRepr(self):
+
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
         string = u'Article(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
-        if self.journal != '':     string += u'    journal = {0!r},\n'.format(self.journal.encode("utf-8"))
-        if self.volume != '':      string += u'    volume = {0!r},\n'.format(self.volume.encode("utf-8"))
-        if self.number != '':      string += u'    number = {0!r},\n'.format(self.number.encode("utf-8"))
-        if self.pages != '':       string += u'    pages = {0!r},\n'.format(self.pages.encode("utf-8"))
-        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
-        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
-        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
+        if len(self.authors) != 0:
+            string += u'    authors = [{0}],\n'.format(
+                ', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':
+            string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.journal != '':
+            string += u'    journal = {0!r},\n'.format(self.journal.encode("utf-8"))
+        if self.volume != '':
+            string += u'    volume = {0!r},\n'.format(self.volume.encode("utf-8"))
+        if self.number != '':
+            string += u'    number = {0!r},\n'.format(self.number.encode("utf-8"))
+        if self.pages != '':
+            string += u'    pages = {0!r},\n'.format(self.pages.encode("utf-8"))
+        if self.year != '':
+            string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':
+            string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':
+            string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
-    
+
+
 ################################################################################
 
 class Book(Reference):
@@ -222,7 +242,8 @@ class Book(Reference):
 
     """
 
-    def __init__(self, authors=None, title='', publisher='', address='', volume='', series='', edition='', year='', doi='', url=''):
+    def __init__(self, authors=None, title='', publisher='', address='', volume='', series='', edition='', year='',
+                 doi='', url=''):
         Reference.__init__(self, authors=authors, title=title, year=year, doi=doi, url=url)
         self.publisher = publisher
         self.address = address
@@ -235,7 +256,7 @@ class Book(Reference):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' *{0}.*'.format(self.title)
         if self.edition != '':
@@ -249,24 +270,36 @@ class Book(Reference):
         if self.year != '':
             string += u' ({0})'.format(self.year)
         return string + u'.'
-    
-    def toPrettyRepr(self):
+
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
         string = u'Book(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
-        if self.publisher != '':   string += u'    publisher = {0!r},\n'.format(self.publisher.encode("utf-8"))
-        if self.address != '':     string += u'    address = {0!r},\n'.format(self.address.encode("utf-8"))
-        if self.volume != '':      string += u'    volume = {0!r},\n'.format(self.volume.encode("utf-8"))
-        if self.series != '':      string += u'    series = {0!r},\n'.format(self.series.encode("utf-8"))
-        if self.edition != '':     string += u'    edition = {0!r},\n'.format(self.edition.encode("utf-8"))
-        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
-        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
-        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
+        if len(self.authors) != 0:
+            string += u'    authors = [{0}],\n'.format(
+                ', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':
+            string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.publisher != '':
+            string += u'    publisher = {0!r},\n'.format(self.publisher.encode("utf-8"))
+        if self.address != '':
+            string += u'    address = {0!r},\n'.format(self.address.encode("utf-8"))
+        if self.volume != '':
+            string += u'    volume = {0!r},\n'.format(self.volume.encode("utf-8"))
+        if self.series != '':
+            string += u'    series = {0!r},\n'.format(self.series.encode("utf-8"))
+        if self.edition != '':
+            string += u'    edition = {0!r},\n'.format(self.edition.encode("utf-8"))
+        if self.year != '':
+            string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':
+            string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':
+            string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
+
 
 ################################################################################
 
@@ -298,7 +331,7 @@ class Thesis(Reference):
         Return a string representation of the reference in reStructuredText
         format.
         """
-        string = self.getAuthorString()
+        string = self.get_author_string()
         if self.title != '':
             string += u' "{0}."'.format(self.title)
         if self.degree != '':
@@ -307,22 +340,31 @@ class Thesis(Reference):
             string += u' {0}'.format(self.school)
         if self.year != '':
             string += u' ({0})'.format(self.year)
-        if string and string[-1] != '.': string += u'.'
+        if string and string[-1] != '.':
+            string += u'.'
         return string
-    
-    def toPrettyRepr(self):
+
+    def to_pretty_repr(self):
         """
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
         string = u'Thesis(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
-        if self.degree != '':      string += u'    degree = {0!r},\n'.format(self.degree.encode("utf-8"))
-        if self.school != '':      string += u'    school = {0!r},\n'.format(self.school.encode("utf-8"))
-        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
-        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
-        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
+        if len(self.authors) != 0:
+            string += u'    authors = [{0}],\n'.format(
+                ', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':
+            string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.degree != '':
+            string += u'    degree = {0!r},\n'.format(self.degree.encode("utf-8"))
+        if self.school != '':
+            string += u'    school = {0!r},\n'.format(self.school.encode("utf-8"))
+        if self.year != '':
+            string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':
+            string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':
+            string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
 
 ################################################################################

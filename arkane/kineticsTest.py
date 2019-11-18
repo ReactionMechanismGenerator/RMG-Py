@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,10 +27,14 @@
 #                                                                             #
 ###############################################################################
 
+"""
+This module contains unit tests of the :mod:`arkane.kinetics` module.
+"""
+
 import unittest
 
-from rmgpy.species import TransitionState
 from rmgpy.reaction import Reaction
+from rmgpy.species import TransitionState
 
 from arkane.kinetics import KineticsJob
 
@@ -47,18 +50,18 @@ class KineticsTest(unittest.TestCase):
         """
         Ensures that the proper temperature ranges are set when Tlist is specified
         """
-        rxn = Reaction(transitionState=TransitionState())
-        Tlist = [50.7, 100, 300, 800, 1255]
-        kjob = KineticsJob(rxn, Tlist=(Tlist, 'K'))
-        self.assertEqual(min(Tlist), kjob.Tmin.value_si)
-        self.assertEqual(max(Tlist), kjob.Tmax.value_si)
-        self.assertEqual(len(Tlist), kjob.Tcount)
+        rxn = Reaction(transition_state=TransitionState())
+        t_list = [50.7, 100, 300, 800, 1255]
+        kjob = KineticsJob(rxn, Tlist=(t_list, 'K'))
+        self.assertEqual(min(t_list), kjob.Tmin.value_si)
+        self.assertEqual(max(t_list), kjob.Tmax.value_si)
+        self.assertEqual(len(t_list), kjob.Tcount)
 
-    def test_give_Trange_for_kineticsjob(self):
+    def test_give_temperature_range_for_kineticsjob(self):
         """
         Ensures that Tlist is set when a range of temperatures is specified
         """
-        rxn = Reaction(transitionState=TransitionState())
+        rxn = Reaction(transition_state=TransitionState())
         kjob = KineticsJob(rxn, Tmin=(50, 'K'), Tmax=(4000, 'K'), Tcount=5)
         self.assertEqual(5, len(kjob.Tlist.value_si))
         self.assertEqual(50, min(kjob.Tlist.value_si))
@@ -74,7 +77,7 @@ class KineticsTest(unittest.TestCase):
         """
         Ensures that Tlist is set when no range is specified
         """
-        rxn = Reaction(transitionState=TransitionState())
+        rxn = Reaction(transition_state=TransitionState())
         kjob = KineticsJob(rxn)
         self.assertAlmostEqual(298, kjob.Tmin.value_si)
         self.assertAlmostEqual(2500, kjob.Tmax.value_si)
@@ -89,6 +92,8 @@ class KineticsTest(unittest.TestCase):
                                    'Obtained values of {0} and {1}'.format(inverse_tlist[1] - inverse_tlist[0],
                                                                            inverse_tlist[-1] - inverse_tlist[-2]))
 
+
+################################################################################
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

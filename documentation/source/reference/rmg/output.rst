@@ -2,6 +2,6 @@
 Saving RMG output
 *****************
 
-.. autofunction:: rmgpy.rmg.output.saveOutputHTML
+.. autofunction:: rmgpy.rmg.output.save_output_html
 
-.. autofunction:: rmgpy.rmg.output.saveDiffHTML
+.. autofunction:: rmgpy.rmg.output.save_diff_html

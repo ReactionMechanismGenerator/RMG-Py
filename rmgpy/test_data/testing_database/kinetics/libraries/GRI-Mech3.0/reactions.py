@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "GRI-Mech3.0"
-shortDesc = u"Natural Gas Combustion Mechanism (without NOx chemistry)"
-longDesc = u"""
+shortDesc = "Natural Gas Combustion Mechanism (without NOx chemistry)"
+longDesc = """
 The thermodynamic and kinetic parameters in the GRI-Mech 3.0 mechanism have 
 been collectively estimated from literature search and then optimized to a set 
 of representative experimental targets. For this reason you should generally

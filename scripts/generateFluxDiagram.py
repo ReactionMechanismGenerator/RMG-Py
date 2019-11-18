@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -37,10 +36,11 @@ of species images is available, it can be passed as an optional argument. A
 Chemkin output file can also be passed as an optional positional argument.
 """
 
-import os
 import argparse
+import os
 
-from rmgpy.tools.fluxdiagram import createFluxDiagram
+from rmgpy.tools.fluxdiagram import create_flux_diagram
+
 
 ################################################################################
 
@@ -78,62 +78,64 @@ def parse_arguments():
 
     args = parser.parse_args()
 
-    inputFile = os.path.abspath(args.input)
-    chemkinFile = os.path.abspath(args.chemkin)
-    dictFile = os.path.abspath(args.dictionary)
-    speciesPath = os.path.abspath(args.species) if args.species is not None else None
-    chemkinOutput = os.path.abspath(args.chemkinOutput) if args.chemkinOutput is not None else ''
-    useJava = args.java
+    input_file = os.path.abspath(args.input)
+    chemkin_file = os.path.abspath(args.chemkin)
+    dict_file = os.path.abspath(args.dictionary)
+    species_path = os.path.abspath(args.species) if args.species is not None else None
+    chemkin_output = os.path.abspath(args.chemkinOutput) if args.chemkinOutput is not None else ''
+    use_java = args.java
     dflag = args.dlim
-    checkDuplicates = args.checkDuplicates
-    centralSpeciesList = args.centralSpecies
+    check_duplicates = args.checkDuplicates
+    central_species_list = args.centralSpecies
     superimpose = args.super
-    saveStates = args.saveStates
-    readStates = args.readStates
+    save_states = args.saveStates
+    read_states = args.readStates
 
-    keys = ('maximumNodeCount',
-            'maximumEdgeCount',
-            'concentrationTolerance',
-            'speciesRateTolerance',
+    keys = ('max_node_count',
+            'max_edge_count',
+            'concentration_tol',
+            'species_rate_tol',
             'radius',
-            'centralReactionCount',
-            'timeStep')
+            'central_reaction_count',
+            'time_step')
     vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
-    
-    return (inputFile,
-            chemkinFile,
-            dictFile,
-            speciesPath,
-            chemkinOutput,
-            useJava,
+
+    return (input_file,
+            chemkin_file,
+            dict_file,
+            species_path,
+            chemkin_output,
+            use_java,
             dflag,
-            checkDuplicates,
+            check_duplicates,
             settings,
-            centralSpeciesList,
+            central_species_list,
             superimpose,
-            saveStates,
-            readStates)
+            save_states,
+            read_states)
+
 
 def main():
-    (inputFile,
-     chemkinFile,
-     dictFile,
-     speciesPath,
-     chemkinOutput,
-     useJava,
+    (input_file,
+     chemkin_file,
+     dict_file,
+     species_path,
+     chemkin_output,
+     use_java,
      dflag,
-     checkDuplicates,
+     check_duplicates,
      settings,
-     centralSpeciesList,
+     central_species_list,
      superimpose,
-     saveStates,
-     readStates) = parse_arguments()
+     save_states,
+     read_states) = parse_arguments()
 
-    createFluxDiagram(inputFile, chemkinFile, dictFile, speciesPath=speciesPath, java=useJava, settings=settings,
-                      chemkinOutput=chemkinOutput, diffusionLimited=dflag, centralSpeciesList=centralSpeciesList,
-                      superimpose=superimpose, saveStates=saveStates, readStates=readStates,
-                      checkDuplicates=checkDuplicates)
+    create_flux_diagram(input_file, chemkin_file, dict_file, species_path=species_path, java=use_java,
+                        settings=settings, chemkin_output=chemkin_output, central_species_list=central_species_list,
+                        superimpose=superimpose, save_states=save_states, read_states=read_states,
+                        diffusion_limited=dflag, check_duplicates=check_duplicates)
+
 
 if __name__ == '__main__':
     main()

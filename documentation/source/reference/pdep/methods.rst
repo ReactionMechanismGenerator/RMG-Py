@@ -12,7 +12,7 @@ of all unimolecular isomers and bimolecular reactant channels.
 The modified strong collision method
 ====================================
 
-.. autofunction:: rmgpy.pdep.msc.applyModifiedStrongCollisionMethod
+.. autofunction:: rmgpy.pdep.msc.apply_modified_strong_collision_method
 
     The modified strong collision method utilizes a greatly simplified collision
     model that allows for a decoupling of the energy grains. In the simplified
@@ -36,7 +36,7 @@ The modified strong collision method
 The reservoir state method
 ==========================
 
-.. autofunction:: rmgpy.pdep.rs.applyReservoirStateMethod
+.. autofunction:: rmgpy.pdep.rs.apply_reservoir_state_method
 
     In the reservoir state method, the population distribution of each isomer is
     partitioned into the low-energy grains (called the *reservoir*) and the
@@ -60,7 +60,7 @@ The reservoir state method
 The chemically-significant eigenvalues method
 =============================================
 
-.. autofunction:: rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod
+.. autofunction:: rmgpy.pdep.cse.apply_chemically_significant_eigenvalues_method
 
     In the chemically-significant eigenvalues method, the master equation matrix
     is diagonized to determine its eigenmodes. Only the slowest of these modes are

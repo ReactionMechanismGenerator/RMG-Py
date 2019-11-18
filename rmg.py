@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -33,92 +32,23 @@ RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
 
 import os.path
-import argparse
 import logging
-import rmgpy
 
-from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
+# Before importing any RMG modules, check Python version
+try:
+    import utilities
+except ImportError:  # This is likely the binary install version, which does not include utilities
+    # If this is in fact the binary version, conda has ensured that the python version is correct.
+    # It is okay to skip this test here
+    utilities = None
+else:
+    utilities.check_python()
+
+import rmgpy
+from rmgpy.rmg.main import RMG, initialize_log, process_profile_stats, make_profile_graph
+from rmgpy.util import parse_command_line_arguments
 
 ################################################################################
-
-
-def parse_command_line_arguments(command_line_args=None):
-    """
-    Parse the command-line arguments being passed to RMG Py. This uses the
-    :mod:`argparse` module, which ensures that the command-line arguments are
-    sensible, parses them, and returns them.
-    """
-
-    parser = argparse.ArgumentParser(description=
-    """
-    Reaction Mechanism Generator (RMG) is an automatic chemical reaction
-    mechanism generator that constructs kinetic models composed of
-    elementary chemical reaction steps using a general understanding of
-    how molecules react.
-    """)
-    parser.add_argument('file', metavar='FILE', type=str, nargs=1,
-                        help='a file describing the job to execute')
-
-    # Options for controlling the amount of information printed to the console
-    # By default a moderate level of information is printed; you can either
-    # ask for less (quiet), more (verbose), or much more (debug)
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
-    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
-    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
-
-    # Add options for controlling what directories files are written to
-    parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
-                        metavar='DIR', help='use DIR as output directory')
-
-    # Add restart option
-    parser.add_argument('-r', '--restart', action='store_true', help='restart an incomplete job')
-
-    parser.add_argument('-p', '--profile', action='store_true',
-                        help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
-    parser.add_argument('-P', '--postprocess', action='store_true',
-                        help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
-
-    parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
-                        metavar='DD:HH:MM:SS', help='set the maximum execution time')
-
-    # Add option to select max number of processes for reaction generation
-    parser.add_argument('-n', '--maxproc', type=int, nargs=1, default=1,
-                        help='max number of processes used during reaction generation')
-
-    # Add option to output a folder that stores the details of each kinetic database entry source
-    parser.add_argument('-k', '--kineticsdatastore', action='store_true',
-                        help='output a folder, kinetics_database, that contains a .txt file for each reaction family '
-                             'listing the source(s) for each entry')
-
-    args = parser.parse_args(command_line_args)
-
-    # Process args to set correct default values and format
-
-    # For output and scratch directories, if they are empty strings, set them
-    # to match the input file location
-    args.file = args.file[0]
-
-    # If walltime was specified, retrieve this string from the element 1 list
-    if args.walltime != '00:00:00:00':
-        args.walltime = args.walltime[0]
-
-    if args.maxproc != 1:
-        args.maxproc = args.maxproc[0]
-
-    # Set directories
-    input_directory = os.path.abspath(os.path.dirname(args.file))
-
-    if args.output_directory == '':
-        args.output_directory = input_directory
-    # If output directory was specified, retrieve this string from the element 1 list
-    else:
-        args.output_directory = args.output_directory[0]
-
-    if args.postprocess:
-        args.profile = True
-
-    return args
 
 
 def main():
@@ -136,7 +66,7 @@ def main():
             level = logging.DEBUG
         elif args.quiet:
             level = logging.WARNING
-        initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
+        initialize_log(level, os.path.join(args.output_directory, 'RMG.log'))
 
     logging.info(rmgpy.settings.report())
 
@@ -157,7 +87,7 @@ def main():
             'RMG': RMG
         }
 
-        command = """rmg = RMG(inputFile=inputFile, outputDirectory=output_dir); rmg.execute(**kwargs)"""
+        command = """rmg = RMG(input_file=inputFile, output_directory=output_dir); rmg.execute(**kwargs)"""
 
         stats_file = os.path.join(args.output_directory, 'RMG.profile')
         print("Running under cProfile")
@@ -166,12 +96,12 @@ def main():
             cProfile.runctx(command, global_vars, local_vars, stats_file)
         # postprocess the stats
         log_file = os.path.join(args.output_directory, 'RMG.log')
-        processProfileStats(stats_file, log_file)
-        makeProfileGraph(stats_file)
+        process_profile_stats(stats_file, log_file)
+        make_profile_graph(stats_file)
 
     else:
 
-        rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
+        rmg = RMG(input_file=args.file, output_directory=args.output_directory)
         rmg.execute(**kwargs)
 
 

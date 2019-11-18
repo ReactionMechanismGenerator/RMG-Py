@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 from cpython cimport bool
 include "settings.pxi"
 if DASPK == 1:
@@ -39,70 +39,68 @@ cdef class ReactionSystem(DASx):
 
     # reactor state variables:
     cdef public float t0
-    cdef public numpy.ndarray y0
-    cdef public numpy.ndarray dydt0
+    cdef public np.ndarray y0
+    cdef public np.ndarray dydt0
 
     #  variables that determine the dimensions of arrays and matrices:
-    cdef public int numCoreSpecies
-    cdef public int numCoreReactions
-    cdef public int numEdgeSpecies
-    cdef public int numSurfaceSpecies
-    cdef public int numSurfaceReactions
-    cdef public int numEdgeReactions
-    cdef public int numPdepNetworks
+    cdef public int num_core_species
+    cdef public int num_core_reactions
+    cdef public int num_edge_species
+    cdef public int num_edge_reactions
+    cdef public int num_pdep_networks
     cdef public int neq
 
     # variables that store stoichiometry data
-    cdef public dict speciesIndex
-    cdef public dict reactionIndex
-    cdef public numpy.ndarray reactantIndices
-    cdef public numpy.ndarray productIndices
-    cdef public numpy.ndarray networkIndices
+    cdef public dict species_index
+    cdef public dict reaction_index
+    cdef public np.ndarray reactant_indices
+    cdef public np.ndarray product_indices
+    cdef public np.ndarray network_indices
 
     # matrices that cache kinetic and rate data
-    cdef public numpy.ndarray kf # forward rate coefficients
-    cdef public numpy.ndarray kb # reverse rate coefficients
-    cdef public numpy.ndarray Keq # equilibrium constants
-    cdef public numpy.ndarray networkLeakCoefficients
-    cdef public numpy.ndarray jacobianMatrix
+    cdef public np.ndarray kf  # forward rate coefficients
+    cdef public np.ndarray kb  # reverse rate coefficients
+    cdef public np.ndarray Keq  # equilibrium constants
+    cdef public np.ndarray network_leak_coefficients
+    cdef public np.ndarray jacobian_matrix
 
-    cdef public numpy.ndarray coreSpeciesConcentrations
+    cdef public np.ndarray core_species_concentrations
     
     #surface information
-    cdef public numpy.ndarray surfaceSpeciesIndices
-    cdef public numpy.ndarray surfaceReactionIndices
-    cdef public numpy.ndarray validLayeringIndices
+    cdef public np.ndarray surface_species_indices
+    cdef public np.ndarray surface_reaction_indices
+    cdef public np.ndarray valid_layering_indices
     
     # The reaction and species rates at the current time (in mol/m^3*s)
-    cdef public numpy.ndarray coreSpeciesRates
-    cdef public numpy.ndarray coreReactionRates
-    cdef public numpy.ndarray coreSpeciesProductionRates
-    cdef public numpy.ndarray coreSpeciesConsumptionRates
-    cdef public numpy.ndarray edgeSpeciesRates
-    cdef public numpy.ndarray edgeReactionRates
+    cdef public np.ndarray core_species_rates
+    cdef public np.ndarray core_reaction_rates
+    cdef public np.ndarray core_species_production_rates
+    cdef public np.ndarray core_species_consumption_rates
+    cdef public np.ndarray edge_species_rates
+    cdef public np.ndarray edge_reaction_rates
 
-    cdef public numpy.ndarray networkLeakRates    
+    cdef public np.ndarray network_leak_rates    
 
     # variables that cache maximum rate (ratio) data
-    cdef public numpy.ndarray maxEdgeSpeciesRateRatios
-    cdef public numpy.ndarray maxNetworkLeakRateRatios
+    cdef public np.ndarray max_edge_species_rate_ratios
+    cdef public np.ndarray max_network_leak_rate_ratios
     
     #for managing prunable edge species
-    cdef public list prunableSpecies
-    cdef public list prunableNetworks
-    cdef public numpy.ndarray prunableSpeciesIndices
-    cdef public numpy.ndarray prunableNetworkIndices
+    cdef public list prunable_species
+    cdef public list prunable_networks
+    cdef public np.ndarray prunable_species_indices
+    cdef public np.ndarray prunable_network_indices
     
     # sensitivity variables
     # cdef public int sensmethod
-    cdef public numpy.ndarray sensitivityCoefficients
-    cdef public list sensitiveSpecies
-    cdef public double sensitivityThreshold
-    # cdef public numpy.ndarray senpar
+    cdef public np.ndarray sensitivity_coefficients
+    cdef public list sensitive_species
+    cdef public double sensitivity_threshold
+    # cdef public np.ndarray senpar
 
     # tolerance settings
-    cdef public numpy.ndarray atol_array
-    cdef public numpy.ndarray rtol_array
+    cdef public np.ndarray atol_array
+    cdef public np.ndarray rtol_array
     
     cdef public list snapshots
 
@@ -112,26 +110,26 @@ cdef class ReactionSystem(DASx):
     cdef public bint trimolecular
 
     # reaction threshold settings
-    cdef public numpy.ndarray unimolecularThreshold
-    cdef public numpy.ndarray bimolecularThreshold
-    cdef public numpy.ndarray trimolecularThreshold
+    cdef public np.ndarray unimolecular_threshold
+    cdef public np.ndarray bimolecular_threshold
+    cdef public np.ndarray trimolecular_threshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        list surfaceSpecies=?, list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?,
-        sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?, dict conditions=?)
+    cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
+        list surface_species=?, list surface_reactions=?, list pdep_networks=?, atol=?, rtol=?,
+        sensitivity=?, sens_atol=?, sens_rtol=?, filter_reactions=?, dict conditions=?)
 
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
-        list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        list pdepNetworks=?, bool prune=?, bool sensitivity=?, list sensWorksheet=?, object modelSettings=?,
-        object simulatorSettings=?, dict conditions=?)
+    cpdef simulate(self, list core_species, list core_reactions, list edge_species, 
+        list edge_reactions,list surface_species, list surface_reactions,
+        list pdep_networks=?, bool prune=?, bool sensitivity=?, list sens_worksheet=?, object model_settings=?,
+        object simulator_settings=?, dict conditions=?)
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
+    cpdef log_rates(self, double char_rate, object species, double species_rate, double max_dif_ln_accum_num, object network, double network_rate)
      
-    cpdef logConversions(self, speciesIndex, y0)
+    cpdef log_conversions(self, species_index, y0)
     
-    cpdef getLayeringIndices(self)
+    cpdef get_layering_indices(self)
     
-    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions)
+    cpdef initialize_surface(self,list core_species,list core_reactions,list surface_species,list surface_reactions)
     
-    cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list surfaceSpecies,list surfaceReactions,list edgeSpecies)
+    cpdef add_reactions_to_surface(self,list new_surface_reactions,list new_surface_reaction_inds,list surface_species,list surface_reactions,list edge_species)

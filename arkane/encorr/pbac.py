@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -37,8 +36,10 @@ Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579
 import logging
 import re
 
-from arkane.exceptions import BondAdditivityCorrectionError
 import arkane.encorr.data as data
+from arkane.exceptions import BondAdditivityCorrectionError
+
+################################################################################
 
 
 def get_bac(model_chemistry, bonds):

@@ -65,7 +65,6 @@ pressureDependence(
 
 options(
     units='si',
-    saveRestartPeriod=None,
     generateOutputHTML=False,
     generatePlots=False,
 )

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -29,21 +28,21 @@
 ###############################################################################
 
 import filecmp
-import mock
+import logging
 import os.path
 import shutil
 import unittest
+
+import mock
 import numpy as np
-import logging
 
 from rmgpy import settings
-from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
-from rmgpy.molecule.group import Group
 
 
 ###################################################
@@ -57,7 +56,7 @@ class TestFamily(unittest.TestCase):
         """
         # Set up a dummy database
         cls.database = KineticsDatabase()
-        cls.database.loadFamilies(
+        cls.database.load_families(
             path=os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families'),
             families=[
                 'intra_H_migration',
@@ -68,44 +67,45 @@ class TestFamily(unittest.TestCase):
                 '1,2_shiftC',
                 'Intra_R_Add_Exo_scission',
                 'intra_substitutionS_isomerization',
-                'R_Addition_COm'
+                'R_Addition_COm',
+                'R_Recombination'
             ],
         )
         cls.family = cls.database.families['intra_H_migration']
 
-    def testGetBackboneRoots(self):
+    def test_get_backbone_roots(self):
         """
-        Test the getBackboneRoots() function
+        Test the get_backbone_roots() function
         """
-        backbones = self.family.getBackboneRoots()
+        backbones = self.family.get_backbone_roots()
         self.assertEquals(backbones[0].label, "RnH")
 
-    def testGetEndRoots(self):
+    def test_get_end_roots(self):
         """
-        Test the getEndRoots() function
+        Test the get_end_roots() function
         """
-        ends = self.family.getEndRoots()
+        ends = self.family.get_end_roots()
         self.assertEquals(len(ends), 2)
         self.assertIn(self.family.groups.entries["Y_rad_out"], ends)
         self.assertIn(self.family.groups.entries["XH_out"], ends)
 
-    def testGetTopLevelGroups(self):
+    def test_get_top_level_groups(self):
         """
-        Test the getTopLevelGroups() function
+        Test the get_top_level_groups() function
         """
-        topGroups = self.family.getTopLevelGroups(self.family.groups.entries["RnH"])
-        self.assertEquals(len(topGroups), 4)
-        self.assertIn(self.family.groups.entries["R5Hall"], topGroups)
-        self.assertIn(self.family.groups.entries["R6Hall"], topGroups)
-        self.assertIn(self.family.groups.entries["R2Hall"], topGroups)
-        self.assertIn(self.family.groups.entries["R3Hall"], topGroups)
+        top_groups = self.family.get_top_level_groups(self.family.groups.entries["RnH"])
+        self.assertEquals(len(top_groups), 4)
+        self.assertIn(self.family.groups.entries["R5Hall"], top_groups)
+        self.assertIn(self.family.groups.entries["R6Hall"], top_groups)
+        self.assertIn(self.family.groups.entries["R2Hall"], top_groups)
+        self.assertIn(self.family.groups.entries["R3Hall"], top_groups)
 
-    def testReactBenzeneBond(self):
+    def test_react_benzene_bond(self):
         """
         Test that hydrogen addition to benzene (w/ benzene bonds) returns kekulized product.
         """
         family = self.database.families['R_Addition_MultipleBond']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 1  *1 C u0 p0 c0 {2,B} {6,B} {7,S}
 2  *2 C u0 p0 c0 {1,B} {3,B} {8,S}
 3     C u0 p0 c0 {2,B} {4,B} {9,S}
@@ -119,8 +119,8 @@ class TestFamily(unittest.TestCase):
 11    H u0 p0 c0 {5,S}
 12    H u0 p0 c0 {6,S}
 """),
-                     Molecule().fromAdjacencyList("1 *3 H u1 p0 c0")]
-        expectedProduct = Molecule().fromAdjacencyList("""
+                     Molecule().from_adjacency_list("1 *3 H u1 p0 c0")]
+        expected_product = Molecule().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {7,S} {13,S}
 2  C u1 p0 c0 {1,S} {3,S} {8,S}
@@ -136,17 +136,17 @@ multiplicity 2
 12 H u0 p0 c0 {6,S}
 13 H u0 p0 c0 {1,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
-        self.assertTrue(expectedProduct.isIsomorphic(products[0]))
+        self.assertTrue(expected_product.is_isomorphic(products[0]))
 
-    def testReactBenzeneBond2(self):
+    def test_react_benzene_bond2(self):
         """
         Test that hydrogen addition to phenanthrene (w/ benzene bonds) returns kekulized product.
         """
         family = self.database.families['R_Addition_MultipleBond']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 1  *1 C u0 p0 c0 {2,B} {3,B} {6,B}
 2  *2 C u0 p0 c0 {1,B} {4,B} {9,B}
 3     C u0 p0 c0 {1,B} {5,B} {7,B}
@@ -172,8 +172,8 @@ multiplicity 2
 23    H u0 p0 c0 {10,S}
 24    H u0 p0 c0 {14,S}
 """),
-                     Molecule().fromAdjacencyList("1 *3 H u1 p0 c0")]
-        expectedProduct = Molecule().fromAdjacencyList("""
+                     Molecule().from_adjacency_list("1 *3 H u1 p0 c0")]
+        expected_product = Molecule().from_adjacency_list("""
 multiplicity 2
 1  *1 C u0 p0 c0 {2,S} {3,S} {5,S} {15,S}
 2  *2 C u1 p0 c0 {1,S} {4,S} {8,S}
@@ -201,17 +201,18 @@ multiplicity 2
 24    H u0 p0 c0 {10,S}
 25    H u0 p0 c0 {14,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
-        self.assertTrue(expectedProduct.isIsomorphic(products[0]))
+        self.assertTrue(expected_product.is_isomorphic(products[0]))
 
-    def test_intra_H_migration(self):
+    def test_intra__h_migration(self):
         """
-        Test that the intra_H_migration family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the intra_H_migration family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['intra_H_migration']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 multiplicity 2
 1  *2 C u0 p0 c0 {3,S} {11,S} {12,S} {13,S}
 2  *4 C u0 p0 c0 {4,S} {5,S} {6,D}
@@ -235,7 +236,7 @@ multiplicity 2
 20    H u0 p0 c0 {9,S}
 21    H u0 p0 c0 {7,S}
 """)]
-        expectedProduct = Molecule().fromAdjacencyList("""
+        expected_product = Molecule().from_adjacency_list("""
 multiplicity 2
 1  *1 C u1 p0 c0 {3,S} {12,S} {13,S}
 2  *5 C u0 p0 c0 {4,S} {5,S} {6,D}
@@ -259,22 +260,23 @@ multiplicity 2
 20    H u0 p0 c0 {9,S}
 21    H u0 p0 c0 {7,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_product.get_all_labeled_atoms().items():
+            mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
+        self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_H_Abstraction(self):
+    def test_h_abstraction(self):
         """
-        Test that the H_Abstraction family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the H_Abstraction family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['H_Abstraction']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 1 *1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
 2    C u0 p0 c0 {1,S} {3,D} {7,S}
 3    C u0 p0 c0 {2,D} {8,S} {9,S}
@@ -285,12 +287,12 @@ multiplicity 2
 8    H u0 p0 c0 {3,S}
 9    H u0 p0 c0 {3,S}
         """),
-                     Molecule().fromAdjacencyList("1 *3 H u1 p0 c0")]
-        expectedProducts = [Molecule().fromAdjacencyList("""
+                     Molecule().from_adjacency_list("1 *3 H u1 p0 c0")]
+        expected_products = [Molecule().from_adjacency_list("""
 1 *1 H u0 p0 c0 {2,S}
 2 *2 H u0 p0 c0 {1,S}
         """),
-                    Molecule().fromAdjacencyList("""
+                             Molecule().from_adjacency_list("""
 1 *3 C u1 p0 c0 {2,S} {5,S} {6,S}
 2    C u0 p0 c0 {1,S} {3,D} {7,S}
 3    C u0 p0 c0 {2,D} {8,S} {9,S}
@@ -300,28 +302,29 @@ multiplicity 2
 8    H u0 p0 c0 {3,S}
 9    H u0 p0 c0 {3,S}
         """)]
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 2)
 
         mapping1 = {}
-        for label, atom in expectedProducts[0].getLabeledAtoms().iteritems():
-            mapping1[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_products[0].get_all_labeled_atoms().items():
+            mapping1[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProducts[0].isIsomorphic(products[0], mapping1))
+        self.assertTrue(expected_products[0].is_isomorphic(products[0], mapping1))
 
         mapping2 = {}
-        for label, atom in expectedProducts[1].getLabeledAtoms().iteritems():
-            mapping2[atom] = products[1].getLabeledAtom(label)[0]
+        for label, atom in expected_products[1].get_all_labeled_atoms().items():
+            mapping2[atom] = products[1].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProducts[1].isIsomorphic(products[1], mapping2))
+        self.assertTrue(expected_products[1].is_isomorphic(products[1], mapping2))
 
-    def test_Intra_ene_reaction(self):
+    def test_intra_ene_reaction(self):
         """
-        Test that the Intra_ene_reaction family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the Intra_ene_reaction family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['Intra_ene_reaction']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 1  *1 C u0 p0 c0 {2,S} {3,S} {4,S} {10,S}
 2  *5 C u0 p0 c0 {1,S} {5,D} {6,S}
 3  *2 C u0 p0 c0 {1,S} {7,D} {11,S}
@@ -340,7 +343,7 @@ multiplicity 2
 16    H u0 p0 c0 {9,S}
 17    H u0 p0 c0 {8,S}
 """)]
-        expectedProduct = Molecule().fromAdjacencyList("""
+        expected_product = Molecule().from_adjacency_list("""
 1  *2 C u0 p0 c0 {2,D} {3,S} {4,S} 
 2  *3 C u0 p0 c0 {1,D} {5,S} {6,S}
 3  *1 C u0 p0 c0 {1,S} {7,S} {11,S} {10,S}
@@ -359,22 +362,23 @@ multiplicity 2
 16    H u0 p0 c0 {9,S}
 17    H u0 p0 c0 {8,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_product.get_all_labeled_atoms().items():
+            mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
+        self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_6_membered_central_CC_shift(self):
+    def test_6_membered_central_cc_shift(self):
         """
-        Test that the 6_membered_central_C-C_shift family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the 6_membered_central_C-C_shift family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['6_membered_central_C-C_shift']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 1  *3 C u0 p0 c0 {2,S} {3,S} {7,S} {8,S}
 2  *4 C u0 p0 c0 {1,S} {4,S} {9,S} {10,S}
 3  *2 C u0 p0 c0 {1,S} {5,T}
@@ -388,7 +392,7 @@ multiplicity 2
 11    H u0 p0 c0 {5,S}
 12    H u0 p0 c0 {6,S}
 """)]
-        expectedProduct = Molecule().fromAdjacencyList("""
+        expected_product = Molecule().from_adjacency_list("""
 1  *3 C u0 p0 c0 {2,S} {5,D} {7,S}
 2  *4 C u0 p0 c0 {1,S} {6,D} {8,S}
 3  *1 C u0 p0 c0 {5,D} {9,S} {10,S}
@@ -402,22 +406,23 @@ multiplicity 2
 11    H u0 p0 c0 {4,S}
 12    H u0 p0 c0 {4,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_product.get_all_labeled_atoms().items():
+            mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
+        self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_12_shiftC(self):
+    def test_12_shift_c(self):
         """
-        Test that the 1,2_shiftC family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the 1,2_shiftC family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['1,2_shiftC']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 multiplicity 2
 1  *2 C u0 p0 c0 {2,S} {3,S} {8,S} {9,S}
 2  *1 C u0 p0 c0 {1,S} {10,S} {11,S} {12,S}
@@ -436,7 +441,7 @@ multiplicity 2
 15    H u0 p0 c0 {6,S}
 16    H u0 p0 c0 {7,S}
 """)]
-        expectedProduct = Molecule().fromAdjacencyList("""
+        expected_product = Molecule().from_adjacency_list("""
 multiplicity 2
 1  *2 C u0 p0 c0 {2,S} {3,S} {4,S} {7,S}
 2  *1 C u0 p0 c0 {1,S} {8,S} {9,S} {10,S}
@@ -455,22 +460,23 @@ multiplicity 2
 15    H u0 p0 c0 {7,S}
 16    H u0 p0 c0 {7,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_product.get_all_labeled_atoms().items():
+            mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
+        self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_Intra_R_Add_Exo_scission(self):
+    def test_intra_r_add_exo_scission(self):
         """
-        Test that the Intra_R_Add_Exo_scission family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the Intra_R_Add_Exo_scission family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['Intra_R_Add_Exo_scission']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 multiplicity 2
 1  *3 C u0 p0 c0 {2,S} {8,S} {11,S} {12,S}
 2  *2 C u0 p0 c0 {1,S} {3,B} {4,B}
@@ -492,7 +498,7 @@ multiplicity 2
 18    H u0 p0 c0 {8,S}
 19    H u0 p0 c0 {10,S}
 """)]
-        expectedProduct = Molecule().fromAdjacencyList("""
+        expected_product = Molecule().from_adjacency_list("""
 multiplicity 2
 1  *3 C u0 p0 c0 {2,S} {8,S} {9,S} {11,S}
 2  *2 C u0 p0 c0 {1,S} {3,B} {4,B}
@@ -514,22 +520,23 @@ multiplicity 2
 18    H u0 p0 c0 {8,S}
 19    H u0 p0 c0 {10,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_product.get_all_labeled_atoms().items():
+            mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
+        self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
-    def test_intra_substitutionS_isomerization(self):
+    def test_intra_substitution_s_isomerization(self):
         """
-        Test that the intra_substitutionS_isomerization family, which is its own reverse, returns a properly re-labeled product structure.
+        Test that the intra_substitutionS_isomerization family returns a properly re-labeled product structure.
+        This family is its own reverse.
         """
         family = self.database.families['intra_substitutionS_isomerization']
-        reactants = [Molecule().fromAdjacencyList("""
+        reactants = [Molecule().from_adjacency_list("""
 multiplicity 2
 1  *2 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
 2     C u0 p0 c0 {3,S} {7,S} {8,S} {9,S}
@@ -543,7 +550,7 @@ multiplicity 2
 10    H u0 p0 c0 {3,S}
 11    H u0 p0 c0 {4,S}
 """)]
-        expectedProduct = Molecule().fromAdjacencyList("""
+        expected_product = Molecule().from_adjacency_list("""
 multiplicity 2
 1  *2 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2     C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
@@ -557,27 +564,27 @@ multiplicity 2
 10    H u0 p0 c0 {3,S}
 11    H u0 p0 c0 {4,S}
 """)
-        products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
         self.assertEqual(len(products), 1)
 
         mapping = {}
-        for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)[0]
+        for label, atom in expected_product.get_all_labeled_atoms().items():
+            mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
-        self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
+        self.assertTrue(expected_product.is_isomorphic(products[0], mapping))
 
     def test_r_addition_com(self):
-            """
-            Test that the R_addition_COm family, whose product template is generated by
-            charged groups, can successfully match the reaction and returns properly product structures.
-            """
-            family = self.database.families['R_Addition_COm']
-            reactants = [Molecule().fromAdjacencyList("""
+        """
+        Test that the R_Addition_COm family can successfully match the reaction and returns properly product structures.
+        This family's product template is generated by charged groups.
+        """
+        family = self.database.families['R_Addition_COm']
+        reactants = [Molecule().from_adjacency_list("""
 1 *1  C u0 p1 c-1 {2,T}
 2 *3  O u0 p1 c+1 {1,T}
 """),
-                         Molecule().fromAdjacencyList("""
+                     Molecule().from_adjacency_list("""
 multiplicity 2
 1      C u0 p0 c0 {2,D} {7,S} {8,S}
 2      C u0 p0 c0 {1,D} {3,S} {9,S}
@@ -591,9 +598,9 @@ multiplicity 2
 10     H u0 p0 c0 {3,S}
 11     H u0 p0 c0 {3,S}
 """),
-]
+                     ]
 
-            expected_products = [Molecule().fromAdjacencyList("""
+        expected_products = [Molecule().from_adjacency_list("""
 multiplicity 2
 1      C u0 p0 c0 {2,D} {7,S} {8,S}
 2      C u0 p0 c0 {1,D} {3,S} {9,S}
@@ -609,34 +616,44 @@ multiplicity 2
 12     H u0 p0 c0 {4,S}
 13     H u0 p0 c0 {4,S}
 """),
-]
+                             ]
 
-            products = family.applyRecipe(reactants)
+        products = family.apply_recipe(reactants)
 
-            self.assertEqual(len(products), 1)
-            self.assertTrue(expected_products[0].isIsomorphic(products[0]))
+        self.assertEqual(len(products), 1)
+        self.assertTrue(expected_products[0].is_isomorphic(products[0]))
 
-
-    def testSaveFamily(self):
+    def test_save_family(self):
         """
 
         This tests the the family.save method by writing a new temporary file and
         comparing it to the original source.
 
         """
+        base_path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
         try:
-            os.makedirs(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
-            self.family.save(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/groups.py'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/groups.py')))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/rules.py'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/rules.py')))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/reactions.py'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/reactions.py')))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/dictionary.txt'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/dictionary.txt')))
+            os.makedirs(os.path.join(base_path, 'intra_H_copy'))
+            self.family.save(os.path.join(base_path, 'intra_H_copy'))
+            self.assertTrue(filecmp.cmp(os.path.join(base_path, 'intra_H_migration', 'groups.py'),
+                                        os.path.join(base_path, 'intra_H_copy', 'groups.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(base_path, 'intra_H_migration', 'rules.py'),
+                                        os.path.join(base_path, 'intra_H_copy', 'rules.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(base_path, 'intra_H_migration', 'training', 'reactions.py'),
+                                        os.path.join(base_path, 'intra_H_copy', 'training', 'reactions.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(base_path, 'intra_H_migration', 'training', 'dictionary.txt'),
+                                        os.path.join(base_path, 'intra_H_copy', 'training', 'dictionary.txt')))
         finally:
-            shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+            shutil.rmtree(os.path.join(base_path, 'intra_H_copy'))
+
+    def test_reactant_num_id(self):
+        """
+        Tests that templates aren't applied to the incorrect
+        number of reactants
+        """
+        family = self.database.families['R_Recombination']
+        spc = Molecule().from_smiles("[CH2]CC[CH2]")
+        out = family._generate_reactions(reactants=[spc], forward=True)
+        self.assertEqual(out, [])
 
 
 class TestTreeGeneration(unittest.TestCase):
@@ -648,27 +665,29 @@ class TestTreeGeneration(unittest.TestCase):
         cls.database = RMGDatabase()
         cls.database.load(
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
-            thermoLibraries=[],
-            reactionLibraries=[],
-            kineticsFamilies=[],
+            thermo_libraries=[],
+            reaction_libraries=[],
+            kinetics_families=[],
             depository=False,
             solvation=False,
             testing=True,
         )
-        cls.database.loadForbiddenStructures()
-        
-        cls.thermoDatabase = ThermoDatabase() #the real full Thermo Database
-        cls.thermoDatabase.load(path=os.path.join(settings['database.directory'],'thermo'),libraries=['primaryThermoLibrary'])
-        
+        cls.database.load_forbidden_structures()
+
+        cls.thermoDatabase = ThermoDatabase()  # the real full Thermo Database
+        cls.thermoDatabase.load(path=os.path.join(settings['database.directory'], 'thermo'),
+                                libraries=['primaryThermoLibrary'])
+
         cls.kineticsDatabase = KineticsDatabase()
-        cls.kineticsDatabase.loadFamilies(
+        cls.kineticsDatabase.load_families(
             path=os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families'),
             families=[
                 'Singlet_Carbene_Intra_Disproportionation',
             ],
         )
         cls.family = cls.kineticsDatabase.families['Singlet_Carbene_Intra_Disproportionation']
-        cls.treerxns = cls.family.getTrainingSet(thermoDatabase=cls.thermoDatabase,removeDegeneracy=True,estimateThermo=True,fixLabels=True,getReverse=True)
+        cls.treerxns = cls.family.get_training_set(thermo_database=cls.thermoDatabase, remove_degeneracy=True,
+                                                   estimate_thermo=True, fix_labels=True, get_reverse=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -676,121 +695,128 @@ class TestTreeGeneration(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-    
-    def test_AClearTree(self):
+    def test_a_clear_tree(self):
         """
         Test that the tree was properly cleared before generation
         """
-        self.family.cleanTree(self.thermoDatabase)
-        ents = [ent for ent in self.family.groups.entries.itervalues() if ent.index != -1]
-        self.assertEquals(len(ents),1,'more than one relevant group left in groups after preparing tree for generation')
-        self.assertEquals(len(self.family.rules.entries),1,'more than one group in rules.entries after preparing tree for generation' )
-        root = self.family.groups.entries[self.family.rules.entries.keys()[0]]
-        self.assertEquals([root],self.family.forwardTemplate.reactants)
-        self.assertEquals([root],self.family.groups.top)
-        
-    def test_BGenerateTree(self):
+        self.family.clean_tree()
+        ents = [ent for ent in self.family.groups.entries.values() if ent.index != -1]
+        self.assertEquals(len(ents), 1,
+                          'more than one relevant group left in groups after preparing tree for generation')
+        self.assertEquals(len(self.family.rules.entries), 1,
+                          'more than one group in rules.entries after preparing tree for generation')
+        root = self.family.groups.entries[list(self.family.rules.entries.keys())[0]]
+        self.assertEquals([root], self.family.forward_template.reactants)
+        self.assertEquals([root], self.family.groups.top)
+
+    def test_b_generate_tree(self):
         """
         test tree generation process
         """
-        def objective(k1s,k2s):
-            return len(k1s)*np.std(k1s)+len(k2s)*np.std(k2s)
 
-        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns,obj=objective) #test input objective function
+        def objective(k1s, k2s):
+            return len(k1s) * np.std(k1s) + len(k2s) * np.std(k2s)
 
-        self.family.cleanTree(self.thermoDatabase) #reclear
+        self.family.generate_tree(thermo_database=self.thermoDatabase, rxns=self.treerxns,
+                                  obj=objective)  # test input objective function
 
-        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns) #test that default objective works
+        self.family.clean_tree()  # reclear
 
-    def test_CParentChild(self):
+        self.family.generate_tree(thermo_database=self.thermoDatabase,
+                                  rxns=self.treerxns)  # test that default objective works
+
+    def test_c_parent_child(self):
         """
         test that the tree is structured properly
         """
-        for entry in self.family.groups.entries.itervalues():
+        for entry in self.family.groups.entries.values():
             for entry2 in entry.children:
-                self.assertTrue(entry2 in self.family.groups.entries.itervalues())
+                self.assertIn(entry2, list(self.family.groups.entries.values()))
             if entry.parent:
-                self.assertTrue(entry.parent in self.family.groups.entries.itervalues())
-        
-        self.assertTrue(self.family.groups.entries['Root'].parent is None)
-                
-    def test_FRules(self):
+                self.assertIn(entry.parent, list(self.family.groups.entries.values()))
+
+        self.assertIsNone(self.family.groups.entries['Root'].parent)
+
+    def test_f_rules(self):
         """
         test that there are six rules and each is under a different group
         """
-        templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.thermoDatabase,removeDegeneracy=True)
-        self.family.makeBMRulesFromTemplateRxnMap(templateRxnMap)
-        
+        template_rxn_map = self.family.get_reaction_matches(thermo_database=self.thermoDatabase, remove_degeneracy=True)
+        self.family.make_bm_rules_from_template_rxn_map(template_rxn_map)
+
         c = 0
-        for rs in self.family.rules.entries.itervalues():
-            self.assertLess(len(rs),2,'more than one training reaction at a node')
+        for rs in self.family.rules.entries.values():
+            self.assertLess(len(rs), 2, 'more than one training reaction at a node')
             if len(rs) == 1:
                 c += 1
-        
-        self.assertEquals(c,6,'incorrect number of kinetics information, expected 6 found {0}'.format(c))
-    
-    def test_DRegularizationDims(self):
+
+        self.assertEquals(c, 6, 'incorrect number of kinetics information, expected 6 found {0}'.format(c))
+
+    def test_d_regularization_dims(self):
         """
         test that appropriate regularization dimensions have been identified
         """
-        templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.database.thermo,estimateThermo=False)
-        
-        for entry in self.family.groups.entries.itervalues():
+        template_rxn_map = self.family.get_reaction_matches(thermo_database=self.database.thermo, estimate_thermo=False)
+
+        for entry in self.family.groups.entries.values():
             if entry.children == []:
                 continue
-            vioObj = set() #set of violations, one atom or one bond is allowed to be in violation (if it was just created)
+            # set of violations, one atom or one bond is allowed to be in violation (if it was just created)
+            vio_obj = set()
             pgrp = entry.item
-            exts = pgrp.getExtensions()
-            for grp,grpc,name,typ,indc in exts:
-                if typ == 'intNewBondExt' or typ =='extNewBondExt':
+            exts = pgrp.get_extensions()
+            for grp, grpc, name, typ, indc in exts:
+                if typ == 'intNewBondExt' or typ == 'extNewBondExt':
                     continue
                 else:
-                    val,boo = self.family.evalExt(entry,grp,name,templateRxnMap)
+                    val, boo = self.family.eval_ext(entry, grp, name, template_rxn_map)
                     if val != np.inf:
                         continue
                     atms = grp.atoms
                     if typ == 'bondExt':
-                        bd = grp.getBond(atms[indc[0]],atms[indc[1]])
+                        bd = grp.get_bond(atms[indc[0]], atms[indc[1]])
                         bds = bd.reg_dim[1]
                         if boo and bds != [] and not (set(bd.order) <= set(bds)):
                             logging.error('bond regularization dimension missed')
-                            vioObj.add((tuple(indc),tuple(bds),tuple(bd.order),typ))
+                            vio_obj.add((tuple(indc), tuple(bds), tuple(bd.order), typ))
                     elif typ == 'atomExt':
                         atypes = atms[indc[0]].reg_dim_atm[1]
-                        atype = atms[indc[0]].atomType
+                        atype = atms[indc[0]].atomtype
                         if boo and atypes != [] and not (set(atype) <= set(atypes)):
                             logging.error('atomtype regularization dimension missed')
-                            vioObj.add((tuple(indc),tuple(atypes),tuple(atype),typ))
+                            vio_obj.add((tuple(indc), tuple(atypes), tuple(atype), typ))
                     elif typ == 'elExt':
                         us = atms[indc[0]].reg_dim_u[1]
-                        u = atms[indc[0]].radicalElectrons
+                        u = atms[indc[0]].radical_electrons
                         if boo and us != [] and not (set(u) <= set(us)):
                             logging.error('unpaired electron regularization dimension missed')
-                            vioObj.add((tuple(indc),tuple(us),tuple(u),typ))
+                            vio_obj.add((tuple(indc), tuple(us), tuple(u), typ))
                     elif typ == 'ringExt':
                         rs = atms[indc[0]].reg_dim_r[1]
                         if 'inRing' in atms[indc[0]].props.keys():
                             r = atms[indc[0]].props['inRing']
                         else:
-                            r = [True,False]
+                            r = [True, False]
                         if boo and rs != [] and not (set(r) <= set(rs)):
                             logging.error('in ring regularization dimension missed')
-                            vioObj.add((tuple(indc),tuple(rs),tuple(r),typ))
+                            vio_obj.add((tuple(indc), tuple(rs), tuple(r), typ))
                     else:
                         raise ValueError('extension type {0} not identified within test'.format(typ))
-                        
-            self.assertTrue(len(vioObj) <= 1,'there were {0} regularization violations at, {1}'.format(len(vioObj),vioObj))
-    
-    def test_ERegularizationStructure(self):
+
+            self.assertTrue(len(vio_obj) <= 1,
+                            'there were {0} regularization violations at, {1}'.format(len(vio_obj), vio_obj))
+
+    def test_e_regularization_structure(self):
         """
         test that the tree is structured properly after regularization
         """
-        self.family.cleanTree()
-        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns)
-        self.family.checkTree()
-        self.family.regularize(thermoDatabase=self.thermoDatabase,rxns=self.treerxns)
-        self.family.checkTree()
-        
+        self.family.clean_tree()
+        self.family.generate_tree(thermo_database=self.thermoDatabase, rxns=self.treerxns)
+        self.family.check_tree()
+        self.family.regularize(thermo_database=self.thermoDatabase, rxns=self.treerxns)
+        self.family.check_tree()
+
+
 class TestGenerateReactions(unittest.TestCase):
 
     @classmethod
@@ -800,15 +826,16 @@ class TestGenerateReactions(unittest.TestCase):
         cls.database = RMGDatabase()
         cls.database.load(
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
-            thermoLibraries=[],
-            reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
-                              'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative', 'Surface_Dissociation_vdW'],
+            thermo_libraries=[],
+            reaction_libraries=[],
+            kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
+                              'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative',
+                              'Surface_Dissociation_vdW'],
             depository=False,
             solvation=False,
             testing=True,
         )
-        cls.database.loadForbiddenStructures()
+        cls.database.load_forbidden_structures()
 
     @classmethod
     def tearDownClass(cls):
@@ -819,34 +846,36 @@ class TestGenerateReactions(unittest.TestCase):
     @mock.patch('rmgpy.data.kinetics.family.logging')
     def test_debug_forbidden_reverse_rxn(self, mock_logging):
         """Test that we can automatically debug when a reverse reaction is forbidden."""
-        reactants = [Species().fromSMILES('CC'), Species().fromSMILES('[CH2]C=C[CH2]')]
-        products = [Species().fromSMILES('C[CH2]'), Species().fromSMILES('[CH2]C=CC')]
+        reactants = [Species().from_smiles('CC'), Species().from_smiles('[CH2]C=C[CH2]')]
+        products = [Species().from_smiles('C[CH2]'), Species().from_smiles('[CH2]C=CC')]
 
         reaction = TemplateReaction(reactants=reactants, products=products)
 
-        successful = self.database.kinetics.families['H_Abstraction'].addReverseAttribute(reaction)
+        successful = self.database.kinetics.families['H_Abstraction'].add_reverse_attribute(reaction)
 
         self.assertFalse(successful)
 
         mock_logging.error.assert_has_calls([
-            mock.call('Expecting one matching reverse reaction, not zero in reaction family H_Abstraction for forward reaction CC + [CH2]C=C[CH2] <=> C[CH2] + [CH2]C=CC.\n'),
+            mock.call('Expecting one matching reverse reaction, not zero in reaction family H_Abstraction '
+                      'for forward reaction CC + [CH2]C=C[CH2] <=> C[CH2] + [CH2]C=CC.\n'),
         ])
 
         mock_logging.error.assert_has_calls([
-            mock.call('Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.'),
+            mock.call('Error was fixed, the product is a forbidden structure when '
+                      'used as a reactant in the reverse direction.'),
         ])
 
-    def test_addAtomLabelsForReaction(self):
+    def test_add_atom_labels_for_reaction(self):
         """Test that we can add atom labels to an existing reaction"""
-        reactants = [Species().fromSMILES('C=C'), Species().fromSMILES('[OH]')]
-        products = [Species().fromSMILES('[CH2]CO')]
+        reactants = [Species().from_smiles('C=C'), Species().from_smiles('[OH]')]
+        products = [Species().from_smiles('[CH2]CO')]
 
         reaction = TemplateReaction(reactants=reactants, products=products)
 
-        self.database.kinetics.families['R_Addition_MultipleBond'].addAtomLabelsForReaction(reaction)
+        self.database.kinetics.families['R_Addition_MultipleBond'].add_atom_labels_for_reaction(reaction)
 
         expected_reactants = [
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 1 *1 C u0 p0 c0 {2,D} {3,S} {4,S}
 2 *2 C u0 p0 c0 {1,D} {5,S} {6,S}
 3    H u0 p0 c0 {1,S}
@@ -854,14 +883,14 @@ class TestGenerateReactions(unittest.TestCase):
 5    H u0 p0 c0 {2,S}
 6    H u0 p0 c0 {2,S}
 """),
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 multiplicity 2
 1 *3 O u1 p2 c0 {2,S}
 2    H u0 p0 c0 {1,S}
 """)]
 
         expected_products = [
-            Molecule().fromAdjacencyList("""
+            Molecule().from_adjacency_list("""
 multiplicity 2
 1 *1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 *2 C u1 p0 c0 {1,S} {6,S} {7,S}
@@ -875,60 +904,126 @@ multiplicity 2
 
         for i, reactant in enumerate(reaction.reactants):
             mapping = {}
-            for label, atom in expected_reactants[i].getLabeledAtoms().iteritems():
-                mapping[atom] = reactant.molecule[0].getLabeledAtom(label)[0]
+            for label, atom in expected_reactants[i].get_all_labeled_atoms().items():
+                mapping[atom] = reactant.molecule[0].get_labeled_atoms(label)[0]
 
-            self.assertTrue(expected_reactants[i].isIsomorphic(reactant.molecule[0], mapping))
+            self.assertTrue(expected_reactants[i].is_isomorphic(reactant.molecule[0], mapping))
 
         for i, product in enumerate(reaction.products):
             mapping = {}
-            for label, atom in expected_products[i].getLabeledAtoms().iteritems():
-                mapping[atom] = product.molecule[0].getLabeledAtom(label)[0]
+            for label, atom in expected_products[i].get_all_labeled_atoms().items():
+                mapping[atom] = product.molecule[0].get_labeled_atoms(label)[0]
 
-            self.assertTrue(expected_products[i].isIsomorphic(product.molecule[0], mapping))
+            self.assertTrue(expected_products[i].is_isomorphic(product.molecule[0], mapping))
+
+    def test_add_atom_labels_for_reaction_r_recombination(self):
+        """Test that we can add atom labels to an existing R_Recombination reaction"""
+        reactants = [Species().from_smiles('C[CH2]'), Species().from_smiles('[CH3]')]
+        products = [Species().from_smiles('CCC')]
+
+        reaction = TemplateReaction(reactants=reactants, products=products)
+
+        self.database.kinetics.families['R_Recombination'].add_atom_labels_for_reaction(reaction)
+
+        expected_reactants = [
+            Molecule().from_adjacency_list("""
+multiplicity 2
+1   C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 * C u1 p0 c0 {1,S} {6,S} {7,S}
+3   H u0 p0 c0 {1,S}
+4   H u0 p0 c0 {1,S}
+5   H u0 p0 c0 {1,S}
+6   H u0 p0 c0 {2,S}
+7   H u0 p0 c0 {2,S}
+"""),
+            Molecule().from_adjacency_list("""
+multiplicity 2
+1 * C u1 p0 c0 {2,S} {3,S} {4,S}
+2   H u0 p0 c0 {1,S}
+3   H u0 p0 c0 {1,S}
+4   H u0 p0 c0 {1,S}
+""")]
+
+        expected_products = [
+            Molecule().from_adjacency_list("""
+1  * C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2  * C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+3    C u0 p0 c0 {1,S} {9,S} {10,S} {11,S}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {1,S}
+6    H u0 p0 c0 {2,S}
+7    H u0 p0 c0 {2,S}
+8    H u0 p0 c0 {2,S}
+9    H u0 p0 c0 {3,S}
+10   H u0 p0 c0 {3,S}
+11   H u0 p0 c0 {3,S}
+""")]
+
+        for i, reactant in enumerate(reaction.reactants):
+            mapping = {}
+            for label, atom in expected_reactants[i].get_all_labeled_atoms().items():
+                mapping[atom] = reactant.molecule[0].get_labeled_atoms(label)[0]
+
+            self.assertTrue(expected_reactants[i].is_isomorphic(reactant.molecule[0], mapping))
+
+        for i, product in enumerate(reaction.products):
+            # There are two identical labels in the product, so we need to check both mappings
+            # Only one of the mappings will result in isomorphic structures though
+            atoms_a = expected_products[i].get_labeled_atoms('*')
+            atoms_b = product.molecule[0].get_labeled_atoms('*')
+            mapping1 = {atoms_a[0]: atoms_b[0], atoms_a[1]: atoms_b[1]}
+            mapping2 = {atoms_a[0]: atoms_b[1], atoms_a[1]: atoms_b[0]}
+
+            results = [
+                expected_products[i].is_isomorphic(product.molecule[0], mapping1),
+                expected_products[i].is_isomorphic(product.molecule[0], mapping2)
+            ]
+
+            self.assertTrue(any(results))
+            self.assertFalse(all(results))
 
     def test_irreversible_reaction(self):
         """Test that the Singlet_Val6_to_triplet and 1,2-Birad_to_alkene families generate irreversible reactions."""
 
-        reactant = [Molecule(SMILES='O=O')]
-        reactionList = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactant)
-        self.assertFalse(reactionList[0].reversible)
+        reactant = [Molecule(smiles='O=O')]
+        reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generate_reactions(reactant)
+        self.assertFalse(reaction_list[0].reversible)
 
     def test_net_charge_of_products(self):
-        """Test that __generateProductStructures() does not generate charged products"""
+        """Test that _generate_product_structures() does not generate charged products"""
 
-        reactant = [Molecule(SMILES='[NH-][NH2+]')]
-        reactionList = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
-        for rxn in reactionList:
+        reactant = [Molecule(smiles='[NH-][NH2+]')]
+        reaction_list = self.database.kinetics.families['R_Recombination'].generate_reactions(reactant)
+        for rxn in reaction_list:
             for product in rxn.products:
-                self.assertEquals(product.getNetCharge(), 0)
+                self.assertEquals(product.get_net_charge(), 0)
 
-        reactant = [Molecule(SMILES='[O-][N+]#N')]
-        reactionList = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
-        self.assertEquals(len(reactionList), 0)
+        reactant = [Molecule(smiles='[O-][N+]#N')]
+        reaction_list = self.database.kinetics.families['R_Recombination'].generate_reactions(reactant)
+        self.assertEquals(len(reaction_list), 0)
 
     def test_reactant_num_mismatch(self):
         """Test that we get no reactions for reactant/template size mismatch
 
         This happens often because we test every combo of molecules against all families."""
-        reactants = [Molecule(SMILES='C'), Molecule(SMILES='[OH]')]
-        reactionList = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactants)
-        self.assertEquals(len(reactionList), 0)
-        reactionList = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generateReactions(reactants)
-        self.assertEquals(len(reactionList), 0)
-        reactionList = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
-        self.assertEquals(len(reactionList), 0)
+        reactants = [Molecule(smiles='C'), Molecule(smiles='[OH]')]
+        reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generate_reactions(reactants)
+        self.assertEquals(len(reaction_list), 0)
+        reaction_list = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generate_reactions(reactants)
+        self.assertEquals(len(reaction_list), 0)
+        reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generate_reactions(reactants)
+        self.assertEquals(len(reaction_list), 0)
 
     def test_reactant_num_mismatch_2(self):
         """Test that we get no reactions for reactant/template size mismatch
 
         This happens often because we test every combo of molecules against all families."""
         reactants = [
-            Molecule().fromSMILES('CC'),
-            Molecule().fromAdjacencyList('1 X u0'),
-            Molecule().fromAdjacencyList('1 X u0'),
+            Molecule().from_smiles('CC'),
+            Molecule().from_adjacency_list('1 X u0'),
+            Molecule().from_adjacency_list('1 X u0'),
         ]
-        # reactionList = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
-        # self.assertEquals(len(reactionList), 14)
-        reactionList = self.database.kinetics.families['Surface_Dissociation_vdW'].generateReactions(reactants)
-        self.assertEquals(len(reactionList), 0)
+        # reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generate_reactions(reactants)
+        # self.assertEquals(len(reaction_list), 14)
+        reaction_list = self.database.kinetics.families['Surface_Dissociation_vdW'].generate_reactions(reactants)
+        self.assertEquals(len(reaction_list), 0)

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -37,6 +36,6 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 
 database = RMGDatabase()
-database.load(settings['database.directory'], kineticsFamilies = 'all')
+database.load(settings['database.directory'], kinetics_families='all')
 
 database.save(settings['database.directory'])

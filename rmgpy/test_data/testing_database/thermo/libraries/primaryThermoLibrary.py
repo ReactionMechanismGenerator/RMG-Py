@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "primaryThermoLibrary"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 
 """
 entry(
@@ -20,9 +20,9 @@ entry(
         H298 = (0,'kcal/mol'),
         S298 = (31.233,'cal/(mol*K)','+|-',0.0007),
     ),
-    shortDesc = u"""library value for H2""",
+    shortDesc = """library value for H2""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -41,9 +41,9 @@ multiplicity 2
         H298 = (52.103,'kcal/mol','+|-',0.001),
         S298 = (27.419,'cal/(mol*K)','+|-',0.0005),
     ),
-    shortDesc = u"""library value for H radical""",
+    shortDesc = """library value for H radical""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -63,9 +63,9 @@ multiplicity 3
         H298 = (-0.0010244,'kcal/mol'),
         S298 = (49.0236,'cal/(mol*K)'),
     ),
-    shortDesc = u"""from GRI-Mech 3.0""",
+    shortDesc = """from GRI-Mech 3.0""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -86,9 +86,9 @@ entry(
         H298 = (-37.9,'kcal/mol'),
         S298 = (61.28,'cal/(mol*K)'),
     ),
-    shortDesc = u"""Mebel et al (2004) http:""",
+    shortDesc = """Mebel et al (2004) http:""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -110,9 +110,9 @@ multiplicity 3
         H298 = (-11.5,'kcal/mol'),
         S298 = (64.53,'cal/(mol*K)'),
     ),
-    shortDesc = u"""Mebel et al (2004) http:""",
+    shortDesc = """Mebel et al (2004) http:""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -134,9 +134,9 @@ multiplicity 3
         H298 = (28.7,'kcal/mol'),
         S298 = (67.06,'cal/(mol*K)'),
     ),
-    shortDesc = u"""Mebel et al (2004) http:""",
+    shortDesc = """Mebel et al (2004) http:""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -159,9 +159,9 @@ multiplicity 3
         H298 = (188.13,'kcal/mol'),
         S298 = (59.26,'cal/(mol*K)'),
     ),
-    shortDesc = u"""doi:10.1016/j.chemphys.2008.01.057 and doi:10.1021/jp003224c""",
+    shortDesc = """doi:10.1016/j.chemphys.2008.01.057 and doi:10.1021/jp003224c""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -183,9 +183,9 @@ multiplicity 2
         H298 = (169.8,'kcal/mol'),
         S298 = (57.47,'cal/(mol*K)'),
     ),
-    shortDesc = u"""doi:10.1016/j.chemphys.2008.01.057 and doi:10.1021/jp003224c""",
+    shortDesc = """doi:10.1016/j.chemphys.2008.01.057 and doi:10.1021/jp003224c""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -206,9 +206,9 @@ entry(
         H298 = (18.31,'kcal/mol'),
         S298 = (90.63,'cal/(mol*K)'),
     ),
-    shortDesc = u"""QCI""",
+    shortDesc = """QCI""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -230,9 +230,9 @@ multiplicity 3
         H298 = (5.6,'kcal/mol'),
         S298 = (61.18,'cal/(mol*K)'),
     ),
-    shortDesc = u"""QCI""",
+    shortDesc = """QCI""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -254,9 +254,9 @@ entry(
         H298 = (113.99,'kcal/mol'),
         S298 = (56.44,'cal/(mol*K)'),
     ),
-    shortDesc = u"""Burcat's recommended value for 16165-40-5: C3H2 CYCLOPROPENYLIDENE BI-RADICAL SINGLET on 3/25/2011 (MRH converted from NASA-7 to RMG format)""",
+    shortDesc = """Burcat's recommended value for 16165-40-5: C3H2 CYCLOPROPENYLIDENE BI-RADICAL SINGLET on 3/25/2011 (MRH converted from NASA-7 to RMG format)""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -275,9 +275,9 @@ entry(
         H298 = (47.12,'kcal/mol'),
         S298 = (53.78,'cal/(mol*K)'),
     ),
-    shortDesc = u"""CBS-QB3 value A.G. Vandeputte""",
+    shortDesc = """CBS-QB3 value A.G. Vandeputte""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -297,9 +297,9 @@ multiplicity 3
         H298 = (30.74,'kcal/mol'),
         S298 = (54.54,'cal/(mol*K)'),
     ),
-    shortDesc = u"""from Chase thermo database""",
+    shortDesc = """from Chase thermo database""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -320,9 +320,9 @@ multiplicity 2
         H298 = (71.7,'kcal/mol'),
         S298 = (56.37,'cal/(mol*K)'),
     ),
-    shortDesc = u"""NIST value + B3LYP/cbsb7 entropy and heat cap A.G. Vandeputte""",
+    shortDesc = """NIST value + B3LYP/cbsb7 entropy and heat cap A.G. Vandeputte""",
     longDesc = 
-u"""
+"""
 
 """,
 )
@@ -342,9 +342,9 @@ entry(
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 Ar HF298=0.  REF=C.E. Moore 'Atomic Energy Levels' NSRDS-NBS 35 (1971) p.211
 """,
 )
@@ -365,9 +365,9 @@ entry(
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 N2  HF298= 0.0 KJ  REF=TSIV  Max Lst Sq Error Cp @ 6000 K 0.29%
 """,
 )
@@ -387,9 +387,9 @@ entry(
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 McBride, Heimel, Ehlers & Gordon "Thermodynamic Properties to 6000 K", 1963.
 """,
 )
@@ -407,9 +407,9 @@ entry(
         H298 = (200.397,'kcal/mol'),
         S298 = (33.393,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -430,9 +430,9 @@ multiplicity 3
         H298 = (171.336,'kcal/mol'),
         S298 = (35.576,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -454,9 +454,9 @@ entry(
         H298 = (102.541,'kcal/mol'),
         S298 = (45.197,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -479,9 +479,9 @@ multiplicity 3
         H298 = (93.559,'kcal/mol'),
         S298 = (46.636,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -505,9 +505,9 @@ entry(
         H298 = (-17.814,'kcal/mol'),
         S298 = (44.473,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -529,9 +529,9 @@ multiplicity 3
         H298 = (85.753,'kcal/mol'),
         S298 = (43.265,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -554,9 +554,9 @@ multiplicity 2
         H298 = (44.467,'kcal/mol'),
         S298 = (46.516,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -579,9 +579,9 @@ entry(
         H298 = (-10.889,'kcal/mol'),
         S298 = (45.986,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -601,9 +601,9 @@ entry(
         H298 = (104.81,'kcal/mol'),
         S298 = (34.25,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -624,9 +624,9 @@ multiplicity 3
         H298 = (59.567,'kcal/mol'),
         S298 = (36.433,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -648,9 +648,9 @@ multiplicity 2
         H298 = (8.863,'kcal/mol'),
         S298 = (43.958,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -672,9 +672,9 @@ entry(
         H298 = (-57.797,'kcal/mol'),
         S298 = (45.084,'cal/(mol*K)'),
     ),
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 H298: ATcT version 1.110
 level of theory energy: CCSD(T)F12A/cc-pVQZ-F12//CCSD(T)/cc-pVQZ
 level of theory frequency: B3LYP/6-311++g(d,p)//B3LYP/6-311++g(d,p)
@@ -697,9 +697,9 @@ entry(
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 Burcat Thermo Data
 
 REFERENCE ELEMENT REF=Gurvich 1989 V1 py.1 p.177 HF298=0.00 kcal Max Lst 
@@ -723,9 +723,9 @@ multiplicity 2
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 Burcat Thermo Data
 
 HF298=121.302+/-0.008 kJ HF0=119.633+/- 0.008 kJ  REF=JANAF  {HF298=121.302
@@ -749,9 +749,9 @@ entry(
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 Burcat Thermo Data
 
 HYDROCHLORIC ACID CALCULATED FROM ORIGINAL TABLES  REF=Gurvich 1989
@@ -775,9 +775,9 @@ entry(
         Tmin = (200,'K'),
         Tmax = (6000,'K'),
     ),
-    shortDesc = u"""Burcat Thermo Data""",
+    shortDesc = """Burcat Thermo Data""",
     longDesc = 
-u"""
+"""
 McBride, Heimel, Ehlers & Gordon, "Thermodynamic Properties to 6000 K", 1963.
 """,
 )

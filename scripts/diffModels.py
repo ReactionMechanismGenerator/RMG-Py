@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -52,14 +51,14 @@ Flag                    Description
 --commonDiffOnly        Only show species and reactions present in BOTH models which have different values
 ======================= ==================================================================================== 
 """
-import rmgpy.tools.diff_models as diff_models
+import rmgpy.tools.diffmodels as diff_models
+
 
 ################################################################################
 
 def main():
     diff_models.main()
 
+
 if __name__ == '__main__':
     main()
-    
-    

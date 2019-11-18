@@ -14,11 +14,11 @@ depository.
 
 Usage::
 
-    python evansPolanyi.py [-h] DEPOSITORY
+    python evansPolanyi.py [-h] <family> <kinetics_depository> [<kinetics_depository> ...]
 
 Positional arguments::
-
-    DEPOSITORY    the depository to use
+  <family>              the family to use
+  <kinetics_depository> the kineticsDepository to use, e.g., training, NIST
 
 Optional arguments::
 
@@ -46,21 +46,6 @@ Optional arguments::
     -h, --help     show help message and exit
 
 
-exportOldDatabase.py
---------------------
-This script exports the database to the old RMG-Java format. The script
-requires two command-line arguments: the path to the database to import, and
-the path to save the old RMG-Java database to.
-
-Usage::
-
-    python exportOldDatabase.py OUTPUT
-
-Positional arguments::
-
-    OUTPUT   path to the directory where the RMG-Java database should be saved
-
-
 importChemkinLibrary.py
 -----------------------
 This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
@@ -82,64 +67,22 @@ Optional arguments::
     -h, --help  show help message and exit
 
 
-importJavaKineticsLibrary.py
-----------------------------
-This script imports an individual RMG-Java kinetics library from a local directory and saves the output
-kinetics library py file into a path of the user's choosing.  This library will be automatically
-added to the 'libraryname' folder in the input/kinetics/libraries directory and can 
-be used directly as an RMG-Py kinetics library.
+process_family_images.py
+------------------------
+This script processes reaction family template images (saved as eps files) into user friendly files (pdf and pngs).
+This should typically be run whenever a new family is added or an existing family is updated.
+
+Notes:
+  - Make sure you have a working LaTeX installation with pdflatex
+  - Make sure you have a working GhostScript installation for epstopdf
+  - Make sure you have ImageMagick installed for png generation
+  - ImageMagick may have security limitations in place which prevent reading
+    eps files. To circumvent these, edit the ``/etc/ImageMagick-6/policy.xml``
+    file by changing ``<policy domain="coder" rights="none" pattern="EPS" />``
+    to ``<policy domain="coder" rights="read|write" pattern="EPS" />``
 
 Usage::
 
-    python importJavaKineticsLibrary.py [-h] INPUT LIBRARYNAME
-
-Positional arguments::
-
-    INPUT          the input path of the RMG-Java kinetics library directory
-    LIBRARYNAME    the libraryname for the RMG-Py format kinetics library
-
-Optional arguments::
-
-    -h, --help     show help message and exit
-
-
-importJavaThermoLibrary.py
---------------------------
-This script imports an individual RMG-Java themo library from a local directory and saves the output
-thermo library py file into a path of the user's choosing.  This library will be automatically
-saved to libraryname.py in the input/thermo/libraries directory and can 
-be used directly as an RMG-Py thermo library.
-
-Usage::
-
-    python importJavaThermoLibrary.py [-h] INPUT LIBRARYNAME
-
-Positional arguments::
-
-    INPUT          the input path of the RMG-Java thermo library directory
-    LIBRARYNAME    the libraryname for the RMG-Py format thermo library
-
-Optional arguments::
-
-    -h, --help     show help message and exit
-
-
-importOldDatabase.py
---------------------
-This script imports an RMG-Java database from the output directory and saves
-it in the input directory. Only recommended for use in extreme circumstances.
-
-Usage::
-
-    python importOldDatabase.py [-h]  INPUT OUTPUT
-
-Positional arguments::
-
-    INPUT          the input path of the RMG-Java database directory
-    LIBRARYNAME    output path for the desired RMG-Py database directory
-
-Optional arguments::
-
-    -h, --help     show help message and exit
+    python process_family_images.py
 
 

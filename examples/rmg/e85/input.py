@@ -85,7 +85,6 @@ model(
 
 options(
     units='si',
-    saveRestartPeriod=(1,'day'),
     generateOutputHTML=False,
     generatePlots=False,
 )

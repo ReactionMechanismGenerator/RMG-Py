@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -74,7 +73,6 @@ SOC = {
     'S': -0.000893, 'P': 0.0, 'I': -0.011547226,
     'Cl':-0.001338, 'Br':-0.005597, 'F':-0.000614
 }
-
 
 # Atomic energies
 # All model chemistries here should be lower-case because the user input is changed to lower-case
@@ -341,7 +339,7 @@ atom_energies = {
     },
 
     # Fitted to small molecules
-    'b3lyp/6-31g**': {
+    'b3lyp/6-31g(d,p)': {
         'H': -0.500426155, 'C': -37.850331697831, 'O': -75.0535872748806, 'S': -398.100820107242
     },
 
@@ -364,7 +362,6 @@ atom_energies = {
     },
 
 }
-
 
 # Petersson-type bond additivity correction parameters
 pbac = {
@@ -418,7 +415,7 @@ pbac = {
         'N#N': -2.0, 'O=O': -0.2, 'H-H': 1.1,  # Unknown source
     },
 
-    # Identical corrections for 'b3lyp/cbsb7', 'b3lyp/6-311g(2d,d,p)', 'b3lyp/6-311+g(3df,2p)', 'b3lyp/6-31g**'
+    # Identical corrections for 'b3lyp/cbsb7', 'b3lyp/6-311g(2d,d,p)', 'b3lyp/6-311+g(3df,2p)', 'b3lyp/6-31g(d,p)'
     'b3lyp/cbsb7': {
         'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
         'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44,
@@ -434,7 +431,7 @@ pbac = {
         'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44,
         'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52,
     },
-    'b3lyp/6-31g**': {
+    'b3lyp/6-31g(d,p)': {
         'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
         'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44,
         'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52,
@@ -447,7 +444,6 @@ pbac = {
     'F-O': -0.4662, 'F-H': 0.2108, 'F-F': -1.2368, 'O=O': -0.0997
     },
 }
-
 
 # Melius-type bond additivity correction parameters
 mbac = {}

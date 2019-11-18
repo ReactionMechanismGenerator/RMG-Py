@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,17 +27,19 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+import logging
 import os.path
 import shutil
-import logging
+import unittest
 
 from rmgpy import settings
-from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.kinetics.model import PDepKineticsModel
-from rmgpy.kinetics import Arrhenius, Troe, PDepArrhenius
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
+from rmgpy.data.kinetics.library import LibraryReaction
+from rmgpy.kinetics import Arrhenius, Troe, PDepArrhenius
+from rmgpy.kinetics.model import PDepKineticsModel
+
+
 ###################################################
 
 class TestLibrary(unittest.TestCase):
@@ -50,55 +51,62 @@ class TestLibrary(unittest.TestCase):
         """
         # Set up a dummy database
         cls.database = KineticsDatabase()
-        cls.database.loadLibraries(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries'),
-                                  libraries=None) #this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
+        cls.database.load_libraries(
+            os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'libraries'),
+            libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
         cls.libraries = cls.database.libraries
 
-    def testGetLibraryReactions(self):
+    def test_get_library_reactions(self):
         """
-        test that getLibraryReactions loads reactions correctly 
+        test that get_library_reactions loads reactions correctly
         """
-        libRxns = self.libraries['GRI-Mech3.0'].getLibraryReactions()
-        for rxn in libRxns:
-            self.assertIsInstance(rxn,LibraryReaction)
-        
-        libRxns = self.libraries['ethane-oxidation'].getLibraryReactions() #should have no direct library reactions
-        for rxn in libRxns:
-            if isinstance(rxn.kinetics,PDepKineticsModel):
-                self.assertIsInstance(rxn,LibraryReaction) #can load pdep as networks yet so load as libraries
+        lib_rxns = self.libraries['GRI-Mech3.0'].get_library_reactions()
+        for rxn in lib_rxns:
+            self.assertIsInstance(rxn, LibraryReaction)
+
+        lib_rxns = self.libraries['ethane-oxidation'].get_library_reactions()  # should have no direct library reactions
+        for rxn in lib_rxns:
+            if isinstance(rxn.kinetics, PDepKineticsModel):
+                self.assertIsInstance(rxn, LibraryReaction)  # can load pdep as networks yet so load as libraries
             else:
-                self.assertIsInstance(rxn,TemplateReaction) #all reactions are template based
-                
-    def testSaveLibrary(self):
+                self.assertIsInstance(rxn, TemplateReaction)  # all reactions are template based
+
+    def test_save_library(self):
         """
         This tests the the library.save method by writing a new temporary file and
         loading it and comparing the original and copied reactions
         """
-        os.makedirs(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy'))
+        os.makedirs(os.path.join(settings['test_data.directory'],
+                                 'testing_database', 'kinetics', 'libraries', 'eth-oxcopy'))
         try:
-            self.libraries['ethane-oxidation'].save(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy','reactions.py'))
-            self.database.loadLibraries(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries'),
-                                      libraries=None) #this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation','eth-oxcopy'])
-            oriRxns = self.database.libraries['ethane-oxidation'].getLibraryReactions()
-            copyRxns = self.database.libraries['eth-oxcopy'].getLibraryReactions()
-            for i in xrange(len(oriRxns)):
-                if repr(oriRxns[i]).strip() != repr(copyRxns[i]).strip():
-                    self.assertIsInstance(copyRxns[i],TemplateReaction)
+            self.libraries['ethane-oxidation'].save(
+                os.path.join(settings['test_data.directory'],
+                             'testing_database', 'kinetics', 'libraries', 'eth-oxcopy', 'reactions.py'))
+            self.database.load_libraries(
+                os.path.join(settings['test_data.directory'],
+                             'testing_database', 'kinetics', 'libraries'),
+                libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation', 'eth-oxcopy'])
+            ori_rxns = self.database.libraries['ethane-oxidation'].get_library_reactions()
+            copy_rxns = self.database.libraries['eth-oxcopy'].get_library_reactions()
+            for i in range(len(ori_rxns)):
+                if repr(ori_rxns[i]).strip() != repr(copy_rxns[i]).strip():
+                    self.assertIsInstance(copy_rxns[i], TemplateReaction)
         finally:
-            shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy'))
+            shutil.rmtree(os.path.join(settings['test_data.directory'],
+                                       'testing_database', 'kinetics', 'libraries', 'eth-oxcopy'))
 
     def test_generate_high_p_limit_kinetics(self):
         """
         Test that a :class:Arrhenius kinetics object representing the high pressure limit rate
         is returned from Troe/Lindmann/PDepArrhenius/Chebyshev kinetic classes
         """
-        libRxns = self.libraries['lib_net'].getLibraryReactions()
-        for rxn in libRxns:
+        lib_rxns = self.libraries['lib_net'].get_library_reactions()
+        for rxn in lib_rxns:
             self.assertIsNone(rxn.network_kinetics)
             logging.debug("Processing reaction {0}".format(rxn))
             success = rxn.generate_high_p_limit_kinetics()
-            if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000)\
-                    or not rxn.isUnimolecular():
+            if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000) \
+                    or not rxn.is_unimolecular():
                 # generate_high_p_limit_kinetics() should return `False` if the reaction is not unimolecular
                 # or if it is a PDepArrhenius or Chebyshev with Pmax < 90 bar
                 self.assertFalse(success)
@@ -109,7 +117,7 @@ class TestLibrary(unittest.TestCase):
                     self.assertIsNone(rxn.network_kinetics)
                 else:
                     self.assertTrue(isinstance(rxn.network_kinetics, Arrhenius))
-                    if isinstance(rxn.kinetics,Troe):
+                    if isinstance(rxn.kinetics, Troe):
                         # This block quantitative tests the "H + CH2 <=> CH3" reaction
                         # from the test library test_data/testing_database/kinetics/libraries/lib_net/reactions.py
                         # 1. Check that the T exponent in the modified Arrhenius (the "n") equals to 0

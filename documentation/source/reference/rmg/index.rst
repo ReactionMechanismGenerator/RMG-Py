@@ -31,8 +31,8 @@ Input
 =============================== ================================================
 Function                        Description
 =============================== ================================================
-:func:`readInputFile`           Load an RMG job input file
-:func:`saveInputFile`           Save an RMG job input file
+:func:`read_input_file`         Load an RMG job input file
+:func:`save_input_file`         Save an RMG job input file
 =============================== ================================================
 
 
@@ -45,8 +45,8 @@ Output
 =============================== ================================================
 Function                        Description
 =============================== ================================================
-:func:`saveOutputHTML`          Save the results of an RMG job to an HTML file
-:func:`saveDiffHTML`            Save a comparison of two reaction mechanisms to an HTML file
+:func:`save_output_html`        Save the results of an RMG job to an HTML file
+:func:`save_diff_html`          Save a comparison of two reaction mechanisms to an HTML file
 =============================== ================================================
 
 
