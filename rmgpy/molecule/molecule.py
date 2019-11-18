@@ -2479,7 +2479,18 @@ class Molecule(Graph):
         Primary use case is tracking atoms in reactions for reaction degeneracy determination.
 
         Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+        
+        If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
+        cython.declare(atom_ids=set, other_ids=set, atom_list=list, other_list=list, mapping=dict)
+
+        if not isinstance(other, Molecule):
+            raise TypeError(
+                'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+
+        # Get a set of atom indices for each molecule
+        atom_ids = set([atom.id for atom in self.atoms])
+        other_ids = set([atom.id for atom in other.atoms])
 
         if atom_ids == other_ids:
             # Sort the atoms by ID
@@ -2487,7 +2498,7 @@ class Molecule(Graph):
             other_list = sorted(other.atoms, key=lambda x: x.id)
 
             if include_labels is True:
-                if [a.label for a in atomList] != [a.label for a in otherList]:
+                if [a.label for a in atom_list] != [a.label for a in other_list]:
                     return False
 
             # If matching atom indices gives a valid mapping, then the molecules are fully identical

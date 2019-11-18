@@ -74,7 +74,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
         rd_atom.SetNumRadicalElectrons(atom.radical_electrons)
         rd_atom.SetFormalCharge(atom.charge)
         if atom.element.symbol == 'C' and atom.lone_pairs == 1 and mol.multiplicity == 1: rd_atom.SetNumRadicalElectrons(2)
-        if atom.element.symbol == 'C' and atom.lone_pairs == 1 and atom.radical_electrons == 1: rdAtom.SetNumRadicalElectrons(3)
+        if atom.element.symbol == 'C' and atom.lone_pairs == 1 and atom.radical_electrons == 1: rd_atom.SetNumRadicalElectrons(3)
         rdkitmol.AddAtom(rd_atom)
         if remove_h and atom.symbol == 'H':
             pass
