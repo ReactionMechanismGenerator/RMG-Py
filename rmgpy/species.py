@@ -123,7 +123,9 @@ class Species(object):
             self._smiles = smiles
 
         # Check multiplicity of each molecule is the same
-        if molecule is not None and len(molecule) > 1:
+        # although forgive things with a surface site because metals can 
+        # "absorb" radicals.
+        if molecule is not None and len(molecule) > 1 and not molecule[0].contains_surface_site():
             mult = molecule[0].multiplicity
             for m in molecule[1:]:
                 if mult != m.multiplicity:
