@@ -239,6 +239,9 @@ for new users to better understand the options of rmg input files</p>
     <span class="c1"># if species exist in multiple libraries, the earlier libraries overwrite the</span>
     <span class="c1"># previous values</span>
     <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;BurkeH2O2&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span> <span class="s1">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
+    <span class="c1"># overrides RMG transport calculations with these values.</span>
+    <span class="c1"># if species exist in multiple libraries, the earlier libraries overwrite the previous values</span>
+    <span class="n">transportLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PrimaryTransportLibrary.py&#39;</span><span class="p">],</span>
     <span class="c1"># overrides RMG kinetics estimation if needed in the core of RMG.</span>
     <span class="c1"># list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/</span>
     <span class="c1"># libraries can be input as either a string or tuple of form (&#39;library_name&#39;,True/False)</span>
@@ -252,13 +255,13 @@ for new users to better understand the options of rmg input files</p>
     <span class="c1"># This is helpful for reducing run time for species you know will appear in</span>
     <span class="c1"># the mechanism.</span>
     <span class="n">seedMechanisms</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;BurkeH2O2inN2&#39;</span><span class="p">,</span> <span class="s1">&#39;ERC-FoundationFuelv0.9&#39;</span><span class="p">],</span>
-    <span class="c1"># this is normally not changed in general RMG runs.  Usually used for testing with</span>
-    <span class="c1"># outside kinetics databases</span>
-    <span class="n">kineticsDepositories</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
     <span class="c1"># lists specific families used to generate the model. &#39;default&#39; uses a list of</span>
     <span class="c1"># families from RMG-Database/input/kinetics/families/recommended.py</span>
     <span class="c1"># a visual list of families is available in PDF form at RMG-database/families</span>
     <span class="n">kineticsFamilies</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
+    <span class="c1"># this is normally not changed in general RMG runs.  Usually used for testing with</span>
+    <span class="c1"># outside kinetics databases</span>
+    <span class="n">kineticsDepositories</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
     <span class="c1"># specifies how RMG calculates rates.  currently, the only option is &#39;rate rules&#39;</span>
     <span class="n">kineticsEstimator</span><span class="o">=</span><span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -313,6 +316,8 @@ for new users to better understand the options of rmg input files</p>
         <span class="s2">&quot;O2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s2">&quot;butane&quot;</span><span class="p">:</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">6.5</span><span class="p">,</span>
     <span class="p">},</span>
+    <span class="c1"># number of simulations used to explore variable temperature and pressure reactors</span>
+    <span class="n">nSims</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
     <span class="c1"># the following two values specify when to determine the final output model</span>
     <span class="c1"># only one must be specified</span>
     <span class="c1"># the first condition to be satisfied will terminate the process</span>
