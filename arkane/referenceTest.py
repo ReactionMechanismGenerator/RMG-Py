@@ -55,9 +55,9 @@ class TestReferenceSpecies(unittest.TestCase):
     """
 
     def setUp(self):
-        self.methane = Species(SMILES='C')
-        self.ethane = Species(SMILES='CC')
-        self.propane = Species(SMILES='CCC')
+        self.methane = Species(smiles='C')
+        self.ethane = Species(smiles='CC')
+        self.propane = Species(smiles='CCC')
 
         self.thermo_data = ThermoData(H298=(100.0, 'kJ/mol'), S298=(100.0, 'J/(mol*K)'))
 
@@ -68,20 +68,20 @@ class TestReferenceSpecies(unittest.TestCase):
         """
         ref_spcs = ReferenceSpecies(species=self.ethane)
         self.assertEqual(ref_spcs.smiles, 'CC')
-        self.assertEqual(ref_spcs.inchi_key, self.ethane.molecule[0].toInChIKey())
+        self.assertEqual(ref_spcs.inchi_key, self.ethane.molecule[0].to_inchi_key())
 
         ref_from_smiles = ReferenceSpecies(smiles='CCC')
         self.assertEqual(ref_from_smiles.smiles, 'CCC')
-        self.assertEqual(ref_from_smiles.inchi_key, self.propane.molecule[0].toInChIKey())
+        self.assertEqual(ref_from_smiles.inchi_key, self.propane.molecule[0].to_inchi_key())
 
         ref_from_inchi = ReferenceSpecies(inchi='InChI=1S/C2H6/c1-2/h1-2H3')
         self.assertEqual(ref_from_inchi.smiles, 'CC')
-        self.assertEqual(ref_from_inchi.inchi_key, self.ethane.molecule[0].toInChIKey())
+        self.assertEqual(ref_from_inchi.inchi_key, self.ethane.molecule[0].to_inchi_key())
 
         ref_from_adj = ReferenceSpecies(adjacency_list='1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}\n2 H u0 p0 c0 {1,S}\n'
                                                        '3 H u0 p0 c0 {1,S}\n4 H u0 p0 c0 {1,S}\n5 H u0 p0 c0 {1,S}\n')
         self.assertEqual(ref_from_adj.smiles, 'C')
-        self.assertEqual(ref_from_adj.inchi_key, self.methane.molecule[0].toInChIKey())
+        self.assertEqual(ref_from_adj.inchi_key, self.methane.molecule[0].to_inchi_key())
 
         with self.assertRaises(ValueError):
             _ = ReferenceSpecies()
@@ -158,7 +158,7 @@ class TestReferenceDatabase(unittest.TestCase):
         database = ReferenceDatabase()
         database.load()
         self.assertIn('main', database.reference_sets)
-        self.assertIsInstance(database.reference_sets['main'][0], ReferenceSpecies)
+        self.assertIsInstance(list(database.reference_sets['main'].values())[0], ReferenceSpecies)
 
         # Also test that calling load again appends a new set in the database
         data_dir = os.path.join(FILE_DIR, 'data')
@@ -203,14 +203,15 @@ class TestReferenceDatabase(unittest.TestCase):
                                   calculated_data={'bad_chem': calc_data_2})
 
         database = ReferenceDatabase()
-        database.reference_sets = {'testing_1': [ethane, butane], 'testing_2': [propane]}
+        #database.reference_sets = {'testing_1': [ethane, butane], 'testing_2': [propane]}
+        database.reference_sets = {'testing_1': {"CC": ethane,"CCCC": butane}, 'testing_2': {"CCC": propane}}
 
         model_chem_list = database.extract_model_chemistry('good_chem')
         self.assertEqual(len(model_chem_list), 2)
         self.assertIsInstance(model_chem_list[0], ErrorCancelingSpecies)
 
         for spcs in model_chem_list:
-            smiles = spcs.molecule.toSMILES()
+            smiles = spcs.molecule.to_smiles()
             self.assertNotIn(smiles, ['CCCC'])
             self.assertIn(smiles, ['CC', 'CCC'])
 

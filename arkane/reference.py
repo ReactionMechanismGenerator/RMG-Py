@@ -88,9 +88,9 @@ class ReferenceSpecies(ArkaneSpecies):
             if adjacency_list:
                 species = Species().from_adjacency_list(adjacency_list)
             elif smiles:
-                species = Species(SMILES=smiles)
+                species = Species(smiles=smiles)
             elif inchi:
-                species = Species(InChI=inchi)
+                species = Species(inchi=inchi)
             else:
                 raise ValueError('Either an rmgpy species object, smiles string, InChI string, or an adjacency list '
                                  'must be given to create a ReferenceSpecies object')
@@ -622,7 +622,7 @@ class ReferenceDatabase(object):
             A method to check is reference species is isomorphic
             """
             try:
-                reference_mol_smiles = Molecule(SMILES=ref.smiles)
+                reference_mol_smiles = Molecule(smiles=ref.smiles)
                 reference_mol_smiles = reference_mol_smiles.to_single_bonds()
                 reference_mol_adj = Molecule().from_adjacency_list(ref.adjacency_list)
                 reference_mol_adj = reference_mol_adj.to_single_bonds()

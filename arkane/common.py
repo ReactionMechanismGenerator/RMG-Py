@@ -185,9 +185,9 @@ class ArkaneSpecies(RMGObject):
                 self.conformer = species.conformer
                 self.xyz = self.update_xyz_string()
         elif species.molecule is not None and len(species.molecule) > 0:
-            self.charge = species.molecule[0].getNetCharge()
+            self.charge = species.molecule[0].get_net_charge()
             self.multiplicity = species.molecule[0].multiplicity
-            self.formula = species.molecule[0].getFormula()
+            self.formula = species.molecule[0].get_formula()
             self.smiles = species.molecule[0].to_smiles()
             self.adjacency_list = species.molecule[0].to_adjacency_list()
             try:
@@ -328,10 +328,10 @@ class ArkaneSpecies(RMGObject):
             # Finally, set the species label so that the special attributes are updated properly
             data['species'].label = data['label']
 
-        self.make_object(data=data, class_dict=ARKANE_CLASS_DICT)
+        self.make_object(data=data, class_dict=class_dict)
         if freq_data is not None:
             self.imaginary_frequency = ScalarQuantity()
-            self.imaginary_frequency.make_object(data=freq_data, class_dict=ARKANE_CLASS_DICT)
+            self.imaginary_frequency.make_object(data=freq_data, class_dict=class_dict)
 
         if pdep and not self.is_ts and self.smiles is None and self.adjacency_list is None \
                 and self.inchi is None and self.molecular_weight is None:
@@ -623,3 +623,23 @@ mass_by_symbol = {
     'Lv': [[293, 293.20449]],
     'Ts': [[292, 292.20746]],
     'Og': [[294, 294.21392]]}
+
+ARKANE_CLASS_DICT = {'ScalarQuantity': ScalarQuantity,
+                      'ArrayQuantity': ArrayQuantity,
+                      'Conformer': Conformer,
+                      'LinearRotor': LinearRotor,
+                      'NonlinearRotor': NonlinearRotor,
+                      'KRotor': KRotor,
+                      'SphericalTopRotor': SphericalTopRotor,
+                      'HinderedRotor': HinderedRotor,
+                      'FreeRotor': FreeRotor,
+                      'IdealGasTranslation': IdealGasTranslation,
+                      'HarmonicOscillator': HarmonicOscillator,
+                      'TransportData': TransportData,
+                      'SingleExponentialDown': SingleExponentialDown,
+                      'Wilhoit': Wilhoit,
+                      'NASA': NASA,
+                      'NASAPolynomial': NASAPolynomial,
+                      'ThermoData': ThermoData,
+                      'np_array': np.array,
+                      }

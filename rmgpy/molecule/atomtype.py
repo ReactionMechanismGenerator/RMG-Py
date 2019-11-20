@@ -552,8 +552,8 @@ ATOMTYPES['Br1s'] = AtomType('Br1s', generic=['R','Br','Val7'],  specific=[],
 # examples for Cl1s: HCl, [Cl]
 ATOMTYPES['Ar'] = AtomType('Ar', generic=['R', 'R!H'], specific=[])
 
-ATOMTYPES['I'] = AtomType('I', generic=['R', 'R!H', 'Val7'], specific=['I1s'])
-ATOMTYPES['I1s'] = AtomType('I1s', generic=['R', 'R!H', 'I', 'Val7'], specific=[],
+ATOMTYPES['I'] = AtomType('I', generic=['R', 'Val7'], specific=['I1s'])
+ATOMTYPES['I1s'] = AtomType('I1s', generic=['R', 'I', 'Val7'], specific=[],
                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for I1s: HI, [I], IO, CH3I, I2
 
