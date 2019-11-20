@@ -44,6 +44,10 @@ If you only desire the reactions contained in the specific RMG job,
 you can add ``--useOriginalReactions`` in addition to ``--original``.
 This will create a full set of isotopically labeled versions of the reactions
 you input and avoid a time-consuming generate reactions proceedure.
+Note that without ``--useOriginalReactions``, labeled and unlabeled reactions may
+not match the same depository reactions, leading to inconsistent kinetics. If
+degeneracy errors arise when generating reactions from scratch, try using this
+option to see if it reduces errors in degeneracy.
 
 The arguement ``--maximumIsotopicAtoms [integer]`` limits the number of enriched
 atoms in any isotopologue in the model. This is beneficial for decreasing model 
@@ -82,3 +86,13 @@ The isotope generation script will output two files inside the nested folders
 RMG adjacency list structure. The other file of importance ``chem_annotated.inp``
 is a chemkin input file containing elements, species, thermo, and reactions of
 the entire system.
+
+Further reading & resources
+---------------------------
+
+A description of mechanisms generated using this module and its application to
+obtaining intramolecular isotopic enrichment information is described in
+`Chemical Geology, Volume 514, page 1 <https://doi.org/10.1016/j.chemgeo.2019.02.036>`_.
+
+Code to replicate that work, as well as convert between experimental enrichments
+and the isotopologues used in RMG is deposited at `Zenodo <https://doi.org/10.5281/zenodo.2567585>`_.
