@@ -515,7 +515,7 @@ class KineticsLibrary(Database):
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
         """
-
+        logging.info('Loading entry index={0}'.format(index))
         # reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant1)])]
         # if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant2)]))
         # if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant3)]))
