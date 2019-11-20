@@ -495,6 +495,25 @@ class TestHinderedRotor(unittest.TestCase):
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
 
+    def test_fit_cosine_potential_to_data(self):
+        """
+        Test that cosine fit works in difficult cases.
+
+        Data come from an unfinished methyl rotor scan where only 120 degrees
+        was completed.
+        """
+        hr = self.mode
+        original_symmetry = hr.symmetry
+        angles = np.array([250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360]) / 180 * np.pi
+        energies = np.array([394, 2093, 4658, 7488, 9765, 10847, 10350, 8473, 5817, 3092, 1001, 0])
+        hr.fit_cosine_potential_to_data(angles, energies)
+        # fitting the potential should not change the symmetry
+        self.assertEqual(original_symmetry, hr.symmetry)
+        # fitted barrier height should be within one kJ of highest value
+        self.assertAlmostEqual(hr.barrier.value_si, energies.max(), -3)
+        # no fourier fitting should exist
+        self.assertIsNone(hr.fourier)
+
 ################################################################################
 
 

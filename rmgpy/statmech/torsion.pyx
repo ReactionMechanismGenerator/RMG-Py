@@ -570,32 +570,16 @@ cdef class HinderedRotor(Torsion):
     cpdef fit_cosine_potential_to_data(self, np.ndarray angle, np.ndarray V):
         """
         Fit the given angles in radians and corresponding potential energies in
-        J/mol to the cosine potential. For best results, the angle should 
-        begin at zero and end at :math:`2 \pi`, with the minimum energy
-        conformation having a potential of zero be placed at zero angle. The
-        fit is attempted at several possible values of the symmetry number in
-        order to determine which one is correct.
+        J/mol to the cosine potential. The symmetry value of the object should
+        already bet set. You can use arkane.statmech.determine_rotor_symmetry
+        to get the symmetry value.
         """
-        cdef double barrier, barr, num, den
-        cdef int symmetry, symm
+        cdef double num, den
 
-        # We fit at integral symmetry numbers in the range [1, 9]
-        # The best fit will have the maximum barrier height
-        symmetry = 0
-        barrier = 0.0
-        for symm in range(1, 10):
-            num = np.sum(V * (1 - np.cos(symm * angle)))
-            den = np.sum((1 - np.cos(symm * angle)) ** 2)
-            barr = 2 * num / den
-            if barr > barrier:
-                symmetry = symm
-                barrier = barr
-
+        num = np.sum(V * (1 - np.cos(self.symmetry * angle)))
+        den = np.sum((1 - np.cos(self.symmetry * angle)) ** 2)
+        self.barrier = (2 * num / den, 'J/mol')
         self.fourier = None
-        self.barrier = (barrier * 0.001, "kJ/mol")
-        self.symmetry = symmetry
-
-        return self
 
 cdef class FreeRotor(Torsion):
     """
