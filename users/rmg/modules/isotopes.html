@@ -94,7 +94,11 @@ will use the specified model instead of re-running an RMG job.</p>
 <p>If you only desire the reactions contained in the specific RMG job,
 you can add <code class="docutils literal notranslate"><span class="pre">--useOriginalReactions</span></code> in addition to <code class="docutils literal notranslate"><span class="pre">--original</span></code>.
 This will create a full set of isotopically labeled versions of the reactions
-you input and avoid a time-consuming generate reactions proceedure.</p>
+you input and avoid a time-consuming generate reactions proceedure.
+Note that without <code class="docutils literal notranslate"><span class="pre">--useOriginalReactions</span></code>, labeled and unlabeled reactions may
+not match the same depository reactions, leading to inconsistent kinetics. If
+degeneracy errors arise when generating reactions from scratch, try using this
+option to see if it reduces errors in degeneracy.</p>
 <p>The arguement <code class="docutils literal notranslate"><span class="pre">--maximumIsotopicAtoms</span> <span class="pre">[integer]</span></code> limits the number of enriched
 atoms in any isotopologue in the model. This is beneficial for decreasing model
 size, runtime of model creation and runtime necessary for analysis.</p>
@@ -127,6 +131,14 @@ kinetic isotope effects.</p>
 RMG adjacency list structure. The other file of importance <code class="docutils literal notranslate"><span class="pre">chem_annotated.inp</span></code>
 is a chemkin input file containing elements, species, thermo, and reactions of
 the entire system.</p>
+</div>
+<div class="section" id="further-reading-resources">
+<h2>9.11.4. Further reading &amp; resources<a class="headerlink" href="#further-reading-resources" title="Permalink to this headline">¶</a></h2>
+<p>A description of mechanisms generated using this module and its application to
+obtaining intramolecular isotopic enrichment information is described in
+<a class="reference external" href="https://doi.org/10.1016/j.chemgeo.2019.02.036">Chemical Geology, Volume 514, page 1</a>.</p>
+<p>Code to replicate that work, as well as convert between experimental enrichments
+and the isotopologues used in RMG is deposited at <a class="reference external" href="https://doi.org/10.5281/zenodo.2567585">Zenodo</a>.</p>
 </div>
 </div>
 
@@ -163,6 +175,7 @@ the entire system.</p>
 <li><a class="reference internal" href="#describing-isotopes-in-adjacency-lists">9.11.1. Describing isotopes in adjacency lists</a></li>
 <li><a class="reference internal" href="#running-the-rmg-isotopes-algorithm">9.11.2. Running the RMG isotopes algorithm</a></li>
 <li><a class="reference internal" href="#output-from-script">9.11.3. Output from script</a></li>
+<li><a class="reference internal" href="#further-reading-resources">9.11.4. Further reading &amp; resources</a></li>
 </ul>
 </li>
 </ul>
