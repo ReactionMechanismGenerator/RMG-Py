@@ -482,11 +482,11 @@ The charge span is a measure of the number of charge separations in a molecule.<
 <dt id="rmgpy.molecule.Molecule.get_deterministic_sssr">
 <code class="sig-name descname">get_deterministic_sssr</code><a class="headerlink" href="#rmgpy.molecule.Molecule.get_deterministic_sssr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modified <cite>Graph</cite> method <cite>get_smallest_set_of_smallest_rings</cite> by sorting calculated cycles
-by short lenth and then high atomic number instead of just short length (for cases where
+by short length and then high atomic number instead of just short length (for cases where
 multiple cycles with same length are found, <cite>get_smallest_set_of_smallest_rings</cite> outputs
-non-determinstically ).</p>
+non-determinstically).</p>
 <p>For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
-output from <cite>get_smallest_set_of_smallest_rings</cite>, which leads to non-deterministic bycyclic decomposition
+output from <cite>get_smallest_set_of_smallest_rings</cite>, which leads to non-deterministic bicyclic decomposition.
 Using this new method can effectively prevent this situation.</p>
 <p>Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).
 It is recommended to use the main <cite>Graph.get_smallest_set_of_smallest_rings</cite> method in new applications.
