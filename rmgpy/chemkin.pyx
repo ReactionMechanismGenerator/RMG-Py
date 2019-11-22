@@ -1518,35 +1518,44 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
                 else:
                     string += "! {0}\n".format(line)
 
-    # Line 1
-    string += '{0:<16}        '.format(get_species_identifier(species))
-    if len(element_counts) <= 4:
-        # Use the original Chemkin syntax for the element counts
-        for key, count in element_counts.items():
-            if isinstance(key, tuple):
-                symbol, isotope = key
-                chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            else:
-                chemkin_name = key
-            string += '{0!s:<2}{1:>3d}'.format(chemkin_name, count)
-        string += '     ' * (4 - len(element_counts))
-    else:
-        string += '     ' * 4
-    string += 'G{0:>10.3f}{1:>10.3f}{2:>8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si,
-                                                             thermo.polynomials[1].Tmax.value_si,
-                                                             thermo.polynomials[0].Tmax.value_si)
-    if len(element_counts) > 4:
-        string += '&\n'
+    # Compile element count string
+    extended_syntax = len(element_counts) > 4  # If there are more than 4 elements, use extended syntax
+    elements = []
+    for key, count in element_counts.items():
+        if isinstance(key, tuple):
+            symbol, isotope = key
+            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
+        else:
+            chemkin_name = key
+        if extended_syntax:
+            # Create a list of alternating elements and counts
+            elements.extend([chemkin_name, str(count)])
+        else:
+            # Create a list of 5-column wide formatted element counts, e.g. 'C  10'
+            elements.append('{0!s:<2}{1:>3d}'.format(chemkin_name, count))
+    if extended_syntax:
         # Use the new-style Chemkin syntax for the element counts
+        # Place all elements in space delimited format on new line
         # This will only be recognized by Chemkin 4 or later
-        for key, count in element_counts.items():
-            if isinstance(key, tuple):
-                symbol, isotope = key
-                chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            else:
-                chemkin_name = key
-            string += '{0!s:<2}{1:>3d}'.format(chemkin_name, count)
-    string += '\n'
+        elem_1 = ' ' * 20
+        elem_2 = '&\n' + ' '.join(elements)
+    else:
+        # Use the original Chemkin syntax for the element counts
+        # Place up to 4 elements in columns 24-43 of the first line
+        # (don't use the space in columns 74-78 for the 5th element
+        #  because nobody else does and Cantera can't read it)
+        elem_1 = ''.join(elements)
+        elem_2 = ''
+
+    # Line 1
+    string += '{ident:<16}        {elem_1:<20}G{Tmin:>10.3f}{Tint:>10.3f}{Tmax:>8.2f}      1{elem_2}\n'.format(
+        ident=get_species_identifier(species),
+        elem_1=elem_1,
+        Tmin=thermo.polynomials[0].Tmin.value_si,
+        Tint=thermo.polynomials[1].Tmax.value_si,
+        Tmax=thermo.polynomials[0].Tmax.value_si,
+        elem_2=elem_2,
+    )
 
     # Line 2
     string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(thermo.polynomials[1].c0,
