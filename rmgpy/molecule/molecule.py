@@ -2326,12 +2326,12 @@ class Molecule(Graph):
     def get_deterministic_sssr(self):
         """
         Modified `Graph` method `get_smallest_set_of_smallest_rings` by sorting calculated cycles
-        by short lenth and then high atomic number instead of just short length (for cases where
+        by short length and then high atomic number instead of just short length (for cases where
         multiple cycles with same length are found, `get_smallest_set_of_smallest_rings` outputs
-        non-determinstically ). 
+        non-determinstically).
         
         For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
-        output from `get_smallest_set_of_smallest_rings`, which leads to non-deterministic bycyclic decomposition
+        output from `get_smallest_set_of_smallest_rings`, which leads to non-deterministic bicyclic decomposition.
         Using this new method can effectively prevent this situation.
 
         Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).

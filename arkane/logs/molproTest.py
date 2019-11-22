@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.molpro` module.
+This module contains unit tests of the :mod:`arkane.logs.molpro` module.
 """
 
 import unittest
@@ -39,17 +39,21 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
-from arkane.molpro import MolproLog
-
+from arkane.logs.molpro import MolproLog
 
 ################################################################################
 
 
-class MolproTest(unittest.TestCase):
+class MolproLogTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.io.gaussian module, used for reading
-    and writing Molpro files.
+    Contains unit tests for the molpro module, used for parsing Molpro log files.
     """
+    @classmethod
+    def setUpClass(cls):
+        """
+        A method that is run before all unit tests in this class.
+        """
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'molpro')
 
     def test_load_dz_from_molpro_log_f12(self):
         """
@@ -57,7 +61,7 @@ class MolproTest(unittest.TestCase):
         energy can be properly read.
         """
 
-        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
+        log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
         e0 = log.load_energy()
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.474353559604, 5)
@@ -68,7 +72,7 @@ class MolproTest(unittest.TestCase):
         energy can be properly read.
         """
 
-        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_qz.out'))
+        log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_qz.out'))
         e0 = log.load_energy()
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.472682755635, 5)
@@ -79,7 +83,7 @@ class MolproTest(unittest.TestCase):
         energy can be properly read.
         """
 
-        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'OH_f12.out'))
+        log = MolproLog(os.path.join(self.data_path, 'OH_f12.out'))
         e0 = log.load_energy()
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -75.663696424380, 5)
@@ -90,7 +94,7 @@ class MolproTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'HOSI_ccsd_t1.out'))
+        log = MolproLog(os.path.join(self.data_path, 'HOSI_ccsd_t1.out'))
         conformer, unscaled_frequencies = log.load_conformer(spin_multiplicity=1)
         e0 = log.load_energy()
 
@@ -116,7 +120,7 @@ class MolproTest(unittest.TestCase):
         """
         Load E0 for CCSD(T) (without F12) from a molpro output file
         """
-        molpro_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'TS_CCSD(T)_no_F12_sp_molpro.out'))
+        molpro_log = MolproLog(os.path.join(self.data_path, 'TS_CCSD(T)_no_F12_sp_molpro.out'))
         e0 = molpro_log.load_energy()
         self.assertAlmostEqual(e0, -301585968.58196217, places=7)
 
@@ -124,8 +128,8 @@ class MolproTest(unittest.TestCase):
         """
         Load the MRCI and MRCI+Davidson energies from a molpro output file
         """
-        mrci_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci.out'))
-        mrciq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci+q.out'))
+        mrci_log = MolproLog(os.path.join(self.data_path, 'molpro_mrci.out'))
+        mrciq_log = MolproLog(os.path.join(self.data_path, 'molpro_mrci+q.out'))
         mrci_e0 = mrci_log.load_energy()
         mrciq_e0 = mrciq_log.load_energy()
         self.assertAlmostEqual(mrci_e0, -293217091.0381712, places=7)
@@ -135,7 +139,7 @@ class MolproTest(unittest.TestCase):
         """
         Load an imaginary frequency from a  molpro output file
         """
-        freq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_TS.out'))
+        freq_log = MolproLog(os.path.join(self.data_path, 'molpro_TS.out'))
         imaginary_freq = freq_log.load_negative_frequency()
         self.assertEqual(imaginary_freq, -1997.98)
 
@@ -143,7 +147,7 @@ class MolproTest(unittest.TestCase):
         """
         Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
         """
-        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
+        log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
         d1_diagnostic = log.get_D1_diagnostic()
         self.assertAlmostEqual(d1_diagnostic, 0.03369031)
 
@@ -151,12 +155,12 @@ class MolproTest(unittest.TestCase):
         """
         Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
         """
-        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
+        log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
         t1_diagnostic = log.get_T1_diagnostic()
         self.assertAlmostEqual(t1_diagnostic, 0.01152184)
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

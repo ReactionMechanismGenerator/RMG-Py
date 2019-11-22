@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.gaussian` module.
+This module contains unit tests of the :mod:`arkane.logs.gaussian` module.
 """
 
 import os
@@ -40,10 +40,12 @@ from nose.plugins.attrib import attr
 
 import rmgpy
 
-from arkane.gaussian import GaussianLog
+from arkane.logs.gaussian import GaussianLog
 from arkane.main import Arkane
 from arkane.output import prettify, get_str_xyz
 from rmgpy.species import Species
+
+################################################################################
 
 
 @attr('functional')
@@ -90,6 +92,13 @@ class OutputUnitTest(unittest.TestCase):
     """
     Contains unit tests for the Arkane's output module.
     """
+    @classmethod
+    def setUpClass(cls):
+        """
+        A method that is run before all unit tests in this class.
+        """
+        cls.data_path = os.path.join(os.path.dirname(__file__), 'data')
+
     def test_prettify(self):
         """Test that ``prettify`` returns the expected result"""
         input_str = ("conformer(label='C7H7', E0=(193.749,'kJ/mol'), modes=[IdealGasTranslation(mass=(91.0548,'amu')), "
@@ -134,7 +143,7 @@ class OutputUnitTest(unittest.TestCase):
 
     def test_get_str_xyz(self):
         """Test generating an xyz string from the species.conformer object"""
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_G3.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'gaussian', 'ethylene_G3.log'))
         conformer = log.load_conformer()[0]
         coords, number, mass = log.load_geometry()
         conformer.coordinates, conformer.number, conformer.mass = (coords, "angstroms"), number, (mass, "amu")
@@ -148,6 +157,8 @@ C      -1.12745800    0.00000000   -0.70256500
 H      -1.12319800    0.00000000   -1.78740100
 H      -2.09943900    0.00000000   -0.22075700"""
         self.assertEqual(xyz_str, expected_xyz_str)
+
+################################################################################
 
 
 if __name__ == '__main__':

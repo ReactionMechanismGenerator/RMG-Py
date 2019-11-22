@@ -41,6 +41,7 @@ import yaml
 
 import rmgpy.constants as constants
 from rmgpy import __version__
+from rmgpy.exceptions import InputError
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.translator import to_inchi, to_inchi_key
 from rmgpy.pdep.collision import SingleExponentialDown
@@ -56,6 +57,8 @@ from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
 from rmgpy.transport import TransportData
 
 from arkane.pdep import PressureDependenceJob
+
+################################################################################
 
 
 # Add a custom string representer to use block literals for multiline strings
@@ -353,9 +356,9 @@ def check_conformer_energy(energies, path):
     energies = np.array(energies, np.float64)
     e_diff = (energies[0] - np.min(energies)) * constants.E_h * constants.Na / 1000
     if e_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
-        logging.warning('the species corresponding to {path} is different in energy from the lowest energy conformer '
-                        'by {diff} kJ/mol. This can cause significant errors in your computed rate constants.'
-                        .format(path=os.path.basename(path), diff=e_diff))
+        logging.warning(f'The species corresponding to {os.path.basename(path)} is different in energy from the '
+                        f'lowest energy conformer by {e_diff:.2f} kJ/mol. This can cause significant errors in '
+                        f'your computed thermodynamic properties and rate coefficients.')
 
 
 def get_element_mass(input_element, isotope=None):
@@ -587,3 +590,94 @@ mass_by_symbol = {
     'Lv': [[293, 293.20449]],
     'Ts': [[292, 292.20746]],
     'Og': [[294, 294.21392]]}
+
+
+def get_center_of_mass(coords, numbers=None, symbols=None):
+    """
+    Calculate and return the 3D position of the center of mass of the current geometry.
+    Either ``numbers`` or ``symbols`` must be given.
+
+    Args:
+        coords (np.array): Entries are 3-length lists of xyz coordinates for an atom.
+        numbers (np.array, list): Entries are atomic numbers corresponding to coords.
+        symbols (list): Entries are atom symbols corresponding to coords.
+
+    Returns:
+        np.array: The center of mass coordinates.
+    """
+    if symbols is None and numbers is None:
+        raise IndexError('Either symbols or numbers must be given.')
+    if numbers is not None:
+        symbols = [symbol_by_number[number] for number in numbers]
+    center, total_mass = np.zeros(3, np.float64), 0
+    for coord, symbol in zip(coords, symbols):
+        mass = get_element_mass(symbol)[0]
+        center += mass * coord
+        total_mass += mass
+    center /= total_mass
+    return center
+
+
+def get_moment_of_inertia_tensor(coords, numbers=None, symbols=None):
+    """
+    Calculate and return the moment of inertia tensor for the current
+    geometry in amu*angstrom^2. If the coordinates are not at the center of mass,
+    they are temporarily shifted there for the purposes of this calculation.
+    Adapted from J.W. Allen: https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py
+
+    Args:
+        coords (np.array): Entries are 3-length lists of xyz coordinates for an atom.
+        numbers (np.array, list): Entries are atomic numbers corresponding to coords.
+        symbols (list): Entries are atom symbols corresponding to coords.
+
+    Returns:
+        np.array: The 3x3 moment of inertia tensor.
+    Raises:
+        InputError: If neither ``symbols`` nor ``numbers`` are given, or if they have a different length than ``coords``
+    """
+    if symbols is None and numbers is None:
+        raise InputError('Either symbols or numbers must be given.')
+    if numbers is not None:
+        symbols = [symbol_by_number[number] for number in numbers]
+    if len(coords) != len(symbols):
+        raise InputError(f'The number of atoms ({len(symbols)}) is not equal to the number of '
+                         f'atomic coordinates ({len(list(coords))})')
+    tensor = np.zeros((3, 3), np.float64)
+    center_of_mass = get_center_of_mass(coords=coords, numbers=numbers, symbols=symbols)
+    for symbol, coord in zip(symbols, coords):
+        mass = get_element_mass(symbol)[0]
+        cm_coord = coord - center_of_mass
+        tensor[0, 0] += mass * (cm_coord[1] * cm_coord[1] + cm_coord[2] * cm_coord[2])
+        tensor[1, 1] += mass * (cm_coord[0] * cm_coord[0] + cm_coord[2] * cm_coord[2])
+        tensor[2, 2] += mass * (cm_coord[0] * cm_coord[0] + cm_coord[1] * cm_coord[1])
+        tensor[0, 1] -= mass * cm_coord[0] * cm_coord[1]
+        tensor[0, 2] -= mass * cm_coord[0] * cm_coord[2]
+        tensor[1, 2] -= mass * cm_coord[1] * cm_coord[2]
+    tensor[1, 0] = tensor[0, 1]
+    tensor[2, 0] = tensor[0, 2]
+    tensor[2, 1] = tensor[1, 2]
+    return tensor
+
+
+def get_principal_moments_of_inertia(coords, numbers=None, symbols=None):
+    """
+    Calculate and return the principal moments of inertia in amu*angstrom^2 in decending order
+    and the corresponding principal axes for the current geometry.
+    The moments of inertia are in translated to the center of mass. The principal axes have unit lengths.
+    Adapted from J.W. Allen: https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py
+
+    Args:
+        coords (np.array): Entries are 3-length lists of xyz coordinates for an atom.
+        numbers (np.array, list): Entries are atomic numbers corresponding to coords.
+        symbols (list): Entries are atom symbols corresponding to coords.
+
+    Returns:
+        tuple: The principal moments of inertia.
+        tuple: The corresponding principal axes.
+    """
+    tensor0 = get_moment_of_inertia_tensor(coords=coords, numbers=numbers, symbols=symbols)
+    # Since tensor0 is real and symmetric, diagonalization is always possible
+    principal_moments_of_inertia, axes = np.linalg.eig(tensor0)
+    principal_moments_of_inertia, axes = zip(*sorted(zip(np.ndarray.tolist(principal_moments_of_inertia),
+                                                         np.ndarray.tolist(axes)), reverse=True))
+    return principal_moments_of_inertia, axes

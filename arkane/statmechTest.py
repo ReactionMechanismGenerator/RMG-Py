@@ -40,7 +40,7 @@ from rmgpy.species import Species
 from rmgpy.exceptions import InputError
 
 from arkane import Arkane
-from arkane.qchem import QChemLog
+from arkane.logs.qchem import QChemLog
 from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 
 ################################################################################
@@ -193,8 +193,8 @@ rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmet
         self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
         os.remove(h2o2_path)
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

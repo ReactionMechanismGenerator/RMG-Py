@@ -92,8 +92,8 @@ class KineticsTest(unittest.TestCase):
                                    'Obtained values of {0} and {1}'.format(inverse_tlist[1] - inverse_tlist[0],
                                                                            inverse_tlist[-1] - inverse_tlist[-2]))
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

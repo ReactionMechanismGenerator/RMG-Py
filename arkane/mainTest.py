@@ -35,7 +35,6 @@ import logging
 import os
 import shutil
 import unittest
-import zipfile
 
 from nose.plugins.attrib import attr
 
@@ -105,8 +104,8 @@ class TestArkaneExamples(unittest.TestCase):
                         # This is a sub-directory. remove.
                         shutil.rmtree(item_path)
 
-
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

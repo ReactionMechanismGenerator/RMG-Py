@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.gaussian` module.
+This module contains unit tests of the :mod:`arkane.logs.gaussian` module.
 """
 
 import os
@@ -40,7 +40,7 @@ import rmgpy.constants as constants
 from external.wip import work_in_progress
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
-from arkane.gaussian import GaussianLog
+from arkane.logs.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
 from arkane.exceptions import LogError
 
@@ -48,11 +48,16 @@ from arkane.exceptions import LogError
 ################################################################################
 
 
-class GaussianTest(unittest.TestCase):
+class GaussianLogTest(unittest.TestCase):
     """
-    Contains unit tests for the chempy.io.gaussian module, used for reading
-    and writing Gaussian files.
+    Contains unit tests for the gaussian module, used for parsing Gaussian log files.
     """
+    @classmethod
+    def setUpClass(cls):
+        """
+        A method that is run before all unit tests in this class.
+        """
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'gaussian')
 
     @work_in_progress
     def test_load_ethylene_from_gaussian_log_cbsqb3(self):
@@ -61,7 +66,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'ethylene.log'))
         conformer, unscaled_frequencies = log.load_conformer()
         e0 = log.load_energy()
 
@@ -109,7 +114,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'oxygen.log'))
         conformer, unscaled_frequencies = log.load_conformer()
         e0 = log.load_energy()
 
@@ -137,7 +142,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_G3.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'ethylene_G3.log'))
         conformer, unscaled_frequencies = log.load_conformer()
         e0 = log.load_energy()
 
@@ -165,7 +170,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'oxygen.log'))
         optical, symmetry, _ = log.get_symmetry_properties()
         self.assertEqual(optical, 1)
         self.assertEqual(symmetry, 2)
@@ -210,7 +215,6 @@ class GaussianTest(unittest.TestCase):
             log.load_conformer()
         self.assertTrue(f'The Gaussian job in {file_path} did not converge.' in str(log_error.exception))
 
-
     def test_load_scan_with_freq(self):
         """
         Ensures that the length of enegies with hr scans and freq calc is correct
@@ -222,6 +226,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(len(vlist), 37)
 
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

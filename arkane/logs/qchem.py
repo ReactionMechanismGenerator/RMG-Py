@@ -42,8 +42,8 @@ import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
-from arkane.log import Log
 from arkane.exceptions import LogError
+from arkane.logs.log import Log
 
 ################################################################################
 
@@ -123,7 +123,7 @@ class QChemLog(Log):
         atom, coord, number, mass = [], [], [], []
 
         with open(self.path) as f:
-            log = f.read().splitlines()
+            log = f.readlines()
 
         # First check that the QChem job file (not necessarily a geometry optimization)
         # has successfully completed, if not an error is thrown
