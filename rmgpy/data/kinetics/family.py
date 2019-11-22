@@ -243,7 +243,7 @@ class ReactionRecipe(object):
         of the reaction that this is the recipe for.
         """
         other = ReactionRecipe()
-        for action in self.actions:
+        for action in reversed(self.actions):  # Play the reverse recipe in the reverse order
             if action[0] == 'CHANGE_BOND':
                 other.add_action(['CHANGE_BOND', action[1], str(-int(action[2])), action[3]])
             elif action[0] == 'FORM_BOND':
