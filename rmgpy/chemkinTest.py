@@ -429,7 +429,7 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(duplicate_flags, expected_flags)
 
 
-class TestThermoWrite(unittest.TestCase):
+class TestThermoReadWrite(unittest.TestCase):
 
     def setUp(self):
         """This method is run once before each test."""
@@ -451,20 +451,43 @@ class TestThermoWrite(unittest.TestCase):
             comment=comment,
         )
 
-    def test_write_thermo_block(self):
-        """Test that we can write a normal thermo block"""
-        species = Species(smiles='CC')
-        species.thermo = self.nasa
-
-        expected = """C2H6                    C   2H   6          G   300.000  3000.000  650.73      1
+        # Chemkin entries for testing - note that the values are all the same
+        self.entry1 = """C2H6                    C   2H   6          G   300.000  3000.000  650.73      1
 -3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
 -1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
 -5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
 """
 
+        self.entry2 = """CH3NO2X                                     G   300.000  3000.000  650.73      1&
+C 1 H 3 N 1 O 2 X 1
+-3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
+-1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
+-5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
+"""
+
+        self.entry3 = """CH3NO2SX                                    G   300.000  3000.000  650.73      1&
+C 1 H 3 N 1 O 2 S 1 X 1
+-3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
+-1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
+-5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
+"""
+
+    def test_write_thermo_block(self):
+        """Test that we can write a normal thermo block"""
+        species = Species(smiles='CC')
+        species.thermo = self.nasa
+
         result = write_thermo_entry(species, verbose=False)
 
-        self.assertEqual(expected, result)
+        self.assertEqual(result, self.entry1)
+
+    def test_read_thermo_block(self):
+        """Test that we can read a normal thermo block"""
+        species, thermo, formula = read_thermo_entry(self.entry1)
+
+        self.assertEqual(species, 'C2H6')
+        self.assertEqual(formula, {'H': 6, 'C': 2})
+        self.assertTrue(self.nasa.is_identical_to(thermo))
 
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""
@@ -480,16 +503,17 @@ class TestThermoWrite(unittest.TestCase):
 """)
         species.thermo = self.nasa
 
-        expected = """CH3NO2X                                     G   300.000  3000.000  650.73      1&
-C 1 H 3 N 1 O 2 X 1
--3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
--1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
--5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
-"""
-
         result = write_thermo_entry(species, verbose=False)
 
-        self.assertEqual(expected, result)
+        self.assertEqual(result, self.entry2)
+
+    def test_read_thermo_block_5_elem(self):
+        """Test that we can read a thermo block with 5 elements"""
+        species, thermo, formula = read_thermo_entry(self.entry2)
+
+        self.assertEqual(species, 'CH3NO2X')
+        self.assertEqual(formula, {'X': 1, 'C': 1, 'O': 2, 'H': 3, 'N': 1})
+        self.assertTrue(self.nasa.is_identical_to(thermo))
 
     def test_write_thermo_block_6_elem(self):
         """Test that we can write a thermo block for a species with 6 elements"""
@@ -506,16 +530,17 @@ C 1 H 3 N 1 O 2 X 1
 """)
         species.thermo = self.nasa
 
-        expected = """CH3NO2SX                                    G   300.000  3000.000  650.73      1&
-C 1 H 3 N 1 O 2 S 1 X 1
--3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
--1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
--5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
-"""
-
         result = write_thermo_entry(species, verbose=False)
 
-        self.assertEqual(expected, result)
+        self.assertEqual(result, self.entry3)
+
+    def test_read_thermo_block_6_elem(self):
+        """Test that we can read a thermo block with 6 elements"""
+        species, thermo, formula = read_thermo_entry(self.entry3)
+
+        self.assertEqual(species, 'CH3NO2SX')
+        self.assertEqual(formula, {'X': 1, 'C': 1, 'O': 2, 'H': 3, 'N': 1, 'S': 1})
+        self.assertTrue(self.nasa.is_identical_to(thermo))
 
 
 class TestReadReactionComments(unittest.TestCase):

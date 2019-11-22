@@ -80,7 +80,7 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
 
     comment = lines[0][len(species):24].strip()
     formula = {}
-    for i in [24, 29, 34, 39, 74]:
+    for i in [24, 29, 34, 39, 73]:
         element, count = lines[0][i:i + 2].strip(), lines[0][i + 2:i + 5].strip()
         if element:
             try:
@@ -103,6 +103,21 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
                         raise
             if count != 0:  # Some people put garbage elements in, with zero count. Ignore these. Allow negative counts though (eg. negative one electron)
                 formula[element] = count
+
+    # Parsing for extended elemental composition syntax, adapted from Cantera ck2cti.py
+    if lines[0].rstrip().endswith('&'):
+        complines = []
+        for i in range(len(lines)-1):
+            if lines[i].rstrip().endswith('&'):
+                complines.append(lines[i+1])
+            else:
+                break
+        lines = [lines[0]] + lines[i+1:]
+        elements = ' '.join(line.rstrip('&\n') for line in complines).split()
+        formula = {}
+        for i in range(0, len(elements), 2):
+            formula[elements[i].capitalize()] = int(elements[i+1])
+
     phase = lines[0][44]
     if phase.upper() != 'G':
         logging.warning("Was expecting gas phase thermo data for {0}. Skipping thermo data.".format(species))
