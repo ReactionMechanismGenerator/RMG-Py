@@ -258,6 +258,7 @@ class ReactionRecipe(object):
                 other.add_action(['GAIN_PAIR', action[1], action[2]])
             elif action[0] == 'GAIN_PAIR':
                 other.add_action(['LOSE_PAIR', action[1], action[2]])
+        other.actions = reversed(other.actions) # Play the reverse recipe in the reverse order
         return other
 
     def _apply(self, struct, forward, unique):
