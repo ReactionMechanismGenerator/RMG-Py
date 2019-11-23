@@ -1139,10 +1139,7 @@ class KineticsFamily(Database):
             data = deepcopy(entry.data)
             data.change_t0(1)
 
-            if type(data) is Arrhenius:
-                # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
-                data = data.to_arrhenius_ep()
-            elif isinstance(data, StickingCoefficient):
+            if isinstance(data, StickingCoefficient):
                 data = StickingCoefficientBEP(
                     # todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP
                     #  analogous to Arrhenius.to_arrhenius_ep
@@ -1164,6 +1161,9 @@ class KineticsFamily(Database):
                     Tmin=deepcopy(data.Tmin),
                     Tmax=deepcopy(data.Tmax)
                 )
+            elif type(data) is Arrhenius:
+                # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
+                data = data.to_arrhenius_ep()
             else:
                 raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
 
