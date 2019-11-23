@@ -683,7 +683,7 @@ class Reaction:
         if isinstance(self.kinetics, SurfaceArrhenius):
             return self.kinetics.get_rate_coefficient(T, P=0)
 
-        raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r}".format(type(self.kinetics)))
+        raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r} and reaction {}".format(type(self.kinetics),self.to_labeled_str()))
 
     def fix_diffusion_limited_a_factor(self, T):
         """
