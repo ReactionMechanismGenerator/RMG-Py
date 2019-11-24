@@ -576,12 +576,9 @@ class HinderedRotorClassicalND(Mode):
         generate splines for the first and second derivatives of the partition function
         """
         N = len(self.pivots)
-        if N > 2:
+        if N > 1:
             self.V = interpolate.LinearNDInterpolator(self.phis, self.Es)
             self.rootD = interpolate.LinearNDInterpolator(self.phis, self.rootDs)
-        elif N == 2:
-            self.V = interpolate.SmoothBivariateSpline(self.phis[:, 0], self.phis[:, 1], self.Es)
-            self.rootD = interpolate.SmoothBivariateSpline(self.phis[:, 0], self.phis[:, 1], self.rootDs)
         else:
             self.V = interpolate.CubicSpline(self.phis, self.Es)
             self.rootD = interpolate.CubicSpline(self.phis, self.rootDs)
