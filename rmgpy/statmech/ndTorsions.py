@@ -32,6 +32,7 @@ import logging
 import os
 import os.path
 import subprocess
+import itertools
 
 import numdifftools as nd
 import numpy as np
@@ -598,12 +599,22 @@ class HinderedRotorClassicalND(Mode):
         """
         calculate the classical/semiclassical partition function at a given temperature
         """
-        rngs = [(0.0, 2.0 * np.pi) for x in xrange(len(self.pivots))]
 
         def f(*phis):
-            return self.rootD(*phis) * np.exp(-self.V(*phis) / (constants.R * T))
-
-        intg = inte.nquad(f, ranges=rngs)[0]
+            return (self.rootD(*phis)) * np.exp(-self.V(*phis) / (constants.R * T))
+        
+        rphis = np.linspace(0,2.0*np.pi,30)
+        Imat = np.zeros([len(rphis) for i in xrange(len(self.pivots))])
+        iter = itertools.product(*[list(xrange(len(rphis))) for i in xrange(len(self.pivots))])
+        
+        for coords in iter:
+            Imat[coords] = f(*rphis[np.array(coords)])
+        
+        for i in xrange(len(self.pivots)):
+            Imat = inte.simps(Imat,rphis)
+            
+        intg = Imat
+        
         Q = intg * (2.0 * np.pi * constants.kB * T / constants.h**2) ** (len(self.pivots) / 2.0) / np.prod(self.sigmas)
 
         if self.semiclassical:
@@ -613,7 +624,6 @@ class HinderedRotorClassicalND(Mode):
             x = constants.h * freqs / (constants.kB * T)
             out = x / (1.0 - np.exp(-x))
             Q *= np.prod(out)
-
         return Q
 
     def getPartitionFunction(self, T):
