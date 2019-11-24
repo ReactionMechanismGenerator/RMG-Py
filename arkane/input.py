@@ -56,12 +56,13 @@ from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
 
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusBM
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
+from rmgpy.kinetics.uncertainties import RateUncertainty
 
 from rmgpy.pdep.configuration import Configuration
 from rmgpy.pdep.network import Network
@@ -597,6 +598,7 @@ def loadInputFile(path):
         'SingleExponentialDown': SingleExponentialDown,
         # Kinetics
         'Arrhenius': Arrhenius,
+        'RateUncertainty' : RateUncertainty,
         # Statistical mechanics
         'IdealGasTranslation': IdealGasTranslation,
         'LinearRotor': LinearRotor,
