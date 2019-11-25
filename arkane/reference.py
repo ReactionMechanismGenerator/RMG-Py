@@ -41,7 +41,7 @@ import os
 import yaml
 import string
 
-from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
+from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, replace_yaml_syntax
 from arkane.isodesmic import SpeciesConstraints,ErrorCancelingSpecies,ErrorCancelingReaction,ErrorCancelingScheme
 from rmgpy.molecule import Molecule
 from rmgpy.rmgobject import RMGObject
@@ -159,8 +159,13 @@ class ReferenceSpecies(ArkaneSpecies):
             label: Unused argument from parent class ArkaneSpecies
             pdep: Unused argument from parent class ArkaneSpecies
         """
+
         with open(path, 'r') as f:
-            data = yaml.safe_load(stream=f)
+            content = f.read()
+        content = replace_yaml_syntax(content, label)
+        data = yaml.safe_load(stream=content)
+        # with open(path, 'r') as f:
+        #     data = yaml.safe_load(stream=f)
 
         if data['class'] != 'ReferenceSpecies':
             raise ValueError('Cannot create ReferenceSpecies object from yaml file {0}: object defined by this file is'
