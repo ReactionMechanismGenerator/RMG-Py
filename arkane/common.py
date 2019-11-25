@@ -354,6 +354,7 @@ def replace_yaml_syntax(content, label=None):
     """
     syntax_correction_dict = {'spinMultiplicity': 'spin_multiplicity',
                               'opticalIsomers': 'optical_isomers',
+                              'uncertaintyType': 'uncertainty_type'
                               }
     replaced_keys = list()
     for key, value in syntax_correction_dict.items():
