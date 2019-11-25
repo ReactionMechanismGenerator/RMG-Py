@@ -316,17 +316,17 @@ class ArkaneSpecies(RMGObject):
             freq_data = data['imaginary_frequency']
             del data['imaginary_frequency']
         if not data['is_ts']:
-            if 'smiles' in data:
-                data['species'] = Species(smiles=data['smiles'])
-            elif 'adjacency_list' in data:
-                data['species'] = Species().from_adjacency_list(data['adjacency_list'])
-            elif 'inchi' in data:
-                data['species'] = Species(inchi=data['inchi'])
+            if 'adjacency_list' in data['Identifiers']:
+                data['species'] = Species().from_adjacency_list(data['Identifiers']['adjacency_list'])
+            elif 'smiles' in data['Identifiers']:
+                data['species'] = Species(smiles=data['Identifiers']['smiles'])
+            elif 'inchi' in data['Identifiers']:
+                data['species'] = Species(inchi=data['Identifiers']['inchi'])
             else:
                 raise ValueError('Cannot load ArkaneSpecies from YAML file {0}. Either `smiles`, `adjacency_list`, or '
                                  'InChI must be specified'.format(path))
             # Finally, set the species label so that the special attributes are updated properly
-            data['species'].label = data['label']
+            data['species'].label = data['Identifiers']['label']
 
         self.make_object(data=data, class_dict=class_dict)
         if freq_data is not None:
