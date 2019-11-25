@@ -229,8 +229,8 @@ class ReferenceSpecies(ArkaneSpecies):
             if self.preferred_reference is not None:
                 preferred_source = self.preferred_reference
             else:  # Choose the source that has the smallest uncertainty
-                sources = self.reference_data.keys()
-                data = self.reference_data.values()
+                sources = list(self.reference_data.keys())
+                data = list(self.reference_data.values())
                 preferred_source = sources[0]  # If all else fails, use the first source as the preferred one
                 uncertainty = data[0].thermo_data.H298.uncertainty_si
                 for i, entry in enumerate(data):
@@ -637,7 +637,7 @@ class ReferenceDatabase(object):
             if not reference_mol_adj.is_isomorphic(reference_mol_smiles):
                 logging.info("RMG Molecule created from SMILES is not isomorphic to adjacency list mol for {}".format(ref))
                 return False
-            coords = ref.calculated_data[model_chem].conformer.coordinates.getValue()
+            coords = ref.calculated_data[model_chem].conformer.coordinates.value
             numbers = ref.calculated_data[model_chem].conformer.number.value
             model_chem_mol = Molecule()
             try:
