@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.qchem` module.
+This module contains unit tests of the :mod:`arkane.ess.qchem` module.
 """
 
 import os
@@ -36,7 +36,7 @@ import unittest
 
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
-from arkane.logs.qchem import QChemLog
+from arkane.ess.qchem import QChemLog
 
 ################################################################################
 

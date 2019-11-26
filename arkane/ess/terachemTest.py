@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.terachem` module.
+This module contains unit tests of the :mod:`arkane.ess.terachem` module.
 """
 
 import os
@@ -39,7 +39,7 @@ import numpy as np
 from rmgpy.statmech.conformer import Conformer
 
 from arkane.exceptions import LogError
-from arkane.logs.terachem import TeraChemLog
+from arkane.ess.terachem import TeraChemLog
 
 ################################################################################
 

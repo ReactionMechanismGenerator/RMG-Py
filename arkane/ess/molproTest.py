@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.molpro` module.
+This module contains unit tests of the :mod:`arkane.ess.molpro` module.
 """
 
 import unittest
@@ -39,7 +39,7 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
-from arkane.logs.molpro import MolproLog
+from arkane.ess.molpro import MolproLog
 
 ################################################################################
 

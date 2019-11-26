@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.gaussian` module.
+This module contains unit tests of the :mod:`arkane.ess.gaussian` module.
 """
 
 import os
@@ -40,7 +40,7 @@ from nose.plugins.attrib import attr
 
 import rmgpy
 
-from arkane.logs.gaussian import GaussianLog
+from arkane.ess.gaussian import GaussianLog
 from arkane.main import Arkane
 from arkane.output import prettify, get_str_xyz
 from rmgpy.species import Species

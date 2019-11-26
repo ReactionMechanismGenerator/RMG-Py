@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.gaussian` module.
+This module contains unit tests of the :mod:`arkane.ess.gaussian` module.
 """
 
 import os
@@ -40,7 +40,7 @@ import rmgpy.constants as constants
 from external.wip import work_in_progress
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
-from arkane.logs.gaussian import GaussianLog
+from arkane.ess.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
 from arkane.exceptions import LogError
 

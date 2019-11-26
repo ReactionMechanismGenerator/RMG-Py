@@ -35,11 +35,7 @@ import os
 
 from rmgpy.exceptions import InputError
 
-from arkane.logs.gaussian import GaussianLog
-from arkane.logs.molpro import MolproLog
-from arkane.logs.orca import OrcaLog
-from arkane.logs.qchem import QChemLog
-from arkane.logs.terachem import TeraChemLog
+from arkane.ess import GaussianLog, MolproLog, OrcaLog, QChemLog, TeraChemLog
 
 ################################################################################
 

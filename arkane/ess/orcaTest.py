@@ -29,13 +29,13 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.orca` module.
+This module contains unit tests of the :mod:`arkane.ess.orca` module.
 """
 
 import os
 import unittest
 
-from arkane.logs.orca import OrcaLog
+from arkane.ess.orca import OrcaLog
 
 ################################################################################
 
