@@ -1,0 +1,279 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /18.000/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	Cl
+	X /195.083/
+END
+
+SPECIES
+    Ar                  ! Ar
+    He                  ! He
+    Ne                  ! Ne
+    N2                  ! N2
+    H2(1)               ! H2(1)
+    O2(2)               ! O2(2)
+    H(3)                ! H(3)
+    HO2(4)              ! [O]O(4)
+    OH(D)(5)            ! OH(D)(5)
+    O(T)(6)             ! O(T)(6)
+    OO(7)               ! OO(7)
+    H2O(10)             ! H2O(10)
+END
+
+
+
+THERM ALL
+   300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+Ar                      Ar  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+He                      He  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 9.28724000E-01 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 9.28724000E-01                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+N2                      N   2               G   200.000  6000.000 1000.00      1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2(1)                   H   2               G   100.000  5000.000 1959.08      1
+ 2.78816583E+00 5.87640942E-04 1.59010417E-07-5.52739026E-11 4.34310984E-15    2
+-5.96144270E+02 1.12732655E-01 3.43536412E+00 2.12710353E-04-2.78625043E-07    3
+ 3.40267167E-10-7.76031998E-14-1.03135984E+03-3.90841732E+00                   4
+
+! Thermo library: primaryThermoLibrary
+O2(2)                   O   2               G   100.000  5000.000 1074.56      1
+ 3.15382425E+00 1.67803802E-03-7.69971022E-07 1.51274714E-10-1.08781801E-14    2
+-1.04081878E+03 6.16753884E+00 3.53732181E+00-1.21570930E-03 5.31617826E-06    3
+-4.89443424E-09 1.45845042E-12-1.03858846E+03 4.68368406E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H(3)                    H   1               G   100.000  5000.000 3459.60      1
+ 2.49999999E+00 9.20455546E-12-3.58608293E-15 6.15198922E-19-3.92041801E-23    2
+ 2.54742178E+04-4.44972842E-01 2.50000000E+00 9.24384602E-15-1.36779837E-17    3
+ 6.66184769E-21-1.00106912E-24 2.54742178E+04-4.44972896E-01                   4
+
+! Thermo group additivity estimation: group(O2s-OsH) + group(O2s-OsH) + radical(HOOJ)
+HO2(4)                  O   2H   1          G   100.000  5000.000  932.13      1
+ 3.21021575E+00 3.67945961E-03-1.27703899E-06 2.18050820E-10-1.46342588E-14    2
+-9.10359190E+02 8.18304670E+00 4.04595233E+00-1.73474005E-03 1.03769950E-05    3
+-1.02207268E-08 3.34930151E-12-9.86754562E+02 4.63578650E+00                   4
+
+! Thermo library: primaryThermoLibrary
+OH(D)(5)                O   1H   1          G   100.000  5000.000 1145.75      1
+ 3.07194246E+00 6.04011411E-04-1.39759127E-08-2.13451563E-11 2.48070095E-15    2
+ 3.57938557E+03 4.57798500E+00 3.51456768E+00 2.92814373E-05-5.32176582E-07    3
+ 1.01950588E-09-3.85951152E-13 3.41425421E+03 2.10435015E+00                   4
+
+! Thermo library: primaryThermoLibrary
+O(T)(6)                 O   1               G   100.000  5000.000 3459.60      1
+ 2.49999999E+00 9.20455546E-12-3.58608293E-15 6.15198922E-19-3.92041801E-23    2
+ 2.92302441E+04 5.12616433E+00 2.50000000E+00 9.24384602E-15-1.36779837E-17    3
+ 6.66184769E-21-1.00106912E-24 2.92302441E+04 5.12616427E+00                   4
+
+! Thermo group additivity estimation: group(O2s-OsH) + group(O2s-OsH)
+OO(7)                   O   2H   2          G   100.000  5000.000  908.86      1
+ 5.41576461E+00 2.61012083E-03-4.39915287E-07 4.91143478E-11-3.35235545E-15    2
+-1.83029432E+04-4.02235599E+00 3.73136642E+00 3.35060430E-03 9.35072698E-06    3
+-1.52105192E-08 6.41611128E-12-1.77211712E+04 5.45907862E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2O(10)                 O   1H   2          G   100.000  5000.000 1130.24      1
+ 2.84324866E+00 2.75108838E-03-7.81033120E-07 1.07244016E-10-5.79395308E-15    2
+-2.99586120E+04 5.91043011E+00 4.05763610E+00-7.87938871E-04 2.90878480E-06    3
+-1.47520039E-09 2.12847506E-13-3.02815866E+04-3.11365027E-01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #1
+! Template reaction: R_Recombination
+! Flux pairs: H(3), H2(1); H(3), H2(1); 
+! Matched reaction 56 H + H <=> H2 in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R-inRing_2R->H]
+! family: R_Recombination
+H(3)+H(3)=H2(1)                                     5.450000e+10 0.000     1.500    
+DUPLICATE
+
+! Reaction index: Chemkin #2; RMG #4
+! Template reaction: R_Recombination
+! Flux pairs: H(3), H2(1); H(3), H2(1); 
+! Matched reaction 56 H + H <=> H2 in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R-inRing_2R->H]
+! family: R_Recombination
+H(3)+H(3)=H2(1)                                     5.450000e+10 0.000     1.500    
+DUPLICATE
+
+! Reaction index: Chemkin #3; RMG #2
+! Template reaction: H_Abstraction
+! Flux pairs: O2(2), HO2(4); H2(1), H(3); 
+! Matched reaction 306 H2 + O2 <=> HO2_r12 + H in H_Abstraction/training
+! This reaction matched rate rule [H2;O2b]
+! family: H_Abstraction
+O2(2)+H2(1)=H(3)+HO2(4)                             2.900000e+14 0.000     56.640   
+
+! Reaction index: Chemkin #4; RMG #3
+! Template reaction: R_Recombination
+! Flux pairs: H(3), HO2(4); O2(2), HO2(4); 
+! Matched reaction 104 O2 + H <=> HO2-2 in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_N-2CNO->C_Ext-2NO-R_N-2NO->N_N-3R!H->C]
+! family: R_Recombination
+O2(2)+H(3)=HO2(4)                                   8.790000e+10 1.000     0.450    
+
+! Reaction index: Chemkin #5; RMG #6
+! Template reaction: H_Abstraction
+! Flux pairs: OO(7), HO2(4); H(3), H2(1); 
+! Estimated using average of templates [O/H/NonDeO;H_rad] + [H2O2;Y_rad] for rate rule [H2O2;H_rad]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+H(3)+OO(7)=HO2(4)+H2(1)                             1.235020e+06 1.634     6.086    
+
+! Reaction index: Chemkin #6; RMG #8
+! Template reaction: R_Recombination
+! Flux pairs: HO2(4), OO(7); H(3), OO(7); 
+! BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_N-2CNO->C_Ext-2NO-R_N-2NO->N_N-3R!H->C
+!     Total Standard Deviation in ln(k): 11.5401827615
+! Exact match found for rate rule [Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_N-2CNO->C_Ext-2NO-R_N-2NO->N_N-3R!H->C]
+! Euclidian distance = 0
+! family: R_Recombination
+H(3)+HO2(4)=OO(7)                                   5.250690e+09 1.273     0.000    
+
+! Reaction index: Chemkin #7; RMG #9
+! Template reaction: H_Abstraction
+! Flux pairs: HO2(4), OO(7); HO2(4), O2(2); 
+! Matched reaction 405 HO2_r3 + HO2_r12 <=> H2O2 + O2 in H_Abstraction/training
+! This reaction matched rate rule [Orad_O_H;O_rad/NonDeO]
+! family: H_Abstraction
+HO2(4)+HO2(4)=O2(2)+OO(7)                           1.750000e+10 0.000     -3.275   
+
+! Reaction index: Chemkin #8; RMG #11
+! Template reaction: R_Recombination
+! Flux pairs: OH(D)(5), OO(7); OH(D)(5), OO(7); 
+! Matched reaction 96 OH + OH <=> H2O2 in R_Recombination/training
+! This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_1COS->O_N-2R->C]
+! family: R_Recombination
+OH(D)(5)+OH(D)(5)=OO(7)                             7.850000e+12 0.000     0.000    
+
+! Reaction index: Chemkin #9; RMG #13
+! Template reaction: H_Abstraction
+! Flux pairs: OH(D)(5), H2O(10); H2(1), H(3); 
+! Matched reaction 312 H2 + OH <=> H2O_p + H_p in H_Abstraction/training
+! This reaction matched rate rule [H2;O_pri_rad]
+! family: H_Abstraction
+OH(D)(5)+H2(1)=H(3)+H2O(10)                         1.820000e+09 1.210     20.070   
+
+! Reaction index: Chemkin #10; RMG #17
+! Template reaction: R_Recombination
+! Flux pairs: OH(D)(5), H2O(10); H(3), H2O(10); 
+! Matched reaction 64 H + OH <=> H2O in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_N-2CNO->C]
+! family: R_Recombination
+H(3)+OH(D)(5)=H2O(10)                               1.620000e+14 0.000     0.150    
+
+! Reaction index: Chemkin #11; RMG #18
+! Template reaction: H_Abstraction
+! Flux pairs: H2O(10), OH(D)(5); O2(2), HO2(4); 
+! Matched reaction 379 H2O + O2 <=> HO2_r12 + OH_p23 in H_Abstraction/training
+! This reaction matched rate rule [Orad_O_H;O_pri_rad]
+! family: H_Abstraction
+O2(2)+H2O(10)=OH(D)(5)+HO2(4)                       9.300000e+12 0.000     74.120   
+
+! Reaction index: Chemkin #12; RMG #21
+! Template reaction: H_Abstraction
+! Flux pairs: OH(D)(5), H2O(10); OO(7), HO2(4); 
+! Estimated using average of templates [O/H/NonDeO;O_pri_rad] + [H2O2;O_rad] for rate rule [H2O2;O_pri_rad]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+OH(D)(5)+OO(7)=HO2(4)+H2O(10)                       4.994995e+05 1.927     6.325    
+
+! Reaction index: Chemkin #13; RMG #5
+! Template reaction: Birad_R_Recombination
+! Flux pairs: OH(D)(5), HO2(4); O(T)(6), HO2(4); 
+! Estimated using template [O_rad;O_birad] for rate rule [O_pri_rad;O_birad]
+! Euclidian distance = 1.0
+! family: Birad_R_Recombination
+O(T)(6)+OH(D)(5)=HO2(4)                             1.548026e+07 1.880     1.235    
+DUPLICATE
+
+! Reaction index: Chemkin #14; RMG #12
+! Template reaction: Birad_R_Recombination
+! Flux pairs: H(3), OH(D)(5); O(T)(6), OH(D)(5); 
+! Matched reaction 4 H + O <=> HO in Birad_R_Recombination/training
+! This reaction matched rate rule [H_rad;O_birad]
+! family: Birad_R_Recombination
+O(T)(6)+H(3)=OH(D)(5)                               1.000000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #15; RMG #14
+! Template reaction: H_Abstraction
+! Flux pairs: HO2(4), O2(2); O(T)(6), OH(D)(5); 
+! Estimated using average of templates [X_H;O_atom_triplet] + [Orad_O_H;Y_rad_birad_trirad_quadrad] for rate rule [Orad_O_H;O_atom_triplet]
+! Euclidian distance = 2.0
+! family: H_Abstraction
+O(T)(6)+HO2(4)=O2(2)+OH(D)(5)                       3.680392e+09 0.678     5.899    
+
+! Reaction index: Chemkin #16; RMG #16
+! Template reaction: H_Abstraction
+! Flux pairs: H2(1), H(3); O(T)(6), OH(D)(5); 
+! Matched reaction 285 H2 + O_rad <=> HO + H in H_Abstraction/training
+! This reaction matched rate rule [OH_rad_H;H_rad]
+! family: H_Abstraction
+O(T)(6)+H2(1)=H(3)+OH(D)(5)                         3.400000e+08 1.500     22.950   
+
+! Reaction index: Chemkin #17; RMG #19
+! Template reaction: H_Abstraction
+! Flux pairs: OO(7), HO2(4); O(T)(6), OH(D)(5); 
+! Estimated using template [O/H/NonDeO;O_atom_triplet] for rate rule [H2O2;O_atom_triplet]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+O(T)(6)+OO(7)=OH(D)(5)+HO2(4)                       1.740000e+13 0.000     4.750    
+
+! Reaction index: Chemkin #18; RMG #22
+! Template reaction: H_Abstraction
+! Flux pairs: H2O(10), OH(D)(5); O(T)(6), OH(D)(5); 
+! Matched reaction 380 H2O + O_rad <=> HO + OH_p23 in H_Abstraction/training
+! This reaction matched rate rule [OH_rad_H;O_pri_rad]
+! family: H_Abstraction
+O(T)(6)+H2O(10)=OH(D)(5)+OH(D)(5)                   5.260000e+09 1.200     17.830   
+
+! Reaction index: Chemkin #19; RMG #25
+! Template reaction: Birad_R_Recombination
+! Flux pairs: O(T)(6), HO2(4); OH(D)(5), HO2(4); 
+! Estimated using template [O_rad;O_birad] for rate rule [O_pri_rad;O_birad]
+! Euclidian distance = 1.0
+! family: Birad_R_Recombination
+O(T)(6)+OH(D)(5)=HO2(4)                             1.548026e+07 1.880     1.235    
+DUPLICATE
+
+END
+
