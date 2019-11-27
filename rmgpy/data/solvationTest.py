@@ -112,8 +112,8 @@ class TestSoluteDatabase(TestCase):
         ]
 
         for name, smiles, S, B, E, L, A, V in self.testCases:
-            species = Species(molecule=[Molecule(smiles=smiles)])
-            solute_data = self.database.get_solute_data_from_groups(Species(molecule=[species.molecule[0]]))
+            species = Species(smiles=smiles)
+            solute_data = self.database.get_solute_data_from_groups(species)
             self.assertAlmostEqual(solute_data.S, S, places=2)
             self.assertAlmostEqual(solute_data.B, B, places=2)
             self.assertAlmostEqual(solute_data.E, E, places=2)
