@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.logs.gaussian` module.
+This module contains unit tests of the :mod:`arkane.ess.gaussian` module.
 """
 
 import os
@@ -40,10 +40,9 @@ import rmgpy.constants as constants
 from external.wip import work_in_progress
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
-from arkane.logs.gaussian import GaussianLog
+from arkane.ess.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
 from arkane.exceptions import LogError
-
 
 ################################################################################
 
@@ -91,11 +90,12 @@ class GaussianLogTest(unittest.TestCase):
         """
         test parsing double hydride, MP2, CCSD, CCSD(T) form Gaussian log
         """
-        log_doublehybrid = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'B2PLYP.LOG'))
-        log_mp2 = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'UMP2_C_ATOM.LOG'))
-        log_ccsd = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'UCCSD_C_ATOM.LOG'))
-        log_ccsdt = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'UCCSDT_C_ATOM.LOG'))
-        log_qb3 = GaussianLog(os.path.join(os.path.dirname(__file__), '../examples/arkane/species/C2H5/', 'ethyl_cbsqb3.log'))
+        log_doublehybrid = GaussianLog(os.path.join(self.data_path, 'B2PLYP.LOG'))
+        log_mp2 = GaussianLog(os.path.join(self.data_path, 'UMP2_C_ATOM.LOG'))
+        log_ccsd = GaussianLog(os.path.join(self.data_path, 'UCCSD_C_ATOM.LOG'))
+        log_ccsdt = GaussianLog(os.path.join(self.data_path, 'UCCSDT_C_ATOM.LOG'))
+        log_qb3 = GaussianLog(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                           '../examples/arkane/species/C2H5/', 'ethyl_cbsqb3.log'))
 
         self.assertAlmostEqual(log_doublehybrid.load_energy() / constants.Na / constants.E_h, -0.40217794572194e+02,
                                delta=1e-6)
@@ -188,28 +188,28 @@ class GaussianLogTest(unittest.TestCase):
         """
         Ensures proper scan angle found in Gaussian scan job
         """
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'isobutanolQOOH_scan.log'))
         self.assertAlmostEqual(log._load_scan_angle(), 10.0)
 
     def test_load_number_scans(self):
         """
         Ensures proper scan angle found in Gaussian scan job
         """
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'isobutanolQOOH_scan.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'isobutanolQOOH_scan.log'))
         self.assertAlmostEqual(log._load_number_scans(), 36)
 
     def test_determine_qm_software(self):
         """
         Ensures that determine_qm_software returns a GaussianLog object
         """
-        log = determine_qm_software(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
+        log = determine_qm_software(os.path.join(self.data_path, 'oxygen.log'))
         self.assertIsInstance(log, GaussianLog)
 
     def test_gaussian_log_error_termination(self):
         """
         Ensures that error termination gaussian log file raises an logError
         """
-        file_path = os.path.join(os.path.dirname(__file__), 'data', 'error_termination.out')
+        file_path = os.path.join(self.data_path, 'error_termination.out')
         log = GaussianLog(file_path)
         with self.assertRaises(LogError) as log_error:
             log.load_conformer()
@@ -219,7 +219,7 @@ class GaussianLogTest(unittest.TestCase):
         """
         Ensures that the length of enegies with hr scans and freq calc is correct
         """
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'hr_scan_with_freq.log'))
+        log = GaussianLog(os.path.join(self.data_path, 'hr_scan_with_freq.log'))
         self.assertAlmostEqual(log._load_number_scans(), 36)
         self.assertAlmostEqual(log._load_scan_angle(), 10.0)
         vlist, _ = log.load_scan_energies()

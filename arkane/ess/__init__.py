@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 ###############################################################################
 #                                                                             #
@@ -28,48 +29,12 @@
 ###############################################################################
 
 """
-This module contains different utilities used in Arkane.
+Initialize imports for the ess (electronic structure software) modules
 """
 
-import os
-
-from rmgpy.exceptions import InputError
-
-from arkane.ess import GaussianLog, MolproLog, OrcaLog, QChemLog, TeraChemLog
-
-################################################################################
-
-
-def determine_qm_software(fullpath):
-    """
-    Given a path to the log file of a QM software, determine whether it is
-    Gaussian, Molpro, QChem, or TeraChem
-    """
-    with open(fullpath, 'r') as f:
-        software_log = None
-        if os.path.splitext(fullpath)[1] in ['.xyz', '.dat', '.geometry']:
-            software_log = TeraChemLog(fullpath)
-        line = f.readline()
-        while software_log is None and line != '':
-            if 'gaussian' in line.lower():
-                software_log = GaussianLog(fullpath)
-                break
-            elif 'molpro' in line.lower():
-                software_log = MolproLog(fullpath)
-                break
-            elif 'qchem' in line.lower():
-                software_log = QChemLog(fullpath)
-                break
-            elif 'terachem' in line.lower():
-                software_log = TeraChemLog(fullpath)
-                break
-            elif 'orca' in line.lower():
-                f.close()
-                software_log = OrcaLog(fullpath)
-                break
-            line = f.readline()
-        if software_log is None:
-            f.close()
-            raise InputError(f'The file at {fullpath} could not be identified as a '
-                             'Gaussian, Molpro, QChem, or TeraChem log file.')
-    return software_log
+from arkane.ess.gaussian import GaussianLog
+from arkane.ess.log import Log
+from arkane.ess.molpro import MolproLog
+from arkane.ess.orca import OrcaLog
+from arkane.ess.qchem import QChemLog
+from arkane.ess.terachem import TeraChemLog

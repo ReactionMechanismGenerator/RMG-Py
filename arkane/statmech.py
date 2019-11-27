@@ -53,12 +53,7 @@ from rmgpy.quantity import Quantity
 
 from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments_of_inertia
 from arkane.encorr.corr import get_atom_correction, get_bac
-from arkane.logs.gaussian import GaussianLog
-from arkane.logs.log import Log
-from arkane.logs.molpro import MolproLog
-from arkane.logs.orca import OrcaLog
-from arkane.logs.qchem import QChemLog
-from arkane.logs.terachem import TeraChemLog
+from arkane.ess import GaussianLog, Log, MolproLog, OrcaLog, QChemLog, TeraChemLog
 from arkane.output import prettify
 from arkane.util import determine_qm_software
 

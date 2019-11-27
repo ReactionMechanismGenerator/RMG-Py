@@ -40,7 +40,7 @@ from rmgpy.species import Species
 from rmgpy.exceptions import InputError
 
 from arkane import Arkane
-from arkane.logs.qchem import QChemLog
+from arkane.ess.qchem import QChemLog
 from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
 
 ################################################################################

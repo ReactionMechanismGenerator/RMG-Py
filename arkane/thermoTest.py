@@ -36,7 +36,7 @@ import unittest
 
 from rmgpy.species import Species
 
-from arkane.logs.gaussian import GaussianLog
+from arkane.ess.gaussian import GaussianLog
 from arkane.thermo import ThermoJob
 
 ################################################################################
