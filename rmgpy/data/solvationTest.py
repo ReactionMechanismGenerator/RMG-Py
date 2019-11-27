@@ -193,6 +193,22 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
+    def test_radical_solute_group(self):
+        """Test that the existing radical group is found for the radical species when using group additivity"""
+        # First check whether the radical group is found for the radical species
+        rad_species = Species(smiles='[OH]')
+        rad_solute_data = self.database.get_solute_data_from_groups(rad_species)
+        self.assertTrue('radical' in rad_solute_data.comment)
+        # Then check that the radical and its saturated species give different solvation free energies
+        saturated_struct = rad_species.molecule[0].copy(deep=True)
+        saturated_struct.saturate_radicals()
+        sat_species = Species(molecule=[saturated_struct])
+        sat_solute_data = self.database.get_solute_data_from_groups(sat_species)
+        solvent_data = self.database.get_solvent_data('water')
+        rad_solvation_correction = self.database.get_solvation_correction(rad_solute_data, solvent_data)
+        sat_solvation_correction = self.database.get_solvation_correction(sat_solute_data, solvent_data)
+        self.assertNotAlmostEqual(rad_solvation_correction.gibbs / 1000, sat_solvation_correction.gibbs / 1000)
+
     def test_correction_generation(self):
         """Test we can estimate solvation thermochemistry."""
         self.testCases = [

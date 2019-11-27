@@ -798,8 +798,8 @@ class SolvationDatabase(object):
         for atom in saturated_struct.atoms:
             # Iterate over heavy (non-hydrogen) atoms
             if atom.is_non_hydrogen() and atom.radical_electrons > 0:
-                for electron in range(1, atom.radical_electrons):
-                    # Get solute data for radical group    
+                for electron in range(atom.radical_electrons):
+                    # Get solute data for radical group
                     try:
                         self._add_group_solute_data(solute_data, self.groups['radical'], saturated_struct, {'*': atom})
                     except KeyError:
