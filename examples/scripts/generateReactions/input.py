@@ -5,7 +5,7 @@ database(
     seedMechanisms = [],
     kineticsDepositories = 'default', 
     #this section lists possible reaction families to find reactioons with
-    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
+    kineticsFamilies = ['default'],
     kineticsEstimator = 'rate rules',
 )
 

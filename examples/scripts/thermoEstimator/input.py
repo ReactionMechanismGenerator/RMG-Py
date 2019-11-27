@@ -23,9 +23,3 @@ species(
     structure=SMILES('CC12CCC(CC1)C(C)(C)O2'),
 )
 
-quantumMechanics(
-    software='mopac',
-    method='pm3',
-    onlyCyclics = True,
-    maxRadicalNumber = 0,
-)

@@ -5,4 +5,4 @@
 # listed in the input file.
 
 # Run generateReactions on the given rmg input file
-python ../../scripts/generateReactions.py input.py
+python ../../../scripts/generateReactions.py input.py
