@@ -38,6 +38,8 @@ from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.molecule.molecule import Bond
 
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -150,7 +152,6 @@ cdef class Arrhenius(KineticsModel):
         data.
         """
         import scipy.stats
-        import scipy.linalg
         if not all(np.isfinite(klist)):
             raise  ValueError("Rates must all be finite, not inf or NaN")
         if any(klist<0):
@@ -178,14 +179,11 @@ cdef class Arrhenius(KineticsModel):
             for n in range(b.size):
                 A[n, :] *= weights[n]
                 b[n] *= weights[n]
-        try:
-            x, residues, rank, s = scipy.linalg.lstsq(A, b)
-        except:
-            x, residues, rank, s = scipy.linalg.lstsq(A, b, lapack_driver='gelss')
+        x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
         # Determine covarianace matrix to obtain parameter uncertainties
         count = klist.size
-        cov = residues / (count - 3) * np.linalg.inv(np.dot(A.T, A))
+        cov = residues[0] / (count - 3) * np.linalg.inv(np.dot(A.T, A))
         t = scipy.stats.t.ppf(0.975, count - 3)
 
         if not three_params:
