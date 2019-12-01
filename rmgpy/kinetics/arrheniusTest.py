@@ -158,6 +158,21 @@ class TestArrhenius(unittest.TestCase):
         self.assertAlmostEqual(arrhenius.Ea.value_si, self.arrhenius.Ea.value_si, 2)
         self.assertAlmostEqual(arrhenius.T0.value_si, self.arrhenius.T0.value_si, 4)
 
+    def test_fit_to_negative_data(self):
+        """
+        Test the Arrhenius.fit_to_data() method on negative rates
+        """
+        Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        kdata = np.array([-1 * self.arrhenius.get_rate_coefficient(T) for T in Tdata])
+        arrhenius = Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
+        self.assertEqual(float(self.arrhenius.T0.value_si), 1)
+        for T, k in zip(Tdata, kdata):
+            self.assertAlmostEqual(k, arrhenius.get_rate_coefficient(T), delta=1e-6 * abs(k))
+        self.assertAlmostEqual(arrhenius.A.value_si, -1 * self.arrhenius.A.value_si, delta=1e0)
+        self.assertAlmostEqual(arrhenius.n.value_si, self.arrhenius.n.value_si, 1, 4)
+        self.assertAlmostEqual(arrhenius.Ea.value_si, self.arrhenius.Ea.value_si, 2)
+        self.assertAlmostEqual(arrhenius.T0.value_si, self.arrhenius.T0.value_si, 4)
+
     def test_pickle(self):
         """
         Test that an Arrhenius object can be pickled and unpickled with no loss
