@@ -214,6 +214,7 @@ scripts = [
     'scripts/simulate.py',
     'scripts/standardizeModelSpeciesNames.py',
     'scripts/thermoEstimator.py',
+    'scripts/isotopes.py',
     'testing/databaseTest.py',
 ]
 
