@@ -33,7 +33,8 @@ import os
 
 import rmgpy
 from rmgpy.chemkin import get_species_identifier, load_chemkin_file, load_transport_file, mark_duplicate_reactions, \
-    read_kinetics_entry, read_reaction_comments, read_thermo_entry, save_chemkin_file, save_species_dictionary, save_transport_file
+    read_kinetics_entry, read_reaction_comments, read_thermo_entry, save_chemkin_file, save_species_dictionary, \
+    save_transport_file, write_thermo_entry
 from rmgpy.chemkin import _remove_line_breaks, _process_duplicate_reactions
 from rmgpy.data.kinetics import LibraryReaction
 from rmgpy.exceptions import ChemkinError
@@ -41,7 +42,7 @@ from rmgpy.kinetics.arrhenius import Arrhenius, MultiArrhenius
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
-from rmgpy.thermo import NASA
+from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
 
 
@@ -426,6 +427,120 @@ class ChemkinTest(unittest.TestCase):
         duplicate_flags = [rxn.duplicate for rxn in reaction_list]
 
         self.assertEqual(duplicate_flags, expected_flags)
+
+
+class TestThermoReadWrite(unittest.TestCase):
+
+    def setUp(self):
+        """This method is run once before each test."""
+        coeffs_low = [4.03055, -0.00214171, 4.90611e-05, -5.99027e-08, 2.38945e-11, -11257.6, 3.5613]
+        coeffs_high = [-0.307954, 0.0245269, -1.2413e-05, 3.07724e-09, -3.01467e-13, -10693, 22.628]
+        Tmin = 300.
+        Tmax = 3000.
+        Tint = 650.73
+        E0 = -782292.  # J/mol.
+        comment = "C2H6"
+        self.nasa = NASA(
+            polynomials=[
+                NASAPolynomial(coeffs=coeffs_low, Tmin=(Tmin, "K"), Tmax=(Tint, "K")),
+                NASAPolynomial(coeffs=coeffs_high, Tmin=(Tint, "K"), Tmax=(Tmax, "K")),
+            ],
+            Tmin=(Tmin, "K"),
+            Tmax=(Tmax, "K"),
+            E0=(E0, "J/mol"),
+            comment=comment,
+        )
+
+        # Chemkin entries for testing - note that the values are all the same
+        self.entry1 = """C2H6                    C   2H   6          G   300.000  3000.000  650.73      1
+-3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
+-1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
+-5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
+"""
+
+        self.entry2 = """CH3NO2X                                     G   300.000  3000.000  650.73      1&
+C 1 H 3 N 1 O 2 X 1
+-3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
+-1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
+-5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
+"""
+
+        self.entry3 = """CH3NO2SX                                    G   300.000  3000.000  650.73      1&
+C 1 H 3 N 1 O 2 S 1 X 1
+-3.07954000E-01 2.45269000E-02-1.24130000E-05 3.07724000E-09-3.01467000E-13    2
+-1.06930000E+04 2.26280000E+01 4.03055000E+00-2.14171000E-03 4.90611000E-05    3
+-5.99027000E-08 2.38945000E-11-1.12576000E+04 3.56130000E+00                   4
+"""
+
+    def test_write_thermo_block(self):
+        """Test that we can write a normal thermo block"""
+        species = Species(smiles='CC')
+        species.thermo = self.nasa
+
+        result = write_thermo_entry(species, verbose=False)
+
+        self.assertEqual(result, self.entry1)
+
+    def test_read_thermo_block(self):
+        """Test that we can read a normal thermo block"""
+        species, thermo, formula = read_thermo_entry(self.entry1)
+
+        self.assertEqual(species, 'C2H6')
+        self.assertEqual(formula, {'H': 6, 'C': 2})
+        self.assertTrue(self.nasa.is_identical_to(thermo))
+
+    def test_write_thermo_block_5_elem(self):
+        """Test that we can write a thermo block for a species with 5 elements"""
+        species = Species().from_adjacency_list("""
+1 O u0 p3 c-1 {3,S}
+2 O u0 p2 c0 {3,D}
+3 N u0 p0 c+1 {1,S} {2,D} {4,S}
+4 C u0 p0 c0 {3,S} {5,S} {6,S} {7,S}
+5 H u0 p0 c0 {4,S}
+6 H u0 p0 c0 {4,S}
+7 H u0 p0 c0 {4,S}
+8 X u0 p0 c0
+""")
+        species.thermo = self.nasa
+
+        result = write_thermo_entry(species, verbose=False)
+
+        self.assertEqual(result, self.entry2)
+
+    def test_read_thermo_block_5_elem(self):
+        """Test that we can read a thermo block with 5 elements"""
+        species, thermo, formula = read_thermo_entry(self.entry2)
+
+        self.assertEqual(species, 'CH3NO2X')
+        self.assertEqual(formula, {'X': 1, 'C': 1, 'O': 2, 'H': 3, 'N': 1})
+        self.assertTrue(self.nasa.is_identical_to(thermo))
+
+    def test_write_thermo_block_6_elem(self):
+        """Test that we can write a thermo block for a species with 6 elements"""
+        species = Species().from_adjacency_list("""
+1 O u0 p3 c-1 {2,S}
+2 N u0 p0 c+1 {1,S} {3,D} {4,S}
+3 O u0 p2 c0 {2,D}
+4 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+5 S u0 p2 c0 {4,S} {8,S}
+6 H u0 p0 c0 {4,S}
+7 H u0 p0 c0 {4,S}
+8 H u0 p0 c0 {5,S}
+9 X u0 p0 c0
+""")
+        species.thermo = self.nasa
+
+        result = write_thermo_entry(species, verbose=False)
+
+        self.assertEqual(result, self.entry3)
+
+    def test_read_thermo_block_6_elem(self):
+        """Test that we can read a thermo block with 6 elements"""
+        species, thermo, formula = read_thermo_entry(self.entry3)
+
+        self.assertEqual(species, 'CH3NO2SX')
+        self.assertEqual(formula, {'X': 1, 'C': 1, 'O': 2, 'H': 3, 'N': 1, 'S': 1})
+        self.assertTrue(self.nasa.is_identical_to(thermo))
 
 
 class TestReadReactionComments(unittest.TestCase):

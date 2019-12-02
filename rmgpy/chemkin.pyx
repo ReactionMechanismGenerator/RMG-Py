@@ -80,7 +80,7 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
 
     comment = lines[0][len(species):24].strip()
     formula = {}
-    for i in [24, 29, 34, 39, 74]:
+    for i in [24, 29, 34, 39, 73]:
         element, count = lines[0][i:i + 2].strip(), lines[0][i + 2:i + 5].strip()
         if element:
             try:
@@ -103,6 +103,21 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
                         raise
             if count != 0:  # Some people put garbage elements in, with zero count. Ignore these. Allow negative counts though (eg. negative one electron)
                 formula[element] = count
+
+    # Parsing for extended elemental composition syntax, adapted from Cantera ck2cti.py
+    if lines[0].rstrip().endswith('&'):
+        complines = []
+        for i in range(len(lines)-1):
+            if lines[i].rstrip().endswith('&'):
+                complines.append(lines[i+1])
+            else:
+                break
+        lines = [lines[0]] + lines[i+1:]
+        elements = ' '.join(line.rstrip('&\n') for line in complines).split()
+        formula = {}
+        for i in range(0, len(elements), 2):
+            formula[elements[i].capitalize()] = int(elements[i+1])
+
     phase = lines[0][44]
     if phase.upper() != 'G':
         logging.warning("Was expecting gas phase thermo data for {0}. Skipping thermo data.".format(species))
@@ -1497,6 +1512,15 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
     if element_counts is None:
         element_counts = get_element_count(species.molecule[0])
 
+    # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
+    # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system
+    # done by Molecule.get_formula
+    if 'C' in element_counts:
+        sorted_elements = sorted(element_counts, key = lambda e: {'C':'0','H':'1'}.get(e, e))
+    else:
+        sorted_elements = sorted(element_counts)
+    element_counts = {e: element_counts[e] for e in sorted_elements}
+
     string = ''
     # Write thermo comments
     if verbose:
@@ -1509,35 +1533,44 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
                 else:
                     string += "! {0}\n".format(line)
 
-    # Line 1
-    string += '{0:<16}        '.format(get_species_identifier(species))
-    if len(element_counts) <= 4:
-        # Use the original Chemkin syntax for the element counts
-        for key, count in element_counts.items():
-            if isinstance(key, tuple):
-                symbol, isotope = key
-                chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            else:
-                chemkin_name = key
-            string += '{0!s:<2}{1:>3d}'.format(chemkin_name, count)
-        string += '     ' * (4 - len(element_counts))
-    else:
-        string += '     ' * 4
-    string += 'G{0:>10.3f}{1:>10.3f}{2:>8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si,
-                                                             thermo.polynomials[1].Tmax.value_si,
-                                                             thermo.polynomials[0].Tmax.value_si)
-    if len(element_counts) > 4:
-        string += '&\n'
+    # Compile element count string
+    extended_syntax = len(element_counts) > 4  # If there are more than 4 elements, use extended syntax
+    elements = []
+    for key, count in element_counts.items():
+        if isinstance(key, tuple):
+            symbol, isotope = key
+            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
+        else:
+            chemkin_name = key
+        if extended_syntax:
+            # Create a list of alternating elements and counts
+            elements.extend([chemkin_name, str(count)])
+        else:
+            # Create a list of 5-column wide formatted element counts, e.g. 'C  10'
+            elements.append('{0!s:<2}{1:>3d}'.format(chemkin_name, count))
+    if extended_syntax:
         # Use the new-style Chemkin syntax for the element counts
+        # Place all elements in space delimited format on new line
         # This will only be recognized by Chemkin 4 or later
-        for key, count in element_counts.items():
-            if isinstance(key, tuple):
-                symbol, isotope = key
-                chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            else:
-                chemkin_name = key
-            string += '{0!s:<2}{1:>3d}'.format(chemkin_name, count)
-    string += '\n'
+        elem_1 = ' ' * 20
+        elem_2 = '&\n' + ' '.join(elements)
+    else:
+        # Use the original Chemkin syntax for the element counts
+        # Place up to 4 elements in columns 24-43 of the first line
+        # (don't use the space in columns 74-78 for the 5th element
+        #  because nobody else does and Cantera can't read it)
+        elem_1 = ''.join(elements)
+        elem_2 = ''
+
+    # Line 1
+    string += '{ident:<16}        {elem_1:<20}G{Tmin:>10.3f}{Tint:>10.3f}{Tmax:>8.2f}      1{elem_2}\n'.format(
+        ident=get_species_identifier(species),
+        elem_1=elem_1,
+        Tmin=thermo.polynomials[0].Tmin.value_si,
+        Tint=thermo.polynomials[1].Tmax.value_si,
+        Tmax=thermo.polynomials[0].Tmax.value_si,
+        elem_2=elem_2,
+    )
 
     # Line 2
     string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(thermo.polynomials[1].c0,
