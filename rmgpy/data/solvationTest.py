@@ -112,13 +112,35 @@ class TestSoluteDatabase(TestCase):
         ]
 
         for name, smiles, S, B, E, L, A, V in self.testCases:
-            species = Species(molecule=[Molecule(smiles=smiles)])
-            solute_data = self.database.get_solute_data_from_groups(Species(molecule=[species.molecule[0]]))
+            species = Species(smiles=smiles)
+            solute_data = self.database.get_solute_data_from_groups(species)
             self.assertAlmostEqual(solute_data.S, S, places=2)
             self.assertAlmostEqual(solute_data.B, B, places=2)
             self.assertAlmostEqual(solute_data.E, E, places=2)
             self.assertAlmostEqual(solute_data.L, L, places=2)
             self.assertAlmostEqual(solute_data.A, A, places=2)
+
+    def test_solute_with_resonance_structures(self):
+        """
+        Test we can estimate Abraham solute parameters correctly using group contributions
+        for the solute species with resonance structures.
+        """
+        smiles = "CC1=CC=CC=C1N"
+        species = Species(smiles=smiles)
+        species.generate_resonance_structures()
+        solute_data = self.database.get_solute_data(species)
+        solvent_data = self.database.get_solvent_data('water')
+        solvation_correction = self.database.get_solvation_correction(solute_data, solvent_data)
+        dGsolv_spc = solvation_correction.gibbs / 1000
+        for mol in species.molecule:
+            spc = Species(molecule=[mol])
+            solute_data = self.database.get_solute_data_from_groups(spc)
+            solvation_correction = self.database.get_solvation_correction(solute_data, solvent_data)
+            dGsolv_mol = solvation_correction.gibbs / 1000
+            if mol == species.molecule[0]:
+                self.assertEqual(dGsolv_spc, dGsolv_mol)
+            else:
+                self.assertNotAlmostEqual(dGsolv_spc, dGsolv_mol)
 
     def test_lone_pair_solute_generation(self):
         """Test we can obtain solute parameters via group additivity for a molecule with lone pairs"""
