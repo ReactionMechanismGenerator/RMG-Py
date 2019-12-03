@@ -29,9 +29,12 @@
 
 """
 This script cleans and generates new trees for the specified family running in parallel on the specified number of processors
-`python generate_tree.py familyName nprocs`
-ex:  `python generate_tree.py intra_H_migration 6`
+`python generateTree.py familyName nprocs`
+ex:  `python generateTree.py intra_H_migration 6`
 Note that 6 is the maximum number of processors used currently by this script
+This script will work only for the certain reaction families that have been fixed to run this script.
+Running this script on other reaction families will throw error.
+The documentation for this script will be ready in the future.
 """
 
 import argparse
