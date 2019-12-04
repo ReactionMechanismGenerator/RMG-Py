@@ -427,6 +427,32 @@ multiplicity 2
 
         self.assertEqual(mol.to_inchi(), inchi)
 
+    def test_surface_molecule_rdkit(self):
+        """Test InChI generation for a surface molecule using RDKit"""
+        mol = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}
+""")
+        inchi = 'InChI=1S/CH3.Pt/h1H3;'
+
+        self.assertEqual(to_inchi(mol, backend='rdkit'), inchi)
+
+    def test_surface_molecule_ob(self):
+        """Test InChI generation for a surface molecule using OpenBabel"""
+        mol = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}
+""")
+        inchi = 'InChI=1S/CH3.Pt/h1H3;'
+
+        self.assertEqual(to_inchi(mol, backend='openbabel'), inchi)
+
 
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):
@@ -753,6 +779,32 @@ class SMILESGenerationTest(unittest.TestCase):
         self.assertNotEqual(smiles1, smiles2)
         self.assertNotEqual(smiles2, smiles3)
         self.assertNotEqual(smiles1, smiles3)
+
+    def test_surface_molecule_rdkit(self):
+        """Test InChI generation for a surface molecule using RDKit"""
+        mol = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}
+""")
+        smiles = 'C[Pt]'
+
+        self.assertEqual(to_smiles(mol, backend='rdkit'), smiles)
+
+    def test_surface_molecule_ob(self):
+        """Test InChI generation for a surface molecule using OpenBabel"""
+        mol = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}
+""")
+        smiles = 'C[Pt]'
+
+        self.assertEqual(to_smiles(mol, backend='openbabel'), smiles)
 
 
 class ParsingTest(unittest.TestCase):
