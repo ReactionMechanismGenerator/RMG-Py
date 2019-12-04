@@ -98,15 +98,6 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     else:
         raise Exception('thermo_class neither NASA nor Wilhoit.  Cannot process thermo data.')
 
-    if thermo.__class__ != thermo0.__class__:
-        # Compute RMS error of overall transformation
-        Tlist = np.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], np.float64)
-        err = 0.0
-        for T in Tlist:
-            err += (thermo.get_heat_capacity(T) - thermo0.get_heat_capacity(T)) ** 2
-        err = math.sqrt(err / len(Tlist)) / constants.R
-        # logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(spc, err))
-
     return thermo
 
 
