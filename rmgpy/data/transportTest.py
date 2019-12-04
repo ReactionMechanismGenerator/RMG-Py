@@ -126,13 +126,13 @@ class TestTransportDatabase(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        self.database = TransportDatabase()
-        self.database.load(os.path.join(settings['database.directory'], 'transport'),
-                           ['GRI-Mech', 'PrimaryTransportLibrary'])
+        cls.database = TransportDatabase()
+        cls.database.load(os.path.join(settings['database.directory'], 'transport'),
+                          ['GRI-Mech', 'PrimaryTransportLibrary'])
 
-        self.speciesList = [
+        cls.speciesList = [
             Species().from_smiles('C'),
             Species().from_smiles('CCCC'),
             Species().from_smiles('O'),

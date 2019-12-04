@@ -47,30 +47,30 @@ from rmgpy.util import parse_command_line_arguments
 class TestRMGWorkFlow(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """
         A method that is run before all unit tests in this class.
         """
         # set-up RMG object
-        self.rmg = RMG()
-        self.rmg.reaction_model = CoreEdgeReactionModel()
+        cls.rmg = RMG()
+        cls.rmg.reaction_model = CoreEdgeReactionModel()
 
         # load kinetic database and forbidden structures
-        self.rmg.database = RMGDatabase()
+        cls.rmg.database = RMGDatabase()
         path = os.path.join(settings['test_data.directory'], 'testing_database')
 
         # kinetics family Disproportionation loading
-        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
-                                        kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond'],
-                                        reaction_libraries=[])
+        cls.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
+                                       kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond'],
+                                       reaction_libraries=[])
 
         # load empty forbidden structures
-        for family in self.rmg.database.kinetics.families.values():
+        for family in cls.rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
-        self.rmg.database.forbidden_structures = ForbiddenStructures()
+        cls.rmg.database.forbidden_structures = ForbiddenStructures()
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         """
         Reset the loaded database
         """
