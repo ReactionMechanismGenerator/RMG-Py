@@ -826,8 +826,6 @@ METHODS1 = {
     'retrieveTemplate': 'retrieve_template',
     'getLabeledReactantsAndProducts': 'get_labeled_reactants_and_products',
     'addAtomLabelsForReaction': 'add_atom_labels_for_reaction',
-    'getw0': 'get_w0',
-    'getw0s': 'get_w0s',
     'getTrainingDepository': 'get_training_depository',
     'addEntry': 'add_entry',
     # rmgpy.data.kinetics.library
