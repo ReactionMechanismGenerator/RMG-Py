@@ -34,6 +34,7 @@ This module contains unit test for the translator module.
 import re
 import unittest
 from external.wip import work_in_progress
+from unittest.mock import patch
 
 from rmgpy.molecule.adjlist import ConsistencyChecker
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -51,6 +52,18 @@ class TranslatorTest(unittest.TestCase):
 
         self.assertEqual(mol.to_smiles(), '')
         self.assertEqual(mol.to_inchi(), '')
+
+    @patch('rmgpy.molecule.translator.logging')
+    def test_failure_message(self, mock_logging):
+        """Test that we log the molecule adjlist upon failure."""
+        mol = Molecule(smiles='[CH2-][N+]#N')
+
+        with self.assertRaisesRegex(ValueError, 'Unable to generate identifier type'):
+            to_inchi(mol, backend='rdkit')
+
+        mock_logging.error.assert_called_with(
+            "Unable to generate identifier for this molecule:\n{0}".format(mol.to_adjacency_list())
+        )
 
 
 class InChIGenerationTest(unittest.TestCase):

@@ -531,6 +531,8 @@ def _write(mol, identifier_type, backend):
             logging.debug('Backend {0} is not able to generate {1} for this molecule:\n'
                           '{2}'.format(option, identifier_type, mol.to_adjacency_list()))
 
+    logging.error('Unable to generate identifier for this molecule:\n{0}'.format(mol.to_adjacency_list()))
+
     raise ValueError("Unable to generate identifier type {0} with backend {1}.".format(identifier_type, backend))
 
 
