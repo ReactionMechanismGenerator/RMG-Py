@@ -260,6 +260,7 @@ cdef class HinderedRotor(Torsion):
         # The overlap matrix is the identity matrix, i.e. this is a standard
         # eigenvalue problem
         logging.info('Hamiltonian:\n{0}'.format(H))
+        logging.info('Memory alignment: {0}'.format(H.__array_interface__['data'][0] % 16))
         # logging.info('Condition number = {0}'.format(np.linalg.cond(H)))
 
         # Find the eigenvalues and eigenvectors of the Hamiltonian matrix
