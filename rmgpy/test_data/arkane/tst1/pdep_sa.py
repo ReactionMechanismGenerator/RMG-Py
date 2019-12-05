@@ -95,5 +95,5 @@ pressureDependence(
     method = 'modified strong collision',
     interpolationModel = ('chebyshev', 6, 4),
     activeJRotor = True,
-    sensitivity_conditions = [(1000, 'K'), (1, 'bar')]
+    # sensitivity_conditions = [(1000, 'K'), (1, 'bar')]
 )

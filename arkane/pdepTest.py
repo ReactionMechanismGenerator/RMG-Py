@@ -106,17 +106,17 @@ class ArkaneTest(unittest.TestCase):
         self.assertIsInstance(rxn.kinetics, Chebyshev)
         self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246)
 
-        files = [f for f in os.listdir(os.path.join(self.directory, 'sensitivity', ''))
-                 if os.path.isfile(os.path.join(self.directory, 'sensitivity', f))]
-        self.assertTrue(any('hydroperoxylvinoxy.pdf' in f for f in files))
-
-        with open(os.path.join(self.directory, 'sensitivity', 'network1.txt'), 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                if '1000.0' in line:
-                    break
-        sa_coeff = line.split()[-2]
-        self.assertEquals(float(sa_coeff), -8.23e-6)
+        # files = [f for f in os.listdir(os.path.join(self.directory, 'sensitivity', ''))
+        #          if os.path.isfile(os.path.join(self.directory, 'sensitivity', f))]
+        # self.assertTrue(any('hydroperoxylvinoxy.pdf' in f for f in files))
+        #
+        # with open(os.path.join(self.directory, 'sensitivity', 'network1.txt'), 'r') as f:
+        #     lines = f.readlines()
+        #     for line in lines:
+        #         if '1000.0' in line:
+        #             break
+        # sa_coeff = line.split()[-2]
+        # self.assertEquals(float(sa_coeff), -8.23e-6)
 
     @classmethod
     def tearDown(cls):

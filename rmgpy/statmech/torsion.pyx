@@ -38,6 +38,7 @@ import cython
 import numpy as np
 cimport numpy as np
 import scipy.linalg
+import scipy.sparse
 from libc.math cimport log, exp, sqrt, sin, cos
 from scipy.special import i0, i1, ellipk, ellipe
 
@@ -252,12 +253,22 @@ cdef class HinderedRotor(Torsion):
         """
         # Populate Hamiltonian matrix (banded in lower triangular form)
         H = self.get_hamiltonian(n_basis)
+        # H = scipy.sparse.diags(H0, np.arange(H0.shape[0])*-1)
+        # H = H.todense()
+        # H = H + H.H - np.diag(H0[0, :])
+        # logging.info(np.array_equal(H, H.H))
         # The overlap matrix is the identity matrix, i.e. this is a standard
         # eigenvalue problem
-        logging.info('Condition number = {0}'.format(np.linalg.cond(H)))
+        logging.info('Hamiltonian:\n{0}'.format(H))
+        # logging.info('Condition number = {0}'.format(np.linalg.cond(H)))
 
         # Find the eigenvalues and eigenvectors of the Hamiltonian matrix
-        E = scipy.linalg.eig_banded(H, lower=True, eigvals_only=True, overwrite_a_band=True)
+        # E = scipy.linalg.eig_banded(H, lower=True, eigvals_only=True, overwrite_a_band=True)
+        E = scipy.linalg.eigvals_banded(H, lower=True, overwrite_a_band=True)
+        # E = np.linalg.eigvalsh(H)
+        # E = scipy.linalg.eigvalsh(H, lower=True)
+        # E = np.real(np.sort(scipy.linalg.eigvals(H, overwrite_a=True)))
+        # E = np.real(np.sort(np.linalg.eigvals(H)))
         logging.info('Eigenvalues:\n{0}'.format(E))
         # Don't consider zero-point energy here
         self.energies = E - np.min(E)
