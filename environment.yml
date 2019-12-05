@@ -21,6 +21,7 @@ dependencies:
   - h5py
   - jinja2
   - jupyter
+  - lapack
   - lpsolve55
   - markupsafe
   - matplotlib >=1.5
