@@ -37,8 +37,8 @@ import logging
 import cython
 import numpy as np
 cimport numpy as np
-import scipy.linalg
 from libc.math cimport log, exp, sqrt, sin, cos
+from scipy.sparse import diags
 from scipy.special import i0, i1, ellipk, ellipe
 
 cimport rmgpy.constants as constants
@@ -252,11 +252,18 @@ cdef class HinderedRotor(Torsion):
         """
         # Populate Hamiltonian matrix (banded in lower triangular form)
         H = self.get_hamiltonian(n_basis)
+
+        # Convert the Hamiltonian matrix to a dense matrix. Only the lower triangular elements need to be included
+        # for np.linalg.eigh. Previously the banded format was fed directly into scipy.linalg.eig_banded, but this
+        # led to inconsistent results as documented in RMG-Py issue #1843
+        indices = np.arange(0, H.shape[0])*-1
+        H = diags(H, indices)
+        H = H.todense()
         # The overlap matrix is the identity matrix, i.e. this is a standard
         # eigenvalue problem
 
         # Find the eigenvalues and eigenvectors of the Hamiltonian matrix
-        E = scipy.linalg.eig_banded(H, lower=True, eigvals_only=True, overwrite_a_band=True)
+        E = np.sort(np.linalg.eigh(H, UPLO='L')[0])
         # Don't consider zero-point energy here
         self.energies = E - np.min(E)
 
