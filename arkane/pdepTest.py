@@ -76,7 +76,7 @@ class ArkaneTest(unittest.TestCase):
         self.tst1 = Arkane()
         self.tst1.input_file = self.input_file
         self.tst1.output_directory = self.directory
-        self.tst1.verbose = logging.WARN
+        self.tst1.verbose = logging.INFO
         self.tst1.plot = False
         self.tst1.job_list = []
         self.tst1.job_list = self.tst1.load_input_file(self.tst1.input_file)

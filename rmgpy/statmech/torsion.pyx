@@ -254,9 +254,11 @@ cdef class HinderedRotor(Torsion):
         H = self.get_hamiltonian(n_basis)
         # The overlap matrix is the identity matrix, i.e. this is a standard
         # eigenvalue problem
+        logging.info('Condition number = {0}'.format(np.linalg.cond(H)))
 
         # Find the eigenvalues and eigenvectors of the Hamiltonian matrix
         E = scipy.linalg.eig_banded(H, lower=True, eigvals_only=True, overwrite_a_band=True)
+        logging.info('Eigenvalues:\n{0}'.format(E))
         # Don't consider zero-point energy here
         self.energies = E - np.min(E)
 

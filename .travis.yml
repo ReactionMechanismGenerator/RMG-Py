@@ -52,48 +52,46 @@ jobs:
         # Compile RMG
         - make
       script:
-        - make test-unittests
-        - make test-functional
-        - make test-database
-      after_success:
-        - codecov
-        - bash ./deploy.sh
-    - stage: documentation
-      install:
-        - cd RMG-Py
-        - conda env create -q -f environment.yml
-        - source activate rmg_env
-        # Install sphinx for building documentation
-        - conda install -y sphinx
-        - conda list
-        # Modify setup.py
-        - sed -i '/embedsignature/s/# //g' setup.py
-        - make
-        - cd documentation
-        - export COMMITMESSAGE="Automatic documentation rebuild"
-      script:
-        - make travis_setup clean html publish
-    - stage: deploy
-      install:
-        # Setup conda build
-        - conda install -y conda-build
-        - conda install -y anaconda-client
-        - conda config --append channels rmg
-        - conda config --append channels rdkit
-        - conda config --append channels cantera
-        - conda config --append channels anaconda
-        - conda config --set anaconda_upload yes
-      script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
-    - os: osx
-      install:
-        # Setup conda build
-        - conda install -y conda-build
-        - conda install -y anaconda-client
-        - conda config --append channels rmg
-        - conda config --append channels rdkit
-        - conda config --append channels cantera
-        - conda config --append channels anaconda
-        - conda config --set anaconda_upload yes
-      script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+        - nosetests -vs --nologcapture --all-modules arkane/pdepTest.py
+#      after_success:
+#        - codecov
+#        - bash ./deploy.sh
+#    - stage: documentation
+#      install:
+#        - cd RMG-Py
+#        - conda env create -q -f environment.yml
+#        - source activate rmg_env
+#        # Install sphinx for building documentation
+#        - conda install -y sphinx
+#        - conda list
+#        # Modify setup.py
+#        - sed -i '/embedsignature/s/# //g' setup.py
+#        - make
+#        - cd documentation
+#        - export COMMITMESSAGE="Automatic documentation rebuild"
+#      script:
+#        - make travis_setup clean html publish
+#    - stage: deploy
+#      install:
+#        # Setup conda build
+#        - conda install -y conda-build
+#        - conda install -y anaconda-client
+#        - conda config --append channels rmg
+#        - conda config --append channels rdkit
+#        - conda config --append channels cantera
+#        - conda config --append channels anaconda
+#        - conda config --set anaconda_upload yes
+#      script:
+#        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+#    - os: osx
+#      install:
+#        # Setup conda build
+#        - conda install -y conda-build
+#        - conda install -y anaconda-client
+#        - conda config --append channels rmg
+#        - conda config --append channels rdkit
+#        - conda config --append channels cantera
+#        - conda config --append channels anaconda
+#        - conda config --set anaconda_upload yes
+#      script:
+#        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
