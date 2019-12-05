@@ -51,6 +51,8 @@ jobs:
         - git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
         # Compile RMG
         - make
+        # Check numpy config
+        - python -c 'import numpy; numpy.show_config()'
       script:
         - nosetests -vs --nologcapture --all-modules arkane/pdepTest.py
 #      after_success:
