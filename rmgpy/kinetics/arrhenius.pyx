@@ -152,6 +152,15 @@ cdef class Arrhenius(KineticsModel):
         data.
         """
         import scipy.stats
+        if not all(np.isfinite(klist)):
+            raise  ValueError("Rates must all be finite, not inf or NaN")
+        if any(klist<0):
+            if not all(klist<0):
+                raise ValueError("Rates must all be positive or all be negative.")
+            rate_sign_multiplier = -1
+            klist = -1 * klist
+        else:
+            rate_sign_multiplier = 1
 
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
         if len(Tlist) < 3 + three_params:
@@ -181,7 +190,7 @@ cdef class Arrhenius(KineticsModel):
             x = np.array([x[0], 0, x[1]])
             cov = np.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
 
-        self.A = (exp(x[0]), kunits)
+        self.A = (rate_sign_multiplier * exp(x[0]), kunits)
         self.n = x[1]
         self.Ea = (x[2] * 0.001, "kJ/mol")
         self.T0 = (T0, "K")
