@@ -226,6 +226,23 @@ def simple_reactor(temperature,
             [not isinstance(x, list) for x in initialMoleFractions.values()]):
         nSims = 1
 
+    # normalize mole fractions if not using a mole fraction range
+    if all([not isinstance(x, list) for x in initialMoleFractions.values()]):
+        total_initial_moles = sum(initialMoleFractions.values())
+        if total_initial_moles != 1:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            for spec in initialMoleFractions:
+                initialMoleFractions[spec] /= total_initial_moles
+            logging.info('')
+            logging.info('Normalized mole fractions:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            logging.info('')
+
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.items():
