@@ -32,7 +32,7 @@ This script contains unit tests of the :mod:`rmgpy.constraints` module.
 """
 
 import unittest
-import mock
+from unittest import mock
 
 from rmgpy.rmg.main import RMG
 from rmgpy.constraints import fails_species_constraints

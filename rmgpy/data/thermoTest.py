@@ -82,19 +82,19 @@ class TestThermoDatabase(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
-        self.database = database.thermo
+        cls.database = database.thermo
 
-        self.databaseWithoutLibraries = ThermoDatabase()
-        self.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'), libraries=[])
+        cls.databaseWithoutLibraries = ThermoDatabase()
+        cls.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'), libraries=[])
 
         # Set up ML estimator
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
         hf298_path = os.path.join(models_path, 'hf298')
         s298_cp_path = os.path.join(models_path, 's298_cp')
-        self.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
+        cls.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
     def test_pickle(self):
         """
@@ -1640,10 +1640,10 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
-        self.database = database.thermo
+        cls.database = database.thermo
 
     def connect_to_test_central_database(self):
         host, port, username, password = get_testing_tcd_authentication_info()

@@ -226,7 +226,10 @@ def to_ob_mol(mol, return_mapping=False):
     obmol = openbabel.OBMol()
     for atom in atoms:
         a = obmol.NewAtom()
-        a.SetAtomicNum(atom.number)
+        if atom.element.symbol == 'X':
+            a.SetAtomicNum(78)  # not sure how to do this with linear scaling when this might not be Pt
+        else:
+            a.SetAtomicNum(atom.number)
         if atom.element.isotope != -1:
             a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)

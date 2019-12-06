@@ -2758,63 +2758,6 @@ class KineticsFamily(Database):
             for species in reaction.reactants + reaction.products:
                 species.generate_resonance_structures()
 
-    def get_w0(self, rxn):
-        """
-        calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
-        and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
-        """
-        mol = None
-        a_dict = {}
-        for r in rxn.reactants:
-            m = r.molecule[0]
-            a_dict.update(m.get_all_labeled_atoms())
-            if mol:
-                mol = mol.merge(m)
-            else:
-                mol = m.copy(deep=True)
-
-        recipe = self.forward_recipe.actions
-
-        wb = 0.0
-        wf = 0.0
-        for act in recipe:
-
-            if act[0] == 'BREAK_BOND':
-                bd = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
-                wb += bd.get_bde()
-            elif act[0] == 'FORM_BOND':
-                bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
-                wf += bd.get_bde()
-            elif act[0] == 'CHANGE_BOND':
-                bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
-
-                if act[2] + bd1.order == 0.5:
-                    mol2 = None
-                    for r in rxn.products:
-                        m = r.molecule[0]
-                        if mol2:
-                            mol2 = mol2.merge(m)
-                        else:
-                            mol2 = m.copy(deep=True)
-                    bd2 = mol2.get_bond(a_dict[act[1]], a_dict[act[3]])
-                else:
-                    bd2 = Bond(a_dict[act[1]], a_dict[act[3]], bd1.order + act[2])
-
-                if bd2.order == 0:
-                    bd2_bde = 0.0
-                else:
-                    bd2_bde = bd2.get_bde()
-                bde_diff = bd2_bde - bd1.get_bde()
-                if bde_diff > 0:
-                    wf += abs(bde_diff)
-                else:
-                    wb += abs(bde_diff)
-
-        return (wf + wb) / 2.0
-
-    def get_w0s(self, rxns):
-        return list(map(self.get_w0, rxns))
-
     def get_training_depository(self):
         """
         Returns the `training` depository from self.depositories

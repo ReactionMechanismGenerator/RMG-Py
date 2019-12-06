@@ -32,8 +32,8 @@ import logging
 import os.path
 import shutil
 import unittest
+from unittest import mock
 
-import mock
 import numpy as np
 
 from rmgpy import settings

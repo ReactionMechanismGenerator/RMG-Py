@@ -104,7 +104,9 @@ class ArkaneTest(unittest.TestCase):
             reaction_list = read_reactions_block(chem, dictionary)
         rxn = reaction_list[0]
         self.assertIsInstance(rxn.kinetics, Chebyshev)
-        self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246)
+        # Accept a delta of 0.2, which could result from numerical discrepancies
+        # See RMG-Py #1682 on GitHub for discussion
+        self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246, delta=0.2)
 
         files = [f for f in os.listdir(os.path.join(self.directory, 'sensitivity', ''))
                  if os.path.isfile(os.path.join(self.directory, 'sensitivity', f))]
@@ -116,7 +118,7 @@ class ArkaneTest(unittest.TestCase):
                 if '1000.0' in line:
                     break
         sa_coeff = line.split()[-2]
-        self.assertEquals(float(sa_coeff), -8.23e-6)
+        self.assertAlmostEquals(float(sa_coeff), -8.23e-6, delta=0.02e-6)
 
     @classmethod
     def tearDown(cls):

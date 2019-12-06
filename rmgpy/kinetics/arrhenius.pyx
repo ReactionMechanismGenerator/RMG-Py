@@ -1081,10 +1081,10 @@ def get_w0(actions, rxn):
     and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
     """
     mol = None
-    aDict = {}
+    a_dict = {}
     for r in rxn.reactants:
         m = r.molecule[0]
-        aDict.update(m.get_all_labeled_atoms())
+        a_dict.update(m.get_all_labeled_atoms())
         if mol:
             mol = mol.merge(m)
         else:
@@ -1097,13 +1097,13 @@ def get_w0(actions, rxn):
     for act in recipe:
 
         if act[0] == 'BREAK_BOND':
-            bd = mol.get_bond(aDict[act[1]], aDict[act[3]])
+            bd = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
             wb += bd.get_bde()
         elif act[0] == 'FORM_BOND':
-            bd = Bond(aDict[act[1]], aDict[act[3]], act[2])
+            bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
             wf += bd.get_bde()
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.get_bond(aDict[act[1]], aDict[act[3]])
+            bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
 
             if act[2] + bd1.order == 0.5:
                 mol2 = None
@@ -1113,19 +1113,19 @@ def get_w0(actions, rxn):
                         mol2 = mol2.merge(m)
                     else:
                         mol2 = m.copy(deep=True)
-                bd2 = mol2.get_bond(aDict[act[1]], aDict[act[3]])
+                bd2 = mol2.get_bond(a_dict[act[1]], a_dict[act[3]])
             else:
-                bd2 = Bond(aDict[act[1]], aDict[act[3]], bd1.order + act[2])
+                bd2 = Bond(a_dict[act[1]], a_dict[act[3]], bd1.order + act[2])
 
             if bd2.order == 0:
-                bd2bde = 0.0
+                bd2_bde = 0.0
             else:
-                bd2bde = bd2.get_bde()
-            bdediff = bd2bde - bd1.get_bde()
-            if bdediff > 0:
-                wf += abs(bdediff)
+                bd2_bde = bd2.get_bde()
+            bde_diff = bd2_bde - bd1.get_bde()
+            if bde_diff > 0:
+                wf += abs(bde_diff)
             else:
-                wb += abs(bdediff)
+                wb += abs(bde_diff)
     return (wf + wb) / 2.0
 
 def get_w0s(actions, rxns):
