@@ -27,9 +27,9 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
-import mock
 import os
+import unittest
+from unittest import mock
 
 import rmgpy
 from rmgpy.chemkin import get_species_identifier, load_chemkin_file, load_transport_file, mark_duplicate_reactions, \
