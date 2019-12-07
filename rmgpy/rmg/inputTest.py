@@ -28,6 +28,7 @@
 ###############################################################################
 
 import unittest
+from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
@@ -35,7 +36,7 @@ from rmgpy.rmg.main import RMG
 
 ###################################################
 
-def setUpModule(self):
+def setUpModule():
     """
     A method that is run before the class.
     """
@@ -46,7 +47,7 @@ def setUpModule(self):
     inp.set_global_rmg(rmg)
 
 
-def tearDownModule(self):
+def tearDownModule():
     # remove RMG object
     global rmg
     rmg = None
@@ -144,6 +145,239 @@ class TestInputThemoCentralDatabase(unittest.TestCase):
         self.assertEqual(rmg.thermo_central_database.password, 'some_pw')
         self.assertEqual(rmg.thermo_central_database.application, 'some_app')
         self.assertEqual(rmg.thermo_central_database.client, None)
+
+
+class TestInputReactors(unittest.TestCase):
+    """
+    Contains unit tests for reactor input classes
+    """
+
+    def setUp(self):
+        """This method is run before every test in this class"""
+        # Create a mock species dictionary
+        # In reality, the values would be Species objects, but it doesn't matter for testing
+        species_dict = {
+            'A': 'A',
+            'B': 'B',
+            'C': 'C',
+            'X': 'X',
+        }
+
+        # Assign to global variable in the input module
+        inp.species_dict = species_dict
+
+        # Initialize the rmg.reaction_systems attribute
+        global rmg
+        rmg.reaction_systems = []
+
+    def tearDown(self):
+        """This method is run after every test in this class"""
+        # Reset the global species_dict variable in the input module
+        inp.species_dict = {}
+
+        # Reset the rmg.reaction_systems attribute
+        global rmg
+        rmg.reaction_systems = []
+
+    def test_simple_reactor_mole_fractions(self):
+        """Test that SimpleReactor mole fractions are set properly"""
+        inp.simple_reactor(
+            temperature=(1000, 'K'),
+            pressure=(1, 'atm'),
+            initialMoleFractions={
+                'A': 0.5,
+                'B': 0.3,
+                'C': 0.2,
+            },
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_mole_fractions['C'], 0.2)
+
+    @patch('rmgpy.rmg.input.logging')
+    def test_simple_reactor_mole_fractions_normalize_1(self, mock_logging):
+        """Test that SimpleReactor mole fractions are normalized properly"""
+        inp.simple_reactor(
+            temperature=(1000, 'K'),
+            pressure=(1, 'atm'),
+            initialMoleFractions={
+                'A': 5,
+                'B': 3,
+                'C': 2,
+            },
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_mole_fractions['C'], 0.2)
+
+        mock_logging.warning.assert_called_with(
+            'Initial mole fractions do not sum to one; normalizing.'
+        )
+
+    @patch('rmgpy.rmg.input.logging')
+    def test_simple_reactor_mole_fractions_normalize_2(self, mock_logging):
+        """Test that SimpleReactor mole fractions are normalized properly"""
+        inp.simple_reactor(
+            temperature=[(1000, 'K'), (2000, 'K')],
+            pressure=[(1, 'atm'), (10, 'atm')],
+            initialMoleFractions={
+                'A': 5,
+                'B': 3,
+                'C': 2,
+            },
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_mole_fractions['C'], 0.2)
+
+        mock_logging.warning.assert_called_with(
+            'Initial mole fractions do not sum to one; normalizing.'
+        )
+
+    def test_simple_reactor_mole_fractions_ranged(self):
+        """Test that SimpleReactor ranged mole fractions are not normalized"""
+        inp.simple_reactor(
+            temperature=[(1000, 'K'), (2000, 'K')],
+            pressure=[(1, 'atm'), (10, 'atm')],
+            initialMoleFractions={
+                'A': [5, 8],
+                'B': 3,
+                'C': 2,
+            },
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_mole_fractions['A'], [5, 8])
+        self.assertEqual(reactor.initial_mole_fractions['B'], 3)
+        self.assertEqual(reactor.initial_mole_fractions['C'], 2)
+
+    def test_liquid_reactor_concentrations(self):
+        """Test that LiquidReactor concentrations are set properly"""
+        inp.liquid_reactor(
+            temperature=(1000, 'K'),
+            initialConcentrations={
+                'A': (0.3, 'mol/L'),
+                'B': (0.2, 'mol/L'),
+                'C': (0.1, 'mol/L'),
+            },
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+
+        # Values get converted to default SI units, mol/m^3
+        self.assertEqual(reactor.initial_concentrations['A'], 300)
+        self.assertEqual(reactor.initial_concentrations['B'], 200)
+        self.assertEqual(reactor.initial_concentrations['C'], 100)
+
+    def test_surface_reactor_mole_fractions(self):
+        """Test that SurfaceReactor mole fractions are set properly"""
+        inp.surface_reactor(
+            temperature=(1000, 'K'),
+            initialPressure=(1, 'atm'),
+            initialGasMoleFractions={
+                'A': 0.5,
+                'B': 0.3,
+                'C': 0.2,
+            },
+            initialSurfaceCoverages={'X': 1.0},
+            surfaceVolumeRatio=(1e1, 'm^-1'),
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_gas_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_gas_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_gas_mole_fractions['C'], 0.2)
+
+    @patch('rmgpy.rmg.input.logging')
+    def test_surface_reactor_mole_fractions_normalize_1(self, mock_logging):
+        """Test that SurfaceReactor mole fractions are normalized properly"""
+        inp.surface_reactor(
+            temperature=(1000, 'K'),
+            initialPressure=(1, 'atm'),
+            initialGasMoleFractions={
+                'A': 5,
+                'B': 3,
+                'C': 2,
+            },
+            initialSurfaceCoverages={'X': 1.0},
+            surfaceVolumeRatio=(1e1, 'm^-1'),
+            terminationTime=(1, 's'),
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_gas_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_gas_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_gas_mole_fractions['C'], 0.2)
+
+        mock_logging.warning.assert_called_with(
+            'Initial gas mole fractions do not sum to one; renormalizing.'
+        )
+
+    def test_mb_sampled_reactor_mole_fractions(self):
+        """Test that MBSampledReactor mole fractions are set properly"""
+        inp.mb_sampled_reactor(
+            temperature=(1000, 'K'),
+            pressure=(1, 'atm'),
+            initialMoleFractions={
+                'A': 0.5,
+                'B': 0.3,
+                'C': 0.2,
+            },
+            mbsamplingRate=3500,
+            terminationTime=(1, 's'),
+            constantSpecies=['B', 'C'],
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_mole_fractions['C'], 0.2)
+
+    @patch('rmgpy.rmg.input.logging')
+    def test_mb_sampled_reactor_mole_fractions_normalize_1(self, mock_logging):
+        """Test that MBSampledReactor mole fractions are normalized properly"""
+        inp.mb_sampled_reactor(
+            temperature=(1000, 'K'),
+            pressure=(1, 'atm'),
+            initialMoleFractions={
+                'A': 5,
+                'B': 3,
+                'C': 2,
+            },
+            mbsamplingRate=3500,
+            terminationTime=(1, 's'),
+            constantSpecies=['B', 'C'],
+        )
+
+        global rmg
+        reactor = rmg.reaction_systems[0]
+        self.assertEqual(reactor.initial_mole_fractions['A'], 0.5)
+        self.assertEqual(reactor.initial_mole_fractions['B'], 0.3)
+        self.assertEqual(reactor.initial_mole_fractions['C'], 0.2)
+
+        mock_logging.warning.assert_called_with(
+            'Initial mole fractions do not sum to one; normalizing.'
+        )
 
 
 if __name__ == '__main__':
