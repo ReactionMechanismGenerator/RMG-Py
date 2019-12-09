@@ -10,41 +10,20 @@ species and reactions.
 
 
 
-Reading Gaussian log files
-==========================
+Reading electronic structure software log files
+===============================================
 
-.. currentmodule:: arkane.gaussian
+.. currentmodule:: arkane.ess
 
 =============================== ================================================
 Class                           Description
 =============================== ================================================
+:class:`Log`                    Base class for generic log files
 :class:`GaussianLog`            Extract chemical parameters from Gaussian log files
-=============================== ================================================
-
-
-
-Reading Q-Chem log files
-========================
-
-.. currentmodule:: arkane.qchem
-
-=============================== ================================================
-Class                           Description
-=============================== ================================================
-:class:`QChemLog`               Extract chemical parameters from Q-Chem log files
-=============================== ================================================
-
-
-
-Reading Molpro log files
-========================
-
-.. currentmodule:: arkane.molpro
-
-=============================== ================================================
-Class                           Description
-=============================== ================================================
 :class:`MolproLog`              Extract chemical parameters from Molpro log files
+:class:`OrcaLog`                Extract chemical parameters from Orca log files
+:class:`QChemLog`               Extract chemical parameters from Q-Chem log files
+:class:`TeraChemLog`            Extract chemical parameters from TeraChem log files
 =============================== ================================================
 
 
@@ -82,9 +61,12 @@ Class                           Description
 .. toctree::
     :hidden:
     
+    log
     gaussianlog
-    qchemlog
     molprolog
+    orcalog
+    qchemlog
+    terachemlog
     input
     kinetics
     main

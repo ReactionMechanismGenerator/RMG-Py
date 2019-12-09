@@ -1,5 +1,5 @@
 *******************************
-arkane.ess.GaussianLog
+arkane.ess.TeraChemLog
 *******************************
 
-.. autoclass:: arkane.ess.GaussianLog
+.. autoclass:: arkane.ess.TeraChemLog
