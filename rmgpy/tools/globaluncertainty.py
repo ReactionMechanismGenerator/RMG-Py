@@ -33,8 +33,8 @@ from time import time
 
 import numpy as np
 
-import muq.Modeling as muqm
 import muq.Approximation as muqa
+import muq.Modeling as muqm
 import muq.Utilities as muqu
 
 
@@ -47,27 +47,31 @@ class ReactorModPiece(muqm.PyModPiece):
         ======================= ====================================================
         `cantera`               A Cantera() object containing CanteraConditions and initialized species and reactions
         `output_species_list`   A list of Species() objects corresponding to the desired observables for uncertainty analysis
-        `k_params`              Uncorrelated: A list of indices of the Reaction() objects in cantera.reaction_list corresponding to the uncertain input rate coefficients
-                                Correlated: this is a list of strings of the uncertain kinetic parameter sources to be propagated in the model. i.e. 'H_Abstraction CHO/Oa'
-        `k_uncertainty`         Uncorrelated: A list of uncertainties dlnk corresponding to the reactions in kReactions
-                                Correlated: A list of dictionaries corresponding to each reaction's partial uncertainties with respect to various kinetic sources.
-                                            This is the output object from the Uncertainty.kineticInputUncertainties 
-        `g_params `             Uncorrelated: A list of indices for the Species() objects in cantera.species_list corresponding to the uncertain input free energies of individual species
-                                Correlated: A list of strings corresponding to the uncertain thermo sources to be propagated.  i.e. 'Group(group) C=O'
-        `g_uncertainty`         Uncorrelated: A list of uncertainties dG corresponding to the species in gSpecies in units of kcal/mol
-                                Correlated: A list of dictionaries corresponding to each specie's partial uncertainties with respect to various thermo sources.
-                                            This is the output object from the Uncertainty.thermoInputUncertainties 
-        `correlated`            A flag set to either `True` or `False` depending on whether the uncertainties are correlated or not
-                                If correlated, the correlated uncertainties will propagate and affect multiple species thermo and reaction kinetics parameters
-        
-        `affected_reactions`     Used only in the correlated case, this is a list of the indices of the affected rxns for k_params
-        `affected_species`       Used only in the correlated case, this is a list of the indices of the affected species for g_params
+        `k_params`              Uncorrelated: A list of RMG reaction indices corresponding to the uncertain
+                                    input rate coefficients
+                                Correlated: A list of strings of the uncertain kinetic parameter sources to be
+                                    propagated in the model. i.e. 'H_Abstraction CHO/Oa'
+        `k_uncertainty`         Uncorrelated: A list of uncertainties dlnk for every reaction
+                                Correlated: A list of dictionaries with every reaction's partial uncertainties
+                                    with respect to various kinetic sources
+                                This is the output object from the Uncertainty.kineticInputUncertainties
+        `g_params `             Uncorrelated: A list of RMG species indices corresponding to the uncertain input free energies
+                                Correlated: A list of strings corresponding to the uncertain thermo sources to be
+                                    propagated in the model.  i.e. 'Group(group) C=O'
+        `g_uncertainty`         Uncorrelated: A list of uncertainties dG corresponding for every species in units of kcal/mol
+                                Correlated: A list of dictionaries with every species' partial uncertainties
+                                    with respect to various thermo sources.
+                                This is the output object from the Uncertainty.thermoInputUncertainties
+        `correlated`            If true, propagate correlated uncertainties from the underlying independent parameters
+        `affected_reactions`    For correlated only, a list of the indices of the affected rxns for k_params
+        `affected_species`      For correlated only, a list of the indices of the affected species for g_params
         `logx`                  A flag to set whether to use mole fraction or ln(mole fraction) as the output variable
         ============================================================================
         """
         self.cantera = cantera
         self.output_species_list = output_species_list
-        self.output_species_indices = [cantera.species_list.index(output_species) for output_species in output_species_list]
+        self.output_species_indices = [cantera.species_list.index(output_species)
+                                       for output_species in output_species_list]
         self.correlated = correlated
         self.logx = logx
 
@@ -98,10 +102,10 @@ class ReactorModPiece(muqm.PyModPiece):
             g_params = new_g_params
 
         # for uncorrelated case, these are indices of reactions
-        # for correlated case, this is the list of labels for the uncertain parameters to be perturbed, i.e. 'H_Abstraction CHO/Oa'
+        # for correlated case, this is a list of parameter labels, i.e. 'H_Abstraction CHO/Oa'
         self.k_params = k_params
         # for uncorrelated case, these are indices of the species
-        # for correlated case, this is the list of labels for the uncertain thermo parameters to be perturbed, i.e. 'Group(ring) cyclohexane'
+        # for correlated case, this is a list of parameter labels, i.e. 'Group(ring) cyclohexane'
         self.g_params = g_params
 
         if not self.correlated:
@@ -109,13 +113,15 @@ class ReactorModPiece(muqm.PyModPiece):
             self.k_uncertainty_factors = {}
             for i, rxn_index in enumerate(k_params):
                 self.k_uncertainty_factors[rxn_index] = k_uncertainty_factors[rxn_index]
-                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.reaction_list[rxn_index], k_uncertainty_factors[rxn_index]))
+                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.reaction_list[rxn_index],
+                                                                              k_uncertainty_factors[rxn_index]))
             
             g_uncertainty_factors = [val * np.sqrt(3) for val in g_uncertainty]
             self.g_uncertainty_factors = {}
             for i, spc_index in enumerate(g_params):
                 self.g_uncertainty_factors[spc_index] = g_uncertainty_factors[spc_index]
-                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.species_list[spc_index], g_uncertainty_factors[spc_index]))
+                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.species_list[spc_index],
+                                                                              g_uncertainty_factors[spc_index]))
             
         else:
             # In the correlated case, keep track of which reactions and species each 
@@ -130,7 +136,7 @@ class ReactorModPiece(muqm.PyModPiece):
                         uncertainty_factor = rxn_input_dict[k_param] * np.sqrt(3) / np.log(10)
                         # If this parameter string contributes to the reaction, add this reaction index
                         rxn_partial_uncertainty.append((rxn_index, uncertainty_factor))
-                self.k_uncertainty_factors[k_param] = rxn_partial_uncertainty  # list of indices of the reactions affected
+                self.k_uncertainty_factors[k_param] = rxn_partial_uncertainty  # list of indices of affected reactions
             self.affected_reactions = list(affected_reactions)
 
             self.g_uncertainty_factors = {}
@@ -177,7 +183,7 @@ class ReactorModPiece(muqm.PyModPiece):
         g_rv = inputs[0][len(self.k_params):]
 
         if not self.correlated:
-            # Make deepcopies of the thermo and kinetics so as to not modify the originals in the species_list and reaction_list
+            # Make deepcopies of the thermo and kinetics to not modify originals in the species_list and reaction_list
             original_thermo = [copy.deepcopy(self.cantera.species_list[index].thermo) for index in self.g_params]
             original_kinetics = [copy.deepcopy(self.cantera.reaction_list[index].kinetics) for index in self.k_params]
 
@@ -190,7 +196,7 @@ class ReactorModPiece(muqm.PyModPiece):
                 self.scale_to_thermo(rv, self.g_uncertainty_factors[spc_index], spc_index)
 
         else:
-            # Make deepcopies of the thermo and kinetics so as to not modify the originals in the species_list and reaction_list
+            # Make deepcopies of the thermo and kinetics to not modify originals in the species_list and reaction_list
             original_kinetics = [copy.deepcopy(self.cantera.reaction_list[index].kinetics) 
                                  for index in self.affected_reactions]
             original_thermo = [copy.deepcopy(self.cantera.species_list[index].thermo) 
@@ -302,7 +308,7 @@ class ReactorPCEFactory(object):
         2. Run local uncertainty analysis
         3. Extract top N most uncertain parameters
         4. Input these set of parameters into a MUQ model class (which is a child of the ModPiece class)
-        5. Create EvaluateImpl function within model class that runs simulation based on reactor conditions through Cantera
+        5. Create EvaluateImpl function within model class that runs Cantera simulation based on reactor conditions
         6. Perform PCE analysis of desired outputs
     """
 
@@ -320,11 +326,11 @@ class ReactorPCEFactory(object):
             logx=logx,
         )
 
-        # Select the polynomial and quadrature families
-        quad_family = muqa.GaussPattersonQuadrature()  # We select the Gauss-Patterson quadrature as it is recommended
-                                                       # as the fastest in the Patrick Conrad, Youssef Marzouk paper
-        poly_family = muqa.Legendre()                  # Uniform random variables used chemical kinetics
-                                                       # uncertainty propagation uses Legendre polynomials
+        # We select the Gauss-Patterson quadrature as it is recommended as the fastest in the
+        # Patrick Conrad, Youssef Marzouk paper doi: 10.1137/120890715
+        quad_family = muqa.GaussPattersonQuadrature()
+        # Uniform random variables used chemical kinetics uncertainty propagation uses Legendre polynomials
+        poly_family = muqa.Legendre()
 
         # Initialize the PCE Factory
         self.dim = self.reactor_mod.inputSizes[0]
