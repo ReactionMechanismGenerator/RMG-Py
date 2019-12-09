@@ -615,6 +615,8 @@ class RMG(util.Subject):
         self.initialize_reaction_threshold_and_react_flags()
         self.reaction_model.initialize_index_species_dict()
 
+        self.initialize_seed_mech()
+
     def register_listeners(self):
         """
         Attaches listener classes depending on the options 
@@ -726,7 +728,7 @@ class RMG(util.Subject):
         self.save_everything()
 
         if self.generate_seed_each_iteration:
-            self.make_seed_mech(first_time=True)
+            self.make_seed_mech()
 
         max_num_spcs_hit = False  # default
 
@@ -798,7 +800,7 @@ class RMG(util.Subject):
                                 from arkane.output import prettify
                                 logging.error(prettify(repr(self.reaction_model.core.reactions)))
                             if not self.generate_seed_each_iteration:  # Then we haven't saved the seed mechanism yet
-                                self.make_seed_mech(first_time=True)  # Just in case the user wants to restart from this
+                                self.make_seed_mech()  # Just in case the user wants to restart from this
                             raise
 
                         self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
@@ -952,7 +954,7 @@ class RMG(util.Subject):
         if self.generate_seed_each_iteration:
             self.make_seed_mech()
         else:
-            self.make_seed_mech(first_time=True)
+            self.make_seed_mech()
 
         self.run_model_analysis()
 
@@ -1238,23 +1240,31 @@ class RMG(util.Subject):
         else:
             logging.info("No collision rate violators found.")
 
-    def make_seed_mech(self, first_time=False):
+    def initialize_seed_mech(self):
         """
-        causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
-        this seed mechanism is outputted in a seed folder within the run directory and automatically
-        added to as the (or replaces the current) 'Seed' thermo and kinetics libraries in database
-        
-        if run with first_time=True it will change self.name to be unique within the thermo/kinetics libraries
-        by adding integers to the end of the name to prevent overwritting
+        Initialize the process of saving the seed mechanism by performing the following:
 
-        This also writes the filter tensors to the `filters` sub-folder for restarting an RMG job from a seed mechanism
+        1. Create the initial seed mechanism folder (the seed from a previous iterations will be deleted)
+        2. Save the restart-from-seed file (unless the current job is itself a restart job)
+        3. Ensure that we don't overwrite existing libraries in the database that have the same name as this job
         """
+        # Make the initial seed mechanism folder
+        seed_dir = os.path.join(self.output_directory, 'seed')
+        if os.path.exists(seed_dir):  # This is a seed from a previous RMG run. Delete it
+            shutil.rmtree(seed_dir)
+        os.mkdir(seed_dir)
 
-        logging.info('Making seed mechanism...')
+        # Generate a file for restarting from a seed mechanism if this is not a restart job
+        if not self.restart:
+            with open(os.path.join(self.output_directory, 'restart_from_seed.py'), 'w') as f:
+                f.write('restartFromSeed(path=\'seed\')\n\n')
+                with open(self.input_file, 'r') as input_file:
+                    f.write(input_file.read())
 
+        # Change self.name to be unique within the thermo/kinetics libraries by adding integers to the end of the
+        # name to prevent overwriting
         name = self.name
-
-        if self.save_seed_to_database and first_time:  # make sure don't overwrite current libraries
+        if self.save_seed_to_database:  # make sure we don't overwrite current libraries
             thermo_names = list(self.database.thermo.libraries.keys())
             kinetics_names = list(self.database.kinetics.libraries.keys())
 
@@ -1264,26 +1274,38 @@ class RMG(util.Subject):
                     q += 1
                 self.name = name + str(q)
 
+    def make_seed_mech(self):
+        """
+        Save a seed mechanism (both core and edge) in the 'seed' sub-folder of the output directory. Additionally, save
+        the filter tensors to the 'seed/filters' sub-folder so that the RMG job can be restarted from a seed mechanism.
+        If `self.save_seed_to_database` is True then the seed mechanism is also saved as libraries (one each for the
+        core and edge) in the RMG-database.
+
+        Notes:
+            `initialize_seed_mech` should be called one time before this function is ever called.
+
+        """
+        logging.info('Making seed mechanism...')
+
+        name = self.name
+
         seed_dir = os.path.join(self.output_directory, 'seed')
         filter_dir = os.path.join(seed_dir, 'filters')
         temp_seed_dir = os.path.join(self.output_directory, 'seed_tmp')
 
-        if first_time:
-            if os.path.exists(seed_dir):  # This is a seed from a previous RMG run. Delete it
-                shutil.rmtree(seed_dir)
-        else:  # This is a seed from the previous iteration. Move it to a temporary directory in case we run into errors
-            try:
-                os.rename(seed_dir, temp_seed_dir)
-            except PermissionError:  # The Windows Subsystem for Linux (WSL) can have problems with renaming
-                # Try copying over the files instead. Unfortunately, this takes more time
-                if os.path.exists(temp_seed_dir):  # First, delete the contents of the old folder if it exists
-                    shutil.rmtree(temp_seed_dir)
-                shutil.copytree(seed_dir, temp_seed_dir)
+        # Move the seed from the previous iteration to a temporary directory in case we run into errors
+        try:
+            os.rename(seed_dir, temp_seed_dir)
+        except PermissionError:  # The Windows Subsystem for Linux (WSL) can have problems with renaming
+            # Try copying over the files instead. Unfortunately, this takes more time
+            if os.path.exists(temp_seed_dir):  # First, delete the contents of the old folder if it exists
+                shutil.rmtree(temp_seed_dir)
+            shutil.copytree(seed_dir, temp_seed_dir)
 
-                # Now remove the contents of the seed directory
-                shutil.rmtree(seed_dir)
+            # Now remove the contents of the seed directory
+            shutil.rmtree(seed_dir)
 
-        # Now that we have either deleted or moved the seed mechanism folder, create a new one
+        # Now that we have moved the seed mechanism folder, create a new one
         os.mkdir(seed_dir)
 
         try:
@@ -1379,13 +1401,6 @@ class RMG(util.Subject):
 
             with open(os.path.join(filter_dir, 'species_map.yml'), 'w') as f:
                 yaml.dump(data=spcs_map, stream=f)
-
-            # Generate a file for restarting from a seed mechanism if this is not a restart job
-            if first_time and (not self.restart):
-                with open(os.path.join(self.output_directory, 'restart_from_seed.py'), 'w') as f:
-                    f.write('restartFromSeed(path=\'seed\')\n\n')
-                    with open(self.input_file, 'r') as input_file:
-                        f.write(''.join(input_file.readlines()))
 
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(temp_seed_dir):
