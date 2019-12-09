@@ -52,88 +52,78 @@ class Log(object):
 
     def get_number_of_atoms(self):
         """
-        Return the number of atoms in the molecular configuration used in
-        the MolPro log file.
+        Return the number of atoms in the molecular configuration.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("get_number_of_atoms is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_force_constant_matrix(self):
         """
-        Return the force constant matrix (in Cartesian coordinates) from the
-        QChem log file. If multiple such matrices are identified,
-        only the last is returned. The units of the returned force constants
-        are J/m^2. If no force constant matrix can be found in the log file,
-        ``None`` is returned.
+        Return the force constant matrix (in Cartesian coordinates).
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_force_constant_matrix is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_geometry(self):
         """
-        Return the optimum geometry of the molecular configuration from the
-        log file. If multiple such geometries are identified, only the
-        last is returned.
+        Return the optimum geometry of the molecular configuration.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_geometry is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
-        Load the molecular degree of freedom data from an output file created as the result of a
-        QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
-        you can use the `symmetry` parameter to substitute your own value;
-        if not provided, the value in the QChem output file will be adopted.
+        Load the molecular degree of freedom data from a frequency calculations.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_conformer is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_energy(self, zpe_scale_factor=1.):
         """
-        Load the energy in J/mol from a QChem log file. Only the last energy
-        in the file is returned. The zero-point energy is *not* included in
-        the returned value.
+        Load the energy.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_energy is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_zero_point_energy(self):
         """
-        Load the unscaled zero-point energy in J/mol from a QChem output file.
+        Load the unscaled zero-point energy.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_zero_point_energy is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_scan_energies(self):
         """
-        Extract the optimized energies in J/mol from a QChem log file, e.g. the
-        result of a QChem "PES Scan" quantum chemistry calculation.
+        Extract the optimized energies from a potential energy scan.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_scan_energies is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
     def load_scan_pivot_atoms(self):
         """
-        Extract the atom numbers which the rotor scan pivots around
-        Return a list of atom numbers starting with the first atom as 1
+        Extract the atom numbers which the rotor scan pivots around.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_scan_pivot_atoms is not implemented for the Log class")
 
     def load_scan_frozen_atoms(self):
         """
-        Extract the atom numbers which were frozen during the scan
-        Return a list of list of atom numbers starting with the first atom as 1
-        Each element of the outer lists represents a frozen bond
-        Inner lists with length 2 represent frozen bond lengths
-        Inner lists with length 3 represent frozen bond angles
-        Inner lists with length 4 represent frozen dihedral angles
+        Extract the atom numbers which were frozen during the scan.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_scan_frozen_atoms is not implemented for the Log class")
 
     def load_negative_frequency(self):
         """
-        Return the imaginary frequency from a transition state frequency
-        calculation in cm^-1.
+        Return the imaginary frequency from a transition state frequency calculation.
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("load_negative_frequency is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
@@ -180,11 +170,13 @@ class Log(object):
     def get_D1_diagnostic(self):
         """
         This method returns the D1 diagnostic for certain quantum jobs
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("get_D1_diagnostic is not implemented for all Log subclasses.")
 
     def get_T1_diagnostic(self):
         """
         This method returns the T1 diagnostic for certain quantum jobs
+        Should be implemented by a subclass.
         """
         raise NotImplementedError("get_T1_diagnostic is not implemented for all Log subclasses.")
