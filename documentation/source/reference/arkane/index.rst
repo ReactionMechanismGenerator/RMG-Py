@@ -75,6 +75,20 @@ Class                           Description
 
 
 
+Sensitivity analysis
+====================
+
+.. currentmodule:: arkane.sensitivity
+
+=============================== ================================================
+Class                           Description
+=============================== ================================================
+:class:`KineticsSensitivity`    Perform sensitivity analysis for a kinetics job
+:class:`PDepSensitivity`        Perform sensitivity analysis for a pressure dependence job
+=============================== ================================================
+
+
+
 .. toctree::
     :hidden:
     
@@ -91,4 +105,5 @@ Class                           Description
     pdep
     statmech
     thermo
+    sensitivity
     
