@@ -1029,7 +1029,7 @@ class RMG(util.Subject):
         """
         if self.uncertainty is not None and self.uncertainty['global']:
             try:
-                import libmuqModelling
+                import muq
             except ImportError:
                 logging.error('Unable to import MUQ. Skipping global uncertainty analysis.')
                 self.uncertainty['global'] = False
@@ -1037,7 +1037,7 @@ class RMG(util.Subject):
                 import re
                 import random
                 from rmgpy.tools.canteramodel import Cantera
-                from rmgpy.tools.muq import ReactorPCEFactory
+                from rmgpy.tools.globaluncertainty import ReactorPCEFactory
 
         if self.uncertainty is not None and self.uncertainty['local']:
             correlation = []
@@ -1132,24 +1132,28 @@ class RMG(util.Subject):
 
                             reactor_pce_factory = ReactorPCEFactory(
                                 cantera=job,
-                                outputSpeciesList=reaction_system.sensitive_species,
-                                kParams=k_params,
-                                kUncertainty=uncertainty.kinetic_input_uncertainties,
-                                gParams=g_params,
-                                gUncertainty=uncertainty.thermo_input_uncertainties,
+                                output_species_list=reaction_system.sensitive_species,
+                                k_params=k_params,
+                                k_uncertainty=uncertainty.kinetic_input_uncertainties,
+                                g_params=g_params,
+                                g_uncertainty=uncertainty.thermo_input_uncertainties,
                                 correlated=correlated,
                                 logx=self.uncertainty['logx'],
                             )
 
                             logging.info('Generating PCEs...')
-                            reactor_pce_factory.generatePCE(runTime=self.uncertainty['pcetime'])
+                            reactor_pce_factory.generate_pce(
+                                max_adapt_time=self.uncertainty['pcetime'],
+                                error_tol=self.uncertainty['pcetol'],
+                                max_evals=self.uncertainty['pceevals'],
+                            )
 
                             # Try a test point to see how well the PCE performs
-                            reactor_pce_factory.compareOutput(
+                            reactor_pce_factory.compare_output(
                                 [random.uniform(-1.0, 1.0) for i in range(len(k_params) + len(g_params))])
 
                             # Analyze results and save statistics
-                            reactor_pce_factory.analyzeResults()
+                            reactor_pce_factory.analyze_results()
                     else:
                         logging.info('Unable to run uncertainty analysis. Must specify sensitivity analysis options in '
                                      'reactor options.')
