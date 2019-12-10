@@ -254,6 +254,17 @@ by the <code class="xref py py-mod docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.main.RMG.initialize_seed_mech">
+<code class="sig-name descname">initialize_seed_mech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.initialize_seed_mech" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the process of saving the seed mechanism by performing the following:</p>
+<ol class="arabic simple">
+<li><p>Create the initial seed mechanism folder (the seed from a previous iterations will be deleted)</p></li>
+<li><p>Save the restart-from-seed file (unless the current job is itself a restart job)</p></li>
+<li><p>Ensure that we don’t overwrite existing libraries in the database that have the same name as this job</p></li>
+</ol>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.main.RMG.load_input">
 <code class="sig-name descname">load_input</code><span class="sig-paren">(</span><em class="sig-param">path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an RMG job from the input file located at <cite>input_file</cite>, or
@@ -282,13 +293,13 @@ from the <cite>input_file</cite> attribute if not given as a parameter.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.main.RMG.make_seed_mech">
-<code class="sig-name descname">make_seed_mech</code><span class="sig-paren">(</span><em class="sig-param">first_time=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.make_seed_mech" title="Permalink to this definition">¶</a></dt>
-<dd><p>causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
-this seed mechanism is outputted in a seed folder within the run directory and automatically
-added to as the (or replaces the current) ‘Seed’ thermo and kinetics libraries in database</p>
-<p>if run with first_time=True it will change self.name to be unique within the thermo/kinetics libraries
-by adding integers to the end of the name to prevent overwritting</p>
-<p>This also writes the filter tensors to the <cite>filters</cite> sub-folder for restarting an RMG job from a seed mechanism</p>
+<code class="sig-name descname">make_seed_mech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.make_seed_mech" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a seed mechanism (both core and edge) in the ‘seed’ sub-folder of the output directory. Additionally, save
+the filter tensors to the ‘seed/filters’ sub-folder so that the RMG job can be restarted from a seed mechanism.
+If <cite>self.save_seed_to_database</cite> is True then the seed mechanism is also saved as libraries (one each for the
+core and edge) in the RMG-database.</p>
+<p class="rubric">Notes</p>
+<p><cite>initialize_seed_mech</cite> should be called one time before this function is ever called.</p>
 </dd></dl>
 
 <dl class="method">
