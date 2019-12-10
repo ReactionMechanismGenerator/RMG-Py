@@ -92,7 +92,10 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 
 # A list of default flags for automatically documented items.
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_options = {
+    'members': True,
+    'inherited-members': True,
+}
 
 
 # -- Options for HTML output ---------------------------------------------------
