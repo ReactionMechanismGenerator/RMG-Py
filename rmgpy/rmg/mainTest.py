@@ -27,13 +27,14 @@
 #                                                                             #
 ###############################################################################
 
+import logging
 import os
 import shutil
 import unittest
 
 from nose.plugins.attrib import attr
 
-from rmgpy.rmg.main import RMG
+from rmgpy.rmg.main import RMG, initialize_log
 from rmgpy.rmg.main import RMG_Memory
 from rmgpy import get_path
 from rmgpy import settings
@@ -181,6 +182,76 @@ class TestMain(unittest.TestCase):
                     ct.Solution(os.path.join(outName, f))
                 except:
                     self.fail('The output Cantera file is not loadable in Cantera.')
+
+
+@attr('functional')
+class TestRestartWithFilters(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'restartTest')
+        cls.outputDir = os.path.join(cls.testDir, 'output_w_filters')
+        cls.databaseDirectory = settings['database.directory']
+
+        os.mkdir(cls.outputDir)
+        initialize_log(logging.INFO, os.path.join(cls.outputDir, 'RMG.log'))
+
+        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'restart_w_filters.py'),
+                      output_directory=os.path.join(cls.outputDir))
+
+    def test_restart_with_filters(self):
+        """
+        Test that the RMG restart job with filters included completed without problems
+        """
+        self.rmg.execute()
+        with open(os.path.join(self.outputDir, 'RMG.log'), 'r') as f:
+            self.assertIn('MODEL GENERATION COMPLETED', f.read())
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+        # Reset module level database
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
+        # Remove output directory
+        shutil.rmtree(cls.outputDir)
+
+
+@attr('functional')
+class TestRestartNoFilters(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'restartTest')
+        cls.outputDir = os.path.join(cls.testDir, 'output_no_filters')
+        cls.databaseDirectory = settings['database.directory']
+
+        os.mkdir(cls.outputDir)
+        initialize_log(logging.INFO, os.path.join(cls.outputDir, 'RMG.log'))
+
+        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'restart_no_filters.py'),
+                      output_directory=os.path.join(cls.outputDir))
+
+    def test_restart_no_filters(self):
+        """
+        Test that the RMG restart job with no filters included completed without problems
+        """
+        self.rmg.execute()
+        with open(os.path.join(self.outputDir, 'RMG.log'), 'r') as f:
+            self.assertIn('MODEL GENERATION COMPLETED', f.read())
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+        # Reset module level database
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
+        # Remove output directory
+        shutil.rmtree(cls.outputDir)
 
 
 class TestCanteraOutput(unittest.TestCase):
