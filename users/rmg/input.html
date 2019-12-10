@@ -760,6 +760,8 @@ an uncertainty options block in the input file:</p>
     <span class="n">globalNumber</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">terminationTime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">pceRunTime</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>
+    <span class="n">pceErrorTol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pceMaxEvals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">logx</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -789,11 +791,13 @@ or group additivity values for thermochemistry) are accounted for, which reduces
 parameters.</p>
 <p>Finally, there are a few miscellaneous options for global uncertainty analysis. The <code class="docutils literal notranslate"><span class="pre">terminationTime</span></code> applies for the
 reactor simulation. It is only necessary if termination time is not specified in the reactor settings (i.e. only other
-termination criteria are used). The <code class="docutils literal notranslate"><span class="pre">pceRunTime</span></code> sets the time limit for fitting the PCE to the output surface.
-Longer run times allow more simulations to be performed, leading to more accurate results. The <code class="docutils literal notranslate"><span class="pre">logx</span></code> option toggles
-the output parameter space between mole fractions and log mole fractions. Results in mole fraction space are more
-physically meaningful, while results in log mole fraction space can be directly compared against local uncertainty
-results.</p>
+termination criteria are used). For PCE generation, there are three termination options: <code class="docutils literal notranslate"><span class="pre">pceRunTime</span></code> sets a time
+limit for adapting the PCE to the output, <code class="docutils literal notranslate"><span class="pre">pceErrorTol</span></code> sets the target L2 error between the PCE model and the true
+output, and <code class="docutils literal notranslate"><span class="pre">pceMaxEvals</span></code> sets a limit on the total number of model evaluations used to adapt the PCE.
+Longer run time, smaller error tolerance, and more model evaluations all contribute to more accurate results at the
+expense of computation time. The <code class="docutils literal notranslate"><span class="pre">logx</span></code> option toggles the output parameter space between mole fractions and log mole
+fractions. Results in mole fraction space are more physically meaningful, while results in log mole fraction space can
+be directly compared against local uncertainty results.</p>
 <p><strong>Important Note:</strong> The current implementation of uncertainty analysis assigns values for input parameter
 uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
 are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.</p>

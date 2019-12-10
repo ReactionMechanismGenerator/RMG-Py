@@ -796,6 +796,8 @@ an uncertainty options block in the input file::
         globalNumber=5,
         terminationTime=None,
         pceRunTime=1800,
+        pceErrorTol=None,
+        pceMaxEvals=None,
         logx=True
     )
 
@@ -827,11 +829,13 @@ parameters.
 
 Finally, there are a few miscellaneous options for global uncertainty analysis. The ``terminationTime`` applies for the
 reactor simulation. It is only necessary if termination time is not specified in the reactor settings (i.e. only other
-termination criteria are used). The ``pceRunTime`` sets the time limit for fitting the PCE to the output surface.
-Longer run times allow more simulations to be performed, leading to more accurate results. The ``logx`` option toggles
-the output parameter space between mole fractions and log mole fractions. Results in mole fraction space are more
-physically meaningful, while results in log mole fraction space can be directly compared against local uncertainty
-results.
+termination criteria are used). For PCE generation, there are three termination options: ``pceRunTime`` sets a time
+limit for adapting the PCE to the output, ``pceErrorTol`` sets the target L2 error between the PCE model and the true
+output, and ``pceMaxEvals`` sets a limit on the total number of model evaluations used to adapt the PCE.
+Longer run time, smaller error tolerance, and more model evaluations all contribute to more accurate results at the
+expense of computation time. The ``logx`` option toggles the output parameter space between mole fractions and log mole
+fractions. Results in mole fraction space are more physically meaningful, while results in log mole fraction space can
+be directly compared against local uncertainty results.
 
 **Important Note:** The current implementation of uncertainty analysis assigns values for input parameter
 uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
