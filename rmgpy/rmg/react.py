@@ -31,7 +31,7 @@
 Contains functions for generating reactions.
 """
 import logging
-from multiprocessing import Pool
+from dask.distributed import as_completed
 
 from rmgpy.data.rmg import get_db
 
@@ -39,7 +39,7 @@ from rmgpy.data.rmg import get_db
 ################################################################################
 
 
-def react(spc_fam_tuples, procnum=1):
+def react(spc_fam_tuples, procnum=1, client=None):
     """
     Generate reactions between the species in the list of species-family tuples
     for the optionally specified reaction families.
@@ -66,20 +66,28 @@ def react(spc_fam_tuples, procnum=1):
         reactions = list(map(_react_species_star, spc_fam_tuples))
     else:
         logging.info('For reaction generation {0} processes are used.'.format(procnum))
-        p = Pool(processes=procnum)
-        reactions = p.map(_react_species_star, spc_fam_tuples)
-        p.close()
-        p.join()
+        results = []
+        reactions = []
+
+        # Submit individual task asynchronously
+        for spc_fam_tuple in spc_fam_tuples:
+            result = _react_species_star(spc_fam_tuple, client=client)
+            results.append(result)
+
+        # Process results as they arrive
+        for res in as_completed(results):
+            reactions.append(res.result())
+
+
 
     return reactions
 
 
-def _react_species_star(args):
+def _react_species_star(args, client=None):
     """Wrapper to unpack zipped arguments for use with map"""
-    return react_species(*args)
+    return react_species(*args, client=client)
 
-
-def react_species(species_tuple, only_families=None):
+def react_species(species_tuple, only_families=None, client=None):
     """
     Given a tuple of Species objects, generates all possible reactions
     from the loaded reaction families and combines degenerate reactions.
@@ -91,12 +99,17 @@ def react_species(species_tuple, only_families=None):
     Returns:
         list of generated reactions
     """
-    reactions = get_db('kinetics').generate_reactions_from_families(species_tuple, only_families=only_families)
+    if client:
+        db_kin = get_db('kinetics')
+        result = client.submit(db_kin.generate_reactions_from_families, species_tuple, only_families=only_families)
+    else:
+        result = get_db('kinetics').generate_reactions_from_families(species_tuple, only_families=only_families)
 
-    return reactions
+    return result
 
 
-def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecular_react, trimolecular_react=None, procnum=1):
+def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecular_react, trimolecular_react=None,
+              procnum=1, client=None):
     """
     Reacts the core species list via uni-, bi-, and trimolecular reactions.
 
@@ -169,4 +182,4 @@ def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecul
             else:
                 spc_fam_tuples.append((spc_tuple,))
 
-    return react(spc_fam_tuples, procnum), [fam_tuple[0] for fam_tuple in spc_fam_tuples]
+    return react(spc_fam_tuples, procnum, client=client), [fam_tuple[0] for fam_tuple in spc_fam_tuples]

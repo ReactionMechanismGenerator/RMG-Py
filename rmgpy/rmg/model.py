@@ -497,7 +497,7 @@ class CoreEdgeReactionModel:
         return forward
 
     def enlarge(self, new_object=None, react_edge=False,
-                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
+                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None, client=None):
         """
         Enlarge a reaction model by processing the objects in the list `new_object`. 
         If `new_object` is a
@@ -592,7 +592,7 @@ class CoreEdgeReactionModel:
             rxn_lists, spcs_tuples = react_all(self.core.species, num_old_core_species,
                                              unimolecular_react, bimolecular_react,
                                              trimolecular_react=trimolecular_react,
-                                             procnum=procnum)
+                                             procnum=procnum, client=client)
 
             for rxnList, spcTuple in zip(rxn_lists, spcs_tuples):
                 if rxnList:

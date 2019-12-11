@@ -48,6 +48,7 @@ import numpy as np
 import psutil
 import yaml
 from cantera import ck2cti
+from dask.distributed import Client
 from scipy.optimize import brute
 
 import rmgpy.util as util
@@ -650,6 +651,15 @@ class RMG(util.Subject):
 
         self.initialize(**kwargs)
 
+        # Determine number of parallel processes.
+        from rmgpy.rmg.main import determine_procnum_from_ram
+        procnum = determine_procnum_from_ram()
+        # start DASK distributed memory client if more than one process requested and available.
+        if procnum > 1:
+            client = start_DASK_client(procnum)
+        else:
+            client = None
+
         # register listeners
         self.register_listeners()
 
@@ -709,7 +719,7 @@ class RMG(util.Subject):
             self.reaction_model.enlarge(react_edge=True,
                                         unimolecular_react=self.unimolecular_react,
                                         bimolecular_react=self.bimolecular_react,
-                                        trimolecular_react=self.trimolecular_react)
+                                        trimolecular_react=self.trimolecular_react, client=client)
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
             self.reaction_model.set_thermodynamic_filtering_parameters(
@@ -890,7 +900,7 @@ class RMG(util.Subject):
                         self.reaction_model.enlarge(react_edge=True,
                                                     unimolecular_react=self.unimolecular_react,
                                                     bimolecular_react=self.bimolecular_react,
-                                                    trimolecular_react=self.trimolecular_react)
+                                                    trimolecular_react=self.trimolecular_react, client=client)
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(
                                 self.reaction_model.core.reactions):
@@ -985,7 +995,7 @@ class RMG(util.Subject):
         logging.info('The final model core has %s species and %s reactions' % (core_spec, core_reac))
         logging.info('The final model edge has %s species and %s reactions' % (edge_spec, edge_reac))
 
-        self.finish()
+        self.finish(client=client)
 
     def run_model_analysis(self, number=10):
         """
@@ -1750,7 +1760,7 @@ class RMG(util.Subject):
         # Notify registered listeners:
         self.notify()
 
-    def finish(self):
+    def finish(self, client=None):
         """
         Complete the model generation.
         """
@@ -1772,6 +1782,10 @@ class RMG(util.Subject):
         # Log end timestamp
         logging.info('')
         logging.info('RMG execution terminated at ' + time.asctime())
+
+        # close DASK process if available.
+        if client:
+            stop_DASK_client(client)
 
     def get_git_commit(self, module_path):
         import subprocess
@@ -2040,6 +2054,18 @@ def determine_procnum_from_ram():
     # Return the maximal number of processes for multiprocessing
     return procnum
 
+def start_DASK_client(procnum):
+    """
+    Start DASK cluster with all available processes on the machine.
+    You can navigate to http://localhost:8787/status to see the diagnostic dashboard if you have Bokeh installed.
+    """
+    return Client(threads_per_worker=1, n_workers=procnum)
+
+def stop_DASK_client(client):
+    """
+    Delete all DASK processes.
+    """
+    client.shutdown()
 
 def initialize_log(verbose, log_file_name):
     """
