@@ -141,7 +141,7 @@ class ExplorerJob(object):
             flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec, react_edge=False, unimolecular_react=flags,
                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
-                                                              len(reaction_model.core.species))))
+                                                              len(reaction_model.core.species))),)
 
         reaction_model.add_seed_mechanism_to_core('kineticsjobs')
 
