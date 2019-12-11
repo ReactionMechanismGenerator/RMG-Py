@@ -1558,11 +1558,11 @@ class RMG(util.Subject):
 
                 # Load in the restart filter tensors
                 with h5py.File(self.filters_path, 'r') as f:
-                    try:
-                        unimolecular_threshold_restart = f.get('unimolecular_threshold').value
-                        bimolecular_threshold_restart = f.get('bimolecular_threshold').value
+                    if 'unimolecular_threshold' in f.keys():
+                        unimolecular_threshold_restart = f.get('unimolecular_threshold')[()]
+                        bimolecular_threshold_restart = f.get('bimolecular_threshold')[()]
                         if self.trimolecular:
-                            trimolecular_threshold_restart = f.get('trimolecular_threshold').value
+                            trimolecular_threshold_restart = f.get('trimolecular_threshold')[()]
 
                         # Expand Thresholds to match number of species in the current model.
                         # Note that we are about to reorder the core species to match the order in the restart seed
@@ -1581,7 +1581,7 @@ class RMG(util.Subject):
 
                         filters_found = True
 
-                    except KeyError:  # If we can't find the filters then this is because filtering was not used
+                    else:  # If we can't find the filters then this is because filtering was not used
                         logging.warning('No filters were found in file {0}. This is to be expected if the restart '
                                         'files specified are from an RMG job without reaction filtering. Therefore, '
                                         'RMG will assume that all of the core species from the restart core seed have '
