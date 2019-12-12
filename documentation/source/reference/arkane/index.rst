@@ -71,6 +71,7 @@ Class                           Description
 :class:`ThermoJob`              Compute the thermodynamic properties of a species
 :class:`KineticsJob`            Compute the high pressure-limit rate coefficient for a reaction using transition state theory
 :class:`PressureDependenceJob`  Compute the phenomenological pressure-dependent rate coefficients :math:`k(T,P)` for a unimolecular reaction network
+:class:`ExplorerJob`            Explore a potential energy surface starting from a source
 =============================== ================================================
 
 
@@ -119,6 +120,7 @@ Class                       Description
     pdep
     statmech
     thermo
+    explorer
     sensitivity
     common
     util
