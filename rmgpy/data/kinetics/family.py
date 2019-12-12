@@ -3798,10 +3798,12 @@ class KineticsFamily(Database):
             if estimate_thermo:
                 for j, react in enumerate(r.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
+                        react.generate_resonance_structures()
                         rxns[i].reactants[j].thermo = tdb.get_thermo_data(react)
 
                 for j, react in enumerate(r.item.products):
                     if rxns[i].products[j].thermo is None:
+                        react.generate_resonance_structures()
                         rxns[i].products[j].thermo = tdb.get_thermo_data(react)
 
             rxns[i].kinetics = r.data
@@ -3877,7 +3879,9 @@ class KineticsFamily(Database):
                     if estimate_thermo:
                         for r in rrev.reactants:
                             if r.thermo is None:
-                                r.thermo = tdb.get_thermo_data(deepcopy(r))
+                                therm_spc = deepcopy(r)
+                                therm_spc.generate_resonance_structures()
+                                r.thermo = tdb.get_thermo_data(therm_spc)
 
                     rev_rxns.append(rrev)
 
@@ -3916,7 +3920,9 @@ class KineticsFamily(Database):
                 if estimate_thermo:
                     for r in rrev.reactants:
                         if r.thermo is None:
-                            r.thermo = tdb.get_thermo_data(deepcopy(r))
+                            therm_spc = deepcopy(r)
+                            therm_spc.generate_resonance_structures()
+                            r.thermo = tdb.get_thermo_data(therm_spc)
                 rxns[i] = rrev
 
         if self.own_reverse and get_reverse:
