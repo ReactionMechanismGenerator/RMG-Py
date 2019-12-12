@@ -40,7 +40,7 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import NASA, NASAPolynomial
 from rmgpy.molecule import Molecule
-from rmgpy.rmg.main import RMG
+from rmgpy.rmg.main import RMG, start_DASK_client
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.react import react
 from rmgpy.species import Species
@@ -145,14 +145,16 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         rsys.P = P
         procnum = 2
 
+        client = start_DASK_client(procnum)
+
         cerm = CoreEdgeReactionModel()
 
         spcA = Species().from_smiles('[OH]')
         spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
         spc_tuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        rxns = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
-        rxns += list(itertools.chain.from_iterable(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum)))
+        rxns = list(itertools.chain.from_iterable(react(spc_tuples, procnum, client)))
+        rxns += list(itertools.chain.from_iterable(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum, client)))
 
         for rxn in rxns:
             cerm.make_new_reaction(rxn)
@@ -251,11 +253,12 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         """
 
         procnum = 2
+        client = start_DASK_client(procnum)
         spcA = Species().from_smiles('[OH]')
         spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
         spc_tuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        rxns = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
+        rxns = list(itertools.chain.from_iterable(react(spc_tuples, procnum, client)))
 
         cerm = CoreEdgeReactionModel()
 

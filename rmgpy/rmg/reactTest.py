@@ -36,7 +36,7 @@ import numpy as np
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.main import RMG
+from rmgpy.rmg.main import RMG, start_DASK_client
 from rmgpy.rmg.react import react, react_all
 from rmgpy.species import Species
 
@@ -88,12 +88,13 @@ class TestReact(unittest.TestCase):
         import rmgpy.rmg.main
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
+        client = start_DASK_client(procnum)
 
         spc_a = Species().from_smiles('[OH]')
         spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
         spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
 
-        reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
+        reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum, client)))
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 3)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
@@ -131,6 +132,7 @@ class TestReact(unittest.TestCase):
         import rmgpy.rmg.main
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
+        client = start_DASK_client(procnum)
 
         spcs = [
             Species().from_smiles('C=C'),
@@ -140,7 +142,7 @@ class TestReact(unittest.TestCase):
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum, client)
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 94)
         self.assertEqual(len(spc_tuples), 94)
