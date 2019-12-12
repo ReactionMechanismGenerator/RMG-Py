@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>arkane.ess.MolproLog &#8212; RMG-Py 2.4.1 Documentation</title>
+    <title>arkane.ess.OrcaLog &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -17,8 +17,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="arkane.ess.OrcaLog" href="orcalog.html" />
-    <link rel="prev" title="arkane.ess.GaussianLog" href="gaussianlog.html" />
+    <link rel="next" title="arkane.ess.QchemLog" href="qchemlog.html" />
+    <link rel="prev" title="arkane.ess.MolproLog" href="molprolog.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -38,10 +38,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="orcalog.html" title="arkane.ess.OrcaLog"
+          <a href="qchemlog.html" title="arkane.ess.QchemLog"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="gaussianlog.html" title="arkane.ess.GaussianLog"
+          <a href="molprolog.html" title="arkane.ess.MolproLog"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -56,38 +56,38 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="arkane-ess-molprolog">
-<h1>arkane.ess.MolproLog<a class="headerlink" href="#arkane-ess-molprolog" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="arkane-ess-orcalog">
+<h1>arkane.ess.OrcaLog<a class="headerlink" href="#arkane-ess-orcalog" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="arkane.ess.MolproLog">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.ess.</code><code class="sig-name descname">MolproLog</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a Molpro log file. The attribute <cite>path</cite> refers to the
-location on disk of the Molpro log file of interest. Methods are provided
-to extract a variety of information into Arkane classes and/or NumPy arrays.</p>
+<dt id="arkane.ess.OrcaLog">
+<em class="property">class </em><code class="sig-prename descclassname">arkane.ess.</code><code class="sig-name descname">OrcaLog</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent an output file from Orca. The attribute <cite>path</cite> refers to the
+location on disk of the Orca output file of interest. Methods are provided
+to extract a variety of information into Arkane classes and/or NumPy
+arrays.</p>
 <dl class="method">
-<dt id="arkane.ess.MolproLog.get_D1_diagnostic">
-<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the D1 diagnostic from output log.
-If multiple occurrences exist, returns the last occurrence</p>
+<dt id="arkane.ess.OrcaLog.get_D1_diagnostic">
+<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Orca</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.get_T1_diagnostic">
-<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.OrcaLog.get_T1_diagnostic">
+<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the T1 diagnostic from output log.
 If multiple occurrences exist, returns the last occurrence</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.get_number_of_atoms">
-<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.OrcaLog.get_number_of_atoms">
+<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of atoms in the molecular configuration used in
-the MolPro log file.</p>
+the Orca output file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.get_symmetry_properties">
-<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.OrcaLog.get_symmetry_properties">
+<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method uses the symmetry package from RMG’s QM module
 and returns a tuple where the first element is the number
 of optical isomers, the second element is the symmetry number,
@@ -95,64 +95,69 @@ and the third element is the point group identified.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_conformer">
-<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_conformer" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.OrcaLog.load_conformer">
+<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from a log file created as
-the result of a MolPro “Freq” quantum chemistry calculation with the thermo printed.</p>
+the result of a Orca “Freq” quantum chemistry calculation.</p>
+<p>CAUTION: The rotational entropy is not quite correctly treated here
+because it includes a symmetry number that is not yet correctly
+implemented in ORCA. Orca does not provide Rotational temperatures;
+only E(rot) and E(trans) energies.</p>
+<p>Consider using another supported software (such as Gaussian or QChem)
+to calculate the frequencies and derive E0</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_energy">
-<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return either the f12 or MRCI energy in J/mol from a Molpro Logfile.
-If the MRCI job outputted the MRCI+Davidson energy, the latter is returned.
-For CCSD(T)-f12, the function determines which energy (f12a or f12b) to use based on the basis set,
-which it will parse out of the Molpro file. For the vdz and vtz basis sets f12a is
-a better approximation, but for higher basis sets f12b is a better approximation.</p>
+<dt id="arkane.ess.OrcaLog.load_energy">
+<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the energy in J/ml from an Orca log file. Only the last energy
+in the file is returned. The zero-point energy is <em>not</em> included in
+the returned value.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_force_constant_matrix">
-<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print the force constant matrix by including the print, hessian command in the input file</p>
+<dt id="arkane.ess.OrcaLog.load_force_constant_matrix">
+<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>not implemented in orca</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_geometry">
-<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.OrcaLog.load_geometry">
+<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the optimum geometry of the molecular configuration from the
-Molpro .out file. If multiple such geometries are identified, only the
+Orca log file. If multiple such geometries are identified, only the
 last is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_negative_frequency">
-<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the negative frequency from a transition state frequency calculation in cm^-1.</p>
+<dt id="arkane.ess.OrcaLog.load_negative_frequency">
+<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the imaginary frequency from a transition state frequency
+calculation in cm^-1.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_scan_energies">
-<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rotor scans are not implemented in Molpro</p>
+<dt id="arkane.ess.OrcaLog.load_scan_energies">
+<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>not implemented in Orca</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_scan_frozen_atoms">
-<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for Molpro</p>
+<dt id="arkane.ess.OrcaLog.load_scan_frozen_atoms">
+<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Orca</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_scan_pivot_atoms">
-<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for Molpro</p>
+<dt id="arkane.ess.OrcaLog.load_scan_pivot_atoms">
+<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Orca</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.MolproLog.load_zero_point_energy">
-<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.MolproLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the unscaled zero-point energy in J/mol from a MolPro log file.</p>
+<dt id="arkane.ess.OrcaLog.load_zero_point_energy">
+<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the unscaled zero-point energy in J/mol from a Orca output file.</p>
 </dd></dl>
 
 </dd></dl>
@@ -189,18 +194,18 @@ last is returned.</p>
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="gaussianlog.html"
-                        title="previous chapter">arkane.ess.GaussianLog</a></p>
+  <p class="topless"><a href="molprolog.html"
+                        title="previous chapter">arkane.ess.MolproLog</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="orcalog.html"
-                        title="next chapter">arkane.ess.OrcaLog</a></p>
+  <p class="topless"><a href="qchemlog.html"
+                        title="next chapter">arkane.ess.QchemLog</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
     <h3>This Page</h3>
         <ul class="this-page-menu">
             <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
-            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/molprolog.rst"
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/orcalog.rst"
                    rel="nofollow">View Source</a></li>
         </ul>
 </div>
@@ -233,10 +238,10 @@ last is returned.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="orcalog.html" title="arkane.ess.OrcaLog"
+          <a href="qchemlog.html" title="arkane.ess.QchemLog"
              >next</a> |</li>
         <li class="right" >
-          <a href="gaussianlog.html" title="arkane.ess.GaussianLog"
+          <a href="molprolog.html" title="arkane.ess.MolproLog"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>arkane.ess.QchemLog &#8212; RMG-Py 2.4.1 Documentation</title>
+    <title>arkane.ess.TeraChemLog &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -17,8 +17,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="arkane.ess.TeraChemLog" href="terachemlog.html" />
-    <link rel="prev" title="arkane.ess.OrcaLog" href="orcalog.html" />
+    <link rel="next" title="Arkane input files" href="input.html" />
+    <link rel="prev" title="arkane.ess.QchemLog" href="qchemlog.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -38,10 +38,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="terachemlog.html" title="arkane.ess.TeraChemLog"
+          <a href="input.html" title="Arkane input files"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="orcalog.html" title="arkane.ess.OrcaLog"
+          <a href="qchemlog.html" title="arkane.ess.QchemLog"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -56,37 +56,36 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="arkane-ess-qchemlog">
-<h1>arkane.ess.QchemLog<a class="headerlink" href="#arkane-ess-qchemlog" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="arkane-ess-terachemlog">
+<h1>arkane.ess.TeraChemLog<a class="headerlink" href="#arkane-ess-terachemlog" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="arkane.ess.QChemLog">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.ess.</code><code class="sig-name descname">QChemLog</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent an output file from QChem. The attribute <cite>path</cite> refers to the
-location on disk of the QChem output file of interest. Methods are provided
-to extract a variety of information into Arkane classes and/or NumPy
-arrays.</p>
+<dt id="arkane.ess.TeraChemLog">
+<em class="property">class </em><code class="sig-prename descclassname">arkane.ess.</code><code class="sig-name descname">TeraChemLog</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a log file from TeraChem. The attribute <cite>path</cite> refers to the
+location on disk of the TeraChem log file of interest. Methods are provided
+to extract a variety of information into Arkane classes and/or NumPy arrays.</p>
 <dl class="method">
-<dt id="arkane.ess.QChemLog.get_D1_diagnostic">
-<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for QChem</p>
+<dt id="arkane.ess.TeraChemLog.get_D1_diagnostic">
+<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for TeraChem</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.get_T1_diagnostic">
-<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for QChem</p>
+<dt id="arkane.ess.TeraChemLog.get_T1_diagnostic">
+<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for TeraChem</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.get_number_of_atoms">
-<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of atoms in the molecular configuration used in
-the QChem output file.</p>
+<dt id="arkane.ess.TeraChemLog.get_number_of_atoms">
+<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of atoms in the molecular configuration used in the TeraChem output file.
+Accepted output files: TeraChem’s log file, xyz format file, TeraChem’s output.geometry file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.get_symmetry_properties">
-<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.TeraChemLog.get_symmetry_properties">
+<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method uses the symmetry package from RMG’s QM module
 and returns a tuple where the first element is the number
 of optical isomers, the second element is the symmetry number,
@@ -94,70 +93,69 @@ and the third element is the point group identified.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_conformer">
-<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_conformer" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.TeraChemLog.load_conformer">
+<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from an output file created as the result of a
-QChem “Freq” calculation. As QChem’s guess of the external symmetry number is not always correct,
+TeraChem “Freq” calculation. As TeraChem’s guess of the external symmetry number might not always correct,
 you can use the <cite>symmetry</cite> parameter to substitute your own value;
-if not provided, the value in the QChem output file will be adopted.</p>
+if not provided, the value in the TeraChem output file will be adopted.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_energy">
-<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the energy in J/mol from a QChem log file. Only the last energy
-in the file is returned. The zero-point energy is <em>not</em> included in
-the returned value.</p>
+<dt id="arkane.ess.TeraChemLog.load_energy">
+<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the energy in J/mol from a TeraChem log file. Only the last energy
+in the file is returned, unless the log file represents a frequencies calculation,
+in which case the first energy is returned. The zero-point energy is <em>not</em> included
+in the returned value.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_force_constant_matrix">
-<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.TeraChemLog.load_force_constant_matrix">
+<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the force constant matrix (in Cartesian coordinates) from the
-QChem log file. If multiple such matrices are identified,
+TeraChem log file. If multiple such matrices are identified,
 only the last is returned. The units of the returned force constants
-are J/m^2. If no force constant matrix can be found in the log file,
-<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+are J/m^2. If no force constant matrix can be found in the log file, <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_geometry">
-<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.TeraChemLog.load_geometry">
+<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the optimum geometry of the molecular configuration from the
-QChem log file. If multiple such geometries are identified, only the
+TeraChem log file. If multiple such geometries are identified, only the
 last is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_negative_frequency">
-<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.ess.TeraChemLog.load_negative_frequency">
+<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the imaginary frequency from a transition state frequency
 calculation in cm^-1.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_scan_energies">
-<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract the optimized energies in J/mol from a QChem log file, e.g. the
-result of a QChem “PES Scan” quantum chemistry calculation.</p>
+<dt id="arkane.ess.TeraChemLog.load_scan_energies">
+<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the optimized energies in J/mol from a TeraChem torsional scan log file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_scan_frozen_atoms">
-<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for QChem</p>
+<dt id="arkane.ess.TeraChemLog.load_scan_frozen_atoms">
+<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for TeraChem</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_scan_pivot_atoms">
-<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for QChem</p>
+<dt id="arkane.ess.TeraChemLog.load_scan_pivot_atoms">
+<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for TeraChem</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ess.QChemLog.load_zero_point_energy">
-<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the unscaled zero-point energy in J/mol from a QChem output file.</p>
+<dt id="arkane.ess.TeraChemLog.load_zero_point_energy">
+<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the unscaled zero-point energy in J/mol from a TeraChem log file.</p>
 </dd></dl>
 
 </dd></dl>
@@ -194,18 +192,18 @@ result of a QChem “PES Scan” quantum chemistry calculation.</p>
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="orcalog.html"
-                        title="previous chapter">arkane.ess.OrcaLog</a></p>
+  <p class="topless"><a href="qchemlog.html"
+                        title="previous chapter">arkane.ess.QchemLog</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="terachemlog.html"
-                        title="next chapter">arkane.ess.TeraChemLog</a></p>
+  <p class="topless"><a href="input.html"
+                        title="next chapter">Arkane input files</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
     <h3>This Page</h3>
         <ul class="this-page-menu">
             <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
-            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/qchemlog.rst"
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/terachemlog.rst"
                    rel="nofollow">View Source</a></li>
         </ul>
 </div>
@@ -238,10 +236,10 @@ result of a QChem “PES Scan” quantum chemistry calculation.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="terachemlog.html" title="arkane.ess.TeraChemLog"
+          <a href="input.html" title="Arkane input files"
              >next</a> |</li>
         <li class="right" >
-          <a href="orcalog.html" title="arkane.ess.OrcaLog"
+          <a href="qchemlog.html" title="arkane.ess.QchemLog"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>

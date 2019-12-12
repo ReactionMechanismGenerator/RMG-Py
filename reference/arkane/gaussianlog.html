@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>arkane.gaussian.GaussianLog &#8212; RMG-Py 2.4.1 Documentation</title>
+    <title>arkane.ess.GaussianLog &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -17,8 +17,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="arkane.qchem.QchemLog" href="qchemlog.html" />
-    <link rel="prev" title="Arkane (arkane)" href="index.html" />
+    <link rel="next" title="arkane.ess.MolproLog" href="molprolog.html" />
+    <link rel="prev" title="arkane.ess.Log" href="log.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -38,10 +38,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="qchemlog.html" title="arkane.qchem.QchemLog"
+          <a href="molprolog.html" title="arkane.ess.MolproLog"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Arkane (arkane)"
+          <a href="log.html" title="arkane.ess.Log"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -56,8 +56,125 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="arkane-gaussian-gaussianlog">
-<h1>arkane.gaussian.GaussianLog<a class="headerlink" href="#arkane-gaussian-gaussianlog" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="arkane-ess-gaussianlog">
+<h1>arkane.ess.GaussianLog<a class="headerlink" href="#arkane-ess-gaussianlog" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="arkane.ess.GaussianLog">
+<em class="property">class </em><code class="sig-prename descclassname">arkane.ess.</code><code class="sig-name descname">GaussianLog</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a log file from Gaussian. The attribute <cite>path</cite> refers to the
+location on disk of the Gaussian log file of interest. Methods are provided
+to extract a variety of information into Arkane classes and/or NumPy
+arrays.</p>
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.get_D1_diagnostic">
+<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Gaussian</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.get_T1_diagnostic">
+<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for Gaussian</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.get_number_of_atoms">
+<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of atoms in the molecular configuration used in
+the Gaussian log file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.get_symmetry_properties">
+<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method uses the symmetry package from RMG’s QM module
+and returns a tuple where the first element is the number
+of optical isomers, the second element is the symmetry number,
+and the third element is the point group identified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_conformer">
+<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the molecular degree of freedom data from a log file created as
+the result of a Gaussian “Freq” quantum chemistry calculation. As
+Gaussian’s guess of the external symmetry number is not always correct,
+you can use the <cite>symmetry</cite> parameter to substitute your own value; if
+not provided, the value in the Gaussian log file will be adopted. In a
+log file with multiple Thermochemistry sections, only the last one will
+be kept.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_energy">
+<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the energy in J/mol from a Gaussian log file. The file is checked
+for a complete basis set extrapolation; if found, that value is
+returned. Only the last energy in the file is returned. The zero-point
+energy is <em>not</em> included in the returned value; it is removed from the
+CBS-QB3 value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_force_constant_matrix">
+<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the force constant matrix from the Gaussian log file. The job
+that generated the log file must have the option <code class="docutils literal notranslate"><span class="pre">iop(7/33=1)</span></code> in
+order for the proper force constant matrix (in Cartesian coordinates)
+to be printed in the log file. If multiple such matrices are identified,
+only the last is returned. The units of the returned force constants
+are J/m^2. If no force constant matrix can be found in the log file,
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_geometry">
+<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the optimum geometry of the molecular configuration from the
+Gaussian log file. If multiple such geometries are identified, only the
+last is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_negative_frequency">
+<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the negative frequency from a transition state frequency
+calculation in cm^-1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_scan_energies">
+<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the optimized energies in J/mol from a log file, e.g. the
+result of a Gaussian “Scan” quantum chemistry calculation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_scan_frozen_atoms">
+<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the atom numbers which were frozen during the scan
+Return a list of list of atom numbers starting with the first atom as 1
+Each element of the outer lists represents a frozen bond
+Inner lists with length 2 represent frozen bond lengths
+Inner lists with length 3 represent frozen bond angles
+Inner lists with length 4 represent frozen dihedral angles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_scan_pivot_atoms">
+<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the atom numbers which the rotor scan pivots around
+Return a list of atom numbers starting with the first atom as 1</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.GaussianLog.load_zero_point_energy">
+<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the unscaled zero-point energy in J/mol from a Gaussian log file.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -90,11 +207,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a></p>
+  <p class="topless"><a href="log.html"
+                        title="previous chapter">arkane.ess.Log</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="qchemlog.html"
-                        title="next chapter">arkane.qchem.QchemLog</a></p>
+  <p class="topless"><a href="molprolog.html"
+                        title="next chapter">arkane.ess.MolproLog</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -134,10 +251,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="qchemlog.html" title="arkane.qchem.QchemLog"
+          <a href="molprolog.html" title="arkane.ess.MolproLog"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Arkane (arkane)"
+          <a href="log.html" title="arkane.ess.Log"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>

@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Species (rmgpy.species)" href="../species/index.html" />
-    <link rel="prev" title="rmgpy.solver.LiquidReactor" href="liquidreactor.html" />
+    <link rel="prev" title="rmgpy.solver.MBSampledReactor" href="mbsampledreactor.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -41,7 +41,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../species/index.html" title="Species (rmgpy.species)"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="liquidreactor.html" title="rmgpy.solver.LiquidReactor"
+          <a href="mbsampledreactor.html" title="rmgpy.solver.MBSampledReactor"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -71,6 +71,15 @@ has one attribute: the termination <cite>time</cite> in seconds.</p>
 <dd><p>Represent a conversion at which the simulation should be terminated. This
 class has two attributes: the <cite>species</cite> to monitor and the fractional
 <cite>conversion</cite> at which to terminate.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.solver.TerminationRateRatio">
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.solver.</code><code class="sig-name descname">TerminationRateRatio</code><a class="headerlink" href="#rmgpy.solver.TerminationRateRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a fraction of the maximum characteristic rate of the simulation
+at which the simulation should be terminated.  This class has one attribute
+the ratio between the current and maximum characteristic rates at which
+to terminate</p>
 </dd></dl>
 
 </div>
@@ -105,8 +114,8 @@ class has two attributes: the <cite>species</cite> to monitor and the fractional
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="liquidreactor.html"
-                        title="previous chapter">rmgpy.solver.LiquidReactor</a></p>
+  <p class="topless"><a href="mbsampledreactor.html"
+                        title="previous chapter">rmgpy.solver.MBSampledReactor</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../species/index.html"
                         title="next chapter">Species (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.species</span></code>)</a></p>
@@ -152,7 +161,7 @@ class has two attributes: the <cite>species</cite> to monitor and the fractional
           <a href="../species/index.html" title="Species (rmgpy.species)"
              >next</a> |</li>
         <li class="right" >
-          <a href="liquidreactor.html" title="rmgpy.solver.LiquidReactor"
+          <a href="mbsampledreactor.html" title="rmgpy.solver.MBSampledReactor"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>

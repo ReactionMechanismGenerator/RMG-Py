@@ -1,5 +1,5 @@
-*****************************
-arkane.qchem.QchemLog
-*****************************
+*************************
+arkane.ess.QchemLog
+*************************
 
-.. autoclass:: arkane.qchem.QChemLog
+.. autoclass:: arkane.ess.QChemLog

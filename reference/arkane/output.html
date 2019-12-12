@@ -56,17 +56,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="saving-arkane-output">
-<h1>Saving Arkane output<a class="headerlink" href="#saving-arkane-output" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="arkane.output.prettify">
-<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">prettify</code><span class="sig-paren">(</span><em class="sig-param">string</em>, <em class="sig-param">indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.prettify" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a “pretty” version of the given <cite>string</cite>, representing a snippet of
-Python code such as a representation of an object or function. This
-involves splitting of tuples, lists, and dicts (including parameter lists)
-onto multiple lines, indenting as appropriate for readability.</p>
-</dd></dl>
-
+  <div class="section" id="module-arkane.output">
+<span id="saving-arkane-output"></span><h1>Saving Arkane output<a class="headerlink" href="#module-arkane.output" title="Permalink to this headline">¶</a></h1>
+<p>This module contains helper functionality for writing Arkane output files.</p>
 <dl class="class">
 <dt id="arkane.output.PrettifyVisitor">
 <em class="property">class </em><code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">PrettifyVisitor</code><span class="sig-paren">(</span><em class="sig-param">level=0</em>, <em class="sig-param">indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor" title="Permalink to this definition">¶</a></dt>
@@ -127,6 +119,64 @@ function.</p>
 <dd><p>Return a pretty representation of the number represented by <cite>node</cite>.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.output.get_str_xyz">
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">get_str_xyz</code><span class="sig-paren">(</span><em class="sig-param">spc</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.get_str_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a string representation of the 3D coordinates from the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>spc</strong> (<a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><em>Species</em></a>) – A Species instance.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A string representation of the coordinates</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.output.prettify">
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">prettify</code><span class="sig-paren">(</span><em class="sig-param">string</em>, <em class="sig-param">indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.prettify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a “pretty” version of the given <cite>string</cite>, representing a snippet of
+Python code such as a representation of an object or function. This
+involves splitting of tuples, lists, and dicts (including parameter lists)
+onto multiple lines, indenting as appropriate for readability.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.output.save_kinetics_lib">
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">save_kinetics_lib</code><span class="sig-paren">(</span><em class="sig-param">rxn_list</em>, <em class="sig-param">path</em>, <em class="sig-param">name</em>, <em class="sig-param">lib_long_desc</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_kinetics_lib" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an RMG kinetics library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rxn_list</strong> (<em>list</em>) – Entries are Reaction object instances for which kinetics will be saved.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The base folder in which the kinetic library will be saved.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The library name.</p></li>
+<li><p><strong>lib_long_desc</strong> (<em>str</em>) – A multiline string with relevant description.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.output.save_thermo_lib">
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">save_thermo_lib</code><span class="sig-paren">(</span><em class="sig-param">species_list</em>, <em class="sig-param">path</em>, <em class="sig-param">name</em>, <em class="sig-param">lib_long_desc</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_thermo_lib" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an RMG thermo library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>species_list</strong> (<em>list</em>) – Entries are Species object instances for which thermo will be saved.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The base folder in which the thermo library will be saved.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The library name.</p></li>
+<li><p><strong>lib_long_desc</strong> (<em>str</em>) – A multiline string with relevant description.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

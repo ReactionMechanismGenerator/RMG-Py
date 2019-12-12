@@ -93,6 +93,7 @@ Class                            Description
 ================================ ========================================================
 :mod:`rmgpy.molecule.resonance`  Resonance structure generation methods
 :mod:`rmgpy.molecule.kekulize`   Kekule structure generation
+:mod:`rmgpy.molecule.filtration` Resonance structure filtration methods
 :mod:`rmgpy.molecule.pathfinder` Resonance path enumeration
 :mod:`rmgpy.molecule.converter`  Molecule object converter (RDKit/OpenBabel)
 :mod:`rmgpy.molecule.translator` Molecule string representation translator
@@ -163,6 +164,7 @@ Class                    Description
     group
     resonance
     kekulize
+    filtration
     pathfinder
     converter
     translator

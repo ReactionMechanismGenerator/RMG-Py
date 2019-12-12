@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>arkane.ThermoJob &#8212; RMG-Py 2.4.1 Documentation</title>
+    <title>arkane.ExplorerJob &#8212; RMG-Py 2.4.1 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -17,8 +17,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="arkane.ExplorerJob" href="explorer.html" />
-    <link rel="prev" title="arkane.StatMechJob" href="statmech.html" />
+    <link rel="next" title="Sensitivity Analysis" href="sensitivity.html" />
+    <link rel="prev" title="arkane.ThermoJob" href="thermo.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -38,10 +38,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="explorer.html" title="arkane.ExplorerJob"
+          <a href="sensitivity.html" title="Sensitivity Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="statmech.html" title="arkane.StatMechJob"
+          <a href="thermo.html" title="arkane.ThermoJob"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
@@ -56,71 +56,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="arkane-thermojob">
-<h1>arkane.ThermoJob<a class="headerlink" href="#arkane-thermojob" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="arkane-explorerjob">
+<h1>arkane.ExplorerJob<a class="headerlink" href="#arkane-explorerjob" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="arkane.ThermoJob">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.</code><code class="sig-name descname">ThermoJob</code><span class="sig-paren">(</span><em class="sig-param">species</em>, <em class="sig-param">thermo_class</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of an Arkane thermodynamics job. This job is used to
-compute and save the thermodynamics information for a single species.</p>
+<dt id="arkane.ExplorerJob">
+<em class="property">class </em><code class="sig-prename descclassname">arkane.</code><code class="sig-name descname">ExplorerJob</code><span class="sig-paren">(</span><em class="sig-param">source</em>, <em class="sig-param">pdepjob</em>, <em class="sig-param">explore_tol</em>, <em class="sig-param">energy_tol=inf</em>, <em class="sig-param">flux_tol=0.0</em>, <em class="sig-param">bath_gas=None</em>, <em class="sig-param">maximum_radical_electrons=inf</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ExplorerJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of an Arkane explorer job. This job is used to explore a potential energy surface (PES).</p>
 <dl class="method">
-<dt id="arkane.ThermoJob.element_count_from_conformer">
-<code class="sig-name descname">element_count_from_conformer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.element_count_from_conformer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an element count in a dictionary form (e.g.,  {‘C’: 3, ‘H’: 8}) from the species.conformer attribute.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Element count, keys are element symbols,</dt><dd><p>values are number of occurrences of the element in the molecule.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
+<dt id="arkane.ExplorerJob.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ExplorerJob.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a copy of the explorer job.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ThermoJob.execute">
-<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">output_directory=None</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the thermodynamics job, saving the results within
-the <cite>output_directory</cite>.</p>
-<p>If <cite>plot</cite> is true, then plots of the raw and fitted values for heat
-capacity, entropy, enthalpy, gibbs free energy, and hindered rotors
-will be saved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.ThermoJob.generate_thermo">
-<code class="sig-name descname">generate_thermo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.generate_thermo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the thermodynamic data for the species and fit it to the
-desired heat capacity model (as specified in the <cite>thermo_class</cite>
-attribute).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.ThermoJob.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the heat capacity, enthapy, entropy, and Gibbs free energy of the
-fitted thermodynamics model, along with the same values from the
-statistical mechanics model that the thermodynamics model was fitted
-to. The plot is saved to the file <code class="docutils literal notranslate"><span class="pre">thermo.pdf</span></code> in the output
-directory. The plot is not generated if <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is not installed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.ThermoJob.write_chemkin">
-<code class="sig-name descname">write_chemkin</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.write_chemkin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Appends the thermo block to <cite>chem.inp</cite> and species name to
-<cite>species_dictionary.txt</cite> within the <cite>outut_directory</cite> specified</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.ThermoJob.write_output">
-<code class="sig-name descname">write_output</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.write_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the thermodynamics job to the <cite>output.py</cite> file located
-in <cite>output_directory</cite>.</p>
+<dt id="arkane.ExplorerJob.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">output_file</em>, <em class="sig-param">plot</em>, <em class="sig-param">file_format='pdf'</em>, <em class="sig-param">print_summary=True</em>, <em class="sig-param">species_list=None</em>, <em class="sig-param">thermo_library=None</em>, <em class="sig-param">kinetics_library=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ExplorerJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an ExplorerJob</p>
 </dd></dl>
 
 </dd></dl>
@@ -157,18 +108,18 @@ in <cite>output_directory</cite>.</p>
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="statmech.html"
-                        title="previous chapter">arkane.StatMechJob</a></p>
+  <p class="topless"><a href="thermo.html"
+                        title="previous chapter">arkane.ThermoJob</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="explorer.html"
-                        title="next chapter">arkane.ExplorerJob</a></p>
+  <p class="topless"><a href="sensitivity.html"
+                        title="next chapter">Sensitivity Analysis</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
     <h3>This Page</h3>
         <ul class="this-page-menu">
             <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
-            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/thermo.rst"
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/explorer.rst"
                    rel="nofollow">View Source</a></li>
         </ul>
 </div>
@@ -201,10 +152,10 @@ in <cite>output_directory</cite>.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="explorer.html" title="arkane.ExplorerJob"
+          <a href="sensitivity.html" title="Sensitivity Analysis"
              >next</a> |</li>
         <li class="right" >
-          <a href="statmech.html" title="arkane.StatMechJob"
+          <a href="thermo.html" title="arkane.ThermoJob"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>

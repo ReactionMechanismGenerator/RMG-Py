@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>arkane.common &#8212; RMG-Py 2.4.1 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="arkane.util" href="util.html" />
+    <link rel="prev" title="Sensitivity Analysis" href="sensitivity.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="util.html" title="arkane.util"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sensitivity.html" title="Sensitivity Analysis"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arkane.common">
+<span id="arkane-common"></span><h1>arkane.common<a class="headerlink" href="#module-arkane.common" title="Permalink to this headline">¶</a></h1>
+<p>Arkane common module</p>
+<dl class="class">
+<dt id="arkane.common.ArkaneSpecies">
+<em class="property">class </em><code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">ArkaneSpecies</code><span class="sig-paren">(</span><em class="sig-param">species=None</em>, <em class="sig-param">conformer=None</em>, <em class="sig-param">author=''</em>, <em class="sig-param">level_of_theory=''</em>, <em class="sig-param">model_chemistry=''</em>, <em class="sig-param">frequency_scale_factor=None</em>, <em class="sig-param">use_hindered_rotors=None</em>, <em class="sig-param">use_bond_corrections=None</em>, <em class="sig-param">atom_energies=''</em>, <em class="sig-param">chemkin_thermo_string=''</em>, <em class="sig-param">smiles=None</em>, <em class="sig-param">adjacency_list=None</em>, <em class="sig-param">inchi=None</em>, <em class="sig-param">inchi_key=None</em>, <em class="sig-param">xyz=None</em>, <em class="sig-param">molecular_weight=None</em>, <em class="sig-param">symmetry_number=None</em>, <em class="sig-param">transport_data=None</em>, <em class="sig-param">energy_transfer_model=None</em>, <em class="sig-param">thermo=None</em>, <em class="sig-param">thermo_data=None</em>, <em class="sig-param">label=None</em>, <em class="sig-param">datetime=None</em>, <em class="sig-param">RMG_version=None</em>, <em class="sig-param">reactants=None</em>, <em class="sig-param">products=None</em>, <em class="sig-param">reaction_label=None</em>, <em class="sig-param">is_ts=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for archiving an Arkane species including its statmech data into .yml files</p>
+<dl class="attribute">
+<dt id="arkane.common.ArkaneSpecies.as_dict">
+<code class="sig-name descname">as_dict</code><a class="headerlink" href="#arkane.common.ArkaneSpecies.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary representation of the object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.common.ArkaneSpecies.load_yaml">
+<code class="sig-name descname">load_yaml</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">label=None</em>, <em class="sig-param">pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies.load_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the all statMech data from the .yml file in <cite>path</cite> into <cite>species</cite>
+<cite>pdep</cite> is a boolean specifying whether or not job_list includes a pressureDependentJob.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.common.ArkaneSpecies.make_object">
+<code class="sig-name descname">make_object</code><a class="headerlink" href="#arkane.common.ArkaneSpecies.make_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – The dictionary representation of the object</p></li>
+<li><p><strong>class_dict</strong> (<em>dict</em>) – A mapping of class names to the classes themselves</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.common.ArkaneSpecies.save_yaml">
+<code class="sig-name descname">save_yaml</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies.save_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the species with all statMech data to a .yml file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.common.ArkaneSpecies.update_species_attributes">
+<code class="sig-name descname">update_species_attributes</code><span class="sig-paren">(</span><em class="sig-param">species=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies.update_species_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the object with a new species/TS (while keeping non-species-dependent attributes unchanged)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.common.ArkaneSpecies.update_xyz_string">
+<code class="sig-name descname">update_xyz_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies.update_xyz_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an xyz string built from self.conformer, and standardize the result</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>3D coordinates in an XYZ format.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.check_conformer_energy">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">check_conformer_energy</code><span class="sig-paren">(</span><em class="sig-param">energies</em>, <em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.check_conformer_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see that the starting energy of the species in the potential energy scan calculation
+is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and
+log a warning message.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.get_center_of_mass">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">get_center_of_mass</code><span class="sig-paren">(</span><em class="sig-param">coords</em>, <em class="sig-param">numbers=None</em>, <em class="sig-param">symbols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the 3D position of the center of mass of the current geometry.
+Either <code class="docutils literal notranslate"><span class="pre">numbers</span></code> or <code class="docutils literal notranslate"><span class="pre">symbols</span></code> must be given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coords</strong> (<em>np.array</em>) – Entries are 3-length lists of xyz coordinates for an atom.</p></li>
+<li><p><strong>numbers</strong> (<em>np.array</em><em>, </em><em>list</em>) – Entries are atomic numbers corresponding to coords.</p></li>
+<li><p><strong>symbols</strong> (<em>list</em>) – Entries are atom symbols corresponding to coords.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The center of mass coordinates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.get_element_mass">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">get_element_mass</code><span class="sig-paren">(</span><em class="sig-param">input_element</em>, <em class="sig-param">isotope=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.get_element_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the mass and z number of the requested isotope for a given element.
+‘input_element’ can be wither the atomic number (integer) or an element symbol.
+‘isotope’ is an integer of the atomic z number. If ‘isotope’ is None, returns the most common isotope.
+Data taken from NIST, <a class="reference external" href="https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl">https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl</a> (accessed October 2018)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.get_moment_of_inertia_tensor">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">get_moment_of_inertia_tensor</code><span class="sig-paren">(</span><em class="sig-param">coords</em>, <em class="sig-param">numbers=None</em>, <em class="sig-param">symbols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.get_moment_of_inertia_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the moment of inertia tensor for the current
+geometry in amu*angstrom^2. If the coordinates are not at the center of mass,
+they are temporarily shifted there for the purposes of this calculation.
+Adapted from J.W. Allen: <a class="reference external" href="https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py">https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coords</strong> (<em>np.array</em>) – Entries are 3-length lists of xyz coordinates for an atom.</p></li>
+<li><p><strong>numbers</strong> (<em>np.array</em><em>, </em><em>list</em>) – Entries are atomic numbers corresponding to coords.</p></li>
+<li><p><strong>symbols</strong> (<em>list</em>) – Entries are atom symbols corresponding to coords.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The 3x3 moment of inertia tensor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="../exceptions.html#rmgpy.exceptions.InputError" title="rmgpy.exceptions.InputError"><strong>InputError</strong></a> – If neither <code class="docutils literal notranslate"><span class="pre">symbols</span></code> nor <code class="docutils literal notranslate"><span class="pre">numbers</span></code> are given, or if they have a different length than <code class="docutils literal notranslate"><span class="pre">coords</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.get_principal_moments_of_inertia">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">get_principal_moments_of_inertia</code><span class="sig-paren">(</span><em class="sig-param">coords</em>, <em class="sig-param">numbers=None</em>, <em class="sig-param">symbols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.get_principal_moments_of_inertia" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the principal moments of inertia in amu*angstrom^2 in decending order
+and the corresponding principal axes for the current geometry.
+The moments of inertia are in translated to the center of mass. The principal axes have unit lengths.
+Adapted from J.W. Allen: <a class="reference external" href="https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py">https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coords</strong> (<em>np.array</em>) – Entries are 3-length lists of xyz coordinates for an atom.</p></li>
+<li><p><strong>numbers</strong> (<em>np.array</em><em>, </em><em>list</em>) – Entries are atomic numbers corresponding to coords.</p></li>
+<li><p><strong>symbols</strong> (<em>list</em>) – Entries are atom symbols corresponding to coords.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The principal moments of inertia.
+tuple: The corresponding principal axes.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.is_pdep">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">is_pdep</code><span class="sig-paren">(</span><em class="sig-param">job_list</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.is_pdep" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function to determine whether a job is PressureDependenceJob or not</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.replace_yaml_syntax">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">replace_yaml_syntax</code><span class="sig-paren">(</span><em class="sig-param">content</em>, <em class="sig-param">label=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.replace_yaml_syntax" title="Permalink to this definition">¶</a></dt>
+<dd><p>PEP8 compliant changes to RMG objects could be backward incompatible with Arkane’s YAML files.
+Search for knows phrases which were replace, and fix the format on the fly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>content</strong> (<em>str</em>) – The content of an Arkane YAML file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The modified content to be processed via yaml.safe_load().</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="arkane.common.str_repr">
+<code class="sig-prename descclassname">arkane.common.</code><code class="sig-name descname">str_repr</code><span class="sig-paren">(</span><em class="sig-param">dumper</em>, <em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.str_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repair YAML string representation</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sensitivity.html"
+                        title="previous chapter">Sensitivity Analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="util.html"
+                        title="next chapter">arkane.util</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/common.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="util.html" title="arkane.util"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sensitivity.html" title="Sensitivity Analysis"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+    </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
+  </body>
+</html>

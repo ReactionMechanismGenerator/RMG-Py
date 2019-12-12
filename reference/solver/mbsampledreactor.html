@@ -1,0 +1,1093 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>rmgpy.solver.MBSampledReactor &#8212; RMG-Py 2.4.1 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Termination criteria" href="termination.html" />
+    <link rel="prev" title="rmgpy.solver.SurfaceReactor" href="surfacereactor.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="termination.html" title="Termination criteria"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="surfacereactor.html" title="rmgpy.solver.SurfaceReactor"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rmgpy-solver-mbsampledreactor">
+<h1>rmgpy.solver.MBSampledReactor<a class="headerlink" href="#rmgpy-solver-mbsampledreactor" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.solver.MBSampledReactor">
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.solver.</code><code class="sig-name descname">MBSampledReactor</code><span class="sig-paren">(</span><em class="sig-param">T</em>, <em class="sig-param">P</em>, <em class="sig-param">initial_mole_fractions</em>, <em class="sig-param">k_sampling</em>, <em class="sig-param">constantSpeciesList</em>, <em class="sig-param">termination</em>, <em class="sig-param">sensitive_species=None</em>, <em class="sig-param">sensitivity_threshold=1e-3</em>, <em class="sig-param">const_spc_names=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reaction system consisting of a homogeneous, isothermal, isobaric batch
+reactor that is being sample by a molecular beam.
+The sampling process is modeled as a unimolecular reaction.
+These assumptions allow for a number of optimizations that enable
+this solver to complete very rapidly, even for large kinetic models.</p>
+<p>This is currently only intended for use with the <code class="docutils literal notranslate"><span class="pre">simulate.py</span></code> script,
+and cannot be used for a standard RMG job.</p>
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.Keq">
+<code class="sig-name descname">Keq</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.Keq" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Keq</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.P">
+<code class="sig-name descname">P</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.P" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.quantity.ScalarQuantity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>P</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.T">
+<code class="sig-name descname">T</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.T" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.quantity.ScalarQuantity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>T</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.V">
+<code class="sig-name descname">V</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.V" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘double’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>V</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.add_reactions_to_surface">
+<code class="sig-name descname">add_reactions_to_surface</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list new_surface_reactions</em>, <em class="sig-param">list new_surface_reaction_inds</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em>, <em class="sig-param">list edge_species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>moves new surface reactions to the surface
+done after the while loop before the simulate call ends</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.advance">
+<code class="sig-name descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.advance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate from the current value of the independent variable to a
+specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+and <cite>dydt</cite> attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.atol_array">
+<code class="sig-name descname">atol_array</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.atol_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>atol_array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.bimolecular_threshold">
+<code class="sig-name descname">bimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bimolecular_threshold</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.calculate_effective_pressure">
+<code class="sig-name descname">calculate_effective_pressure</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.calculate_effective_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the effective pressure for a reaction as:</p>
+<div class="math notranslate nohighlight">
+\[P_{eff} = P * \sum_i \frac{y_i * eff_i}{\sum_j y_j}\]</div>
+<dl class="simple">
+<dt>with:</dt><dd><ul class="simple">
+<li><p>P the pressure of the reactor,</p></li>
+<li><p>y the array of initial moles of the core species</p></li>
+</ul>
+</dd>
+</dl>
+<p>or as:</p>
+<div class="math notranslate nohighlight">
+\[P_{eff} = \frac{P * y_{specific_collider}}{\sum_j y_j}\]</div>
+<p>if a specific_collider is mentioned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.collider_efficiencies">
+<code class="sig-name descname">collider_efficiencies</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.collider_efficiencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>collider_efficiencies</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.compute_network_variables">
+<code class="sig-name descname">compute_network_variables</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">pdep_networks=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the arrays containing network information:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>NetworkLeakCoefficients is a n x 1 array with</dt><dd><p>n the number of pressure-dependent networks.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>NetworkIndices is a n x 3 matrix with</dt><dd><p>n the number of pressure-dependent networks and
+3 the maximum number of molecules allowed in either the reactant or
+product side of a reaction.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.compute_rate_derivative">
+<code class="sig-name descname">compute_rate_derivative</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
+k_j is the rate parameter for the jth core reaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.const_spc_names">
+<code class="sig-name descname">const_spc_names</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.const_spc_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>const_spc_names</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.constantSpeciesList">
+<code class="sig-name descname">constantSpeciesList</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.constantSpeciesList" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>constantSpeciesList</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.constant_volume">
+<code class="sig-name descname">constant_volume</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.constant_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>constant_volume</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.convert_initial_keys_to_species_objects">
+<code class="sig-name descname">convert_initial_keys_to_species_objects</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">species_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the initial_mole_fractions dictionary from species names into species objects,
+using the given dictionary of species.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.core_reaction_rates">
+<code class="sig-name descname">core_reaction_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>core_reaction_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.core_species_concentrations">
+<code class="sig-name descname">core_species_concentrations</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>core_species_concentrations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.core_species_consumption_rates">
+<code class="sig-name descname">core_species_consumption_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>core_species_consumption_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.core_species_production_rates">
+<code class="sig-name descname">core_species_production_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>core_species_production_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.core_species_rates">
+<code class="sig-name descname">core_species_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.core_species_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>core_species_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.dydt0">
+<code class="sig-name descname">dydt0</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.dydt0" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dydt0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.edge_reaction_rates">
+<code class="sig-name descname">edge_reaction_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>edge_reaction_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.edge_species_rates">
+<code class="sig-name descname">edge_species_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.edge_species_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>edge_species_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.generate_rate_coefficients">
+<code class="sig-name descname">generate_rate_coefficients</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_reactions</em>, <em class="sig-param">edge_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
+and equilibrium constants (Keq) arrays with the values computed at the temperature
+and (effective) pressure of the reaction system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.generate_reactant_product_indices">
+<code class="sig-name descname">generate_reactant_product_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_reactions</em>, <em class="sig-param">edge_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a matrix for the reactants and products.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.generate_reaction_indices">
+<code class="sig-name descname">generate_reaction_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_reactions</em>, <em class="sig-param">edge_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign an index to each reaction (core first, then edge) and
+store the (reaction, index) pair in a dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.generate_species_indices">
+<code class="sig-name descname">generate_species_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_species</em>, <em class="sig-param">edge_species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign an index to each species (core first, then edge) and
+store the (species, index) pair in a dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.get_layering_indices">
+<code class="sig-name descname">get_layering_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.get_layering_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>determines the edge reaction indices that indicate reactions that are valid for movement from
+edge to surface based on the layering constraint</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.get_species_index">
+<code class="sig-name descname">get_species_index</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">spc</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the index that is associated with the parameter species
+from the species index dictionary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.initial_mole_fractions">
+<code class="sig-name descname">initial_mole_fractions</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initial_mole_fractions" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>initial_mole_fractions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.initialize">
+<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the DASPK solver by setting the initial values of the
+independent variable <cite>t0</cite>, dependent variables <cite>y0</cite>, and first
+derivatives <cite>dydt0</cite>. If provided, the derivatives must be consistent
+with the other initial conditions; if not provided, DASPK will attempt
+to estimate a consistent set of initial values for the derivatives.
+You can also set the absolute and relative tolerances <cite>atol</cite> and <cite>rtol</cite>,
+respectively, either as single values for all dependent variables or
+individual values for each dependent variable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.initialize_model">
+<code class="sig-name descname">initialize_model</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list edge_species</em>, <em class="sig-param">list edge_reactions</em>, <em class="sig-param">list surface_species=None</em>, <em class="sig-param">list surface_reactions=None</em>, <em class="sig-param">list pdep_networks=None</em>, <em class="sig-param">atol=1e-16</em>, <em class="sig-param">rtol=1e-8</em>, <em class="sig-param">sensitivity=False</em>, <em class="sig-param">sens_atol=1e-6</em>, <em class="sig-param">sens_rtol=1e-4</em>, <em class="sig-param">filter_reactions=False</em>, <em class="sig-param">dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a simulation of the reaction system using the provided
+kinetic model. You will probably want to create your own version of this
+method in the derived class; don’t forget to also call the base class
+version, too.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.initialize_solver">
+<code class="sig-name descname">initialize_solver</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_solver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.initialize_surface">
+<code class="sig-name descname">initialize_surface</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>removes surface_species and surface_reactions from  until they are self consistent:</dt><dd><ol class="arabic simple">
+<li><p>every reaction has one species in the surface</p></li>
+<li><p>every species participates in a surface reaction</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.initiate_tolerances">
+<code class="sig-name descname">initiate_tolerances</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">atol=1e-16</em>, <em class="sig-param">rtol=1e-8</em>, <em class="sig-param">sensitivity=False</em>, <em class="sig-param">sens_atol=1e-6</em>, <em class="sig-param">sens_rtol=1e-4</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.jacobian_matrix">
+<code class="sig-name descname">jacobian_matrix</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>jacobian_matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.k_sampling">
+<code class="sig-name descname">k_sampling</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.k_sampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.quantity.ScalarQuantity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>k_sampling</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.kb">
+<code class="sig-name descname">kb</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.kb" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>kb</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.kf">
+<code class="sig-name descname">kf</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.kf" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>kf</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.log_conversions">
+<code class="sig-name descname">log_conversions</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">species_index</em>, <em class="sig-param">y0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log information about the current conversion values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.log_rates">
+<code class="sig-name descname">log_rates</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double char_rate</em>, <em class="sig-param">species</em>, <em class="sig-param">double species_rate</em>, <em class="sig-param">double max_dif_ln_accum_num</em>, <em class="sig-param">network</em>, <em class="sig-param">double network_rate</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.log_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log information about the current maximum species and network rates.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.max_edge_species_rate_ratios">
+<code class="sig-name descname">max_edge_species_rate_ratios</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>max_edge_species_rate_ratios</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.max_network_leak_rate_ratios">
+<code class="sig-name descname">max_network_leak_rate_ratios</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>max_network_leak_rate_ratios</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.neq">
+<code class="sig-name descname">neq</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.neq" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>neq</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.network_indices">
+<code class="sig-name descname">network_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.network_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>network_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.network_leak_coefficients">
+<code class="sig-name descname">network_leak_coefficients</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>network_leak_coefficients</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.network_leak_rates">
+<code class="sig-name descname">network_leak_rates</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.network_leak_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>network_leak_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.num_core_reactions">
+<code class="sig-name descname">num_core_reactions</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.num_core_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>num_core_reactions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.num_core_species">
+<code class="sig-name descname">num_core_species</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.num_core_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>num_core_species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.num_edge_reactions">
+<code class="sig-name descname">num_edge_reactions</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>num_edge_reactions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.num_edge_species">
+<code class="sig-name descname">num_edge_species</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.num_edge_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>num_edge_species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.num_pdep_networks">
+<code class="sig-name descname">num_pdep_networks</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>num_pdep_networks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.pdep_collider_kinetics">
+<code class="sig-name descname">pdep_collider_kinetics</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.pdep_collider_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pdep_collider_kinetics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.pdep_collision_reaction_indices">
+<code class="sig-name descname">pdep_collision_reaction_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.pdep_collision_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pdep_collision_reaction_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.pdep_specific_collider_kinetics">
+<code class="sig-name descname">pdep_specific_collider_kinetics</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.pdep_specific_collider_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pdep_specific_collider_kinetics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.pdep_specific_collider_reaction_indices">
+<code class="sig-name descname">pdep_specific_collider_reaction_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.pdep_specific_collider_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pdep_specific_collider_reaction_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.product_indices">
+<code class="sig-name descname">product_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.product_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>product_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.prunable_network_indices">
+<code class="sig-name descname">prunable_network_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>prunable_network_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.prunable_networks">
+<code class="sig-name descname">prunable_networks</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.prunable_networks" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>prunable_networks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.prunable_species">
+<code class="sig-name descname">prunable_species</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.prunable_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>prunable_species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.prunable_species_indices">
+<code class="sig-name descname">prunable_species_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>prunable_species_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.reactant_indices">
+<code class="sig-name descname">reactant_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.reactant_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reactant_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.reaction_index">
+<code class="sig-name descname">reaction_index</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.reaction_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>reaction_index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.reset_max_edge_species_rate_ratios">
+<code class="sig-name descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sets max_edge_species_rate_ratios back to zero
+for pruning of ranged reactors it is important to avoid doing this
+every initialization</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.residual">
+<code class="sig-name descname">residual</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double t</em>, <em class="sig-param">ndarray y</em>, <em class="sig-param">ndarray dydt</em>, <em class="sig-param">ndarray senpar=np.zeros(1</em>, <em class="sig-param">np.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the residual function for the governing DAE system for the
+simple reaction system.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.rtol_array">
+<code class="sig-name descname">rtol_array</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>rtol_array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.sensitive_species">
+<code class="sig-name descname">sensitive_species</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.sensitive_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>sensitive_species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.sensitivity_coefficients">
+<code class="sig-name descname">sensitivity_coefficients</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>sensitivity_coefficients</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.sensitivity_threshold">
+<code class="sig-name descname">sensitivity_threshold</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘double’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>sensitivity_threshold</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.set_colliders">
+<code class="sig-name descname">set_colliders</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_reactions</em>, <em class="sig-param">edge_reactions</em>, <em class="sig-param">core_species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_colliders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store collider efficiencies and reaction indices for pdep reactions that have collider efficiencies,
+and store specific collider indices</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.set_initial_conditions">
+<code class="sig-name descname">set_initial_conditions</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the initial conditions of the rate equations that represent the
+current reactor model.</p>
+<p>The volume is set to the value derived from the ideal gas law, using the
+user-defined pressure, temperature, and the number of moles of initial species.</p>
+<p>The species moles array (y0) is set to the values stored in the
+initial mole fractions dictionary.</p>
+<p>The initial species concentration is computed and stored in the
+core_species_concentrations array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.set_initial_derivative">
+<code class="sig-name descname">set_initial_derivative</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the derivative of the species moles with respect to the independent variable (time)
+equal to the residual.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.set_initial_reaction_thresholds">
+<code class="sig-name descname">set_initial_reaction_thresholds</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.set_prunable_indices">
+<code class="sig-name descname">set_prunable_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">edge_species</em>, <em class="sig-param">pdep_networks</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list edge_species</em>, <em class="sig-param">list edge_reactions</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em>, <em class="sig-param">list pdep_networks=None</em>, <em class="sig-param">bool prune=False</em>, <em class="sig-param">bool sensitivity=False</em>, <em class="sig-param">list sens_worksheet=None</em>, <em class="sig-param">model_settings=None</em>, <em class="sig-param">simulator_settings=None</em>, <em class="sig-param">dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate the reaction system with the provided reaction model,
+consisting of lists of core species, core reactions, edge species, and
+edge reactions. As the simulation proceeds the system is monitored for
+validity. If the model becomes invalid (e.g. due to an excessively
+large edge flux), the simulation is interrupted and the object causing
+the model to be invalid is returned. If the simulation completes to
+the desired termination criteria and the model remains valid throughout,
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.snapshots">
+<code class="sig-name descname">snapshots</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.snapshots" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>snapshots</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.species_index">
+<code class="sig-name descname">species_index</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.species_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>species_index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.specific_collider_species">
+<code class="sig-name descname">specific_collider_species</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.specific_collider_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>specific_collider_species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.MBSampledReactor.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform one simulation step from the current value of the independent
+variable toward (but not past) a specified value <cite>tout</cite>. The resulting
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+and <cite>dydt</cite> attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.surface_reaction_indices">
+<code class="sig-name descname">surface_reaction_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>surface_reaction_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.surface_species_indices">
+<code class="sig-name descname">surface_species_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.surface_species_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>surface_species_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.t0">
+<code class="sig-name descname">t0</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.t0" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘float’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>t0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.termination">
+<code class="sig-name descname">termination</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.termination" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>termination</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.trimolecular">
+<code class="sig-name descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>trimolecular</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.trimolecular_threshold">
+<code class="sig-name descname">trimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>trimolecular_threshold</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.unimolecular_threshold">
+<code class="sig-name descname">unimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>unimolecular_threshold</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.valid_layering_indices">
+<code class="sig-name descname">valid_layering_indices</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>valid_layering_indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.MBSampledReactor.y0">
+<code class="sig-name descname">y0</code><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.y0" title="Permalink to this definition">¶</a></dt>
+<dd><p>numpy.ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>y0</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="surfacereactor.html"
+                        title="previous chapter">rmgpy.solver.SurfaceReactor</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="termination.html"
+                        title="next chapter">Termination criteria</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/solver/mbsampledreactor.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="termination.html" title="Termination criteria"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="surfacereactor.html" title="rmgpy.solver.SurfaceReactor"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+    </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
+  </body>
+</html>

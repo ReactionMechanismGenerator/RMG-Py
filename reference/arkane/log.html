@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>arkane.ess.Log &#8212; RMG-Py 2.4.1 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="arkane.ess.GaussianLog" href="gaussianlog.html" />
+    <link rel="prev" title="Arkane (arkane)" href="index.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gaussianlog.html" title="arkane.ess.GaussianLog"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Arkane (arkane)"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="arkane-ess-log">
+<h1>arkane.ess.Log<a class="headerlink" href="#arkane-ess-log" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="arkane.ess.Log">
+<em class="property">class </em><code class="sig-prename descclassname">arkane.ess.</code><code class="sig-name descname">Log</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a general log file.
+The attribute <cite>path</cite> refers to the location on disk of the log file of interest.</p>
+<dl class="method">
+<dt id="arkane.ess.Log.get_D1_diagnostic">
+<code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns the D1 diagnostic for certain quantum jobs
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.get_T1_diagnostic">
+<code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns the T1 diagnostic for certain quantum jobs
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.get_number_of_atoms">
+<code class="sig-name descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of atoms in the molecular configuration.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.get_symmetry_properties">
+<code class="sig-name descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method uses the symmetry package from RMG’s QM module
+and returns a tuple where the first element is the number
+of optical isomers, the second element is the symmetry number,
+and the third element is the point group identified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_conformer">
+<code class="sig-name descname">load_conformer</code><span class="sig-paren">(</span><em class="sig-param">symmetry=None</em>, <em class="sig-param">spin_multiplicity=0</em>, <em class="sig-param">optical_isomers=None</em>, <em class="sig-param">label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the molecular degree of freedom data from a frequency calculations.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_energy">
+<code class="sig-name descname">load_energy</code><span class="sig-paren">(</span><em class="sig-param">zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the energy.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_force_constant_matrix">
+<code class="sig-name descname">load_force_constant_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the force constant matrix (in Cartesian coordinates).
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_geometry">
+<code class="sig-name descname">load_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the optimum geometry of the molecular configuration.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_negative_frequency">
+<code class="sig-name descname">load_negative_frequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the imaginary frequency from a transition state frequency calculation.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_scan_energies">
+<code class="sig-name descname">load_scan_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_scan_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the optimized energies from a potential energy scan.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_scan_frozen_atoms">
+<code class="sig-name descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the atom numbers which were frozen during the scan.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_scan_pivot_atoms">
+<code class="sig-name descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the atom numbers which the rotor scan pivots around.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ess.Log.load_zero_point_energy">
+<code class="sig-name descname">load_zero_point_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.Log.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the unscaled zero-point energy.
+Should be implemented by a subclass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gaussianlog.html"
+                        title="next chapter">arkane.ess.GaussianLog</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/log.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gaussianlog.html" title="arkane.ess.GaussianLog"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Arkane (arkane)"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.4.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+    </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
+  </body>
+</html>

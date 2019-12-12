@@ -17,7 +17,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="arkane.gaussian.GaussianLog" href="gaussianlog.html" />
+    <link rel="next" title="arkane.ess.Log" href="log.html" />
     <link rel="prev" title="RMG API Reference" href="../index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -38,7 +38,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="gaussianlog.html" title="arkane.gaussian.GaussianLog"
+          <a href="log.html" title="arkane.ess.Log"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../index.html" title="RMG API Reference"
@@ -60,8 +60,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>The <a class="reference internal" href="#module-arkane" title="arkane"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code></a> subpackage contains the main functionality for
 Arkane, a tool for computing thermodynamic and kinetic properties of chemical
 species and reactions.</p>
-<div class="section" id="reading-gaussian-log-files">
-<h2>Reading Gaussian log files<a class="headerlink" href="#reading-gaussian-log-files" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="reading-electronic-structure-software-log-files">
+<h2>Reading electronic structure software log files<a class="headerlink" href="#reading-electronic-structure-software-log-files" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 38%" />
@@ -73,46 +73,23 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLog</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="log.html#arkane.ess.Log" title="arkane.ess.Log"><code class="xref py py-class docutils literal notranslate"><span class="pre">Log</span></code></a></p></td>
+<td><p>Base class for generic log files</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="gaussianlog.html#arkane.ess.GaussianLog" title="arkane.ess.GaussianLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Gaussian log files</p></td>
 </tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="reading-q-chem-log-files">
-<h2>Reading Q-Chem log files<a class="headerlink" href="#reading-q-chem-log-files" title="Permalink to this headline">¶</a></h2>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 39%" />
-<col style="width: 61%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Class</p></th>
-<th class="head"><p>Description</p></th>
+<tr class="row-even"><td><p><a class="reference internal" href="molprolog.html#arkane.ess.MolproLog" title="arkane.ess.MolproLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">MolproLog</span></code></a></p></td>
+<td><p>Extract chemical parameters from Molpro log files</p></td>
 </tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">QChemLog</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="orcalog.html#arkane.ess.OrcaLog" title="arkane.ess.OrcaLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrcaLog</span></code></a></p></td>
+<td><p>Extract chemical parameters from Orca log files</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="qchemlog.html#arkane.ess.QChemLog" title="arkane.ess.QChemLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">QChemLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Q-Chem log files</p></td>
 </tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="reading-molpro-log-files">
-<h2>Reading Molpro log files<a class="headerlink" href="#reading-molpro-log-files" title="Permalink to this headline">¶</a></h2>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 39%" />
-<col style="width: 61%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Class</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MolproLog</span></code></p></td>
-<td><p>Extract chemical parameters from Molpro log files</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="terachemlog.html#arkane.ess.TeraChemLog" title="arkane.ess.TeraChemLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">TeraChemLog</span></code></a></p></td>
+<td><p>Extract chemical parameters from TeraChem log files</p></td>
 </tr>
 </tbody>
 </table>
@@ -132,6 +109,37 @@ species and reactions.</p>
 <tbody>
 <tr class="row-even"><td><p><a class="reference internal" href="input.html#arkane.input.load_input_file" title="arkane.input.load_input_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input_file()</span></code></a></p></td>
 <td><p>Load an Arkane job input file</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="output.html#arkane.output.PrettifyVisitor" title="arkane.output.PrettifyVisitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettifyVisitor</span></code></a></p></td>
+<td><p>Custom Abstract Syntax Tree (AST) visitor class</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="output.html#arkane.output.prettify" title="arkane.output.prettify"><code class="xref py py-func docutils literal notranslate"><span class="pre">prettify()</span></code></a></p></td>
+<td><p>Pretty formatting for a Python syntax string</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="output.html#arkane.output.get_str_xyz" title="arkane.output.get_str_xyz"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_str_xyz()</span></code></a></p></td>
+<td><p>Pretty formatting for XYZ coordinates</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="output.html#arkane.output.save_thermo_lib" title="arkane.output.save_thermo_lib"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_thermo_lib()</span></code></a></p></td>
+<td><p>Save an RMG thermo library</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="output.html#arkane.output.save_kinetics_lib" title="arkane.output.save_kinetics_lib"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_kinetics_lib()</span></code></a></p></td>
+<td><p>Save an RMG kinetics library</p></td>
 </tr>
 </tbody>
 </table>
@@ -163,6 +171,53 @@ species and reactions.</p>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="pdep.html#arkane.PressureDependenceJob" title="arkane.PressureDependenceJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">PressureDependenceJob</span></code></a></p></td>
 <td><p>Compute the phenomenological pressure-dependent rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> for a unimolecular reaction network</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="explorer.html#arkane.ExplorerJob" title="arkane.ExplorerJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerJob</span></code></a></p></td>
+<td><p>Explore a potential energy surface starting from a source</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="sensitivity-analysis">
+<h2>Sensitivity analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="sensitivity.html#arkane.sensitivity.KineticsSensitivity" title="arkane.sensitivity.KineticsSensitivity"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsSensitivity</span></code></a></p></td>
+<td><p>Perform sensitivity analysis for a kinetics job</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="sensitivity.html#arkane.sensitivity.PDepSensitivity" title="arkane.sensitivity.PDepSensitivity"><code class="xref py py-class docutils literal notranslate"><span class="pre">PDepSensitivity</span></code></a></p></td>
+<td><p>Perform sensitivity analysis for a pressure dependence job</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="utility-modules">
+<h2>Utility modules<a class="headerlink" href="#utility-modules" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 73%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="common.html#module-arkane.common" title="arkane.common"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.common</span></code></a></p></td>
+<td><p>Contains <a class="reference internal" href="common.html#arkane.common.ArkaneSpecies" title="arkane.common.ArkaneSpecies"><code class="xref py py-class docutils literal notranslate"><span class="pre">common.ArkaneSpecies</span></code></a> and other commonly used functions</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="util.html#module-arkane.util" title="arkane.util"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.util</span></code></a></p></td>
+<td><p>Other utility functions</p></td>
 </tr>
 </tbody>
 </table>
@@ -201,11 +256,12 @@ species and reactions.</p>
   <h3><a href="../../contents.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Arkane (<code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code>)</a><ul>
-<li><a class="reference internal" href="#reading-gaussian-log-files">Reading Gaussian log files</a></li>
-<li><a class="reference internal" href="#reading-q-chem-log-files">Reading Q-Chem log files</a></li>
-<li><a class="reference internal" href="#reading-molpro-log-files">Reading Molpro log files</a></li>
+<li><a class="reference internal" href="#reading-electronic-structure-software-log-files">Reading electronic structure software log files</a></li>
 <li><a class="reference internal" href="#input">Input</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
 <li><a class="reference internal" href="#job-classes">Job classes</a></li>
+<li><a class="reference internal" href="#sensitivity-analysis">Sensitivity analysis</a></li>
+<li><a class="reference internal" href="#utility-modules">Utility modules</a></li>
 </ul>
 </li>
 </ul>
@@ -216,8 +272,8 @@ species and reactions.</p>
   <p class="topless"><a href="../index.html"
                         title="previous chapter">RMG API Reference</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="gaussianlog.html"
-                        title="next chapter">arkane.gaussian.GaussianLog</a></p>
+  <p class="topless"><a href="log.html"
+                        title="next chapter">arkane.ess.Log</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -257,7 +313,7 @@ species and reactions.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="gaussianlog.html" title="arkane.gaussian.GaussianLog"
+          <a href="log.html" title="arkane.ess.Log"
              >next</a> |</li>
         <li class="right" >
           <a href="../index.html" title="RMG API Reference"

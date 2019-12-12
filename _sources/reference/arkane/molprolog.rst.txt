@@ -1,5 +1,5 @@
-*******************************
-arkane.molpro.MolproLog
-*******************************
+***************************
+arkane.ess.MolproLog
+***************************
 
-.. autoclass:: arkane.molpro.MolproLog
+.. autoclass:: arkane.ess.MolproLog

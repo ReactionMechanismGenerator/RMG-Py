@@ -6,3 +6,4 @@ Termination criteria
 
 .. autoclass:: rmgpy.solver.TerminationConversion
 
+.. autoclass:: rmgpy.solver.TerminationRateRatio

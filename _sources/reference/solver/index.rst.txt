@@ -22,6 +22,8 @@ Class                       Description
 :class:`ReactionSystem`     Base class for all reaction systems
 :class:`SimpleReactor`      A simple isothermal, isobaric, well-mixed batch reactor
 :class:`LiquidReactor`      A homogeneous, isothermal, isobaric liquid batch reactor
+:class:`SurfaceReactor`     A heterogeneous, isothermal, isochoric batch reactor
+:class:`MBSampledReactor`   :class:`SimpleReactor` with sampling delay for simulating molecular beam experiments
 =========================== ====================================================
 
 
@@ -36,6 +38,7 @@ Class                           Description
 =============================== ================================================
 :class:`TerminationTime`        Represent a time at which the simulation should be terminated
 :class:`TerminationConversion`  Represent a species conversion at which the simulation should be terminated
+:class:`TerminationRateRatio`   Represent a fraction of the maximum characteristic rate at which the simulation should be terminated
 =============================== ================================================
 
 .. toctree::
@@ -44,5 +47,7 @@ Class                           Description
     reactionsystem
     simplereactor
     liquidreactor
+    surfacereactor
+    mbsampledreactor
     termination
 

@@ -65,10 +65,76 @@ To call this method type:</p>
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">Input_File</span></code> is a file similar to a general RMG input file which contains all the species
-for RMG to generate reactions between.  An example file is placed in <code class="docutils literal notranslate"><span class="pre">$RMGPy/examples/generateReactions/input.py</span></code></p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/travis/build/ReactionMechanismGenerator/RMG-Py/documentation/source/users/rmg/modules/generateReactions.rst</span>, line 15)</p>
-<p>Include file ‘/home/travis/build/ReactionMechanismGenerator/RMG-Py/examples/generateReactions/input.py’ not found or reading it failed</p>
+for RMG to generate reactions between.  An example file is placed in <code class="docutils literal notranslate"><span class="pre">$RMGPy/examples/scripts/generateReactions/input.py</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources for kinetics</span>
+<span class="n">database</span><span class="p">(</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;BurkeH2O2&#39;</span><span class="p">,</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s1">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
+    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>  
+    <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span> 
+    <span class="c1">#this section lists possible reaction families to find reactioons with</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">],</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># List all species you want reactions between</span>
+<span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CC&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[H]&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;butane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CCCC&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+
+<span class="c1"># you must list reactor conditions (though this may not effect the output)</span>
+<span class="n">simpleReactor</span><span class="p">(</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">650</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;ethane&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;butane&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">99</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1">#optional module if you want to get pressure dependent kinetics. </span>
+
+<span class="c1">#pressureDependence(</span>
+<span class="c1">#     method=&#39;modified strong collision&#39;,</span>
+<span class="c1">#     maximumGrainSize=(0.5,&#39;kcal/mol&#39;),</span>
+<span class="c1">#     minimumNumberOfGrains=250,</span>
+<span class="c1">#     temperatures=(300,2200,&#39;K&#39;,2),</span>
+<span class="c1">#     pressures=(0.01,100,&#39;bar&#39;,3),</span>
+<span class="c1">#     interpolation=(&#39;Chebyshev&#39;, 6, 4),</span>
+<span class="c1">#     maximumAtoms=15,</span>
+<span class="c1">#)</span>
+
+<span class="c1">#optional module if you want to limit species produced in reactions. </span>
+
+<span class="c1">#generatedSpeciesConstraints(</span>
+<span class="c1">#    allowed=[&#39;input species&#39;,&#39;seed mechanisms&#39;,&#39;reaction libraries&#39;],</span>
+<span class="c1">#    maximumCarbonAtoms=4,</span>
+<span class="c1">#    maximumOxygenAtoms=7,</span>
+<span class="c1">#    maximumNitrogenAtoms=0,</span>
+<span class="c1">#    maximumSiliconAtoms=0,</span>
+<span class="c1">#    maximumSulfurAtoms=0,</span>
+<span class="c1">#    maximumHeavyAtoms=20,</span>
+<span class="c1">#    maximumRadicalElectrons=1,</span>
+<span class="c1">#)</span>
+</pre></div>
 </div>
 <p>This method will produce an <code class="docutils literal notranslate"><span class="pre">output.html</span></code> file in the directory of <code class="docutils literal notranslate"><span class="pre">input.py</span></code> which contains the all the reactions produced between the species.</p>
 <p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/tools/populate_reactions">Populate Reactions</a>.</p>
