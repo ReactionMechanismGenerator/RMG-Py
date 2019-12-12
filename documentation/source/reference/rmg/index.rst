@@ -17,7 +17,6 @@ Reaction models
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`Species`                A chemical species, with RMG-specific functionality
 :class:`CoreEdgeReactionModel`  A reaction model comprised of core and edge species and reactions
 =============================== ================================================
 
@@ -87,5 +86,3 @@ Class                           Description
     output
     pdepnetwork
     pdepreaction
-    species
-    

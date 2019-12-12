@@ -10,41 +10,20 @@ species and reactions.
 
 
 
-Reading Gaussian log files
-==========================
+Reading electronic structure software log files
+===============================================
 
-.. currentmodule:: arkane.gaussian
+.. currentmodule:: arkane.ess
 
 =============================== ================================================
 Class                           Description
 =============================== ================================================
+:class:`Log`                    Base class for generic log files
 :class:`GaussianLog`            Extract chemical parameters from Gaussian log files
-=============================== ================================================
-
-
-
-Reading Q-Chem log files
-========================
-
-.. currentmodule:: arkane.qchem
-
-=============================== ================================================
-Class                           Description
-=============================== ================================================
-:class:`QChemLog`               Extract chemical parameters from Q-Chem log files
-=============================== ================================================
-
-
-
-Reading Molpro log files
-========================
-
-.. currentmodule:: arkane.molpro
-
-=============================== ================================================
-Class                           Description
-=============================== ================================================
 :class:`MolproLog`              Extract chemical parameters from Molpro log files
+:class:`OrcaLog`                Extract chemical parameters from Orca log files
+:class:`QChemLog`               Extract chemical parameters from Q-Chem log files
+:class:`TeraChemLog`            Extract chemical parameters from TeraChem log files
 =============================== ================================================
 
 
@@ -62,6 +41,23 @@ Function                        Description
 
 
 
+Output
+======
+
+.. currentmodule:: arkane.output
+
+=============================== ================================================
+Function                        Description
+=============================== ================================================
+:class:`PrettifyVisitor`        Custom Abstract Syntax Tree (AST) visitor class
+:func:`prettify`                Pretty formatting for a Python syntax string
+:func:`get_str_xyz`             Pretty formatting for XYZ coordinates
+:func:`save_thermo_lib`         Save an RMG thermo library
+:func:`save_kinetics_lib`       Save an RMG kinetics library
+=============================== ================================================
+
+
+
 Job classes
 ===========
 
@@ -75,16 +71,48 @@ Class                           Description
 :class:`ThermoJob`              Compute the thermodynamic properties of a species
 :class:`KineticsJob`            Compute the high pressure-limit rate coefficient for a reaction using transition state theory
 :class:`PressureDependenceJob`  Compute the phenomenological pressure-dependent rate coefficients :math:`k(T,P)` for a unimolecular reaction network
+:class:`ExplorerJob`            Explore a potential energy surface starting from a source
 =============================== ================================================
+
+
+
+Sensitivity analysis
+====================
+
+.. currentmodule:: arkane.sensitivity
+
+=============================== ================================================
+Class                           Description
+=============================== ================================================
+:class:`KineticsSensitivity`    Perform sensitivity analysis for a kinetics job
+:class:`PDepSensitivity`        Perform sensitivity analysis for a pressure dependence job
+=============================== ================================================
+
+
+
+Utility modules
+===============
+
+.. currentmodule:: arkane
+
+=========================== ================================================
+Class                       Description
+=========================== ================================================
+:mod:`arkane.common`        Contains :class:`common.ArkaneSpecies` and other commonly used functions
+:mod:`arkane.util`          Other utility functions
+=========================== ================================================
 
 
 
 .. toctree::
     :hidden:
     
+    log
     gaussianlog
-    qchemlog
     molprolog
+    orcalog
+    qchemlog
+    terachemlog
     input
     kinetics
     main
@@ -92,4 +120,7 @@ Class                           Description
     pdep
     statmech
     thermo
-    
+    explorer
+    sensitivity
+    common
+    util

@@ -142,11 +142,15 @@ class OrcaLog(Log):
     def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
-        the result of a Orca "Freq" quantum chemistry calculation. As
+        the result of a Orca "Freq" quantum chemistry calculation.
+
         CAUTION: The rotational entropy is not quite correctly treated here
-         because it includes a symmetry number that is not yet correctly
-         implemented in ORCA. Orca does not provide Rotational temperatures. Only E(rot) and E(trans) energies
-         Consider using another supported software (such as Gaussian or QChem) to calculate the frequencies and derive E0
+        because it includes a symmetry number that is not yet correctly
+        implemented in ORCA. Orca does not provide Rotational temperatures;
+        only E(rot) and E(trans) energies.
+
+        Consider using another supported software (such as Gaussian or QChem)
+        to calculate the frequencies and derive E0
         """
 
         raise NotImplementedError('Could not find a successfully load Orca scan:Parser is not inpemented')

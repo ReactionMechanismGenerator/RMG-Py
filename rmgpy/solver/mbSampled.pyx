@@ -53,7 +53,7 @@ cdef class MBSampledReactor(ReactionSystem):
     These assumptions allow for a number of optimizations that enable
     this solver to complete very rapidly, even for large kinetic models.
 
-    This is currently only intended for use with the ``simulate.py``script,
+    This is currently only intended for use with the ``simulate.py`` script,
     and cannot be used for a standard RMG job.
     """
 
@@ -193,13 +193,18 @@ cdef class MBSampledReactor(ReactionSystem):
     def calculate_effective_pressure(self, rxn):
         """
         Computes the effective pressure for a reaction as:
-            Peff = P * sum(yi * effi / sum(y))
+
+        .. math:: P_{eff} = P * \\sum_i \\frac{y_i * eff_i}{\\sum_j y_j}
+
         with:
             - P the pressure of the reactor,
             - y the array of initial moles of the core species
+
         or as:
-            Peff = P * y_specificCollider / sum(y)
-        if a secificCollider is mentioned
+
+        .. math:: P_{eff} = \\frac{P * y_{specific_collider}}{\\sum_j y_j}
+
+        if a specific_collider is mentioned.
         """
 
         y0_core_species = self.y0[:self.num_core_species]

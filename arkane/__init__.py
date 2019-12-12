@@ -32,6 +32,7 @@ initialize imports
 """
 
 from arkane.common import ArkaneSpecies
+from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
 from arkane.main import Arkane
 from arkane.pdep import PressureDependenceJob

@@ -32,11 +32,12 @@ This module contains functions for filtering a list of Molecules representing a 
 keeping only the representative structures. Relevant for filtration of negligible mesomerism contributing structures.
 
 The rules this module follows are (by order of importance):
-1. Minimum overall deviation from the Octet Rule (elaborated for Dectet for sulfur as a third row element)
-2. Additional charge separation is only allowed for radicals if it makes a new radical site in the species
-3. If a structure must have charge separation, negative charges will be assigned to more electronegative atoms, whereas
-   positive charges will be assigned to less electronegative atoms (charge stabilization)
-4. Opposite charges will be as close as possible to one another, and vice versa (charge stabilization)
+
+    1. Minimum overall deviation from the Octet Rule (elaborated for Dectet for sulfur as a third row element)
+    2. Additional charge separation is only allowed for radicals if it makes a new radical site in the species
+    3. If a structure must have charge separation, negative charges will be assigned to more electronegative atoms,
+       whereas positive charges will be assigned to less electronegative atoms (charge stabilization)
+    4. Opposite charges will be as close as possible to one another, and vice versa (charge stabilization)
 
 (inspired by http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html)
 """
@@ -187,20 +188,22 @@ def charge_filtration(filtered_list, charge_span_list):
     """
     Returns a new filtered_list, filtered based on charge_span_list, electronegativity and proximity considerations.
     If structures with an additional charge layer introduce reactive sites (i.e., radicals or multiple bonds) they will
-    also be considered.
-    For example:
-    - Both of NO2's resonance structures will be kept: [O]N=O <=> O=[N+.][O-]
-    - NCO will only have two resonance structures [N.]=C=O <=> N#C[O.], and will loose the third structure which has
-      the same octet deviation, has a charge separation, but the radical site has already been considered: [N+.]#C[O-]
-    - CH2NO keeps all three structures, since a new radical site is introduced: [CH2.]N=O <=> C=N[O.] <=> C=[N+.][O-]
-    - NH2CHO has two structures, one of which is charged since it introduces a multiple bond: NC=O <=> [NH2+]=C[O-]
+    also be considered. For example:
+
+        - Both of NO2's resonance structures will be kept: [O]N=O <=> O=[N+.][O-]
+        - NCO will only have two resonance structures [N.]=C=O <=> N#C[O.], and will loose the third structure which has
+          the same octet deviation, has a charge separation, but the radical site has already been considered: [N+.]#C[O-]
+        - CH2NO keeps all three structures, since a new radical site is introduced: [CH2.]N=O <=> C=N[O.] <=> C=[N+.][O-]
+        - NH2CHO has two structures, one of which is charged since it introduces a multiple bond: NC=O <=> [NH2+]=C[O-]
+
     However, if the species is not a radical, or multiple bonds do not alter, we only keep the structures with the
     minimal charge span. For example:
-    - NSH will only keep the N#S form and not [N-]=[SH+]
-    - The following species will loose two thirds of its resonance structures, which are charged: CS(=O)SC <=>
-      CS(=O)#SC <=> C[S+]([O-]SC <=> CS([O-])=[S+]C <=> C[S+]([O-])#SC <=> C[S+](=O)=[S-]C
-    - Azide is know to have three resonance structures: [NH-][N+]#N <=> N=[N+]=[N-] <=> [NH+]#[N+][N-2];
-      here we filter the third one out due to the higher charge span, which does not contribute to reactivity in RMG
+
+        - NSH will only keep the N#S form and not [N-]=[SH+]
+        - The following species will loose two thirds of its resonance structures, which are charged: CS(=O)SC <=>
+          CS(=O)#SC <=> C[S+]([O-]SC <=> CS([O-])=[S+]C <=> C[S+]([O-])#SC <=> C[S+](=O)=[S-]C
+        - Azide is know to have three resonance structures: [NH-][N+]#N <=> N=[N+]=[N-] <=> [NH+]#[N+][N-2];
+          here we filter the third one out due to the higher charge span, which does not contribute to reactivity in RMG
     """
     min_charge_span = min(charge_span_list)
     if len(set(charge_span_list)) > 1:
