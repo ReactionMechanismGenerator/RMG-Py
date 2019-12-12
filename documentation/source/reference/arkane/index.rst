@@ -89,6 +89,20 @@ Class                           Description
 
 
 
+Utility modules
+===============
+
+.. currentmodule:: arkane
+
+=========================== ================================================
+Class                       Description
+=========================== ================================================
+:mod:`arkane.common`        Contains :class:`common.ArkaneSpecies` and other commonly used functions
+:mod:`arkane.util`          Other utility functions
+=========================== ================================================
+
+
+
 .. toctree::
     :hidden:
     
@@ -106,4 +120,5 @@ Class                           Description
     statmech
     thermo
     sensitivity
-    
+    common
+    util
