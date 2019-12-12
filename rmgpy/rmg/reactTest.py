@@ -36,7 +36,7 @@ import numpy as np
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.main import RMG, start_DASK_client
+from rmgpy.rmg.main import RMG, start_DASK_client, stop_DASK_client
 from rmgpy.rmg.react import react, react_all
 from rmgpy.species import Species
 
@@ -101,6 +101,7 @@ class TestReact(unittest.TestCase):
 
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
+        stop_DASK_client(client)
 
     def test_react_all(self):
         """
@@ -153,6 +154,7 @@ class TestReact(unittest.TestCase):
 
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
+        stop_DASK_client(client)
 
     def tearDown(self):
         """

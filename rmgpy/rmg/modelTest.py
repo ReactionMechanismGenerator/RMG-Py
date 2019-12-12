@@ -40,7 +40,7 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import NASA, NASAPolynomial
 from rmgpy.molecule import Molecule
-from rmgpy.rmg.main import RMG, start_DASK_client
+from rmgpy.rmg.main import RMG, start_DASK_client, stop_DASK_client
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.react import react
 from rmgpy.species import Species
@@ -192,6 +192,8 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         self.assertEqual(cerm.new_surface_rxns_loss, empty)
         self.assertEqual(cerm.new_surface_rxns_add, set([cerm.edge.reactions[0]]))
 
+        stop_DASK_client(client)
+
     def test_make_new_species(self):
         """
         Test that CoreEdgeReactionModel.make_new_species method correctly stores the unique species.
@@ -280,6 +282,8 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                     counter += len(rxnList)
 
         self.assertEquals(counter, 3)
+
+        stop_DASK_client(client)
 
     def test_thermo_filter_species(self):
         """
