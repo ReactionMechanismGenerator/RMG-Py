@@ -42,7 +42,7 @@ dependencies:
   - python >=3.7
   - pyyaml
   - quantities
-  - rdkit >=2018
+  - rdkit >=2019.09.1.0
   - scikit-learn
   - scipy
   - symmetry
