@@ -218,15 +218,15 @@ cdef class LiquidReactor(ReactionSystem):
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
-        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
+        cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
+        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
         cdef int num_core_species, num_core_reactions
         cdef int i, j, z, first, second, third
         cdef double k, V, reaction_rate, rev_reaction_rate, T, P, Peff
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] core_species_rates
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] C, y_core_species
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, collider_efficiencies
-        cdef numpy.ndarray[numpy.int_t, ndim=1] pdep_collider_reaction_indices, pdep_specific_collider_reaction_indices
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_rates
+        cdef np.ndarray[np.float64_t, ndim=1] C, y_core_species
+        cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk, collider_efficiencies
+        cdef np.ndarray[np.int_t, ndim=1] pdep_collider_reaction_indices, pdep_specific_collider_reaction_indices
         cdef list pdep_collider_kinetics, pdep_specific_collider_kinetics
 
         ir = self.reactant_indices
@@ -244,13 +244,13 @@ cdef class LiquidReactor(ReactionSystem):
         knet = self.network_leak_coefficients
         
         
-        res = numpy.zeros(num_core_species, numpy.float64)
+        res = np.zeros(num_core_species, np.float64)
 
-        core_species_concentrations = numpy.zeros_like(self.core_species_concentrations)
-        core_species_rates = numpy.zeros_like(self.core_species_rates)
-        core_reaction_rates = numpy.zeros_like(self.core_reaction_rates)
+        core_species_concentrations = np.zeros_like(self.core_species_concentrations)
+        core_species_rates = np.zeros_like(self.core_species_rates)
+        core_reaction_rates = np.zeros_like(self.core_reaction_rates)
 
-        C = numpy.zeros_like(self.core_species_concentrations)
+        C = np.zeros_like(self.core_species_concentrations)
         
         # Volume is constant
         V = self.V
@@ -341,21 +341,21 @@ cdef class LiquidReactor(ReactionSystem):
         return delta, 1
     
     @cython.boundscheck(False)
-    def generate_edge_info(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y):
+    def generate_edge_info(self, double t, np.ndarray[np.float64_t, ndim=1] y):
 
         """
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
-        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
+        cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
+        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
         cdef int  num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef int i, j, z, first, second, third
         cdef double k, V, reaction_rate, rev_reaction_rate, T, P, Peff
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates, edge_species_rates, edge_reaction_rates, network_leak_rates, coreSpeciesConsumptionRates, coreSpeciesProductionRates
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] C, y_coreSpecies
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, collider_efficiencies
-        cdef numpy.ndarray[numpy.int_t, ndim=1] pdep_collider_reaction_indices, pdep_specific_collider_reaction_indices
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates, edge_species_rates, edge_reaction_rates, network_leak_rates, coreSpeciesConsumptionRates, coreSpeciesProductionRates
+        cdef np.ndarray[np.float64_t, ndim=1] C, y_coreSpecies
+        cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk, collider_efficiencies
+        cdef np.ndarray[np.int_t, ndim=1] pdep_collider_reaction_indices, pdep_specific_collider_reaction_indices
         cdef list pdep_collider_kinetics, pdep_specific_collider_kinetics
 
         ir = self.reactant_indices
@@ -376,9 +376,9 @@ cdef class LiquidReactor(ReactionSystem):
         knet = self.network_leak_coefficients
         
         
-        edge_species_rates = numpy.zeros_like(self.edge_species_rates)
-        edge_reaction_rates = numpy.zeros_like(self.edge_reaction_rates)
-        network_leak_rates = numpy.zeros_like(self.network_leak_rates)
+        edge_species_rates = np.zeros_like(self.edge_species_rates)
+        edge_reaction_rates = np.zeros_like(self.edge_reaction_rates)
+        network_leak_rates = np.zeros_like(self.network_leak_rates)
 
         
         # Constant Volume
