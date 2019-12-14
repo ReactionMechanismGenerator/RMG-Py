@@ -73,7 +73,7 @@ def main():
         path=dbdir,
         thermo_libraries=['Klippenstein_Glarborg2016', 'BurkeH2O2', 'thermo_DFT_CCSDTF12_BAC', 'DFT_QCI_thermo',
                          'primaryThermoLibrary', 'primaryNS', 'NitrogenCurran', 'NOx2018', 'FFCM1(-)',
-                         'SulfurLibrary', 'SulfurGlarborgH2S'],
+                         'SulfurLibrary', 'SulfurGlarborgH2S', 'SABIC_aromatics'],
         transport_libraries=[],
         reaction_libraries=[],
         seed_mechanisms=[],
