@@ -361,7 +361,7 @@ cdef class LiquidReactor(ReactionSystem):
         ir = self.reactant_indices
         ip = self.product_indices
         
-         num_core_species = len(self.core_species_rates)
+        num_core_species = len(self.core_species_rates)
         num_core_reactions = len(self.core_reaction_rates)
         num_edge_species = len(self.edge_species_rates)
         num_edge_reactions = len(self.edge_reaction_rates)

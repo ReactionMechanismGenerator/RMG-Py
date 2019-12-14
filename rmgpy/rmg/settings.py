@@ -51,7 +51,7 @@ This module contains settings classes for manipulation of RMG run parameters
     `ignore_overall_flux_criterion`           flag indicating that the ordinary flux criterion should be ignored except for pdep purposes
     `max_num_species`                         Number of core species at which a stage/job will terminate
     `maxNumObjPerIter`                        Maximum number of objects that can be sent for enlargement from a single simulation
-    `edgeCheckFrequency`                            Fraction of solver time steps at which the edge reaction rates will be calculated and checked
+    `edgeCheckFrequency`                      Fraction of solver time steps at which the edge reaction rates will be calculated and checked
 ==================================================================================================================================================
 """
 import numpy as np

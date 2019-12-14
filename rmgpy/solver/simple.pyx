@@ -525,7 +525,7 @@ cdef class SimpleReactor(ReactionSystem):
         
         y_core_species = y[:num_core_species]
         
-            
+        
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
         
