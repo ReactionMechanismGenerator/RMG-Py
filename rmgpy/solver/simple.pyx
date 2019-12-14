@@ -394,7 +394,7 @@ cdef class SimpleReactor(ReactionSystem):
             specific_collider_species = self.specific_collider_species
             for i in range(pdep_specific_collider_reaction_indices.shape[0]):
                 # Calculate effective pressure
-                Peff = P * y[self.speciesIndex[specificColliderSpecies[i]]] / numpy.sum(y_core_species)
+                Peff = P * y[self.speciesIndex[specific_collider_species[i]]] / np.sum(y_core_species)
                 j = pdep_specific_collider_reaction_indices[i]
                 kf[j] = pdep_specific_collider_kinetics[i].getRateCoefficient(T, Peff)
                 kr[j] = kf[j] / equilibrium_constants[j]
