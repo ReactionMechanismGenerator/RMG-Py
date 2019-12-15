@@ -399,8 +399,8 @@ cdef class SimpleReactor(ReactionSystem):
                 kf[j] = pdep_specific_collider_kinetics[i].getRateCoefficient(T, Peff)
                 kr[j] = kf[j] / equilibrium_constants[j]
             
-        inet = self.networkIndices
-        knet = self.networkLeakCoefficients
+        inet = self.network_indices
+        knet = self.network_leak_coefficients
         
         
         res = np.zeros(num_core_species, np.float64)
@@ -526,8 +526,8 @@ cdef class SimpleReactor(ReactionSystem):
         y_core_species = y[:num_core_species]
         
         
-        inet = self.networkIndices
-        knet = self.networkLeakCoefficients
+        inet = self.network_indices
+        knet = self.network_leak_coefficients
         
         
         edge_species_rates = np.zeros_like(self.edge_species_rates)

@@ -586,7 +586,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
             tol_branch_rxn_to_core=toleranceBranchReactionToCore,
             branching_index=branchingIndex,
             branching_ratio_max=branchingRatioMax,
-            edgeCheckFrequency=edgeCheckFrequency,
+            edge_check_frequency=edgeCheckFrequency,
         )
     )
 
