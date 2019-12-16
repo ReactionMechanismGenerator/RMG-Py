@@ -73,7 +73,10 @@ of species in the condition file, the reactions involving those species will be
 automatically added to the core. (Putting these reactions in the seed mechanism 
 has the same effect.)  Thus, if a species is known to be a part of your system 
 and RMG is having trouble incorporating it within your model, it should be added 
-to the condition file with 0.0 set as the concentration.
+to the condition file with 0.0 set as the concentration. If you are adding a larger
+ number of species with zero concentration to your input file make sure to set
+ the `filterReactions` flag to true. Otherwise the inital reaction generation step
+ will take a long time.
 
 Starting with a single molecule when generating a model for a mixture
 ---------------------------------------------------------------------
