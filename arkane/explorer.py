@@ -136,12 +136,16 @@ class ExplorerJob(object):
 
         form = mmol.get_formula()
 
+        # Generate a list of families to be added to bimolecular species tuples
+        families = kinetics_database.families.keys()
+
         for spec in list(self.bath_gas.keys()) + self.source:
             nspec, is_new = reaction_model.make_new_species(spec, reactive=False)
-            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
+            flags = np.tile(np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species]),
+                             (len(families), 1)).T
             reaction_model.enlarge(nspec, react_edge=False, unimolecular_react=flags,
                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
-                                                              len(reaction_model.core.species))))
+                                                              len(reaction_model.core.species), len(families))))
 
         reaction_model.add_seed_mechanism_to_core('kineticsjobs')
 
@@ -156,14 +160,16 @@ class ExplorerJob(object):
 
         # react initial species
         if len(self.source) == 1:
-            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
-            biflags = np.zeros((len(reaction_model.core.species), len(reaction_model.core.species)))
+            flags = np.tile(np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species]),
+                            (len(families), 1)).T
+            biflags = np.zeros((len(reaction_model.core.species), len(reaction_model.core.species), len(families)))
         elif len(self.source) == 2:
-            flags = np.array([False for s in reaction_model.core.species])
-            biflags = np.array([[False for i in range(len(reaction_model.core.species))]
-                                for j in range(len(reaction_model.core.species))])
+            flags = np.tile(np.array([False for s in reaction_model.core.species]), (len(families), 1)).T
+            biflags = np.array([[[False for i in range(len(families))]
+                                for j in range(len(reaction_model.core.species))]
+                                for k in range(len(reaction_model.core.species))])
             biflags[reaction_model.core.species.index(self.source[0]), reaction_model.core.species.index(
-                self.source[1])] = True
+                self.source[1]), :] = True
         else:
             raise ValueError("Reactant channels with greater than 2 reactants not supported")
 
@@ -235,15 +241,19 @@ class ExplorerJob(object):
                             incomplete = True
                             spc = network.get_maximum_leak_species(T=temperature, P=pressure)
                             logging.info('adding new isomer {0} to network'.format(spc))
-                            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
+                            flags = np.tile(np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species]),
+                                            (len(families), 1)).T
                             reaction_model.enlarge((network, spc), react_edge=False, unimolecular_react=flags,
                                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
-                                                                              len(reaction_model.core.species))))
+                                                                              len(reaction_model.core.species),
+                                                                              len(families))))
 
-                            flags = np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species])
+                            flags = np.tile(np.array([s.molecule[0].get_formula() == form for s in reaction_model.core.species]),
+                                            (len(families), 1)).T
                             reaction_model.enlarge(react_edge=True, unimolecular_react=flags,
                                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
-                                                                              len(reaction_model.core.species))))
+                                                                              len(reaction_model.core.species),
+                                                                              len(families))))
         for network in self.networks:
             rm_rxns = []
             for rxn in network.path_reactions:  # remove reactions with forbidden species
