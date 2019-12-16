@@ -732,11 +732,6 @@ cdef class ReactionSystem(DASx):
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
                                                np.int)  # index within core_species list of the sensitive species
 
-        if filter_reactions:
-            # Calculate filter thresholds for each reaction family. Note that this method is temperature dependent
-            # and has to be moved inside the while not terminated loop if used with a non-isothermal reactor!
-            kvals_uni, kvals_bi, kvals_tri = self.get_threshold_rate_constants(model_settings)
-
         step_time = 1e-12
         prev_time = self.t
 
