@@ -57,9 +57,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="creating-input-files">
-<h1>3. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">3. </span>Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
-<h2>3.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.1. </span>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>The format of Arkane input files is based on Python syntax. In fact, Arkane
 input files are valid Python source code, and this is used to facilitate
 reading of the file.</p>
@@ -149,7 +149,7 @@ computations:</p>
 </table>
 </div>
 <div class="section" id="model-chemistry">
-<h2>3.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.2. </span>Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
 <p>The first item in the input file should be a <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> assignment with a string describing the model
 chemistry. The <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> could either be in a <cite>single point // frequency</cite> format, e.g.,
 <cite>CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)</cite>, just the <cite>single point</cite>, e.g., <cite>CCSD(T)-F12a/aug-cc-pVTZ</cite>,
@@ -425,7 +425,7 @@ in the output file will not be meaningful, but kinetics and equilibrium constant
 correct.</p>
 </div>
 <div class="section" id="frequency-scale-factor">
-<h2>3.3. Frequency Scale Factor<a class="headerlink" href="#frequency-scale-factor" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.3. </span>Frequency Scale Factor<a class="headerlink" href="#frequency-scale-factor" title="Permalink to this headline">¶</a></h2>
 <p>Frequency scale factors are empirically fit to experiment for different <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>.
 Refer to NIST website for values (<a class="reference external" href="http://cccbdb.nist.gov/vibscalejust.asp">http://cccbdb.nist.gov/vibscalejust.asp</a>).
 For CBS-QB3, which is not included in the link above, <code class="docutils literal notranslate"><span class="pre">frequencyScaleFactor</span> <span class="pre">=</span> <span class="pre">0.99</span></code> according to Montgomery et al.
@@ -434,7 +434,7 @@ The frequency scale factor is automatically assigned according to the supplied <
 (see above table). If not available automatically and not specified by the user, it will be assumed a unity value.</p>
 </div>
 <div class="section" id="species">
-<h2>3.4. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.4. </span>Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
 <p>Each species of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, which can be input in three different ways,
 discussed in the separate subsections below:</p>
 <p>1. By pointing to the output files of quantum chemistry calculations, which Arkane will parse for the necessary
@@ -443,7 +443,7 @@ molecular properties.
 3. By pointing to an appropriate YAML file.</p>
 <p>Within a single input file, any of the above options may be used for different species.</p>
 <div class="section" id="option-1-automatically-parse-quantum-chemistry-calculation-output">
-<h3>3.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output<a class="headerlink" href="#option-1-automatically-parse-quantum-chemistry-calculation-output" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.4.1. </span>Option #1: Automatically Parse Quantum Chemistry Calculation Output<a class="headerlink" href="#option-1-automatically-parse-quantum-chemistry-calculation-output" title="Permalink to this headline">¶</a></h3>
 <p>For this option, the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function only requires two parameters, as in the example below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span><span class="s1">&#39;C2H6&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6.py&#39;</span><span class="p">,</span>
         <span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">))</span>
@@ -566,7 +566,7 @@ energy from a Gaussian, Molpro, or QChem log file, all using the same <code clas
 rotors are included. If <code class="docutils literal notranslate"><span class="pre">geometry</span></code> is not set, then Arkane will read the geometry from the <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> file.
 Both cases are described below.</p>
 <div class="section" id="without-hindered-free-rotors">
-<h4>3.4.1.1. Without Hindered/Free Rotors<a class="headerlink" href="#without-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">3.4.1.1. </span>Without Hindered/Free Rotors<a class="headerlink" href="#without-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
 <p>In this case, only <code class="docutils literal notranslate"><span class="pre">geometry</span></code> and <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> need to be specified, and they can point to the same or different
 quantum chemistry calculation output files. The <code class="docutils literal notranslate"><span class="pre">geometry</span></code> file contains the optimized geometry, while the
 <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> file contains the harmonic oscillator frequencies of the species in its optimized geometry.
@@ -608,7 +608,7 @@ following example:</p>
 </div>
 </div>
 <div class="section" id="with-hindered-free-rotors">
-<h4>3.4.1.2. With Hindered/Free Rotors<a class="headerlink" href="#with-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">3.4.1.2. </span>With Hindered/Free Rotors<a class="headerlink" href="#with-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
 <p>In this case, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> and <code class="docutils literal notranslate"><span class="pre">rotors</span></code> need to be specified. The <code class="docutils literal notranslate"><span class="pre">geometry</span></code> and <code class="docutils literal notranslate"><span class="pre">frequencies</span></code>
 parameters must point to the <strong>same</strong> quantum chemistry calculation output file in this case.
 For example:</p>
@@ -762,7 +762,7 @@ for specifying the same <code class="docutils literal notranslate"><span class="
 <p>Note that the atom labels identified within the rotor section should correspond to the indicated geometry.</p>
 </div>
 <div class="section" id="multidimensional-hindered-rotors">
-<h4>3.4.1.3. Multidimensional Hindered Rotors<a class="headerlink" href="#multidimensional-hindered-rotors" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">3.4.1.3. </span>Multidimensional Hindered Rotors<a class="headerlink" href="#multidimensional-hindered-rotors" title="Permalink to this headline">¶</a></h4>
 <p>For multidimensional hindered rotors, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> need to be specified in the same way described
 in detail in the last section. However, rotor files may be specified by either a 1D rotor scan file as in the last
 section (1D rotors only) or as a directory. The directory must contain a list of energy files in the format
@@ -844,7 +844,7 @@ HinderedRotor2D you should delete the .evals file. HinderedRotorClassicalND usua
 dimensional torsions.</p>
 </div>
 <div class="section" id="additional-parameters-for-pressure-dependent-networks">
-<h4>3.4.1.4. Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">3.4.1.4. </span>Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>
 <p>Additional parameters apply only to molecules in pressure dependent networks</p>
 <table class="docutils align-default">
 <colgroup>
@@ -938,7 +938,7 @@ exponential down parameters is the following paper:
 </div>
 </div>
 <div class="section" id="option-2-directly-enter-molecular-properties">
-<h3>3.4.2. Option #2: Directly Enter Molecular Properties<a class="headerlink" href="#option-2-directly-enter-molecular-properties" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.4.2. </span>Option #2: Directly Enter Molecular Properties<a class="headerlink" href="#option-2-directly-enter-molecular-properties" title="Permalink to this headline">¶</a></h3>
 <p>While it is usually more convenient to have Arkane parse molecular properties from the output of quantum chemistry
 calculations (see <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a>) there are instances where an
 output file is not available and it is more convenient for the user to directly enter the molecular properties. This is
@@ -1149,7 +1149,7 @@ section) and run a new Arkane job in this manner. This can be useful if the user
 function from <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> to
 <a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a>.</p>
 <div class="section" id="id1">
-<h4>3.4.2.1. Additional parameters for pressure dependent networks<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">3.4.2.1. </span>Additional parameters for pressure dependent networks<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <p>Additional parameters apply only to molecules in pressure depedent networks</p>
 <table class="docutils align-default">
 <colgroup>
@@ -1207,7 +1207,7 @@ calculates thermodynamic parameters for pressure dependent mechanisms.</p>
 </div>
 </div>
 <div class="section" id="option-3-automatically-parse-yaml-files">
-<h3>3.4.3. Option #3: Automatically Parse YAML files<a class="headerlink" href="#option-3-automatically-parse-yaml-files" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.4.3. </span>Option #3: Automatically Parse YAML files<a class="headerlink" href="#option-3-automatically-parse-yaml-files" title="Permalink to this headline">¶</a></h3>
 <p>Arkane automatically saves a .yml file representing an ArkaneSpecies in an <code class="docutils literal notranslate"><span class="pre">ArkaneSpecies</span></code> folder under the run
 directory with the statistical mechanics properties of a species along with additional useful metadata. This process is
 triggered whenever a <code class="docutils literal notranslate"><span class="pre">thermo</span></code> calculation is ran for a species with a specified structure. To automatically generate
@@ -1219,7 +1219,7 @@ repository becomes available, a full description will be added to these pages.</
 </div>
 </div>
 <div class="section" id="transition-state">
-<h2>3.5. Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.5. </span>Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
 <p>Transition state(s) are only required when performing kinetics computations.
 Each transition state of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>
 function, which is analogous to the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function described above. Therefore, the <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>
@@ -1259,7 +1259,7 @@ in <a class="reference internal" href="#option-1-automatically-parse-quantum-che
 <a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a> for a more detailed description of the other parameters.</p>
 </div>
 <div class="section" id="reaction">
-<h2>3.6. Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.6. </span>Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h2>
 <p>This is only required if you wish to perform a kinetics computation.
 Each reaction of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">reaction()</span></code> function,
 which accepts the following parameters:</p>
@@ -1338,7 +1338,7 @@ parameter will just output the value specified by the <code class="docutils lite
 without using transition state theory.</p>
 </div>
 <div class="section" id="thermodynamics">
-<h2>3.7. Thermodynamics<a class="headerlink" href="#thermodynamics" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.7. </span>Thermodynamics<a class="headerlink" href="#thermodynamics" title="Permalink to this headline">¶</a></h2>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function to make Arkane execute the thermodynamic
 parameters computatiom for a species. Pass the string label of the species
 you wish to compute the  thermodynamic parameters for and the type of
@@ -1351,7 +1351,7 @@ output file.</p>
 </div>
 </div>
 <div class="section" id="high-pressure-limit-kinetics">
-<h2>3.8. High Pressure Limit Kinetics<a class="headerlink" href="#high-pressure-limit-kinetics" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.8. </span>High Pressure Limit Kinetics<a class="headerlink" href="#high-pressure-limit-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The <code class="docutils literal notranslate"><span class="pre">'label'</span></code> string must correspond to that of
 a defined <code class="docutils literal notranslate"><span class="pre">reaction()</span></code> function.</p>
@@ -1392,7 +1392,7 @@ at all requested conditions. A horizontal bar figure is automatically generated 
 forward and reverse direction at all conditions.</p>
 </div>
 <div class="section" id="pressure-dependent-network-specification">
-<h2>3.9. Pressure Dependent Network Specification<a class="headerlink" href="#pressure-dependent-network-specification" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.9. </span>Pressure Dependent Network Specification<a class="headerlink" href="#pressure-dependent-network-specification" title="Permalink to this headline">¶</a></h2>
 <p>To obtain pressure dependent rates, you need to add two different sections to
 the file. First, a declaration for the overall network must be given using the
 <code class="docutils literal notranslate"><span class="pre">network()</span></code> function, which specifies which spiecies are contained in this
@@ -1458,7 +1458,7 @@ be treated as a product channel.</p>
 calculated at the RQCISD(T)/CBS//B3LYP/6-311++G(d,p) level of theory</p>
 </div>
 <div class="section" id="pressure-dependent-rate-calculation">
-<h2>3.10. Pressure Dependent Rate Calculation<a class="headerlink" href="#pressure-dependent-rate-calculation" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.10. </span>Pressure Dependent Rate Calculation<a class="headerlink" href="#pressure-dependent-rate-calculation" title="Permalink to this headline">¶</a></h2>
 <p>The overall parameters for the pressure-dependence calculation must be defined in a
 <code class="docutils literal notranslate"><span class="pre">pressureDependence()</span></code> function at the end of the input file. The parameters are:</p>
 <table class="docutils align-default">
@@ -1537,7 +1537,7 @@ calculated at the RQCISD(T)/CBS//B3LYP/6-311++G(d,p) level of theory</p>
 </pre></div>
 </div>
 <div class="section" id="temperature-and-pressure-ranges">
-<h3>3.10.1. Temperature and Pressure Ranges<a class="headerlink" href="#temperature-and-pressure-ranges" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.10.1. </span>Temperature and Pressure Ranges<a class="headerlink" href="#temperature-and-pressure-ranges" title="Permalink to this headline">¶</a></h3>
 <p>Arkane will compute the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values on a grid of temperature and
 pressure points. <code class="docutils literal notranslate"><span class="pre">Tmin</span></code>, <code class="docutils literal notranslate"><span class="pre">Tmax</span></code>, and <code class="docutils literal notranslate"><span class="pre">Tcount</span></code> values, as well as <code class="docutils literal notranslate"><span class="pre">Pmin</span></code>, <code class="docutils literal notranslate"><span class="pre">Pmax</span></code>, and <code class="docutils literal notranslate"><span class="pre">Pcount</span></code> parameter
 values must be provided. Arkane will automatically choose the intermediate temperatures based on the interpolation model
@@ -1545,12 +1545,12 @@ you wish to fit. This is the recommended approach.</p>
 <p>Alternatively, the grid of temperature and pressure points can be specified explicitly using <code class="docutils literal notranslate"><span class="pre">Tlist</span></code> and/or <code class="docutils literal notranslate"><span class="pre">Plist</span></code>.</p>
 </div>
 <div class="section" id="energy-grains">
-<h3>3.10.2. Energy Grains<a class="headerlink" href="#energy-grains" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.10.2. </span>Energy Grains<a class="headerlink" href="#energy-grains" title="Permalink to this headline">¶</a></h3>
 <p>Determine the fineness of the energy grains to be used in the master equation calculations.  Dictate
 the <code class="docutils literal notranslate"><span class="pre">maximumGrainSize</span></code>, and the <code class="docutils literal notranslate"><span class="pre">minimumGrainCount</span></code>.</p>
 </div>
 <div class="section" id="sensitivity-analysis">
-<h3>3.10.3. Sensitivity analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.10.3. </span>Sensitivity analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h3>
 <p>Arkane also has the ability to vary barrier heights and generate sensitivity coefficients as a function of changes
 in <code class="docutils literal notranslate"><span class="pre">E0</span></code> with the <code class="docutils literal notranslate"><span class="pre">sensitivity_conditions</span></code> argument. For each desired condition, place its corresponding temperature
 and pressure within the list of <code class="docutils literal notranslate"><span class="pre">sensitivity_conditions</span></code>. See the example above for syntax.</p>
@@ -1561,13 +1561,13 @@ automatically generated per network reaction, showing the semi-normalized sensit
 </div>
 </div>
 <div class="section" id="examples">
-<h2>3.11. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.11. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the <code class="docutils literal notranslate"><span class="pre">examples/arkane</span></code> directory.</p>
 </div>
 <div class="section" id="troubleshooting-and-faqs">
-<h2>3.12. Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.12. </span>Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
 <p>1) The network that Arkane generated and the resulting pdf file show abnormally large
 absolute values. What’s going on?</p>
 <blockquote>
@@ -1575,7 +1575,7 @@ absolute values. What’s going on?</p>
 </div></blockquote>
 </div>
 <div class="section" id="arkane-user-checklist">
-<h2>3.13. Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.13. </span>Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
 <p>Using Arkane, or any rate theory package for that matter, requires careful consideration and management of a large
 amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was
 made to minimize such mistakes for users:</p>
@@ -1671,10 +1671,10 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="installation.html"
-                        title="previous chapter">2. Installation</a></p>
+                        title="previous chapter"><span class="section-number">2. </span>Installation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="input_explorer.html"
-                        title="next chapter">4. Creating Input Files for Automated Pressure Dependent Network Exploration</a></p>
+                        title="next chapter"><span class="section-number">4. </span>Creating Input Files for Automated Pressure Dependent Network Exploration</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -1729,7 +1729,7 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

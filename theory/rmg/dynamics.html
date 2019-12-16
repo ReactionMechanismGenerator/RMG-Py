@@ -57,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="dynamics-criterion">
-<span id="dynamics"></span><h1>3. Dynamics Criterion<a class="headerlink" href="#dynamics-criterion" title="Permalink to this headline">¶</a></h1>
+<span id="dynamics"></span><h1><span class="section-number">3. </span>Dynamics Criterion<a class="headerlink" href="#dynamics-criterion" title="Permalink to this headline">¶</a></h1>
 <p>When dealing with more complex chemical mechanisms the standard RMG flux criterion
 has trouble picking up key chain branching reactions and has limited guarantees
 that it accurately represents the concentrations of all species.  The dynamics
@@ -65,7 +65,7 @@ criterion is a measure of how much a given reaction affects core concentrations.
 This allows it to pick up key low-flux chain branching reactions and better represent
 species concentrations.</p>
 <div class="section" id="calculating-the-dynamics-criterion">
-<h2>3.1. Calculating the Dynamics Criterion<a class="headerlink" href="#calculating-the-dynamics-criterion" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.1. </span>Calculating the Dynamics Criterion<a class="headerlink" href="#calculating-the-dynamics-criterion" title="Permalink to this headline">¶</a></h2>
 <p>Let us define rates of production <span class="math notranslate nohighlight">\(P_i(t)\)</span> and consumption <span class="math notranslate nohighlight">\(L_i(t)\)</span> for a given species
 <span class="math notranslate nohighlight">\(\frac{dc_i}{dt} = P_i(t) - L_i(t)\)</span></p>
 <p>Let us define a dimensionless concentration variable we will refer to as the
@@ -86,7 +86,7 @@ core species involved in reaction j to get our criterion the dynamics number.</p
 <p><span class="math notranslate nohighlight">\(\sum_{i\in core} |Ln(\Pi_{Ac,i,j})| = Dy &gt; \epsilon\)</span></p>
 </div>
 <div class="section" id="surface-algorithm">
-<h2>3.2. Surface Algorithm<a class="headerlink" href="#surface-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.2. </span>Surface Algorithm<a class="headerlink" href="#surface-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>One common issue with the dynamics criterion is that it treats all core species equally.
 Because of this, if the dynamics criterion is set too low it enters a feedback loop where
 it adds species and then since it can’t get those species’ concentrations right it adds
@@ -109,7 +109,7 @@ for movement from surface to bulk core based on flux or dynamics criterion.</p>
 </div>
 </div>
 <div class="section" id="key-parameters-for-dynamics-criterion-and-surface-algorithm">
-<h2>3.3. Key Parameters for Dynamics Criterion and Surface Algorithm<a class="headerlink" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.3. </span>Key Parameters for Dynamics Criterion and Surface Algorithm<a class="headerlink" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p><strong>toleranceMoveEdgeReactionToCore</strong></p>
 <p>An edge reaction will be pulled directly into the bulk core if its dynamics number
@@ -179,7 +179,7 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="prune.html"
-                        title="previous chapter">2. Prune Edge Species</a></p>
+                        title="previous chapter"><span class="section-number">2. </span>Prune Edge Species</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../pdep/index.html"
                         title="next chapter">Pressure-Dependence Theory Guide</a></p>
@@ -237,7 +237,7 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

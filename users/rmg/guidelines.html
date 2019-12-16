@@ -57,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="guidelines-for-building-a-model">
-<span id="guidelines"></span><h1>8. Guidelines for Building a Model<a class="headerlink" href="#guidelines-for-building-a-model" title="Permalink to this headline">¶</a></h1>
+<span id="guidelines"></span><h1><span class="section-number">8. </span>Guidelines for Building a Model<a class="headerlink" href="#guidelines-for-building-a-model" title="Permalink to this headline">¶</a></h1>
 <p>RMG has been designed to build kinetic models for gas phase pyrolysis and combustion of
 organic molecules made of C, H, O and S. By kinetic model, we mean a set
 of reactions and associated kinetics that represent the chemical transformations
@@ -71,7 +71,7 @@ reproducible manner.</p>
 (temperature, pressure, etc.) under which one desires to develop kinetic models.
 The following are some tips for setting up your input/condition file.</p>
 <div class="section" id="start-with-a-good-seed-mechanism">
-<h2>8.1. Start with a good seed mechanism<a class="headerlink" href="#start-with-a-good-seed-mechanism" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.1. </span>Start with a good seed mechanism<a class="headerlink" href="#start-with-a-good-seed-mechanism" title="Permalink to this headline">¶</a></h2>
 <p>RMG is a useful tool in elucidating important pathways in a given process but may not
 capture certain special reaction types which may be specific to the system you are
 interested in. However, if you already have a good idea of these reactions that are
@@ -90,7 +90,7 @@ good seed mechanism can address this issue for the system of interest and also
 reduce the size, cost and time taken to arrive at a converged model.</p>
 </div>
 <div class="section" id="setting-up-the-right-termination-criterion">
-<h2>8.2. Setting up the right termination criterion<a class="headerlink" href="#setting-up-the-right-termination-criterion" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.2. </span>Setting up the right termination criterion<a class="headerlink" href="#setting-up-the-right-termination-criterion" title="Permalink to this headline">¶</a></h2>
 <p>Start with a relatively large tolerance (such as 0.1) when building your first model
 to make sure that RMG can converge the model to completion without any hiccups, then
 begin tightening the tolerance if you are able to converge the initial model.  For
@@ -99,7 +99,7 @@ for RMG to work with and lead to convergence problems. Note that a good seed mec
 allows for faster convergence.</p>
 </div>
 <div class="section" id="restricting-the-number-of-carbon-atoms-oxygen-atoms-and-radical-sites-per-species">
-<h2>8.3. Restricting the number of carbon atoms, oxygen atoms, and radical sites per species<a class="headerlink" href="#restricting-the-number-of-carbon-atoms-oxygen-atoms-and-radical-sites-per-species" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3. </span>Restricting the number of carbon atoms, oxygen atoms, and radical sites per species<a class="headerlink" href="#restricting-the-number-of-carbon-atoms-oxygen-atoms-and-radical-sites-per-species" title="Permalink to this headline">¶</a></h2>
 <p>Options to tune the maximum number of carbon or oxygen atoms, or number of radical
 sites per species can be specified at the beginning of the condition file. In most
 systems, we do not expect large contributions from species with more than 1 radical
@@ -115,7 +115,7 @@ converging and is generating many unlikely species on the edge), you can begin
 tuning these options to produce a better model.</p>
 </div>
 <div class="section" id="adding-key-species-into-the-initial-condition-file">
-<h2>8.4. Adding key species into the initial condition file<a class="headerlink" href="#adding-key-species-into-the-initial-condition-file" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.4. </span>Adding key species into the initial condition file<a class="headerlink" href="#adding-key-species-into-the-initial-condition-file" title="Permalink to this headline">¶</a></h2>
 <p>Sometimes, chain branching reactions like dissociation of ROOH species do not make
 it to the core directly because if their fluxes are very small and the tolerance is
 not tight enough. In these cases, seeding the condition file with these species
@@ -127,7 +127,7 @@ and RMG is having trouble incorporating it within your model, it should be added
 to the condition file with 0.0 set as the concentration.</p>
 </div>
 <div class="section" id="starting-with-a-single-molecule-when-generating-a-model-for-a-mixture">
-<h2>8.5. Starting with a single molecule when generating a model for a mixture<a class="headerlink" href="#starting-with-a-single-molecule-when-generating-a-model-for-a-mixture" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.5. </span>Starting with a single molecule when generating a model for a mixture<a class="headerlink" href="#starting-with-a-single-molecule-when-generating-a-model-for-a-mixture" title="Permalink to this headline">¶</a></h2>
 <p>For modeling the combustion of fuel mixtures, you may want to start with determining
 their composition and starting with a kinetic study of the dominant compound. It is
 possible to model the combustion of fuel mixtures but they are more challenging as
@@ -185,10 +185,10 @@ of interest to you.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="output.html"
-                        title="previous chapter">7. Analyzing the Output Files</a></p>
+                        title="previous chapter"><span class="section-number">7. </span>Analyzing the Output Files</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="modules/index.html"
-                        title="next chapter">9. Standalone Modules</a></p>
+                        title="next chapter"><span class="section-number">9. </span>Standalone Modules</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -243,7 +243,7 @@ of interest to you.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -57,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="thermochemistry-estimation">
-<span id="thermo"></span><h1>13. Thermochemistry Estimation<a class="headerlink" href="#thermochemistry-estimation" title="Permalink to this headline">¶</a></h1>
+<span id="thermo"></span><h1><span class="section-number">13. </span>Thermochemistry Estimation<a class="headerlink" href="#thermochemistry-estimation" title="Permalink to this headline">¶</a></h1>
 <p>This section gives in-depth descriptions of the methods used for determining thermochemistry of
 species.</p>
 <p>Thermochemistry of species is obtained via three possible ways:</p>
@@ -67,7 +67,7 @@ species.</p>
 <li><p>On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)</p></li>
 </ol>
 <div class="section" id="species-thermochemistry-libraries">
-<h2>13.1. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.1. </span>Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h2>
 <p>These databases contain thermochemical parameters for species.
 In these databases each entry contains an unambiguous definition of the species
 (through the adjacency list representation),
@@ -78,7 +78,7 @@ the evaluation of each thermodynamic variable as a function of temperature.</p>
 <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="group-contribution-methods">
-<h2>13.2. Group contribution methods<a class="headerlink" href="#group-contribution-methods" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2. </span>Group contribution methods<a class="headerlink" href="#group-contribution-methods" title="Permalink to this headline">¶</a></h2>
 <p>When the thermochemistry of a species is not present in one of the available
 species thermochemistry libraries, RMG needs to estimate thermochemistry. One way
 to do so, is by using group contribution methods that estimate the thermochemistry
@@ -104,7 +104,7 @@ of the contributions <span class="math notranslate nohighlight">\(C_{i}\)</span>
 <p>Values for each central atomtype (e.g. “tertiary carbon atom”) and its surrounding ligands can be found in the thermo
 group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 <div class="section" id="nnis">
-<h3>13.2.1. NNIs<a class="headerlink" href="#nnis" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.1. </span>NNIs<a class="headerlink" href="#nnis" title="Permalink to this headline">¶</a></h3>
 <p>Besides the main group-centered (GAV) contributions, non-next-nearest
 neighbor interactions (NNI) may also be important to take into account. NNIs are interactions between
 atoms separated by at least 2 atoms, such as alkane 1,4-gauche, alkane 1,5 (cf. figure), alkene 1,4-gauche,
@@ -117,7 +117,7 @@ alkene single and double cis, ene-yne cis and ortho interactions.</p>
 can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="ring-strain">
-<h3>13.2.2. Ring Strain<a class="headerlink" href="#ring-strain" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.2. </span>Ring Strain<a class="headerlink" href="#ring-strain" title="Permalink to this headline">¶</a></h3>
 <p>To account for ring strain, ring strain corrections (RSC) were
 introduced. Because there is no obvious relation between the
 RSC and the ring structure, a specific RSC is required for every
@@ -132,7 +132,7 @@ ring correction (RSC) needs to be added to the sum of the GAVs of the individual
 can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="hydrogen-bond-increment-hbi-method">
-<h3>13.2.3. Hydrogen Bond Increment (HBI) method<a class="headerlink" href="#hydrogen-bond-increment-hbi-method" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.3. </span>Hydrogen Bond Increment (HBI) method<a class="headerlink" href="#hydrogen-bond-increment-hbi-method" title="Permalink to this headline">¶</a></h3>
 <p>Lay et al. <a class="reference internal" href="#lay" id="id2"><span>[Lay]</span></a> introduced the hydrogen bond increment (HBI) method to
 predict thermochemical properties of radicals. In contrast to Benson’s method,
 the HBI method does not use the group-additivity concept. The HBI
@@ -163,7 +163,7 @@ can be found here: <a class="reference internal" href="database/thermo.html#ther
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp">
-<span id="qm"></span><h2>13.3. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)<a class="headerlink" href="#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp" title="Permalink to this headline">¶</a></h2>
+<span id="qm"></span><h2><span class="section-number">13.3. </span>On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)<a class="headerlink" href="#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp" title="Permalink to this headline">¶</a></h2>
 <p>An interface for performing on-the-fly quantum and force field calculations
 has been developed and integrated into RMG to complement the species thermochemistry databases and
 group contribution methods [Magoon and Green]_. This interface is particularly interesting for the estimation of
@@ -230,7 +230,7 @@ present in the QMfiles folder. It does so by comparing the InChI key of the give
 of the files in the QMfiles folder. If none of the InChI keys of the files correspond to the InChI key of
 the given species, RMG will initiate a new QMTP calculation.</p>
 <div class="section" id="supported-qm-packages-and-levels-of-theory">
-<h3>13.3.1. Supported QM packages, and levels of theory<a class="headerlink" href="#supported-qm-packages-and-levels-of-theory" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.3.1. </span>Supported QM packages, and levels of theory<a class="headerlink" href="#supported-qm-packages-and-levels-of-theory" title="Permalink to this headline">¶</a></h3>
 <p>The following table shows an overview of the computational chemistry packages
 and levels of theory that are currently  supported in the QMTP interface of RMG.</p>
 <p>The MM4 force field software originates from Allinger and Lii. <a class="reference internal" href="#allinger" id="id4"><span>[Allinger]</span></a>.</p>
@@ -259,9 +259,9 @@ and levels of theory that are currently  supported in the QMTP interface of RMG.
 </div>
 </div>
 <div class="section" id="symmetry-and-chirality">
-<h2>13.4. Symmetry and Chirality<a class="headerlink" href="#symmetry-and-chirality" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.4. </span>Symmetry and Chirality<a class="headerlink" href="#symmetry-and-chirality" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="symmetry">
-<h3>13.4.1. Symmetry<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.4.1. </span>Symmetry<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h3>
 <p>The notion of symmetry is an essential part of molecules.
 Molecular symmetry refers to the indistinguishable orientations of a molecule and
 can be represented by molecular groups or a symmetry number. RMG uses a symmetry number
@@ -281,7 +281,7 @@ using the open-source software SYMMETRY “Brute Force Symmetry Analyzer” <a c
 three-dimensional geometry and calculates the corresponding point group.</p>
 </div>
 <div class="section" id="chirality">
-<h3>13.4.2. Chirality<a class="headerlink" href="#chirality" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.4.2. </span>Chirality<a class="headerlink" href="#chirality" title="Permalink to this headline">¶</a></h3>
 <p>RMG does not take stereochemistry into account, effectively assuming a racemic mixture of mirror image enantiomers.
 As a result, a chirality contribution of <span class="math notranslate nohighlight">\(+R * ln(2)\)</span> is included in the entropy of the molecule.</p>
 <p>Chirality for molecules whose thermochemistry is determiend using group contribution techniques is detected
@@ -298,7 +298,7 @@ for each chiral center.</p>
 </div>
 </div>
 <div class="section" id="references">
-<h2>13.5. References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.5. </span>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <dl class="citation">
 <dt class="label" id="benson1976"><span class="brackets"><a class="fn-backref" href="#id1">Benson1976</a></span></dt>
 <dd><p>Benson, Sidney William. “Thermochemical kinetics.” (1976)</p>
@@ -382,10 +382,10 @@ for each chiral center.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="database/modification.html"
-                        title="previous chapter">12.4. Database Modification</a></p>
+                        title="previous chapter"><span class="section-number">12.4. </span>Database Modification</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="kinetics.html"
-                        title="next chapter">14. Kinetics Estimation</a></p>
+                        title="next chapter"><span class="section-number">14. </span>Kinetics Estimation</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -440,7 +440,7 @@ for each chiral center.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -57,9 +57,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="parsing-output-files">
-<h1>6. Parsing Output Files<a class="headerlink" href="#parsing-output-files" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">6. </span>Parsing Output Files<a class="headerlink" href="#parsing-output-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="thermodynamic-and-high-pressure-limit-kinetics-calculations">
-<h2>6.1. Thermodynamic and High-pressure Limit Kinetics Calculations<a class="headerlink" href="#thermodynamic-and-high-pressure-limit-kinetics-calculations" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.1. </span>Thermodynamic and High-pressure Limit Kinetics Calculations<a class="headerlink" href="#thermodynamic-and-high-pressure-limit-kinetics-calculations" title="Permalink to this headline">¶</a></h2>
 <p>The syntax of Arkane output files closely mirrors that of the input files.
 For each <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function in the input file, there will be a corresponding
 <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function in the output file containing the computed thermodynamic
@@ -68,7 +68,7 @@ be a corresponding <code class="docutils literal notranslate"><span class="pre">
 computed kinetics model.</p>
 </div>
 <div class="section" id="pressure-dependent-calculations">
-<h2>6.2. Pressure-Dependent Calculations<a class="headerlink" href="#pressure-dependent-calculations" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.2. </span>Pressure-Dependent Calculations<a class="headerlink" href="#pressure-dependent-calculations" title="Permalink to this headline">¶</a></h2>
 <p>The output file contains the entire contents of the input file. In
 addition, the output file contains a block of <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> calls. The
 parameters of each <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> block match those of the <code class="docutils literal notranslate"><span class="pre">reaction()</span></code>
@@ -79,7 +79,7 @@ network. Each reaction is reversible. Reactions in the opposite direction are
 provided as commented out, so a user can choose to use them if she/he desires.</p>
 </div>
 <div class="section" id="chemkin-output-file">
-<h2>6.3. Chemkin Output File<a class="headerlink" href="#chemkin-output-file" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.3. </span>Chemkin Output File<a class="headerlink" href="#chemkin-output-file" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the <code class="docutils literal notranslate"><span class="pre">output.py</span></code> which contains the thermodynamic,
 kinetic, and pressure dependent results from an Arkane run, a Chemkin
 input file, <code class="docutils literal notranslate"><span class="pre">chem.inp</span></code> is also returned. This file contains species and their
@@ -94,7 +94,7 @@ chemkin file.</p>
 a Cantera input file for use in Cantera software.</p>
 </div>
 <div class="section" id="log-file">
-<h2>6.4. Log File<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.4. </span>Log File<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h2>
 <p>A log file containing similar information to that displayed on the console
 during Arkane execution is also automatically saved. This file has the name
 <code class="docutils literal notranslate"><span class="pre">Arkane.log</span></code> and is found in the same directory as the output file. The
@@ -105,7 +105,7 @@ something unexpected has occurred.</p>
 output files.</p>
 </div>
 <div class="section" id="species-dictionary">
-<h2>6.5. Species Dictionary<a class="headerlink" href="#species-dictionary" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.5. </span>Species Dictionary<a class="headerlink" href="#species-dictionary" title="Permalink to this headline">¶</a></h2>
 <p>Any species that had the <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> method called and had the structure defined in the Arkane
 input file will also have an RMG style adjacency list representation in <code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code>.
 This allows the user to input the corresponding thermo and kinetics into RMG in various ways
@@ -156,10 +156,10 @@ described in the RMG user guide.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="running.html"
-                        title="previous chapter">5. Running Arkane</a></p>
+                        title="previous chapter"><span class="section-number">5. </span>Running Arkane</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="faq.html"
-                        title="next chapter">7. Frequently Asked Questions</a></p>
+                        title="next chapter"><span class="section-number">7. </span>Frequently Asked Questions</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -214,7 +214,7 @@ described in the RMG user guide.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

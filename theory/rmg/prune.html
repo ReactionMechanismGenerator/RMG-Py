@@ -57,13 +57,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="prune-edge-species">
-<span id="prune"></span><h1>2. Prune Edge Species<a class="headerlink" href="#prune-edge-species" title="Permalink to this headline">¶</a></h1>
+<span id="prune"></span><h1><span class="section-number">2. </span>Prune Edge Species<a class="headerlink" href="#prune-edge-species" title="Permalink to this headline">¶</a></h1>
 <p>When dealing with complicated reaction systems, RMG calculation would easily hit the computer memory limitation. Memory profiling shows
 most memory especially during memory limitation stage is occupied by edge species. However, most edge species in fact wouldn’t
 be included in the core (or final model). Thus, it’s natural to get rid of some not “so useful” edge species during calculation
 in order to achieve both low memory consumption and mechanism accuracy. Pruning is such a way.</p>
 <div class="section" id="key-parameters-in-pruning">
-<h2>2.1. Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.1. </span>Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p>toleranceKeepInEdge</p>
 <p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Thus, larger values will lead to smaller edge mechanisms.</p>
@@ -89,7 +89,7 @@ toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> char
 </ul>
 </div>
 <div class="section" id="how-pruning-works">
-<h2>2.2. How Pruning Works<a class="headerlink" href="#how-pruning-works" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.2. </span>How Pruning Works<a class="headerlink" href="#how-pruning-works" title="Permalink to this headline">¶</a></h2>
 <div class="figure align-default" id="id1">
 <img alt="../../_images/fluxDiagram.png" src="../../_images/fluxDiagram.png" />
 <p class="caption"><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
@@ -153,10 +153,10 @@ in the edge, which is followed by pruning of excessive amount of edge species to
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="enlarger.html"
-                        title="previous chapter">1. Rate-based Model Enlarging Algorithm</a></p>
+                        title="previous chapter"><span class="section-number">1. </span>Rate-based Model Enlarging Algorithm</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="dynamics.html"
-                        title="next chapter">3. Dynamics Criterion</a></p>
+                        title="next chapter"><span class="section-number">3. </span>Dynamics Criterion</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -211,7 +211,7 @@ in the edge, which is followed by pruning of excessive amount of edge species to
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -57,9 +57,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="creating-input-files-for-automated-pressure-dependent-network-exploration">
-<h1>4. Creating Input Files for Automated Pressure Dependent Network Exploration<a class="headerlink" href="#creating-input-files-for-automated-pressure-dependent-network-exploration" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">4. </span>Creating Input Files for Automated Pressure Dependent Network Exploration<a class="headerlink" href="#creating-input-files-for-automated-pressure-dependent-network-exploration" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
-<h2>4.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.1. </span>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>Network exploration starts from a pressure dependent calculation job so naturally it requires an input file
 containing everything required for a pressure-dependent calculation input file.  In addition all species
 blocks must have a structure input and there must be a database block in the job.  At the end of the
@@ -76,7 +76,7 @@ pressure-dependent calculation input file you append an explorer block.  For exa
 source channel.  The network is expanded starting from this starting isomer/channel.</p>
 </div>
 <div class="section" id="network-exploration">
-<h2>4.2. Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.2. </span>Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> is a fraction of the flux from all net reactions from the source to the other channels in the network.  Network expansion is done starting from just the network source using
 values from the rest of the Arkane job when available, otherwise from RMG.  It cycles through all of the
 temperature and pressure points specified for fitting in the pressure dependence job and checks the total network
@@ -86,7 +86,7 @@ again.  Once this loop is finished a network_full.py file is generated in the pd
 explored network.</p>
 </div>
 <div class="section" id="network-reduction">
-<h2>4.3. Network Reduction<a class="headerlink" href="#network-reduction" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.3. </span>Network Reduction<a class="headerlink" href="#network-reduction" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> and <code class="docutils literal notranslate"><span class="pre">flux_tol</span></code> control reduction of the full network.  This is highly recommended as the full model
 will often contain many unimportant reactions.  How strict you decide to set these parameters should be related
 to how much you trust the thermo and rate information being used in the job.</p>
@@ -148,10 +148,10 @@ containing the reduced network.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="input.html"
-                        title="previous chapter">3. Creating Input Files</a></p>
+                        title="previous chapter"><span class="section-number">3. </span>Creating Input Files</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="running.html"
-                        title="next chapter">5. Running Arkane</a></p>
+                        title="next chapter"><span class="section-number">5. </span>Running Arkane</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -206,7 +206,7 @@ containing the reduced network.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

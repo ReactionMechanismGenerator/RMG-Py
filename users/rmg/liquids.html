@@ -57,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="liquid-phase-systems">
-<span id="liquids"></span><h1>15. Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
+<span id="liquids"></span><h1><span class="section-number">15. </span>Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
 <p>To simulate liquids in RMG requires a module in your input file for liquid-phase:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">solvation</span><span class="p">(</span>
     <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
@@ -110,7 +110,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 <p>Notes: sensitivity, sensitivityThreshold and constantSpecies are optionnal keywords.</p>
 <div class="section" id="equation-of-state">
-<h2>15.1. Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.1. </span>Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
 <p>Specifying a liquidReactor will have two effects:</p>
 <ol class="arabic simple">
 <li><p>disable the ideal gas law renormalization and instead rely on the concentrations you specified in the input file to initialize the system.</p></li>
@@ -118,7 +118,7 @@ in one final simulation (sensitivity is not performed in intermediate iterations
 </ol>
 </div>
 <div class="section" id="solvation-thermochemistry">
-<h2>15.2. Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.2. </span>Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquids is solvation effects on the thermochemistry. By specifying a solvent in the input file, we load the solvent parameters to use.</p>
 <p>The free energy change associated with the process of transferring a
 molecule from the gas phase to the solvent phase is defined as the free
@@ -131,7 +131,7 @@ memory (RAM) requirements are also important considerations. A fairly
 accurate and fast method for computing <span class="math notranslate nohighlight">\(\Delta G\)</span>, which is used in RMG, is the
 LSER approach described below.</p>
 <div class="section" id="use-of-thermo-libraries-in-liquid-phase-system">
-<span id="useofthermolibrariesliquid"></span><h3>15.2.1. Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
+<span id="useofthermolibrariesliquid"></span><h3><span class="section-number">15.2.1. </span>Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
 <p>As it is for gas phase simulation, thermo libraries listed in the input files are checked first to find thermo for a given species and return the first match.
 As it exists two types of thermo libraries, (more details on <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">thermo libraries</span></a>),
 thermo of species matching a library in a liquid phase simulation is obtained following those two cases:</p>
@@ -144,7 +144,7 @@ for this specific species-solvent system.</p>
 </div>
 </div>
 <div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry">
-<span id="lsertoestimatethermo"></span><h3>15.2.2. Use of Abraham LSER to estimate thermochemistry<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry" title="Permalink to this headline">¶</a></h3>
+<span id="lsertoestimatethermo"></span><h3><span class="section-number">15.2.2. </span>Use of Abraham LSER to estimate thermochemistry<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry" title="Permalink to this headline">¶</a></h3>
 <p>The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the
 log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent
 (<span class="math notranslate nohighlight">\(K_{vs}\)</span>) (also known as gas-solvent partition coefficient) at 298 K:</p>
@@ -197,7 +197,7 @@ to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> 
 </ol>
 </div>
 <div class="section" id="group-additivity-method-for-solute-descriptor-estimation">
-<h3>15.2.3. Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">15.2.3. </span>Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
 <p>Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach
 to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id12"><span>[Platts1999]</span></a>) proposed such a scheme
@@ -207,7 +207,7 @@ capabilities. The value of a given descriptor for a molecule is obtained by summ
 fragment found in the molecule and the intercept associated with that descriptor.</p>
 </div>
 <div class="section" id="mintz-model-for-enthalpy-of-solvation">
-<h3>15.2.4. Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">15.2.4. </span>Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
 <p>For estimating <span class="math notranslate nohighlight">\(\Delta G\)</span> at temperatures other than 298 K, the enthalpy change associated with solvation,
 <span class="math notranslate nohighlight">\(\Delta H\)</span> must be calculated separately and, along with <span class="math notranslate nohighlight">\(\Delta S\)</span>, assumed to be independent of
 temperature. Recently, Mintz et al. (<a class="reference internal" href="#mintz2007" id="id13"><span>[Mintz2007]</span></a>, <a class="reference internal" href="#mintz2007a" id="id14"><span>[Mintz2007a]</span></a>, <a class="reference internal" href="#mintz2007b" id="id15"><span>[Mintz2007b]</span></a>, <a class="reference internal" href="#mintz2007c" id="id16"><span>[Mintz2007c]</span></a>, <a class="reference internal" href="#mintz2007d" id="id17"><span>[Mintz2007d]</span></a>, <a class="reference internal" href="#mintz2008" id="id18"><span>[Mintz2008]</span></a>, <a class="reference internal" href="#mintz2008a" id="id19"><span>[Mintz2008a]</span></a>, <a class="reference internal" href="#mintz2009" id="id20"><span>[Mintz2009]</span></a>)
@@ -221,7 +221,7 @@ used to find <span class="math notranslate nohighlight">\(\Delta S(298 K)\)</spa
 </div>
 </div>
 <div class="section" id="diffusion-limited-kinetics">
-<span id="diffusionlimited"></span><h2>15.3. Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
+<span id="diffusionlimited"></span><h2><span class="section-number">15.3. </span>Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion
 limits. The theory behind diffusive limits in the solution phase for bimolecular reactions is well established
 (<a class="reference internal" href="#rice1985" id="id21"><span>[Rice1985]</span></a>) and has been extended to reactions of any order (<a class="reference internal" href="#flegg2016" id="id22"><span>[Flegg2016]</span></a>). The effective rate constant of a
@@ -252,7 +252,7 @@ and a correlation for the viscosity using parameters <span class="math notransla
 <p>To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).</p>
 </div>
 <div class="section" id="example-liquid-phase-input-file-no-constant-species">
-<span id="exampleliquidphase"></span><h2>15.4. Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
+<span id="exampleliquidphase"></span><h2><span class="section-number">15.4. </span>Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
 <p>This is an example of an input file for a liquid-phase system:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -313,7 +313,7 @@ and a correlation for the viscosity using parameters <span class="math notransla
 </div>
 </div>
 <div class="section" id="example-liquid-phase-input-file-with-constant-species">
-<h2>15.5. Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.5. </span>Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
 <p>This is an example of an input file for a liquid-phase system with constant species:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -472,10 +472,10 @@ and a correlation for the viscosity using parameters <span class="math notransla
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="kinetics.html"
-                        title="previous chapter">14. Kinetics Estimation</a></p>
+                        title="previous chapter"><span class="section-number">14. </span>Kinetics Estimation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="surfaces.html"
-                        title="next chapter">16. Heterogeneous Catalysis Systems and Surface Reactions</a></p>
+                        title="next chapter"><span class="section-number">16. </span>Heterogeneous Catalysis Systems and Surface Reactions</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -530,7 +530,7 @@ and a correlation for the viscosity using parameters <span class="math notransla
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

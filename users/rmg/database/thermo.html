@@ -48,7 +48,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U"><span class="section-number">12. </span>Databases</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -58,7 +58,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="thermo-database">
-<span id="thermodatabase"></span><h1>12.2. Thermo Database<a class="headerlink" href="#thermo-database" title="Permalink to this headline">¶</a></h1>
+<span id="thermodatabase"></span><h1><span class="section-number">12.2. </span>Thermo Database<a class="headerlink" href="#thermo-database" title="Permalink to this headline">¶</a></h1>
 <p>This section describes the general usage of RMG’s thermochemistry databases.
 Thermochemical data in RMG is reported using three different quantities:</p>
 <ol class="arabic simple">
@@ -69,9 +69,9 @@ Thermochemical data in RMG is reported using three different quantities:</p>
 <p>A heat capacity model based on the Wilhoit equation is used for inter- and
 extrapolation of the heat capacity data as a function of temperature.</p>
 <div class="section" id="libraries">
-<h2>12.2.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.2.1. </span>Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="library-types">
-<span id="thermolibrarytype"></span><h3>12.2.1.1. Library types<a class="headerlink" href="#library-types" title="Permalink to this headline">¶</a></h3>
+<span id="thermolibrarytype"></span><h3><span class="section-number">12.2.1.1. </span>Library types<a class="headerlink" href="#library-types" title="Permalink to this headline">¶</a></h3>
 <p>Two types of thermo libraries are available in RMG: “gas phase” and “liquid thermo” libraries respectively identified thanks to the absence or presence of the keyword
 <cite>solvent = “solvent_name”</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;example_liquid_thermo_library&quot;</span>
@@ -91,7 +91,7 @@ RMG will also raise an error if user try to use liquid phase thermo library in g
 </div>
 </div>
 <div class="section" id="species-thermochemistry-libraries">
-<h3>12.2.1.2. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.2.1.2. </span>Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
 <p>The folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/thermo/libraries/</span></code> in RMG-database is the location to store
 species thermochemistry libraries. Each particularly library is stored in a file
 with the extension .py, e.g. ‘DFT_QCI_thermo.py’.</p>
@@ -127,7 +127,7 @@ the standard entropy at 298K (‘S298’).</p>
 </div>
 </div>
 <div class="section" id="groups">
-<h2>12.2.2. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.2.2. </span>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
 <p>The folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/thermo/groups/</span></code> in RMG-database is the location to store
 group contribution databases. Each particularly type of group contribution is stored in a file
 with the extension .py, e.g. ‘groups.py’:</p>
@@ -189,7 +189,7 @@ is organized in a hierarchical tree, and is defined at the bottom of the databas
 <p>More information on hierarchical tree structures in RMG can be found here:
 <a class="reference internal" href="introduction.html#introdatabase"><span class="std std-ref">Introduction</span></a>.</p>
 <div class="section" id="group-additive-values-gav">
-<h3>12.2.2.1. Group additive values (GAV)<a class="headerlink" href="#group-additive-values-gav" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.2.2.1. </span>Group additive values (GAV)<a class="headerlink" href="#group-additive-values-gav" title="Permalink to this headline">¶</a></h3>
 <p>An example of a GAV entry in group.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
@@ -221,7 +221,7 @@ the adjacency list representation. Uncertainty margins are added in the data, af
 specification. A short description ‘shortDesc’ specifies the origin of the data.</p>
 </div>
 <div class="section" id="ring-strain-corrections-rsc">
-<h3>12.2.2.2. Ring Strain Corrections (RSC)<a class="headerlink" href="#ring-strain-corrections-rsc" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.2.2.2. </span>Ring Strain Corrections (RSC)<a class="headerlink" href="#ring-strain-corrections-rsc" title="Permalink to this headline">¶</a></h3>
 <p>RMG distinguishes between monocyclic and polycyclic ring correction databases.</p>
 <p>Monocyclic RSCs are used for molecules that contain one single ring.
 An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
@@ -281,7 +281,7 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 </div>
 </div>
 <div class="section" id="hydrogen-bond-increments-hbi">
-<h3>12.2.2.3. Hydrogen Bond Increments (HBI)<a class="headerlink" href="#hydrogen-bond-increments-hbi" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.2.2.3. </span>Hydrogen Bond Increments (HBI)<a class="headerlink" href="#hydrogen-bond-increments-hbi" title="Permalink to this headline">¶</a></h3>
 <p>An example of a HBI entry in radical.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
@@ -309,7 +309,7 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 </div>
 </div>
 <div class="section" id="non-nearest-neighbor-interactions">
-<h3>12.2.2.4. Non-nearest neighbor interactions<a class="headerlink" href="#non-nearest-neighbor-interactions" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.2.2.4. </span>Non-nearest neighbor interactions<a class="headerlink" href="#non-nearest-neighbor-interactions" title="Permalink to this headline">¶</a></h3>
 <p>The majority of the NNIs groups pertain to small enthalpy of formation corrections. Only a very limited
 number include entropy or heat capacity corrections. The database other.py contains
 cis-, ortho- and ketene-corrections.</p>
@@ -399,10 +399,10 @@ cis-, ortho- and ketene-corrections.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="introduction.html"
-                        title="previous chapter">12.1. Introduction</a></p>
+                        title="previous chapter"><span class="section-number">12.1. </span>Introduction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="kinetics.html"
-                        title="next chapter">12.3. Kinetics Database</a></p>
+                        title="next chapter"><span class="section-number">12.3. </span>Kinetics Database</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -452,13 +452,13 @@ cis-, ortho- and ketene-corrections.</p>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" >12. Databases</a> &#187;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" ><span class="section-number">12. </span>Databases</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

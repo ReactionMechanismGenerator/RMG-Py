@@ -48,7 +48,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U"><span class="section-number">12. </span>Databases</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -58,24 +58,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="database-modification">
-<span id="databasemodification"></span><h1>12.4. Database Modification<a class="headerlink" href="#database-modification" title="Permalink to this headline">¶</a></h1>
+<span id="databasemodification"></span><h1><span class="section-number">12.4. </span>Database Modification<a class="headerlink" href="#database-modification" title="Permalink to this headline">¶</a></h1>
 <p>Note that the RMG-Py database is written in Python code where line indentations
 determine the scope. When modifying the database, be sure to preserve all
 line indentations shown in the examples.</p>
 <div class="section" id="modifying-the-thermo-database">
-<h2>12.4.1. Modifying the Thermo Database<a class="headerlink" href="#modifying-the-thermo-database" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.4.1. </span>Modifying the Thermo Database<a class="headerlink" href="#modifying-the-thermo-database" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="creating-thermo-libraries">
-<h3>12.4.1.1. Creating Thermo Libraries<a class="headerlink" href="#creating-thermo-libraries" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.1.1. </span>Creating Thermo Libraries<a class="headerlink" href="#creating-thermo-libraries" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="adding-thermo-groups">
-<h3>12.4.1.2. Adding Thermo Groups<a class="headerlink" href="#adding-thermo-groups" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.1.2. </span>Adding Thermo Groups<a class="headerlink" href="#adding-thermo-groups" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="adding-thermo-to-the-depository">
-<h3>12.4.1.3. Adding Thermo to the Depository<a class="headerlink" href="#adding-thermo-to-the-depository" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.1.3. </span>Adding Thermo to the Depository<a class="headerlink" href="#adding-thermo-to-the-depository" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="modifying-the-kinetics-database">
-<span id="kinetic-database-modification"></span><h2>12.4.2. Modifying the Kinetics Database<a class="headerlink" href="#modifying-the-kinetics-database" title="Permalink to this headline">¶</a></h2>
+<span id="kinetic-database-modification"></span><h2><span class="section-number">12.4.2. </span>Modifying the Kinetics Database<a class="headerlink" href="#modifying-the-kinetics-database" title="Permalink to this headline">¶</a></h2>
 <p>For the casual user, it is recommended to use either a kinetic library or
 add to the training set instead of modifying the kinetic groups.</p>
 <p>Put kinetic parameters into a kinetic library when:</p>
@@ -91,7 +91,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 <li><p>You wish for the reaction to be generalized to similar reactions in your mechanism</p></li>
 </ul>
 <div class="section" id="adding-reaction-family">
-<h3>12.4.2.1. Adding Reaction Family<a class="headerlink" href="#adding-reaction-family" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.1. </span>Adding Reaction Family<a class="headerlink" href="#adding-reaction-family" title="Permalink to this headline">¶</a></h3>
 <p>There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -145,7 +145,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </ul>
 </div>
 <div class="section" id="creating-kinetics-libraries">
-<h3>12.4.2.2. Creating Kinetics Libraries<a class="headerlink" href="#creating-kinetics-libraries" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.2. </span>Creating Kinetics Libraries<a class="headerlink" href="#creating-kinetics-libraries" title="Permalink to this headline">¶</a></h3>
 <p>To add a reaction library, simply create a folder bearing the library’s name under
 <code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/libraries</span></code>. You’ll need to create two files:
 <code class="docutils literal notranslate"><span class="pre">dictionary.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code>. The dictionary file contains the Adjacency lists
@@ -297,7 +297,7 @@ Allowed pressure units are <code class="docutils literal notranslate"><span clas
 </div>
 </div>
 <div class="section" id="adding-a-specific-collider">
-<h3>12.4.2.3. Adding a specific collider<a class="headerlink" href="#adding-a-specific-collider" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.3. </span>Adding a specific collider<a class="headerlink" href="#adding-a-specific-collider" title="Permalink to this headline">¶</a></h3>
 <p>Only the <code class="docutils literal notranslate"><span class="pre">Troe</span></code> and <code class="docutils literal notranslate"><span class="pre">Lindemann</span></code> pressure dependent formats could be defined with a specific species as a third body collider, if needed. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
@@ -320,10 +320,10 @@ Allowed pressure units are <code class="docutils literal notranslate"><span clas
 </div>
 </div>
 <div class="section" id="adding-new-kinetic-groups-and-rate-rules">
-<h3>12.4.2.4. Adding New Kinetic Groups and Rate Rules<a class="headerlink" href="#adding-new-kinetic-groups-and-rate-rules" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.4. </span>Adding New Kinetic Groups and Rate Rules<a class="headerlink" href="#adding-new-kinetic-groups-and-rate-rules" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="decide-on-a-template">
-<h3>12.4.2.5. Decide on a Template<a class="headerlink" href="#decide-on-a-template" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.5. </span>Decide on a Template<a class="headerlink" href="#decide-on-a-template" title="Permalink to this headline">¶</a></h3>
 <p>First you need to know the template for your reaction to decide whether or not
 to create new groups:</p>
 <ol class="arabic simple">
@@ -366,7 +366,7 @@ group. Therefore it is better to make a new group.</p>
 next section for instructions on creating the new group.</p>
 </div>
 <div class="section" id="creating-a-new-group">
-<h3>12.4.2.6. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.6. </span>Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
 <p>In the family’s groups.py, you will need to add an entry of the format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
@@ -407,7 +407,7 @@ example given in the previous section, the new group would be added under the C_
 </div>
 </div>
 <div class="section" id="adding-kinetic-rules">
-<span id="kinetic-rules"></span><h3>12.4.2.7. Adding Kinetic Rules<a class="headerlink" href="#adding-kinetic-rules" title="Permalink to this headline">¶</a></h3>
+<span id="kinetic-rules"></span><h3><span class="section-number">12.4.2.7. </span>Adding Kinetic Rules<a class="headerlink" href="#adding-kinetic-rules" title="Permalink to this headline">¶</a></h3>
 <p>Rules give generalized kinetic parameters for a specific node template. In most
 cases, your kinetic parameters describe a specific reaction in which case you
 will want to add your reaction to the training set.</p>
@@ -470,7 +470,7 @@ will want to add your reaction to the training set.</p>
 </ul>
 </div>
 <div class="section" id="adding-training-reactions">
-<span id="kinetic-training-set"></span><h3>12.4.2.8. Adding Training Reactions<a class="headerlink" href="#adding-training-reactions" title="Permalink to this headline">¶</a></h3>
+<span id="kinetic-training-set"></span><h3><span class="section-number">12.4.2.8. </span>Adding Training Reactions<a class="headerlink" href="#adding-training-reactions" title="Permalink to this headline">¶</a></h3>
 <p>If you know the kinetics of a specific reaction, rather than a rate rule for a template, you can
 add the kinetics to the database training set.  By default, RMG creates new rate rules from this
 training set, which in turn benefits the kinetics of similar reactions.  The new rate rules
@@ -510,7 +510,7 @@ in the <code class="docutils literal notranslate"><span class="pre">training.py<
 reactants and products.</p>
 </div>
 <div class="section" id="pitfalls">
-<h3>12.4.2.9. Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.4.2.9. </span>Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h3>
 <p>Be careful with the specificity when naming neighbouring atoms. On upper nodes,
 you should try to be general so that you do not exclude reactions.</p>
 <p>Sibling nodes must be exclusive from one another so that there is no question
@@ -587,10 +587,10 @@ activation energy truly does reflect the reaction barrier height.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="kinetics.html"
-                        title="previous chapter">12.3. Kinetics Database</a></p>
+                        title="previous chapter"><span class="section-number">12.3. </span>Kinetics Database</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../thermo.html"
-                        title="next chapter">13. Thermochemistry Estimation</a></p>
+                        title="next chapter"><span class="section-number">13. </span>Thermochemistry Estimation</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -640,13 +640,13 @@ activation energy truly does reflect the reaction barrier height.</p>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" >12. Databases</a> &#187;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" ><span class="section-number">12. </span>Databases</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

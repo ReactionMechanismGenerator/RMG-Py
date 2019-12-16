@@ -57,22 +57,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="creating-input-files">
-<span id="input"></span><h1>4. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
+<span id="input"></span><h1><span class="section-number">4. </span>Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
 <p>The syntax and parameters within an RMG input file are explained below.  We recommend
 trying to build your first input file while referencing one of the
 <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Example Input Files</span></a>.</p>
 <div class="section" id="syntax">
-<h2>4.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.1. </span>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>The format of RMG-Py <code class="file docutils literal notranslate"><span class="pre">input.py</span></code> is based on Python syntax.</p>
 <p>Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.</p>
 </div>
 <div class="section" id="datasources">
-<h2>4.2. Datasources<a class="headerlink" href="#datasources" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.2. </span>Datasources<a class="headerlink" href="#datasources" title="Permalink to this headline">¶</a></h2>
 <p>This section explains how to specify various reaction and thermo data sources in the input file.</p>
 <div class="section" id="thermo-libraries">
-<span id="thermolibraries"></span><h3>4.2.1. Thermo Libraries<a class="headerlink" href="#thermo-libraries" title="Permalink to this headline">¶</a></h3>
+<span id="thermolibraries"></span><h3><span class="section-number">4.2.1. </span>Thermo Libraries<a class="headerlink" href="#thermo-libraries" title="Permalink to this headline">¶</a></h3>
 <p>By default, RMG will calculate the thermodynamic properties of the species from
 Benson additivity formulas. In general, the group-additivity results are
 suitably accurate. However, if you would like to override the default settings,
@@ -110,7 +110,7 @@ directory.</p>
 </div>
 </div>
 <div class="section" id="reaction-libraries">
-<span id="reactionlibraries"></span><h3>4.2.2. Reaction Libraries<a class="headerlink" href="#reaction-libraries" title="Permalink to this headline">¶</a></h3>
+<span id="reactionlibraries"></span><h3><span class="section-number">4.2.2. </span>Reaction Libraries<a class="headerlink" href="#reaction-libraries" title="Permalink to this headline">¶</a></h3>
 <p>The next section of the <code class="file docutils literal notranslate"><span class="pre">input.py</span></code> file specifies which, if any,
 Reaction Libraries should be used. When a reaction library is specified, RMG will first
 use the reaction library to generate all the relevant reactions for the species
@@ -147,7 +147,7 @@ Library.</p>
 </div>
 </div>
 <div class="section" id="seed-mechanisms">
-<span id="seedmechanism"></span><h3>4.2.3. Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this headline">¶</a></h3>
+<span id="seedmechanism"></span><h3><span class="section-number">4.2.3. </span>Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this headline">¶</a></h3>
 <p>The next section of the <code class="file docutils literal notranslate"><span class="pre">input.py</span></code> file specifies which, if any,
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
@@ -169,7 +169,7 @@ the instance of it from the first mechanism in which it appears is
 the one that gets used.</p>
 </div>
 <div class="section" id="kinetics-depositories">
-<span id="kineticsdepositories"></span><h3>4.2.4. Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this headline">¶</a></h3>
+<span id="kineticsdepositories"></span><h3><span class="section-number">4.2.4. </span>Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this headline">¶</a></h3>
 <p>Kinetics depositories store reactions which can be used for rate estimation.
 Depositories are divided by the sources of the data. Currently, RMG database
 has two depositories. The main depository is <cite>training</cite> which contains
@@ -183,7 +183,7 @@ strings describing which depositories to include.:</p>
 </div>
 </div>
 <div class="section" id="kinetics-families">
-<span id="kineticsfamilies"></span><h3>4.2.5. Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this headline">¶</a></h3>
+<span id="kineticsfamilies"></span><h3><span class="section-number">4.2.5. </span>Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this headline">¶</a></h3>
 <p>In this section users can specify the particular reaction families that they wish to use to generate their model.
 This can be specified with any combination of specific families and predefined sets from <code class="file docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/recommended.py</span></code>.</p>
 <p>For example, you can use only the <code class="file docutils literal notranslate"><span class="pre">H_Abstraction</span></code> family to build the model:</p>
@@ -210,7 +210,7 @@ This can be specified with any combination of specific families and predefined s
 <p>Finally, you can also specify <code class="docutils literal notranslate"><span class="pre">'all'</span></code> or <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, which may be useful in certain cases.</p>
 </div>
 <div class="section" id="kinetics-estimator">
-<h3>4.2.6. Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.2.6. </span>Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this headline">¶</a></h3>
 <p>The last section is specifying that RMG is estimating kinetics of reactions from rate rules. For more details on how kinetic estimations is working check <a class="reference internal" href="kinetics.html#kinetics"><span class="std std-ref">Kinetics Estimation</span></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span>
 </pre></div>
@@ -229,7 +229,7 @@ This can be specified with any combination of specific families and predefined s
 </div>
 </div>
 <div class="section" id="list-of-species">
-<span id="species-list"></span><h2>4.3. List of species<a class="headerlink" href="#list-of-species" title="Permalink to this headline">¶</a></h2>
+<span id="species-list"></span><h2><span class="section-number">4.3. </span>List of species<a class="headerlink" href="#list-of-species" title="Permalink to this headline">¶</a></h2>
 <p>Species to be included in the core at the start of your RMG job are defined in the species block.
 The label, reactive or inert, and structure of each reactant must be specified.</p>
 <p>The label field will be used throughout your mechanism to identify the species.
@@ -257,7 +257,7 @@ be set as <code class="docutils literal notranslate"><span class="pre">True</spa
 </div>
 </div>
 <div class="section" id="reaction-system">
-<span id="reactionsystem"></span><h2>4.4. Reaction System<a class="headerlink" href="#reaction-system" title="Permalink to this headline">¶</a></h2>
+<span id="reactionsystem"></span><h2><span class="section-number">4.4. </span>Reaction System<a class="headerlink" href="#reaction-system" title="Permalink to this headline">¶</a></h2>
 <p>Every reaction system we want the model to be generated at must be defined individually.
 Currently, RMG can only model constant temperature and pressure systems. Future versions
 will allow for variable temperature and pressure. To define a reaction system we need to
@@ -304,7 +304,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
 <p>Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 <div class="section" id="advanced-setting-range-based-reactors">
-<h3>4.4.1. Advanced Setting: Range Based Reactors<a class="headerlink" href="#advanced-setting-range-based-reactors" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.4.1. </span>Advanced Setting: Range Based Reactors<a class="headerlink" href="#advanced-setting-range-based-reactors" title="Permalink to this headline">¶</a></h3>
 <p>Under this setting rather than using reactors at fixed points, reaction conditions are sampled from a range of conditions.
 Conditions are chosen using a weighted stochastic grid sampling algorithm.  An implemented objective function measures how
 desirable it is to sample from a point condition (T, P, concentrations) based on prior run conditions (weighted by how
@@ -361,7 +361,7 @@ fraction of one.  This ensures that all species except the <code class="docutils
 </div>
 </div>
 <div class="section" id="simulator-tolerances">
-<span id="simulatortolerances"></span><h2>4.5. Simulator Tolerances<a class="headerlink" href="#simulator-tolerances" title="Permalink to this headline">¶</a></h2>
+<span id="simulatortolerances"></span><h2><span class="section-number">4.5. </span>Simulator Tolerances<a class="headerlink" href="#simulator-tolerances" title="Permalink to this headline">¶</a></h2>
 <p>The next two lines specify the absolute and relative tolerance for the ODE solver, respectively. Common values for the absolute tolerance are 1e-15 to 1e-25. Relative tolerance is usually 1e-4 to 1e-8:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">simulator</span><span class="p">(</span>
     <span class="n">atol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span>
@@ -375,7 +375,7 @@ fraction of one.  This ensures that all species except the <code class="docutils
 are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.</p>
 </div>
 <div class="section" id="model-tolerances">
-<span id="modeltolerances"></span><h2>4.6. Model Tolerances<a class="headerlink" href="#model-tolerances" title="Permalink to this headline">¶</a></h2>
+<span id="modeltolerances"></span><h2><span class="section-number">4.6. </span>Model Tolerances<a class="headerlink" href="#model-tolerances" title="Permalink to this headline">¶</a></h2>
 <p>Model tolerances dictate how species get included in the model. For more information, see the theory behind how RMG builds models using the <a class="reference internal" href="../../theory/rmg/enlarger.html#ratebasedmodelenlarger"><span class="std std-ref">Flux-based Algorithm</span></a>.
 For running an initial job, it is recommended to only change the <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> and <code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> values to an equivalent desired value.  We find
 that typically a value between <code class="docutils literal notranslate"><span class="pre">0.01</span></code> and <code class="docutils literal notranslate"><span class="pre">0.05</span></code> is best.  If your model cannot converge within a few hours, more advanced settings such as <a class="reference internal" href="#filterreactions"><span class="std std-ref">reaction filtering</span></a>
@@ -391,7 +391,7 @@ or <a class="reference internal" href="#pruning"><span class="std std-ref">pruni
 <li><p><code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the <code class="docutils literal notranslate"><span class="pre">terminationConversion</span></code> or <code class="docutils literal notranslate"><span class="pre">terminationTime</span></code>).  This value should be set to be equal to <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> unless the advanced <a class="reference internal" href="#pruning"><span class="std std-ref">pruning</span></a> feature is desired.</p></li>
 </ul>
 <div class="section" id="advanced-setting-speed-up-by-filtering-reactions">
-<span id="filterreactions"></span><h3>4.6.1. Advanced Setting: Speed Up by Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this headline">¶</a></h3>
+<span id="filterreactions"></span><h3><span class="section-number">4.6.1. </span>Advanced Setting: Speed Up by Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this headline">¶</a></h3>
 <p>For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of
 <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.  Thus it can be further sped up by pre-filtering reactions that are
 added to the model.  This modification to the algorithm does not react core species together
@@ -412,7 +412,7 @@ the model does not converge with normal parameter settings.  See <a class="refer
 </ul>
 </div>
 <div class="section" id="advanced-setting-speed-up-by-pruning">
-<span id="pruning"></span><h3>4.6.2. Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this headline">¶</a></h3>
+<span id="pruning"></span><h3><span class="section-number">4.6.2. </span>Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this headline">¶</a></h3>
 <p>For further speed-up, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage.</p>
 <p>A typical set of parameters for pruning is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
@@ -456,7 +456,7 @@ Because the ODE simulation is always interrupted, no pruning is performed.</p>
 <p>Please find more details about the theory behind pruning at <a class="reference internal" href="../../theory/rmg/prune.html#prune"><span class="std std-ref">Pruning Theory</span></a>.</p>
 </div>
 <div class="section" id="advanced-setting-thermodynamic-pruning">
-<h3>4.6.3. Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.6.3. </span>Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this headline">¶</a></h3>
 <p>Thermodynamic pruning is an alternative to flux pruning that does not require a given
 simulation to complete to remove excess species.  The thermodynamic criteria is
 calculated by determining the minimum and maximum Gibbs energies of formation (Gmin and Gmax)
@@ -486,7 +486,7 @@ Will always maintain the correct <code class="docutils literal notranslate"><spa
 this is more likely to kick out species RMG might otherwise have added to core.</p>
 </div>
 <div class="section" id="advanced-setting-taking-multiple-species-at-a-time">
-<h3>4.6.4. Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.6.4. </span>Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this headline">¶</a></h3>
 <p>Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a <code class="docutils literal notranslate"><span class="pre">maxNumObjsPerIter</span></code> parameter that allows RMG to take
 that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.</p>
@@ -508,7 +508,7 @@ affect flux pruning.</p>
 object at a time) pick up chemistry that would otherwise have been missed.</p>
 </div>
 <div class="section" id="advanced-setting-dynamics-criterion">
-<span id="ontheflyquantumcalculations"></span><h3>4.6.5. Advanced Setting:  Dynamics Criterion<a class="headerlink" href="#advanced-setting-dynamics-criterion" title="Permalink to this headline">¶</a></h3>
+<span id="ontheflyquantumcalculations"></span><h3><span class="section-number">4.6.5. </span>Advanced Setting:  Dynamics Criterion<a class="headerlink" href="#advanced-setting-dynamics-criterion" title="Permalink to this headline">¶</a></h3>
 <p>While the flux criterion works very well for identifying new species that have high flux
 and therefore will likely be high throughput or high concentration species,
 it provides few automatic guarantees about how well a given model will accurately represent
@@ -530,7 +530,7 @@ is available in the theory section: <a class="reference internal" href="../../th
 criterion and not by itself.</p>
 </div>
 <div class="section" id="advanced-setting-surface-algorithm">
-<h3>4.6.6. Advanced Setting:  Surface Algorithm<a class="headerlink" href="#advanced-setting-surface-algorithm" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.6.6. </span>Advanced Setting:  Surface Algorithm<a class="headerlink" href="#advanced-setting-surface-algorithm" title="Permalink to this headline">¶</a></h3>
 <p>One common issue with the dynamics criterion is that it treats all core species equally
 as discussed in our theory section: <a class="reference internal" href="../../theory/rmg/dynamics.html#dynamics"><span class="std std-ref">Dynamics Criterion</span></a>.  Because of this, if the dynamics
 criterion is set too low it enters a feedback loop where it adds species and then
@@ -562,7 +562,7 @@ for movement from surface to bulk core based on flux or dynamics criterion.</p>
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-calculations">
-<h2>4.7. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.7. </span>On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
 These calculations are only run if the molecule is not included in a specified thermo library.
 The <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> option, if <code class="docutils literal notranslate"><span class="pre">True</span></code>, only runs these calculations for cyclic species.
@@ -595,7 +595,7 @@ thermodynamic parameters.</p>
 </dl>
 </div>
 <div class="section" id="machine-learning-based-thermo-estimation">
-<span id="mlestimation"></span><h2>4.8. Machine Learning-based Thermo Estimation<a class="headerlink" href="#machine-learning-based-thermo-estimation" title="Permalink to this headline">¶</a></h2>
+<span id="mlestimation"></span><h2><span class="section-number">4.8. </span>Machine Learning-based Thermo Estimation<a class="headerlink" href="#machine-learning-based-thermo-estimation" title="Permalink to this headline">¶</a></h2>
 <p>This block is used to turn on the machine learning module to estimate thermodynamic parameters.
 These calculations are only run if the molecule is not included in a specified thermo library.
 There are a number of different settings that can be specified to tune the estimator so that it only tries to estimate
@@ -642,7 +642,7 @@ restricted to only cyclic species with the specified minimum cycle overlap.</p>
 values do not yet have any effect.</p>
 </div>
 <div class="section" id="pressure-dependence">
-<span id="pressuredependence"></span><h2>4.9. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
+<span id="pressuredependence"></span><h2><span class="section-number">4.9. </span>Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when the model should account for pressure
 dependent rate coefficients. RMG can estimate pressure dependence kinetics based on <code class="docutils literal notranslate"><span class="pre">Modified</span> <span class="pre">Strong</span> <span class="pre">Collision</span></code> and <code class="docutils literal notranslate"><span class="pre">Reservoir</span> <span class="pre">State</span></code> methods.
 The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id3"><span>[Chang2000]</span></a>,
@@ -663,7 +663,7 @@ and is more theoretically sound but more expensive.</p>
 </div>
 <p>The various options are as follows:</p>
 <div class="section" id="method-used-for-estimating-pressure-dependent-kinetics">
-<h3>4.9.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.9.1. </span>Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
 <p>To specify the modified strong collision approach, this item should read</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;Modified Strong Collision&#39;</span>
 </pre></div>
@@ -683,7 +683,7 @@ and is more theoretically sound but more expensive.</p>
 </dl>
 </div>
 <div class="section" id="grain-size-and-minimum-number-of-grains">
-<h3>4.9.2. Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.9.2. </span>Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
 <p>Since the <span class="math notranslate nohighlight">\(k(E)\)</span> requires discretization in the energy space, we need to specify the number of energy grains to use
 when solving the Master Equation. The default value for the minimum number of grains is 250; this was selected to balance the speed
 and accuracy of the Master Equation solver method.  However, for some pressure-dependent networks,
@@ -695,7 +695,7 @@ the high-P limit</p>
 </div>
 </div>
 <div class="section" id="temperature-and-pressure-for-the-interpolation-scheme">
-<h3>4.9.3. Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.9.3. </span>Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
 <p>To generate the <span class="math notranslate nohighlight">\(k(T,P)\)</span> interpolation model, a set of temperatures and pressures must be used. RMG can do this automatically, but it must be told a few parameters.
 We need to specify the limits of the temperature and pressure for the fitting of the interpolation scheme and the number of points to be considered in between this limit.
 For typical combustion model temperatures of the experiments range from 300 - 2000 K and pressure 1E-2 to 100 bar</p>
@@ -705,7 +705,7 @@ For typical combustion model temperatures of the experiments range from 300 - 20
 </div>
 </div>
 <div class="section" id="interpolation-scheme">
-<h3>4.9.4. Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.9.4. </span>Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
 <p>To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;PDepArrhenius&#39;</span><span class="p">,)</span>
@@ -731,7 +731,7 @@ The number of pressures and temperature coefficents should always be smaller
 than the respective number of user-specified temperatures and pressures.</p>
 </div>
 <div class="section" id="maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">
-<h3>4.9.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">4.9.5. </span>Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
 <p>By default pressure dependence is run for every system that might show pressure
 dependence, i.e. every isomerization, dissociation, and association reaction.
 In reality, larger molecules are less likely to exhibit pressure-dependent
@@ -748,7 +748,7 @@ of atoms (16 in the above example).</p>
 </div>
 </div>
 <div class="section" id="uncertainty-analysis">
-<span id="uncertaintyanalysis"></span><h2>4.10. Uncertainty Analysis<a class="headerlink" href="#uncertainty-analysis" title="Permalink to this headline">¶</a></h2>
+<span id="uncertaintyanalysis"></span><h2><span class="section-number">4.10. </span>Uncertainty Analysis<a class="headerlink" href="#uncertainty-analysis" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to request automatic uncertainty analysis following the convergence of an RMG simulation by including
 an uncertainty options block in the input file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">uncertainty</span><span class="p">(</span>
@@ -815,7 +815,7 @@ chemical kinetics, thermodynamics, and transport processes; <a class="reference 
 </dl>
 </div>
 <div class="section" id="miscellaneous-options">
-<span id="miscellaneousoptions"></span><h2>4.11. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
+<span id="miscellaneousoptions"></span><h2><span class="section-number">4.11. </span>Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Seed&#39;</span><span class="p">,</span>
@@ -846,7 +846,7 @@ HTML file for your model containing all the species and reactions.  Turning this
 <p>Setting <code class="docutils literal notranslate"><span class="pre">trimolecularProductReversible</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code> will not allow families with three products to react in the reverse direction. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </div>
 <div class="section" id="species-constraints">
-<h2>4.12. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.12. </span>Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
 <p>RMG can generate mechanisms with a number of optional species constraints,
 such as total number of carbon atoms or electrons per species. These are applied to
 all of RMG’s reaction families.</p>
@@ -876,7 +876,7 @@ forbidden groups.</p>
 <p>By default, the <code class="docutils literal notranslate"><span class="pre">allowSingletO2</span></code> flag is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.  See <a class="reference internal" href="species.html#representing-oxygen"><span class="std std-ref">Representing Oxygen</span></a> for more information.</p>
 </div>
 <div class="section" id="staging">
-<h2>4.13. Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.13. </span>Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
 <p>It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.</p>
 <p>There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.</p>
 <p>To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.</p>
@@ -892,7 +892,7 @@ forbidden groups.</p>
 </div>
 </div>
 <div class="section" id="restarting-from-a-seed-mechanism">
-<h2>4.14. Restarting from a Seed Mechanism<a class="headerlink" href="#restarting-from-a-seed-mechanism" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.14. </span>Restarting from a Seed Mechanism<a class="headerlink" href="#restarting-from-a-seed-mechanism" title="Permalink to this headline">¶</a></h2>
 <p>The only method for restarting an RMG-Py job is to restart the job from a seed mechanism. There are
 many scenarios when the user might want to do this, including continuing on a job that ran out of time or crashed as the
 result of a now fixed bug. To restart from a seed mechanism, the block below must be added on to the input file.</p>
@@ -1007,10 +1007,10 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="installation/dependencies.html"
-                        title="previous chapter">3.5.1. Dependencies</a></p>
+                        title="previous chapter"><span class="section-number">3.5.1. </span>Dependencies</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="examples.html"
-                        title="next chapter">5. Example Input Files</a></p>
+                        title="next chapter"><span class="section-number">5. </span>Example Input Files</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -1065,7 +1065,7 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
