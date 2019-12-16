@@ -20,7 +20,7 @@ requirements:
     - pydas >=1.0.2
     - pydqed >=1.0.1
     - pyrdl
-    - python >=3.7
+    - python
     - quantities
     - rdkit >=2018
     - scipy
@@ -57,7 +57,7 @@ requirements:
     - pymongo
     - pyparsing
     - pyrdl
-    - python >=3.7
+    - python
     - pyyaml
     - pyzmq
     - quantities
