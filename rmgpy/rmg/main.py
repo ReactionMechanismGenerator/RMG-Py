@@ -219,6 +219,7 @@ class RMG(util.Subject):
         self.ml_settings = None
         self.species_constraints = {}
         self.walltime = '00:00:00:00'
+        self.save_seed_modulus = -1
         self.max_iterations = None
         self.initialization_time = 0
         self.kinetics_datastore = None
@@ -760,11 +761,12 @@ class RMG(util.Subject):
 
             # Main RMG loop
             while not self.done:
-                if self.generate_seed_each_iteration:
-                    self.make_seed_mech()
-
+                # iteration number starts at 0. Increment it before entering make_seed_mech
                 self.reaction_model.iteration_num += 1
                 self.done = True
+
+                if self.generate_seed_each_iteration:
+                    self.make_seed_mech()
 
                 all_terminated = True
                 num_core_species = len(self.reaction_model.core.species)
@@ -1259,6 +1261,7 @@ class RMG(util.Subject):
         1. Create the initial seed mechanism folder (the seed from a previous iterations will be deleted)
         2. Save the restart-from-seed file (unless the current job is itself a restart job)
         3. Ensure that we don't overwrite existing libraries in the database that have the same name as this job
+        4. Create the previous_seeds directory to save intermediate seeds if the user gives a value for saveSeedModulus
         """
         # Make the initial seed mechanism folder
         seed_dir = os.path.join(self.output_directory, 'seed')
@@ -1286,6 +1289,12 @@ class RMG(util.Subject):
                     q += 1
                 self.name = name + str(q)
 
+        previous_seeds_dir = os.path.join(self.output_directory, 'previous_seeds')
+        if os.path.exists(previous_seeds_dir):  # These are seeds from a previous RMG run. Delete them
+            shutil.rmtree(previous_seeds_dir)
+        if self.save_seed_modulus != -1:
+            os.makedirs(previous_seeds_dir, exist_ok=True)
+
     def make_seed_mech(self):
         """
         Save a seed mechanism (both core and edge) in the 'seed' sub-folder of the output directory. Additionally, save
@@ -1303,6 +1312,7 @@ class RMG(util.Subject):
 
         seed_dir = os.path.join(self.output_directory, 'seed')
         filter_dir = os.path.join(seed_dir, 'filters')
+        previous_seeds_dir = os.path.join(self.output_directory, 'previous_seeds')
         temp_seed_dir = os.path.join(self.output_directory, 'seed_tmp')
 
         # Move the seed from the previous iteration to a temporary directory in case we run into errors
@@ -1413,6 +1423,12 @@ class RMG(util.Subject):
 
             with open(os.path.join(filter_dir, 'species_map.yml'), 'w') as f:
                 yaml.dump(data=spcs_map, stream=f)
+
+            # Also, save the seed to the previous_seeds directory on specified iterations
+            if self.save_seed_modulus != -1 and self.reaction_model.iteration_num % self.save_seed_modulus == 0:
+                dst = os.path.join(previous_seeds_dir, 'iteration_number_{0}'.format(self.reaction_model.iteration_num))
+                logging.info('Copying seed from seed directory to {0}'.format(dst))
+                shutil.copytree(seed_dir, dst)
 
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(temp_seed_dir):

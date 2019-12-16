@@ -204,6 +204,9 @@ options(
     keepIrreversible=False,
     # Allows families with three products to react in the diverse direction (default).
     trimolecularProductReversible=True,
+    # Allows a seed to be saved every n iterations.
+    # The default of -1 causes the iteration to only be saved at the end of the RMG job
+    saveSeedModulus=-1
 )
 
 # optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.
