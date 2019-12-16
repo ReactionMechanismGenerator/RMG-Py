@@ -1295,8 +1295,11 @@ class RMG(util.Subject):
                     q += 1
                 self.name = name + str(q)
 
+        previous_seeds_dir = os.path.join(self.output_directory, 'previous_seeds')
+        if os.path.exists(previous_seeds_dir):  # These are seeds from a previous RMG run. Delete them
+            shutil.rmtree(previous_seeds_dir)
         if self.save_seed_modulus != -1:
-            previous_seeds_dir = os.path.join(self.output_directory, 'previous_seeds')
+            os.makedirs(previous_seeds_dir, exist_ok=True)
 
     def make_seed_mech(self):
         """
