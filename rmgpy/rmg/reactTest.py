@@ -105,7 +105,11 @@ class TestReact(unittest.TestCase):
         """
         Test that the ``react_all`` function works in serial
         """
+        # Number of processes used for reaction generation
         procnum = 1
+
+        # Number of families in RMG
+        num_families = len(self.rmg.database.kinetics.families)
 
         spcs = [
             Species().from_smiles('C=C'),
@@ -115,10 +119,11 @@ class TestReact(unittest.TestCase):
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list, spc_tuples = react_all(spcs, n, np.ones([n, num_families]), np.ones([n, n, num_families]),
+                                              np.ones([n, n, n, num_families]), procnum)
         self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 34)
-        self.assertEqual(len(spc_tuples), 34)
+        self.assertEqual(len(reaction_list), 14)
+        self.assertEqual(len(spc_tuples), 14)
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
         self.assertEqual(len(flat_rxn_list), 44)
@@ -132,6 +137,9 @@ class TestReact(unittest.TestCase):
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
+        # Number of families in RMG
+        num_families = len(self.rmg.database.kinetics.families)
+
         spcs = [
             Species().from_smiles('C=C'),
             Species().from_smiles('[CH3]'),
@@ -140,10 +148,11 @@ class TestReact(unittest.TestCase):
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list, spc_tuples = react_all(spcs, n, np.ones([n, num_families]), np.ones([n, n, num_families]),
+                                              np.ones([n, n, n, num_families]), procnum)
         self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 94)
-        self.assertEqual(len(spc_tuples), 94)
+        self.assertEqual(len(reaction_list), 27)
+        self.assertEqual(len(spc_tuples), 27)
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
         self.assertEqual(len(flat_rxn_list), 44)

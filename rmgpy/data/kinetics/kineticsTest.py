@@ -40,7 +40,9 @@ from rmgpy.data.kinetics.common import save_entry, find_degenerate_reactions, en
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.rmg.settings import ModelSettings
 from rmgpy.species import Species
 
 
@@ -1225,3 +1227,28 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(reactant2.molecule[0].get_all_labeled_atoms(), reactant2_copy.molecule[0].get_all_labeled_atoms())
         self.assertEqual(reactant1.molecule[0].props, reactant1_copy.molecule[0].props)
         self.assertEqual(reactant2.molecule[0].props, reactant2_copy.molecule[0].props)
+
+###################################################
+class TestLoadFilterFits(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Load the database to test loading the YAML file with custom filter criteria.
+        """
+        global database
+        cls.database = database
+
+    def test_load(self):
+        """
+        Test if loading Arrhenius fits of the highest training reaction rates in each reaction family from
+        `RMG-database/input/FilterArrheniusFits.yml` works.
+        """
+        model_settings_list = [ModelSettings(), ModelSettings()]
+        self.database.kinetics.load_filter_fits(settings['database.directory'], model_settings_list)
+
+        for model_settings in model_settings_list:
+            self.assertIsNotNone(model_settings.unimolecular_filter_fit)
+            self.assertIsNotNone(model_settings.bimolecular_filter_fit)
+            self.assertIsInstance(model_settings.unimolecular_filter_fit[2], Arrhenius)
+            self.assertIsInstance(model_settings.bimolecular_filter_fit[0], Arrhenius)
