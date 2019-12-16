@@ -714,6 +714,10 @@ cdef class ReactionSystem(DASx):
         bimolecular_threshold = self.bimolecular_threshold
         trimolecular_threshold = self.trimolecular_threshold
 
+        max_uni_concentrations = np.zeros((num_core_species,), dtype=np.float64)
+        max_bi_concentrations = np.zeros((num_core_species, num_core_species), dtype=np.float64)
+        max_tri_concentrations = np.zeros((num_core_species, num_core_species, num_core_species), dtype=np.float64)
+
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
@@ -727,11 +731,6 @@ cdef class ReactionSystem(DASx):
             # identify sensitive species indices
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
                                                np.int)  # index within core_species list of the sensitive species
-
-        if filter_reactions:
-            # Calculate filter thresholds for each reaction family. Note that this method is temperature dependent
-            # and has to be moved inside the while not terminated loop if used with a non-isothermal reactor!
-            kvals_uni, kvals_bi, kvals_tri = self.get_threshold_rate_constants(model_settings)
 
         step_time = 1e-12
         prev_time = self.t
@@ -1007,31 +1006,17 @@ cdef class ReactionSystem(DASx):
                                  ''.format(len(self.surface_species_indices), len(self.surface_reaction_indices)))
 
             if filter_reactions:
-                # Calculate thresholds for reactions
-                unimolecular_threshold_val = tol_move_to_core * char_rate / kvals_uni
-                bimolecular_threshold_val = tol_move_to_core * char_rate / kvals_bi
-                trimolecular_threshold_val = tol_move_to_core * char_rate / kvals_tri
                 for i in range(num_core_species):
-                    for j in range(num_families):
-                        if not unimolecular_threshold[i, j]:
-                            # Check if core species concentration has gone above threshold for unimolecular reaction
-                            if core_species_concentrations[i] > unimolecular_threshold_val[j]:
-                                unimolecular_threshold[i, j] = True
-                for i in range(num_core_species):
+                    max_uni_concentrations[i] = max(max_uni_concentrations[i], core_species_concentrations[i])
                     for j in range(i, num_core_species):
-                        for k in range(num_families):
-                            if not bimolecular_threshold[i, j, k]:
-                                if core_species_concentrations[i] * core_species_concentrations[j] > bimolecular_threshold_val [k]:
-                                    bimolecular_threshold[i, j, k] = True
-                if self.trimolecular:
-                    for i in range(num_core_species):
-                        for j in range(i, num_core_species):
+                        max_bi_concentrations[i,j] = max(max_bi_concentrations[i,j], core_species_concentrations[i] *
+                                                          core_species_concentrations[j])
+                        if self.trimolecular:
                             for k in range(j, num_core_species):
-                                for l in range(num_families):
-                                    if not trimolecular_threshold[i, j, k]:
-                                        if core_species_concentrations[i] * core_species_concentrations[j] * \
-                                                core_species_concentrations[k] > trimolecular_threshold_val[l]:
-                                            trimolecular_threshold[i, j, k, l] = True
+                                max_tri_concentrations[i,j,k] = max(max_tri_concentrations[i,j,k],
+                                                                    core_species_concentrations[i] *
+                                                                    core_species_concentrations[j] *
+                                                                    core_species_concentrations[k])
 
             ###############################################################################
             # Movement from edge to core or surface processing and interrupt determination#
