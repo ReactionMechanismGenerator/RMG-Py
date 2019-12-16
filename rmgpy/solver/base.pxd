@@ -117,12 +117,12 @@ cdef class ReactionSystem(DASx):
     # methods
     cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
         list surface_species=?, list surface_reactions=?, list pdep_networks=?, atol=?, rtol=?,
-        sensitivity=?, sens_atol=?, sens_rtol=?, filter_reactions=?, dict conditions=?)
+        sensitivity=?, sens_atol=?, sens_rtol=?, filter_reactions=?, dict conditions=?, int num_families=?)
 
     cpdef simulate(self, list core_species, list core_reactions, list edge_species, 
         list edge_reactions,list surface_species, list surface_reactions,
         list pdep_networks=?, bool prune=?, bool sensitivity=?, list sens_worksheet=?, object model_settings=?,
-        object simulator_settings=?, dict conditions=?)
+        object simulator_settings=?, dict conditions=?, int num_families=?)
 
     cpdef log_rates(self, double char_rate, object species, double species_rate, double max_dif_ln_accum_num, object network, double network_rate)
      
