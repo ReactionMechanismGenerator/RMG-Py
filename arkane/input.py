@@ -58,6 +58,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.wilhoit import Wilhoit
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.transport import TransportData
 from rmgpy.util import as_list
 
@@ -567,6 +568,7 @@ def load_input_file(path):
         'SingleExponentialDown': SingleExponentialDown,
         # Kinetics
         'Arrhenius': Arrhenius,
+        'RateUncertainty' : RateUncertainty,
         # Statistical mechanics
         'IdealGasTranslation': IdealGasTranslation,
         'LinearRotor': LinearRotor,

@@ -384,7 +384,8 @@ cdef class Conformer(RMGObject):
         elif pivots[0] in top1 and pivots[1] in top1:
             raise ValueError('Both pivot atoms included in top; you must specify only one pivot atom that belongs'
                              ' with the specified top.')
-
+        elif 0 in top1:
+            raise ValueError('Top must be one indexed, top1: {}'.format(top1))
         # Enumerate atoms in other top
         top2 = [i + 1 for i in range(n_atoms) if i + 1 not in top1]
 
