@@ -62,7 +62,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2018
-    - rmgdatabase >=2.4.0
+    - rmgdatabase >=3.0.0
     - scikit-learn
     - scipy
     - symmetry
