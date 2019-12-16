@@ -559,7 +559,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
           toleranceMoveSurfaceReactionToCore=np.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
           toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50,
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8,
+          minSpeciesExistIterationsForPrune=2, filterReactions=False,
           ignoreOverallFluxCriterion=False,
           maxNumSpecies=None, maxNumObjsPerIter=1, terminateAtMaxObjects=False,
           toleranceThermoKeepSpeciesInEdge=np.inf, dynamicsTimeScale=(0.0, 'sec'),
@@ -594,7 +594,6 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
             min_core_size_for_prune=minCoreSizeForPrune,
             min_species_exist_iterations_for_prune=minSpeciesExistIterationsForPrune,
             filter_reactions=filterReactions,
-            filter_threshold=filterThreshold,
             ignore_overall_flux_criterion=ignoreOverallFluxCriterion,
             max_num_species=maxNumSpecies,
             max_num_objects_per_iter=maxNumObjsPerIter,
@@ -1115,7 +1114,6 @@ def save_input_file(path, rmg):
     f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_core_size_for_prune))
     f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_species_exist_iterations_for_prune))
     f.write('    filterReactions = {0:d},\n'.format(rmg.model_settings_list[0].filter_reactions))
-    f.write('    filterThreshold = {0:g},\n'.format(rmg.model_settings_list[0].filter_threshold))
     f.write(')\n\n')
 
     # Pressure Dependence
