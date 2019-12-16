@@ -27,7 +27,7 @@
 
 cimport numpy as np
 
-from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.kinetics.uncertainties cimport RateUncertainty
 
 ################################################################################

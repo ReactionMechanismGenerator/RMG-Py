@@ -1594,8 +1594,8 @@ class RMG(util.Subject):
                 # Reorder the core species to match the indices of the restart filter tensors
                 reordered_core_species = []
                 for spc in restart_species_list:
-                    for j, oldCoreSpc in enumerate(self.reaction_model.core.species):
-                        if oldCoreSpc.is_isomorphic(spc, strict=False):
+                    for j, old_core_spc in enumerate(self.reaction_model.core.species):
+                        if old_core_spc.is_isomorphic(spc, strict=False):
                             reordered_core_species.append(self.reaction_model.core.species.pop(j))
                             break
                     else:
