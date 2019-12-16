@@ -152,7 +152,7 @@ cdef class MBSampledReactor(ReactionSystem):
     cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
                           list surface_species=None, list surface_reactions=None, list pdep_networks=None,
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                          filter_reactions=False, dict conditions=None):
+                          filter_reactions=False, dict conditions=None, int num_families=0):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
@@ -167,17 +167,18 @@ cdef class MBSampledReactor(ReactionSystem):
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
         ReactionSystem.initialize_model(self, core_species=core_species, core_reactions=core_reactions,
-                                       edge_species=edge_species, edge_reactions=edge_reactions,
-                                       surface_species=surface_species, surface_reactions=surface_reactions,
-                                       pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
-                                       sens_atol=sens_atol, sens_rtol=sens_rtol)
+                                        edge_species=edge_species, edge_reactions=edge_reactions,
+                                        surface_species=surface_species, surface_reactions=surface_reactions,
+                                        pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
+                                        sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
+                                        conditions=conditions, num_families=num_families)
 
         # Set initial conditions
         self.set_initial_conditions()
 
         # Compute reaction thresholds if reaction filtering is turned on
         if filter_reactions:
-            ReactionSystem.set_initial_reaction_thresholds(self)
+            ReactionSystem.set_initial_reaction_thresholds(self, num_families)
 
         self.set_colliders(core_reactions, edge_reactions, core_species)
 

@@ -132,6 +132,7 @@ cdef class SurfaceReactor(ReactionSystem):
                           sens_rtol=1e-4,
                           filter_reactions=False,
                           dict conditions=None,
+                          int num_families=0,
                           ):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
@@ -155,6 +156,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                        sens_rtol=sens_rtol,
                                        filter_reactions=filter_reactions,
                                        conditions=conditions,
+                                       num_families=num_families,
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef int index
@@ -177,7 +179,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # Compute reaction thresholds if reaction filtering is turned on
         if filter_reactions:
-            ReactionSystem.set_initial_reaction_thresholds(self)
+            ReactionSystem.set_initial_reaction_thresholds(self, num_families)
 
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(core_reactions, edge_reactions)

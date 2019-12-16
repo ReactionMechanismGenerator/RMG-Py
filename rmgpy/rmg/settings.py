@@ -47,7 +47,6 @@ This module contains settings classes for manipulation of RMG run parameters
     `min_core_size_for_prune`                 Minimum number of core species before pruning is allowed
     `min_species_exist_iterations_for_prune`  Minimum number of iterations a species must exist before it can be pruned
     `filter_reactions`                        Specify whether to filter reactions during model enlarging step
-    `filter_threshold`                        Bimolecular reaction filtering threshold rate constant
     `ignore_overall_flux_criterion`           flag indicating that the ordinary flux criterion should be ignored except for pdep purposes
     `max_num_species`                         Number of core species at which a stage/job will terminate
     `maxNumObjPerIter`                        Maximum number of objects that can be sent for enlargement from a single simulation
@@ -69,7 +68,7 @@ class ModelSettings(object):
                  tol_move_surface_rxn_to_core=np.inf,
                  tol_move_edge_rxn_to_surface_interrupt=None, tol_move_edge_rxn_to_core_interrupt=None,
                  maximum_edge_species=1000000, min_core_size_for_prune=50,
-                 min_species_exist_iterations_for_prune=2, filter_reactions=False, filter_threshold=1e8,
+                 min_species_exist_iterations_for_prune=2, filter_reactions=False,
                  ignore_overall_flux_criterion=False, max_num_species=None, max_num_objects_per_iter=1,
                  terminate_at_max_objects=False, thermo_tol_keep_spc_in_edge=np.inf,
                  dynamics_time_scale=Quantity((0.0, 'sec')),
@@ -83,7 +82,6 @@ class ModelSettings(object):
         self.min_core_size_for_prune = min_core_size_for_prune
         self.min_species_exist_iterations_for_prune = min_species_exist_iterations_for_prune
         self.filter_reactions = filter_reactions
-        self.filter_threshold = filter_threshold
         self.ignore_overall_flux_criterion = ignore_overall_flux_criterion
         self.tol_move_edge_rxn_to_surface = tol_move_edge_rxn_to_surface
         self.tol_move_surface_spc_to_core = tol_move_surface_spc_to_core
@@ -119,6 +117,10 @@ class ModelSettings(object):
             self.max_num_objects_per_iter = np.inf
         else:
             self.max_num_objects_per_iter = max_num_objects_per_iter
+
+        # Arrhenius fits loaded from file 'FilterArrheniusFits.yml' are stored here
+        self.unimolecular_filter_fit = None
+        self.bimolecular_filter_fit = None
 
 
 class SimulatorSettings(object):

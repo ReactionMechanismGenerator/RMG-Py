@@ -175,10 +175,14 @@ cdef class ReactionSystem(DASx):
         # Flag to indicate whether or not reactions with 3 reactants are present 
         self.trimolecular = False
 
-        # reaction filtration, unimolecular_threshold is a vector with length of number of core species
-        # bimolecular_threshold is a square matrix with length of number of core species
-        # trimolecular_threshold is a rank-3 tensor with length of number of core species
-        # A value of 1 in the matrix indicates the species is above the threshold to react or participate in those reactions
+        # Reaction filtering:
+        # unimolecular_threshold is a matrix with shape number of core species by number of reaction families in RMG.
+        # bimolecular_threshold is a rank-3 tensor with shape number of core species in two dimensions and
+        # number of reaction families in third dimension.
+        # trimolecular_threshold is a rank-4 tensor with shape number of core species in three dimensions and
+        # number of reaction families in fourth dimension.
+        # A value of 1 in the matrix indicates the species is above the threshold to react or participate in those
+        # reactions
         self.unimolecular_threshold = None
         self.bimolecular_threshold = None
         self.trimolecular_threshold = None
@@ -192,7 +196,7 @@ cdef class ReactionSystem(DASx):
     cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
                            list surface_species=None, list surface_reactions=None, list pdep_networks=None,
                            atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                           filter_reactions=False, dict conditions=None):
+                           filter_reactions=False, dict conditions=None, int num_families=0):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
@@ -254,11 +258,11 @@ cdef class ReactionSystem(DASx):
         self.network_leak_rates = np.zeros((self.num_pdep_networks), np.float64)
         self.max_network_leak_rate_ratios = np.zeros((len(self.prunable_networks)), np.float64)
         self.sensitivity_coefficients = np.zeros((self.num_core_species, self.num_core_reactions), np.float64)
-        self.unimolecular_threshold = np.zeros((self.num_core_species), bool)
-        self.bimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species), bool)
+        self.unimolecular_threshold = np.zeros((self.num_core_species, num_families), bool)
+        self.bimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species, num_families), bool)
         if self.trimolecular:
-            self.trimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species, self.num_core_species),
-                                                     bool)
+            self.trimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species, self.num_core_species,
+                                                    num_families), bool)
 
         surface_species, surface_reactions = self.initialize_surface(core_species, core_reactions, surface_species,
                                                                    surface_reactions)
@@ -447,17 +451,17 @@ cdef class ReactionSystem(DASx):
 
         self.y0 = np.zeros(self.neq, np.float64)
 
-    def set_initial_reaction_thresholds(self):
+    def set_initial_reaction_thresholds(self, num_families):
 
         # Set unimolecular and bimolecular thresholds as true for any concentrations greater than 0
         num_core_species = len(self.core_species_concentrations)
         for i in range(num_core_species):
             if self.core_species_concentrations[i] > 0:
-                self.unimolecular_threshold[i] = True
+                self.unimolecular_threshold[i, :] = True
         for i in range(num_core_species):
             for j in range(i, num_core_species):
                 if self.core_species_concentrations[i] > 0 and self.core_species_concentrations[j] > 0:
-                    self.bimolecular_threshold[i, j] = True
+                    self.bimolecular_threshold[i, j, :] = True
         if self.trimolecular:
             for i in range(num_core_species):
                 for j in range(i, num_core_species):
@@ -465,7 +469,7 @@ cdef class ReactionSystem(DASx):
                         if (self.core_species_concentrations[i] > 0
                                 and self.core_species_concentrations[j] > 0
                                 and self.core_species_concentrations[k] > 0):
-                            self.trimolecular_threshold[i, j, k] = True
+                            self.trimolecular_threshold[i, j, k, :] = True
 
     def set_initial_derivative(self):
         """
@@ -571,7 +575,8 @@ cdef class ReactionSystem(DASx):
     cpdef simulate(self, list core_species, list core_reactions, list edge_species,
                    list edge_reactions, list surface_species, list surface_reactions,
                    list pdep_networks=None, bool prune=False, bool sensitivity=False, list sens_worksheet=None,
-                   object model_settings=None, object simulator_settings=None, dict conditions=None):
+                   object model_settings=None, object simulator_settings=None, dict conditions=None,
+                   int num_families=0):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -606,7 +611,12 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.float64_t, ndim=1] surface_total_div_accum_nums, surface_species_rate_ratios
         cdef np.ndarray[np.float64_t, ndim=1] forward_rate_coefficients, core_species_concentrations
         cdef double prev_time, total_moles, c, volume, RTP, max_char_rate, br, rr
-        cdef double unimolecular_threshold_val, bimolecular_threshold_val, trimolecular_threshold_val
+        cdef np.ndarray[np.float64_t, ndim=1] unimolecular_threshold_val, bimolecular_threshold_val
+        cdef np.ndarray[np.float64_t, ndim=1] trimolecular_threshold_val
+        cdef np.ndarray[np.float64_t, ndim=1] kvals_uni, kvals_bi, kvals_tri
+        cdef np.ndarray[np.float64_t, ndim=1] max_uni_concentrations
+        cdef np.ndarray[np.float64_t, ndim=2] max_bi_boncentrations
+        cdef np.ndarray[np.float64_t, ndim=3] max_tri_concentrations
         cdef bool useDynamicsTemp, first_time, use_dynamics, terminate_at_max_objects, schanged, invalid_objects_print_boolean
         cdef np.ndarray[np.float64_t, ndim=1] edge_reaction_rates
         cdef double reaction_rate, production, consumption
@@ -670,7 +680,7 @@ cdef class ReactionSystem(DASx):
                               surface_species, surface_reactions,
                               pdep_networks, atol, rtol, sensitivity,
                               sens_atol, sens_rtol,
-                              filter_reactions, conditions)
+                              filter_reactions, conditions, num_families)
 
         prunable_species_indices = self.prunable_species_indices
         prunable_network_indices = self.prunable_network_indices
@@ -717,6 +727,11 @@ cdef class ReactionSystem(DASx):
             # identify sensitive species indices
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
                                                np.int)  # index within core_species list of the sensitive species
+
+        if filter_reactions:
+            # Calculate filter thresholds for each reaction family. Note that this method is temperature dependent
+            # and has to be moved inside the while not terminated loop if used with a non-isothermal reactor!
+            kvals_uni, kvals_bi, kvals_tri = self.get_threshold_rate_constants(model_settings)
 
         step_time = 1e-12
         prev_time = self.t
@@ -993,32 +1008,30 @@ cdef class ReactionSystem(DASx):
 
             if filter_reactions:
                 # Calculate thresholds for reactions
-                (unimolecular_threshold_rate_constant,
-                 bimolecular_threshold_rate_constant,
-                 trimolecular_threshold_rate_constant) = self.get_threshold_rate_constants(model_settings)
-                unimolecular_threshold_val = tol_move_to_core * char_rate / unimolecular_threshold_rate_constant
-                bimolecular_threshold_val = tol_move_to_core * char_rate / bimolecular_threshold_rate_constant
-                trimolecular_threshold_val = tol_move_to_core * char_rate / trimolecular_threshold_rate_constant
+                unimolecular_threshold_val = tol_move_to_core * char_rate / kvals_uni
+                bimolecular_threshold_val = tol_move_to_core * char_rate / kvals_bi
+                trimolecular_threshold_val = tol_move_to_core * char_rate / kvals_tri
                 for i in range(num_core_species):
-                    if not unimolecular_threshold[i]:
-                        # Check if core species concentration has gone above threshold for unimolecular reaction
-                        if core_species_concentrations[i] > unimolecular_threshold_val:
-                            unimolecular_threshold[i] = True
+                    for j in range(num_families):
+                        if not unimolecular_threshold[i, j]:
+                            # Check if core species concentration has gone above threshold for unimolecular reaction
+                            if core_species_concentrations[i] > unimolecular_threshold_val[j]:
+                                unimolecular_threshold[i, j] = True
                 for i in range(num_core_species):
                     for j in range(i, num_core_species):
-                        if not bimolecular_threshold[i, j]:
-                            if core_species_concentrations[i] * core_species_concentrations[j] > bimolecular_threshold_val:
-                                bimolecular_threshold[i, j] = True
+                        for k in range(num_families):
+                            if not bimolecular_threshold[i, j, k]:
+                                if core_species_concentrations[i] * core_species_concentrations[j] > bimolecular_threshold_val [k]:
+                                    bimolecular_threshold[i, j, k] = True
                 if self.trimolecular:
                     for i in range(num_core_species):
                         for j in range(i, num_core_species):
                             for k in range(j, num_core_species):
-                                if not trimolecular_threshold[i, j, k]:
-                                    if (core_species_concentrations[i] *
-                                            core_species_concentrations[j] *
-                                            core_species_concentrations[k]
-                                            > trimolecular_threshold_val):
-                                        trimolecular_threshold[i, j, k] = True
+                                for l in range(num_families):
+                                    if not trimolecular_threshold[i, j, k]:
+                                        if core_species_concentrations[i] * core_species_concentrations[j] * \
+                                                core_species_concentrations[k] > trimolecular_threshold_val[l]:
+                                            trimolecular_threshold[i, j, k, l] = True
 
             ###############################################################################
             # Movement from edge to core or surface processing and interrupt determination#
@@ -1253,6 +1266,33 @@ cdef class ReactionSystem(DASx):
 
         # notify reaction system listeners
         self.notify()
+
+        if filter_reactions:
+            # Calculate filter thresholds for each reaction family. Note that this method is temperature dependent
+            # and has to be moved inside the while not terminated loop if used with a non-isothermal reactor!
+            kvals_uni, kvals_bi, kvals_tri = self.get_threshold_rate_constants(model_settings)
+
+            unimolecular_threshold_val = tol_move_to_core * char_rate / kvals_uni
+            bimolecular_threshold_val = tol_move_to_core * char_rate / kvals_bi
+            trimolecular_threshold_val = tol_move_to_core * char_rate / kvals_tri
+
+            for i in range(num_core_species):
+                for k in range(num_families):
+                    if not unimolecular_threshold[i,k] and (max_uni_concentrations[i] > unimolecular_threshold_val[k]):
+                        # Check if core species concentration has gone above threshold for unimolecular reaction
+                        unimolecular_threshold[i,k] = True
+
+                for j in range(i, num_core_species):
+                    for k in range(num_families):
+                        if not bimolecular_threshold[i,j,k] and (max_bi_concentrations[i,j] > bimolecular_threshold_val[k]):
+                            bimolecular_threshold[i,j,k] = True
+
+                    if self.trimolecular:
+                        for k in range(j, num_core_species):
+                            for l in range(num_families):
+                                if not trimolecular_threshold[i,j,k,l] and \
+                                        (max_tri_concentrations[i,j,k] > trimolecular_threshold_val[l]):
+                                    trimolecular_threshold[i,j,k,l] = True
 
         if sensitivity:
             for i in range(len(self.sensitive_species)):

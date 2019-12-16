@@ -118,7 +118,7 @@ cdef class LiquidReactor(ReactionSystem):
     cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
                           list surface_species=None, list surface_reactions=None, list pdep_networks=None,
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                          filter_reactions=False, dict conditions=None):
+                          filter_reactions=False, dict conditions=None, int num_families=0):
         """
         Initialize a simulation of the liquid reactor using the provided kinetic
         model.
@@ -134,14 +134,15 @@ cdef class LiquidReactor(ReactionSystem):
                                        surface_species=surface_species, surface_reactions=surface_reactions,
                                        pdep_networks=pdep_networks, atol=atol, rtol=rtol,
                                        sensitivity=sensitivity, sens_atol=sens_atol, sens_rtol=sens_rtol,
-                                       filter_reactions=filter_reactions, conditions=conditions)
+                                       filter_reactions=filter_reactions, conditions=conditions,
+                                       num_families=num_families)
 
         # Set initial conditions
         self.set_initial_conditions()
 
         # Compute reaction thresholds if reaction filtering is turned on
         if filter_reactions:
-            ReactionSystem.set_initial_reaction_thresholds(self)
+            ReactionSystem.set_initial_reaction_thresholds(self, num_families)
 
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(core_reactions, edge_reactions)
@@ -170,18 +171,16 @@ cdef class LiquidReactor(ReactionSystem):
     def get_threshold_rate_constants(self, model_settings):
         """
         Get the threshold rate constants for reaction filtering.
-
-        model_settings is not used here, but is needed so that the method
-        matches the one in simpleReactor.
         """
-        # Set the maximum unimolecular rate to be kB*T/h
-        unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
-        # Set the maximum bi/trimolecular rates based on the Smoluchowski and Stokes-Einstein equations
-        bimolecular_threshold_rate_constant = 22.2 * self.T.value_si / self.viscosity
-        trimolecular_threshold_rate_constant = 0.11 * self.T.value_si / self.viscosity
-        return (unimolecular_threshold_rate_constant,
-                bimolecular_threshold_rate_constant,
-                trimolecular_threshold_rate_constant)
+        # Set the unimolecular rate to kB*T/h
+        kvals_uni = np.full(len(model_settings.unimolecular_filter_fit), constants.kB * self.T.value_si / constants.h,
+                            dtype=np.float64)
+        # Set the bi/trimolecular rates based on the Smoluchowski and Stokes-Einstein equations
+        kvals_bi = np.full(len(model_settings.unimolecular_filter_fit), 22.2 * self.T.value_si / self.viscosity,
+                           dtype=np.float64)
+        kvals_tri = np.full(len(model_settings.unimolecular_filter_fit), 0.11 * self.T.value_si / self.viscosity,
+                            dtype=np.float64)
+        return kvals_uni, kvals_bi, kvals_tri
 
     def set_initial_conditions(self):
         """
