@@ -122,8 +122,8 @@ class TestReact(unittest.TestCase):
         reaction_list, spc_tuples = react_all(spcs, n, np.ones([n, num_families]), np.ones([n, n, num_families]),
                                               np.ones([n, n, n, num_families]), procnum)
         self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 14)
-        self.assertEqual(len(spc_tuples), 14)
+        self.assertEqual(len(reaction_list), 27)
+        self.assertEqual(len(spc_tuples), 27)
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
         self.assertEqual(len(flat_rxn_list), 44)
