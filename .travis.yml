@@ -81,7 +81,8 @@ jobs:
         - conda config --append channels rmg
         - conda config --append channels rdkit
         - conda config --append channels cantera
-        - conda config --append channels anaconda
+        - conda config --append channels pytorch
+        - conda config --append channels conda-forge
         - conda config --set anaconda_upload yes
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
@@ -93,7 +94,8 @@ jobs:
         - conda config --append channels rmg
         - conda config --append channels rdkit
         - conda config --append channels cantera
-        - conda config --append channels anaconda
+        - conda config --append channels pytorch
+        - conda config --append channels conda-forge
         - conda config --set anaconda_upload yes
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
