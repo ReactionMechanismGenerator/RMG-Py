@@ -4,6 +4,114 @@
 Release Notes
 *************
 
+RMG-Py Version 3.0.0
+====================
+Date: December 16, 2019
+
+This release represents a major milestone in RMG development and includes many backwards-incompatible changes,
+most notably Python 3 compatibility and major API changes. Users switching to RMG 3 will need to create new
+conda environments and update any scripts which access the API. We recommend using the `futurize` script from
+python-future for updating scripts for Python 3 and the provided `rmg2to3.py` script for updating scripts for RMG 3.
+
+- Python 3 #1724
+    - RMG is now compatible with Python 3.7 and newer
+    - RMG v2.x versions will no longer be supported
+    - API changes
+        - Method, function, and argument names have been standardized to use snake_case across RMG and Arkane
+        - Input file related code was not changed, in order to continue support for existing syntax
+        - Conversion script has been provided to aid transition (scripts/rmg2to3.py)
+        - Standardized submodule names in the rmgpy.tools module #1794
+    - Accompanying changes
+        - Reduction and scoop_framework modules have been removed
+        - New/updated hash and comparison methods for Species/Molecule/Atom/Bond classes
+        - DDE thermochemistry estimator has been replaced by chemprop
+        - Update example IPython notebooks #1735
+        - Update global uncertainty module to work with MUQ 2 and Python 3 #1738
+    - Miscellaneous clean up and bug fixes following transition #1741, #1744, #1752, #1759, #1785, #1802, #1798, #1799, #1808
+
+- Arkane
+    - Improvements and refactoring of job output file creation and content #1607
+    - Fix kinetics fitting bug #1672
+    - Improvements to automatic network exploration tool #1647
+    - Support for ND classical and semi-classical rotor calculations #1640, #1849
+    - Support for 2D quantum mechanical rotor calculations using Q2DTor #1640
+    - Support for providing absolute file paths #1685
+    - Output RMG-style libraries #1769
+    - Check for error termination in Gaussian log files #1766
+    - Support for parsing Orca log files #1749
+    - Support for parsing MP2, double hybrid DFT, CCSD, and CCSD(T) energies from Gaussian log files #1815
+    - Support for TeraChem log files #1788
+    - Miscellaneous bug fixes #1810
+
+- New features and other additions
+    - Additional options for heterocycles in MLEstimator #1621
+    - Automatic tree generation algorithm implementation completed #1486, #1675, #1848
+    - New simulation restart approach using seed mechanisms (old pickle-based method removed) #1641
+    - Added new MBSampledReactor type for simulating molecular beam experiments (does not support model generation) #1669
+    - Improvements to group additivity thermo estimates for aromatics and sulfur species #1731, #1751
+    - Improvements to solvation correction determination with multiple resonance structures #1832
+    - Add support for reading and writing extended element syntax in Chemkin NASA polynomials #1636
+    - Add support for fitting negative Arrhenius rates (found in MultiArrhenius data) #1834
+
+- Bug fixes
+    - Fix numpy rcond usage to restore support for older numpy versions #1670
+    - Fix bug with duplicate library reactions when using RMG generated seed mechanisms #1676
+    - Move parse_command_line_arguments to facilitate importing in binary package #1717
+    - Fix issues with is_identical_to methods of kinetics models #1705
+    - Fix cython issue with make_object definitions #1817
+    - Fix issue with estimating solvation corrections for radicals #1773
+    - Fix parsing of certain types of RMG generated reaction comments #1842
+    - Fix identifier generation for surface species using OpenBabel #1842
+    - Fix mole fraction normalization for SimpleReactor #1809
+    - Fix permissions error when writing seed mechanisms in WSL #1796
+    - Fix issue with restarting from job without reaction filters #1847
+
+- Other
+    - Improvements to mergeModels.py script #1649
+    - Miscellaneous performance improvements #1677, #1765,
+    - Raise errors when NaN is encountered in solver #1679
+    - Allow sulfur species to have valence 12 in resonance algorithm #1751
+    - Add support for maxproc argument to generate_reactions module #1780
+    - Display atom index when drawing groups #1758
+    - Update sensitivity example #1805
+    - Update commented input file #1806
+    - Generate reverse reaction recipes in reverse order of the forward recipe #1829
+    - Add iodine to Chemkin elements list #1825
+    - Remove unnecessary duplicate checking for seed mechanisms #1824
+    - Organize examples for running RMG scripts #1840
+    - Increase RDKit version requirement to avoid memory leak #1851
+    - Logging changes #1721, #1755
+    - Documentation updates #1680, #1709, #1767, #1781, #1784, #1807, #1845
+
+Thanks to all contributors: ajocher, alongd, amarkpayne, cgrambow, dranasinghe, hwpang, kspieks, goldmanm, mazeau,
+mjohnson541, mliu49, oscarwumit, rwest, rgillis8, sarakha, sudoursa, xiaoruiDong, yunsiechung, zjburas
+
+
+RMG-database Version 3.0.0
+==========================
+Date: December 16, 2019
+
+- Thermochemistry
+    - Add new models for chemprop estimator to replace dde models #351
+    - Revamp GAVs for oxygenated sulfur species #360
+    - Add polycyclic GAVs for various strained molecules #333
+
+- Kinetics
+    - New automatically generated tree for R_Recombination #334, #369
+    - Refine root template for 1,2_NH3_elimination #350
+    - New DMSOxy kinetics family #360
+    - Add DMS related training reactions to H_abstraction #360
+
+- Bug fixes
+    - Fix drawing for 2+2_cycloaddition_Cd #345
+    - Fix incorrect SMILES in solute database #348
+    - Fix incorrect adjacency list for HON in kinetics libraries #350
+    - Fix typo in solvent parameters #357
+
+- Miscellaneous
+    - Update scripts and IPython notebooks for Python 3 #364
+
+
 RMG-Py Version 2.4.1
 ====================
 Date: July 23, 2019
