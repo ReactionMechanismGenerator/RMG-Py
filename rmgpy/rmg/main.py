@@ -1760,6 +1760,12 @@ class RMG(util.Subject):
                             for k in range(prev_num_core_species, num_core_species):
                                 self.trimolecular_react[i, j, k] = True
 
+    def save_profiler_info(self):
+        if self.profiler:  # Save the profile information in case the job crashes
+            with open(os.path.join(self.output_directory, 'RMG.profile'), 'wb') as f:
+                self.profiler.snapshot_stats()
+                marshal.dump(self.profiler.stats, f)
+
     def save_everything(self):
         """
         Saves the output HTML and the Chemkin file. If the job is being profiled this is saved as well.
@@ -1781,10 +1787,7 @@ class RMG(util.Subject):
         # Notify registered listeners:
         self.notify()
 
-        if self.profiler:  # Save the profile information in case the job crashes
-            with open(os.path.join(self.output_directory, 'RMG.profile'), 'wb') as f:
-                self.profiler.snapshot_stats()
-                marshal.dump(self.profiler.stats, f)
+        self.save_profiler_info()
 
     def finish(self):
         """
