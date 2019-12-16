@@ -102,6 +102,10 @@ def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecul
 
     For parallel processing, reaction families are split per task for improved
     load balancing. This is currently hard-coded using reaction family labels.
+    Species tuples are only generated if the associated family allows unimolecular or bimolecular reactions, respectively.
+
+    Note:
+        The bi- and trimolecular_react flags are only set for the upper part of the tensor.
 
     Args:
         core_spc_list (list): list of all core species
