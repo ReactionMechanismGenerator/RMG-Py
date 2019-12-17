@@ -44,6 +44,10 @@ from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+
+from rmgpy.molecule.group import Group
+from rmgpy.kinetics import KineticsData, Arrhenius
+
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
@@ -742,6 +746,12 @@ class CoreEdgeReactionModel:
         
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
+        qdooh = Group().from_adjacency_list("""
+            1  O u0 p2 c0 {2,S} {4,S}
+            2  O u0 p2 c0 {1,S} {3,S}
+            3  R!H u1 px c0 {2,S}
+            4  H u0 p0  c0 {1,S}
+            """)
         for rxn in new_reactions:
             rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo)
             if rxn is None:
@@ -774,6 +784,8 @@ class CoreEdgeReactionModel:
             elif self.pressure_dependence.maximum_atoms is not None \
                     and self.pressure_dependence.maximum_atoms < isomer_atoms:
                 # The reaction involves so many atoms that pressure-dependent effects are assumed to be negligible
+                pdep = False
+            elif any([x.is_subgraph_isomorphic(qdooh) for y in rxn.reactants+rxn.products for x in y.molecule]):
                 pdep = False
             elif not (rxn.is_isomerization() or rxn.is_dissociation() or rxn.is_association()):
                 # The reaction is not unimolecular in either direction, so it cannot be pressure-dependent
