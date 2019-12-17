@@ -125,7 +125,10 @@ cdef class ReactionSystem(DASx):
         self.Keq = None  # equilibrium constants
         self.network_leak_coefficients = None
         self.jacobian_matrix = None
-
+        
+        self.mww = None
+        self.mww = None
+        self.mww_network = None
         self.core_species_concentrations = None
 
         # The reaction and species rates at the current time (in mol/m^3*s)
@@ -595,6 +598,7 @@ cdef class ReactionSystem(DASx):
         cdef int num_core_species, num_edge_species, num_pdep_networks, num_core_reactions
         cdef double step_time, char_rate, max_species_rate, max_network_rate, maxEdgeReactionAccum, stdan
         cdef np.ndarray[np.float64_t, ndim=1] y0  # Vector containing the number of moles of each species
+        cdef np.ndarray[np.float64_t, ndim=1] core_rates,edge_rates,leak_rates,mww
         cdef np.ndarray[np.float64_t, ndim=1] core_species_rates, edge_species_rates, network_leak_rates
         cdef np.ndarray[np.float64_t, ndim=1] core_species_production_rates, core_species_consumption_rates, total_div_accum_nums
         cdef np.ndarray[np.float64_t, ndim=1] max_edge_species_rate_ratios, max_network_leak_rate_ratios
@@ -646,7 +650,9 @@ cdef class ReactionSystem(DASx):
         sens_rtol = simulator_settings.sens_rtol
         filter_reactions = model_settings.filter_reactions
         max_num_objs_per_iter = model_settings.max_num_objects_per_iter
-
+        
+        mass_index = model_settings.mass_index
+        flux_basis = model_settings.flux_basis
         if model_settings.tol_branch_rxn_to_core != 0.0:
             branch_factor = 1.0 / model_settings.tol_branch_rxn_to_core
             br_max = model_settings.branching_ratio_max
@@ -703,7 +709,10 @@ cdef class ReactionSystem(DASx):
         unimolecular_threshold = self.unimolecular_threshold
         bimolecular_threshold = self.bimolecular_threshold
         trimolecular_threshold = self.trimolecular_threshold
-
+        
+        self.mw = np.array([spc.molecular_weight.value_si for spc in itertools.chain(core_species,edge_species)])
+        self.mww = self.mw**mass_index
+        self.mww_network = np.array([sum([sum([x.molecular_weight.value_si for x in r.species]) for r in nwk.reactants]) for nwk in pdep_networks])**mass_index
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
@@ -807,8 +816,16 @@ cdef class ReactionSystem(DASx):
             self.snapshots.append(snapshot)
 
             # Get the characteristic flux
-            char_rate = sqrt(np.sum(self.core_species_rates * self.core_species_rates))
+            if flux_basis == 'mass':
+                core_rates = self.core_species_rates * self.mww[:num_core_species]
+                edge_rates = self.edge_species_rates * self.mww[num_core_species:]
+                leak_rates = self.network_leak_rates * self.mww_network
+            else: #'mole'
+                core_rates = self.core_species_rates
+                edge_rates = self.edge_species_rates
+                leak_rates = self.network_leak_rates
 
+            char_rate = np.linalg.norm(core_rates)
             if char_rate > max_char_rate:
                 max_char_rate = char_rate
 

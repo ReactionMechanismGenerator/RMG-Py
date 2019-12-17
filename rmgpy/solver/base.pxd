@@ -63,6 +63,9 @@ cdef class ReactionSystem(DASx):
     cdef public np.ndarray Keq  # equilibrium constants
     cdef public np.ndarray network_leak_coefficients
     cdef public np.ndarray jacobian_matrix
+    cdef public np.ndarray mw
+    cdef public np.ndarray mww #molecular weight based weights of species
+    cdef public np.ndarray mww_network #molecular weight based weights of pdep networks
 
     cdef public np.ndarray core_species_concentrations
     
