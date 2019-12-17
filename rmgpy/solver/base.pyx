@@ -1258,7 +1258,21 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, reached target termination RateRatio: '
                                      '{1}'.format(self.t,char_rate/max_char_rate))
                         self.log_conversions(species_index, y0)
-
+                        
+                elif isinstance(term, TerminationNumberAvgMW):
+                    avg_MW = np.dot(self.y[:num_core_species],self.mw[:num_core_species])*constants.Na*1000.0/self.y[:num_core_species].sum()
+                    if avg_MW > term.avg_MW:
+                        terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination Number Averaged MW: {1}'.format(self.t,avg_MW))
+                        self.logConversions(species_index, y0)
+                        
+                elif isinstance(term, TerminationWeightAvgMW):
+                    avg_MW = np.dot(self.y[:num_core_species],self.mw[:num_core_species]**2)*constants.Na*1000.0/self.y[:num_core_species].dot(self.mw[:num_core_species])
+                    if avg_MW > term.avg_MW:
+                        terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination Weight Averaged MW: {1}'.format(self.t,avg_MW))
+                        self.logConversions(species_index, y0)
+                        
             # Increment destination step time if necessary
             if self.t >= 0.9999 * step_time:
                 step_time *= 10.0
@@ -1455,3 +1469,21 @@ class TerminationRateRatio:
 
     def __init__(self, ratio=0.01):
         self.ratio = ratio
+        
+class TerminationNumberAvgMW:
+    """
+    Represent an number averaged MW in amu at which a simulation
+    should be terminated. This class has one attribute the average
+    molecular weight.  Useful for molecular growth situations.
+    """
+    def __init__(self, avg_MW=50.0):
+        self.avg_MW = avg_MW
+
+class TerminationWeightAvgMW:
+    """
+    Represent an weight averaged MW in amu at which a simulation
+    should be terminated. This class has one attribute the average
+    molecular weight.  Useful for molecular growth situations.
+    """
+    def __init__(self, avg_MW=50.0):
+        self.avg_MW = avg_MW
