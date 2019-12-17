@@ -337,38 +337,6 @@ family: 1,4_Linear_birad_scission
 
 entry(
     index = 20,
-    label = "C=C + C=C <=> C1CCC1",
-    degeneracy = 1.0,
-    kinetics = Arrhenius(A=(6.92e+10,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_2H_2H]
-    Euclidian distance = 3.605551275463989
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_2H_2H]
-Euclidian distance = 3.605551275463989
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 21,
-    label = "CH2(S) + C[CH2] <=> [CH2]CC",
-    degeneracy = 3.0,
-    kinetics = Arrhenius(A=(215646,'m^3/(mol*s)'), n=0.444, Ea=(-5.08576,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [carbene;R_H]
-    Euclidian distance = 0
-    Multiplied by reaction path degeneracy 3.0
-    family: 1,2_Insertion_carbene"""),
-    longDesc = 
-"""
-Estimated using an average for rate rule [carbene;R_H]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 3.0
-family: 1,2_Insertion_carbene
-""",
-)
-
-entry(
-    index = 22,
     label = "CH2(T) + C[CH2] <=> [CH2]CC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(3.22604e+07,'m^3/(mol*s)'), n=-0.594572, Ea=(56.8079,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Birad] for rate rule [C_rad/H2/Cs;Birad]
@@ -383,7 +351,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 23,
+    index = 21,
     label = "H + [CH]CC <=> [CH2]CC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;Birad]
@@ -398,7 +366,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 24,
+    index = 22,
     label = "H + C=CC <=> [CH2]CC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.36e+08,'cm^3/(mol*s)'), n=1.64, Ea=(7.78224,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 2554 H + propene_2 <=> C3H7-4 in R_Addition_MultipleBond/training
@@ -413,7 +381,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 25,
+    index = 23,
     label = "[CH3] + [CH2][CH2] <=> [CH2]CC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.86084e+09,'m^3/(mol*s)'), n=-0.614675, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0056097018252, var=3.01068616167, Tref=1000.0, N=5, correlation='Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C',), comment="""BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C
@@ -434,7 +402,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 26,
+    index = 24,
     label = "H + [CH2][CH]C <=> [CH2]CC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(9.17499e+07,'m^3/(mol*s)'), n=0.115342, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0, var=33.1368631905, Tref=1000.0, N=1, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_N-Sp-4R!H=3C_Sp-4R!H-3C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_N-Sp-4R!H=3C_Sp-4R!H-3C
@@ -453,7 +421,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 27,
+    index = 25,
     label = "H + [CH2]C[CH2] <=> [CH2]CC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.835e+08,'m^3/(mol*s)'), n=0.115342, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0, var=33.1368631905, Tref=1000.0, N=1, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_N-Sp-4R!H=3C_Sp-4R!H-3C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_N-Sp-4R!H=3C_Sp-4R!H-3C
@@ -474,7 +442,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 28,
+    index = 26,
     label = "C[CH]C <=> [CH2]CC",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(4.86e+09,'s^-1'), n=1.32, Ea=(168.615,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 146 C3H7-2 <=> C3H7 in intra_H_migration/training
@@ -489,7 +457,24 @@ family: intra_H_migration
 )
 
 entry(
-    index = 29,
+    index = 27,
+    label = "C[CH2] + CCC <=> ethane + [CH2]CC",
+    degeneracy = 6.0,
+    kinetics = Arrhenius(A=(0.00552,'cm^3/(mol*s)'), n=4.34, Ea=(38.4928,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Estimated using template [C/H3/Cs;C_rad/H2/Cs\H3] for rate rule [C/H3/Cs\H2\Cs;C_rad/H2/Cs\H3]
+    Euclidian distance = 2.0
+    Multiplied by reaction path degeneracy 6.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using template [C/H3/Cs;C_rad/H2/Cs\H3] for rate rule [C/H3/Cs\H2\Cs;C_rad/H2/Cs\H3]
+Euclidian distance = 2.0
+Multiplied by reaction path degeneracy 6.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 28,
     label = "C[CH2] + [CH]CC <=> C=C + [CH2]CC",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(9.03e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using an average for rate rule [Y_1centerbirad;Cmethyl_Csrad]
@@ -506,7 +491,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 30,
+    index = 29,
     label = "C[CH2] + [CH2][CH]C <=> C=C + [CH2]CC",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(6.57e+14,'cm^3/(mol*s)','*|/',1.1), n=-0.68, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 5 used for Y_rad;Cmethyl_Csrad
@@ -525,7 +510,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 31,
+    index = 30,
     label = "C[CH2] + [CH2]C[CH2] <=> C=C + [CH2]CC",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(1.38e+14,'cm^3/(mol*s)','*|/',1.1), n=-0.35, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 6 used for C_rad/H2/Cs;Cmethyl_Csrad
@@ -544,7 +529,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 32,
+    index = 31,
     label = "[CH]=C + CCC <=> C=C + [CH2]CC",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(4.48919e-10,'m^3/(mol*s)'), n=4.71, Ea=(14.644,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [C/H3/Cs;Cd_Cd\H2_pri_rad] + [C/H3/Cs\H2\Cs;Cd_rad] for rate rule [C/H3/Cs\H2\Cs;Cd_Cd\H2_pri_rad]
@@ -561,7 +546,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 33,
+    index = 32,
     label = "C=C + [CH2]CC <=> [CH2]CCCC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(4240,'cm^3/(mol*s)'), n=2.41, Ea=(21.171,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""From training reaction 220 used for Cds-HH_Cds-HH;CsJ-CsHH
@@ -580,7 +565,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 34,
+    index = 33,
     label = "H + CCC <=> H2 + [CH2]CC",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(0.0166382,'m^3/(mol*s)'), n=2.718, Ea=(27.1788,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [C/H3/Cs\OneNonDe;H_rad] + [C/H3/Cs\H2\Cs;Y_rad] for rate rule [C/H3/Cs\H2\Cs;H_rad]
@@ -597,7 +582,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 35,
+    index = 34,
     label = "H + [C]=C <=> [CH]=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;Birad]
@@ -612,7 +597,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 36,
+    index = 35,
     label = "H + [CH]=[CH] <=> [CH]=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(3.28966e+26,'m^3/(mol*s)'), n=-5.36567, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=4.38384058707, var=325.386444698, Tref=1000.0, N=6, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C
@@ -633,7 +618,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 37,
+    index = 36,
     label = "[CH]C + C[CH2] <=> [CH]=C + ethane",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(6.9203e+06,'m^3/(mol*s)'), n=-0.07, Ea=(5.0208,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [C_rad/H2/Cs;XH_Rrad_birad] for rate rule [C_rad/H2/Cs;CH_s_Rbirad]
@@ -650,7 +635,160 @@ family: Disproportionation
 )
 
 entry(
+    index = 37,
+    label = "CH2(T) + [CH]C <=> [CH3] + [CH]=C",
+    degeneracy = 3.0,
+    kinetics = Arrhenius(A=(990,'m^3/(mol*s)'), n=1.5, Ea=(-3.72376,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_1centerbirad;XH_s_Rbirad] for rate rule [CH2_triplet;CH_s_Rbirad]
+    Euclidian distance = 1.4142135623730951
+    Multiplied by reaction path degeneracy 3.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+Estimated using template [Y_1centerbirad;XH_s_Rbirad] for rate rule [CH2_triplet;CH_s_Rbirad]
+Euclidian distance = 1.4142135623730951
+Multiplied by reaction path degeneracy 3.0
+family: Disproportionation
+""",
+)
+
+entry(
     index = 38,
+    label = "CH2(T) + C=C <=> [CH3] + [CH]=C",
+    degeneracy = 4.0,
+    kinetics = Arrhenius(A=(1.512e+07,'cm^3/(mol*s)'), n=1.91, Ea=(116.399,'kJ/mol'), T0=(1,'K'), Tmin=(290,'K'), Tmax=(1510,'K'), comment="""Estimated using template [Cd/H2/NonDeC;Y_1centerbirad] for rate rule [Cd/H2/NonDeC;CH2_triplet]
+    Euclidian distance = 1.0
+    Multiplied by reaction path degeneracy 4.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using template [Cd/H2/NonDeC;Y_1centerbirad] for rate rule [Cd/H2/NonDeC;CH2_triplet]
+Euclidian distance = 1.0
+Multiplied by reaction path degeneracy 4.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 39,
+    label = "CH4 + [C]=C <=> [CH3] + [CH]=C",
+    degeneracy = 4.0,
+    kinetics = Arrhenius(A=(200651,'m^3/(mol*s)'), n=0.833333, Ea=(64.9405,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [C_methane;Y_1centerbirad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 4.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using an average for rate rule [C_methane;Y_1centerbirad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 4.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 40,
+    label = "[CH3] + [CH]=C <=> C=CC",
+    degeneracy = 1.0,
+    kinetics = Arrhenius(A=(7.23e+13,'cm^3/(mol*s)','+|-',1.81e+13), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(298,'K'), comment="""Matched reaction 69 CH3 + C2H3 <=> C3H6 in R_Recombination/training
+    This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_N-Sp-3R!H-2R_N-3R!H->O_N-Sp-3CCSS#2R]
+    family: R_Recombination"""),
+    longDesc = 
+"""
+Matched reaction 69 CH3 + C2H3 <=> C3H6 in R_Recombination/training
+This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_N-Sp-3R!H-2R_N-3R!H->O_N-Sp-3CCSS#2R]
+family: R_Recombination
+""",
+)
+
+entry(
+    index = 41,
+    label = "[CH]C + [CH]C <=> [CH]=C + C[CH2]",
+    degeneracy = 3.0,
+    kinetics = Arrhenius(A=(990,'m^3/(mol*s)'), n=1.5, Ea=(-3.72376,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_1centerbirad;XH_s_Rbirad] for rate rule [Y_1centerbirad;CH_s_Rbirad]
+    Euclidian distance = 1.0
+    Multiplied by reaction path degeneracy 3.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+Estimated using template [Y_1centerbirad;XH_s_Rbirad] for rate rule [Y_1centerbirad;CH_s_Rbirad]
+Euclidian distance = 1.0
+Multiplied by reaction path degeneracy 3.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 42,
+    label = "[CH2][CH2] + [CH]C <=> [CH]=C + C[CH2]",
+    degeneracy = 6.0,
+    kinetics = Arrhenius(A=(36.4601,'m^3/(mol*s)'), n=1.92811, Ea=(-4.76984,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [Y_rad;CH_s_Rbirad]
+    Euclidian distance = 1.0
+    Multiplied by reaction path degeneracy 6.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [Y_rad;CH_s_Rbirad]
+Euclidian distance = 1.0
+Multiplied by reaction path degeneracy 6.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 43,
+    label = "C=C + [CH]C <=> [CH]=C + C[CH2]",
+    degeneracy = 4.0,
+    kinetics = Arrhenius(A=(1.512e+07,'cm^3/(mol*s)'), n=1.91, Ea=(116.399,'kJ/mol'), T0=(1,'K'), Tmin=(290,'K'), Tmax=(1510,'K'), comment="""Estimated using an average for rate rule [Cd/H2/NonDeC;Y_1centerbirad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 4.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using an average for rate rule [Cd/H2/NonDeC;Y_1centerbirad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 4.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 44,
+    label = "[C]=C + ethane <=> [CH]=C + C[CH2]",
+    degeneracy = 6.0,
+    kinetics = Arrhenius(A=(115724,'m^3/(mol*s)'), n=0.933333, Ea=(51.9937,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [C/H3/Cs\H3;Y_1centerbirad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 6.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using an average for rate rule [C/H3/Cs\H3;Y_1centerbirad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 6.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 45,
+    label = "[CH]=C + C[CH2] <=> C=CCC",
+    degeneracy = 1.0,
+    kinetics = Arrhenius(A=(8.08049e+08,'m^3/(mol*s)'), n=-0.685207, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.691788023649, var=1.05747121089, Tref=1000.0, N=3, correlation='Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R',), comment="""BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R
+        Total Standard Deviation in ln(k): 3.79969848986
+    Exact match found for rate rule [Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R]
+    Euclidian distance = 0
+    family: R_Recombination"""),
+    longDesc = 
+"""
+BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R
+    Total Standard Deviation in ln(k): 3.79969848986
+Exact match found for rate rule [Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R]
+Euclidian distance = 0
+family: R_Recombination
+""",
+)
+
+entry(
+    index = 46,
     label = "[CH3] + [CH]C <=> CH4 + [CH]=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(18.2301,'m^3/(mol*s)'), n=1.92811, Ea=(-4.76984,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [C_methyl;CH_s_Rbirad]
@@ -667,7 +805,24 @@ family: Disproportionation
 )
 
 entry(
-    index = 39,
+    index = 47,
+    label = "H2 + [C]=C <=> H + [CH]=C",
+    degeneracy = 2.0,
+    kinetics = Arrhenius(A=(231776,'m^3/(mol*s)'), n=0.75, Ea=(89.2238,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H2;Y_1centerbirad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 2.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using an average for rate rule [H2;Y_1centerbirad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 2.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 48,
     label = "[CH]=C + [CH]C <=> [CH]=C + C=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(18.2301,'m^3/(mol*s)'), n=1.92811, Ea=(-4.76984,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [Cd_pri_rad;CH_s_Rbirad]
@@ -684,7 +839,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 40,
+    index = 49,
     label = "[C]=C + C[CH2] <=> [CH]=C + C=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(9.03e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using an average for rate rule [Y_1centerbirad;Cmethyl_Csrad]
@@ -701,7 +856,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 41,
+    index = 50,
     label = "[CH]=[CH] + C[CH2] <=> [CH]=C + C=C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(1.314e+15,'cm^3/(mol*s)','*|/',1.1), n=-0.68, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 5 used for Y_rad;Cmethyl_Csrad
@@ -720,7 +875,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 42,
+    index = 51,
     label = "H + [CH]C <=> H2 + [CH]=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.44e+09,'cm^3/(mol*s)'), n=1.5, Ea=(-3.72376,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using template [H_rad;XH_s_Rbirad] for rate rule [H_rad;CH_s_Rbirad]
@@ -737,7 +892,73 @@ family: Disproportionation
 )
 
 entry(
-    index = 43,
+    index = 52,
+    label = "[C]=C + [CH]C <=> [CH]=C + [CH]=C",
+    degeneracy = 3.0,
+    kinetics = Arrhenius(A=(990,'m^3/(mol*s)'), n=1.5, Ea=(-3.72376,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_1centerbirad;XH_s_Rbirad] for rate rule [Y_1centerbirad;CH_s_Rbirad]
+    Euclidian distance = 1.0
+    Multiplied by reaction path degeneracy 3.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+Estimated using template [Y_1centerbirad;XH_s_Rbirad] for rate rule [Y_1centerbirad;CH_s_Rbirad]
+Euclidian distance = 1.0
+Multiplied by reaction path degeneracy 3.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 53,
+    label = "[CH]=[CH] + [CH]C <=> [CH]=C + [CH]=C",
+    degeneracy = 6.0,
+    kinetics = Arrhenius(A=(36.4601,'m^3/(mol*s)'), n=1.92811, Ea=(-4.76984,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [Y_rad;CH_s_Rbirad]
+    Euclidian distance = 1.0
+    Multiplied by reaction path degeneracy 6.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [Y_rad;CH_s_Rbirad]
+Euclidian distance = 1.0
+Multiplied by reaction path degeneracy 6.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 54,
+    label = "[C]=C + C=C <=> [CH]=C + [CH]=C",
+    degeneracy = 4.0,
+    kinetics = Arrhenius(A=(1.512e+07,'cm^3/(mol*s)'), n=1.91, Ea=(116.399,'kJ/mol'), T0=(1,'K'), Tmin=(290,'K'), Tmax=(1510,'K'), comment="""Estimated using an average for rate rule [Cd/H2/NonDeC;Y_1centerbirad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 4.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using an average for rate rule [Cd/H2/NonDeC;Y_1centerbirad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 4.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 55,
+    label = "[CH]=C + [CH]=C <=> C=CC=C",
+    degeneracy = 0.5,
+    kinetics = Arrhenius(A=(3.615e+13,'cm^3/(mol*s)','+|-',1.2e+13), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(298,'K'), comment="""Matched reaction 89 C2H3 + C2H3 <=> C4H6-4 in R_Recombination/training
+    This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_N-Sp-3R!H-2R_N-3R!H->O_N-Sp-3CCSS#2R_Ext-1C-R]
+    family: R_Recombination"""),
+    longDesc = 
+"""
+Matched reaction 89 C2H3 + C2H3 <=> C4H6-4 in R_Recombination/training
+This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_N-Sp-3R!H-2R_N-3R!H->O_N-Sp-3CCSS#2R_Ext-1C-R]
+family: R_Recombination
+""",
+)
+
+entry(
+    index = 56,
     label = "H + [C]#C <=> C#C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.81e+14,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Matched reaction 61 H + C2H <=> C2H2 in R_Recombination/training
@@ -752,7 +973,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 44,
+    index = 57,
     label = "CH2(T) + [CH]=C <=> [CH3] + C#C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(340,'m^3/(mol*s)'), n=1.5, Ea=(-3.72376,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_1centerbirad;Cds/H2_d_Rrad] for rate rule [CH2_triplet;Cds/H2_d_Crad]
@@ -769,7 +990,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 45,
+    index = 58,
     label = "CH4 + [C]#C <=> [CH3] + C#C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(1.812e+12,'cm^3/(mol*s)','*|/',10), n=0, Ea=(2.092,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Matched reaction 317 C2H + CH4b <=> C2H2 + CH3_p1 in H_Abstraction/training
@@ -784,7 +1005,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 46,
+    index = 59,
     label = "[CH3] + C#C <=> [CH]=CC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(133800,'cm^3/(mol*s)'), n=2.41, Ea=(28.3257,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 2253 C2H2 + CH3 <=> C3H5-2 in R_Addition_MultipleBond/training
@@ -799,7 +1020,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 47,
+    index = 60,
     label = "[CH]=C + [CH]C <=> C#C + C[CH2]",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.32966e+06,'m^3/(mol*s)'), n=0.12, Ea=(5.06264,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_1centerbirad;Cds/H2_d_Rrad] for rate rule [Y_1centerbirad;Cds/H2_d_Crad]
@@ -816,7 +1037,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 48,
+    index = 61,
     label = "[CH]=C + [CH2][CH2] <=> C#C + C[CH2]",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(413106,'m^3/(mol*s)'), n=0.308563, Ea=(4.59142,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_rad;Cds/H2_d_Rrad] for rate rule [Y_rad;Cds/H2_d_Crad]
@@ -833,7 +1054,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 49,
+    index = 62,
     label = "[C]#C + ethane <=> C#C + C[CH2]",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(3.612e+12,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 324 C2H + C2H6 <=> C2H2 + C2H5 in H_Abstraction/training
@@ -848,7 +1069,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 50,
+    index = 63,
     label = "H2 + [C]#C <=> H + C#C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.08e+13,'cm^3/(mol*s)','*|/',3.16), n=0, Ea=(9.07928,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Matched reaction 308 H2 + C2H <=> C2H2 + H in H_Abstraction/training
@@ -863,7 +1084,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 51,
+    index = 64,
     label = "[CH]=CC[CH2] <=> C#C + C=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -878,7 +1099,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 52,
+    index = 65,
     label = "[C]#C + C[CH2] <=> C#C + C=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.083e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Matched reaction 12 C2H + C2H5 <=> C2H2 + C2H4 in Disproportionation/training
@@ -893,7 +1114,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 53,
+    index = 66,
     label = "[C]=C + [CH]=C <=> C#C + [CH]=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.32966e+06,'m^3/(mol*s)'), n=0.12, Ea=(5.06264,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_1centerbirad;Cds/H2_d_Rrad] for rate rule [Y_1centerbirad;Cds/H2_d_Crad]
@@ -910,7 +1131,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 54,
+    index = 67,
     label = "[CH]=[CH] + [CH]=C <=> C#C + [CH]=C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(413106,'m^3/(mol*s)'), n=0.308563, Ea=(4.59142,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_rad;Cds/H2_d_Rrad] for rate rule [Y_rad;Cds/H2_d_Crad]
@@ -927,7 +1148,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 55,
+    index = 68,
     label = "[C]#C + [CH]C <=> C#C + [CH]=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(18.2301,'m^3/(mol*s)'), n=1.92811, Ea=(-4.76984,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;XH_s_Rbirad] for rate rule [Ct_rad/Ct;CH_s_Rbirad]
@@ -944,7 +1165,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 56,
+    index = 69,
     label = "[C]#C + C=C <=> C#C + [CH]=C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(9.96578e+06,'m^3/(mol*s)'), n=0, Ea=(54.5805,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Cd_H;Ct_rad/Ct] + [Cd/H2/NonDeC;Y_rad] for rate rule [Cd/H2/NonDeC;Ct_rad/Ct]
@@ -961,7 +1182,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 57,
+    index = 70,
     label = "C#C + [CH]=C <=> [CH]=CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.168e+07,'cm^3/(mol*s)'), n=1.997, Ea=(5.452,'kcal/mol'), T0=(1,'K'), comment="""Matched reaction 196 C2H2 + C2H3 <=> C4H5-8 in R_Addition_MultipleBond/training
@@ -976,7 +1197,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 58,
+    index = 71,
     label = "[CH]=CC=[CH] <=> C#C + C#C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -991,7 +1212,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 59,
+    index = 72,
     label = "[C]#C + [CH]=C <=> C#C + C#C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Ct_rad/Ct;Cds/H2_d_Crad]
@@ -1008,7 +1229,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 60,
+    index = 73,
     label = "CH2(T) + [CH2]C=C <=> [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(6.45208e+07,'m^3/(mol*s)'), n=-0.594572, Ea=(56.8079,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Birad] for rate rule [C_rad/H2/Cd;Birad]
@@ -1025,7 +1246,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 61,
+    index = 74,
     label = "H + [CH]CC=C <=> [CH2]CC=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;Birad]
@@ -1040,24 +1261,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 62,
-    label = "[CH2][CH]C[CH2] <=> [CH2]CC=C",
-    degeneracy = 2.0,
-    kinetics = Arrhenius(A=(3.898e+11,'s^-1'), n=0.486, Ea=(22.8614,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [R2radExo;Y_rad;XH_Rrad]
-    Euclidian distance = 0
-    Multiplied by reaction path degeneracy 2.0
-    family: Intra_Disproportionation"""),
-    longDesc = 
-"""
-Estimated using an average for rate rule [R2radExo;Y_rad;XH_Rrad]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 2.0
-family: Intra_Disproportionation
-""",
-)
-
-entry(
-    index = 63,
+    index = 75,
     label = "[CH2]CC=C <=> [CH]1CCC1",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(6.6e+07,'s^-1'), n=1.08, Ea=(30.4,'kcal/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Matched reaction 14 C_CCCJ <=> cyclobutyl in Intra_R_Add_Endocyclic/training
@@ -1072,7 +1276,7 @@ family: Intra_R_Add_Endocyclic
 )
 
 entry(
-    index = 64,
+    index = 76,
     label = "H + C=CC=C <=> [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(3.24e+08,'cm^3/(mol*s)'), n=1.64, Ea=(10.0416,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 2580 H + C4H6-2 <=> C4H7-11 in R_Addition_MultipleBond/training
@@ -1087,7 +1291,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 65,
+    index = 77,
     label = "[CH]=C + [CH2][CH2] <=> [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.6161e+09,'m^3/(mol*s)'), n=-0.685207, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.691788023649, var=1.05747121089, Tref=1000.0, N=3, correlation='Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R',), comment="""BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C_Ext-1C-R
@@ -1108,7 +1312,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 66,
+    index = 78,
     label = "H + [CH2][CH]C=C <=> [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(3.25196e+07,'m^3/(mol*s)'), n=0.255122, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0, var=33.1368631905, Tref=1000.0, N=1, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_Sp-4R!H=3C_N-3C-inRing',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_Sp-4R!H=3C_N-3C-inRing
@@ -1129,7 +1333,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 67,
+    index = 79,
     label = "H + [CH2]C[C]=C <=> [CH2]CC=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.22275e+29,'m^3/(mol*s)'), n=-6.20388, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=10.070721229, var=800.140618875, Tref=1000.0, N=2, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_Ext-2C-R',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_Ext-2C-R
@@ -1148,7 +1352,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 68,
+    index = 80,
     label = "H + [CH]=CC[CH2] <=> [CH2]CC=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(9.98828e+07,'m^3/(mol*s)'), n=0.00561861, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=-1.07954496089, var=4.22925582891, Tref=1000.0, N=3, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C
@@ -1167,7 +1371,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 69,
+    index = 81,
     label = "C=[C]CC <=> [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(2.304e+09,'s^-1'), n=1.24, Ea=(151.879,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 204 C4H7-8 <=> C4H7-9 in intra_H_migration/training
@@ -1182,7 +1386,62 @@ family: intra_H_migration
 )
 
 entry(
-    index = 70,
+    index = 82,
+    label = "C[CH2] + [CH2]CC[CH2] <=> ethane + [CH2]CC=C",
+    degeneracy = 4.0,
+    kinetics = Arrhenius(A=(5.8e+12,'cm^3/(mol*s)','*|/',1.4), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 21 used for C_rad/H2/Cs;C/H2/Nd_Csrad
+    Exact match found for rate rule [C_rad/H2/Cs;C/H2/Nd_Csrad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 4.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+From training reaction 21 used for C_rad/H2/Cs;C/H2/Nd_Csrad
+Exact match found for rate rule [C_rad/H2/Cs;C/H2/Nd_Csrad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 4.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 83,
+    label = "C[CH2] + [CH2]C[CH]C <=> ethane + [CH2]CC=C",
+    degeneracy = 3.0,
+    kinetics = Arrhenius(A=(6.9e+13,'cm^3/(mol*s)','*|/',1.1), n=-0.35, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 6 used for C_rad/H2/Cs;Cmethyl_Csrad
+    Exact match found for rate rule [C_rad/H2/Cs;Cmethyl_Csrad]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 3.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+From training reaction 6 used for C_rad/H2/Cs;Cmethyl_Csrad
+Exact match found for rate rule [C_rad/H2/Cs;Cmethyl_Csrad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 3.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 84,
+    label = "ethane + [CH2]CC=C <=> C[CH2] + C=CCC",
+    degeneracy = 6.0,
+    kinetics = Arrhenius(A=(3.2606e-10,'m^3/(mol*s)'), n=4.81, Ea=(35.5222,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
+    Euclidian distance = 0
+    Multiplied by reaction path degeneracy 6.0
+    family: H_Abstraction"""),
+    longDesc = 
+"""
+Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 6.0
+family: H_Abstraction
+""",
+)
+
+entry(
+    index = 85,
     label = "[CH2]C[CH]CC[CH2] <=> C=C + [CH2]CC=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -1197,7 +1456,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 71,
+    index = 86,
     label = "[CH2]CC([CH2])C[CH2] <=> C=C + [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1e+13,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -1214,41 +1473,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 72,
-    label = "C=C + [CH2]CC=C <=> [CH2]CC1CCC1",
-    degeneracy = 2.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(1.384e+11,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_HNd_2H]
-    Euclidian distance = 3.605551275463989
-    Multiplied by reaction path degeneracy 2.0
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_HNd_2H]
-Euclidian distance = 3.605551275463989
-Multiplied by reaction path degeneracy 2.0
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 73,
-    label = "C=C + [CH2]CC=C <=> [CH2]CC1CCC1",
-    degeneracy = 1.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(6.92e+10,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_2H_HNd]
-    Euclidian distance = 4.47213595499958
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_2H_HNd]
-Euclidian distance = 4.47213595499958
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 74,
+    index = 87,
     label = "[CH]=C + [CH2]CC[CH2] <=> C=C + [CH2]CC=C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(4.84e+12,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 29 used for Cd_pri_rad;C/H2/Nd_Csrad
@@ -1267,7 +1492,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 75,
+    index = 88,
     label = "[CH]=C + [CH2]C[CH]C <=> C=C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(4.56e+14,'cm^3/(mol*s)','*|/',1.5), n=-0.7, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 11 used for Cd_pri_rad;Cmethyl_Csrad
@@ -1286,7 +1511,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 76,
+    index = 89,
     label = "C[CH2] + [CH]CC=C <=> C=C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(9.03e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using an average for rate rule [Y_1centerbirad;Cmethyl_Csrad]
@@ -1303,7 +1528,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 77,
+    index = 90,
     label = "C[CH2] + [CH2][CH]C=C <=> C=C + [CH2]CC=C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(1.314e+15,'cm^3/(mol*s)','*|/',1.1), n=-0.68, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 5 used for Y_rad;Cmethyl_Csrad
@@ -1322,7 +1547,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 78,
+    index = 91,
     label = "C[CH2] + [CH2]C[C]=C <=> C=C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(4.56e+14,'cm^3/(mol*s)','*|/',1.5), n=-0.7, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using template [Cd_rad;Cmethyl_Csrad] for rate rule [Cd_rad/NonDeC;Cmethyl_Csrad]
@@ -1339,7 +1564,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 79,
+    index = 92,
     label = "C[CH2] + [CH]=CC[CH2] <=> C=C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(4.56e+14,'cm^3/(mol*s)','*|/',1.5), n=-0.7, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 11 used for Cd_pri_rad;Cmethyl_Csrad
@@ -1358,7 +1583,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 80,
+    index = 93,
     label = "[CH]=C + C=CCC <=> C=C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(0.00054,'cm^3/(mol*s)'), n=4.55, Ea=(14.644,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2000,'K'), comment="""Estimated using an average for rate rule [C/H3/Cs;Cd_Cd\H2_pri_rad]
@@ -1375,7 +1600,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 81,
+    index = 94,
     label = "C=C + [CH2]CC=C <=> [CH2]CCCC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(4240,'cm^3/(mol*s)'), n=2.41, Ea=(21.171,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""From training reaction 220 used for Cds-HH_Cds-HH;CsJ-CsHH
@@ -1394,7 +1619,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 82,
+    index = 95,
     label = "H + [CH2]CC[CH2] <=> H2 + [CH2]CC=C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(7.24e+12,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 18 used for H_rad;C/H2/Nd_Csrad
@@ -1413,7 +1638,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 83,
+    index = 96,
     label = "H + [CH2]C[CH]C <=> H2 + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.083e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 4 used for H_rad;Cmethyl_Csrad
@@ -1432,7 +1657,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 84,
+    index = 97,
     label = "H + C=CCC <=> H2 + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.6e+13,'cm^3/(mol*s)'), n=0, Ea=(34.2,'kJ/mol'), T0=(1,'K'), Tmin=(700,'K'), Tmax=(2000,'K'), comment="""From training reaction 111 used for C/H3/Cs;H_rad
@@ -1451,7 +1676,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 85,
+    index = 98,
     label = "[CH]=CC[CH]C[CH2] <=> C#C + [CH2]CC=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -1466,7 +1691,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 86,
+    index = 99,
     label = "[CH]=CC([CH2])C[CH2] <=> C#C + [CH2]CC=C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -1481,7 +1706,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 87,
+    index = 100,
     label = "[C]#C + [CH2]CC[CH2] <=> C#C + [CH2]CC=C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(2.412e+13,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 31 used for Ct_rad/Ct;C/H2/Nd_Csrad
@@ -1500,7 +1725,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 88,
+    index = 101,
     label = "[C]#C + [CH2]C[CH]C <=> C#C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.083e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 12 used for Ct_rad/Ct;Cmethyl_Csrad
@@ -1519,7 +1744,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 89,
+    index = 102,
     label = "[CH]=C + [CH]CC=C <=> C#C + [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.32966e+06,'m^3/(mol*s)'), n=0.12, Ea=(5.06264,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_1centerbirad;Cds/H2_d_Rrad] for rate rule [Y_1centerbirad;Cds/H2_d_Crad]
@@ -1536,7 +1761,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 90,
+    index = 103,
     label = "[CH]=C + [CH2][CH]C=C <=> C#C + [CH2]CC=C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(413106,'m^3/(mol*s)'), n=0.308563, Ea=(4.59142,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_rad;Cds/H2_d_Rrad] for rate rule [Y_rad;Cds/H2_d_Crad]
@@ -1553,7 +1778,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 91,
+    index = 104,
     label = "[CH]=C + [CH2]C[C]=C <=> C#C + [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_rad/NonDeC;Cds/H2_d_Crad]
@@ -1570,7 +1795,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 92,
+    index = 105,
     label = "[CH]=C + [CH]=CC[CH2] <=> C#C + [CH2]CC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
@@ -1587,7 +1812,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 93,
+    index = 106,
     label = "[C]#C + C=CCC <=> C#C + [CH2]CC=C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.806e+12,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Estimated using an average for rate rule [C/H3/Cs;Ct_rad/Ct]
@@ -1604,7 +1829,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 94,
+    index = 107,
     label = "C#C + [CH2]CC=C <=> [CH]=CCCC=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(13600,'cm^3/(mol*s)'), n=2.41, Ea=(25.9408,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""From training reaction 2254 used for Ct-H_Ct-H;CsJ-CsHH
@@ -1623,24 +1848,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 95,
-    label = "CH2(S) + [CH2]C=C <=> [CH2]C1CC1",
-    degeneracy = 2.0,
-    kinetics = Arrhenius(A=(3.13244e+08,'m^3/(mol*s)'), n=-0.441667, Ea=(7.08269,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [carbene;mb_db]
-    Euclidian distance = 0
-    Multiplied by reaction path degeneracy 2.0
-    family: 1+2_Cycloaddition"""),
-    longDesc = 
-"""
-Estimated using an average for rate rule [carbene;mb_db]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 2.0
-family: 1+2_Cycloaddition
-""",
-)
-
-entry(
-    index = 96,
+    index = 108,
     label = "[CH2]C1CC1 <=> [CH]1CCC1",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.31121e+11,'s^-1'), n=0.64, Ea=(159.935,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [cCs(-HC)CJ;CsJ;C] for rate rule [cCs(-HC)CJ;CsJ-HH;C]
@@ -1657,37 +1865,7 @@ family: 1,2_shiftC
 )
 
 entry(
-    index = 97,
-    label = "CH2(T) + [CH]1CC1 <=> [CH2]C1CC1",
-    degeneracy = 1.0,
-    kinetics = Arrhenius(A=(3.22604e+07,'m^3/(mol*s)'), n=-0.594572, Ea=(56.8079,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Birad] for rate rule [C_rad/H/NonDeC;Birad]
-    Euclidian distance = 3.0
-    family: Birad_R_Recombination"""),
-    longDesc = 
-"""
-Estimated using template [Y_rad;Birad] for rate rule [C_rad/H/NonDeC;Birad]
-Euclidian distance = 3.0
-family: Birad_R_Recombination
-""",
-)
-
-entry(
-    index = 98,
-    label = "H + [CH]C1CC1 <=> [CH2]C1CC1",
-    degeneracy = 1.0,
-    kinetics = Arrhenius(A=(1e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;Birad]
-    Euclidian distance = 0
-    family: Birad_R_Recombination"""),
-    longDesc = 
-"""
-Estimated using an average for rate rule [H_rad;Birad]
-Euclidian distance = 0
-family: Birad_R_Recombination
-""",
-)
-
-entry(
-    index = 99,
+    index = 109,
     label = "[CH2]C([CH2])[CH2] <=> [CH2]C1CC1",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(2.21691e+11,'s^-1'), n=0.0476667, Ea=(8.08907,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Rn;C_rad_out_2H;Cpri_rad_out_2H] for rate rule [R3_SS;C_rad_out_2H;Cpri_rad_out_2H]
@@ -1704,7 +1882,7 @@ family: Birad_recombination
 )
 
 entry(
-    index = 100,
+    index = 110,
     label = "[CH2][CH]C[CH2] <=> [CH2]C1CC1",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5.94212e+13,'s^-1'), n=0.0123667, Ea=(5.39457,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Rn;Y_rad_out;Cpri_rad_out_2H] + [R3_SS;Y_rad_out;Ypri_rad_out] for rate rule [R3_SS;Y_rad_out;Cpri_rad_out_2H]
@@ -1719,7 +1897,7 @@ family: Birad_recombination
 )
 
 entry(
-    index = 101,
+    index = 111,
     label = "H + C=C1CC1 <=> [CH2]C1CC1",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(0.00507518,'m^3/(mol*s)'), n=2.82235, Ea=(-4.83599,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""From training reaction 102 used for Cds-CsCs_Cds-HH;HJ
@@ -1736,7 +1914,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 102,
+    index = 112,
     label = "H + [CH2][C]1CC1 <=> [CH2]C1CC1",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5.62514e+08,'m^3/(mol*s)'), n=-0.277158, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=-0.0171165426824, var=1.95021798231, Tref=1000.0, N=11, correlation='Root_1R->H_2R-inRing',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_2R-inRing
@@ -1755,7 +1933,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 103,
+    index = 113,
     label = "H + [CH2]C1[CH]C1 <=> [CH2]C1CC1",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5.62514e+08,'m^3/(mol*s)'), n=-0.277158, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=-0.0171165426824, var=1.95021798231, Tref=1000.0, N=11, correlation='Root_1R->H_2R-inRing',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_2R-inRing
@@ -1774,7 +1952,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 104,
+    index = 114,
     label = "C[C]1CC1 <=> [CH2]C1CC1",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(1.374e+10,'s^-1'), n=1.08, Ea=(169.034,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 168 C4H7-2 <=> C4H7-3 in intra_H_migration/training
@@ -1789,7 +1967,7 @@ family: intra_H_migration
 )
 
 entry(
-    index = 105,
+    index = 115,
     label = "CC1[CH]C1 <=> [CH2]C1CC1",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(7.77203e+08,'s^-1'), n=1.395, Ea=(192.255,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [R3H_SS;C_rad_out_H/NonDeC;Cs_H_out_2H] for rate rule [R3H_SS_12cy3;C_rad_out_H/NonDeC;Cs_H_out_2H]
@@ -1806,58 +1984,7 @@ family: intra_H_migration
 )
 
 entry(
-    index = 106,
-    label = "CH2(S) + [CH]=CC <=> [CH]=CCC",
-    degeneracy = 3.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(1.87e+13,'cm^3/(mol*s)','*|/',0.25), n=-0.146, Ea=(0.0118826,'kJ/mol'), T0=(1,'K'), comment="""From training reaction 6 used for carbene;C_pri/Cd
-    Exact match found for rate rule [carbene;C_pri/Cd]
-    Euclidian distance = 0
-    Multiplied by reaction path degeneracy 3.0
-    family: 1,2_Insertion_carbene"""),
-    longDesc = 
-"""
-From training reaction 6 used for carbene;C_pri/Cd
-Exact match found for rate rule [carbene;C_pri/Cd]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 3.0
-family: 1,2_Insertion_carbene
-""",
-)
-
-entry(
-    index = 107,
-    label = "CH2(S) + [CH]=CC <=> [CH]=CCC",
-    degeneracy = 1.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(71881.9,'m^3/(mol*s)'), n=0.444, Ea=(-5.08576,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [carbene;RR'] for rate rule [carbene;Cs_Cd]
-    Euclidian distance = 2.0
-    family: 1,2_Insertion_carbene"""),
-    longDesc = 
-"""
-Estimated using template [carbene;RR'] for rate rule [carbene;Cs_Cd]
-Euclidian distance = 2.0
-family: 1,2_Insertion_carbene
-""",
-)
-
-entry(
-    index = 108,
-    label = "H + [C]=CCC <=> [CH]=CCC",
-    degeneracy = 1.0,
-    kinetics = Arrhenius(A=(1e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;Birad]
-    Euclidian distance = 0
-    family: Birad_R_Recombination"""),
-    longDesc = 
-"""
-Estimated using an average for rate rule [H_rad;Birad]
-Euclidian distance = 0
-family: Birad_R_Recombination
-""",
-)
-
-entry(
-    index = 109,
+    index = 116,
     label = "H + C#CCC <=> [CH]=CCC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(2.276e+10,'cm^3/(mol*s)'), n=1.103, Ea=(20.5476,'kJ/mol'), T0=(1,'K'), comment="""From training reaction 139 used for Ct-Cs_Ct-H;HJ
@@ -1874,7 +2001,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 110,
+    index = 117,
     label = "[CH3] + [CH]=C[CH2] <=> [CH]=CCC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(6.28654e+07,'m^3/(mol*s)'), n=-0.211676, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.00579809229276, var=0.287312654976, Tref=1000.0, N=3, correlation='Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-3R!H-R_N-Sp-3R!H=2R_Sp-4R!H=3R!H',), comment="""BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-3R!H-R_N-Sp-3R!H=2R_Sp-4R!H=3R!H
@@ -1893,7 +2020,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 111,
+    index = 118,
     label = "[CH]=[CH] + C[CH2] <=> [CH]=CCC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.86084e+09,'m^3/(mol*s)'), n=-0.614675, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0056097018252, var=3.01068616167, Tref=1000.0, N=5, correlation='Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C',), comment="""BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C
@@ -1914,7 +2041,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 112,
+    index = 119,
     label = "H + [CH]=C[CH]C <=> [CH]=CCC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(9.98828e+07,'m^3/(mol*s)'), n=0.00561861, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=-1.07954496089, var=4.22925582891, Tref=1000.0, N=3, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C
@@ -1933,7 +2060,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 113,
+    index = 120,
     label = "H + [CH]=CC[CH2] <=> [CH]=CCC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(9.98828e+07,'m^3/(mol*s)'), n=0.00561861, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=-1.07954496089, var=4.22925582891, Tref=1000.0, N=3, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C
@@ -1952,7 +2079,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 114,
+    index = 121,
     label = "H + [CH]=[C]CC <=> [CH]=CCC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.64483e+26,'m^3/(mol*s)'), n=-5.36567, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=4.38384058707, var=325.386444698, Tref=1000.0, N=6, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C
@@ -1971,7 +2098,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 115,
+    index = 122,
     label = "[CH]=CCC <=> C=[C]CC",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.08e+06,'s^-1'), n=1.99, Ea=(105.437,'kJ/mol'), T0=(1,'K'), comment="""From training reaction 17 used for R2H_D;Cd_rad_out_singleH;Cd_H_out_singleNd
@@ -1988,26 +2115,7 @@ family: intra_H_migration
 )
 
 entry(
-    index = 116,
-    label = "CH2(S) + [CH2]C=C <=> C=C[CH]C",
-    degeneracy = 4.0,
-    kinetics = Arrhenius(A=(7.94e+13,'cm^3/(mol*s)','*|/',0.25), n=-0.324, Ea=(-3.91204,'kJ/mol'), T0=(1,'K'), comment="""From training reaction 4 used for carbene;Cd_pri
-    Exact match found for rate rule [carbene;Cd_pri]
-    Euclidian distance = 0
-    Multiplied by reaction path degeneracy 4.0
-    family: 1,2_Insertion_carbene"""),
-    longDesc = 
-"""
-From training reaction 4 used for carbene;Cd_pri
-Exact match found for rate rule [carbene;Cd_pri]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 4.0
-family: 1,2_Insertion_carbene
-""",
-)
-
-entry(
-    index = 117,
+    index = 123,
     label = "CH2(T) + [CH]=CC <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(3.22604e+07,'m^3/(mol*s)'), n=-0.594572, Ea=(56.8079,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Birad] for rate rule [Cd_pri_rad;Birad]
@@ -2022,7 +2130,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 118,
+    index = 124,
     label = "H + [CH]=C[CH]C <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;Birad]
@@ -2037,24 +2145,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 119,
-    label = "[CH2][CH]C[CH2] <=> C=C[CH]C",
-    degeneracy = 2.0,
-    kinetics = Arrhenius(A=(3.898e+11,'s^-1'), n=0.486, Ea=(22.8614,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [R2radExo;Y_rad;XH_Rrad]
-    Euclidian distance = 0
-    Multiplied by reaction path degeneracy 2.0
-    family: Intra_Disproportionation"""),
-    longDesc = 
-"""
-Estimated using an average for rate rule [R2radExo;Y_rad;XH_Rrad]
-Euclidian distance = 0
-Multiplied by reaction path degeneracy 2.0
-family: Intra_Disproportionation
-""",
-)
-
-entry(
-    index = 120,
+    index = 125,
     label = "C=C[CH]C <=> CC1[CH]C1",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.05e+08,'s^-1'), n=1.192, Ea=(225.936,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1600,'K'), comment="""Estimated using template [R3_D;doublebond_intra_pri;radadd_intra_cs2H] for rate rule [R3_D;doublebond_intra_pri_HNd_Cs;radadd_intra_cs2H]
@@ -2069,7 +2160,7 @@ family: Intra_R_Add_Endocyclic
 )
 
 entry(
-    index = 121,
+    index = 126,
     label = "H + C=C=CC <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5.46e+08,'cm^3/(mol*s)'), n=1.64, Ea=(15.8155,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 2714 H + C4H6-4 <=> C4H7-13 in R_Addition_MultipleBond/training
@@ -2084,7 +2175,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 122,
+    index = 127,
     label = "[CH3] + [CH]=C[CH2] <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(6.28654e+07,'m^3/(mol*s)'), n=-0.211676, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.00579809229276, var=0.287312654976, Tref=1000.0, N=3, correlation='Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-3R!H-R_N-Sp-3R!H=2R_Sp-4R!H=3R!H',), comment="""BM rule fitted to 2 training reactions at node Root_N-1R->H_N-1CClNOSSi->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-3R!H-R_N-Sp-3R!H=2R_Sp-4R!H=3R!H
@@ -2103,7 +2194,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 123,
+    index = 128,
     label = "H + [CH2][CH]C=C <=> C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(3.25196e+07,'m^3/(mol*s)'), n=0.255122, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0, var=33.1368631905, Tref=1000.0, N=1, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_Sp-4R!H=3C_N-3C-inRing',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_N-Sp-3R!H=2C_3R!H->C_Sp-3C-2C_Ext-3C-R_Sp-4R!H=3C_N-3C-inRing
@@ -2124,7 +2215,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 124,
+    index = 129,
     label = "H + [CH2]C=[C]C <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(1.55409e+91,'m^3/(mol*s)'), n=-24.7026, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=0.0, var=33.1368631905, Tref=1000.0, N=1, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_Ext-2C-R_Ext-3R!H-R',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_Ext-2C-R_Ext-3R!H-R
@@ -2143,7 +2234,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 125,
+    index = 130,
     label = "H + [CH2][C]=CC <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(9.98828e+07,'m^3/(mol*s)'), n=0.00561861, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), uncertainty=RateUncertainty(mu=-1.07954496089, var=4.22925582891, Tref=1000.0, N=3, correlation='Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C',), comment="""BM rule fitted to 2 training reactions at node Root_1R->H_N-2R-inRing_N-2R->H_N-2CNOS->S_2CNO->C_Ext-2C-R_Sp-3R!H=2C_3R!H->C
@@ -2162,7 +2253,7 @@ family: R_Recombination
 )
 
 entry(
-    index = 126,
+    index = 131,
     label = "C[C]=CC <=> C=C[CH]C",
     degeneracy = 3.0,
     duplicate = True,
@@ -2178,7 +2269,7 @@ family: intra_H_migration
 )
 
 entry(
-    index = 127,
+    index = 132,
     label = "C[C]=CC <=> C=C[CH]C",
     degeneracy = 3.0,
     duplicate = True,
@@ -2194,7 +2285,7 @@ family: intra_H_migration
 )
 
 entry(
-    index = 128,
+    index = 133,
     label = "[CH]=C + [CH]C <=> C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(3.22604e+07,'m^3/(mol*s)'), n=-0.594572, Ea=(56.8079,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Birad] for rate rule [Cd_pri_rad;Birad]
@@ -2209,7 +2300,7 @@ family: Birad_R_Recombination
 )
 
 entry(
-    index = 129,
+    index = 134,
     label = "H + C=CC=C <=> C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(4.62e+08,'cm^3/(mol*s)'), n=1.64, Ea=(-1.96648,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 2544 H + C4H6 <=> C4H7-9 in R_Addition_MultipleBond/training
@@ -2224,7 +2315,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 130,
+    index = 135,
     label = "C=[C]CC <=> C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(2.66329e+10,'s^-1'), n=0.993, Ea=(157.679,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [R2H_S;Cd_rad_out_Cd;Cs_H_out_H/NonDeC]
@@ -2241,7 +2332,7 @@ family: intra_H_migration
 )
 
 entry(
-    index = 131,
+    index = 136,
     label = "C[CH2] + [CH2][CH]CC <=> ethane + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(2.9e+12,'cm^3/(mol*s)','*|/',1.4), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 21 used for C_rad/H2/Cs;C/H2/Nd_Csrad
@@ -2260,7 +2351,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 132,
+    index = 137,
     label = "C[CH2] + [CH2]C[CH]C <=> ethane + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(4.61353e+06,'m^3/(mol*s)'), n=-0.07, Ea=(5.0208,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [C_rad/H2/Cs;XH_s_Rrad]
@@ -2277,7 +2368,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 133,
+    index = 138,
     label = "ethane + C=C[CH]C <=> C[CH2] + CC=CC",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(0.0876,'cm^3/(mol*s)'), n=4.34, Ea=(82.4248,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""From training reaction 871 used for C/H3/Cs\H3;C_rad/H2/Cd\H_Cd\H2
@@ -2296,7 +2387,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 134,
+    index = 139,
     label = "C[CH2] + C[CH][CH]C <=> ethane + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(1.38e+14,'cm^3/(mol*s)','*|/',1.1), n=-0.35, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 6 used for C_rad/H2/Cs;Cmethyl_Csrad
@@ -2315,7 +2406,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 135,
+    index = 140,
     label = "ethane + C=C[CH]C <=> C[CH2] + C=CCC",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(0.054,'cm^3/(mol*s)'), n=4.34, Ea=(89.1192,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 872 C4H7-4 + C2H6 <=> C4H8-4 + C2H5 in H_Abstraction/training
@@ -2330,7 +2421,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 136,
+    index = 141,
     label = "[CH3] + [CH2][CH]CC <=> CH4 + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(28364.9,'m^3/(mol*s)'), n=0.416667, Ea=(0.734524,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Cs_rad;C/H2/Nd_Csrad] for rate rule [C_methyl;C/H2/Nd_Csrad]
@@ -2347,7 +2438,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 137,
+    index = 142,
     label = "[CH3] + [CH2]C[CH]C <=> CH4 + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(6.79429e+06,'m^3/(mol*s)'), n=-0.157081, Ea=(4.79603,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Cs_rad;XH_s_Rrad] for rate rule [C_methyl;XH_s_Rrad]
@@ -2364,7 +2455,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 138,
+    index = 143,
     label = "[CH3] + CC=CC <=> CH4 + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(0.144,'cm^3/(mol*s)'), n=4.25, Ea=(31.5055,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2000,'K'), comment="""Matched reaction 759 CH3_r3 + C4H8-2 <=> CH4b + C4H7-2 in H_Abstraction/training
@@ -2379,7 +2470,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 139,
+    index = 144,
     label = "[CH3] + C[CH][CH]C <=> CH4 + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(3.62278e+07,'m^3/(mol*s)'), n=-0.391667, Ea=(-0.0453267,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Cs_rad;Cmethyl_Csrad] for rate rule [C_methyl;Cmethyl_Csrad]
@@ -2396,7 +2487,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 140,
+    index = 145,
     label = "[CH3] + C=CCC <=> CH4 + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(0.204,'cm^3/(mol*s)'), n=3.99, Ea=(26.2337,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2000,'K'), comment="""Matched reaction 755 CH3_r3 + C4H8-4 <=> CH4b + C4H7-4 in H_Abstraction/training
@@ -2411,7 +2502,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 141,
+    index = 146,
     label = "[CH2]CC([CH2])[CH]C <=> C=C + C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -2426,7 +2517,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 142,
+    index = 147,
     label = "[CH2][CH]C(C)C[CH2] <=> C=C + C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -2441,41 +2532,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 143,
-    label = "C=C + C=C[CH]C <=> [CH2]C1CCC1C",
-    degeneracy = 2.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(1.384e+11,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_HNd]
-    Euclidian distance = 2.8284271247461903
-    Multiplied by reaction path degeneracy 2.0
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_HNd]
-Euclidian distance = 2.8284271247461903
-Multiplied by reaction path degeneracy 2.0
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 144,
-    label = "C=C + C=C[CH]C <=> [CH2]C1CCC1C",
-    degeneracy = 1.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(6.92e+10,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db]
-    Euclidian distance = 2.23606797749979
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db]
-Euclidian distance = 2.23606797749979
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 145,
+    index = 148,
     label = "[CH]=C + [CH2][CH]CC <=> C=C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(2.42e+12,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 29 used for Cd_pri_rad;C/H2/Nd_Csrad
@@ -2494,7 +2551,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 146,
+    index = 149,
     label = "[CH]=C + [CH2]C[CH]C <=> C=C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.29193e+07,'m^3/(mol*s)'), n=-0.14, Ea=(5.0208,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [Cd_pri_rad;XH_s_Rrad]
@@ -2511,7 +2568,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 147,
+    index = 150,
     label = "C[CH2] + [CH]=C[CH]C <=> C=C + C=C[CH]C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(9.03e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using an average for rate rule [Y_1centerbirad;Cmethyl_Csrad]
@@ -2528,7 +2585,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 148,
+    index = 151,
     label = "C[CH2] + [CH2][CH]C=C <=> C=C + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(1.374e+14,'cm^3/(mol*s)','*|/',3), n=-0.35, Ea=(-0.54392,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 7 used for C_rad/H2/Cd;Cmethyl_Csrad
@@ -2547,7 +2604,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 149,
+    index = 152,
     label = "C[CH2] + [CH2]C=[C]C <=> C=C + C=C[CH]C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(4.56e+14,'cm^3/(mol*s)','*|/',1.5), n=-0.7, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""Estimated using template [Cd_rad;Cmethyl_Csrad] for rate rule [Cd_rad/NonDeC;Cmethyl_Csrad]
@@ -2564,7 +2621,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 150,
+    index = 153,
     label = "C[CH2] + [CH2][C]=CC <=> C=C + C=C[CH]C",
     degeneracy = 3.0,
     kinetics = Arrhenius(A=(6.57e+14,'cm^3/(mol*s)','*|/',1.1), n=-0.68, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 5 used for Y_rad;Cmethyl_Csrad
@@ -2583,7 +2640,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 151,
+    index = 154,
     label = "C=C + C=C[CH]C <=> [CH]=C + CC=CC",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(0.0928,'cm^3/(mol*s)'), n=4.34, Ea=(123.93,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""From training reaction 1570 used for Cd/H2/NonDeC;C_rad/H2/Cd\H_Cd\H2
@@ -2602,7 +2659,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 152,
+    index = 155,
     label = "C=C + C=C[CH]C <=> [CH2]CCC=CC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1350,'cm^3/(mol*s)','*|/',2), n=2.7, Ea=(47.2792,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 3 used for Cds-HH_Cds-HH;CsJ-CdHH
@@ -2621,7 +2678,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 153,
+    index = 156,
     label = "[CH2]CC[CH][CH]C <=> C=C + C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -2636,41 +2693,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 154,
-    label = "C=C + C=C[CH]C <=> C[CH]C1CCC1",
-    degeneracy = 2.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(1.384e+11,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db]
-    Euclidian distance = 2.23606797749979
-    Multiplied by reaction path degeneracy 2.0
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db]
-Euclidian distance = 2.23606797749979
-Multiplied by reaction path degeneracy 2.0
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 155,
-    label = "C=C + C=C[CH]C <=> C[CH]C1CCC1",
-    degeneracy = 1.0,
-    duplicate = True,
-    kinetics = Arrhenius(A=(6.92e+10,'cm^3/(mol*s)'), n=0, Ea=(182.924,'kJ/mol'), T0=(1,'K'), Tmin=(723,'K'), Tmax=(786,'K'), comment="""Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_2H]
-    Euclidian distance = 2.8284271247461903
-    family: 2+2_cycloaddition_Cd"""),
-    longDesc = 
-"""
-Estimated using template [db;doublebond] for rate rule [db_2H_2H;mb_db_2H]
-Euclidian distance = 2.8284271247461903
-family: 2+2_cycloaddition_Cd
-""",
-)
-
-entry(
-    index = 156,
+    index = 157,
     label = "[CH]=C + C[CH][CH]C <=> C=C + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(9.12e+14,'cm^3/(mol*s)','*|/',1.5), n=-0.7, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 11 used for Cd_pri_rad;Cmethyl_Csrad
@@ -2689,7 +2712,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 157,
+    index = 158,
     label = "[CH]=C + C=CCC <=> C=C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(0.01692,'cm^3/(mol*s)'), n=4.34, Ea=(-5.0208,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 1055 C2H3 + C4H8-4 <=> C2H4 + C4H7-4 in H_Abstraction/training
@@ -2704,7 +2727,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 158,
+    index = 159,
     label = "C=C + C=C[CH]C <=> [CH2]CC(C)C=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(7680,'cm^3/(mol*s)'), n=2.41, Ea=(48.8691,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 224 C4H7-2 + C2H4 <=> C6H11-2 in R_Addition_MultipleBond/training
@@ -2719,7 +2742,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 159,
+    index = 160,
     label = "H + [CH2][CH]CC <=> H2 + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(3.62e+12,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 18 used for H_rad;C/H2/Nd_Csrad
@@ -2738,7 +2761,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 160,
+    index = 161,
     label = "H + [CH2]C[CH]C <=> H2 + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(231435,'m^3/(mol*s)'), n=0.55, Ea=(0.0976267,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [H_rad;XH_s_Rrad]
@@ -2755,7 +2778,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 161,
+    index = 162,
     label = "H + CC=CC <=> H2 + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(6720,'cm^3/(mol*s)'), n=3.14, Ea=(17.9494,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2000,'K'), comment="""Matched reaction 757 H + C4H8-2 <=> H2 + C4H7-2 in H_Abstraction/training
@@ -2770,7 +2793,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 162,
+    index = 163,
     label = "H + C[CH][CH]C <=> H2 + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(2.166e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 4 used for H_rad;Cmethyl_Csrad
@@ -2789,7 +2812,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 163,
+    index = 164,
     label = "H + C=CCC <=> H2 + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(45000,'cm^3/(mol*s)'), n=2.67, Ea=(14.5603,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2000,'K'), comment="""Matched reaction 754 H + C4H8-4 <=> H2 + C4H7-4 in H_Abstraction/training
@@ -2804,7 +2827,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 164,
+    index = 165,
     label = "[CH]=CC([CH2])[CH]C <=> C#C + C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -2819,7 +2842,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 165,
+    index = 166,
     label = "[CH]=CC(C)[CH][CH2] <=> C#C + C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -2834,7 +2857,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 166,
+    index = 167,
     label = "[C]#C + [CH2][CH]CC <=> C#C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.206e+13,'cm^3/(mol*s)','*|/',3), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 31 used for Ct_rad/Ct;C/H2/Nd_Csrad
@@ -2853,7 +2876,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 167,
+    index = 168,
     label = "[C]#C + [CH2]C[CH]C <=> C#C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.26085e+07,'m^3/(mol*s)'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), comment="""Estimated using an average for rate rule [Ct_rad/Ct;XH_s_Rrad]
@@ -2870,7 +2893,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 168,
+    index = 169,
     label = "[CH]=C + [CH]=C[CH]C <=> C#C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(1.32966e+06,'m^3/(mol*s)'), n=0.12, Ea=(5.06264,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_1centerbirad;Cds/H2_d_Rrad] for rate rule [Y_1centerbirad;Cds/H2_d_Crad]
@@ -2887,7 +2910,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 169,
+    index = 170,
     label = "[CH]=C + [CH2][CH]C=C <=> C#C + C=C[CH]C",
     degeneracy = 4.0,
     kinetics = Arrhenius(A=(16.4093,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cd;Cds/H2_d_Crad]
@@ -2904,7 +2927,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 170,
+    index = 171,
     label = "[CH]=C + [CH2]C=[C]C <=> C#C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_rad/NonDeC;Cds/H2_d_Crad]
@@ -2921,7 +2944,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 171,
+    index = 172,
     label = "[CH]=C + [CH2][C]=CC <=> C#C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(206553,'m^3/(mol*s)'), n=0.308563, Ea=(4.59142,'kJ/mol'), T0=(1,'K'), comment="""Estimated using average of templates [Y_rad_birad_trirad_quadrad;Cds/H2_d_Crad] + [Y_rad;Cds/H2_d_Rrad] for rate rule [Y_rad;Cds/H2_d_Crad]
@@ -2938,7 +2961,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 172,
+    index = 173,
     label = "[C]#C + CC=CC <=> C#C + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(0.00722537,'m^3/(mol*s)'), n=2.9005, Ea=(25.0779,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [C/H3/Cd\H_Cd\H\Cs;Y_rad] for rate rule [C/H3/Cd\H_Cd\H\Cs;Ct_rad/Ct]
@@ -2955,7 +2978,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 173,
+    index = 174,
     label = "C#C + C=C[CH]C <=> [CH]=CCC=CC",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(119000,'cm^3/(mol*s)'), n=2.26, Ea=(51.4632,'kJ/mol'), T0=(1,'K'), comment="""From training reaction 43 used for Ct-H_Ct-H;CsJ-CdHH
@@ -2974,7 +2997,7 @@ family: R_Addition_MultipleBond
 )
 
 entry(
-    index = 174,
+    index = 175,
     label = "[CH]=CC[CH][CH]C <=> C#C + C=C[CH]C",
     degeneracy = 1.0,
     kinetics = Arrhenius(A=(5e+12,'s^-1'), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Exact match found for rate rule [RJJ]
@@ -2989,7 +3012,7 @@ family: 1,4_Linear_birad_scission
 )
 
 entry(
-    index = 175,
+    index = 176,
     label = "[C]#C + C[CH][CH]C <=> C#C + C=C[CH]C",
     degeneracy = 6.0,
     kinetics = Arrhenius(A=(2.166e+13,'cm^3/(mol*s)','*|/',2), n=0, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(2500,'K'), comment="""From training reaction 12 used for Ct_rad/Ct;Cmethyl_Csrad
@@ -3008,7 +3031,7 @@ family: Disproportionation
 )
 
 entry(
-    index = 176,
+    index = 177,
     label = "[C]#C + C=CCC <=> C#C + C=C[CH]C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(5.12248e-07,'m^3/(mol*s)'), n=3.91071, Ea=(13.7023,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [C/H2/Cd\H_Cd\H2/Cs\H3;Y_rad] for rate rule [C/H2/Cd\H_Cd\H2/Cs\H3;Ct_rad/Ct]
@@ -3025,7 +3048,7 @@ family: H_Abstraction
 )
 
 entry(
-    index = 177,
+    index = 178,
     label = "C#C + C=C[CH]C <=> [CH]=CC(C)C=C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(24600,'cm^3/(mol*s)'), n=2.41, Ea=(53.6389,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K'), comment="""Matched reaction 2258 C2H2 + C4H7-2 <=> C6H9-28 in R_Addition_MultipleBond/training

@@ -47,3 +47,10 @@
   4 H u0 p0 c0 {2,S}
 
   '
+- 'multiplicity 2
+
+  1 O u1 p2 c0 {2,S}
+
+  2 H u0 p0 c0 {1,S}
+
+  '

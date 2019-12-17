@@ -120,3 +120,18 @@ family: H_Abstraction
 """,
 )
 
+entry(
+    index = 7,
+    label = "OH(D) + OH(D) <=> OO",
+    degeneracy = 0.5,
+    kinetics = Arrhenius(A=(7.85e+12,'cm^3/(mol*s)','+|-',6.02e+12), n=(0,'','+|-',0.5), Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(200,'K'), Tmax=(400,'K'), comment="""Matched reaction 96 OH + OH <=> H2O2 in R_Recombination/training
+    This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_1COS->O_N-2R->C]
+    family: R_Recombination"""),
+    longDesc = 
+"""
+Matched reaction 96 OH + OH <=> H2O2 in R_Recombination/training
+This reaction matched rate rule [Root_N-1R->H_N-1CClNOSSi->N_1COS->O_N-2R->C]
+family: R_Recombination
+""",
+)
+

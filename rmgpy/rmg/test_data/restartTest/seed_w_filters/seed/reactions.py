@@ -296,23 +296,6 @@ family: R_Addition_MultipleBond
 
 entry(
     index = 19,
-    label = "[CH]=C + C[CH2] <=> C#C + ethane",
-    degeneracy = 2.0,
-    kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H2_d_Crad]
-    Euclidian distance = 3.1622776601683795
-    Multiplied by reaction path degeneracy 2.0
-    family: Disproportionation"""),
-    longDesc = 
-"""
-Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H2_d_Crad]
-Euclidian distance = 3.1622776601683795
-Multiplied by reaction path degeneracy 2.0
-family: Disproportionation
-""",
-)
-
-entry(
-    index = 20,
     label = "[CH3] + [CH]=C <=> CH4 + C#C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [C_methyl;Cds/H2_d_Crad]
@@ -329,24 +312,24 @@ family: Disproportionation
 )
 
 entry(
-    index = 21,
-    label = "[CH]=C + [CH]=C <=> C#C + C=C",
+    index = 20,
+    label = "[CH]=C + C[CH2] <=> C#C + ethane",
     degeneracy = 2.0,
-    kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
-    Euclidian distance = 2.23606797749979
+    kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H2_d_Crad]
+    Euclidian distance = 3.1622776601683795
     Multiplied by reaction path degeneracy 2.0
     family: Disproportionation"""),
     longDesc = 
 """
-Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
-Euclidian distance = 2.23606797749979
+Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H2_d_Crad]
+Euclidian distance = 3.1622776601683795
 Multiplied by reaction path degeneracy 2.0
 family: Disproportionation
 """,
 )
 
 entry(
-    index = 22,
+    index = 21,
     label = "H + [CH]=C <=> H2 + C#C",
     degeneracy = 2.0,
     kinetics = Arrhenius(A=(678.823,'m^3/(mol*s)'), n=1.5, Ea=(-3.72376,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [H_rad;Cds/H2_d_Rrad] for rate rule [H_rad;Cds/H2_d_Crad]
@@ -357,6 +340,23 @@ entry(
 """
 Estimated using template [H_rad;Cds/H2_d_Rrad] for rate rule [H_rad;Cds/H2_d_Crad]
 Euclidian distance = 1.0
+Multiplied by reaction path degeneracy 2.0
+family: Disproportionation
+""",
+)
+
+entry(
+    index = 22,
+    label = "[CH]=C + [CH]=C <=> C#C + C=C",
+    degeneracy = 2.0,
+    kinetics = Arrhenius(A=(8.20464,'m^3/(mol*s)'), n=1.87713, Ea=(-4.66621,'kJ/mol'), T0=(1,'K'), comment="""Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
+    Euclidian distance = 2.23606797749979
+    Multiplied by reaction path degeneracy 2.0
+    family: Disproportionation"""),
+    longDesc = 
+"""
+Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
+Euclidian distance = 2.23606797749979
 Multiplied by reaction path degeneracy 2.0
 family: Disproportionation
 """,
