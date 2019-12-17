@@ -821,13 +821,13 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
     }
 
 
-def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
+def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None, familyMap=None):
     parent_dir = os.path.dirname(rmg.input_file)
     rmg.restart = True
     doc_link = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
 
     if path:
-        if any((coreSeed, edgeSeed, filters, speciesMap)):
+        if any((coreSeed, edgeSeed, filters, speciesMap, familyMap)):
             raise InputError('For restarting an RMG job from a seed mechanism, either the path to the RMG generated '
                              'seed mechanism should be given as `path`, or the path for each of the required files '
                              'should be explicitly given, but not both. Please take one approach or the other. For '
@@ -845,14 +845,16 @@ def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, spe
         rmg.edge_seed_path = os.path.join(path, 'seed_edge')
         rmg.filters_path = os.path.join(path, 'filters', 'filters.h5')
         rmg.species_map_path = os.path.join(path, 'filters', 'species_map.yml')
+        rmg.family_map_path = os.path.join(path, 'filters', 'family_map.yml')
 
     else:  # The user has specified each of the paths individually
         rmg.core_seed_path = coreSeed
         rmg.edge_seed_path = edgeSeed
         rmg.filters_path = filters
         rmg.species_map_path = speciesMap
+        rmg.family_map_path = familyMap
 
-    rmg_paths = [rmg.core_seed_path, rmg.edge_seed_path, rmg.filters_path, rmg.species_map_path]
+    rmg_paths = [rmg.core_seed_path, rmg.edge_seed_path, rmg.filters_path, rmg.species_map_path, rmg.family_map_path]
     path_errors = [filePath for filePath in rmg_paths if not os.path.exists(filePath)]
 
     if path_errors:
