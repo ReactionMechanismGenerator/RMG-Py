@@ -20,7 +20,7 @@ requirements:
     - pydas >=1.0.2
     - pydqed >=1.0.1
     - pyrdl
-    - python >=3.7
+    - python
     - quantities
     - rdkit >=2018
     - scipy
@@ -45,6 +45,7 @@ requirements:
     - matplotlib >=1.5
     - mopac
     - mpmath
+    - muq2
     - networkx
     - nose
     - numdifftools
@@ -57,12 +58,12 @@ requirements:
     - pymongo
     - pyparsing
     - pyrdl
-    - python >=3.7
+    - python
     - pyyaml
     - pyzmq
     - quantities
     - rdkit >=2018
-    - rmgdatabase >=2.4.0
+    - rmgdatabase >=3.0.0
     - scikit-learn
     - scipy
     - symmetry
