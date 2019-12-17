@@ -1009,6 +1009,7 @@ cdef class ReactionSystem(DASx):
                                  ''.format(len(self.surface_species_indices), len(self.surface_reaction_indices)))
 
             if filter_reactions:
+                mww = self.mww
                 # Calculate thresholds for reactions
                 (unimolecular_threshold_rate_constant,
                  bimolecular_threshold_rate_constant,
@@ -1019,19 +1020,20 @@ cdef class ReactionSystem(DASx):
                 for i in range(num_core_species):
                     if not unimolecular_threshold[i]:
                         # Check if core species concentration has gone above threshold for unimolecular reaction
-                        if core_species_concentrations[i] > unimolecular_threshold_val:
+                        if (flux_basis == 'mass' and core_species_concentrations[i]*mww[i] > unimolecular_threshold_val) or core_species_concentrations[i] > unimolecular_threshold_val:
                             unimolecular_threshold[i] = True
                 for i in range(num_core_species):
                     for j in range(i, num_core_species):
                         if not bimolecular_threshold[i, j]:
-                            if core_species_concentrations[i] * core_species_concentrations[j] > bimolecular_threshold_val:
+                            if (flux_basis == 'mass' and core_species_concentrations[i]*core_species_concentrations[j]*(mww[i]+mww[j]) > bimolecular_threshold_val) or core_species_concentrations[i] * core_species_concentrations[j] > bimolecular_threshold_val:
                                 bimolecular_threshold[i, j] = True
                 if self.trimolecular:
                     for i in range(num_core_species):
                         for j in range(i, num_core_species):
                             for k in range(j, num_core_species):
                                 if not trimolecular_threshold[i, j, k]:
-                                    if (core_species_concentrations[i] *
+                                    if (flux_basis == 'mass' and (core_species_concentrations[i]*core_species_concentrations[j]*core_species_concentrations[k]*
+                                        (mww[i]+mww[j]+mww[k])> trimolecular_threshold_val)) or (core_species_concentrations[i] *
                                             core_species_concentrations[j] *
                                             core_species_concentrations[k]
                                             > trimolecular_threshold_val):
