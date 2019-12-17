@@ -44,6 +44,10 @@ from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+
+from rmgpy.molecule.group import Group
+from rmgpy.kinetics import KineticsData, Arrhenius
+
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
@@ -223,6 +227,12 @@ class CoreEdgeReactionModel:
         self.new_surface_rxns_loss = set()
         self.solvent_name = ''
         self.surface_site_density = None
+        self.unrealgroups = [Group().from_adjacency_list("""
+            1  O u0 p2 c0 {2,S} {4,S}
+            2  O u0 p2 c0 {1,S} {3,S}
+            3  R!H u1 px c0 {2,S}
+            4  H u0 p0  c0 {1,S}
+            """)]
 
     def check_for_existing_species(self, molecule):
         """
@@ -781,6 +791,8 @@ class CoreEdgeReactionModel:
             elif isinstance(rxn, LibraryReaction):
                 # Try generating the high pressure limit kinetics. If successful, set pdep to ``True``, and vice versa.
                 pdep = rxn.generate_high_p_limit_kinetics()
+            elif any([any([x.is_subgraph_isomorphic(q) for q in self.unrealgroups]) for y in rxn.reactants+rxn.products for x in y.molecule]):
+                pdep = False
 
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
