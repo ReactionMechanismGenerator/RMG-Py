@@ -1561,7 +1561,7 @@ class RMG(util.Subject):
 
             if self.restart:
                 # Load in the restart mapping
-                with open(os.path.join(self.species_map_path), 'r') as f:
+                with open(self.species_map_path, 'r') as f:
                     restart_species_list = yaml.safe_load(stream=f)
 
                 num_restart_spcs = len(restart_species_list)
@@ -1577,8 +1577,8 @@ class RMG(util.Subject):
 
                         # Expand Thresholds to match number of species in the current model.
                         # Note that we are about to reorder the core species to match the order in the restart seed
-                        # mechanism, so we only need to broadcast to the indices up to numRestartSpcs. Any indices after
-                        # this are additional species that should have `False` for their threshold
+                        # mechanism, so we only need to broadcast to the indices up to num_restart_spcs. Any indices
+                        # after this are additional species that should have `False` for their threshold
                         unimolecular_threshold = np.zeros((num_core_species, num_families), bool)
                         unimolecular_threshold[:num_restart_spcs, :] = unimolecular_threshold_restart
 
