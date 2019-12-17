@@ -220,6 +220,7 @@ class RMG(util.Subject):
         self.edge_seed_path = None
         self.filters_path = None
         self.species_map_path = None
+        self.family_map_path = None
 
         self.name = 'Seed'
         self.generate_seed_each_iteration = True
@@ -496,6 +497,7 @@ class RMG(util.Subject):
             os.mkdir(filters_restart)
             shutil.copyfile(self.filters_path, os.path.join(filters_restart, 'filters.h5'))
             shutil.copyfile(self.species_map_path, os.path.join(filters_restart, 'species_map.yml'))
+            shutil.copyfile(self.species_map_path, os.path.join(filters_restart, 'family_map.yml'))
 
             # Load the seed mechanism to get the core and edge species
             self.database.kinetics.load_libraries(restart_dir, libraries=['restart', 'restart_edge'])
@@ -1410,6 +1412,11 @@ class RMG(util.Subject):
             with open(os.path.join(filter_dir, 'species_map.yml'), 'w') as f:
                 yaml.dump(data=spcs_map, stream=f)
 
+            # Save a map of reaction families
+            family_map = list(self.database.kinetics.families.keys())
+            with open(os.path.join(filter_dir, 'family_map.yml'), 'w') as f:
+                yaml.dump(data=family_map, stream=f)
+
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(temp_seed_dir):
                 shutil.rmtree(temp_seed_dir)
@@ -1560,12 +1567,19 @@ class RMG(util.Subject):
                                                         num_families), bool)
 
             if self.restart:
+                rmg_family_map = list(self.database.kinetics.families.keys())
+
                 # Load in the restart mapping
                 with open(self.species_map_path, 'r') as f:
                     restart_species_list = yaml.safe_load(stream=f)
 
                 num_restart_spcs = len(restart_species_list)
                 restart_species_list = [Species().from_adjacency_list(adj_list) for adj_list in restart_species_list]
+
+                with open(self.family_map_path, 'r') as f:
+                    restart_family_map = yaml.safe_load(stream=f)
+
+                num_restart_families = len(restart_family_map)
 
                 # Load in the restart filter tensors
                 with h5py.File(self.filters_path, 'r') as f:
@@ -1579,15 +1593,16 @@ class RMG(util.Subject):
                         # Note that we are about to reorder the core species to match the order in the restart seed
                         # mechanism, so we only need to broadcast to the indices up to num_restart_spcs. Any indices
                         # after this are additional species that should have `False` for their threshold
-                        unimolecular_threshold = np.zeros((num_core_species, num_families), bool)
+                        unimolecular_threshold = np.zeros((num_core_species, num_restart_families), bool)
                         unimolecular_threshold[:num_restart_spcs, :] = unimolecular_threshold_restart
 
-                        bimolecular_threshold = np.zeros((num_core_species, num_core_species, num_families), bool)
+                        bimolecular_threshold = np.zeros((num_core_species, num_core_species, num_restart_families),
+                                                         bool)
                         bimolecular_threshold[:num_restart_spcs, :num_restart_spcs, :] = bimolecular_threshold_restart
 
                         if self.trimolecular:
                             trimolecular_threshold = np.zeros((num_core_species, num_core_species, num_core_species,
-                                                               num_families), bool)
+                                                               num_restart_families), bool)
                             trimolecular_threshold[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs, :] = \
                                 trimolecular_threshold_restart
 
@@ -1636,31 +1651,44 @@ class RMG(util.Subject):
                     # present in the restart core seed will be reacted.
 
                     if self.filter_reactions:  # Filling in the filter thresholds will suffice
-                        # Fill in the newly initialized filter tensors
-                        self.unimolecular_threshold = unimolecular_threshold
-                        self.bimolecular_threshold = bimolecular_threshold
-                        if self.trimolecular:
-                            self.trimolecular_threshold = trimolecular_threshold
+                        # Fill in the newly initialized filter tensors by matching based on family order
+                        for i, rmg_family in enumerate(rmg_family_map):
+                            for j, restart_family in enumerate(restart_family_map):
+                                if rmg_family == restart_family:
+                                    self.unimolecular_threshold[:, i] = unimolecular_threshold[:, j]
+                                    self.bimolecular_threshold[:, :, i] = bimolecular_threshold[:, :, j]
+                                    if self.trimolecular:
+                                        self.trimolecular_threshold[:, :, :, i] = trimolecular_threshold[:, :, :, j]
+                                    break
 
                     else:  # We must set the react flags instead. If it was `True` in the threshold, it should not react
-                        self.unimolecular_react = np.logical_not(unimolecular_threshold)
-                        self.bimolecular_react = np.logical_not(bimolecular_threshold)
-                        if self.trimolecular:
-                            self.trimolecular_react = np.logical_not(trimolecular_threshold)
+                        for i, rmg_family in enumerate(rmg_family_map):
+                            for j, restart_family in enumerate(restart_family_map):
+                                if rmg_family == restart_family:
+                                    self.unimolecular_react[:, i] = np.logical_not(unimolecular_threshold[:, j])
+                                    self.bimolecular_react[:, :, i] = np.logical_not(bimolecular_threshold[:, :, j])
+                                    if self.trimolecular:
+                                        self.trimolecular_react[:, :, :, i] = np.logical_not(trimolecular_threshold[:, :, :, j])
 
-                else:  # Assume that all species found in the restart core seed have already been reacted
+                else:  # Assume that all species and families found in the restart core seed have already been reacted
                     if self.filter_reactions:  # Filling in the filter thresholds will suffice
-                        self.unimolecular_threshold[:num_restart_spcs, :] = True
-                        self.bimolecular_threshold[:num_restart_spcs, :num_restart_spcs, :] = True
-                        if self.trimolecular:
-                            self.trimolecular_threshold[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs, :] = True
+                        for i, rmg_family in enumerate(rmg_family_map):
+                            for j, restart_family in enumerate(restart_family_map):
+                                if rmg_family == restart_family:
+                                    self.unimolecular_threshold[:num_restart_spcs, i] = True
+                                    self.bimolecular_threshold[:num_restart_spcs, :num_restart_spcs, i] = True
+                                    if self.trimolecular:
+                                        self.trimolecular_threshold[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs, i] = True
 
                     else:  # We must set the react flags instead.
                         # Don't react any species that were present in the restart core seed
-                        self.unimolecular_react[:num_restart_spcs, :] = False
-                        self.bimolecular_react[:num_restart_spcs, :num_restart_spcs, :] = False
-                        if self.trimolecular:
-                            self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs, :] = False
+                        for i, rmg_family in enumerate(rmg_family_map):
+                            for j, restart_family in enumerate(restart_family_map):
+                                if rmg_family == restart_family:
+                                    self.unimolecular_react[:num_restart_spcs, i] = False
+                                    self.bimolecular_react[:num_restart_spcs, :num_restart_spcs, i] = False
+                                    if self.trimolecular:
+                                        self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs, i] = False
 
     def update_reaction_threshold_and_react_flags(self,
                                                   rxn_sys_unimol_threshold=None,

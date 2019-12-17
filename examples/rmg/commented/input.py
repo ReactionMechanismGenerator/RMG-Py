@@ -8,7 +8,8 @@
 # restartFromSeed(coreSeed='seed/seed'  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`
 #                 edgeSeed='seed/seed_edge'  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`
 #                 filters='seed/filters/filters.h5',
-#                 speciesMap='seed/filters/species_map.yml')
+#                 speciesMap='seed/filters/species_map.yml',
+#                 familyMap='seed/filters/family_map.yml')
 
 # Data sources
 database(
