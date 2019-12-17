@@ -27,13 +27,18 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
-from libc.math cimport exp, log, sqrt, log10
-
-cimport rmgpy.constants as constants
-import rmgpy.quantity as quantity
 import logging
+
+import numpy as np
+cimport numpy as np
+from libc.math cimport log10
+
+import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
+
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
+
 ################################################################################
 
 cdef class Chebyshev(PDepKineticsModel):
@@ -59,15 +64,16 @@ cdef class Chebyshev(PDepKineticsModel):
     """
 
     def __init__(self, coeffs=None, kunits='', highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit, comment=comment)
+        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit,
+                                   comment=comment)
         self.coeffs = coeffs
         self.kunits = kunits
         if self.coeffs is not None:
             self.degreeT = self._coeffs.value_si.shape[0]
             self.degreeP = self._coeffs.value_si.shape[1]
             factor = quantity.RateCoefficient(1.0, kunits).value_si
-            self.coeffs.value_si[0,0] += log10(factor)
-        
+            self.coeffs.value_si[0, 0] += log10(factor)
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -75,7 +81,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         coeffs = self.coeffs.copy()
         factor = quantity.RateCoefficient(1.0, self.kunits).value_si
-        coeffs.value_si[0,0] -= log10(factor)
+        coeffs.value_si[0, 0] -= log10(factor)
         string = 'Chebyshev(coeffs={0!r}, kunits={1!r}'.format(coeffs, self.kunits)
         if self.highPlimit is not None: string += ', highPlimit={0!r}'.format(self.highPlimit)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
@@ -92,16 +98,17 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         coeffs = self.coeffs.copy()
         factor = quantity.RateCoefficient(1.0, self.kunits).value_si
-        coeffs.value_si[0,0] -= log10(factor)
-        return (Chebyshev, (coeffs, self.kunits, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
-    
+        coeffs.value_si[0, 0] -= log10(factor)
+        return (Chebyshev, (coeffs, self.kunits, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.comment))
+
     property coeffs:
         """The Chebyshev coefficients."""
         def __get__(self):
             return self._coeffs
         def __set__(self, value):
             self._coeffs = quantity.Dimensionless(value)
-    
+
     cdef double chebyshev(self, int n, double x):
         """
         Return the value of the nth-order Chebyshev polynomial at the given
@@ -116,13 +123,13 @@ cdef class Chebyshev(PDepKineticsModel):
         else:
             T0 = 1
             T1 = x
-            for i in range(1,n):
+            for i in range(1, n):
                 T = 2 * x * T1 - T0
                 T0 = T1
                 T1 = T
             return T
 
-    cdef double getReducedTemperature(self, double T) except -1000:
+    cdef double get_reduced_temperature(self, double T) except -1000:
         """
         Return the reduced temperature corresponding to the given temperature
         `T` in K. This maps the inverse of the temperature onto the domain 
@@ -131,9 +138,9 @@ cdef class Chebyshev(PDepKineticsModel):
         cdef double Tmin, Tmax
         Tmin = self._Tmin.value_si
         Tmax = self._Tmax.value_si
-        return (2.0/T - 1.0/Tmin - 1.0/Tmax) / (1.0/Tmax - 1.0/Tmin)
-    
-    cdef double getReducedPressure(self, double P) except -1000:
+        return (2.0 / T - 1.0 / Tmin - 1.0 / Tmax) / (1.0 / Tmax - 1.0 / Tmin)
+
+    cdef double get_reduced_pressure(self, double P) except -1000:
         """
         Return the reduced pressure corresponding to the given pressure
         `P` in Pa. This maps the logarithm of the pressure onto the domain 
@@ -142,33 +149,33 @@ cdef class Chebyshev(PDepKineticsModel):
         cdef double Pmin, Pmax
         Pmin = self._Pmin.value_si
         Pmax = self._Pmax.value_si
-        return (2.0*log10(P) - log10(Pmin) - log10(Pmax)) / (log10(Pmax) - log10(Pmin))
-    
-    cpdef double getRateCoefficient(self, double T, double P=0) except -1:
+        return (2.0 * log10(P) - log10(Pmin) - log10(Pmax)) / (log10(Pmax) - log10(Pmin))
+
+    cpdef double get_rate_coefficient(self, double T, double P=0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa by 
         evaluating the Chebyshev expression.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=2] coeffs
+        cdef np.ndarray[np.float64_t, ndim=2] coeffs
         cdef double Tred, Pred, k
         cdef int i, j, t, p
-        
+
         if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent Chebyshev.getRateCoefficient().')
+            raise ValueError('No pressure specified to pressure-dependent Chebyshev.get_rate_coefficient().')
 
         coeffs = self._coeffs.value_si
 
         k = 0.0
-        Tred = self.getReducedTemperature(T)
-        Pred = self.getReducedPressure(P)
+        Tred = self.get_reduced_temperature(T)
+        Pred = self.get_reduced_pressure(P)
         for t in range(self.degreeT):
             for p in range(self.degreeP):
-                k += coeffs[t,p] * self.chebyshev(t, Tred) * self.chebyshev(p, Pred)
-        return 10.0**k
+                k += coeffs[t, p] * self.chebyshev(t, Tred) * self.chebyshev(p, Pred)
+        return 10.0 ** k
 
-    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K,
-        str kunits, int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax):
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K,
+                    str kunits, int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax):
         """
         Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
         is a matrix corresponding to the temperatures `Tlist` in K and pressures
@@ -183,79 +190,77 @@ cdef class Chebyshev(PDepKineticsModel):
         cdef double T, P
 
         if nT <= degreeT or nP <= degreeP:
-            raise KineticsError(
-                    "The master equation data needs more temperature and pressure data "\
-                    "points than are placed into Chebyshev polynomial. Currently, the "\
-                    "data has {0} temperatures and the polynomial is set to have {1}. "\
-                    "The data has {2} pressures and the polynomial is set ot have {3}"\
-                    "".format(nT,degreeT,nP,degreeP))
-        elif nT < 1.25*degreeT or nP < 1.25*degreeP:
-            logging.warning(
-                    'This Chebyshev fitting has few degrees of freedom and may not be '\
-                    'accurate between data points. Consider increasing the number of '\
-                    'temperature and pressure values in the fitting parameters.')
+            raise KineticsError("The master equation data needs more temperature and pressure data "
+                                "points than are placed into Chebyshev polynomial. Currently, the "
+                                "data has {0} temperatures and the polynomial is set to have {1}. "
+                                "The data has {2} pressures and the polynomial is set ot have {3}"
+                                "".format(nT, degreeT, nP, degreeP))
+        elif nT < 1.25 * degreeT or nP < 1.25 * degreeP:
+            logging.warning('This Chebyshev fitting has few degrees of freedom and may not be '
+                            'accurate between data points. Consider increasing the number of '
+                            'temperature and pressure values in the fitting parameters.')
         # Set temperature and pressure ranges
-        self.Tmin = (Tmin,"K")
-        self.Tmax = (Tmax,"K")
-        self.Pmin = (Pmin*1e-5,"bar")
-        self.Pmax = (Pmax*1e-5,"bar")
+        self.Tmin = (Tmin, "K")
+        self.Tmax = (Tmax, "K")
+        self.Pmin = (Pmin * 1e-5, "bar")
+        self.Pmax = (Pmax * 1e-5, "bar")
 
         # Calculate reduced temperatures and pressures
-        Tred = [self.getReducedTemperature(T) for T in Tlist]
-        Pred = [self.getReducedPressure(P) for P in Plist]
+        Tred = [self.get_reduced_temperature(T) for T in Tlist]
+        Pred = [self.get_reduced_pressure(P) for P in Plist]
 
-        K = quantity.RateCoefficient(K,kunits).value_si
+        K = quantity.RateCoefficient(K, kunits).value_si
 
         # Create matrix and vector for coefficient fit (linear least-squares)
-        A = numpy.zeros((nT*nP, degreeT*degreeP), numpy.float64)
-        b = numpy.zeros((nT*nP), numpy.float64)
+        A = np.zeros((nT * nP, degreeT * degreeP), np.float64)
+        b = np.zeros((nT * nP), np.float64)
         for t1, T in enumerate(Tred):
             for p1, P in enumerate(Pred):
                 for t2 in range(degreeT):
                     for p2 in range(degreeP):
-                        A[p1*nT+t1, p2*degreeT+t2] = self.chebyshev(t2, T) * self.chebyshev(p2, P)
-                b[p1*nT+t1] = log10(K[t1,p1])
+                        A[p1 * nT + t1, p2 * degreeT + t2] = self.chebyshev(t2, T) * self.chebyshev(p2, P)
+                b[p1 * nT + t1] = log10(K[t1, p1])
 
         # Do linear least-squares fit to get coefficients
-        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
+        x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
         # Extract coefficients
-        coeffs = numpy.zeros((degreeT,degreeP), numpy.float64)
+        coeffs = np.zeros((degreeT, degreeP), np.float64)
         for t2 in range(degreeT):
             for p2 in range(degreeP):
-                coeffs[t2,p2] = x[p2*degreeT+t2]
+                coeffs[t2, p2] = x[p2 * degreeT + t2]
         self.coeffs = coeffs
 
         self.degreeT = degreeT
         self.degreeP = degreeP
-        
+
         self.kunits = kunits
-        
+
         return self
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, Chebyshev):
+        if not isinstance(other_kinetics, Chebyshev):
             return False
-        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+        if not KineticsModel.is_identical_to(self, other_kinetics):
             return False
-        if self.degreeT != otherKinetics.degreeT or self.degreeP != otherKinetics.degreeP:
+        if self.degreeT != other_kinetics.degreeT or self.degreeP != other_kinetics.degreeP:
             return False
-        if self.kunits != otherKinetics.kunits or (self.coeffs != otherKinetics.coeffs).any():
+        if self.kunits != other_kinetics.kunits or not np.array_equal(self.coeffs.value, other_kinetics.coeffs.value):
             return False
 
         return True
 
-    cpdef changeRate(self, double factor):
+    cpdef change_rate(self, double factor):
         """ 
         Changes kinetics rates by a multiple ``factor``.
         """
-        self.coeffs.value_si[0,0] += log10(factor)
+        self.coeffs.value_si[0, 0] += log10(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList):
+    def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the kinetics parameters for a Cantera ChebyshevReaction() object
         Uses set_parameters(self,Tmin,Tmax,Pmin,Pmax,coeffs)
@@ -263,29 +268,30 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ctReaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+        assert isinstance(ct_reaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
 
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
         Pmin = self.Pmin.value_si
         Pmax = self.Pmax.value_si
         coeffs = copy.deepcopy(self.coeffs.value_si)
-        
+
         # The first coefficient must be adjusted to match Cantera units
-        rateUnitsDimensionality = {'1/s':0,
-                                   's^-1':0, 
-                               'm^3/(mol*s)':1,
-                               'm^6/(mol^2*s)':2,
-                               'cm^3/(mol*s)':1,
-                               'cm^6/(mol^2*s)':2,
-                               'm^3/(molecule*s)': 1, 
-                               'm^6/(molecule^2*s)': 2,
-                               'cm^3/(molecule*s)': 1,
-                               'cm^6/(molecule^2*s)': 2,
-                               }
+        rateUnitsDimensionality = {'1/s': 0,
+                                   's^-1': 0,
+                                   'm^3/(mol*s)': 1,
+                                   'm^6/(mol^2*s)': 2,
+                                   'cm^3/(mol*s)': 1,
+                                   'cm^6/(mol^2*s)': 2,
+                                   'm^3/(molecule*s)': 1,
+                                   'm^6/(molecule^2*s)': 2,
+                                   'cm^3/(molecule*s)': 1,
+                                   'cm^6/(molecule^2*s)': 2,
+                                   }
         try:
-            factor = 1000**rateUnitsDimensionality[self.kunits]
-            coeffs[0,0] += log10(factor)
+            factor = 1000 ** rateUnitsDimensionality[self.kunits]
+            coeffs[0, 0] += log10(factor)
         except:
-            raise Exception('Chebyshev units {0} not found among accepted units for converting to Cantera Chebyshev object.'.format(self.kunits))
-        ctReaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)
+            raise Exception('Chebyshev units {0} not found among accepted units for converting to '
+                            'Cantera Chebyshev object.'.format(self.kunits))
+        ct_reaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)

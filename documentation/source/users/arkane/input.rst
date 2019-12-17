@@ -110,7 +110,7 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'BMK/cbsb7'``                                   v    v    v               H, C, N, O, P, S
 ``'BMK/6-311G(2d,d,p)'``                          v    v    v               H, C, N, O, P, S
 ``'B3LYP/6-311+G(3df,2p)'``                       v    v    v    v (0.967)  H, C, N, O, P, S
-``'B3LYP/6-31G**'``                               v    v         v (0.961)  H, C, O, S
+``'B3LYP/6-31G(d,p)'``                            v    v         v (0.961)  H, C, O, S
 ``'MRCI+Davidson/aug-cc-pV(T+d)Z'``               v         v               H, C, N, O, S
 ``'wb97x-d/aug-cc-pvtz'``                         v         v               H, C, N, O
 ================================================ ===== ==== ==== ========== ====================
@@ -163,8 +163,13 @@ For this option, the ``species()`` function only requires two parameters, as in 
     species('C2H6', 'C2H6.py',
             structure = SMILES('CC'))
 
-The first parameter (``'C2H6'`` above) is the species label, which can be referenced later in the input file. The second
-parameter (``'C2H6.py'`` above) points to the location of another python file containing details of the species. This file
+The first required parameter (``'C2H6'`` above) is the species label, which can be
+referenced later in the input file and is used when constructing output files.
+For chemkin output to run properly, limit names to alphanumeric characters
+with approximately 13 characters or less.
+
+The second parameter (``'C2H6.py'`` above) points to the location of another
+python file containing details of the species. This file
 will be referred to as the species input file. The third parameter (``'structure = SMILES('CC')'`` above)
 gives the species structure (either SMILES, adjacencyList, or InChI could be used). The structure parameter isn't
 necessary for the calculation, however if it is not specified a .yml file representing an ArkaneSpecies will not be
@@ -177,13 +182,13 @@ Parameter               Required?                   Description
 ======================= =========================== ====================================
 ``bonds``               optional                    Type and number of bonds in the species
 ``linear``              optional                    ``True`` if the molecule is linear, ``False`` if not
-``externalSymmetry``    yes                         The external symmetry number for rotation
+``externalSymmetry``    optional                    The external symmetry number for rotation
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
-``opticalIsomers``      yes                         The number of optical isomers of the species
+``opticalIsomers``      optional                    The number of optical isomers of the species
 ``energy``              yes                         The ground-state 0 K atomization energy in Hartree
                                                     (without zero-point energy) **or**
                                                     The path to the quantum chemistry output file containing the energy
-``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
+``geometry``            optional                    The path to the quantum chemistry output file containing the optimized geometry
 ``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
 ``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
 ======================= =========================== ====================================
@@ -194,7 +199,10 @@ to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) f
 atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
 The ``bonds`` parameter is used to apply bond additivity corrections (BACs) for a given ``modelChemistry`` if using
-Petersson-type BACs (``bondCorrectionType = 'p'``). When using Melius-type BACs (``bondCorrectionType = 'm'``),
+Petersson-type BACs (``bondCorrectionType = 'p'``).
+If the species' structure is specified in the Arkane input file, then the `bonds` attribute
+can be automatically populated. Including this parameter in this case will overwrite
+the automatically generated bonds. When using Melius-type BACs (``bondCorrectionType = 'm'``),
 specifying ``bonds`` is not required because the molecular connectivity is automatically inferred from the output of the
 quantum chemistry calculation.
 For a description of Petersson-type BACs, see Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579.
@@ -205,7 +213,8 @@ Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, 
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in the bond correction label is not important. Use ``-``/``=``/``#`` to denote a
+The order of elements in the bond correction label is important. The first atom
+should follow this priority: 'C', 'N', 'O', 'S', 'P', and 'H'. For bonds, use ``-``/``=``/``#`` to denote a
 single/double/triple bond, respectively. For example, for formaldehyde we would write::
 
     bonds = {'C=O': 1, 'C-H': 2}
@@ -239,7 +248,7 @@ directly. The energy used will depend on what ``modelChemistry`` was specified i
 energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
-rotors are included.
+rotors are included. If ``geometry`` is not set, then Arkane will read the geometry from the ``frequencies`` file.
 Both cases are described below.
 
 Without Hindered/Free Rotors
@@ -310,15 +319,15 @@ The output of step 2 is the correct log file to use for ``geometry/frequencies``
 ``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
 object requires the following parameters:
 
-====================== ==========================================================================================
-Parameter              Description
-====================== ==========================================================================================
-``scanLog``            The path to the Gaussian/Qchem log file, or a text file containing the scan energies
-``pivots``             The indices of the atoms in the hindered rotor torsional bond
-``top``                The indices of all atoms on one side of the torsional bond (including the pivot atom)
-``symmetry``           The symmetry number for the torsional rotation (number of indistinguishable energy minima)
-``fit``                Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
-====================== ==========================================================================================
+======================= =========================== ====================================
+Parameter               Required?                   Description
+======================= =========================== ====================================
+``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text file containing the scan energies
+``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
+``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
+``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
+``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
+======================= =========================== ====================================
 
 ``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
 scan in the following format::
@@ -412,10 +421,53 @@ for specifying the same ``rotors`` entry are commented out)::
 
 Note that the atom labels identified within the rotor section should correspond to the indicated geometry.
 
+Multidimensional Hindered Rotors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For multidimensional hindered rotors, ``geometry``, ``frequencies`` need to be specified in the same way described
+in detail in the last section. However, rotor files may be specified by either a 1D rotor scan file as in the last
+section (1D rotors only) or as a directory. The directory must contain a list of energy files in the format
+``something_name_rotorAngle1_rotorAngle2_rotorAngle3(...).log``.
+
+For HinderedRotor2D (Quantum Mechanical 2D using Q2DTor):
+
+======================= ====================================
+Parameter               Description
+======================= ====================================
+``scandir``             file or directory containing scan energies
+``pivots1``             The indices of the atoms in the first rotor torsional bond
+``top1``                The indices of all atoms on one side of the first torsional bond (including the pivot atom)
+``symmetry1``           The symmetry number of the first rotor 
+``pivots2``             The indices of the atoms in the second rotor torsional bond
+``top2``                The indices of all atoms on one side of the second torsional bond (including the pivot atom)
+``symmetry2``           The symmetry number of the second rotor 
+``symmetry``            Q2DTor simplifying symmetry code, default is ``none``
+======================= ====================================
+
+For HinderedRotorClassicalND (Classical and Semiclassical ND rotors):
+
+======================= ====================================
+Parameter               Description
+======================= ====================================
+``scandir``             file or directory containing scan energies
+``pivots``              The list of the indices of the atoms in each rotor torsional bond
+``tops``                The list of the indices of all atoms on one side of each torsional bond (including the pivot atom)
+``sigmas``              The list of symmetry numbers for each torsional bond 
+``semiclassical``       Indicates whether to use the semiclassical rotor correction (highly recommended)
+======================= ====================================
+
+The inputs are mostly the same as the last section except that HinderedRotorClassicalND takes lists of pivots,
+tops and sigmas instead of individual values. These rotor objects enable calculation of partition functions for
+multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular
+hydrogen bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the
+.evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime
+to seconds. This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the
+HinderedRotor2D you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower
+dimensional torsions.
+
 Additional parameters for pressure dependent networks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Additional parameters apply only to molecules in pressure depedent networks
+Additional parameters apply only to molecules in pressure dependent networks
 
 ======================= =================================== ====================================
 Parameter               Required?                           Description
@@ -661,7 +713,7 @@ Parameter               Required?                           Description
 ======================= =================================== ====================================
 
 The parameters ``structure``, ``molecularWeight``, ``collisionModel`` and ``energyTransferModel`` were already discussed
-above in `Species Parameters`_.
+above in `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_.
 
 When the ``thermo`` parameter is specified, Arkane will approximate the modes
 of vibration and energy from the thermodynamic parameters, and will utilize this
@@ -809,24 +861,28 @@ High Pressure Limit Kinetics
 
 Use a ``kinetics()`` function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The ``'label'`` string must correspond to that of
-a defined ``reaction()`` function. If desired, define a temperature range and number
-of temperatures at which the high-pressure rate coefficient will be tabulated and saved to
-the outupt file. The 3-parameter modified Arrhenius coefficients will automatically be fit
-to the computed rate coefficients. The quantum tunneling factor will also be displayed.
+a defined ``reaction()`` function.
 
-Below is a typical ``kinetics()`` function::
+You have three options for specifying the temperature to which a modified Arrhenius
+expression will be fit.
+
+Give an explicit list of temperatures to fit::
+
+    kinetics(
+    label = 'H + C2H4 <=> C2H5',
+    Tlist = ([400,500,700,900,1100,1200],'K'),
+    )
+
+Give minimmum and maximum temperatures to fit::
 
     kinetics(
     label = 'H + C2H4 <=> C2H5',
     Tmin = (400,'K'), Tmax = (1200,'K'), Tcount = 6,
     )
 
-If specific temperatures are desired, you may specify a list
-(``Tlist = ([400,500,700,900,1100,1200],'K')``) instead of Tmin, Tmax, and Tcount.
+Use the default range to fit (298 K to 2500 K at 50 points spaced equally in 1/T space)::
 
-This is also acceptable::
-
-    kinetics('H + C2H4 <=> C2H5')
+    kinetics(label = 'H + C2H4 <=> C2H5')
 
 If a sensitivity analysis is desired, simply add the conditions at which to calculate sensitivity coefficients
 in the following format, e.g.::
@@ -836,6 +892,9 @@ in the following format, e.g.::
         Tmin = (500,'K'), Tmax = (3000,'K'), Tcount = 15,
         sensitivity_conditions = [(1000, 'K'), (2000, 'K')]
     )
+
+The ``output.py`` file will show the rates at various temperatures including the quantum tunneling factor.
+Kinetic rates will also be added to the ``chem.inp`` file.
 
 The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
 with the reaction label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``

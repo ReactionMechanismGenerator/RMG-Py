@@ -4,80 +4,54 @@
 #
 ################################################################################
 
-DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
-DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
+.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis
 
-.PHONY : all minimal main solver check cantherm clean install decython documentation mopac_travis
-
-all: main solver check
+all: pycheck main solver check
 
 minimal:
-	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext minimal --inplace --build-temp .
 
 main:
-	@ echo "Checking you have PyDQED..."
-	@ python -c 'import pydqed; print pydqed.__file__'
-	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext main --inplace --build-temp .
 
 solver:
-
-ifneq ($(DASPK),)
-	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi 
-else ifneq ($(DASSL),)
-	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
-	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
-else
-	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
-	@ python -c 'import pydas.dassl' 
-endif
-	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
+	@ python utilities.py check-pydas
+	python setup.py build_ext solver --inplace --build-temp .
 
 arkane:
-	python setup.py build_ext arkane --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext arkane --inplace --build-temp .
 
 check:
 	@ python utilities.py check-dependencies
+
+pycheck:
+	@ python utilities.py check-python
 
 documentation:
 	$(MAKE) -C documentation html
 	@ echo "Start at: documentation/build/html/index.html"
 
 clean:
-	@ echo "Removing build directory..."
-	@ python setup.py clean --build-temp build
-	@ echo "Removing compiled files..."
 	@ python utilities.py clean
-	@ echo "Cleanup completed."
 
 clean-solver:
-	@ echo "Removing solver build directories..."
-ifeq ($(OS),Windows_NT)
-	@ -rd /s /q build\pyrex\rmgpy\solver
-	@ -rd /s /q build\build\pyrex\rmgpy\solver
-else
-	@ -rm -r build/pyrex/rmgpy/solver/
-	@ -rm -r build/build/pyrex/rmgpy/solver/
-endif
-	@ echo "Removing compiled files..."
 	@ python utilities.py clean-solver
-	@ echo "Cleanup completed."
 
 install:
-	@ echo "Checking you have PyDQED..."
-	@ python -c 'import pydqed; print pydqed.__file__'
-ifneq ($(DASPK),)
-	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi
-else ifneq ($(DASSL),)
-	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
-	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
-else
-	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
-	@ python -c 'import pydas.dassl'
-endif
+	@ python utilities.py check-pydas
 	python setup.py install
 
+q2dtor:
+	@ echo "\nInstalling Q2DTor...\n"
+	@ echo "Q2DTor is a software for calculating the partition functions and themodynamic properties\
+	of molecular systems with two or more torsional modes developed by David Ferro Costas (david.ferro@usc.es)\
+	 and Antonio Fernandez Ramos (qf.ramos@usc.es) at the Universidade de Santiago de Compostela. Arkane can\
+	  integrate Q2DTor to compute the quantum mechanical partition function of 2D rotors.  \n\nFor use of Q2DTor\
+ and HinderedRotor2D within Arkane please cite:  \n\nD. Ferro-Costas, M. N. D. S.Cordeiro, D. G. Truhlar, A.\
+		  Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.\n"
+	@ read -p "Press ENTER to continue" dummy
+	@ git clone https://github.com/mjohnson541/Q2DTor.git external/Q2DTor --branch arkanepy3
+	
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
@@ -88,21 +62,21 @@ ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
 
 test test-unittests:
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
 
 test-functional:
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
+	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
 
 test-database:
 	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py

@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-initialize imports
-"""
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -31,3 +26,7 @@ initialize imports
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+
+"""
+initialize imports
+"""

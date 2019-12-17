@@ -7,7 +7,7 @@ externalSymmetry = 1
 
 spinMultiplicity = 2
 
-opticalIsomers = 2 #confirmed
+opticalIsomers = 2  # confirmed
 
 energy = {
     'm08so/mg3s*': Log('ts1.out'),

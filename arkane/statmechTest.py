@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -29,18 +28,20 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`arkane.main` module.
+This module contains unit tests of the :mod:`arkane.statmech` module.
 """
 
-import unittest
 import os
+import unittest
+
 import numpy as np
 
+from rmgpy.species import Species
 from rmgpy.exceptions import InputError
 
 from arkane import Arkane
+from arkane.ess.qchem import QChemLog
 from arkane.statmech import StatMechJob, determine_rotor_symmetry, is_linear
-from arkane.qchem import QChemLog
 
 ################################################################################
 
@@ -49,12 +50,13 @@ class TestStatmech(unittest.TestCase):
     """
     Contains unit tests of the StatmechJob class.
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                         'data', 'Benzyl', 'input.py'))
+        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                           'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are not the same"""
@@ -71,8 +73,8 @@ class TestStatmech(unittest.TestCase):
         path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'NCC_CRotor.out')
         scan_log1 = QChemLog(path1)
         scan_log2 = QChemLog(path2)
-        v_list1, angle = scan_log1.loadScanEnergies()
-        v_list2, angle = scan_log2.loadScanEnergies()
+        v_list1, angle = scan_log1.load_scan_energies()
+        v_list2, angle = scan_log2.load_scan_energies()
         symmetry1 = determine_rotor_symmetry(energies=v_list1, label='NCC', pivots=[])
         symmetry2 = determine_rotor_symmetry(energies=v_list2, label='NCC', pivots=[])
         self.assertEqual(symmetry1, 1)
@@ -150,6 +152,48 @@ class TestStatmech(unittest.TestCase):
         self.assertFalse(is_linear(xyz5))
         self.assertFalse(is_linear(xyz8))
         self.assertFalse(is_linear(xyz10))
+
+    def test_specifying_absolute_file_paths(self):
+        """Test specifying absolute file paths of statmech files"""
+        h2o2_input = """#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+bonds = {{'H-O': 2, 'O-O': 1}}
+
+externalSymmetry = 2
+
+spinMultiplicity = 1
+
+opticalIsomers = 1
+
+energy = {{'b3lyp/6-311+g(3df,2p)': Log('{energy}')}}
+
+geometry = Log('{freq}')
+
+frequencies = Log('{freq}')
+
+rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmetry=1, fit='fourier')]
+
+"""
+        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
+        energy_path = os.path.join('arkane', 'data', 'H2O2', 'sp_a19032.out')
+        freq_path = os.path.join('arkane', 'data', 'H2O2', 'freq_a19031.out')
+        scan_path = os.path.join('arkane', 'data', 'H2O2', 'scan_a19034.out')
+        h2o2_input = h2o2_input.format(energy=energy_path, freq=freq_path, scan=scan_path)
+        h2o2_path = os.path.join(abs_arkane_path, 'data', 'H2O2', 'H2O2.py')
+        if not os.path.exists(os.path.dirname(h2o2_path)):
+            os.makedirs(os.path.dirname(h2o2_path))
+        with open(h2o2_path, 'w') as f:
+            f.write(h2o2_input)
+        h2o2 = Species(label='H2O2', smiles='OO')
+        self.assertIsNone(h2o2.conformer)
+        statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
+        statmech_job.modelChemistry = 'b3lyp/6-311+g(3df,2p)'
+        statmech_job.load(pdep=False, plot=False)
+        self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
+        os.remove(h2o2_path)
+
+################################################################################
 
 
 if __name__ == '__main__':

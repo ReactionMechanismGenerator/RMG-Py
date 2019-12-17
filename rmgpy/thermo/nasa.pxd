@@ -25,8 +25,6 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
-
 from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.thermo.thermodata cimport ThermoData
 from rmgpy.thermo.wilhoit cimport Wilhoit
@@ -36,18 +34,20 @@ from rmgpy.thermo.wilhoit cimport Wilhoit
 cdef class NASAPolynomial(HeatCapacityModel):
 
     cdef public double cm2, cm1, c0, c1, c2, c3, c4, c5, c6
+
+    cpdef dict as_dict(self)
     
-    cpdef double getHeatCapacity(self, double T) except -1000000000
+    cpdef double get_heat_capacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 1000000000
+    cpdef double get_enthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -1000000000
+    cpdef double get_entropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 1000000000    
+    cpdef double get_free_energy(self, double T) except 1000000000    
     
-    cpdef changeBaseEnthalpy(self, double deltaH)
+    cpdef change_base_enthalpy(self, double deltaH)
 
-    cpdef changeBaseEntropy(self, double deltaS)
+    cpdef change_base_entropy(self, double deltaS)
 
     cdef double integral2_T0(self, double T)
     
@@ -57,22 +57,22 @@ cdef class NASA(HeatCapacityModel):
 
     cdef public NASAPolynomial poly1, poly2, poly3
     
-    cpdef NASAPolynomial selectPolynomial(self, double T)
+    cpdef NASAPolynomial select_polynomial(self, double T)
 
     cpdef dict as_dict(self)
 
-    cpdef double getHeatCapacity(self, double T) except -1000000000
+    cpdef double get_heat_capacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 1000000000
+    cpdef double get_enthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -1000000000
+    cpdef double get_entropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 1000000000
+    cpdef double get_free_energy(self, double T) except 1000000000
 
-    cpdef ThermoData toThermoData(self)
+    cpdef ThermoData to_thermo_data(self)
 
-    cpdef Wilhoit toWilhoit(self)
+    cpdef Wilhoit to_wilhoit(self)
     
-    cpdef NASA changeBaseEnthalpy(self, double deltaH)
+    cpdef NASA change_base_enthalpy(self, double deltaH)
 
-    cpdef NASA changeBaseEntropy(self, double deltaS)
+    cpdef NASA change_base_entropy(self, double deltaS)

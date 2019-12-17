@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -34,4 +33,4 @@ This file defines the current version number for RMG-Py.
 This value can be accessed via `rmgpy.__version__`.
 """
 
-__version__ = '2.4.1'
+__version__ = '3.0.0'

@@ -1,0 +1,249 @@
+Startfile from command line: input.in
+
+
+       ***********************************************************
+       *                    TeraChem v1.9-2018.07-dev            *
+       *                 Hg Version: 83b657a651d5                *
+       *                   Development Version                   *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+
+
+       ***********************************************************
+       *  Compiled by toddmtz      Tue Sep 18 21:35:53 PDT 2018  *
+       *  Supported architectures: sm_30 sm_50 sm_61 sm_70       *
+       *  Cuda compilation tools, release 9.2, V9.2.148          *
+       ***********************************************************
+
+
+ Job started   Sun Oct 27 10:22:50 2019
+ On g001 (available memory: 369148 MB)
+
+######################################### RUNTIME INFO ##########################################
+terachem input.in 
+
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  418.67  Sat Apr  6 03:07:24 CDT 2019
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-28) (GCC) 
+
+	linux-vdso.so.1 =>  (0x00002aaaaaacd000)
+	libcurl.so.4 => /lib64/libcurl.so.4 (0x00002aaaaaccf000)
+	libintbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libintbox.so.1 (0x00002aaaaaf38000)
+	libthcbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libthcbox.so.1 (0x00002aaac92f2000)
+	libgridbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libgridbox.so.1 (0x00002aaacac0c000)
+	libdftbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libdftbox.so.1 (0x00002aaacb0f1000)
+	libcibox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcibox.so.1 (0x00002aaacb3d6000)
+	libcuda.so.1 => /cm/local/apps/cuda/libs/current/lib64/libcuda.so.1 (0x00002aaacb7ad000)
+	libcudart.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcudart.so.9.2 (0x00002aaacc922000)
+	libcublas.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcublas.so.9.2 (0x00002aaaccb8c000)
+	libcusparse.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcusparse.so.9.2 (0x00002aaad05da000)
+	libcufft.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcufft.so.9.2 (0x00002aaad48f5000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00002aaad9f4f000)
+	libssl.so.10 => /lib64/libssl.so.10 (0x00002aaada3b0000)
+	libm.so.6 => /lib64/libm.so.6 (0x00002aaada621000)
+	libcilkrts.so.5 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcilkrts.so.5 (0x00002aaada923000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00002aaadab64000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00002aaadae6b000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00002aaadb081000)
+	libc.so.6 => /lib64/libc.so.6 (0x00002aaadb29d000)
+	/lib64/ld-linux-x86-64.so.2 (0x00002aaaaaaab000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00002aaadb66a000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x00002aaadb86e000)
+	libssh2.so.1 => /lib64/libssh2.so.1 (0x00002aaadbaa1000)
+	libssl3.so => /lib64/libssl3.so (0x00002aaadbccb000)
+	libsmime3.so => /lib64/libsmime3.so (0x00002aaadbf19000)
+	libnss3.so => /lib64/libnss3.so (0x00002aaadc140000)
+	libnssutil3.so => /lib64/libnssutil3.so (0x00002aaadc46d000)
+	libplds4.so => /lib64/libplds4.so (0x00002aaadc69c000)
+	libplc4.so => /lib64/libplc4.so (0x00002aaadc8a0000)
+	libnspr4.so => /lib64/libnspr4.so (0x00002aaadcaa5000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00002aaadcce3000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00002aaadcf30000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00002aaadd218000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00002aaadd44b000)
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00002aaadd64f000)
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00002aaadd85e000)
+	libz.so.1 => /lib64/libz.so.1 (0x00002aaaddab3000)
+	librt.so.1 => /lib64/librt.so.1 (0x00002aaaddcc9000)
+	libnvidia-fatbinaryloader.so.418.67 => /cm/local/apps/cuda/libs/current/lib64/libnvidia-fatbinaryloader.so.418.67 (0x00002aaadded1000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00002aaade11f000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00002aaade32d000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x00002aaade531000)
+	libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00002aaade74a000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00002aaade967000)
+	libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00002aaadeb8e000)
+	libpcre.so.1 => /lib64/libpcre.so.1 (0x00002aaadedc5000)
+	libfreebl3.so => /lib64/libfreebl3.so (0x00002aaadf027000)
+#################################################################################################
+
+       ********************** License Check **********************
+       * Use license from: /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/license.dat
+       * Available Host id: E4434B0CFAEC
+       * Available Host id: E4434B0CFAEE
+       * Available Host id: E4434B0CFB0C
+       * Available Host id: E4434B0CFB0D
+       * Available Host id: 80000886FE80
+       * Available Host id: 80000086FE80
+       * License Host id: E4434B0CFAEC
+       * License expires: 2021-06-13
+       ********************** License OK *************************
+Scratch directory: scr
+Random number seed: 1360782580
+
+XYZ coordinates coord.xyz
+Jobname: output
+Molden File Output: scr/output.molden
+Using basis set: 6-31gs
+dmrgstart not found
+Spin multiplicity: 1
+DIIS will use up to 10 vectors.
+WF convergence threshold: 3.00e-05
+Using DIIS algorithm to converge WF
+Maximum number of SCF iterations: 100
+Incremental fock with rebuild every 8 iterations
+Will switch to conventional Fock if diffuse functions are detected
+X-matrix tolerance: 1.00e-04
+PRECISION: DYNAMIC
+DFT Functional requested: b3lyp
+Method: B3LYP 
+  Hartree-Fock exact exchange:          0.20 
+  Slater exchange functional:           0.80 
+  Becke 1988 exchange functional:       0.72 
+  Lee-Yang-Parr correlation functional: 0.81 
+  VWN(I) correlation functional:        0.19 
+Wavefunction: RESTRICTED
+DFT grid type: 0
+Using a single DFT grid.
+Initial guess generated by maximum overlap
+
+********************************************
+********** FREQUENCY ANALYSIS **************
+********************************************
+
+using 2 out of 2 CUDA devices
+   Device 0: Tesla V100-SXM2-32GB, 32480MB, CC 7.0 -- CPU THREAD 0
+   Device 1: Tesla V100-SXM2-32GB, 32480MB, CC 7.0 -- CPU THREAD 1
+-------------------------------------------------------------------
+Compiled with MAGMA support.  MAGMA parameters:
+    Matrices larger than 5000 square will be treated with MAGMA
+       (Change by setting the MagmaMinN environment variable)
+    Magma will use 1 out of 2 GPUs
+       (Change by setting the MagmaNGPUs environment variable)
+-------------------------------------------------------------------
+ CPU Memory Available: 48172.62 MegaWords 
+ GPU Memory Available: 3804.06 MegaWords 
+ Maximum recommended basis set size: 23500 basis functions
+ (limited by GPU memory)
+-------------------------------------------------------------------
+Using d-functions. Configuring GPUs accordingly.
+0: CUBLAS initialized, available GPU memory: 26610MB
+1: CUBLAS initialized, available GPU memory: 26610MB
+
+****** QM coordinates ******
+N        -1.3493630000        -0.1956500000         0.1744180000  
+H        -1.4153500000        -0.4547470000        -0.8157120000  
+H         0.1040900000         1.1759810000         0.6296970000  
+N         0.6450900000         0.9101450000        -0.1955660000  
+H        -2.3354010000        -0.1025060000         0.4531010000  
+N         1.0482330000        -0.2993130000         0.0339890000  
+H         0.2579380000        -0.8358390000         0.5218500000  
+H         1.4675010000        -0.7414880000        -0.7838040000  
+
+Basis set:       6-31gs
+Total atoms:     8
+Total charge:    0
+Total electrons: 26 (13-alpha, 13-beta)
+Number electrons modeled by ECPs: 0
+Total orbitals:  55
+Total AO shells: 28 (19 S-shells; 6 P-shells; 3 D-shells; 0 F-shells; 0 G-shells)
+Spin multiplicity: 1
+Nuclear repulsion energy (QM atoms): 78.252102665932 a.u.
+
+*********************************************************************
+*** Frequency Analysis by Finite Difference of Analytic Gradients ***
+*********************************************************************
+Search for computed Hessian in scr/Hessian.bin ...  ...Hessian not found. 
+Search for restart file in scr/Hessian.restart ...   ...No restart file found. 
+Compute Hessian from scratch.
+Computing the Hessian via finite differences with a 3 point formula
+Using displacements of 0.0050 bohr
+Numerical Hessian requires 48 displacements
+
+*** Reference Geometry ***
+          Molecular Geometry (bohr)
+ N     -2.549926     -0.369725      0.329602
+ H     -2.674624     -0.859347     -1.541472
+ H      0.196702      2.222282      1.189955
+ N      1.219043      1.719925     -0.369566
+ H     -4.413268     -0.193708      0.856237
+ N      1.980873     -0.565620      0.064230
+ H      0.487432     -1.579507      0.986154
+ H      2.773175     -1.401209     -1.481175
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 8151 (1018 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 7.44e-15 <<<
+THRESPDP set to 1.00e+00
+   1     0.3714387214    -166.0151335445    25.9991748260   -17.4854370778    -166.0151335445     0.03  
+   2     0.5089110476      +0.8219321918    25.9997513972   -19.0009301054    -165.1932013528     0.02  
+   3     0.2578066172      -1.4296392618    25.9995997557   -18.3323804698    -166.6228406146     0.02  
+   4     0.0752582345      -0.4472589655    25.9994386354   -18.0586455722    -167.0700995800     0.02  
+   5     0.0315230919      -0.0209960817    25.9995051172   -18.1972599062    -167.0910956618     0.02  
+   6     0.0188419469      -0.0064253056    25.9995053124   -18.1985361586    -167.0975209674     0.02  
+   7     0.0051904951      -0.0015688148    25.9994964606   -18.1812901188    -167.0990897822     0.02  
+   8     0.0004584655      -0.0000796647    25.9994964481   -18.1824037940    -167.0991694469     0.02  
+THRESPDP set to 2.83e-02
+   9     0.0004580835      +0.0000029574    25.9994971282   -18.1826273027    -167.0991664894     0.03  
+  10     0.0000375268      -0.0000005908    25.9994971083   -18.1826459841    -167.0991670802     0.02  
+  11     0.0000034292      +0.0000000272    25.9994970405   -18.1826463983    -167.0991670530     0.02  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -167.0991670530 a.u.
+CENTER OF MASS: {0.061219, 0.103037, 0.003932} ANGS
+DIPOLE MOMENT: {0.600403, -1.233840, -0.348779} (|D| = 1.415801) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+Writing out molden info
+Completed initial gradient at reference geometry
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0002549131    -0.0009760964    -0.0000771655
+   -0.0004644991     0.0005572753     0.0017347031
+   -0.0001016986     0.0002104900    -0.0007403043
+    0.0005364757    -0.0017978268     0.0014780256
+    0.0019647644    -0.0003897474    -0.0010681375
+   -0.0002868057    -0.0000409688    -0.0023409021
+   -0.0009654639     0.0015357019    -0.0002821344
+   -0.0004278595     0.0009011705     0.0012959136
+---------------------------------------------------
+Net gradient:  9.898512e-11 -1.541184e-09 -1.429533e-09
+Net torque:    1.805880e-05  9.117665e-04  6.385890e-04
+
+Total Dipole Moment: {0.236215, -0.485426, -0.137219} (|D| = 0.557015) a.u.
+
+Maximum gradient component at reference geometry: 2.34e-03
+Maximum component of gradient is too large
+Optimize the geometry and try again
+ Job terminated: Sun Oct 27 10:22:55 2019
+

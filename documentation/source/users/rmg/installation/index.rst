@@ -5,7 +5,7 @@ Installation
 ************
 
 .. NOTE::
-    It is recommended that RMG be installed with Python 2.7, although it has been previously tested that Python 2.5 and 2.6 may also work. Dependency issues render it incompatible with Python 3.x releases.
+    It is recommended that RMG be installed with Python 3.7. Legacy releases compatible with Python 2.7 are also available.
 
 For any questions related to RMG and its usage and installation, please
 post an issue at https://github.com/ReactionMechanismGenerator/RMG-Py/issues and the RMG
@@ -27,10 +27,11 @@ RMG in the Ubuntu subsystem now available on Windows 10.
     virtualMachineSetup
     linuxSubsystem
 
-For users unfamiliar with bash or Linux, we recommend looking at online tutorials such as the one
-`here <https://www.guru99.com/unix-linux-tutorial.html>`_. To start out
-with, we recommend looking at the following tutorials: Linux vs. Windows, Terminal vs File Manager, and Must Know
-Linux/Unix Commands.
+For users unfamiliar with bash or Linux, we recommend looking at
+`online Linux tutorials <https://www.guru99.com/unix-linux-tutorial.html>`_. To start out
+with, we recommend looking at the following tutorials: `Linux vs. Windows <https://www.guru99.com/linux-differences.html>`_,
+`Terminal vs File Manager <https://www.guru99.com/terminal-file-manager.html>`_, and
+`Must Know Linux/Unix Commands <https://www.guru99.com/must-know-linux-commands.html>`_.
 
 
 For Basic Users: Binary Installation Using Anaconda

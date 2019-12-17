@@ -8,7 +8,7 @@ To execute an Arkane job, invoke the command ::
 
 The absolute or relative paths to the Arkane.py file as well as to the input file must be given.
 
-The job will run and the results will be saved to ``output.py`` in the same
+The job will run and the results will be saved in the same
 directory as the input file. If you wish to save the output elsewhere, use
 the ``-o``/``--output`` option, e.g. ::
 
@@ -26,9 +26,17 @@ Log Verbosity
 =============
 
 You can manipulate the amount of information logged to the console window using
-the ``-q``/``--quiet`` flag (for quiet mode) or the ``-v``/``--verbose`` flag
-(for verbose mode). The former causes the amount of logging information shown
-to decrease; the latter causes it to increase.
+the ``-q``/``--quiet`` flag (for quiet mode), the ``-v``/``--verbose`` flag
+(for verbose mode), or the ``-d``/``--debug`` flag (for debug mode).
+The former causes the amount of logging information shown
+to decrease; the latter two cause it to increase.
+
+Suppressing plot creation
+=========================
+
+Arkane by default will generate many plot files. By adding the ``-p``/``--no-plot``
+flag, Arkane will not generate any plots, reducing file size of output and
+increasing the calculation speed.
 
 Help
 ====

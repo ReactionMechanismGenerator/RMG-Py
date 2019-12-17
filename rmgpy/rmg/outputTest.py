@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -29,38 +28,38 @@
 ###############################################################################
 
 import os
+import shutil
 import unittest
-import shutil 
 
-from model import CoreEdgeReactionModel, ReactionModel 
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.rmg.model import CoreEdgeReactionModel, ReactionModel
+from rmgpy.rmg.output import save_output_html
+from rmgpy.chemkin import load_chemkin_file
 
-from output import *
 
 ###################################################
 
 class TestOutput(unittest.TestCase):
 
-	def testSaveOutputHTML(self):
-		"""
-		This example is to test if an HTML file can be generated
-		for the provided chemkin model.
-		"""
-		folder = os.path.join(os.getcwd(),'rmgpy/rmg/test_data/saveOutputHTML/')
-		
-		chemkinPath = os.path.join(folder, 'eg6', 'chem_annotated.inp')
-		dictionaryPath = os.path.join(folder,'eg6', 'species_dictionary.txt')
+    def test_save_output_html(self):
+        """
+        This example is to test if an HTML file can be generated
+        for the provided chemkin model.
+        """
+        folder = os.path.join(os.path.dirname(__file__), 'test_data/saveOutputHTML/')
 
-		# loadChemkinFile
-		species, reactions = loadChemkinFile(chemkinPath, dictionaryPath) 
+        chemkin_path = os.path.join(folder, 'eg6', 'chem_annotated.inp')
+        dictionary_path = os.path.join(folder, 'eg6', 'species_dictionary.txt')
 
-		# convert it into a reaction model:
-		core = ReactionModel(species, reactions)
-		cerm = CoreEdgeReactionModel(core)
+        # load_chemkin_file
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
-		out = os.path.join(folder, 'output.html')
-		saveOutputHTML(out, cerm)
+        # convert it into a reaction model:
+        core = ReactionModel(species, reactions)
+        cerm = CoreEdgeReactionModel(core)
 
-		self.assertTrue(os.path.isfile(out))
-		os.remove(out)
-		shutil.rmtree(os.path.join(folder,'species'))
+        out = os.path.join(folder, 'output.html')
+        save_output_html(out, cerm)
+
+        self.assertTrue(os.path.isfile(out))
+        os.remove(out)
+        shutil.rmtree(os.path.join(folder, 'species'))

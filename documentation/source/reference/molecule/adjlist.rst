@@ -172,6 +172,6 @@ The allowed element types, radicals, and bonds are listed in the following table
  +----------------------+----------+---------------------+
 
 
-.. autofunction:: rmgpy.molecule.adjlist.fromAdjacencyList
+.. autofunction:: rmgpy.molecule.adjlist.from_adjacency_list
 
-.. autofunction:: rmgpy.molecule.adjlist.toAdjacencyList
+.. autofunction:: rmgpy.molecule.adjlist.to_adjacency_list

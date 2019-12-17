@@ -82,13 +82,13 @@ The next correction for liquids is solvation effects on the thermochemistry. By 
 
 The free energy change associated with the process of transferring a
 molecule from the gas phase to the solvent phase is defined as the free
-energy of solvation (ΔG). Many different methods have been developed for
+energy of solvation (:math:`\Delta G`). Many different methods have been developed for
 computing solvation energies among which continuum dielectric and force
 field based methods are popular. Not all of these methods are easy to
 automate, and many are not robust i.e. they either fail or give
 unreasonable results for certain solute-solvent pairs. CPU time and
 memory (RAM) requirements are also important considerations. A fairly
-accurate and fast method for computing ΔG, which is used in RMG, is the
+accurate and fast method for computing :math:`\Delta G`, which is used in RMG, is the
 LSER approach described below.
 
 .. _useofthermolibrariesliquid:
@@ -115,14 +115,14 @@ Use of Abraham LSER to estimate thermochemistry
 
 The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the 
 log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent 
-(`K`\ :sub:`vs`\ ) (also known as gas-solvent partition coefficient) at 298 K:
+(:math:`K_{vs}`) (also known as gas-solvent partition coefficient) at 298 K:
 
 .. math:: \log K_{vs} = c + eE + sS + aA + bB + lL
 	:label: AbModelEqn
 
-The Abraham model is used in RMG to estimate ΔG which is related to the `K`\ :sub:`vs`\  of a solute according to the following expression:
+The Abraham model is used in RMG to estimate :math:`\Delta G` which is related to the :math:`K_{vs}` of a solute according to the following expression:
 
-.. math:: ΔG = -RT \ln K_{vs} \\
+.. math:: \Delta G = -RT \ln K_{vs} \\
 	= -2.303RT \log K_{vs}
 	:label: partition
 
@@ -174,17 +174,27 @@ Group additivity method for solute descriptor estimation
 
 Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled 
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach 
-to estimate the solute descriptors (`A, B, E, L,` and `S`). Platts et al. ([Platts1999]_) proposed such a scheme employing a set of 81 molecular fragments for estimating `B, E, L, V` and `S` and another set of 51 fragments for the estimation of `A`. Only those fragments containing C, H and O are implemented in order to match RMG's existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.
+to estimate the solute descriptors (`A, B, E, L,` and `S`). Platts et al. ([Platts1999]_) proposed such a scheme 
+employing a set of 81 molecular fragments for estimating `B, E, L, V` and `S` and another set of 51 fragments for 
+the estimation of `A`. Only those fragments containing C, H and O are implemented in order to match RMG's existing 
+capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each 
+fragment found in the molecule and the intercept associated with that descriptor.
 
 Mintz model for enthalpy of solvation
 -------------------------------------
 
-For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. ([Mintz2007]_, [Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_) have developed linear correlations similar to the Abraham model for estimating ΔH:
+For estimating :math:`\Delta G` at temperatures other than 298 K, the enthalpy change associated with solvation,
+:math:`\Delta H` must be calculated separately and, along with :math:`\Delta S`, assumed to be independent of
+temperature. Recently, Mintz et al. ([Mintz2007]_, [Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_)
+have developed linear correlations similar to the Abraham model for estimating :math:`\Delta H`:
 
-.. math:: ΔH(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L
+.. math:: \Delta H(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L
 	:label: mintz
 
-where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.
+where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of
+:math:`\Delta G`. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained
+by fitting to experimental data. In RMG, this equation is implemented and together with :math:`\Delta G(298 K)` can be
+used to find :math:`\Delta S(298 K)`. From this data, :math:`\Delta G` at other temperatures is found by extrapolation.
 
 .. _diffusionLimited:
 
@@ -195,16 +205,16 @@ limits. The theory behind diffusive limits in the solution phase for bimolecular
 ([Rice1985]_) and has been extended to reactions of any order ([Flegg2016]_). The effective rate constant of a
 diffusion-limited reaction is given by:
 
-.. math::   k_{\textrm{eff}} = \frac {k_{\textrm{diff}} k_{\textrm{int}}}{k_{\textrm{diff}} + k_{\textrm{int}}}
+.. math::   k_{\mathrm{eff}} = \frac {k_{\mathrm{diff}} k_{\mathrm{int}}}{k_{\mathrm{diff}} + k_{\mathrm{int}}}
    :label: diffusive_limit
 
-where `k`\ :sub:`int` is the intrinsic reaction rate, and `k`\ :sub:`diff` is the diffusion-limited rate, which is given
+where :math:`k_\mathrm{int}` is the intrinsic reaction rate, and :math:`k_\mathrm{diff}` is the diffusion-limited rate, which is given
 by:
 
-.. math:: k_{\textrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}
+.. math:: k_{\mathrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}
    :label: smoluchowski
 
-where `α=(3N-5)/2` and
+where :math:`\alpha=(3N-5)/2` and
 
 .. math:: \hat{D}_i = D_i + \frac{1}{\sum_m^{i-1}D_m^{-1}}
    :label: diff1
@@ -212,17 +222,17 @@ where `α=(3N-5)/2` and
 .. math:: \Delta_N = \frac{\sum_{i=1}^N D_i^{-1}}{\sum_{i>m}(D_iD_m)^{-1}}
    :label: diff2
 
-`D`\ :sub:`i` are the individual diffusivities and `σ` is the Smoluchowski radius, which would usually be fitted to
+:math:`D_i` are the individual diffusivities and :math:`\sigma` is the Smoluchowski radius, which would usually be fitted to
 experiment, but RMG approximates it as the sum of molecular radii. RMG uses the McGowan method for estimating
 radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent 
-viscosities (`\eta` (T)). In a unimolecular to bimolecular reaction, for example, the forward rate
-constant (`k`\ :sub:`f`\ ) can be slowed down if the reverse rate (`k`\ :sub:`r, eff`\ ) is diffusion-limited
-since the equilibrium constant (`K`\ :sub:`eq`\ ) is not affected by diffusion limitations. In cases
+viscosities (:math:`\eta(T)`). In a unimolecular to bimolecular reaction, for example, the forward rate
+constant (:math:`k_f`) can be slowed down if the reverse rate (:math:`k_{r,\mathrm{eff}}`) is diffusion-limited
+since the equilibrium constant (:math:`K_{eq}`) is not affected by diffusion limitations. In cases
 where both the forward and the reverse reaction rates are multimolecular, the forward rate coefficients limited in the
 forward and reverse directions are calculated and the limit with the smaller forward rate coefficient is used.  
 
 The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line 
-and a correlation for the viscosity using parameters `A, B, C, D, E`:
+and a correlation for the viscosity using parameters :math:`A, B, C, D, E`:
 
 .. math:: \ln \eta = A + \frac{B}{T} + C\log T + DT^E
     :label: viscosity
@@ -286,7 +296,6 @@ This is an example of an input file for a liquid-phase system::
 
     options(
         units='si',
-        saveRestartPeriod=None,
         generateOutputHTML=False,
         generatePlots=False,
         saveSimulationProfiles=True,
@@ -348,7 +357,6 @@ This is an example of an input file for a liquid-phase system with constant spec
 
     options(
         units='si',
-        saveRestartPeriod=None,
         generateOutputHTML=False,
         generatePlots=False,
         saveSimulationProfiles=True,

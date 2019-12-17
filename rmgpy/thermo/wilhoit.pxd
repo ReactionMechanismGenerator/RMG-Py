@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.thermo.thermodata cimport ThermoData
@@ -43,13 +43,13 @@ cdef class Wilhoit(HeatCapacityModel):
 
     cpdef make_object(self, dict data, dict class_dict)
     
-    cpdef double getHeatCapacity(self, double T) except -1000000000
+    cpdef double get_heat_capacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 1000000000
+    cpdef double get_enthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -1000000000
+    cpdef double get_entropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 1000000000
+    cpdef double get_free_energy(self, double T) except 1000000000
     
     cpdef Wilhoit copy(self)
     
@@ -69,18 +69,18 @@ cdef class Wilhoit(HeatCapacityModel):
     
     cdef double integral2_TM1(self, double T)
     
-    cpdef ThermoData toThermoData(self)
+    cpdef ThermoData to_thermo_data(self)
 
-    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
 
 ################################################################################
 
-cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint weighting, int contCons)
+cpdef wilhoit_to_nasa(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint weighting, int cont_cons)
 
-cpdef Wilhoit_to_NASA_TintOpt(Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int contCons)
+cpdef wilhoit_to_nasa_t_int_opt(Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int cont_cons)
 
-cpdef double Wilhoit_to_NASA_TintOpt_objFun(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int contCons)
+cpdef double wilhoit_to_nasa_t_int_opt_obj_fun(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, bint weighting, int cont_cons)
 
-cpdef double Wilhoit_to_NASA_TintOpt_objFun_NW(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int contCons)
+cpdef double wilhoit_to_nasa_t_int_opt_obj_fun_nw(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int cont_cons)
 
-cpdef double Wilhoit_to_NASA_TintOpt_objFun_W(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int contCons)
+cpdef double wilhoit_to_nasa_t_int_opt_obj_fun_w(double Tint, Wilhoit wilhoit, double Tmin, double Tmax, int cont_cons)

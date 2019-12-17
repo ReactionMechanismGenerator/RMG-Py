@@ -1,0 +1,49 @@
+name: rmg_env
+channels:
+  - defaults
+  - rmg
+  - rdkit
+  - cantera
+  - pytorch
+  - conda-forge
+dependencies:
+  - cairo
+  - cairocffi
+  - cantera >=2.3.0
+  - cclib
+  - chemprop
+  - coolprop
+  - coverage
+  - cython >=0.25.2
+  - ffmpeg
+  - gprof2dot
+  - graphviz
+  - h5py
+  - jinja2
+  - jupyter
+  - lpsolve55
+  - markupsafe
+  - matplotlib >=1.5
+  - mopac
+  - mpmath
+  - muq2
+  - networkx
+  - nose
+  - numdifftools
+  - numpy >=1.10.0
+  - openbabel
+  - psutil
+  - pydas >=1.0.1
+  - pydot
+  - pydqed >=1.0.0
+  - pymongo
+  - pyparsing
+  - pyrdl
+  - python >=3.7
+  - pyyaml
+  - quantities
+  - rdkit >=2019.09.1.0
+  - scikit-learn
+  - scipy
+  - symmetry
+  - xlwt

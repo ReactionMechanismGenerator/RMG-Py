@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "1,2_shiftC/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 1,2-methyl shift from a Carbon to another Carbon.
 Could possibly be generalized to include  1,2-methyl shift from an Oxygen to Carbon and vice versa.
 1,2-methyl shift from Sulfur to Carbon has separate family (1,2_shiftS).

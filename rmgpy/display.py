@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -37,9 +36,11 @@ If you are NOT running in IPython --pylab mode, it will do nothing.
 try:
     from IPython.core.interactiveshell import InteractiveShell
 except ImportError:
-    def display(obj): pass
+    def display(obj):
+        pass
 else:
     if InteractiveShell.initialized():
         from IPython.core.display import display
     else:
-        def display(obj): pass
+        def display(obj):
+            pass

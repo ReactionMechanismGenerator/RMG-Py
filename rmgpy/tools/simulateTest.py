@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,42 +27,51 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+import logging
 import os
 import os.path
 import shutil
+import unittest
 
-from rmgpy.tools.simulate import run_simulation
 import rmgpy
+from rmgpy.tools.simulate import run_simulation
+
 
 class SimulateTest(unittest.TestCase):
 
+    def setUp(self):
+        """This method is run once before each unit test"""
+        # Disable logging
+        logging.disable(logging.WARNING)
+
     def test_minimal(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/simple')
-        
-        inputFile = os.path.join(folder, 'input.py')
-        chemkinFile = os.path.join(folder, 'chem.inp')
-        dictFile = os.path.join(folder, 'species_dictionary.txt')
-        
-        run_simulation(inputFile, chemkinFile, dictFile)
+        """Test that we can simlulate a SimpleReactor with sensitivity"""
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'sim', 'simple')
+
+        input_file = os.path.join(folder, 'input.py')
+        chemkin_file = os.path.join(folder, 'chem.inp')
+        dict_file = os.path.join(folder, 'species_dictionary.txt')
+
+        run_simulation(input_file, chemkin_file, dict_file)
 
         simfile = os.path.join(folder, 'solver', 'simulation_1_13.csv')
         sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
 
         self.assertTrue(os.path.isfile(simfile))
         self.assertTrue(os.path.isfile(sensfile))
-        
+
         shutil.rmtree(os.path.join(folder, 'solver'))
         os.remove(os.path.join(folder, 'simulate.log'))
 
     def test_liquid(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/liquid')
+        """Test that we can simulate a LiquidReactor with sensitivity"""
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'sim', 'liquid')
 
-        inputFile = os.path.join(folder, 'input.py')
-        chemkinFile = os.path.join(folder, 'chem.inp')
-        dictFile = os.path.join(folder, 'species_dictionary.txt')
+        input_file = os.path.join(folder, 'input.py')
+        chemkin_file = os.path.join(folder, 'chem.inp')
+        dict_file = os.path.join(folder, 'species_dictionary.txt')
 
-        run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=False)
+        run_simulation(input_file, chemkin_file, dict_file, diffusion_limited=False)
 
         simfile = os.path.join(folder, 'solver', 'simulation_1_28.csv')
         sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
@@ -74,6 +82,26 @@ class SimulateTest(unittest.TestCase):
         shutil.rmtree(os.path.join(folder, 'solver'))
         os.remove(os.path.join(folder, 'simulate.log'))
 
+    def test_mb_sampled(self):
+        """Test that we can simulate an MBSampledReactor"""
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'sim', 'mbSampled')
+
+        input_file = os.path.join(folder, 'input.py')
+        chemkin_file = os.path.join(folder, 'chem.inp')
+        dict_file = os.path.join(folder, 'species_dictionary.txt')
+
+        run_simulation(input_file, chemkin_file, dict_file)
+
+        simfile = os.path.join(folder, 'solver', 'simulation_1_30.csv')
+
+        self.assertTrue(os.path.isfile(simfile))
+
+        shutil.rmtree(os.path.join(folder, 'solver'))
+        os.remove(os.path.join(folder, 'simulate.log'))
+
     def tearDown(self):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+        # Reset logging
+        logging.disable(logging.NOTSET)

@@ -16,7 +16,7 @@ for generating the HTML file after job completion.
 To use this script, you need a Chemkin input file and an RMG species dictionary.
 The syntax is as follows::
 
-    python importChemkinLibrary.py [-h, -f] CHEMKIN DICTIONARY [OUTPUT]
+    python generateChemkinHTML.py [-h, -f] CHEMKIN DICTIONARY [OUTPUT]
 
 Positional arguments::
 

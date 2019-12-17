@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,7 +27,8 @@
 #                                                                             #
 ###############################################################################
 
-from .base import ReactionSystem, TerminationTime, TerminationConversion, TerminationRateRatio
-from .simple import SimpleReactor
-from .liquid import LiquidReactor
-from .surface import SurfaceReactor
+from rmgpy.solver.base import ReactionSystem, TerminationTime, TerminationConversion, TerminationRateRatio
+from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.mbSampled import MBSampledReactor

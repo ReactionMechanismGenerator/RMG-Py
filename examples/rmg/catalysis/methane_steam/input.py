@@ -194,7 +194,6 @@ model(
 
 options(
     units='si',
-    saveRestartPeriod=None,
     generateOutputHTML=True,
     generatePlots=False, # Enable to make plots of core and edge size etc.. But takes a lot of the total runtime!
     saveEdgeSpecies=True,

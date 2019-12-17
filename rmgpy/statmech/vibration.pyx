@@ -34,15 +34,15 @@ is required since typical vibrational energies are of similar magnitude to
 :math:`k_\\mathrm{B} T`.
 """
 
-import math
-import numpy
-from scipy.misc import factorial
+import numpy as np
+cimport numpy as np
 from libc.math cimport log, exp
+from scipy.special import factorial
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-import rmgpy.statmech.schrodinger as schrodinger 
-cimport rmgpy.statmech.schrodinger as schrodinger 
+import rmgpy.statmech.schrodinger as schrodinger
+cimport rmgpy.statmech.schrodinger as schrodinger
 
 ################################################################################
 
@@ -83,7 +83,7 @@ cdef class HarmonicOscillator(Vibration):
     requiring a quantum mechanical treatment. Fortunately, the harmonic
     oscillator has an analytical quantum mechanical solution.
     """
-    
+
     def __init__(self, frequencies=None, quantum=True):
         Vibration.__init__(self, quantum)
         self.frequencies = quantity.Frequency(frequencies)
@@ -105,22 +105,22 @@ cdef class HarmonicOscillator(Vibration):
         A helper function used when pickling a HarmonicOscillator object.
         """
         return (HarmonicOscillator, (self.frequencies, self.quantum))
-    
+
     property frequencies:
         """The vibrational frequencies of the oscillators."""
         def __get__(self):
             return self._frequencies
         def __set__(self, value):
             self._frequencies = quantity.Frequency(value)
-    
-    cpdef double getPartitionFunction(self, double T) except -1:
+
+    cpdef double get_partition_function(self, double T) except -1:
         """
         Return the value of the partition function :math:`Q(T)` at the
         specified temperature `T` in K.
         """
         cdef double Q = 1.0, beta = 1.0 / (constants.kB * T), freq
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -131,15 +131,15 @@ cdef class HarmonicOscillator(Vibration):
                 freq = frequencies[i] * constants.c * 100.
                 Q *= 1.0 / (beta * constants.h * freq)
         return Q
-    
-    cpdef double getHeatCapacity(self, double T) except -100000000:
+
+    cpdef double get_heat_capacity(self, double T) except -100000000:
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
         cdef double Cv = 0.0, beta = 1.0 / (constants.kB * T), freq, x, exp_x
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -155,14 +155,14 @@ cdef class HarmonicOscillator(Vibration):
             Cv = frequencies.shape[0]
         return Cv * constants.R
 
-    cpdef double getEnthalpy(self, double T) except 100000000:
+    cpdef double get_enthalpy(self, double T) except 100000000:
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
         """
         cdef double H = 0.0, beta = 1.0 / (constants.kB * T), freq, x
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -173,15 +173,15 @@ cdef class HarmonicOscillator(Vibration):
             H = frequencies.shape[0]
         return H * constants.R * T
 
-    cpdef double getEntropy(self, double T) except -100000000:
+    cpdef double get_entropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
         cdef double S = 0.0, beta = 1.0 / (constants.kB * T), freq, x
         cdef int i
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] frequencies
-        S = log(self.getPartitionFunction(T))
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        S = log(self.get_partition_function(T))
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -192,64 +192,64 @@ cdef class HarmonicOscillator(Vibration):
             S += frequencies.shape[0]
         return S * constants.R
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=None):
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
         """
-        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. If an initial sum of states 
-        `sumStates0` is given, the rotor sum of states will be convoluted into
+        `sum_states_0` is given, the rotor sum of states will be convoluted into
         these states.
         """
         cdef double freq
         cdef int i, Nfreq
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] frequencies
-        cdef numpy.ndarray sumStates
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        cdef np.ndarray sum_states
         frequencies = self._frequencies.value_si
         if self.quantum:
-            if sumStates0 is None:
-                sumStates = numpy.ones_like(Elist)
+            if sum_states_0 is None:
+                sum_states = np.ones_like(e_list)
             else:
-                sumStates = sumStates0
+                sum_states = sum_states_0
             for i in range(frequencies.shape[0]):
                 freq = frequencies[i] * constants.c * 100.
-                sumStates = schrodinger.convolveBS(Elist, sumStates, constants.h * freq * constants.Na, 1)
-        elif sumStates0 is not None:
-            sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist))
+                sum_states = schrodinger.convolve_bs(e_list, sum_states, constants.h * freq * constants.Na, 1)
+        elif sum_states_0 is not None:
+            sum_states = schrodinger.convolve(sum_states_0, self.get_density_of_states(e_list))
         else:
             Nfreq = frequencies.shape[0]
-            sumStates = Elist**Nfreq / factorial(Nfreq)
+            sum_states = e_list ** Nfreq / factorial(Nfreq)
             for i in range(Nfreq):
                 freq = frequencies[i] * constants.c * 100.
-                sumStates /= constants.h * freq * constants.Na
-        return sumStates
-                    
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
+                sum_states /= constants.h * freq * constants.Na
+        return sum_states
+
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
-        energies `Elist` in J/mol above the ground state. If an initial density
-        of states `densStates0` is given, the rotor density of states will be
+        energies `e_list` in J/mol above the ground state. If an initial density
+        of states `dens_states_0` is given, the rotor density of states will be
         convoluted into these states.
         """
         cdef double freq, dE
         cdef int i, Nfreq
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] frequencies
-        cdef numpy.ndarray densStates
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        cdef np.ndarray dens_states
         frequencies = self._frequencies.value_si
         if self.quantum:
-            if densStates0 is None:
-                densStates = numpy.zeros_like(Elist)
-                densStates[0] = 1.0
+            if dens_states_0 is None:
+                dens_states = np.zeros_like(e_list)
+                dens_states[0] = 1.0
             else:
-                densStates = densStates0
+                dens_states = dens_states_0
             for i in range(frequencies.shape[0]):
                 freq = frequencies[i] * constants.c * 100.
-                densStates = schrodinger.convolveBS(Elist, densStates, constants.h * freq * constants.Na, 1)
+                dens_states = schrodinger.convolve_bs(e_list, dens_states, constants.h * freq * constants.Na, 1)
         else:
             Nfreq = frequencies.shape[0]
-            dE = Elist[1] - Elist[0]
-            densStates = Elist**(Nfreq-1) / factorial(Nfreq-1) * dE
+            dE = e_list[1] - e_list[0]
+            dens_states = e_list ** (Nfreq - 1) / factorial(Nfreq - 1) * dE
             for i in range(Nfreq):
                 freq = frequencies[i] * constants.c * 100.
-                densStates /= constants.h * freq * constants.Na
-            if densStates0 is not None:
-                densStates = schrodinger.convolve(densStates0, densStates)
-        return densStates
+                dens_states /= constants.h * freq * constants.Na
+            if dens_states_0 is not None:
+                dens_states = schrodinger.convolve(dens_states_0, dens_states)
+        return dens_states

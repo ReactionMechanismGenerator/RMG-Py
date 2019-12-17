@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Other Corrections"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 """
 
 

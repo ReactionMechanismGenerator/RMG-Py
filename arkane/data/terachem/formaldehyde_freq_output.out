@@ -1,0 +1,1512 @@
+Startfile from command line: input.in
+
+
+       ***********************************************************
+       *                    TeraChem v1.9-2018.07-dev            *
+       *                 Hg Version: 83b657a651d5                *
+       *                   Development Version                   *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+
+
+       ***********************************************************
+       *  Compiled by toddmtz      Tue Sep 18 21:35:53 PDT 2018  *
+       *  Supported architectures: sm_30 sm_50 sm_61 sm_70       *
+       *  Cuda compilation tools, release 9.2, V9.2.148          *
+       ***********************************************************
+
+
+ Job started   Sun Oct 20 14:09:10 2019
+ On g001 (available memory: 371864 MB)
+
+######################################### RUNTIME INFO ##########################################
+terachem input.in
+
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  418.67  Sat Apr  6 03:07:24 CDT 2019
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-28) (GCC)
+
+	linux-vdso.so.1 =>  (0x00002aaaaaacd000)
+	libcurl.so.4 => /lib64/libcurl.so.4 (0x00002aaaaaccf000)
+	libintbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libintbox.so.1 (0x00002aaaaaf38000)
+	libthcbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libthcbox.so.1 (0x00002aaac92f2000)
+	libgridbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libgridbox.so.1 (0x00002aaacac0c000)
+	libdftbox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libdftbox.so.1 (0x00002aaacb0f1000)
+	libcibox.so.1 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcibox.so.1 (0x00002aaacb3d6000)
+	libcuda.so.1 => /cm/local/apps/cuda/libs/current/lib64/libcuda.so.1 (0x00002aaacb7ad000)
+	libcudart.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcudart.so.9.2 (0x00002aaacc922000)
+	libcublas.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcublas.so.9.2 (0x00002aaaccb8c000)
+	libcusparse.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcusparse.so.9.2 (0x00002aaad05da000)
+	libcufft.so.9.2 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcufft.so.9.2 (0x00002aaad48f5000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00002aaad9f4f000)
+	libssl.so.10 => /lib64/libssl.so.10 (0x00002aaada3b0000)
+	libm.so.6 => /lib64/libm.so.6 (0x00002aaada621000)
+	libcilkrts.so.5 => /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/lib/libcilkrts.so.5 (0x00002aaada923000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00002aaadab64000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00002aaadae6b000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00002aaadb081000)
+	libc.so.6 => /lib64/libc.so.6 (0x00002aaadb29d000)
+	/lib64/ld-linux-x86-64.so.2 (0x00002aaaaaaab000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00002aaadb66a000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x00002aaadb86e000)
+	libssh2.so.1 => /lib64/libssh2.so.1 (0x00002aaadbaa1000)
+	libssl3.so => /lib64/libssl3.so (0x00002aaadbccb000)
+	libsmime3.so => /lib64/libsmime3.so (0x00002aaadbf19000)
+	libnss3.so => /lib64/libnss3.so (0x00002aaadc140000)
+	libnssutil3.so => /lib64/libnssutil3.so (0x00002aaadc46d000)
+	libplds4.so => /lib64/libplds4.so (0x00002aaadc69c000)
+	libplc4.so => /lib64/libplc4.so (0x00002aaadc8a0000)
+	libnspr4.so => /lib64/libnspr4.so (0x00002aaadcaa5000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00002aaadcce3000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00002aaadcf30000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00002aaadd218000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00002aaadd44b000)
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00002aaadd64f000)
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00002aaadd85e000)
+	libz.so.1 => /lib64/libz.so.1 (0x00002aaaddab3000)
+	librt.so.1 => /lib64/librt.so.1 (0x00002aaaddcc9000)
+	libnvidia-fatbinaryloader.so.418.67 => /cm/local/apps/cuda/libs/current/lib64/libnvidia-fatbinaryloader.so.418.67 (0x00002aaadded1000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00002aaade11f000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00002aaade32d000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x00002aaade531000)
+	libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00002aaade74a000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00002aaade967000)
+	libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00002aaadeb8e000)
+	libpcre.so.1 => /lib64/libpcre.so.1 (0x00002aaadedc5000)
+	libfreebl3.so => /lib64/libfreebl3.so (0x00002aaadf027000)
+#################################################################################################
+
+       ********************** License Check **********************
+       * Use license from: /gpfs/apps/medsci/stacks/noOS/software/terachem/1.94V/TeraChem/license.dat
+       * Available Host id: E4434B0CFAEC
+       * Available Host id: E4434B0CFAEE
+       * Available Host id: E4434B0CFB0C
+       * Available Host id: E4434B0CFB0D
+       * Available Host id: 80000886FE80
+       * Available Host id: 80000086FE80
+       * License Host id: E4434B0CFAEC
+       * License expires: 2021-06-13
+       ********************** License OK *************************
+Scratch directory: scr
+Random number seed: 1813269098
+
+XYZ coordinates coord.xyz
+Jobname: output
+Molden File Output: scr/output.molden
+Using basis set: 6-31gs
+dmrgstart not found
+Spin multiplicity: 1
+DIIS will use up to 10 vectors.
+WF convergence threshold: 3.00e-05
+Using DIIS algorithm to converge WF
+Maximum number of SCF iterations: 100
+Incremental fock with rebuild every 8 iterations
+Will switch to conventional Fock if diffuse functions are detected
+X-matrix tolerance: 1.00e-04
+PRECISION: DYNAMIC
+DFT Functional requested: b3lyp
+Method: B3LYP
+  Hartree-Fock exact exchange:          0.20
+  Slater exchange functional:           0.80
+  Becke 1988 exchange functional:       0.72
+  Lee-Yang-Parr correlation functional: 0.81
+  VWN(I) correlation functional:        0.19
+Wavefunction: RESTRICTED
+DFT grid type: 0
+Using a single DFT grid.
+Initial guess generated by maximum overlap
+
+********************************************
+********** FREQUENCY ANALYSIS **************
+********************************************
+
+using 2 out of 2 CUDA devices
+   Device 0: Tesla V100-SXM2-32GB, 32480MB, CC 7.0 -- CPU THREAD 0
+   Device 1: Tesla V100-SXM2-32GB, 32480MB, CC 7.0 -- CPU THREAD 1
+-------------------------------------------------------------------
+Compiled with MAGMA support.  MAGMA parameters:
+    Matrices larger than 5000 square will be treated with MAGMA
+       (Change by setting the MagmaMinN environment variable)
+    Magma will use 1 out of 2 GPUs
+       (Change by setting the MagmaNGPUs environment variable)
+-------------------------------------------------------------------
+ CPU Memory Available: 48172.62 MegaWords
+ GPU Memory Available: 3804.06 MegaWords
+ Maximum recommended basis set size: 23500 basis functions
+ (limited by GPU memory)
+-------------------------------------------------------------------
+Using d-functions. Configuring GPUs accordingly.
+0: CUBLAS initialized, available GPU memory: 26610MB
+1: CUBLAS initialized, available GPU memory: 26610MB
+
+****** QM coordinates ******
+O         1.1969932100        -0.0608050200         0.0943614900
+C        -0.0042903600         0.0001433900        -0.0003642300
+H        -0.5496313100         0.9668270400        -0.0338577100
+H        -0.6430715500        -0.9061654200        -0.0601395500
+
+Basis set:       6-31gs
+Total atoms:     4
+Total charge:    0
+Total electrons: 16 (8-alpha, 8-beta)
+Number electrons modeled by ECPs: 0
+Total orbitals:  34
+Total AO shells: 16 (10 S-shells; 4 P-shells; 2 D-shells; 0 F-shells; 0 G-shells)
+Spin multiplicity: 1
+Nuclear repulsion energy (QM atoms): 31.222432895872 a.u.
+
+*********************************************************************
+*** Frequency Analysis by Finite Difference of Analytic Gradients ***
+*********************************************************************
+Search for computed Hessian in scr/Hessian.bin ...  ...Hessian not found.
+Search for restart file in scr/Hessian.restart ...   ...No restart file found.
+Compute Hessian from scratch.
+Computing the Hessian via finite differences with a 3 point formula
+Using displacements of 0.0050 bohr
+Numerical Hessian requires 24 displacements
+
+*** Reference Geometry ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 4.11e-15 <<<
+THRESPDP set to 1.00e+00
+   1     0.4741844401    -113.8163105450    16.0000168004   -11.3850926334    -113.8163105450     0.02
+   2     0.3527372784      -0.4033552128    16.0003537141   -12.3231998790    -114.2196657578     0.02
+   3     0.1097902923      -0.2656709105    16.0002184707   -11.8015515402    -114.4853366682     0.02
+   4     0.1233349797      -0.0010460026    16.0002747734   -11.9280133559    -114.4863826709     0.02
+   5     0.0033125073      -0.0144304044    16.0002426455   -11.8886813446    -114.5008130753     0.02
+   6     0.0005599534      -0.0000325601    16.0002419901   -11.8865176860    -114.5008456354     0.02
+   7     0.0001416163      -0.0000024041    16.0002419688   -11.8872738226    -114.5008480394     0.02
+THRESPDP set to 4.96e-02
+   8     0.0000494812      +0.0000025048    16.0002415544   -11.8872121659    -114.5008455346     0.02
+   9     0.0000085039      -0.0000000201    16.0002415545   -11.8871881137    -114.5008455547     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008455547 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.177229, 0.110278, -0.171616} (|D| = 2.186764) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+Writing out molden info
+Completed initial gradient at reference geometry
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0003210060     0.0009364202    -0.0004819049
+   -0.0005582469    -0.0008839443     0.0004627821
+    0.0000564153    -0.0004128919    -0.0000458769
+    0.0001808263     0.0003604173     0.0000649997
+---------------------------------------------------
+Net gradient:  7.408367e-10  1.427219e-09 -1.034533e-11
+Net torque:   -2.926717e-04  1.158620e-03  2.359812e-03
+
+Total Dipole Moment: {-0.856581, 0.043386, -0.067518} (|D| = 0.860333) a.u.
+
+Maximum gradient component at reference geometry: 9.36e-04
+Deal with potential Hessian restart
+Will write Hessian.restart file
+Positioned restart file at start of displacements
+
+*** Displacement 1 ***
+          Molecular Geometry (bohr)
+ O      2.266989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.86e-03 <<<
+         >>> Purifying P... IDMP = 3.93e-06 <<<
+         >>> Purifying P... IDMP = 1.87e-11 <<<
+         >>> Purifying P... IDMP = 2.22e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0009799420    -114.5008282631    16.0002406042   -11.8859064588    -114.5008282631     0.02
+   2     0.0005826757      -0.0000038134    16.0002390602   -11.8847523408    -114.5008320765     0.02
+   3     0.0008275525      +0.0000000513    16.0002395121   -11.8858970411    -114.5008320252     0.02
+   4     0.0002293171      -0.0000006418    16.0002392217   -11.8854039239    -114.5008326670     0.02
+   5     0.0000146787      -0.0000000510    16.0002392287   -11.8853874776    -114.5008327180     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008327180 a.u.
+CENTER OF MASS: {0.597610, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.187993, 0.110552, -0.172113} (|D| = 2.197535) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0049706048     0.0007329157    -0.0001217883
+   -0.0047973947    -0.0007106965     0.0001498046
+   -0.0001351976    -0.0003080906    -0.0000666472
+   -0.0000380121     0.0002858718     0.0000386309
+---------------------------------------------------
+Net gradient:  5.011214e-10  3.340233e-10  6.345424e-11
+Net torque:   -2.922884e-04  1.157647e-03  2.394239e-03
+
+Total Dipole Moment: {-0.860816, 0.043494, -0.067714} (|D| = 0.864570) a.u.
+
+
+*** Displacement 2 ***
+          Molecular Geometry (bohr)
+ O      2.256989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 3.35e-03 <<<
+         >>> Purifying P... IDMP = 1.30e-05 <<<
+         >>> Purifying P... IDMP = 2.01e-10 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0019843592    -114.5008180097    16.0002398639   -11.8879602703    -114.5008180097     0.02
+   2     0.0012001682      -0.0000151930    16.0002430868   -11.8903291963    -114.5008332028     0.02
+   3     0.0016695579      +0.0000001318    16.0002420614   -11.8880022825    -114.5008330710     0.02
+   4     0.0004542011      -0.0000026060    16.0002426868   -11.8889863635    -114.5008356770     0.02
+   5     0.0000295436      -0.0000002375    16.0002426502   -11.8890232107    -114.5008359145     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008359145 a.u.
+CENTER OF MASS: {0.594789, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.166723, 0.110017, -0.171060} (|D| = 2.176247) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0044205744     0.0011439988    -0.0008498889
+    0.0037783418    -0.0010613908     0.0007832266
+    0.0002449959    -0.0005170816    -0.0000228261
+    0.0003972371     0.0004344750     0.0000894885
+---------------------------------------------------
+Net gradient:  4.601261e-10  1.406333e-09  6.178701e-11
+Net torque:   -2.855085e-04  1.157895e-03  2.323324e-03
+
+Total Dipole Moment: {-0.852448, 0.043284, -0.067300} (|D| = 0.856195) a.u.
+
+
+*** Displacement 3 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.109905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 2.26e-03 <<<
+         >>> Purifying P... IDMP = 6.03e-06 <<<
+         >>> Purifying P... IDMP = 4.87e-11 <<<
+         >>> Purifying P... IDMP = 5.55e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0009459825    -114.5008335193    16.0002332487   -11.8877944802    -114.5008335193     0.02
+   2     0.0006040050      -0.0000059073    16.0002318012   -11.8866021373    -114.5008394266     0.02
+   3     0.0009718089      +0.0000002416    16.0002324179   -11.8878816516    -114.5008391850     0.02
+   4     0.0002563444      -0.0000009004    16.0002320367   -11.8872762853    -114.5008400854     0.02
+   5     0.0000149337      -0.0000000572    16.0002320570   -11.8872586890    -114.5008401426     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008401426 a.u.
+CENTER OF MASS: {0.596200, -0.028903, 0.046990} ANGS
+DIPOLE MOMENT: {-2.176854, 0.104871, -0.171563} (|D| = 2.186121) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0001315060     0.0012991363    -0.0004978349
+   -0.0003999870    -0.0014239213     0.0004762573
+    0.0002539875    -0.0003401222    -0.0000284604
+    0.0000144958     0.0004649068     0.0000500383
+---------------------------------------------------
+Net gradient:  2.431581e-09 -5.136379e-10  3.195530e-10
+Net torque:   -2.844056e-04  1.167033e-03  2.313817e-03
+
+Total Dipole Moment: {-0.856434, 0.041259, -0.067497} (|D| = 0.860079) a.u.
+
+
+*** Displacement 4 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.119905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.88e-03 <<<
+         >>> Purifying P... IDMP = 5.21e-06 <<<
+         >>> Purifying P... IDMP = 5.37e-11 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0017268618    -114.5008400622    16.0002517450   -11.8871390739    -114.5008400622     0.02
+   2     0.0002058225      -0.0000092831    16.0002512367   -11.8870559979    -114.5008493453     0.02
+   3     0.0001237217      -0.0000000541    16.0002512430   -11.8871820642    -114.5008493994     0.02
+   4     0.0001247058      -0.0000000394    16.0002512347   -11.8870472939    -114.5008494388     0.02
+   5     0.0000050251      -0.0000000155    16.0002512663   -11.8871022517    -114.5008494543     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008494543 a.u.
+CENTER OF MASS: {0.596200, -0.031723, 0.046990} ANGS
+DIPOLE MOMENT: {-2.177592, 0.115740, -0.171591} (|D| = 2.187406) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0005305228     0.0005710412    -0.0004658911
+   -0.0007378241    -0.0003446417     0.0004482877
+   -0.0001407604    -0.0004831081    -0.0000606522
+    0.0003480618     0.0002567087     0.0000782557
+---------------------------------------------------
+Net gradient:  6.872588e-11  8.802007e-11  7.504613e-14
+Net torque:   -2.926349e-04  1.154136e-03  2.401314e-03
+
+Total Dipole Moment: {-0.856724, 0.045535, -0.067509} (|D| = 0.860585) a.u.
+
+
+*** Displacement 5 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.183317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 9.33e-04 <<<
+         >>> Purifying P... IDMP = 1.29e-06 <<<
+         >>> Purifying P... IDMP = 4.44e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0008670335    -114.5008420953    16.0002448749   -11.8870643758    -114.5008420953     0.02
+   2     0.0001283198      -0.0000055790    16.0002449799   -11.8870327975    -114.5008476743     0.02
+   3     0.0000670324      -0.0000000919    16.0002450860   -11.8870875838    -114.5008477661     0.02
+   4     0.0000840842      -0.0000000106    16.0002450694   -11.8870135576    -114.5008477767     0.02
+   5     0.0000069947      +0.0000000011    16.0002450716   -11.8870537794    -114.5008477756     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008477756 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.048400} ANGS
+DIPOLE MOMENT: {-2.177915, 0.110269, -0.175643} (|D| = 2.187767) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0006877834     0.0009198105    -0.0003451731
+   -0.0008746699    -0.0008679245     0.0001387179
+    0.0000344684    -0.0004042729     0.0000485756
+    0.0001524167     0.0003523861     0.0001578795
+---------------------------------------------------
+Net gradient: -1.345666e-09 -7.423479e-10 -2.632348e-11
+Net torque:   -2.969374e-04  1.131373e-03  2.356598e-03
+
+Total Dipole Moment: {-0.856851, 0.043383, -0.069103} (|D| = 0.860727) a.u.
+
+
+*** Displacement 6 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.173317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 9.56e-04 <<<
+         >>> Purifying P... IDMP = 1.49e-06 <<<
+         >>> Purifying P... IDMP = 4.35e-12 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0017125730    -114.5008292508    16.0002378269   -11.8872527308    -114.5008292508     0.02
+   2     0.0002571722      -0.0000131821    16.0002381047   -11.8874214203    -114.5008424329     0.02
+   3     0.0001708757      -0.0000001685    16.0002379327   -11.8871888215    -114.5008426014     0.02
+   4     0.0001721300      -0.0000000438    16.0002380838   -11.8874109441    -114.5008426451     0.02
+   5     0.0000172431      -0.0000000060    16.0002379878   -11.8873324880    -114.5008426512     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008426512 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.045580} ANGS
+DIPOLE MOMENT: {-2.176669, 0.110271, -0.167492} (|D| = 2.185886) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0000450344     0.0009528797    -0.0006187000
+   -0.0002383199    -0.0008986790     0.0007860423
+    0.0000761408    -0.0004216593    -0.0001377224
+    0.0002072114     0.0003674585    -0.0000296198
+---------------------------------------------------
+Net gradient: -2.186826e-09 -1.651133e-11  1.374991e-10
+Net torque:   -2.805854e-04  1.190763e-03  2.364708e-03
+
+Total Dipole Moment: {-0.856361, 0.043384, -0.065896} (|D| = 0.859987) a.u.
+
+
+*** Displacement 7 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.003108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.59e-03 <<<
+         >>> Purifying P... IDMP = 3.36e-06 <<<
+         >>> Purifying P... IDMP = 1.75e-11 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0011993532    -114.5008249743    16.0002430026   -11.8878246819    -114.5008249743     0.02
+   2     0.0013370359      -0.0000078150    16.0002447768   -11.8888452691    -114.5008327893     0.02
+   3     0.0015891425      +0.0000001794    16.0002440044   -11.8874025612    -114.5008326098     0.02
+   4     0.0001355998      -0.0000022591    16.0002444563   -11.8881111856    -114.5008348689     0.02
+   5     0.0000162694      +0.0000000094    16.0002443717   -11.8881172082    -114.5008348596     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008348596 a.u.
+CENTER OF MASS: {0.597257, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.164699, 0.110202, -0.170801} (|D| = 2.174222) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0039945565     0.0011153935    -0.0007994563
+    0.0047735404    -0.0009937429     0.0008142082
+   -0.0004131969    -0.0000682890    -0.0000542636
+   -0.0003657882    -0.0000533629     0.0000395119
+---------------------------------------------------
+Net gradient: -1.198268e-09 -1.294532e-09  2.227936e-10
+Net torque:   -2.847318e-04  1.154970e-03  2.330135e-03
+
+Total Dipole Moment: {-0.851652, 0.043357, -0.067198} (|D| = 0.855398) a.u.
+
+
+*** Displacement 8 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.013108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 3.69e-03 <<<
+         >>> Purifying P... IDMP = 1.67e-05 <<<
+         >>> Purifying P... IDMP = 4.00e-10 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0024402057    -114.5008022311    16.0002403722   -11.8869470861    -114.5008022311     0.02
+   2     0.0027420205      -0.0000188999    16.0002365290   -11.8846776996    -114.5008211310     0.02
+   3     0.0026808007      -0.0000021892    16.0002380877   -11.8874407836    -114.5008233202     0.02
+   4     0.0002675797      -0.0000062982    16.0002373163   -11.8862945825    -114.5008296184     0.02
+   5     0.0000389172      -0.0000000928    16.0002373540   -11.8862477814    -114.5008297113     0.02
+   6     0.0000038840      -0.0000000135    16.0002373836   -11.8862964140    -114.5008297248     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008297248 a.u.
+CENTER OF MASS: {0.595142, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.189899, 0.110373, -0.172393} (|D| = 2.199445) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0045453220     0.0007613813    -0.0001693058
+   -0.0057953425    -0.0007806684     0.0001161325
+    0.0005232395    -0.0007619471    -0.0000353921
+    0.0007267783     0.0007812337     0.0000885652
+---------------------------------------------------
+Net gradient: -2.688219e-09 -5.494063e-10 -1.240798e-10
+Net torque:   -2.931072e-04  1.153782e-03  2.386899e-03
+
+Total Dipole Moment: {-0.861566, 0.043424, -0.067824} (|D| = 0.865322) a.u.
+
+
+*** Displacement 9 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.005271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.79e-03 <<<
+         >>> Purifying P... IDMP = 5.25e-06 <<<
+         >>> Purifying P... IDMP = 6.22e-11 <<<
+         >>> Purifying P... IDMP = 4.44e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0011431675    -114.5008317608    16.0002462884   -11.8868548095    -114.5008317608     0.02
+   2     0.0012802642      -0.0000089653    16.0002479688   -11.8878996726    -114.5008407260     0.02
+   3     0.0016928991      +0.0000006887    16.0002472036   -11.8863931371    -114.5008400373     0.02
+   4     0.0001403917      -0.0000025758    16.0002476090   -11.8871573179    -114.5008426131     0.02
+   5     0.0000189693      -0.0000000046    16.0002475609   -11.8871734524    -114.5008426176     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008426176 a.u.
+CENTER OF MASS: {0.596200, -0.029255, 0.046990} ANGS
+DIPOLE MOMENT: {-2.177494, 0.121344, -0.171514} (|D| = 2.187607) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0004804473     0.0003965107    -0.0004690646
+   -0.0006548704     0.0020534255     0.0004728717
+    0.0004302606    -0.0016574575    -0.0000248299
+   -0.0002558378    -0.0007924781     0.0000210229
+---------------------------------------------------
+Net gradient: -3.491534e-10  5.510971e-10  1.388021e-10
+Net torque:   -2.903761e-04  1.152280e-03  2.399277e-03
+
+Total Dipole Moment: {-0.856686, 0.047740, -0.067478} (|D| = 0.860664) a.u.
+
+
+*** Displacement 10 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108     -0.004729     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 2.53e-03 <<<
+         >>> Purifying P... IDMP = 1.15e-05 <<<
+         >>> Purifying P... IDMP = 2.85e-10 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0017195596    -114.5008166126    16.0002352973   -11.8872243685    -114.5008166126     0.02
+   2     0.0002784642      -0.0000171085    16.0002358095   -11.8872844860    -114.5008337211     0.02
+   3     0.0003039263      -0.0000000291    16.0002356594   -11.8871051088    -114.5008337502     0.02
+   4     0.0002126038      -0.0000000471    16.0002358115   -11.8873231956    -114.5008337973     0.02
+   5     0.0000030413      -0.0000000472    16.0002357602   -11.8872294590    -114.5008338445     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008338445 a.u.
+CENTER OF MASS: {0.596200, -0.031371, 0.046990} ANGS
+DIPOLE MOMENT: {-2.177176, 0.099245, -0.171658} (|D| = 2.186187) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0001507263     0.0014745934    -0.0004965075
+   -0.0004658951    -0.0038201793     0.0004525964
+   -0.0003106995     0.0008198963    -0.0000640902
+    0.0006258666     0.0015256878     0.0001080013
+---------------------------------------------------
+Net gradient: -1.748232e-09 -1.818000e-09 -1.424402e-11
+Net torque:   -2.868528e-04  1.167392e-03  2.315352e-03
+
+Total Dipole Moment: {-0.856561, 0.039046, -0.067535} (|D| = 0.860105) a.u.
+
+
+*** Displacement 11 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271      0.004312
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.31e-03 <<<
+         >>> Purifying P... IDMP = 3.04e-06 <<<
+         >>> Purifying P... IDMP = 1.97e-11 <<<
+         >>> Purifying P... IDMP = 2.22e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0009789752    -114.5008331240    16.0002396192   -11.8872461864    -114.5008331240     0.02
+   2     0.0001643947      -0.0000076353    16.0002395912   -11.8872789756    -114.5008407593     0.02
+   3     0.0000997459      -0.0000000731    16.0002395170   -11.8872094981    -114.5008408324     0.02
+   4     0.0001190777      +0.0000000017    16.0002395309   -11.8873084603    -114.5008408307     0.02
+   5     0.0000097467      -0.0000000032    16.0002394995   -11.8872520528    -114.5008408339     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008408339 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.048048} ANGS
+DIPOLE MOMENT: {-2.176388, 0.110350, -0.169129} (|D| = 2.185737) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0000090441     0.0009505612    -0.0008046969
+   -0.0002103290    -0.0008744972     0.0013690753
+    0.0000455512    -0.0003937345    -0.0003362003
+    0.0001557313     0.0003176702    -0.0002281781
+---------------------------------------------------
+Net gradient: -2.417627e-09 -2.250817e-10  7.191155e-11
+Net torque:   -2.855035e-04  1.184925e-03  2.364708e-03
+
+Total Dipole Moment: {-0.856250, 0.043415, -0.066540} (|D| = 0.859929) a.u.
+
+
+*** Displacement 12 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.005688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4173 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.07e-03 <<<
+         >>> Purifying P... IDMP = 2.09e-06 <<<
+         >>> Purifying P... IDMP = 7.77e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0019814339    -114.5008319750    16.0002437324   -11.8871656693    -114.5008319750     0.02
+   2     0.0003354204      -0.0000133145    16.0002434517   -11.8870050505    -114.5008452895     0.02
+   3     0.0004718219      -0.0000001002    16.0002436687   -11.8873428027    -114.5008453897     0.02
+   4     0.0002764608      -0.0000001432    16.0002434211   -11.8870024514    -114.5008455329     0.02
+   5     0.0000090410      -0.0000000975    16.0002435478   -11.8871179292    -114.5008456304     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008456304 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.045932} ANGS
+DIPOLE MOMENT: {-2.178119, 0.110199, -0.174022} (|D| = 2.187837) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0006404951     0.0009217381    -0.0001547354
+   -0.0009093133    -0.0008931693    -0.0004473626
+    0.0000648908    -0.0004296330     0.0002464576
+    0.0002039287     0.0004010645     0.0003556405
+---------------------------------------------------
+Net gradient:  1.317584e-09  2.408791e-10  5.874379e-12
+Net torque:   -2.924056e-04  1.126607e-03  2.355550e-03
+
+Total Dipole Moment: {-0.856932, 0.043355, -0.068465} (|D| = 0.860755) a.u.
+
+
+*** Displacement 13 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.033653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4173 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 7.15e-04 <<<
+         >>> Purifying P... IDMP = 7.67e-07 <<<
+         >>> Purifying P... IDMP = 8.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0010058143    -114.5008399506    16.0002428555   -11.8874923372    -114.5008399506     0.02
+   2     0.0002867205      -0.0000036923    16.0002430129   -11.8876014911    -114.5008436429     0.02
+   3     0.0005887917      +0.0000001916    16.0002430990   -11.8877659258    -114.5008434513     0.02
+   4     0.0001183815      -0.0000003050    16.0002429280   -11.8875179787    -114.5008437564     0.02
+   5     0.0000107392      -0.0000000499    16.0002430312   -11.8876167147    -114.5008438063     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008438063 a.u.
+CENTER OF MASS: {0.596288, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.178049, 0.111565, -0.171703} (|D| = 2.187653) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0001175523     0.0011337912    -0.0005064609
+   -0.0010136416    -0.0005130281     0.0004564717
+    0.0006626741    -0.0009166176    -0.0000103146
+    0.0002334143     0.0002958542     0.0000603037
+---------------------------------------------------
+Net gradient: -9.934149e-10 -3.185578e-10 -7.610554e-11
+Net torque:   -2.913425e-04  1.164664e-03  2.359467e-03
+
+Total Dipole Moment: {-0.856904, 0.043893, -0.067553} (|D| = 0.860682) a.u.
+
+
+*** Displacement 14 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.043653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.58e-03 <<<
+         >>> Purifying P... IDMP = 3.01e-06 <<<
+         >>> Purifying P... IDMP = 1.31e-11 <<<
+         >>> Purifying P... IDMP = 4.44e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0007137521    -114.5008423618    16.0002400876   -11.8869598395    -114.5008423618     0.02
+   2     0.0008003598      -0.0000012785    16.0002404801   -11.8869015541    -114.5008436404     0.02
+   3     0.0006694444      -0.0000002978    16.0002401240   -11.8865083899    -114.5008439381     0.02
+   4     0.0000773879      -0.0000003671    16.0002402514   -11.8868713816    -114.5008443052     0.02
+   5     0.0000114514      -0.0000000204    16.0002402640   -11.8867726515    -114.5008443257     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008443257 a.u.
+CENTER OF MASS: {0.596111, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.176623, 0.108960, -0.171475} (|D| = 2.186084) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0005193493     0.0007394520    -0.0004619457
+   -0.0000925560    -0.0012482055     0.0004728163
+   -0.0005520602     0.0000866847    -0.0000784218
+    0.0001252638     0.0004220697     0.0000675511
+---------------------------------------------------
+Net gradient: -3.062158e-09  9.540919e-10 -1.126341e-10
+Net torque:   -2.849494e-04  1.162753e-03  2.362210e-03
+
+Total Dipole Moment: {-0.856343, 0.042868, -0.067463} (|D| = 0.860065) a.u.
+
+
+*** Displacement 15 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.832038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.98e-04 <<<
+         >>> Purifying P... IDMP = 1.07e-06 <<<
+         >>> Purifying P... IDMP = 1.95e-12 <<<
+         >>> Purifying P... IDMP = 4.44e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0003422635    -114.5008439474    16.0002467847   -11.8866489451    -114.5008439474     0.02
+   2     0.0000725383      -0.0000006737    16.0002468805   -11.8864646866    -114.5008446212     0.02
+   3     0.0000389032      -0.0000000300    16.0002469523   -11.8865755055    -114.5008446512     0.02
+   4     0.0000179078      +0.0000000264    16.0002468700   -11.8865132622    -114.5008446248     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008446248 a.u.
+CENTER OF MASS: {0.596200, -0.030224, 0.046990} ANGS
+DIPOLE MOMENT: {-2.175761, 0.107304, -0.171499} (|D| = 2.185146) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0004375956     0.0010073648    -0.0004731875
+   -0.0002307998    -0.0021138553     0.0004798120
+   -0.0004391803     0.0008448243    -0.0000730766
+    0.0002323855     0.0002616671     0.0000664524
+---------------------------------------------------
+Net gradient:  9.410082e-10  7.415019e-10  2.659464e-10
+Net torque:   -2.904655e-04  1.158968e-03  2.353200e-03
+
+Total Dipole Moment: {-0.856004, 0.042216, -0.067472} (|D| = 0.859696) a.u.
+
+
+*** Displacement 16 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.822038     -0.063982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4173 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.82e-03 <<<
+         >>> Purifying P... IDMP = 4.35e-06 <<<
+         >>> Purifying P... IDMP = 3.20e-11 <<<
+         >>> Purifying P... IDMP = 2.78e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0007596387    -114.5008366880    16.0002365445   -11.8874178277    -114.5008366880     0.02
+   2     0.0008201553      -0.0000029045    16.0002362065   -11.8878777771    -114.5008395925     0.02
+   3     0.0009172967      -0.0000000293    16.0002365986   -11.8881699182    -114.5008396218     0.02
+   4     0.0001050869      -0.0000007330    16.0002363317   -11.8877303168    -114.5008403548     0.02
+   5     0.0000126369      +0.0000000027    16.0002363092   -11.8878692649    -114.5008403521     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008403521 a.u.
+CENTER OF MASS: {0.596200, -0.030402, 0.046990} ANGS
+DIPOLE MOMENT: {-2.178723, 0.113272, -0.171657} (|D| = 2.188408) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0002010545     0.0008661084    -0.0004920726
+   -0.0008906490     0.0003558486     0.0004460147
+    0.0005606832    -0.0016830211    -0.0000158883
+    0.0001289140     0.0004610652     0.0000619464
+---------------------------------------------------
+Net gradient:  2.815821e-09  1.136502e-09  2.985027e-10
+Net torque:   -2.878451e-04  1.161396e-03  2.366527e-03
+
+Total Dipole Moment: {-0.857169, 0.044564, -0.067535} (|D| = 0.860979) a.u.
+
+
+*** Displacement 17 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.058982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4173 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 9.32e-04 <<<
+         >>> Purifying P... IDMP = 1.20e-06 <<<
+         >>> Purifying P... IDMP = 2.99e-12 <<<
+         >>> Purifying P... IDMP = 2.22e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0003688982    -114.5008440004    16.0002416466   -11.8874372569    -114.5008440004     0.02
+   2     0.0003918765      -0.0000011916    16.0002418599   -11.8871984635    -114.5008451920     0.02
+   3     0.0005032014      +0.0000000482    16.0002416393   -11.8870593935    -114.5008451439     0.02
+   4     0.0000614995      -0.0000002220    16.0002417623   -11.8872879920    -114.5008453658     0.02
+   5     0.0000085732      -0.0000000168    16.0002417804   -11.8872081442    -114.5008453826     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008453826 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.047079} ANGS
+DIPOLE MOMENT: {-2.177349, 0.110323, -0.170745} (|D| = 2.186818) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0003067690     0.0009514989    -0.0003884972
+   -0.0005750731    -0.0008629884     0.0001705910
+    0.0000901372    -0.0004406456     0.0000591035
+    0.0001781693     0.0003521363     0.0001588026
+---------------------------------------------------
+Net gradient:  2.357834e-09  1.145572e-09 -1.040079e-10
+Net torque:   -2.754970e-04  1.164062e-03  2.364847e-03
+
+Total Dipole Moment: {-0.856628, 0.043404, -0.067176} (|D| = 0.860354) a.u.
+
+
+*** Displacement 18 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.068982
+ H     -1.215229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.36e-04 <<<
+         >>> Purifying P... IDMP = 1.21e-06 <<<
+         >>> Purifying P... IDMP = 6.66e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0005009858    -114.5008429722    16.0002414981   -11.8871647447    -114.5008429722     0.02
+   2     0.0001090588      -0.0000019148    16.0002414321   -11.8871857846    -114.5008448870     0.02
+   3     0.0001367582      -0.0000000966    16.0002414475   -11.8871117452    -114.5008449836     0.02
+   4     0.0001057721      +0.0000000012    16.0002414682   -11.8872106540    -114.5008449823     0.02
+   5     0.0000077689      -0.0000000214    16.0002414568   -11.8871609829    -114.5008450037     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008450037 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.046901} ANGS
+DIPOLE MOMENT: {-2.177141, 0.110214, -0.172353} (|D| = 2.186732) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0003440332     0.0009203893    -0.0005761663
+   -0.0005485159    -0.0009050391     0.0007546543
+    0.0000211820    -0.0003825762    -0.0001483372
+    0.0001833010     0.0003672265    -0.0000301506
+---------------------------------------------------
+Net gradient:  2.494193e-10  4.552406e-10  2.473858e-10
+Net torque:   -3.023797e-04  1.158121e-03  2.355213e-03
+
+Total Dipole Moment: {-0.856547, 0.043361, -0.067808} (|D| = 0.860320) a.u.
+
+
+*** Displacement 19 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.210229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.21e-04 <<<
+         >>> Purifying P... IDMP = 7.52e-07 <<<
+         >>> Purifying P... IDMP = 1.20e-12 <<<
+         >>> Purifying P... IDMP = 2.22e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0003508277    -114.5008418917    16.0002384199   -11.8875543756    -114.5008418917     0.02
+   2     0.0004580522      -0.0000008567    16.0002382665   -11.8876041035    -114.5008427484     0.02
+   3     0.0004600704      -0.0000000315    16.0002384592   -11.8878434715    -114.5008427800     0.02
+   4     0.0000484698      -0.0000002003    16.0002383460   -11.8876097758    -114.5008429802     0.02
+   5     0.0000083148      -0.0000000046    16.0002383548   -11.8876750113    -114.5008429848     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008429848 a.u.
+CENTER OF MASS: {0.596288, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.178292, 0.108798, -0.171728} (|D| = 2.187758) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0000929067     0.0007678189    -0.0005101032
+   -0.0010964478    -0.0013242773     0.0004389985
+    0.0001091609    -0.0003638903    -0.0000447439
+    0.0008943826     0.0009203487     0.0001158485
+---------------------------------------------------
+Net gradient:  2.505417e-09  6.574829e-11 -1.185725e-10
+Net torque:   -2.779102e-04  1.159830e-03  2.354734e-03
+
+Total Dipole Moment: {-0.856999, 0.042804, -0.067563} (|D| = 0.860724) a.u.
+
+
+*** Displacement 20 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.220229     -1.712404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.60e-03 <<<
+         >>> Purifying P... IDMP = 3.18e-06 <<<
+         >>> Purifying P... IDMP = 1.54e-11 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0007257465    -114.5008425743    16.0002447369   -11.8869328099    -114.5008425743     0.02
+   2     0.0008877073      -0.0000014175    16.0002451370   -11.8868439075    -114.5008439918     0.02
+   3     0.0007131972      -0.0000003953    16.0002447413   -11.8864224948    -114.5008443870     0.02
+   4     0.0000835332      -0.0000004364    16.0002449103   -11.8868157544    -114.5008448234     0.02
+   5     0.0000119242      -0.0000000246    16.0002449167   -11.8867086522    -114.5008448481     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008448481 a.u.
+CENTER OF MASS: {0.596111, -0.030313, 0.046990} ANGS
+DIPOLE MOMENT: {-2.176328, 0.111806, -0.171422} (|D| = 2.185930) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0005480440     0.0011047677    -0.0004554423
+   -0.0000169878    -0.0004524264     0.0004869332
+    0.0000011233    -0.0004590321    -0.0000420926
+   -0.0005321822    -0.0001933076     0.0000106016
+---------------------------------------------------
+Net gradient: -2.617950e-09  1.533303e-09 -5.651532e-11
+Net torque:   -2.912438e-04  1.161517e-03  2.364909e-03
+
+Total Dipole Moment: {-0.856227, 0.043987, -0.067442} (|D| = 0.860004) a.u.
+
+
+*** Displacement 21 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.707404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.36e-03 <<<
+         >>> Purifying P... IDMP = 2.37e-06 <<<
+         >>> Purifying P... IDMP = 9.99e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0006777870    -114.5008383426    16.0002402612   -11.8874971038    -114.5008383426     0.02
+   2     0.0008520356      -0.0000014476    16.0002398433   -11.8877479571    -114.5008397902     0.02
+   3     0.0007112341      -0.0000003269    16.0002401691   -11.8880985779    -114.5008401171     0.02
+   4     0.0000827388      -0.0000004357    16.0002399709   -11.8877093544    -114.5008405527     0.02
+   5     0.0000100199      -0.0000000489    16.0002400680   -11.8878182192    -114.5008406016     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008406016 a.u.
+CENTER OF MASS: {0.596200, -0.030224, 0.046990} ANGS
+DIPOLE MOMENT: {-2.178843, 0.107581, -0.171743} (|D| = 2.188247) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0002363335     0.0010397828    -0.0004897889
+   -0.0009681320    -0.0020441271     0.0004216557
+   -0.0000100695    -0.0005140449    -0.0000516142
+    0.0007418681     0.0015183886     0.0001197474
+---------------------------------------------------
+Net gradient:  2.315371e-10 -6.778068e-10 -5.384682e-11
+Net torque:   -2.895121e-04  1.162369e-03  2.369759e-03
+
+Total Dipole Moment: {-0.857216, 0.042325, -0.067569} (|D| = 0.860916) a.u.
+
+
+*** Displacement 22 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.717404     -0.113647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.63e-03 <<<
+         >>> Purifying P... IDMP = 3.84e-06 <<<
+         >>> Purifying P... IDMP = 3.02e-11 <<<
+         >>> Purifying P... IDMP = 4.44e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0007758149    -114.5008416107    16.0002429983   -11.8869834403    -114.5008416107     0.02
+   2     0.0007818469      -0.0000026340    16.0002432883   -11.8865600655    -114.5008442448     0.02
+   3     0.0008852717      +0.0000000014    16.0002429424   -11.8862719635    -114.5008442434     0.02
+   4     0.0000977755      -0.0000007482    16.0002433192   -11.8866921688    -114.5008449915     0.02
+   5     0.0000127711      +0.0000000048    16.0002432409   -11.8865617463    -114.5008449868     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008449868 a.u.
+CENTER OF MASS: {0.596200, -0.030402, 0.046990} ANGS
+DIPOLE MOMENT: {-2.175665, 0.112985, -0.171416} (|D| = 2.185330) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0004094144     0.0008333170    -0.0004748848
+   -0.0001610757     0.0002657494     0.0005032784
+    0.0001219251    -0.0003122620    -0.0000375132
+   -0.0003702624    -0.0007868035     0.0000091198
+---------------------------------------------------
+Net gradient:  1.392883e-09  7.998490e-10  1.976739e-10
+Net torque:   -2.873068e-04  1.157779e-03  2.351713e-03
+
+Total Dipole Moment: {-0.855966, 0.044451, -0.067440} (|D| = 0.859768) a.u.
+
+
+*** Displacement 23 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.108647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4174 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.02e-03 <<<
+         >>> Purifying P... IDMP = 1.36e-06 <<<
+         >>> Purifying P... IDMP = 3.12e-12 <<<
+         >>> Purifying P... IDMP = 3.33e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0004152543    -114.5008436152    16.0002400762   -11.8870112958    -114.5008436152     0.02
+   2     0.0004194300      -0.0000011957    16.0002398553   -11.8872498478    -114.5008448109     0.02
+   3     0.0005158607      +0.0000000194    16.0002400282   -11.8874006112    -114.5008447915     0.02
+   4     0.0000604116      -0.0000002783    16.0002399843   -11.8871631635    -114.5008450698     0.02
+   5     0.0000085952      +0.0000000327    16.0002398948   -11.8872441503    -114.5008450371     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008450371 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.047079} ANGS
+DIPOLE MOMENT: {-2.177513, 0.110124, -0.170757} (|D| = 2.186972) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0002856039     0.0009222049    -0.0003892621
+   -0.0005680811    -0.0009245494     0.0001718454
+    0.0000507956    -0.0004111123     0.0000499616
+    0.0002316800     0.0004134583     0.0001674552
+---------------------------------------------------
+Net gradient: -1.597960e-09  1.560272e-09  7.287941e-11
+Net torque:   -2.971587e-04  1.160187e-03  2.354965e-03
+
+Total Dipole Moment: {-0.856693, 0.043326, -0.067180} (|D| = 0.860414) a.u.
+
+
+*** Displacement 24 ***
+          Molecular Geometry (bohr)
+ O      2.261989     -0.114905      0.178317
+ C     -0.008108      0.000271     -0.000688
+ H     -1.038653      1.827038     -0.063982
+ H     -1.215229     -1.712404     -0.118647
+
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 4175 (1043 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 8.27e-04 <<<
+         >>> Purifying P... IDMP = 1.21e-06 <<<
+         >>> Purifying P... IDMP = 3.34e-12 <<<
+         >>> Purifying P... IDMP = 2.22e-16 <<<
+THRESPDP set to 4.96e-02
+   1     0.0005020593    -114.5008438334    16.0002431507   -11.8871771678    -114.5008438334     0.02
+   2     0.0001097205      -0.0000019111    16.0002432616   -11.8871461478    -114.5008457444     0.02
+   3     0.0001553459      -0.0000000607    16.0002432164   -11.8871082678    -114.5008458051     0.02
+   4     0.0001057612      -0.0000000366    16.0002433249   -11.8871942396    -114.5008458417     0.02
+   5     0.0000080233      -0.0000000048    16.0002432967   -11.8871384652    -114.5008458465     0.02
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -114.5008458465 a.u.
+CENTER OF MASS: {0.596200, -0.030313, 0.046901} ANGS
+DIPOLE MOMENT: {-2.177075, 0.110433, -0.172355} (|D| = 2.186677) DEBYE
+
+Running Mulliken population analysis...
+
+GPU Memory: 26510 Mb
+GPU Memory: 26510 Mb
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0003511507     0.0009504324    -0.0005764595
+   -0.0005373804    -0.0008390904     0.0007550871
+    0.0000600778    -0.0004144734    -0.0001387417
+    0.0001261504     0.0003031319    -0.0000398856
+---------------------------------------------------
+Net gradient: -1.487532e-09  4.574237e-10  2.394443e-10
+Net torque:   -2.793527e-04  1.161667e-03  2.365541e-03
+
+Total Dipole Moment: {-0.856521, 0.043447, -0.067809} (|D| = 0.860298) a.u.
+
+
+Finished computing Hessian
+Hessian has been written to disk
+
+ *** Hessian Matrix (Hartree/Bohr^2) ***
+             1          2          3          4          5          6
+        ---------  ---------  ---------  ---------  ---------  ---------
+   1      0.9391    -0.0405     0.0730    -0.8558     0.0340    -0.0632
+   2     -0.0405     0.0728    -0.0033     0.0346    -0.1079     0.0028
+   3      0.0730    -0.0033     0.0274    -0.0633     0.0029    -0.0649
+   4     -0.8558     0.0346    -0.0633     1.0569    -0.0201     0.0699
+   5      0.0340    -0.1079     0.0029    -0.0201     0.5874     0.0019
+   6     -0.0632     0.0028    -0.0649     0.0699     0.0019     0.1816
+   7     -0.0391     0.0395    -0.0043    -0.0929     0.0738    -0.0018
+   8      0.0223     0.0142     0.0018     0.0677    -0.2474     0.0035
+   9     -0.0041     0.0032     0.0187    -0.0023     0.0041    -0.0583
+  10     -0.0445    -0.0335    -0.0055    -0.1086    -0.0877    -0.0048
+  11     -0.0161     0.0207    -0.0015    -0.0821    -0.2314    -0.0083
+  12     -0.0058    -0.0028     0.0187    -0.0040    -0.0086    -0.0584
+
+             7          8          9         10         11         12
+        ---------  ---------  ---------  ---------  ---------  ---------
+   1     -0.0391     0.0223    -0.0041    -0.0445    -0.0161    -0.0058
+   2      0.0395     0.0142     0.0032    -0.0335     0.0207    -0.0028
+   3     -0.0043     0.0018     0.0187    -0.0055    -0.0015     0.0187
+   4     -0.0929     0.0677    -0.0023    -0.1086    -0.0821    -0.0040
+   5      0.0738    -0.2474     0.0041    -0.0877    -0.2314    -0.0086
+   6     -0.0018     0.0035    -0.0583    -0.0048    -0.0083    -0.0584
+   7      0.1215    -0.1002     0.0069     0.0108    -0.0129    -0.0008
+   8     -0.1002     0.2528    -0.0058     0.0099    -0.0201     0.0004
+   9      0.0069    -0.0058     0.0207    -0.0004    -0.0015     0.0189
+  10      0.0108     0.0099    -0.0004     0.1427     0.1113     0.0105
+  11     -0.0129    -0.0201    -0.0015     0.1113     0.2305     0.0110
+  12     -0.0008     0.0004     0.0189     0.0105     0.0110     0.0207
+
+
+Dipole moment derivatives:
+
+ Atom        dMuX/dX            dMuX/dY         dMuX/dZ (a.u.)
+------  -----------------  -----------------  -----------------
+    1      -0.8368384579       0.0290567737      -0.0490517743
+    2       0.9914132941      -0.0125129467       0.0681170123
+    3      -0.0561177809       0.1165350567      -0.0081680006
+    4      -0.0772751071      -0.1250218638      -0.0172158596
+
+ Atom        dMuY/dX            dMuY/dY         dMuY/dZ (a.u.)
+------  -----------------  -----------------  -----------------
+    1       0.0210353532      -0.4276107360      -0.0000861501
+    2      -0.0067236894       0.8694459689       0.0059719980
+    3       0.1024909002      -0.2348219970       0.0042846768
+    4      -0.1183312526      -0.2125791992      -0.0121632868
+
+ Atom        dMuZ/dX            dMuZ/dY         dMuZ/dZ (a.u.)
+------  -----------------  -----------------  -----------------
+    1      -0.0414381086       0.0011319517      -0.3207007321
+    2       0.0626662719       0.0056700538       0.1925179236
+    3      -0.0089869682       0.0062379590       0.0632725258
+    4      -0.0120566599      -0.0128883111       0.0628881787
+
+*** Vibrational Frequency Analysis ***
+
+Vibrational Frequencies Before Projection of Rotation/Translation
+  1        110.70108002590767i
+  2          4.75406426631097i
+  3          1.48067792364396i
+  4          0.90018090994053i
+  5         89.74490481916835
+  6        173.53254511892533
+  7       1198.64847216954263
+  8       1276.21179328911398
+  9       1563.63798488086854
+ 10       1893.25406135098524
+ 11       2916.39310172530213
+ 12       2965.86868422232919
+
+Remove Rotational and Translational Modes
+
+Center of Mass at: 1.126653715300 -0.057283507995 0.088798475402
+
+Translational-Rotational degrees of freedom:   6
+Point Group Symmetry:        C2v
+Rotational symmetry number:  3
+Coordinates of molecule in Eckart frame:
+O      -1.1403159451     -0.0000285859      0.0000041922
+C       1.1397384143     -0.0000092661     -0.0000169252
+H       2.2630150663      1.7723781091      0.0000674857
+H       2.2639564475     -1.7718140999      0.0000675071
+Vibrational Frequencies/Thermochemical Analysis After Removing Rotation and Translation
+Temperature (Kelvin):     300.00
+Mode      Eigenvalue(AU)      Frequency(cm-1)    Intensity(km/mol)          Vib.Temp(K)              ZPE(AU)       Vib.Energy(AU)             -T*S(AU)
+  1         0.2331755330      1198.6352080688         1.3259362554      1724.5046104761         0.0027306920         0.0000174668        -0.0000205005
+  2         0.2482643632      1276.1991058236        12.2124856548      1836.0976109021         0.0029073956         0.0000128076        -0.0000148979
+  3         0.3041790321      1563.6275932117         5.3143434351      2249.6277227712         0.0035622059         0.0000039475        -0.0000044738
+  4         0.3683007086      1893.2440764611        96.1337286438      2723.8546946023         0.0043131275         0.0000009833        -0.0000010916
+  5         0.5673379163      2916.3917533427        60.0402362709      4195.8812745849         0.0066440295         0.0000000112        -0.0000000120
+  6         0.5769628150      2965.8683955874       167.7267339991      4267.0644811914         0.0067567456         0.0000000090        -0.0000000096
+
+Vibrational zero-point energy (ZPE) = 70663.209145369197358377 J/mol =     0.02691420 AU
+
+Thermal vibrational energy (ZPE + <E>) = 0.026949421304918269 (AU)
+Thermal vibrational free energy (ZPE + <E> - TS) = 0.026908435930144071 (AU)
+E Vibrational Total: 92.484072116925119644 J/mol
+S Vibrational Total: 0.358690275277240567 J/mol/K
+Total processing time: 3.33 sec
+
+ Job finished: Sun Oct 20 14:09:18 2019
+

@@ -1,5 +1,5 @@
-***********************************
-arkane.gaussian.GaussianLog
-***********************************
+*******************************
+arkane.ess.GaussianLog
+*******************************
 
-.. autoclass:: arkane.gaussian.GaussianLog
+.. autoclass:: arkane.ess.GaussianLog

@@ -244,9 +244,6 @@ options(
     saveSeedToDatabase=False,
 	#only option is 'si'
     units='si',
-	#how often you want to save restart files.  
-	#takes significant amount of time. comment out if you don't want to save 
-    saveRestartPeriod=None,
 	#Draws images of species and reactions and saves the model output to HTML.  
 	#May consume extra memory when running large models.
     generateOutputHTML=True,

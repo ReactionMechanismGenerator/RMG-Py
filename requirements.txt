@@ -15,6 +15,8 @@ MarkupSafe # this makes Jinja2 faster
 Jinja2 # this is for rendering the HTML output files
 cairocffi
 yaml
+cclib # needs to be 1.6.1.rmg
+h5py
 
 # For postprocessing the profiling data
 argparse
@@ -29,13 +31,6 @@ coverage
 
 # for generating the documentation
 Sphinx
-
-
-# SCOOP Dependencies:
-pyzmq
-
-# SCOOP for parallel computing
-git+https://github.com/soravux/scoop.git@0.7.0
 
 # For unit tests
 mock

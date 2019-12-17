@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "lib_net"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 This is a fake library for testing PDep networks exploration of library reactions
 """
 
@@ -69,7 +69,7 @@ entry(
             Arrhenius(A=(2.3e+07, 'cm^3/(mol*s)'), n=1.35, Ea=(974, 'cal/mol'), T0=(1, 'K')),
         ],
     ),
-    shortDesc = u"""The chemkin file reaction is CO + OH <=> CO2 + H""",
+    shortDesc = """The chemkin file reaction is CO + OH <=> CO2 + H""",
 )
 
 entry(

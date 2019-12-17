@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,14 +27,15 @@
 #                                                                             #
 ###############################################################################
 
-import numpy
+import numpy as np
+
 
 class GenericData(object):
     """
     A generic data class for the purpose of plotting.
-    ======================= ==============================================================================================
+    ======================= ============================================================================================
     Attribute               Description
-    ======================= ==============================================================================================
+    ======================= ============================================================================================
     `label`                 A string label describing the data, can be used in a plot legend or in an axis label
     `data`                  A numpy array of the data
     `uncertainty`           An uncertainty value associated with the data.  Either a scalar or a numpy array with same 
@@ -44,19 +44,20 @@ class GenericData(object):
     `reaction`              Contains reaction associated with the data, often used with a Reaction object
     `units`                 Contains a string describing the units associated with the data
     `index`                 An integer containing the index associated with the data
-    ======================= ==============================================================================================
+    ======================= ============================================================================================
     """
+
     def __init__(self, label='', data=None, uncertainty=None, species=None, reaction=None, units=None, index=None):
-        
+
         self.label = str(label) if label else None
-        
+
         if isinstance(data, list):
-                self.data = numpy.array(data)
-        elif isinstance(data, numpy.ndarray):
-                self.data = data
+            self.data = np.array(data)
+        elif isinstance(data, np.ndarray):
+            self.data = data
         else:
             raise Exception('Data for GenericData object must be initialized as a list or numpy.array of values.')
-        
+
         self.uncertainty = uncertainty
         self.species = species
         self.reaction = reaction

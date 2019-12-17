@@ -1,3 +1,15 @@
+# Uncomment either of the blocks below to restart from a seed mechanism
+#
+# # Option 1: Specify the path to an RMG (version > 2.4.1) generated seed mechanism folder, which contains all of the
+# # required files (core and edge seed, filters and mappings) in their default locations and names in the seed folder.
+# restartFromSeed(path='seed')  # Location of the seed mechanism (with `filters` subfolder) to load for restarting
+#
+# # Option 2: Specify the paths of each of the required files individually.
+# restartFromSeed(coreSeed='seed/seed'  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`
+#                 edgeSeed='seed/seed_edge'  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`
+#                 filters='seed/filters/filters.h5',
+#                 speciesMap='seed/filters/species_map.yml')
+
 # Data sources
 database(
     # overrides RMG thermo calculation of RMG with these values.
@@ -5,6 +17,9 @@ database(
     # if species exist in multiple libraries, the earlier libraries overwrite the
     # previous values
     thermoLibraries=['BurkeH2O2', 'primaryThermoLibrary', 'DFT_QCI_thermo', 'CBS_QB3_1dHR'],
+    # overrides RMG transport calculations with these values.
+    # if species exist in multiple libraries, the earlier libraries overwrite the previous values
+    transportLibraries=['PrimaryTransportLibrary.py'],
     # overrides RMG kinetics estimation if needed in the core of RMG.
     # list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
     # libraries can be input as either a string or tuple of form ('library_name',True/False)
@@ -18,13 +33,13 @@ database(
     # This is helpful for reducing run time for species you know will appear in
     # the mechanism.
     seedMechanisms=['BurkeH2O2inN2', 'ERC-FoundationFuelv0.9'],
-    # this is normally not changed in general RMG runs.  Usually used for testing with
-    # outside kinetics databases
-    kineticsDepositories='default',
     # lists specific families used to generate the model. 'default' uses a list of
     # families from RMG-Database/input/kinetics/families/recommended.py
     # a visual list of families is available in PDF form at RMG-database/families
     kineticsFamilies='default',
+    # this is normally not changed in general RMG runs.  Usually used for testing with
+    # outside kinetics databases
+    kineticsDepositories='default',
     # specifies how RMG calculates rates.  currently, the only option is 'rate rules'
     kineticsEstimator='rate rules',
 )
@@ -79,6 +94,8 @@ simpleReactor(
         "O2": 1,
         "butane": 1. / 6.5,
     },
+    # number of simulations used to explore variable temperature and pressure reactors
+    nSims=6,
     # the following two values specify when to determine the final output model
     # only one must be specified
     # the first condition to be satisfied will terminate the process
@@ -156,7 +173,7 @@ model(
 options(
     # provides a name for the seed mechanism produced at the end of an rmg run default is 'Seed'
     name='SeedName',
-    # if True every iteration it saves the current model as libraries/seeds
+    # if True (default) every iteration it saves the current model as libraries/seeds
     # (and deletes the old one)
     # Unlike HTML this is inexpensive time-wise
     # note a seed mechanism will be generated at the end of a completed run and some incomplete
@@ -166,9 +183,6 @@ options(
     saveSeedToDatabase=False,
     # only option is 'si'
     units='si',
-    # how often you want to save restart files.
-    # takes significant amount of time. comment out if you don't want to save
-    saveRestartPeriod=None,
     # Draws images of species and reactions and saves the model output to HTML.
     # May consume extra memory when running large models.
     generateOutputHTML=True,
@@ -274,7 +288,13 @@ generatedSpeciesConstraints(
 #     maxNitrogenAtoms=None,
 #     # Limits on cycles
 #     onlyCyclics=False,
-#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles
+#     onlyHeterocyclics=False, # If onlyHeterocyclics is True, the machine learning estimator is restricted to only
+#                                heterocyclics species regardless of onlyCyclics setting.
+#                                But onlyCyclics should also be True if onlyHeterocyclics is True.
+#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles.
+#                           If minCycleOverlap is greater than zero, the machine learning estimator is restricted to
+#                           only cyclic species with the specified minimum cyclic overlap regardless of onlyCyclics
+#                           setting.
 #     # If the estimated uncertainty of the thermo prediction is greater than
 #     # any of these values, then don't use the ML estimate
 #     H298UncertaintyCutoff=(3.0, 'kcal/mol'),

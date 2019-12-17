@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -33,13 +32,16 @@ This module provides methods for applying energy and bond additivity
 corrections.
 """
 
+import logging
+
 import rmgpy.constants as constants
 
+import arkane.encorr.data as data
+import arkane.encorr.mbac as mbac
+import arkane.encorr.pbac as pbac
 from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectionError
 
-import arkane.encorr.data as data
-import arkane.encorr.pbac as pbac
-import arkane.encorr.mbac as mbac
+################################################################################
 
 
 def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplicity=1,
@@ -66,6 +68,8 @@ def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplic
     Returns:
         The correction to the electronic energy in J/mol.
     """
+    logging.warning('get_energy_correction has be deprecated, use get_atom_correction '
+                    'and get_bac instead')
     model_chemistry = model_chemistry.lower()
 
     corr = 0.0
@@ -83,17 +87,20 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
     quantum chemistry calculation at a given model chemistry such that
     it is consistent with the normal gas-phase reference states.
 
-    `atoms` is a dictionary associating element symbols with the number
-    of that element in the molecule. The atom energies are in Hartrees,
-    which are from single atom calculations using corresponding model
-    chemistries.
+    Args:
+        model_chemistry: The model chemistry, typically specified as method/basis.
+        atoms: A dictionary of element symbols with their associated counts.
+        atom_energies: A dictionary of element symbols with their associated atomic energies in Hartree.
+
+    Returns:
+        The atom correction to the electronic energy in J/mol.
 
     The assumption for the multiplicity of each atom is:
     H doublet, C triplet, N quartet, O triplet, F doublet, Si triplet,
     P quartet, S triplet, Cl doublet, Br doublet, I doublet.
     """
     corr = 0.0
-
+    model_chemistry = model_chemistry.lower()
     # Step 1: Reference all energies to a model chemistry-independent
     # basis by subtracting out that model chemistry's atomic energies
     if atom_energies is None:
@@ -130,8 +137,28 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
 
 def get_bac(model_chemistry, bonds, coords, nums, bac_type='p', multiplicity=1):
     """
-    Calculate bond additivity correction.
+    Returns the bond additivity correction in J/mol.
+
+    There are two bond additivity corrections currently supported. Peterson-type
+    corrections can be specified by setting `bac_type` to 'p'. This will use the
+    `bonds` attribute, which is a dictionary associating bond types with the number
+    of that bond in the molecule.
+
+    The Melius-type BAC is specified with 'm' and utilizes the atom xyz coordinates
+    in `coords` and array of atomic numbers of atoms as well as the structure's multiplicity.
+
+    Args:
+        model_chemistry: The model chemistry, typically specified as method/basis.
+        bonds: A dictionary of bond types (e.g., 'C=O') with their associated counts.
+        coords: A Numpy array of Cartesian molecular coordinates.
+        nums: A sequence of atomic numbers.
+        multiplicity: The spin multiplicity of the molecule.
+        bac_type: The type of bond additivity correction to use.
+
+    Returns:
+        The bond correction to the electronic energy in J/mol.
     """
+    model_chemistry = model_chemistry.lower()
     if bac_type.lower() == 'p':  # Petersson-type BACs
         return pbac.get_bac(model_chemistry, bonds)
     elif bac_type.lower() == 'm':  # Melius-type BACs

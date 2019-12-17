@@ -25,15 +25,15 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
-from rmgpy.statmech.mode cimport Mode
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.statmech.mode cimport Mode
 
 ################################################################################
 
 cdef class Torsion(Mode):
-    pass
+    cpdef make_object(self, dict data, dict class_dict)
 
 ################################################################################
 
@@ -45,49 +45,49 @@ cdef class HinderedRotor(Torsion):
     cdef public int symmetry
     cdef public bint semiclassical
     cdef public double frequency
-    cdef public numpy.ndarray energies
+    cdef public np.ndarray energies
     
-    cpdef double getFrequency(self) except -1
+    cpdef double get_frequency(self) except -1
 
-    cpdef double getLevelEnergy(self, int J) except -1
+    cpdef double get_level_energy(self, int J) except -1
     
-    cpdef int getLevelDegeneracy(self, int J) except -1
+    cpdef int get_level_degeneracy(self, int J) except -1
     
-    cpdef numpy.ndarray solveSchrodingerEquation(self, int Nbasis=?)
+    cpdef np.ndarray solve_schrodinger_equation(self, int n_basis=?)
     
-    cpdef numpy.ndarray getHamiltonian(self, int Nbasis)
+    cpdef np.ndarray get_hamiltonian(self, int n_basis)
     
-    cdef double getRotationalConstantEnergy(self)
+    cdef double get_rotational_constant_energy(self)
     
-    cpdef double getPotential(self, double phi) except -100000000
+    cpdef double get_potential(self, double phi) except -100000000
 
-    cpdef double getPartitionFunction(self, double T) except -1
+    cpdef double get_partition_function(self, double T) except -1
         
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double get_heat_capacity(self, double T) except -100000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double get_enthalpy(self, double T) except 100000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double get_entropy(self, double T) except -100000000
 
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=?)
     
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=?)
 
-    cpdef fitFourierPotentialToData(self, numpy.ndarray angle, numpy.ndarray V)
+    cpdef fit_fourier_potential_to_data(self, np.ndarray angle, np.ndarray V)
     
-    cpdef fitCosinePotentialToData(self, numpy.ndarray angle, numpy.ndarray V)
+    cpdef fit_cosine_potential_to_data(self, np.ndarray angle, np.ndarray V)
 
 cdef class FreeRotor(Torsion):
     
     cdef public ScalarQuantity _inertia
     cdef public int symmetry
     
-    cdef double getRotationalConstantEnergy(self)
+    cdef double get_rotational_constant_energy(self)
     
-    cpdef double getPartitionFunction(self, double T) except -1
+    cpdef double get_partition_function(self, double T) except -1
         
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double get_heat_capacity(self, double T) except -100000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double get_enthalpy(self, double T) except 100000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double get_entropy(self, double T) except -100000000

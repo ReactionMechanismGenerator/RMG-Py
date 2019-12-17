@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "R_Addition_MultipleBond/groups"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 The reaction site *3 should be a triplet, otherwise it will react via the 1+2_Cycloaddition family instead.
 """
 
@@ -500,9 +500,9 @@ forbidden(
 1 *1 O u0 {2,D}
 2 *2 O u0 {1,D}
 """,
-    shortDesc = u"""""",
+    shortDesc = """""",
     longDesc = 
-u"""
+"""
 
 """,
 )

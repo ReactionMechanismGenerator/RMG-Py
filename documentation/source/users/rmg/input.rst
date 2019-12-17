@@ -640,6 +640,7 @@ The available options with their default values are ::
         minNitrogenAtoms=0,
         maxNitrogenAtoms=None,
         onlyCyclics=False,
+        onlyHeterocyclics=False,
         minCycleOverlap=0,
         H298UncertaintyCutoff=(3.0, 'kcal/mol'),
         S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
@@ -648,14 +649,21 @@ The available options with their default values are ::
 
 ``name`` is the name of the folder containing the machine learning model architecture and parameters in the RMG
 database. The next several options allow setting limits on the numbers of atoms. ``onlyCyclics`` means that only cyclic
-species will be estimated. ``minCycleOverlap`` specified the minimum number of atoms that must be shared between any
-two cycles. For example, if there are only disparate monocycles or no cycles in a species, the overlap is zero;
-"spiro" cycles have an overlap of one; "fused" cycles have an overlap of two; and "bridged" cycles have an overlap of
-at least three. Note that specifying any value greater than zero will automatically restrict the machine learning
-estimator to only consider cyclic species regardless of the ``onlyCyclics`` setting.
+species will be estimated. ``onlyHeterocyclics`` means that only heterocyclic species will be estimated. Note that
+if ``onlyHeterocyclics`` setting is set to True, the machine learning estimator will be restricted to heterocyclic
+species regardless of the ``onlyCyclics`` setting. If ``onlyCyclics`` is False and ``onlyHeterocyclics`` is True,
+RMG will log a warning that ``onlyCyclics`` should also be True and the machine learning estimator will be
+restricted to heterocyclic species because they are a subset of cyclics.
+``minCycleOverlap`` specifies the minimum number of atoms that must be shared between any two cycles. For example,
+if there are only disparate monocycles or no cycles in a species, the overlap is zero; "spiro" cycles have an overlap
+of one; "fused" cycles have an overlap of two; and "bridged" cycles have an overlap of at least three. Note that
+specifying any value greater than zero will automatically restrict the machine learning estimator to only consider
+cyclic species regardless of the ``onlyCyclics`` setting. If ``onlyCyclics`` is False and ``minCycleOverlap`` is greater
+than zero, RMG will log a warning that ``onlyCyclics`` should also be True and the machine learning estimator will be
+restricted to only cyclic species with the specified minimum cycle overlap.
 
-If the estimated uncertainty of the thermo prediction is greater than any of the ``UncertaintyCutoff`` values, then
-machine learning estimation is not used for that species.
+Note that the current machine learning model is not yet capable of estimating uncertainty so the ``UncertaintyCutoff``
+values do not yet have any effect.
 
 
 .. _pressuredependence:
@@ -788,6 +796,8 @@ an uncertainty options block in the input file::
         globalNumber=5,
         terminationTime=None,
         pceRunTime=1800,
+        pceErrorTol=None,
+        pceMaxEvals=None,
         logx=True
     )
 
@@ -819,11 +829,13 @@ parameters.
 
 Finally, there are a few miscellaneous options for global uncertainty analysis. The ``terminationTime`` applies for the
 reactor simulation. It is only necessary if termination time is not specified in the reactor settings (i.e. only other
-termination criteria are used). The ``pceRunTime`` sets the time limit for fitting the PCE to the output surface.
-Longer run times allow more simulations to be performed, leading to more accurate results. The ``logx`` option toggles
-the output parameter space between mole fractions and log mole fractions. Results in mole fraction space are more
-physically meaningful, while results in log mole fraction space can be directly compared against local uncertainty
-results.
+termination criteria are used). For PCE generation, there are three termination options: ``pceRunTime`` sets a time
+limit for adapting the PCE to the output, ``pceErrorTol`` sets the target L2 error between the PCE model and the true
+output, and ``pceMaxEvals`` sets a limit on the total number of model evaluations used to adapt the PCE.
+Longer run time, smaller error tolerance, and more model evaluations all contribute to more accurate results at the
+expense of computation time. The ``logx`` option toggles the output parameter space between mole fractions and log mole
+fractions. Results in mole fraction space are more physically meaningful, while results in log mole fraction space can
+be directly compared against local uncertainty results.
 
 **Important Note:** The current implementation of uncertainty analysis assigns values for input parameter
 uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
@@ -847,7 +859,6 @@ Miscellaneous options::
         generateSeedEachIteration=True,
         saveSeedToDatabase=True,
         units='si',
-        saveRestartPeriod=(1,'hour'),
         generateOutputHTML=True,
         generatePlots=False,
         saveSimulationProfiles=True,
@@ -859,13 +870,11 @@ Miscellaneous options::
 
 The ``name`` field is the name of any generated seed mechanisms
 
-Setting ``generateSeedEachIteration`` to ``True`` tells RMG to save and update a seed mechanism and thermo library during the current run
+Setting ``generateSeedEachIteration`` to ``True`` (default) tells RMG to save and update a seed mechanism and thermo library during the current run
 
 Setting ``saveSeedToDatabase`` to ``True`` tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database
 
 The ``units`` field is set to ``si``.  Currently there are no other unit options.
-
-The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
 Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
 HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs.
@@ -936,3 +945,41 @@ For example ::
 		maxNumSpecies=100
 	)
 
+Restarting from a Seed Mechanism
+=================================
+The only method for restarting an RMG-Py job is to restart the job from a seed mechanism. There are
+many scenarios when the user might want to do this, including continuing on a job that ran out of time or crashed as the
+result of a now fixed bug. To restart from a seed mechanism, the block below must be added on to the input file.  ::
+
+    restartFromSeed(path='seed')
+
+The ``path`` flag is the path to the seed mechanism folder, which contains three subfolders that must be titled as
+follows: filters, seed, seed_edge. The path can be a relative path from the input.py file or an absolute path on disk
+
+Alternatively, you may also specify the paths to each of the following files/directories: coreSeed (path to seed
+mechanism folder containing files named ``reactions.py`` and ```dictionary.txt``` that will go into the model core),
+edgeSeed (path to edge seed mechanism folder containing files named ``reactions.py`` and ```dictionary.txt``` that will
+go into the model edge), filters (an h5 binary file storing the uni-, bi-, and optionally tri-molecular thresholds
+generated by RMG from previous run (must be RMG version > 2.4.1)), speciesMap (a YAML file specifying what species are
+at each index in the filters). ::
+
+    restartFromSeed(coreSeed='seed/seed'  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`
+                    edgeSeed='seed/seed_edge'  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`
+                    filters='seed/filters/filters.h5',
+                    speciesMap='seed/filters/species_map.yml')
+
+Then, to restart from the seed mechanism the input file is submitted as normal. ::
+
+    python rmg.py input.py
+
+Once the restart job has begun, RMG will move the seed mechanism files to a new subfolder in the output directory
+entitled ``previous_restart``. This is to back-up the seed mechanism used for restarting, as everything in the ``seed``
+subfolder of the output directory is overwritten by RMG during the course of mechanism generation.
+
+RMG also outputs a file entitled ``restart_from_seed.py`` the first time a seed mechanism is generated during the course
+of an RMG job (so long as the RMG job was not itself a restarted job). This file is an exact duplicate of the original
+input file with the exception that the restart block has been added on automatically for convenience. In this way this
+file is treated in the exact way as a normal input file.
+
+Finally, **note that it is advised to turn on generating the seed each iteration so that you can restart an RMG job right where it left off**.
+This can be done by setting ``generateSeedEachIteration=True`` in the options block of the input file.

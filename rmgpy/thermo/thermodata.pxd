@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
+cimport numpy as np
 
 from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.thermo.wilhoit cimport Wilhoit
@@ -39,14 +39,14 @@ cdef class ThermoData(HeatCapacityModel):
     cdef public ScalarQuantity _H298, _S298
     cdef public ArrayQuantity _Tdata, _Cpdata
     
-    cpdef double getHeatCapacity(self, double T) except -1000000000
+    cpdef double get_heat_capacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 1000000000
+    cpdef double get_enthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -1000000000
+    cpdef double get_entropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 1000000000
+    cpdef double get_free_energy(self, double T) except 1000000000
 
-    cpdef Wilhoit toWilhoit(self, object B=?)
+    cpdef Wilhoit to_wilhoit(self, object B=?)
 
-    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)

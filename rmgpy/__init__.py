@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -34,9 +33,11 @@ This is the rmg module.
 
 import os
 import os.path
-import logging
-from .version import __version__
-from .exceptions import SettingsError
+
+from rmgpy.version import __version__
+from rmgpy.exceptions import SettingsError
+
+
 ################################################################################
 
 class Settings(dict):
@@ -52,13 +53,13 @@ class Settings(dict):
     In general you should be working with the module-level variable
     ``settings`` in this module, which is an instance of this class.
     """
-    
-    def __init__(self, path = None):
+
+    def __init__(self, path=None):
         super(Settings, self).__init__()
         self.filename = None
         self.sources = dict()
         self.load(path)
-    
+
     def __setitem__(self, key, value):
         if key == 'database.directory':
             value = os.path.abspath(os.path.expandvars(value))
@@ -68,7 +69,7 @@ class Settings(dict):
             raise SettingsError('Unexpecting setting "{0}" encountered.'.format(key))
         self.sources[key] = '-'
         super(Settings, self).__setitem__(key, value)
-    
+
     def report(self):
         """
         Returns a string saying what is set and where things came from, suitable for logging
@@ -94,7 +95,7 @@ class Settings(dict):
         """
         # First set all settings to their default values
         self.reset()
-    
+
         if path:
             # The user specified an explicit file to use for the settings
             # Make sure that it exists, fail if it does not
@@ -113,9 +114,8 @@ class Settings(dict):
             elif os.path.exists(os.path.join(working_dir, 'rmgrc')):
                 self.filename = os.path.join(working_dir, 'rmgrc')
             else:
-                return # fail silently, instead of raising the following error:
-                raise SettingsError('Could not find an RMG settings file to load!')
-        
+                return  # fail silently, instead of raising an error
+
         # From here on we assume that we have identified the appropriate
         # settings file to load
 
@@ -123,7 +123,8 @@ class Settings(dict):
             for line in f:
                 # Remove any comments from the line
                 index = line.find('#')
-                if index != -1: line = line[:index]
+                if index != -1:
+                    line = line[:index]
                 # Is there a key-value pair remaining?
                 if line.find('database.directory') != -1:
                     value = line.split()[-1]  # Get the last token from this line
@@ -136,24 +137,27 @@ class Settings(dict):
                     value = value.strip()
                     self['test_data.directory'] = value
                     self.sources['test_data.directory'] = "from {0}".format(self.filename)
-    
+
     def reset(self):
         """
         Reset all settings to their default values.
         """
         self.filename = None
         rmgpy_module_dir = os.path.abspath(os.path.dirname(__file__))
-        self['database.directory'] = os.path.realpath(os.path.join(rmgpy_module_dir, '..', '..', 'RMG-database', 'input'))
+        self['database.directory'] = os.path.realpath(
+            os.path.join(rmgpy_module_dir, '..', '..', 'RMG-database', 'input'))
         self.sources['database.directory'] = 'Default, relative to RMG-Py source code'
         self['test_data.directory'] = os.path.realpath(os.path.join(rmgpy_module_dir, 'test_data'))
         self.sources['test_data.directory'] = 'Default, relative to RMG-Py source code'
 
+
 # The global settings object
-settings = Settings(path = None)
+settings = Settings(path=None)
+
 
 ################################################################################
 
-def getPath():
+def get_path():
     """
     Return the directory that this file is found in on disk.
     """

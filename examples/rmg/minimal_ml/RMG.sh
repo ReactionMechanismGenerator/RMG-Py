@@ -16,5 +16,4 @@
 # command.
 
 # Run RMG on the input.py file.
-export KERAS_BACKEND=theano
 python ../../../rmg.py input.py

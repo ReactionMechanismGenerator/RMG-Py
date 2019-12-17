@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Intra_ene_reaction/rules"
-shortDesc = u"Intramolecular H-shift from an allylic to an unsaturated endgroup (like in cyclopentadiene)"
-longDesc = u"""
+shortDesc = "Intramolecular H-shift from an allylic to an unsaturated endgroup (like in cyclopentadiene)"
+longDesc = """
 
 """
 entry(
@@ -18,7 +18,7 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 4,
-    shortDesc = u"""AG Vandeputte, CBS-QB3""",
+    shortDesc = """AG Vandeputte, CBS-QB3""",
     longDesc = """Rate taken from H shift in ethyleneCPD""",
 )
 

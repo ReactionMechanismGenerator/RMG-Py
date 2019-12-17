@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
@@ -28,17 +27,16 @@
 #                                                                             #
 ###############################################################################
 
+import logging
 import os
 from multiprocessing import Pool
 
-import logging
-
-import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
+import rmgpy.qm.mopac
 from rmgpy.data.thermo import ThermoLibrary
 
 
-class QMSettings():
+class QMSettings(object):
     """
     A minimal class to store settings related to quantum mechanics calculations.
     
@@ -54,13 +52,14 @@ class QMSettings():
     =================== ======================= ====================================
     
     """
+
     def __init__(self,
-                 software = None,
-                 method = 'pm3',
-                 fileStore = None,
-                 scratchDirectory = None,
-                 onlyCyclics = True,
-                 maxRadicalNumber = 0,
+                 software=None,
+                 method='pm3',
+                 fileStore=None,
+                 scratchDirectory=None,
+                 onlyCyclics=True,
+                 maxRadicalNumber=0,
                  ):
         self.software = software
         self.method = method
@@ -74,14 +73,14 @@ class QMSettings():
             self.scratchDirectory = None
         self.onlyCyclics = onlyCyclics
         self.maxRadicalNumber = maxRadicalNumber
-        
+
         if os.sys.platform == 'win32':
-            symmetryPath = os.path.join(rmgpy.getPath(),'..', 'bin', 'symmetry.exe')
+            symmetryPath = os.path.join(rmgpy.get_path(), '..', 'bin', 'symmetry.exe')
             # If symmetry is not installed in the bin folder, assume it is available on the path somewhere
             if not os.path.exists(symmetryPath):
-                symmetryPath = 'symmetry.exe' 
+                symmetryPath = 'symmetry.exe'
         else:
-            symmetryPath = os.path.join(rmgpy.getPath(),'..', 'bin', 'symmetry')
+            symmetryPath = os.path.join(rmgpy.get_path(), '..', 'bin', 'symmetry')
             if not os.path.exists(symmetryPath):
                 symmetryPath = 'symmetry'
         self.symmetryPath = symmetryPath
@@ -98,24 +97,23 @@ class QMSettings():
             self.onlyCyclics,
             self.maxRadicalNumber,
             self.symmetryPath
-            )
         )
+                )
 
-    def checkAllSet(self):
+    def check_all_set(self):
         """
         Check that all the required settings are set.
         """
-        from types import BooleanType, IntType
         assert self.fileStore
-        #assert self.scratchDirectory
         assert self.software
         assert self.method
-        assert self.onlyCyclics is not None # but it can be False
-        assert type(self.onlyCyclics) is BooleanType
-        assert self.maxRadicalNumber is not None # but it can be 0
-        assert type(self.maxRadicalNumber) is IntType
+        assert self.onlyCyclics is not None  # but it can be False
+        assert isinstance(self.onlyCyclics, bool)
+        assert self.maxRadicalNumber is not None  # but it can be 0
+        assert isinstance(self.maxRadicalNumber, int)
 
-class QMCalculator():
+
+class QMCalculator(object):
     """
     A Quantum Mechanics calculator object, to store settings. 
     
@@ -129,66 +127,65 @@ class QMCalculator():
     =================== ======================= ====================================
 
     """
-    
+
     def __init__(self,
-                 software = None,
-                 method = 'pm3',
-                 fileStore = None,
-                 scratchDirectory = None,
-                 onlyCyclics = True,
-                 maxRadicalNumber = 0,
+                 software=None,
+                 method='pm3',
+                 fileStore=None,
+                 scratchDirectory=None,
+                 onlyCyclics=True,
+                 maxRadicalNumber=0,
                  ):
-                 
-        self.settings = QMSettings(software = software,
-                                   method = method,
-                                   fileStore = fileStore,
-                                   scratchDirectory = scratchDirectory,
-                                   onlyCyclics = onlyCyclics,
-                                   maxRadicalNumber = maxRadicalNumber,
+
+        self.settings = QMSettings(software=software,
+                                   method=method,
+                                   fileStore=fileStore,
+                                   scratchDirectory=scratchDirectory,
+                                   onlyCyclics=onlyCyclics,
+                                   maxRadicalNumber=maxRadicalNumber,
                                    )
         self.database = ThermoLibrary(name='QM Thermo Library')
-    
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
         return (QMCalculator, (self.settings, self.database))
 
-
-    def setDefaultOutputDirectory(self, outputDirectory):
+    def set_default_output_directory(self, output_directory):
         """
         IF the fileStore or scratchDirectory are not already set, put them in here.
         """
-        
+
         if not self.settings.fileStore:
-            self.settings.fileStore = os.path.abspath(os.path.join(outputDirectory, 'QMfiles', self.settings.method))
+            self.settings.fileStore = os.path.abspath(os.path.join(output_directory, 'QMfiles', self.settings.method))
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
         if not self.settings.scratchDirectory:
-            self.settings.scratchDirectory = os.path.abspath(os.path.join(outputDirectory, 'QMscratch', self.settings.method))
+            self.settings.scratchDirectory = os.path.abspath(os.path.join(output_directory, 'QMscratch', self.settings.method))
             logging.info("Setting the quantum mechanics scratchDirectory to {0}".format(self.settings.scratchDirectory))
-    
+
     def initialize(self):
         """
         Do any startup tasks.
         """
-        self.checkReady()
+        self.check_ready()
 
-    def checkReady(self):
+    def check_ready(self):
         """
         Check that it's ready to run calculations.
         """
-        self.settings.checkAllSet()
-        self.checkPaths()
+        self.settings.check_all_set()
+        self.check_paths()
 
-    def checkPaths(self):
+    def check_paths(self):
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
+        self.settings.fileStore = os.path.expandvars(self.settings.fileStore)  # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
             if not os.path.exists(path):
-                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
+                logging.info("Creating directory %s for QM files." % os.path.abspath(path))
                 # This try/except should be redundant, but some networked file systems
                 # seem to be slow or buggy or respond strangely causing problems
                 # between checking the path exists and trying to create it.
@@ -199,7 +196,7 @@ class QMCalculator():
                     logging.warning("Checking it already exists...")
                     assert os.path.exists(path), "Path {0} still doesn't exist?".format(path)
 
-    def getThermoData(self, molecule):
+    def get_thermo_data(self, molecule):
         """
         Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
         
@@ -216,7 +213,7 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for mopac".format(self.settings.method))
-            thermo0 = qm_molecule_calculator.generateThermoData()
+            thermo0 = qm_molecule_calculator.generate_thermo_data()
         elif self.settings.software == 'gaussian':
             if self.settings.method == 'pm3':
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
@@ -224,26 +221,26 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM6(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
-            thermo0 = qm_molecule_calculator.generateThermoData()
+            thermo0 = qm_molecule_calculator.generate_thermo_data()
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
         return thermo0
 
-    def runJobs(self, spc_list, procnum=1):
+    def run_jobs(self, spc_list, procnum=1):
         """
         Run QM jobs for the provided species list (in parallel if requested).
         """
         mol_list = []
         for spc in spc_list:
-            if spc.molecule[0].getRadicalCount() > self.settings.maxRadicalNumber:
+            if spc.molecule[0].get_radical_count() > self.settings.maxRadicalNumber:
                 for molecule in spc.molecule:
-                    if self.settings.onlyCyclics and molecule.isCyclic():
+                    if self.settings.onlyCyclics and molecule.is_cyclic():
                         saturated_mol = molecule.copy(deep=True)
                         saturated_mol.saturate_radicals()
                         if saturated_mol not in mol_list:
                             mol_list.append(saturated_mol)
             else:
-                if self.settings.onlyCyclics and spc.molecule[0].isCyclic():
+                if self.settings.onlyCyclics and spc.molecule[0].is_cyclic():
                     if spc.molecule[0] not in mol_list:
                         mol_list.append(spc.molecule[0])
         if mol_list:
@@ -252,32 +249,34 @@ class QMCalculator():
 
             if procnum == 1:
                 logging.info('Writing QM files with {0} process.'.format(procnum))
-                map(_write_QMfiles_star, qm_arg_list)
+                for qm_arg in qm_arg_list:
+                    _write_qm_files_star(qm_arg)
             elif procnum > 1:
                 logging.info('Writing QM files with {0} processes.'.format(procnum))
                 p = Pool(processes=procnum)
-                p.map(_write_QMfiles_star, qm_arg_list)
+                p.map(_write_qm_files_star, qm_arg_list)
                 p.close()
                 p.join()
 
 
-def _write_QMfiles_star(args):
+def _write_qm_files_star(args):
     """Wrapper to unpack zipped arguments for use with map"""
-    return _write_QMfiles(*args)
+    return _write_qm_files(*args)
 
 
-def _write_QMfiles(quantumMechanics, mol):
+def _write_qm_files(quantum_mechanics, mol):
     """
-    If quantumMechanics is turned on thermo is calculated in parallel here.
+    If quantum_mechanics is turned on thermo is calculated in parallel here.
     """
-    quantumMechanics.getThermoData(mol)
+    quantum_mechanics.get_thermo_data(mol)
 
 
 def save(rmg):
     # Save the QM thermo to a library if QM was turned on
-    if rmg.quantumMechanics:
+    if rmg.quantum_mechanics:
         logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
-        rmg.quantumMechanics.database.save(os.path.join(rmg.outputDirectory,'qmThermoLibrary.py'))    
+        rmg.quantum_mechanics.database.save(os.path.join(rmg.output_directory, 'qmThermoLibrary.py'))
+
 
 class QMDatabaseWriter(object):
     """
@@ -301,11 +300,9 @@ class QMDatabaseWriter(object):
     rmg.detach(listener)
     
     """
+
     def __init__(self):
         super(QMDatabaseWriter, self).__init__()
-    
+
     def update(self, rmg):
         save(rmg)
-
-        
-    

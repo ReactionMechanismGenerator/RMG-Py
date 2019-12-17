@@ -32,10 +32,12 @@ This module contains classes representing various models of tunneling through
 a reaction barrier.
 """
 
-import numpy
 import logging
+
 import cython
-from libc.math cimport abs, exp, sqrt, cosh
+import numpy as np
+cimport numpy as np
+from libc.math cimport abs, exp, sqrt
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
@@ -53,10 +55,10 @@ cdef class Wigner(TunnelingModel):
     =============== =============================================================
     
     """
-    
+
     def __init__(self, frequency):
         TunnelingModel.__init__(self, frequency)
-    
+
     def __repr__(self):
         """
         Return a string representation of the tunneling model.
@@ -68,8 +70,8 @@ cdef class Wigner(TunnelingModel):
         A helper function used when pickling an Wigner object.
         """
         return (Wigner, (self.frequency,))
-    
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000:
+
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
         """
         Calculate and return the value of the Wigner tunneling correction for
         the reaction at the temperature `T` in K.
@@ -78,8 +80,8 @@ cdef class Wigner(TunnelingModel):
         frequency = abs(self._frequency.value_si) * constants.c * 100.0
         factor = constants.h * frequency / (constants.kB * T)
         return 1.0 + factor * factor / 24.0
-    
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist):
+
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Raises :class:`NotImplementedError`, as the Wigner tunneling model
         does not have a well-defined energy-dependent tunneling function. 
@@ -106,25 +108,26 @@ cdef class Eckart(TunnelingModel):
     `E0_prod`, and thereby using the "asymmetric" Eckart model, is the
     recommended approach.
     """
-    
+
     def __init__(self, frequency, E0_reac, E0_TS, E0_prod=None):
         TunnelingModel.__init__(self, frequency)
         self.E0_reac = E0_reac
         self.E0_TS = E0_TS
         self.E0_prod = E0_prod
-    
+
     def __repr__(self):
         """
         Return a string representation of the tunneling model.
         """
-        return 'Eckart(frequency={0!r}, E0_reac={1!r}, E0_TS={2!r}, E0_prod={3!r})'.format(self.frequency, self.E0_reac, self.E0_TS, self.E0_prod)
+        return 'Eckart(frequency={0!r}, E0_reac={1!r}, E0_TS={2!r}, E0_prod={3!r})'.format(self.frequency, self.E0_reac,
+                                                                                           self.E0_TS, self.E0_prod)
 
     def __reduce__(self):
         """
         A helper function used when pickling an Eckart object.
         """
         return (Eckart, (self.frequency, self.E0_reac, self.E0_TS, self.E0_prod))
-    
+
     property E0_reac:
         """The ground-state energy of the reactants."""
         def __get__(self):
@@ -146,21 +149,21 @@ cdef class Eckart(TunnelingModel):
         def __set__(self, value):
             self._E0_prod = quantity.Energy(value)
 
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000:
+    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
         """
         Calculate and return the value of the Eckart tunneling correction for
         the reaction at the temperature `T` in K.
         """
         cdef double E0_reac, E0_prod, E0_TS
         cdef double E0, dE, beta, dV1, dV2
-        cdef numpy.ndarray Elist, kappaE
-        
-        beta = 1. / (constants.R * T)        # [=] mol/J
-        
+        cdef np.ndarray Elist, kappaE
+
+        beta = 1. / (constants.R * T)  # [=] mol/J
+
         E0_reac = self._E0_reac.value_si
         E0_TS = self._E0_TS.value_si
         E0_prod = self._E0_prod.value_si
-        
+
         # Calculate intermediate constants
         if E0_reac > E0_prod:
             E0 = E0_reac
@@ -183,34 +186,34 @@ cdef class Eckart(TunnelingModel):
 
         # Evaluate microcanonical tunneling function kappa(E)
         dE = 100.
-        Elist = numpy.arange(E0, E0 + 2. * (E0_TS - E0) + 40. * constants.R * T, dE)
-        kappaE = self.calculateTunnelingFunction(Elist)
-        
+        Elist = np.arange(E0, E0 + 2. * (E0_TS - E0) + 40. * constants.R * T, dE)
+        kappaE = self.calculate_tunneling_function(Elist)
+
         # Integrate to get kappa(T)
-        kappa = exp(dV1 * beta) * numpy.sum(kappaE * numpy.exp(-beta * (Elist - E0))) * dE * beta
-        
+        kappa = exp(dV1 * beta) * np.sum(kappaE * np.exp(-beta * (Elist - E0))) * dE * beta
+
         # Return the calculated Eckart correction
         return kappa
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist):
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Calculate and return the value of the Eckart tunneling function for
-        the reaction at the energies `Elist` in J/mol.
+        the reaction at the energies `e_list` in J/mol.
         """
         cdef double frequency, E0_reac, E0_prod, E0_TS
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] kappa, _Elist
+        cdef np.ndarray[np.float64_t, ndim=1] kappa, _Elist
         cdef double E0, dV1, dV2, alpha1, alpha2, E, xi, twopia, twopib, twopid
         cdef int r, r0
-        
+
         frequency = abs(self._frequency.value_si) * constants.h * constants.c * 100. * constants.Na
         E0_reac = self._E0_reac.value_si
         E0_TS = self._E0_TS.value_si
         E0_prod = self._E0_prod.value_si
 
         _Elist = Elist
-        
+
         # Calculate intermediate constants
         if E0_reac > E0_prod:
             E0 = E0_reac
@@ -220,21 +223,21 @@ cdef class Eckart(TunnelingModel):
             E0 = E0_prod
             dV1 = E0_TS - E0_prod
             dV2 = E0_TS - E0_reac
-        
+
         # Ensure that dV1 is smaller than dV2
         assert dV1 <= dV2
-        
+
         alpha1 = 2 * constants.pi * dV1 / frequency
         alpha2 = 2 * constants.pi * dV2 / frequency
 
-        kappa = numpy.zeros_like(Elist)
+        kappa = np.zeros_like(Elist)
         for r0 in range(_Elist.shape[0]):
             if _Elist[r0] >= E0:
                 break
-        
+
         for r in range(r0, _Elist.shape[0]):
             E = _Elist[r]
-            
+
             xi = (E - E0) / dV1
             # 2 * pi * a
             twopia = 2.*sqrt(alpha1*xi)/(1./sqrt(alpha1)+1./sqrt(alpha2))
@@ -242,13 +245,13 @@ cdef class Eckart(TunnelingModel):
             twopib = 2.*sqrt(abs((xi-1.)*alpha1+alpha2))/(1./sqrt(alpha1)+1/sqrt(alpha2))
             # 2 * pi * d
             twopid = 2.*sqrt(abs(alpha1*alpha2-4*constants.pi*constants.pi/16.))
-            
+
             # We use different approximate versions of the integrand to avoid
             # domain errors when evaluating cosh(x) for large x
             # If all of 2*pi*a, 2*pi*b, and 2*pi*d are sufficiently small,
             # compute as normal
             if twopia < 200. and twopib < 200. and twopid < 200.:
-                kappa[r] = 1 - (numpy.cosh(twopia-twopib)+numpy.cosh(twopid)) / (numpy.cosh(twopia+twopib)+numpy.cosh(twopid))
+                kappa[r] = 1 - (np.cosh(twopia-twopib)+np.cosh(twopid)) / (np.cosh(twopia+twopib)+np.cosh(twopid))
             # If one of the following is true, then we can eliminate most of the
             # exponential terms after writing out the definition of cosh and
             # dividing all terms by exp(2*pi*d)
@@ -258,5 +261,5 @@ cdef class Eckart(TunnelingModel):
             # all terms by exp(2*pi*d) before evaluating
             else:
                 kappa[r] = 1 - (exp(twopia-twopib-twopid) + exp(-twopia+twopib-twopid) + 1 + exp(-2*twopid)) / (exp(twopia+twopib-twopid) + exp(-twopia-twopib-twopid) + 1 + exp(-2*twopid))
-        
+
         return kappa

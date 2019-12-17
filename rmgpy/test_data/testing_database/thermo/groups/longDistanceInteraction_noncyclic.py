@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 name = "Long distance interaction correction for non-cyclic molecule"
-shortDesc = u""
-longDesc = u"""
+shortDesc = ""
+longDesc = """
 Designed to account for the long distance interaction for non-cyclic molecule.
 Currently include gauche(1,4) and 1,5 interaction corrections.
 For gauche interaction, we apply the simple counting scheme as it is in the old RMG database

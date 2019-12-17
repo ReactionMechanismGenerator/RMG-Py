@@ -28,10 +28,10 @@
 cimport rmgpy.molecule.molecule as mm
 
 
-cpdef toRDKitMol(mm.Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanitize=*)
+cpdef to_rdkit_mol(mm.Molecule mol, bint remove_h=*, bint return_mapping=*, bint sanitize=*)
 
-cpdef mm.Molecule fromRDKitMol(mm.Molecule mol, object rdkitmol)
+cpdef mm.Molecule from_rdkit_mol(mm.Molecule mol, object rdkitmol)
 
-cpdef toOBMol(mm.Molecule mol, bint returnMapping=*)
+cpdef to_ob_mol(mm.Molecule mol, bint return_mapping=*)
 
-cpdef mm.Molecule fromOBMol(mm.Molecule mol, object obmol)
+cpdef mm.Molecule from_ob_mol(mm.Molecule mol, object obmol)
