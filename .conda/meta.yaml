@@ -45,6 +45,7 @@ requirements:
     - matplotlib >=1.5
     - mopac
     - mpmath
+    - muq2
     - networkx
     - nose
     - numdifftools
