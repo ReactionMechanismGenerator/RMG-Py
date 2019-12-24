@@ -159,6 +159,7 @@ class RMG(util.Subject):
         self.Tmax = 0.0
         self.Pmin = 0.0
         self.Pmax = 0.0
+        self.database = None
 
     def clear(self):
         """
@@ -642,13 +643,15 @@ class RMG(util.Subject):
                 reaction_system.attach(SimulationProfilePlotter(
                     self.output_directory, index, self.reaction_model.core.species))
 
-    def execute(self, **kwargs):
+    def execute(self, initialize=True, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
+        ``initialize`` is a ``bool`` type flag used to determine whether to call self.initialize()
         """
 
-        self.initialize(**kwargs)
+        if initialize:
+            self.initialize(**kwargs)
 
         # register listeners
         self.register_listeners()
