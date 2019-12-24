@@ -10,6 +10,7 @@ matplotlib
 cython>=0.19
 quantities
 psutil
+pandas
 xlwt
 MarkupSafe # this makes Jinja2 faster
 Jinja2 # this is for rendering the HTML output files
