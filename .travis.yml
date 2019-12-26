@@ -38,7 +38,11 @@ jobs:
       install:
         # Clone RMG-database
         - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-        - cd RMG-Py
+        # Clone ARC and export to PYTHONPATH
+        - git clone https://github.com/ReactionMechanismGenerator/ARC
+        - cd ARC
+        - export PYTHONPATH=$PYTHONPATH:$(pwd)
+        - cd ../RMG-Py
         # Create and activate environment
         - conda env create -q -f environment.yml
         - source activate rmg_env
