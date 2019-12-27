@@ -45,8 +45,18 @@ else:
     utilities.check_python()
 
 import rmgpy
+from rmgpy.exceptions import DependencyError
 from rmgpy.rmg.main import RMG, initialize_log, process_profile_stats, make_profile_graph
 from rmgpy.util import parse_command_line_arguments
+import tandem
+
+# Before importing the RMG-ARC Tandem tool, check that ARC is available
+try:
+    from arc import ARC
+except ImportError:
+    arc_available = False
+else:
+    arc_available = True
 
 ################################################################################
 
@@ -67,8 +77,6 @@ def main():
         elif args.quiet:
             level = logging.WARNING
         initialize_log(level, os.path.join(args.output_directory, 'RMG.log'))
-
-    logging.info(rmgpy.settings.report())
 
     kwargs = {
         'restart': args.restart,
@@ -100,9 +108,18 @@ def main():
         make_profile_graph(stats_file)
 
     else:
-
-        rmg = RMG(input_file=args.file, output_directory=args.output_directory)
-        rmg.execute(**kwargs)
+        if args.tandem:
+            if arc_available:
+                tandem.main(args, kwargs)
+            else:
+                raise DependencyError("ARC is unavailable. Make sure ARC is properly installed and appended to PATH "
+                                      "and PYTHONPATH before running it along with RMG. For further information, "
+                                      "see ARC's installation instructions at "
+                                      "https://reactionmechanismgenerator.github.io/ARC/index.html")
+        else:
+            rmg = RMG(input_file=args.file, output_directory=args.output_directory)
+            logging.info(rmgpy.settings.report())
+            rmg.execute(**kwargs)
 
 
 ################################################################################
