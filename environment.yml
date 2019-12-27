@@ -1,5 +1,6 @@
 name: rmg_env
 channels:
+  - anaconda
   - defaults
   - rmg
   - rdkit
@@ -7,6 +8,7 @@ channels:
   - pytorch
   - conda-forge
 dependencies:
+  - ase >=3.19.0
   - cairo
   - cairocffi
   - cantera >=2.3.0
@@ -32,7 +34,9 @@ dependencies:
   - numdifftools
   - numpy >=1.10.0
   - openbabel
+  - paramiko >=2.6.0
   - psutil
+  - py3dmol >= 0.8.0
   - pydas >=1.0.1
   - pydot
   - pydqed >=1.0.0
