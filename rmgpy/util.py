@@ -185,6 +185,11 @@ def parse_command_line_arguments(command_line_args=None):
                         help='output a folder, kinetics_database, that contains a .txt file for each reaction family '
                              'listing the source(s) for each entry')
 
+    # Add option to iteratively run the RMG-ARC Tandem tool
+    # by supplying a valid ARC input file (in addition to the RMG input file)
+    parser.add_argument('-t3', '--tandem', metavar='Tandem', type=str, nargs=1,
+                        help="an input file for The RMG-ARC Tandem Tool (T3)")
+
     args = parser.parse_args(command_line_args)
 
     # Process args to set correct default values and format
