@@ -1975,16 +1975,16 @@ def mark_duplicate_reaction(test_reaction, reaction_list):
             if reaction1.duplicate and reaction2.duplicate:
                 if reaction1.kinetics.is_pressure_dependent() != reaction2.kinetics.is_pressure_dependent():
                     # Reactions with mixed pressure dependence do not need to be marked duplicate in Chemkin
-                    logging.warning('Marked reaction {0} as not duplicate because of mixed pressure dependence '
-                                    'for saving to Chemkin file.'.format(reaction1))
-                    reaction1.duplicate = False
-                    reaction2.duplicate = False
+                    logging.warning('Reaction {0} is marked as duplicate but for Chemkin file it '
+                                    'doesn\'t need to be because of mixed pressure dependence'
+                                    '.'.format(reaction1))
+                    # But leave it alone in case it's a DUPLICATE of some _other_ reaction.
                 elif opposite_dir_match and not reaction1.reversible and not reaction2.reversible:
                     # Irreversible reactions in opposite directions do not need to be marked duplicate in Chemkin
-                    logging.warning('Marked reaction {0} as not duplicate because they are irreversible '
-                                    'in opposite directions for saving to Chemkin file.'.format(reaction1))
-                    reaction1.duplicate = False
-                    reaction2.duplicate = False
+                    logging.warning('Reaction {0} is marked as duplicate but for Chemkin file it '
+                                    'doesn\'t need to be because they are irreversible '
+                                    'in opposite directions.'.format(reaction1))
+                    # But leave it alone in case it's a DUPLICATE of some _other_ reaction.
             else:
                 if (reaction1.kinetics.is_pressure_dependent() == reaction2.kinetics.is_pressure_dependent()
                         and ((reaction1.reversible and reaction2.reversible)
