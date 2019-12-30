@@ -35,6 +35,7 @@ of kinetics and pressure-dependent jobs.
 import logging
 import os
 import string
+import yaml
 
 import numpy as np
 
@@ -114,23 +115,29 @@ class KineticsSensitivity(object):
         species.conformer.E0.value_si -= self.perturbation.value_si  # restore E0 to its original value
 
     def save(self):
-        """Save the SA results as tabulated data"""
+        """Save the SA results as tabulated data as well as in YAML format"""
         if not os.path.exists(self.sensitivity_path):
             os.mkdir(self.sensitivity_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
         reaction_str = '{0} {1} {2}'.format(
             ' + '.join([reactant.label for reactant in self.job.reaction.reactants]),
             '<=>', ' + '.join([product.label for product in self.job.reaction.products]))
-        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.txt'
-        path = os.path.join(self.sensitivity_path, filename)
+        filename = ''.join(c for c in reaction_str if c in valid_chars)
+        path = os.path.join(self.sensitivity_path, filename + '.txt')
+        sa_data = dict()
+        sa_data['structures'] = dict()
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for reaction {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
                        "by perturbing E0 of each well or TS by {1}, and are given in "
                        "`mol/J` units.\n\n\n".format(reaction_str, self.perturbation))
+            for species in self.job.reaction.reactants + self.job.reaction.products:
+                if species.label not in sa_data['structures']:
+                    sa_data['structures'][species.label] = species.to_adjacency_list()
             reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
             ts_label = self.job.reaction.transition_state.label
             products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
+            sa_data[reactants_label], sa_data[ts_label], sa_data[products_label] = dict(), dict(), dict()
             max_label = max(len(reactants_label), len(products_label), len(ts_label), 10)
             sa_f.write('========================={0}=============================================\n'
                        '| Direction | Well or TS {1}| Temperature (K) | Sensitivity coefficient |\n'
@@ -140,30 +147,45 @@ class KineticsSensitivity(object):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     reactants_label, ' ' * (max_label - len(reactants_label)), condition.value_si,
                     self.f_sa_coefficients[self.job.reaction.reactants[0]][i]))
+                sa_data[reactants_label][(condition.value_si, 'K', 'Forward')] = \
+                    self.f_sa_coefficients[self.job.reaction.reactants[0]][i]
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     products_label, ' ' * (max_label - len(products_label)), condition.value_si,
                     self.f_sa_coefficients[self.job.reaction.products[0]][i]))
+                sa_data[products_label][(condition.value_si, 'K', 'Forward')] = \
+                    self.f_sa_coefficients[self.job.reaction.products[0]][i]
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
                     self.f_sa_coefficients[self.job.reaction.transition_state][i]))
+                sa_data[ts_label][(condition.value_si, 'K', 'Forward')] = \
+                    self.f_sa_coefficients[self.job.reaction.transition_state][i]
             sa_f.write('|-----------+------------{0}+-----------------+-------------------------|\n'.format(
                 '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     reactants_label, ' ' * (max_label - len(reactants_label)), condition.value_si,
                     self.r_sa_coefficients[self.job.reaction.reactants[0]][i]))
+                sa_data[reactants_label][(condition.value_si, 'K', 'Reverse')] = \
+                    self.f_sa_coefficients[self.job.reaction.reactants[0]][i]
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     products_label, ' ' * (max_label - len(products_label)), condition.value_si,
                     self.r_sa_coefficients[self.job.reaction.products[0]][i]))
+                sa_data[products_label][(condition.value_si, 'K', 'Reverse')] = \
+                    self.f_sa_coefficients[self.job.reaction.products[0]][i]
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
                     ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
                     self.r_sa_coefficients[self.job.reaction.transition_state][i]))
+                sa_data[ts_label][(condition.value_si, 'K', 'Reverse')] = \
+                    self.f_sa_coefficients[self.job.reaction.transition_state][i]
             sa_f.write('========================={0}=============================================\n'.format(
                 '=' * (max_label - 10)))
+
+        with open(os.path.join(self.sensitivity_path, filename + '.yml'), 'w') as f:
+            yaml.dump(data=sa_data, stream=f)
 
     def plot(self):
         """Plot the SA results as horizontal bars"""
@@ -208,9 +230,9 @@ class KineticsSensitivity(object):
         if not os.path.exists(self.sensitivity_path):
             os.mkdir(self.sensitivity_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
-        reaction_str = '{0} {1} {2}'.format(
-            ' + '.join([reactant.label for reactant in self.job.reaction.reactants]),
-            '<=>', ' + '.join([product.label for product in self.job.reaction.products]))
+        reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
+        products_label = ' + '.join([product.label for product in self.job.reaction.products])
+        reaction_str = f'{reactants_label} <=> {products_label}'
         filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
         path = os.path.join(self.sensitivity_path, filename)
         plt.savefig(path)
@@ -310,22 +332,28 @@ class PDepSensitivity(object):
         self.perturb(entry, unperturb=True)
 
     def save(self, wells, transition_states):
-        """Save the SA output as tabulated data"""
-        if not os.path.exists(os.path.join(self.output_directory, 'sensitivity', '')):
-            os.mkdir(os.path.join(self.output_directory, 'sensitivity', ''))
+        """Save the SA output as tabulated data as well as in YAML format"""
+        if not os.path.exists(os.path.join(self.output_directory, 'sensitivity')):
+            os.mkdir(os.path.join(self.output_directory, 'sensitivity'))
         valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
         network_str = self.job.network.label
         filename = os.path.join('sensitivity', ''.join(c for c in network_str if c in valid_chars) + '.txt')
         path = os.path.join(self.output_directory, filename)
+        sa_data = dict()
+        sa_data['structures'] = dict()
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for network {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
                        "by perturbing E0 of each well or TS by {1},\n and are given in "
                        "`mol/J` units.\n\n\n".format(network_str, self.perturbation))
             for rxn in self.job.network.net_reactions:
+                for species in rxn.reactants + rxn.products:
+                    if species.label not in sa_data['structures']:
+                        sa_data['structures'][species.label] = species.to_adjacency_list()
                 reactants_label = ' + '.join([reactant.label for reactant in rxn.reactants])
-                products_label = ' + '.join([reactant.label for reactant in rxn.products])
-                reaction_str = '{0} {1} {2}'.format(reactants_label, '<=>', products_label)
+                products_label = ' + '.join([product.label for product in rxn.products])
+                reaction_str = f'{reactants_label} <=> {products_label}'
+                sa_data[reaction_str] = dict()
                 sa_f.write('  Sensitivity of network reaction ' + reaction_str + ' :' + '\n')
                 max_label = 40
                 sa_f.write('========================={0}==================================================\n'
@@ -337,13 +365,20 @@ class PDepSensitivity(object):
                         entry_label = '(TS) ' + entry.label
                     elif isinstance(entry, Configuration):
                         entry_label = ' + '.join([species.label for species in entry.species])
-                    entry_label += ' ' * (max_label - len(entry_label))
+                    mod_entry_label = entry_label + ' ' * (max_label - len(entry_label))
                     for i, condition in enumerate(self.conditions):
                         sa_f.write('| {0} | {1:6.1f}          | {2:8.2f}       | {3:+1.2e}               |\n'.format(
-                            entry_label, condition[0].value_si, condition[1].value_si * 1e-5,
+                            mod_entry_label, condition[0].value_si, condition[1].value_si * 1e-5,
                             self.sa_coefficients[str(rxn)][entry][i]))
+                        condition_tuple = (condition[0].value_si, 'K', condition[1].value_si * 1e-5, 'bar')
+                        if condition_tuple not in sa_data[reaction_str]:
+                            sa_data[reaction_str][condition_tuple] = dict()
+                        sa_data[reaction_str][condition_tuple][entry_label] = self.sa_coefficients[str(rxn)][entry][i]
                 sa_f.write('========================={0}=================================================='
                            '\n\n\n'.format('=' * (max_label - 10)))
+
+        with open(os.path.join(self.output_directory, 'sensitivity', 'sa_coefficients.yml'), 'w') as f:
+            yaml.dump(data=sa_data, stream=f)
 
     def plot(self, wells, transition_states):
         """Draw the SA results as horizontal bars"""
