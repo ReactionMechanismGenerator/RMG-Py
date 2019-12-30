@@ -1969,8 +1969,8 @@ def mark_duplicate_reaction(test_reaction, reaction_list):
             # duplicates of one another.
             # RHW question: why can't TemplateReaction be duplicate of LibraryReaction, in Chemkin terms? I guess it shouldn't happen in RMG.
             continue
-        same_dir_match = (reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products)
-        opposite_dir_match = (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products)
+        same_dir_match = (sorted(reaction1.reactants) == sorted(reaction2.reactants) and sorted(reaction1.products) == sorted(reaction2.products))
+        opposite_dir_match = (sorted(reaction1.products) == sorted(reaction2.reactants) and sorted(reaction1.reactants) == sorted(reaction2.products))
         if (same_dir_match or opposite_dir_match) and (reaction1.specific_collider == reaction2.specific_collider):
             if reaction1.duplicate and reaction2.duplicate:
                 if reaction1.kinetics.is_pressure_dependent() != reaction2.kinetics.is_pressure_dependent():
