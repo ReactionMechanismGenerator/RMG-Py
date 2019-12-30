@@ -2150,7 +2150,7 @@ def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicat
         f.write('\n')
     f.write('END\n\n')
     f.close()
-    logging.info("Chemkin file contains {0} reactions.".format(_chemkin_reaction_count))
+    logging.info("Chemkin surface file contains {0} reactions.".format(_chemkin_reaction_count))
     _chemkin_reaction_count = None
 
 
