@@ -67,7 +67,12 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
 # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state.
 # The splittings are obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV.
 # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226}
+# Halogen Atoms taken from https://cccbdb.nist.gov/elecspin.asp
+SOC = {
+    'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 
+    'S': -0.000893, 'P': 0.0, 'I': -0.011547226,
+    'Cl':-0.001338, 'Br':-0.005597, 'F':-0.000614
+}
 
 # Atomic energies
 # All model chemistries here should be lower-case because the user input is changed to lower-case
@@ -323,7 +328,7 @@ atom_energies = {
         'H': -0.49982118 + SOC['H'], 'C': -37.78321274 + SOC['C'], 'N': -54.51729444 + SOC['N'],
         'O': -74.97847534 + SOC['O'], 'S': -397.6571654 + SOC['S']
     },
-
+    
 }
 
 # Petersson-type bond additivity correction parameters
@@ -399,7 +404,7 @@ pbac = {
         'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44,
         'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52,
     },
-
+    
 }
 
 # Melius-type bond additivity correction parameters
