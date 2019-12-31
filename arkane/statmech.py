@@ -1075,6 +1075,7 @@ def assign_frequency_scale_factor(freq_level):
         [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
         [4] Calculated as described in 10.1021/ct100326h
         [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
+        [6] J. Chem. Phys. 126, 084108 (2007); doi: 10.1063/1.2436888
 
     Args:
         freq_level (str, unicode): The frequency level of theory.
@@ -1130,6 +1131,7 @@ def assign_frequency_scale_factor(freq_level):
                  'ccsd(t)-f12/aug-cc-pvdz': 0.997,  # [3], taken as 'CCSD(T)/cc-pVDZ'
                  'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
                  'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
+                 'g4': 0.9854, # [6]
                  }
     scaling_factor = freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:
