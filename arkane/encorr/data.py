@@ -107,6 +107,13 @@ atom_energies = {
         'Cl': -460.01505, 'F': -99.70498, 'Br': -2573.58537
     },
 
+    # calculated using Gaussian 16 with GD3 dispersion
+    'm062x-d3/jun-cc-pvtz': {
+        'H': -0.49813588717679524, 'N': -54.587423613280166, 'O': -75.06579209968129 + SOC['O'],
+        'C': -37.84283423642995 + SOC['C'], 'Cl': -460.14102245588464 + SOC['Cl'],
+        'F': -99.73219425452456 + SOC['F'], 'Br': -2574.1981614882384 + SOC['Br'],
+    },
+
     # * indicates that the grid size used in the [QChem] electronic
     # structure calculation utilized 75 radial points and 434 angular points
     # (i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
