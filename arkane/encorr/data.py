@@ -100,6 +100,13 @@ atom_energies = {
         'H': -0.5010030, 'N': -54.564343, 'O': -75.030991, 'C': -37.827717, 'P': -341.116432, 'S': -397.961110
     },
 
+    # g4 atom energies taken from [J. Chem. Phys. 126, 084108 (2007); doi: 10.1063/1.2436888]
+    'g4': {
+        'H': -0.50142, 'N': -54.57367, 'O': -75.04550,
+        'C': -37.83417, 'P': -341.13463, 'S': -397.98018,
+        'Cl': -460.01505, 'F': -99.70498, 'Br': -2573.58537
+    },
+
     # * indicates that the grid size used in the [QChem] electronic
     # structure calculation utilized 75 radial points and 434 angular points
     # (i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
@@ -382,6 +389,19 @@ pbac = {
         'N-H': -0.42, 'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58, 'N-O': 0.35,
         # Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
         'N#N': -2.0, 'O=O': -0.2, 'H-H': 1.1,  # Unknown source
+    },
+
+    # g4 bacs were derived using the linear least squares regression method on a training set of 374 species from
+    # [B. Ruscic and D. H. Bross, Active Thermochemical Tables (ATcT) values based on ver. 1.122g of the Thermochemical Network(2019)]
+    # ATcT.anl.gov
+    'g4': {
+        'Br-Br': 0.5635, 'Br-C': 0.5283, 'Br-Cl': -0.5699, 'Br-O': 0.5636,
+        'C#C': -0.7806, 'C#N': -0.4384, 'C-C': 0.0824, 'C-Cl': -0.6351, 'C-F': -0.6744,
+        'C-H': -0.3155, 'C-N': -0.0066, 'C-O': 0.1099, 'C=C': -0.1923, 'C=N': -0.5257,
+        'C=O': -0.6293, 'Cl-Cl': -2.1081, 'Cl-F': -1.382, 'Cl-H': -1.8078, 'Cl-N': -1.6896,
+        'Cl-O': -1.3419, 'F-F': -2.2409, 'F-H': -1.1797, 'F-N': -0.8146, 'F-O': -1.2883,
+        'H-H': -0.9805, 'H-N': -0.6301, 'H-O': -0.9369, 'N#N': -1.0998, 'N-N': 0.0366,
+        'N-O': -0.0954, 'N=N': -0.3661, 'N=O': -0.8795, 'O-O': -0.7334, 'O=O': -1.3686
     },
 
     # Identical corrections for 'b3lyp/cbsb7', 'b3lyp/6-311g(2d,d,p)', 'b3lyp/6-311+g(3df,2p)', 'b3lyp/6-31g(d,p)'
