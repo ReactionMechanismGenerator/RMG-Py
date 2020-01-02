@@ -164,6 +164,35 @@ class GaussianLogTest(unittest.TestCase):
         self.assertEqual(conformer.spin_multiplicity, 1)
         self.assertEqual(conformer.optical_isomers, 1)
 
+    def test_load_ethane_from_gaussian_log_g4(self):
+        """
+        tests parsing of gaussian16 log file for ethane (C2H6)
+        """
+
+        log = GaussianLog(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                          '../examples/arkane/species/C2H6/', 'ethane_g4.log'))
+        conformer = log.load_conformer(symmetry=18)[0]
+        e0 = log.load_energy()
+
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
+
+        trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
+        rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
+        vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
+        t_list = np.array([298.15], np.float64)
+
+        self.assertAlmostEqual(trans.get_partition_function(t_list), 6.473748e6, delta=1e1)
+        self.assertAlmostEqual(rot.get_partition_function(t_list), 270.0905, delta=1e-2)
+        self.assertAlmostEqual(vib.get_partition_function(t_list), 1.3623203, delta=1e-4)
+
+        self.assertAlmostEqual(e0 / constants.Na /
+                               constants.E_h, -79.808057, delta=1e-6)
+        self.assertEqual(conformer.spin_multiplicity, 1)
+        self.assertEqual(conformer.optical_isomers, 1)
+
     def test_load_symmetry_and_optics(self):
         """
         Uses a Gaussian03 log file for oxygen (O2) to test that its
