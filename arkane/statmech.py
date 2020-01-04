@@ -1094,6 +1094,7 @@ def assign_frequency_scale_factor(freq_level):
                  'b3lyp/6-311g(d,p)': 0.967,  # [2]
                  'b3lyp/6-311+g(3df,2p)': 0.967,  # [2]
                  'b3lyp/6-311+g(3df,2pd)': 0.970,  # [2]
+                 'apfd/def2tzvp': 0.993,  # [4]
                  'm06-2x/6-31g(d,p)': 0.952,  # [2]
                  'm06-2x/6-31+g(d,p)': 0.979,  # [3]
                  'm06-2x/6-311+g(d,p)': 0.983,  # [3]
