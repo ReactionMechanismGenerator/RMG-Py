@@ -31,10 +31,11 @@ import logging
 import os
 import shutil
 import unittest
+from unittest.mock import patch
 
 from nose.plugins.attrib import attr
 
-from rmgpy.rmg.main import RMG, initialize_log
+from rmgpy.rmg.main import RMG, initialize_log, make_profile_graph
 from rmgpy.rmg.main import RMG_Memory
 from rmgpy import get_path
 from rmgpy import settings
@@ -252,6 +253,51 @@ class TestRestartNoFilters(unittest.TestCase):
 
         # Remove output directory
         shutil.rmtree(cls.outputDir)
+
+
+class TestProfiling(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        # Making the profile graph requires a display. See if one is available first
+        cls.display_found = False
+
+        try:
+            cls.display_found = bool(os.environ['DISPLAY'])
+        except KeyError:  # This means that no display was found
+            pass
+        cls.test_dir = os.path.join(originalPath, 'rmg', 'test_data', 'mainTest')
+
+    @patch('rmgpy.rmg.main.logging')
+    def test_make_profile_graph(self, mock_logging):
+        """
+        Test that `make_profile_graph` function behaves properly given the current display state
+        """
+        profile_file = os.path.join(self.test_dir, 'RMG.profile')
+        make_profile_graph(profile_file)
+        if self.display_found:  # Check that the profile graph was made
+            self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'RMG.profile.dot.pdf')))
+        else:  # We can't test making a profile graph on this system, but at least test that this was recognized
+            mock_logging.warning.assert_called_with(
+                'Could not find a display, which is required in order to generate '
+                'the profile graph. This '
+                'is likely due to this job being run on a remote server without performing X11 forwarding '
+                'or running the job through a job manager like SLURM.\n\n The graph can be generated later '
+                'by running with the postprocessing flag `rmg.py -P input.py` from any directory/computer '
+                'where both the input file and RMG.profile file are located and a display is available.\n\n'
+                'Note that if the postprocessing flag is specified, this will force the graph generation '
+                'regardless of if a display was found, which could cause this program to crash or freeze.'
+            )
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+
+        if cls.display_found:  # Remove output PDF
+            os.remove(os.path.join(cls.test_dir, 'RMG.profile.dot.pdf'))
+            os.remove(os.path.join(cls.test_dir, 'RMG.profile.dot'))
+            os.remove(os.path.join(cls.test_dir, 'RMG.profile.dot.ps2'))
 
 
 class TestCanteraOutput(unittest.TestCase):
