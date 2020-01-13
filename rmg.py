@@ -97,8 +97,10 @@ def main():
         # postprocess the stats
         log_file = os.path.join(args.output_directory, 'RMG.log')
         process_profile_stats(stats_file, log_file)
-        make_profile_graph(stats_file)
 
+        # Make the profile graph. Force graph generation regardless of display status if args.postprocess
+        make_profile_graph(stats_file, force_graph_generation=args.postprocess)
+        
     else:
 
         rmg = RMG(input_file=args.file, output_directory=args.output_directory)
