@@ -1,0 +1,23 @@
+level_of_theory: 'b3lyp/6-31g**//b3lyp/6-31g**'
+job_types:
+  rotors: false
+  conformers: true
+  fine: false
+  freq: true
+  opt: true
+  sp: true
+  onedmin: false
+  orbitals: false
+allow_nonisomorphic_2d: True
+
+SA species: 10
+SA reactions: 10
+SA pdep threshold: 0.1
+all core species: True
+SA observables:
+  - label: OH
+    smiles: '[OH]'
+collision violators: True
+RMG tolerances:
+  - 0.1
+  - 0.01

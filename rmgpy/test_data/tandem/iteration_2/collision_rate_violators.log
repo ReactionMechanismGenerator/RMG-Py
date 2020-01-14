@@ -1,0 +1,22 @@
+*** Collision rate limit violators report ***
+"Violation factor" is the ratio of the rate coefficient to the collision limit rate at the relevant conditions
+
+! Template reaction: R_Recombination
+! Flux pairs: C3H6(19), C3H7_0(15); H(4), C3H7_0(15); 
+! From training reaction 18 used for C_rad/H2/Cs;H_rad
+! Exact match found for rate rule [C_rad/H2/Cs;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: R_Recombination
+C3H6(19)+H(4)=C3H7_0(15)                            4.199565e+12 0.600     -0.800   
+
+Arrhenius(A=(6.97354e-12,'cm^3/(molecule*s)'), n=0.6, Ea=(-3.3472,'kJ/mol'), T0=(1,'K'))
+From training reaction 18 used for C_rad/H2/Cs;H_rad
+Exact match found for rate rule [C_rad/H2/Cs;H_rad]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 2.0
+family: R_Recombination
+Direction: forward
+Violation factor: 1.13
+Violation condition: 1350.0 K, 1.0 bar
+

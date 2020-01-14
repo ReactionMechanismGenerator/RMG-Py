@@ -1,0 +1,29 @@
+ARC v1.1.0
+ARC project rmg_arc
+
+Levels of theory used:
+
+Conformers:       apfd/def2svp
+TS guesses:       apfd/def2svp
+Optimization:     b3lyp/6-31g(d,p) (NOT using a fine grid)
+Frequencies:      b3lyp/6-31g(d,p)
+Single point:     b3lyp/6-31g(d,p)
+Rotor scans:      
+Using bond additivity corrections for thermo
+
+Using the following ESS settings: {'gaussian': ['rmg', 'pharos', 'c3ddb'], 'molpro': ['rmg', 'pharos'], 'qchem': ['pharos'], 'orca': ['c3ddb'], 'onedmin': ['pharos'], 'gromacs': ['rmg']}
+
+Considered the following species and TSs:
+Species C3H8_0 (run time: 0:01:16)
+Species C3H7_1 (run time: 0:04:01)
+Species C3H6_0 (run time: 0:01:46)
+Species C3H6_1 (run time: 0:03:14)
+Species C3H5_1 (run time: 0:02:11)
+Species C3H5_2 (run time: 0:03:52)
+Species C3H6_2 (run time: 0:04:27)
+Species C3H4_0 (run time: 0:00:43)
+Species C3H3_0 (run time: 0:00:38)
+Species C3H4_1 (Failed!) (run time: None)
+Species C3H4_2 (run time: 0:01:00)
+
+Overall time since project initiation: 00:28:38
