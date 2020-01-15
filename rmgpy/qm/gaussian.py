@@ -51,7 +51,7 @@ class Gaussian:
     inputFileExtension = '.gjf'
     outputFileExtension = '.log'
 
-    executablesToTry = ('g09', 'g03')
+    executablesToTry = ('g16', 'g09', 'g03')
 
     for exe in executablesToTry:
         try:
