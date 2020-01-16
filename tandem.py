@@ -253,8 +253,7 @@ def run_rmg(input_file, output_directory, kwargs, arguments, tolerance, thermo_l
     """
     global rmg_exceptions_counter
     global rmg_thermo_lib_base_path
-    if verbose:
-        log(f'Running RMG (tolerance = {tolerance})...')
+
     # Initialize the logging system (resets the RMG.log file)
     initialize_rmg_log(verbose=20, log_file_name=os.path.join(output_directory, 'RMG.log'))  # 20 is `logging.INFO`
     max_num_exceptions_allowed = arguments['max RMG exceptions allowed']
@@ -265,6 +264,17 @@ def run_rmg(input_file, output_directory, kwargs, arguments, tolerance, thermo_l
     rmg.initialize(**kwargs)
     rmg.wallTime = arguments['max RMG walltime']
     rmg.model_settings_list[0].tol_move_to_core = tolerance
+    # Per pg 51 of RMG-Py Documentation pdf:
+    # If not pruning (i.e. not filtering reactions), typically have toleranceMoveToCore = toleranceInterruptSimulation
+    if not rmg.model_settings_list[0].filter_reactions:
+        rmg.model_settings_list[0].tol_interrupt_simulation = 0.02 # tolerance
+        if verbose:
+            log(f'Running RMG (toleranceMoveToCore = {tolerance} and toleranceInterruptSimulation = {tolerance})...')
+    # If pruning, then only change toleranceMoveToCore i.e. no additional action needed. Assume the user has set
+    # toleranceInterruptSimulation > 1e8 so do not change that value
+    else:
+        if verbose:
+            log(f'Running RMG (toleranceMoveToCore = {tolerance})...')
 
     try:
         rmg.execute(initialize=False)
