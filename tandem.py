@@ -267,7 +267,7 @@ def run_rmg(input_file, output_directory, kwargs, arguments, tolerance, thermo_l
     # Per pg 51 of RMG-Py Documentation pdf:
     # If not pruning (i.e. not filtering reactions), typically have toleranceMoveToCore = toleranceInterruptSimulation
     if not rmg.model_settings_list[0].filter_reactions:
-        rmg.model_settings_list[0].tol_interrupt_simulation = 0.02 # tolerance
+        rmg.model_settings_list[0].tol_interrupt_simulation = tolerance
         if verbose:
             log(f'Running RMG (toleranceMoveToCore = {tolerance} and toleranceInterruptSimulation = {tolerance})...')
     # If pruning, then only change toleranceMoveToCore i.e. no additional action needed. Assume the user has set
