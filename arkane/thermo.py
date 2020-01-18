@@ -123,7 +123,7 @@ class ThermoJob(object):
         conformer = self.species.conformer
         for i in range(Tlist.shape[0]):
             Cplist[i] += conformer.get_heat_capacity(Tlist[i])
-        H298 += conformer.get_enthalpy(298.) + conformer.E0.value_si
+        H298 += conformer.get_enthalpy(298.) + conformer.E0.value_si + self.species.props['atom_corrections_298K']
         S298 += conformer.get_entropy(298.)
 
         if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
@@ -157,6 +157,8 @@ class ThermoJob(object):
         else:
             species.thermo = wilhoit
 
+        species.thermo.E0 = conformer.E0
+
     def write_output(self, output_directory):
         """
         Save the results of the thermodynamics job to the `output.py` file located
@@ -168,8 +170,10 @@ class ThermoJob(object):
 
         with open(output_file, 'a') as f:
             f.write('# Thermodynamics for {0}:\n'.format(species.label))
+            H0 = species.conformer.E0.value_si / 4184
             H298 = species.get_thermo_data().get_enthalpy(298) / 4184.
             S298 = species.get_thermo_data().get_entropy(298) / 4.184
+            f.write('#   Enthalpy of formation (0 K)     = {0:9.3f} kcal/mol\n'.format(H0))
             f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
             f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
             f.write('#    =========== =========== =========== =========== ===========\n')
