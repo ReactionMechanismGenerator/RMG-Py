@@ -1298,4 +1298,3 @@ def determine_rotor_symmetry(energies, label, pivots):
         logging.info('Determined a symmetry number of {0} for rotor of species {1} between pivots {2}'
                      ' based on the {3}.'.format(symmetry, label, pivots, reason))
     return symmetry
-                                     
