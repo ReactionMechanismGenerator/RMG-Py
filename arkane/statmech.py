@@ -483,7 +483,7 @@ class StatMechJob(object):
             else:
                 e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
             if self.applyAtomEnergyCorrections:
-                atom_corrections = get_atom_correction(self.modelChemistry,
+                atom_corrections_0K, atom_corrections_298K  = get_atom_correction(self.modelChemistry,
                                                        atoms, self.atomEnergies)
 
             else:
@@ -497,7 +497,7 @@ class StatMechJob(object):
                                            multiplicity=conformer.spin_multiplicity)
             else:
                 bond_corrections = 0
-            e_electronic_with_corrections = e_electronic + atom_corrections + bond_corrections
+            e_electronic_with_corrections = e_electronic + atom_corrections_0K + bond_corrections
             # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
             zpe = statmech_log.load_zero_point_energy() * zpe_scale_factor if len(number) > 1 else 0
             logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
@@ -510,6 +510,7 @@ class StatMechJob(object):
             logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
 
         conformer.E0 = (e0 * 0.001, "kJ/mol")
+        self.species.props['atom_corrections_298K'] = atom_corrections_298K
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
