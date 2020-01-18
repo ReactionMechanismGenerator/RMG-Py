@@ -489,7 +489,7 @@ class StatMechJob(object):
                     isodesmic_uncertainty = self.isodesmicUncertainty
 
             if self.applyAtomEnergyCorrections:
-                atom_corrections = get_atom_correction(self.modelChemistry,
+                atom_corrections_0K, atom_corrections_298K  = get_atom_correction(self.modelChemistry,
                                                        atoms, self.atomEnergies)
 
             else:
@@ -505,7 +505,7 @@ class StatMechJob(object):
                                            multiplicity=conformer.spin_multiplicity)
             else:
                 bond_corrections = 0
-            e_electronic_with_corrections = e_electronic + atom_corrections + bond_corrections + isodesmic_correction
+            e_electronic_with_corrections = e_electronic + atom_corrections_0K + bond_corrections + isodesmic_correction
             # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
             zpe = statmech_log.load_zero_point_energy() * zpe_scale_factor if len(number) > 1 else 0
             logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
@@ -519,6 +519,7 @@ class StatMechJob(object):
 
         
         conformer.E0 = (e0 * 0.001, "kJ/mol")
+        self.species.props['atom_corrections_298K'] = atom_corrections_298K
         if self.isodesmicUncertainty is not None:
             conformer.E0.uncertainty_si = isodesmic_uncertainty
 
@@ -1297,3 +1298,4 @@ def determine_rotor_symmetry(energies, label, pivots):
         logging.info('Determined a symmetry number of {0} for rotor of species {1} between pivots {2}'
                      ' based on the {3}.'.format(symmetry, label, pivots, reason))
     return symmetry
+                                     

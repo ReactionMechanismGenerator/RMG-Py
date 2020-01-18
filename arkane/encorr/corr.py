@@ -98,6 +98,7 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
     P quartet, S triplet, Cl doublet, Br doublet, I doublet.
     """
     corr = 0.0
+    corr = [0.0,0.0]
     model_chemistry = model_chemistry.lower()
     # Step 1: Reference all energies to a model chemistry-independent
     # basis by subtracting out that model chemistry's atomic energies
@@ -109,7 +110,8 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
 
     for symbol, count in atoms.items():
         if symbol in atom_energies:
-            corr -= count * atom_energies[symbol] * 4.35974394e-18 * constants.Na  # Convert Hartree to J/mol
+            corr[0] -= count * atom_energies[symbol] * constants.E_h * constants.Na # Convert Hartree to J/mol
+            # corr -= count * atom_energies[symbol] * 4.35974394e-18 * constants.Na  # Convert Hartree to J/mol
         else:
             raise AtomEnergyCorrectionError(
                 'An energy correction for element "{}" is unavailable for model chemistry "{}".'
@@ -119,10 +121,11 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
             )
 
     # Step 2: Atom energy corrections to reach gas-phase reference state
-    atom_enthalpy_corrections = {symbol: data.atom_hf[symbol] - data.atom_thermal[symbol] for symbol in data.atom_hf}
+    atom_enthalpy_corrections = {symbol: (data.atom_hf[symbol],data.atom_thermal[symbol]) for symbol in data.atom_hf}
     for symbol, count in atoms.items():
         if symbol in atom_enthalpy_corrections:
-            corr += count * atom_enthalpy_corrections[symbol] * 4184.0  # Convert kcal/mol to J/mol
+            corr[0] += count * atom_enthalpy_corrections[symbol][0] * 4184.0  # Convert kcal/mol to J/mol
+            corr[1] -= count * atom_enthalpy_corrections[symbol][1] * 4184.0  # Convert kcal/mol to J/mol
         else:
             raise AtomEnergyCorrectionError(
                 'Element "{}" is not yet supported in Arkane.'
