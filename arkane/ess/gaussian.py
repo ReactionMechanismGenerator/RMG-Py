@@ -353,9 +353,11 @@ class GaussianLog(Log):
         rigid_scan = False
 
         vlist = []  # The array of potentials at each scan angle
-
+        angle = []  # The corresponding angles for each scan
         # Parse the Gaussian log file, extracting the energies of each
         # optimized conformer in the scan
+        scan_number, failed_scans = 0, 0
+        scan_angle = self._load_scan_angle() * np.pi / 180  # convert to radians
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
@@ -373,18 +375,31 @@ class GaussianLog(Log):
                     # rigid scans will only not optimize, so just append every time it finds an energy.
                     if rigid_scan:
                         vlist.append(energy)
+                        angle.append(scan_angle * scan_number)
+                        scan_number += 1
                 # We want to keep the values of energy that come most recently before
                 # the line containing "Optimization completed", since it refers
                 # to the optimized geometry
                 if 'Optimization completed' in line:
                     vlist.append(energy)
+                    angle.append(scan_angle * scan_number)
+                    scan_number += 1
+                if 'Optimization stopped' in line:
+                    # failed to converge, skipping and warning
+                    scan_number += 1
+                    failed_scans += 1
                 line = f.readline()
 
         # give warning in case this assumption is not true
         if rigid_scan:
             print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
-
+        if failed_scans:
+            logging.warning('{0} failed optimizations for scan located at {1}'.format(failed_scans, self.path))
+        if scan_number != self._load_number_scans() + 1:  # + 1 since Gaussian runs an additional scan at end.
+            logging.warning('Read {0} scan energies located in {2}. Expected {1} from input. Scan job may not '
+                            'have completed.'.format(scan_number, self._load_number_scans() + 1, self.path))
         vlist = np.array(vlist, np.float64)
+        angle = np.array(angle, np.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be
         # the lowest energy conformer
         check_conformer_energy(vlist, self.path)
@@ -396,11 +411,7 @@ class GaussianLog(Log):
 
         if opt_freq:
             vlist = vlist[:-1]
-
-        # Determine the set of dihedral angles corresponding to the loaded energies
-        # This assumes that you start at 0.0, finish at 360.0, and take
-        # constant step sizes in between
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), np.float64)
+            angle = angle[:-1]
 
         return vlist, angle
 
