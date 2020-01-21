@@ -95,6 +95,20 @@ class LibraryReaction(Reaction):
         self.library = library
         self.family = library
         self.entry = entry
+        if self.kinetics.is_pressure_dependent():
+            success = self.generate_high_p_limit_kinetics()
+            if success:
+                self.kinetics = self.network_kinetics
+                logging.info(f'Replaced PDep kinetics for library reaction {self} with the high pressure limit rate.')
+            else:
+                logging.error(f'library reaction {self} is pressure dependent, and its high-pressure limit rate '
+                              f'could not be extracted. Ignoring this library reaction (the rate could still be '
+                              f'estimated from families).')
+                self.kinetics = None
+                self.reactants = list()
+                self.products = list()
+                self.entry = None
+
 
     def __reduce__(self):
         """
