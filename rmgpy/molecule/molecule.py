@@ -1393,7 +1393,7 @@ class Molecule(Graph):
                 atom.atomtype = get_atomtype(atom, atom.edges)
             except AtomTypeError:
                 if log_species:
-                    logging.error("Could not update atomtypes for this molecule:\n{0}".format(self.to_adjacency_list()))
+                    logging.debug("Could not update atomtypes for this molecule:\n{0}".format(self.to_adjacency_list()))
                 if raise_exception:
                     raise
                 atom.atomtype = ATOMTYPES['R']
