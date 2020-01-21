@@ -224,7 +224,7 @@ def fragment_adj(string):
 
 def fragment_SMILES(string):
     from afm.fragment import Fragment
-    return Fragment().from_SMILES_like_string(string)
+    return Fragment().from_smiles_like_string(string)
 
 # Reaction systems
 def simple_reactor(temperature,
