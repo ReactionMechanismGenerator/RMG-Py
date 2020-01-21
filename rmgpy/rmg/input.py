@@ -177,11 +177,11 @@ def adjacency_list(string):
 
 def fragment_adj(string):
     from afm.fragment import Fragment
-    return Fragment().fromAdjacencyList(string)
+    return Fragment().from_adjacency_list(string)
 
 def fragment_smiles(string):
     from afm.fragment import Fragment
-    return Fragment().from_SMILES_like_string(string)
+    return Fragment().from_smiles_like_string(string)
 
 # Reaction systems
 def simple_reactor(temperature,

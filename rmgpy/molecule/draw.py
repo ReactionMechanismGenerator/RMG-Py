@@ -1634,9 +1634,7 @@ class ReactionDrawer(object):
         # First draw each of the reactants and products
         reactants, products = [], []
         for reactant in reaction.reactants:
-            if isinstance(reactant, Species):
-                molecule = reactant.molecule[0]
-            else:
+            if isinstance(reactant, Molecule):
                 molecule = reactant
             elif hasattr(reactant, 'molecule'):
                 molecule = reactant.molecule[0]
@@ -1644,9 +1642,7 @@ class ReactionDrawer(object):
                 raise TypeError('Expected Molecule or Species object, not {0}'.format(reactant.__class__.__name__))
             reactants.append(MoleculeDrawer().draw(molecule, file_format))
         for product in reaction.products:
-            if isinstance(product, Species):
-                molecule = product.molecule[0]
-            else:
+            if isinstance(product, Molecule):
                 molecule = product
             elif hasattr(product, 'molecule'):
                 molecule = product.molecule[0]

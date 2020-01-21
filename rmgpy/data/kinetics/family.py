@@ -61,7 +61,6 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-from rmgpy.molecule.atomtype import atomTypes
 
 from .common import save_entry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
                     ensure_independent_atom_ids

@@ -159,7 +159,7 @@ def evaluator(spc, solvent_name=''):
 
     if isinstance(spc.molecule[0], Molecule):
         spc.generate_resonance_structures()
-        thermo = generateThermoData(spc, solvent_name=solvent_name)
+        thermo = generate_thermo_data(spc, solvent_name=solvent_name)
     else:
         # assume it's a species for Fragment
         spc.molecule[0].assign_representative_species()
