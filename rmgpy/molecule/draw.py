@@ -59,8 +59,7 @@ except ImportError:
         cairo = None
 import numpy as np
 from rdkit.Chem import AllChem
-
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.molecule import Atom, Molecule
 from rmgpy.qm.molecule import Geometry
 
 
@@ -175,7 +174,7 @@ class MoleculeDrawer(object):
         self.implicitHydrogens = {}
         surface_sites = []
         for atom in self.molecule.atoms:
-            if atom.is_hydrogen() and atom.label == '':
+            if isinstance(atom, Atom) and atom.is_hydrogen() and atom.label == '':
                 atoms_to_remove.append(atom)
             elif atom.is_surface_site():
                 surface_sites.append(atom)
@@ -967,7 +966,7 @@ class MoleculeDrawer(object):
         draw_lone_pairs = False
 
         for atom in atoms:
-            if atom.is_nitrogen():
+            if isinstance(atom, Atom) and atom.is_nitrogen():
                 draw_lone_pairs = True
 
         left = 0.0
@@ -1271,7 +1270,9 @@ class MoleculeDrawer(object):
             bounding_rect = [x1, y1, x2, y2]
 
             # Set color for text
-            if atom.element.isotope != -1:
+            if not isinstance(atom, Atom):
+                cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
+            elif atom.element.isotope != -1:
                 cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
             elif heavy_atom == 'C':
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
@@ -1633,7 +1634,9 @@ class ReactionDrawer(object):
         # First draw each of the reactants and products
         reactants, products = [], []
         for reactant in reaction.reactants:
-            if isinstance(reactant, Molecule):
+            if isinstance(reactant, Species):
+                molecule = reactant.molecule[0]
+            else:
                 molecule = reactant
             elif hasattr(reactant, 'molecule'):
                 molecule = reactant.molecule[0]
@@ -1641,7 +1644,9 @@ class ReactionDrawer(object):
                 raise TypeError('Expected Molecule or Species object, not {0}'.format(reactant.__class__.__name__))
             reactants.append(MoleculeDrawer().draw(molecule, file_format))
         for product in reaction.products:
-            if isinstance(product, Molecule):
+            if isinstance(product, Species):
+                molecule = product.molecule[0]
+            else:
                 molecule = product
             elif hasattr(product, 'molecule'):
                 molecule = product.molecule[0]

@@ -175,6 +175,14 @@ def adjacency_list(string):
     return Molecule().from_adjacency_list(string)
 
 
+def fragment_adj(string):
+    from afm.fragment import Fragment
+    return Fragment().fromAdjacencyList(string)
+
+def fragment_smiles(string):
+    from afm.fragment import Fragment
+    return Fragment().from_SMILES_like_string(string)
+
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
@@ -912,6 +920,8 @@ def read_input_file(path, rmg0):
         'catalystProperties': catalyst_properties,
         'species': species,
         'SMARTS': smarts,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,

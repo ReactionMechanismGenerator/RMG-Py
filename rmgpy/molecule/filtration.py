@@ -55,6 +55,12 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
     We often get too many resonance structures from the combination of all rules, particularly for species containing
     lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.
     """
+
+    from afm.fragment import Fragment
+    if isinstance(mol_list[0], Fragment):
+        for mol in mol_list:
+            mol.update()
+
     if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
 
@@ -102,12 +108,13 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
     if `allow_expanded_octet` is ``True`` (by default), then the function also considers dectet for
     third row elements (currently sulfur is the only hypervalance third row element in RMG)
     """
-    if not isinstance(mol, Molecule):
+    from afm.fragment import Fragment, CuttingLabel
+    if not isinstance(mol, (Molecule, Fragment)):
         raise TypeError("Octet deviation could only be determined for Molecule objects.")
 
     octet_deviation = 0  # This is the overall "score" for the molecule, summed across all non-H atoms
     for atom in mol.vertices:
-        if atom.is_hydrogen():
+        if isinstance(atom, CuttingLabel) or atom.is_hydrogen():
             continue
         val_electrons = 2 * (int(atom.get_total_bond_order()) + atom.lone_pairs) + atom.radical_electrons
         if atom.is_carbon() or atom.is_nitrogen() or atom.is_oxygen():

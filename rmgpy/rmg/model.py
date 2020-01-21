@@ -826,9 +826,12 @@ class CoreEdgeReactionModel:
         if not spc.thermo:
             submit(spc, self.solvent_name)
 
+            # if rename and spc.thermo and spc.thermo.label != '':  # check if thermo libraries have a name for it
+            #     logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
+            #     spc.label = spc.thermo.label
             if rename and spc.thermo and spc.thermo.label != '':  # check if thermo libraries have a name for it
-                logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
-                spc.label = spc.thermo.label
+                logging.info('Species {0} NOT renamed {1} but get thermo based on thermo library'.format(spc.label, spc.thermo.label))
+                spc.label = spc.SMILES
 
         spc.generate_energy_transfer_model()
 

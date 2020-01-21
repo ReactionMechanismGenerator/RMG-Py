@@ -51,6 +51,7 @@ import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
+from rmgpy.molecule.graph import Vertex, Edge, Graph
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
@@ -119,7 +120,13 @@ class Species(object):
             self.molecule = [Molecule(inchi=inchi)]
             self._inchi = inchi
         elif smiles:
-            self.molecule = [Molecule(smiles=smiles)]
+            # check it is fragment or molecule
+            import re
+            from afm.fragment import Fragment
+            if re.findall(r'([LR]\d?)', smiles) != []: # Fragment
+                self.molecule = [Fragment(smiles=smiles)]
+            else: # Molecule
+                self.molecule = [Molecule(smiles=smiles)]
             self._smiles = smiles
 
         # Check multiplicity of each molecule is the same
@@ -285,7 +292,8 @@ class Species(object):
             generate_initial_map (bool, optional): If ``True``, make initial map by matching labeled atoms
             strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
         """
-        if isinstance(other, Molecule):
+        from afm.fragment import Fragment
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map, strict=strict):
                     return True
@@ -306,9 +314,14 @@ class Species(object):
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
+        from afm.fragment import Fragment
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.is_identical(other, strict=strict):
+                    return True
+        elif isinstance(other, Fragment):
+            for molecule in self.molecule:
+                if molecule.isIdentical(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
@@ -386,12 +399,16 @@ class Species(object):
         instead. Be sure that species' labels are unique when setting it False.
         """
         import cantera as ct
-
+        from afm.fragment import CuttingLabel
+        
         # Determine the number of each type of element in the molecule
         element_dict = {}  # element_counts = [0,0,0,0]
-        for atom in self.molecule[0].atoms:
+        for vertex in self.molecule[0].vertices:
             # The atom itself
-            symbol = atom.element.symbol
+            if not isinstance(vertex, CuttingLabel):
+                symbol = vertex.element.symbol
+            else: # that means this vertex is CuttingLabel
+                symbol = 'Cl'
             if symbol not in element_dict:
                 element_dict[symbol] = 1
             else:
@@ -648,7 +665,7 @@ class Species(object):
         """
         `True` if the species has at least one reactive molecule, `False` otherwise
         """
-        cython.declare(molecule=Molecule)
+        cython.declare(molecule=Graph)
         return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
@@ -743,8 +760,13 @@ class Species(object):
             logging.debug('Could not obtain the transport database. Not generating transport...')
             raise
 
-        # count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
-        self.transport_data = transport_db.get_transport_properties(self)[0]
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
+        if isinstance(self.molecule[0], Molecule):
+            self.transport_data = transport_db.get_transport_properties(self)[0]
+        else:
+            # assume it's a species for Fragment
+            self.molecule[0].assign_representative_species()
+            self.transport_data = transport_db.get_transport_properties(self.molecule[0].species_repr)[0]
 
     def get_transport_data(self):
         """

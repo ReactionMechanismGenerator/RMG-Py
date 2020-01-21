@@ -61,8 +61,19 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
+from rmgpy.molecule.atomtype import atomTypes
 
+from .common import save_entry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
+                    ensure_independent_atom_ids
+from .depository import KineticsDepository
+from .groups import KineticsGroups
+from .rules import KineticsRules
+from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
+                             UndeterminableKineticsError, ForbiddenStructureException,\
+                             KekulizationError, ActionError, DatabaseError
 
+from afm.fragment import Fragment, CuttingLabel
+import itertools
 ################################################################################
 
 class TemplateReaction(Reaction):
@@ -1290,10 +1301,13 @@ class KineticsFamily(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactant_structures[0], Group):
+        if any(isinstance(reactant, Fragment) for reactant in reactant_structures):
+            reactant_structure = Fragment()
+        elif isinstance(reactant_structures[0], Group):
             reactant_structure = Group()
-        else:
+        elif isinstance(reactant_structures[0], Molecule):
             reactant_structure = Molecule()
+
         for s in reactant_structures:
             reactant_structure = reactant_structure.merge(s.copy(deep=True))
 
@@ -1365,7 +1379,7 @@ class KineticsFamily(Database):
         product_structure = reactant_structure
 
         if not product_structure.props['validAromatic']:
-            if isinstance(product_structure, Molecule):
+            if isinstance(product_structure, Molecule) or isinstance(product_structure, Fragment):
                 # For molecules, kekulize the product to redistribute bonds appropriately
                 product_structure.kekulize()
             else:
@@ -1467,6 +1481,12 @@ class KineticsFamily(Database):
 
         # Split product structure into multiple species if necessary
         product_structures = product_structure.split()
+        # check if a Fragment is a Molecule, then change it to Molecule
+        # if isinstance(product_structures[0], Fragment):
+        #     for index, product in enumerate(product_structures):
+        #         if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
+        #             mol = Molecule(atoms=product.vertices)
+        #             product_structures[index] = mol
 
         # Make sure we've made the expected number of products
         if product_num != len(product_structures):
@@ -1483,7 +1503,10 @@ class KineticsFamily(Database):
 
         # Remove vdW bonds
         for struct in product_structures:
-            struct.remove_van_der_waals_bonds()
+            if isinstance(struct, Fragment):
+                continue
+            else:
+                struct.remove_van_der_waals_bonds()
 
         # Make sure we don't create a different net charge between reactants and products
         reactant_net_charge = product_net_charge = 0
@@ -1495,7 +1518,7 @@ class KineticsFamily(Database):
             # If product structures are Molecule objects, update their atom types
             # If product structures are Group objects and the reaction is in certain families
             # (families with charged substances), the charge of structures will be updated
-            if isinstance(struct, Molecule):
+            if isinstance(struct, Molecule) or isinstance(struct, Fragment):
                 struct.update()
             elif isinstance(struct, Group):
                 struct.reset_ring_membership()

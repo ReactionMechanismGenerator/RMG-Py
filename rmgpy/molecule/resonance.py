@@ -253,7 +253,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         copy                if False, append new resonance structures to input list (default)
                             if True, make a new list with all of the resonance structures
     """
-    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule)
+    cython.declare(index=cython.int, molecule=Graph, new_mol_list=list, new_mol=Graph, mol=Graph)
 
     if copy:
         # Make a copy of the list so we don't modify the input list
@@ -314,8 +314,8 @@ def generate_allyl_delocalization_resonance_structures(mol):
 
     Biradicals on a single atom are not supported.
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -350,8 +350,8 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
     Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] <=> [NH2+]=C[:::O-]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -391,8 +391,8 @@ def generate_adj_lone_pair_radical_resonance_structures(mol):
     NO2 example: O=[:N]-[::O.] <=> O=[N.+]-[:::O-]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -433,8 +433,8 @@ def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
     Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lone_pairs aren't affected)
     (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule, direction=cython.int)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond12=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph, direction=cython.int)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, bond12=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -481,8 +481,8 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
     In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule, direction=cython.int)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond12=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph, direction=cython.int)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, bond12=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -572,7 +572,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, rings=list, aromaticBonds=list, kekuleList=list, maxNum=cython.int, mol_list=list,
+    cython.declare(molecule=Graph, rings=list, aromaticBonds=list, kekuleList=list, maxNum=cython.int, mol_list=list,
                    new_mol_list=list, ring=list, bond=Bond, order=float, originalBonds=list, originalOrder=list,
                    i=cython.int, counter=cython.int)
 
@@ -721,7 +721,7 @@ def generate_aryne_resonance_structures(mol):
     """
     cython.declare(rings=list, ring=list, new_mol_list=list, bond_list=list,
                    i=cython.int, j=cython.int, bond_orders=str, new_orders=str,
-                   ind=cython.int, bond=Bond, new_mol=Molecule)
+                   ind=cython.int, bond=Edge, new_mol=Graph)
 
     rings = mol.get_relevant_cycles()
     rings = [ring for ring in rings if len(ring) == 6]
@@ -785,9 +785,11 @@ def generate_kekule_structure(mol):
     Returns a single Kekule structure as an element of a list of length 1.
     If there's an error (eg. in RDKit) then it just returns an empty list.
     """
-    cython.declare(atom=Atom, molecule=Molecule)
+    cython.declare(atom=Vertex, molecule=Graph)
 
     for atom in mol.atoms:
+        if not isinstance(atom, Atom):
+            continue
         if atom.atomtype.label == 'Cb' or atom.atomtype.label == 'Cbf':
             break
     else:
@@ -863,8 +865,8 @@ def generate_clar_structures(mol):
 
     Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    cython.declare(output=list, mol_list=list, new_mol=Molecule, aromatic_rings=list, bonds=list, solution=list,
-                   y=list, x=list, index=cython.int, bond=Bond, ring=list)
+    cython.declare(output=list, mol_list=list, new_mol=Graph, aromatic_rings=list, bonds=list, solution=list,
+                   y=list, x=list, index=cython.int, bond=Edge, ring=list)
 
     if not mol.is_cyclic():
         return []
@@ -931,7 +933,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Molecule, aromatic_rings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+    cython.declare(molecule=Graph, aromatic_rings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
                    a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
     from lpsolve55 import lpsolve
@@ -1075,7 +1077,7 @@ def _clar_transformation(mol, aromatic_ring):
 
     This function directly modifies the input molecule and does not return anything.
     """
-    cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
+    cython.declare(bondList=list, i=cython.int, atom1=Vertex, atom2=Vertex, bond=Edge)
 
     bond_list = []
 
