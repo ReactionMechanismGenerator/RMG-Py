@@ -713,16 +713,18 @@ def read_reaction_comments(reaction, comments, read=True):
                     if reactant.label == reac_str:
                         break
                 else:
-                    raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
-                                       'for reaction {1}.'.format(reac_str, reaction))
+                    logging.error('Unexpected species identifier {0} encountered in flux pairs '
+                                  'for reaction {1}.'.format(reac_str, reaction))
+                    continue
                 if prod_str[-1] == ';':
                     prod_str = prod_str[:-1]
                 for product in reaction.products:
                     if product.label == prod_str:
                         break
                 else:
-                    raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
-                                       'for reaction {1}.'.format(prod_str, reaction))
+                    logging.error('Unexpected species identifier {0} encountered in flux pairs '
+                                  'for reaction {1}.'.format(prod_str, reaction))
+                    continue
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
