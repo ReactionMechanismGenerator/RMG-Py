@@ -503,6 +503,9 @@ class TestGetAtomType(unittest.TestCase):
 
         self.mol78 = Molecule().from_adjacency_list('''1 X u0 p0 c0''')
 
+        self.mol79 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
+                                                       2 Br u0 p3 c0 {1,S}''')
+
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
         atom_type = get_atomtype(atom, mol.get_bonds(atom))
@@ -626,6 +629,12 @@ class TestGetAtomType(unittest.TestCase):
         Test that get_atomtype() returns appropriate chlorine atom types.
         """
         self.assertEqual(self.atom_type(self.mol73, 1), 'Cl1s')
+
+    def test_bromine_types(self):
+        """
+        Test that get_atomtype() returns appropriate bromine atom types.
+        """
+        self.assertEqual(self.atom_type(self.mol79, 1), 'Br1s')
 
     def test_iodine_types(self):
         """
