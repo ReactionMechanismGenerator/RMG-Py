@@ -1752,7 +1752,7 @@ class RMG(util.Subject):
                 for i in range(num_core_species):
                     for j in range(i, num_core_species):
                         for k in range(j, num_core_species):
-                            for l in range(l, num_families):
+                            for l in range(num_families):
                                 if not self.trimolecular_threshold[i, j, k, l] and rxn_sys_trimol_threshold[i, j, k, l]:
                                     # We've shifted from not reacting to reacting
                                     self.trimolecular_react[i, j, k, l] = True
