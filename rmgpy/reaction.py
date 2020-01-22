@@ -1020,9 +1020,8 @@ class Reaction:
         
         There are a number of ways of determining the correct pairing for 
         bimolecular reactions. Here we try a simple similarity analysis by comparing
-        the number of heavy atoms (C/O/N/S at the moment). This should
-        work most of the time, but a more rigorous algorithm may be needed for
-        some cases.
+        the number of heavy atoms. This should work most of the time, but a more
+        rigorous algorithm may be needed for some cases.
         """
         self.pairs = []
 
@@ -1038,7 +1037,7 @@ class Reaction:
 
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
-                numbers = [6, 8, 7, 14, 16, 17, 53, 9]  # C, O, N, Si, S, Cl, I, F
+                numbers = [6, 8, 7, 14, 16, 17, 53, 9, 35]  # C, O, N, Si, S, Cl, I, F, Br
                 return tuple(sum([1 for atom in spc.molecule[0].atoms if atom.element.number == n]) for n in numbers)
 
             # Sort the reactants and products by element counts
