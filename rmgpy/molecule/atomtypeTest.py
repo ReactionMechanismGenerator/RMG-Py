@@ -483,25 +483,28 @@ class TestGetAtomType(unittest.TestCase):
         #                                              11 H u0 p0 {5,S}''')
 
         self.mol73 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
-                                                     2 Cl u0 p3 c0 {1,S}''')
+                                                       2 Cl u0 p3 c0 {1,S}''')
 
-        self.mol74 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
-                                                     2 I  u0 p3 c0 {1,S}''')
+        self.mol74 = Molecule().from_adjacency_list('''1 H u0 p0 c0 {2,S}
+                                                       2 I u0 p3 c0 {1,S}''')
 
-        self.mol75 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
-                                                     2 F  u0 p3 c0 {1,S}''')
+        self.mol75 = Molecule().from_adjacency_list('''1 H u0 p0 c0 {2,S}
+                                                       2 F u0 p3 c0 {1,S}''')
 
         self.mol76 = Molecule().from_adjacency_list('''1 H u0 p0 c0 {2,S}
-                                                     2 X u0 p0 c0 {1,S}''')
+                                                       2 X u0 p0 c0 {1,S}''')
 
         self.mol77 = Molecule().from_adjacency_list('''1 C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
-                                                     2 H u0 p0 c0 {1,S}
-                                                     3 H u0 p0 c0 {1,S}
-                                                     4 X u0 p0 c0
-                                                     5 H u0 p0 c0 {1,S}
-                                                     6 H u0 p0 c0 {1,S}''')
+                                                       2 H u0 p0 c0 {1,S}
+                                                       3 H u0 p0 c0 {1,S}
+                                                       4 X u0 p0 c0
+                                                       5 H u0 p0 c0 {1,S}
+                                                       6 H u0 p0 c0 {1,S}''')
 
         self.mol78 = Molecule().from_adjacency_list('''1 X u0 p0 c0''')
+
+        self.mol79 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
+                                                       2 Br u0 p3 c0 {1,S}''')
 
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
@@ -626,6 +629,12 @@ class TestGetAtomType(unittest.TestCase):
         Test that get_atomtype() returns appropriate chlorine atom types.
         """
         self.assertEqual(self.atom_type(self.mol73, 1), 'Cl1s')
+
+    def test_bromine_types(self):
+        """
+        Test that get_atomtype() returns appropriate bromine atom types.
+        """
+        self.assertEqual(self.atom_type(self.mol79, 1), 'Br1s')
 
     def test_iodine_types(self):
         """
