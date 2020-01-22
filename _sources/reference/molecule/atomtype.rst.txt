@@ -118,6 +118,10 @@ Atom type       Description
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``Cl``          chlorine atom with any local bond structure
 ``Cl1s``        chlorine atom with three lone pairs and zero to one single bonds
+*Bromine atom types*
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+``Br``          bromine atom with any local bond structure
+``Br1s``        bromine atom with three lone pairs and zero to one single bonds
 *Iodine atom types*
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``I``           iodine atom with any local bond structure
