@@ -120,7 +120,7 @@ class PeriodicSystem(object):
     `lone_pairs`: the number of lone pairs an element has
     'electronegativity': The atom's electronegativity (how well can an atom attract electrons), taken from
     https://sciencenotes.org/list-of-electronegativity-values-of-the-elements/
-    isotops of the same element may have slight different electronegativities, which is not reflected below
+    isotopes of the same element may have slight different electronegativities, which is not reflected below
     """
     valences = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
                 'Si': 4, 'S': 2, 'Cl': 1, 'Br': 1, 'Ar': 0, 'I': 1, 'X': 4}
