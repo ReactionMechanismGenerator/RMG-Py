@@ -672,10 +672,10 @@ ATOMTYPES['I1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['I
 ATOMTYPES['F'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F'], break_bond=['F'], increment_radical=['F'], decrement_radical=['F'], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['F1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F1s'], break_bond=['F1s'], increment_radical=['F1s'], decrement_radical=['F1s'], increment_lone_pair=[], decrement_lone_pair=[])
 
-#these are ordered on priority of picking if we encounter a more general atomtype for make
+# these are ordered in priority of picking if a more general atomtype is encountered
 allElements = ['H', 'C', 'O', 'N', 'S', 'Si', 'F', 'Cl', 'Br', 'I', 'Ne', 'Ar', 'He', 'X']
-#list of elements that do not have more specific atomTypes
-nonSpecifics=['H', 'He', 'Ne', 'Ar',]
+# list of elements that do not have more specific atomTypes
+nonSpecifics = ['H', 'He', 'Ne', 'Ar',]
 
 for atomtype in ATOMTYPES.values():
     for items in [atomtype.generic, atomtype.specific,
