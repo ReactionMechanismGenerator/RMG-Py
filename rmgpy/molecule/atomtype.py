@@ -264,6 +264,7 @@ ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
     'Cl','Cl1s',
+    'Br','Br1s',
     'I','I1s',
     'F','F1s'])
 
@@ -276,6 +277,7 @@ ATOMTYPES['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
     'Cl','Cl1s',
+    'Br','Br1s',
     'I','I1s',
     'F','F1s'])
 
@@ -292,6 +294,7 @@ ATOMTYPES['Val6'] = AtomType(label='Val6', generic=['R', 'R!H'], specific=[
 
 ATOMTYPES['Val7'] = AtomType(label='Val7', generic=['R', 'R!H'], specific=[
     'Cl','Cl1s',
+    'Br','Br1s',
     'I','I1s',
     'F','F1s'])
 
@@ -538,7 +541,10 @@ ATOMTYPES['Cl'] = AtomType('Cl', generic=['R', 'R!H', 'Val7'], specific=['Cl1s']
 ATOMTYPES['Cl1s'] = AtomType('Cl1s', generic=['R', 'R!H', 'Cl', 'Val7'], specific=[],
                              single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for Cl1s: HCl, [Cl]
-ATOMTYPES['Ar'] = AtomType('Ar', generic=['R', 'R!H'], specific=[])
+ATOMTYPES['Br'] = AtomType('Br', generic=['R', 'R!H', 'Val7'], specific=['Br1s'])
+ATOMTYPES['Br1s'] = AtomType('Br1s', generic=['R', 'R!H', 'Br', 'Val7'], specific=[],
+                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
+# examples for Br1s: HBr, [Br]
 
 ATOMTYPES['I'] = AtomType('I', generic=['R', 'R!H', 'Val7'], specific=['I1s'])
 ATOMTYPES['I1s'] = AtomType('I1s', generic=['R', 'R!H', 'I', 'Val7'], specific=[],
@@ -657,6 +663,9 @@ ATOMTYPES['S6tdc'].set_actions(increment_bond=['S6td', 'S6tdc', 'S6tt'], decreme
 ATOMTYPES['Cl'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Cl'], break_bond=['Cl'], increment_radical=['Cl'], decrement_radical=['Cl'], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Cl1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Cl1s'], break_bond=['Cl1s'], increment_radical=['Cl1s'], decrement_radical=['Cl1s'], increment_lone_pair=[], decrement_lone_pair=[])
 
+ATOMTYPES['Br'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Br'], break_bond=['Br'], increment_radical=['Br'], decrement_radical=['Br'], increment_lone_pair=[], decrement_lone_pair=[])
+ATOMTYPES['Br1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Br1s'], break_bond=['Br1s'], increment_radical=['Br1s'], decrement_radical=['Br1s'], increment_lone_pair=[], decrement_lone_pair=[])
+
 ATOMTYPES['I'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['I'], break_bond=['I'], increment_radical=['I'], decrement_radical=['I'], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['I1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['I1s'], break_bond=['I1s'], increment_radical=['I1s'], decrement_radical=['I1s'], increment_lone_pair=[], decrement_lone_pair=[])
 
@@ -664,7 +673,7 @@ ATOMTYPES['F'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F']
 ATOMTYPES['F1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F1s'], break_bond=['F1s'], increment_radical=['F1s'], decrement_radical=['F1s'], increment_lone_pair=[], decrement_lone_pair=[])
 
 #these are ordered on priority of picking if we encounter a more general atomtype for make
-allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'F', 'I', 'Ne', 'Ar', 'He', 'X']
+allElements = ['H', 'C', 'O', 'N', 'S', 'Si', 'F', 'Cl', 'Br', 'I', 'Ne', 'Ar', 'He', 'X']
 #list of elements that do not have more specific atomTypes
 nonSpecifics=['H', 'He', 'Ne', 'Ar',]
 
