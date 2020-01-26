@@ -181,7 +181,7 @@ def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecul
                     for l, (family, molecularity) in enumerate(fam_molecularity.items()):
                         # Find reactions involving the species that are trimolecular
                         if 3 in molecularity:
-                            if (trimolecular_react[i,j,k,l] and core_spc_list[i].reactive and
+                            if (trimolecular_react[i, j, k, l] and core_spc_list[i].reactive and
                                     core_spc_list[j].reactive and core_spc_list[k].reactive):
                                 if (procnum > 1 and family in major_families and
                                         (len(core_spc_list[i].molecule[0].atoms) > min_atoms or
