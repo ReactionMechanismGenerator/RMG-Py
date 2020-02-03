@@ -588,6 +588,9 @@ class KineticsRules(Database):
         elif Aunits in ['m^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)']:
             # surface: dissociative adsorption
             Aunits = 'm^5/(mol^2*s)'
+        elif Aunits == '':
+            # surface: sticking coefficient
+            pass
         else:
             raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
 

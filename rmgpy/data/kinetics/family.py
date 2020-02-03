@@ -1137,7 +1137,6 @@ class KineticsFamily(Database):
 
             tentries[entry.index].item.is_forward = True
 
-            assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
             data.change_t0(1)
 
