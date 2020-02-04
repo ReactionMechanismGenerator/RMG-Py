@@ -496,7 +496,7 @@ class KineticsLibrary(Database):
             self.check_for_duplicates()
             self.convert_duplicates_to_multi()
         
-    def loadEntry(self,
+    def load_entry(self,
                   index,
                   label,
                   kinetics,
