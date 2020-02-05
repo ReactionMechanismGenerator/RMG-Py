@@ -31,6 +31,7 @@ from rmgpy.molecule.molecule cimport Atom, Molecule
 from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
+from rmgpy.kinetics.surface cimport SurfaceArrhenius
 
 cimport numpy as np
 
@@ -47,6 +48,7 @@ cdef class Reaction:
     cdef public TransitionState transition_state
     cdef public KineticsModel kinetics
     cdef public Arrhenius network_kinetics
+    cdef public SurfaceArrhenius
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
@@ -100,6 +102,8 @@ cdef class Reaction:
     cpdef fix_barrier_height(self, bint force_positive=?)
 
     cpdef reverse_arrhenius_rate(self, Arrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
+
+    cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
     cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
 
