@@ -454,6 +454,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 c = c.astype(np.float64)
             except:  # fall back to raw flux analysis rather than solve steady state problem
                 return None
+        
+        if np.isnan(c).any():
+            return None
+        
         return c
 
     def remove_disconnected_reactions(self):
