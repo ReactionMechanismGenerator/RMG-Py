@@ -57,28 +57,28 @@ decython:
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
 
-test-all:
+test-all: check
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
 
-test test-unittests:
+test test-unittests: check
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
 	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
 
-test-functional:
+test-functional: check
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
 	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
 
-test-database:
+test-database: check
 	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
 
 eg0: all
