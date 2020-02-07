@@ -1215,6 +1215,7 @@ def assign_frequency_scale_factor(freq_level):
                  'ccsd(t)-f12/aug-cc-pvdz': 0.997,  # [3], taken as 'CCSD(T)/cc-pVDZ'
                  'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
                  'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
+                 'g4': 0.9854 * 1.014,
                  }
     scaling_factor = freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:
