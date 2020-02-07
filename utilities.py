@@ -44,6 +44,7 @@ def check_dependencies():
     """
     Checks for and locates major dependencies that RMG requires.
     """
+    check_env()
     print('\nChecking vital dependencies...\n')
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
@@ -195,6 +196,18 @@ def _check_symmetry():
             location = subprocess.check_output('which symmetry', shell=True)
 
         print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip().decode()))
+
+
+def check_env():
+    env = os.environ['CONDA_DEFAULT_ENV']
+    if env == 'base':
+        print('\n\n\nWARNING: It appears that conda is still in the `base` environment. Please make sure that the RMG '
+              'environment is activated by running the following command before proceeding: '
+              '`conda activate rmg_env`\n\n\n')
+    elif env != 'rmg_env':
+        print('\nWarning: The current conda environment is not `rmg_env`. If this is in error, please make sure that '
+              'the RMG environment is activated by running the following command before proceeding: '
+              '`conda activate rmg_env`\n')
 
 
 def check_pydas():
