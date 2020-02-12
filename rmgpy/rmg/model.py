@@ -908,7 +908,7 @@ class CoreEdgeReactionModel:
         G298 = reaction.get_free_energy_of_reaction(298)
         gibbs_is_positive = G298 > -1e-8
 
-        if family.own_reverse and hasattr(reaction, 'reverse'):
+        if family.own_reverse and len(reaction.products)==len(reaction.reactants) and hasattr(reaction, 'reverse'):
             if reaction.reverse:
                 # The kinetics family is its own reverse, so we could estimate kinetics in either direction
 
