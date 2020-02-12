@@ -98,11 +98,23 @@ class TestSoluteDatabase(TestCase):
         self.assertIsNotNone(solvent_data)
         self.assertEqual(solvent_data.s_h, 2.836)
         self.assertRaises(DatabaseError, self.database.get_solvent_data, 'orange_juice')
+        solvent_data = self.database.get_solvent_data('cyclohexane')
+        self.assertEqual(solvent_data.name_in_coolprop, 'CycloHexane')
 
     def test_viscosity(self):
         """Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"""
         solvent_data = self.database.get_solvent_data('water')
         self.assertAlmostEqual(solvent_data.get_solvent_viscosity(298), 0.0009155)
+
+    def test_critical_temperature(self):
+        """
+        Test we can calculate the solvent critical temperature given the solvent's name_in_coolprop
+        and we can raise DatabaseError when the solvent's name_in_coolprop is None.
+        """
+        solvent_data = self.database.get_solvent_data('water')
+        self.assertAlmostEqual(solvent_data.get_solvent_critical_temperature(), 647.096)
+        solvent_data = self.database.get_solvent_data('dibutylether')
+        self.assertRaises(DatabaseError, solvent_data.get_solvent_critical_temperature)
 
     def test_solute_generation(self):
         """Test we can estimate Abraham solute parameters correctly using group contributions"""
