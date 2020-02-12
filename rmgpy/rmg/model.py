@@ -58,6 +58,7 @@ from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
 from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
+from rmgpy.rmg.decay import decay_species
 
 
 ################################################################################
@@ -261,7 +262,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
-    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True):
+    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_decay=False):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -284,21 +285,29 @@ class CoreEdgeReactionModel:
             spec = self.check_for_existing_species(molecule)
             if spec is not None:
                 return spec, False
-
+            
         # If we're here then we're ready to make the new species
+        try:
+            spec = Species(label=label,molecule=[molecule],reactive=reactive,thermo=object.thermo, transport_data=object.transport_data)
+        except AttributeError:
+            spec = Species(label=label, molecule=[molecule], reactive=reactive)
+        
+        spec.generate_resonance_structures()
+        
+        if check_decay:
+            spcs = decay_species(spec)
+            if len(spcs) == 1:
+                spec = spcs[0]
+            else:
+                return [self.make_new_species(spc) for spc in spcs]
+        
         if reactive:
             self.species_counter += 1  # count only reactive species
-            species_index = self.species_counter
+            spec.index = self.species_counter
         else:
-            species_index = -1
-        try:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive,
-                           thermo=object.thermo, transport_data=object.transport_data)
-        except AttributeError:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive)
+            spec.index = -1
 
         spec.creation_iteration = self.iteration_num
-        spec.generate_resonance_structures()
         spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
 
         if generate_thermo:
