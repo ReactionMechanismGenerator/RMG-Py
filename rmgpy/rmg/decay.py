@@ -35,6 +35,33 @@ from rmgpy.species import Species
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.kinetics.family import ReactionRecipe
 
+def decay_species(spc,check_deterministic=True):
+    """
+    recursively decays a species object as long as there are valid decay recipes
+    raises a warning if the decays could've been done in a different order
+    """
+    decay = None
+    for mol in spc.molecule:
+        d = decay_molecule(mol,check_deterministic=check_deterministic)
+        if d != mol and decay is None:
+            decay = d
+            if not check_deterministic:
+                break
+        elif d != mol:
+            logging.warning("found more than one possible decay for {}, may not be able to deterministically determine decay".format(spc.molecule[0].to_smiles()))
+            break
+    
+    if type(decay) == list:
+        dlist = []
+        for dmol in decay:
+            dspc = Species(molecule=[dmol])
+            dspc.generate_resonance_structures()
+            decay_spc = decay_species(dspc)
+            dlist.extend(decay_spc)
+        return dlist
+    else:
+        return [spc]
+
 def decay_molecule(mol,check_deterministic=True):
     """
     breaks down a molecule object down one step using the first valid recipe and atom mappings
