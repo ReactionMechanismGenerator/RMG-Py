@@ -34,6 +34,7 @@ import logging
 import math
 import os.path
 from copy import deepcopy
+from CoolProp.CoolProp import PropsSI
 
 import rmgpy.constants as constants
 from rmgpy.data.base import Database, Entry, make_logic_node, DatabaseError
@@ -178,6 +179,17 @@ class SolventData(object):
         """
         return math.exp(self.A + (self.B / T) + (self.C * math.log(T)) + (self.D * (T ** self.E)))
 
+    def get_solvent_critical_temperature(self):
+        """
+        Returns the critical temperature of the solvent in K if the solvent is available in
+        CoolProp (name_in_coolprop is not None). The critical temperature is given by CoolProp function.
+        If the solvent is not available in CoolProp (name_in_coolprop is None), it raises DatabaseError
+        """
+        if self.name_in_coolprop is not None:
+            Tc = PropsSI('T_critical', self.name_in_coolprop)
+        else:
+            raise DatabaseError("Critical temperature is not available for the solvent whose `name_in_coolprop` is None")
+        return Tc
 
 class SolvationCorrection(object):
     """
