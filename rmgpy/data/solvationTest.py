@@ -35,7 +35,7 @@ from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, S
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.main import Species
-
+from rmgpy.exceptions import InputError
 
 ###################################################
 
@@ -281,6 +281,22 @@ class TestSoluteDatabase(TestCase):
         # check that DatabaseError is raised when the solvent's name_in_coolprop is None
         solvent_data = self.database.get_solvent_data('chloroform')
         self.assertRaises(DatabaseError, self.database.get_Kfactor_parameters, solute_data, solvent_data)
+
+    def test_Tdep_solvation_calculation(self):
+        '''Test we can calculate the temperature dependent K-factor and solvation free energy'''
+        species = Species().from_smiles('CCC1=CC=CC=C1')  # ethylbenzene
+        species.generate_resonance_structures()
+        solute_data = self.database.get_solute_data(species)
+        solvent_data = self.database.get_solvent_data('benzene')
+        T = 500 # in K
+        Kfactor = self.database.get_Kfactor(solute_data, solvent_data, T)
+        delG = self.database.get_T_dep_solvation_energy(solute_data, solvent_data, T) / 1000 # in kJ/mol
+        self.assertAlmostEqual(Kfactor, 0.416, 3)
+        self.assertAlmostEqual(delG, -13.463, 3)
+        # For temperature greater than or equal to the critical temperature of the solvent,
+        # it should raise InputError
+        T = 1000
+        self.assertRaises(InputError, self.database.get_T_dep_solvation_energy, solute_data, solvent_data, T)
 
     def test_initial_species(self):
         """Test we can check whether the solvent is listed as one of the initial species in various scenarios"""
