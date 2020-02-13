@@ -202,6 +202,27 @@ class SolvationCorrection(object):
         self.entropy = entropy
         self.gibbs = gibbs
 
+class KfactorParameters(object):
+    """
+    Stores 4 coefficients (A, B, C, D) in the following K-factor relationships and
+    the transition temperature (T_transition) in K.
+    1) T <= T_transition : Harvey's semi-empirical relationship
+                    Tr*ln(K-factor) = A + B(1-Tr)^0.355 + Cexp(1-Tr)(Tr)^0.59
+    2) T_transition <= T < T_c : Japas and Levelt Sengers' linear relationship
+                    Tr*ln(K-factor) = D(rho_l / rho_c -1)
+    Relevant definitions:
+    rho_l = saturated liquid phase density of the solvent [=] mol / m^3
+    rho_c = critical density of the solvent [=] mol / m^3
+    Tr = reduced temperature = T / Tc [=] K
+    Tc = critical temperature of the solvent [=] K
+    K-factor = y_solute / x_solute.
+    y_solute = mole fraction of the solute in a gas phase at equilibrium in a binary dilute mixture
+    x_solute = mole fraction of the solute in a liquid phase at equilibrium in a binary dilute mixture
+    """
+    def __init__(self, A=None, B=None, C=None, D=None, T_transition=None):
+        self.lower_T = [A, B, C]
+        self.higher_T = D
+        self.T_transition = T_transition # in K
 
 class SoluteData(object):
     """
