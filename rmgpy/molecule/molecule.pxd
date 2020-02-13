@@ -47,6 +47,7 @@ cdef class Atom(Vertex):
     cdef public short lone_pairs
     cdef public int id
     cdef public dict props
+    cdef public int position_label
     
     cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 

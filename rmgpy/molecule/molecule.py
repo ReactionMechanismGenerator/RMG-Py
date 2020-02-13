@@ -96,7 +96,7 @@ class Atom(Vertex):
     """
 
     def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([]),
-                 id=-1, props=None):
+                 id=-1, props=None, position_label=-1):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -110,6 +110,7 @@ class Atom(Vertex):
         self.coords = coords
         self.id = id
         self.props = props or {}
+        self.position_label = position_label
 
     def __str__(self):
         """
@@ -319,6 +320,7 @@ class Atom(Vertex):
         a.coords = self.coords[:]
         a.id = self.id
         a.props = deepcopy(self.props)
+        a.position_label = self.position_label
         return a
 
     def is_hydrogen(self):

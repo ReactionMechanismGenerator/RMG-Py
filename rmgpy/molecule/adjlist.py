@@ -692,6 +692,14 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
                 props['inRing'] = bool(int(r_state[1]))
                 index += 1
 
+        # Next the position label (if provided)
+        position_label = -1
+        if len(data) > index:
+            pl_state = data[index]
+            if pl_state[0:2] == 'pl':
+                position_label = int(pl_state[2:])
+                index += 1
+
         # Create a new atom based on the above information
         if group:
             atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, props)
@@ -700,6 +708,8 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
                 atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
                 if isotope != -1:
                     atom.element = get_element(atom.number, isotope)
+                if position_label != -1:
+                    atom.position_label = position_label
             except KeyError:
                 from afm.fragment import CuttingLabel
                 atom = CuttingLabel(name=atom_type[0], label=label)
@@ -841,6 +851,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     atom_charge = {}
     atom_isotope = {}
     atom_props = {}
+    atom_position_label = {}
     if group:
         for atom in atom_numbers:
             # Atom type(s)
@@ -897,6 +908,8 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
                 # cutting labels in 
                 # fragment cases
                 atom_isotope[atom] = atom.isotope
+            # Position label
+            atom_position_label[atom] = atom.position_label
 
     # Determine field widths
     atom_number_width = max([len(s) for s in atom_numbers.values()]) + 1
@@ -905,6 +918,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
         atom_label_width += 1
     atom_type_width = max([len(s) for s in atom_types.values()]) + 1
     atom_unpaired_electrons_width = max([len(s) for s in atom_unpaired_electrons.values()])
+
 
     # Assemble the adjacency list
     for atom in atoms:
@@ -931,6 +945,9 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
         if group and len(atom_props[atom]) > 0:
             for prop in atom_props[atom]:
                 adjlist += prop
+        # Position label
+        if atom_position_label[atom] != -1:
+            adjlist += ' pl{0}'.format(atom_position_label[atom])
 
         # Bonds list
         atoms2 = list(atom.bonds.keys())

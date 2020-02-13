@@ -925,7 +925,7 @@ class MoleculeDrawer(object):
             # or they are isotopically labeled
             if symbols[i] == 'C' and len(symbols) > 2:
                 if (len(atoms[i].bonds) > 1 or (atoms[i].radical_electrons == 0 and atoms[i].charge == 0)) \
-                        and atoms[i].element.isotope == -1:
+                        and atoms[i].element.isotope == -1 and atoms[i].position_label == -1:
                     symbols[i] = ''
         # Do label atoms that have only double bonds to one or more labeled atoms
         changed = True
@@ -939,14 +939,17 @@ class MoleculeDrawer(object):
         # Add implicit hydrogens
         for i in range(len(symbols)):
             if symbols[i] != '':
-                try:
-                    h_count = self.implicitHydrogens[atoms[i]]
-                except KeyError:
-                    continue
-                if h_count == 1:
-                    symbols[i] = symbols[i] + 'H'
-                elif h_count > 1:
-                    symbols[i] = symbols[i] + 'H{0:d}'.format(h_count)
+                if atoms[i].position_label != -1:
+                    symbols[i] = symbols[i] + str(atoms[i].position_label)
+                else:
+                    try:
+                        h_count = self.implicitHydrogens[atoms[i]]
+                    except KeyError:
+                        continue
+                    if h_count == 1:
+                        symbols[i] = symbols[i] + 'H'
+                    elif h_count > 1:
+                        symbols[i] = symbols[i] + 'H{0:d}'.format(h_count)
 
         return symbols
 
