@@ -41,6 +41,7 @@ import rmgpy.constants as constants
 from rmgpy.data.base import Database, Entry, make_logic_node, DatabaseError
 from rmgpy.molecule import Molecule, Group, ATOMTYPES
 from rmgpy.species import Species
+from rmgpy.exceptions import InputError
 
 
 ################################################################################
@@ -980,6 +981,48 @@ class SolvationDatabase(object):
         correction.gibbs = self.calc_g(solute_data, solvent_data)
         correction.entropy = self.calc_s(correction.gibbs, correction.enthalpy)
         return correction
+
+    def get_Kfactor(self, solute_data, solvent_data, T):
+        """
+        Given solute_data, solvent_data, and temperature, calculates K-factor T
+        if the solvent's name_in_coolprop is not None. K-factor = y_solute / x_solute.
+        If the temperature is above the critical temperature of the solvent, it raises InpurError.
+        If the solvent's name_in_coolprop is None, it raises DatabaseError
+        """
+        if solvent_data.name_in_coolprop is not None:
+            Tc = solvent_data.get_solvent_critical_temperature()
+            if T < Tc:
+                kfactor_parameters = self.get_Kfactor_parameters(solute_data, solvent_data)
+                A = kfactor_parameters.lower_T[0]
+                B = kfactor_parameters.lower_T[1]
+                C = kfactor_parameters.lower_T[2]
+                D = kfactor_parameters.higher_T
+                T_transition = kfactor_parameters.T_transition
+                solvent_name = solvent_data.name_in_coolprop
+                rho_c = PropsSI('rhomolar_critical', solvent_name) # critical density of the solvent in mol/m^3
+                rho_l = PropsSI('Dmolar', 'T', T, 'Q', 0, solvent_name)  # saturated liquid phase density of the solvent, in mol/m^3
+                if T < T_transition:
+                    Kfactor = math.exp((A + B * (1 - T / Tc) ** 0.355 + C * math.exp(1 - T / Tc) * (T / Tc) ** 0.59) / (T / Tc))
+                else:
+                    Kfactor = math.exp(D * (rho_l / rho_c -1) / (T / Tc))
+            else:
+                raise InputError("The input temperature {0} K cannot be greater than "
+                                 "or equal to the critical temperature, {1} K".format(T, Tc))
+        else:
+            raise DatabaseError("K-factor calculation or temperature-dependent solvation free energy calculation "
+                                "is not available for the solvent whose `name_in_coolprop` is None")
+        return Kfactor
+
+    def get_T_dep_solvation_energy(self, solute_data, solvent_data, T):
+        """
+        Given solute_data, solvent_data, and temperature, calculates the Gibbs free energy of
+        solvation at T if the solvent's name_in_coolprop is not None.
+        """
+        Kfactor = self.get_Kfactor(solute_data, solvent_data, T)
+        rho_g = PropsSI('Dmolar', 'T', T, 'Q', 1, solvent_data.name_in_coolprop) # saturated gas phase density of the solvent, in mol/m^3
+        rho_l = PropsSI('Dmolar', 'T', T, 'Q', 0, solvent_data.name_in_coolprop) # saturated liquid phase density of the solvent, in mol/m^3
+        delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
+        return delG
 
     def get_Kfactor_parameters(self, solute_data, solvent_data, T_trans_factor=0.75):
         """
