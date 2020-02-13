@@ -267,6 +267,21 @@ class TestSoluteDatabase(TestCase):
                                    msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}"
                                        "".format(soluteName, solventName, solvation_correction.gibbs, G))
 
+    def test_Kfactor_parameters(self):
+        """Test we can calculate the parameters for K-factor relationships"""
+        species = Species().from_smiles('CCC(C)=O') # 2-Butanone for a solute
+        solute_data = self.database.get_solute_data(species)
+        solvent_data = self.database.get_solvent_data('water')
+        kfactor_parameters = self.database.get_Kfactor_parameters(solute_data, solvent_data)
+        self.assertAlmostEqual(kfactor_parameters.lower_T[0], -16.303, 3) # check up to 3 decimal places
+        self.assertAlmostEqual(kfactor_parameters.lower_T[1], -0.930, 3)
+        self.assertAlmostEqual(kfactor_parameters.lower_T[2], 17.550, 3)
+        self.assertAlmostEqual(kfactor_parameters.higher_T, 1.308, 3)
+        self.assertAlmostEqual(kfactor_parameters.T_transition, 485.3, 1)
+        # check that DatabaseError is raised when the solvent's name_in_coolprop is None
+        solvent_data = self.database.get_solvent_data('chloroform')
+        self.assertRaises(DatabaseError, self.database.get_Kfactor_parameters, solute_data, solvent_data)
+
     def test_initial_species(self):
         """Test we can check whether the solvent is listed as one of the initial species in various scenarios"""
 
