@@ -82,13 +82,13 @@ The next correction for liquids is solvation effects on the thermochemistry. By 
 
 The free energy change associated with the process of transferring a
 molecule from the gas phase to the solvent phase is defined as the free
-energy of solvation (:math:`\Delta G`). Many different methods have been developed for
+energy of solvation (:math:`\Delta G_{solv}`). Many different methods have been developed for
 computing solvation energies among which continuum dielectric and force
 field based methods are popular. Not all of these methods are easy to
 automate, and many are not robust i.e. they either fail or give
 unreasonable results for certain solute-solvent pairs. CPU time and
 memory (RAM) requirements are also important considerations. A fairly
-accurate and fast method for computing :math:`\Delta G`, which is used in RMG, is the
+accurate and fast method for computing :math:`\Delta G_{solv}`, which is used in RMG, is the
 LSER approach described below.
 
 .. _useofthermolibrariesliquid:
@@ -110,20 +110,24 @@ for this specific species-solvent system.
 
 .. _lserToEstimateThermo:
 
-Use of Abraham LSER to estimate thermochemistry
------------------------------------------------
+Use of Abraham LSER to estimate thermochemistry at 298 K
+---------------------------------------------------------
 
-The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the 
-log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent 
-(:math:`K_{vs}`) (also known as gas-solvent partition coefficient) at 298 K:
+The Abraham LSER provides an estimate of the the partition coefficient (:math:`K`)  of a solute (component 2)
+between the vapor phase and a particular solvent (component 1) at 298 K:
 
-.. math:: \log K_{vs} = c + eE + sS + aA + bB + lL
+.. math:: \log_{10} K = c + eE + sS + aA + bB + lL
 	:label: AbModelEqn
 
-The Abraham model is used in RMG to estimate :math:`\Delta G` which is related to the :math:`K_{vs}` of a solute according to the following expression:
+where the partition coefficient is the ratio of the equilibrium concentrations of the solute in liquid and vapor phases
 
-.. math:: \Delta G = -RT \ln K_{vs} \\
-	= -2.303RT \log K_{vs}
+.. math:: K = \frac{c_{2, liquid}}{c_{2, gas}}
+	:label: AbModelEqn
+
+The Abraham model is used in RMG to estimate :math:`\Delta G_{solv}` which is related to the :math:`K` of a solute according to the following expression:
+
+.. math:: \Delta G_{solv} = -RT \ln K \\
+	= -2.303RT \log_{10} K
 	:label: partition
 
 The variables in the Abraham model represent solute (`E, S, A, B, V, L`) and solvent descriptors (`c, e, s, a, b, v, l`) 
@@ -140,8 +144,19 @@ can act as acceptor (donor) and vice versa. The descriptor `A` is a measure of t
 to donate a hydrogen bond (acidity) and the solvent descriptor `a` is a measure of the solvent's ability 
 to accept a hydrogen bond. A similar explanation applies to the `bB` term [Vitha2006]_, [Abraham1999]_, [Poole2009]_.
 
+The enthalpy change associated with solvation at 298 K can be calculated the Mintz LSER. Mintz et al. ([Mintz2007]_,
+[Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_)
+have developed linear correlations similar to the Abraham model for estimating :math:`\Delta H_{solv}`:
 
-The solvent descriptors (`c, e, s, a, b, l`) are largely treated as regressed empirical coefficients. Parameters are provided in RMG's database for the following solvents:
+.. math:: \Delta H_{solv}(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L
+	:label: mintz
+
+where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of
+:math:`\Delta G_{solv}`. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained
+by fitting to experimental data.
+
+The solvent descriptors (`c, e, s, a, b, l, c', a', b', e', s', l'`) are largely treated as regressed empirical coefficients.
+Parameters are provided in RMG's database for the following solvents:
 
 #. acetonitrile
 #. benzene
@@ -169,6 +184,25 @@ The solvent descriptors (`c, e, s, a, b, l`) are largely treated as regressed em
 #. undecane
 #. water
 
+Estimation of :math:`\Delta G_{solv}` at other temperatures: linear extrapolation
+---------------------------------------------------------------------------------
+
+For simple linear extrapolation approach, the enthalpy and entropy of solvation are assumed to be independent of temperature.
+The entropy of solvation, :math:`\Delta S_{solv}(298 K)`, is calculated from :math:`\Delta G_{solv}(298 K)` and
+:math:`\Delta H_{solv}(298 K)` estimated from the Abraham and Mintz LSERs.
+
+.. math:: \Delta S_{solv}(298 K) = \frac{\Delta H_{solv}(298 K) - \Delta G_{solv}(298 K)}{298 K}
+	:label: entropy_298K
+
+Then :math:`\Delta G_{solv}` at other temperatures is approximated by simple extrapolation assuming linear temperature dependence.
+
+.. math:: \Delta G_{solv}(T) = \Delta H_{solv}(298 K) - T\Delta S_{solv}(298 K)
+	:label: linear_extrapolation
+
+This method provides a rapid, first-order approximation of the temperature dependence of solvation free energy. However,
+since the actual solvation enthalpy and entropy vary with temperature, this approximation will deviate at temperatures
+far away from 298 K. Looking at several experimental data, this approximation seems reasonable up to ~ 400 K.
+
 Group additivity method for solute descriptor estimation
 --------------------------------------------------------
 
@@ -179,22 +213,6 @@ employing a set of 81 molecular fragments for estimating `B, E, L, V` and `S` an
 the estimation of `A`. Only those fragments containing C, H and O are implemented in order to match RMG's existing 
 capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each 
 fragment found in the molecule and the intercept associated with that descriptor.
-
-Mintz model for enthalpy of solvation
--------------------------------------
-
-For estimating :math:`\Delta G` at temperatures other than 298 K, the enthalpy change associated with solvation,
-:math:`\Delta H` must be calculated separately and, along with :math:`\Delta S`, assumed to be independent of
-temperature. Recently, Mintz et al. ([Mintz2007]_, [Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_)
-have developed linear correlations similar to the Abraham model for estimating :math:`\Delta H`:
-
-.. math:: \Delta H(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L
-	:label: mintz
-
-where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of
-:math:`\Delta G`. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained
-by fitting to experimental data. In RMG, this equation is implemented and together with :math:`\Delta G(298 K)` can be
-used to find :math:`\Delta S(298 K)`. From this data, :math:`\Delta G` at other temperatures is found by extrapolation.
 
 .. _diffusionLimited:
 
