@@ -345,7 +345,22 @@ where :math:`\alpha=(3N-5)/2` and
 :math:`D_i` are the individual diffusivities and :math:`\sigma` is the Smoluchowski radius, which would usually be fitted to
 experiment, but RMG approximates it as the sum of molecular radii. RMG uses the McGowan method for estimating
 radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent 
-viscosities (:math:`\eta(T)`). In a unimolecular to bimolecular reaction, for example, the forward rate
+viscosities (:math:`\eta(T)`):
+
+.. math:: D_{i} = \frac{k_{B}T}{6\pi\,\eta\,r_{i}}
+   :label: StokesEinstein
+
+.. math:: \sigma = \sum_{i=1}^N r_{i}
+   :label: Smoluchowski_radius
+
+.. math:: r_{i} = \frac{\left(100\frac{3}{4}\frac{V_{i}}{\pi N_{A}}\right)^{1/3}}{100}
+   :label: Raidus_from_McGowan_Volume
+
+where :math:`k_B` is the Boltzmann constant, :math:`N_A` is the Avogadro number, :math:`r_i` is the individual molecular
+radius in meters, and :math:`V_i` is the individual McGowan volume in cm3/mol divided by 100, which is equivalent to the
+Abraham solute parameter, :math:`V`.
+
+In a unimolecular to bimolecular reaction, for example, the forward rate
 constant (:math:`k_f`) can be slowed down if the reverse rate (:math:`k_{r,\mathrm{eff}}`) is diffusion-limited
 since the equilibrium constant (:math:`K_{eq}`) is not affected by diffusion limitations. In cases
 where both the forward and the reverse reaction rates are multimolecular, the forward rate coefficients limited in the
