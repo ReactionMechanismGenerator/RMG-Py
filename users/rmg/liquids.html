@@ -121,14 +121,19 @@ in one final simulation (sensitivity is not performed in intermediate iterations
 <h2><span class="section-number">15.2. </span>Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquids is solvation effects on the thermochemistry. By specifying a solvent in the input file, we load the solvent parameters to use.</p>
 <p>The free energy change associated with the process of transferring a
-molecule from the gas phase to the solvent phase is defined as the free
-energy of solvation (<span class="math notranslate nohighlight">\(\Delta G\)</span>). Many different methods have been developed for
+molecule from the gas phase to the solvent phase at constant <span class="math notranslate nohighlight">\(T\)</span> and <span class="math notranslate nohighlight">\(P\)</span> is defined as the free
+energy of solvation. Commonly, the standard state of the ideal gas and ideal solution at equal and dilute solute concentrations,
+also known as the Ben-Naim standard state, is used for solvation free energy (<span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span>) <a class="reference internal" href="#bennaim1987" id="id1"><span>[BenNaim1987]</span></a>.
+Solvation energy is added to the gas phase Gibbs free energy as a correction to estimate the free energy of the compound in a liquid phase:</p>
+<div class="math notranslate nohighlight" id="equation-liquid-phase-thermo">
+<span class="eqno">(1)<a class="headerlink" href="#equation-liquid-phase-thermo" title="Permalink to this equation">¶</a></span>\[\Delta G_{\rm liquid}^{*} \approx \Delta G_{\rm f, gas}^{\circ} + \Delta G_{\rm solv}^{*}\]</div>
+<p>Many different methods have been developed for
 computing solvation energies among which continuum dielectric and force
 field based methods are popular. Not all of these methods are easy to
 automate, and many are not robust i.e. they either fail or give
 unreasonable results for certain solute-solvent pairs. CPU time and
 memory (RAM) requirements are also important considerations. A fairly
-accurate and fast method for computing <span class="math notranslate nohighlight">\(\Delta G\)</span>, which is used in RMG, is the
+accurate and fast method for computing <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span>, which is used in RMG, is the
 LSER approach described below.</p>
 <div class="section" id="use-of-thermo-libraries-in-liquid-phase-system">
 <span id="useofthermolibrariesliquid"></span><h3><span class="section-number">15.2.1. </span>Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
@@ -143,31 +148,42 @@ for this specific species-solvent system.</p>
 <p>Gas phase libraries can be declared first, liquid thermo libraries will still be tested first but the order will be respected if several liquid libraries are provided.</p>
 </div>
 </div>
-<div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry">
-<span id="lsertoestimatethermo"></span><h3><span class="section-number">15.2.2. </span>Use of Abraham LSER to estimate thermochemistry<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry" title="Permalink to this headline">¶</a></h3>
-<p>The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the
-log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent
-(<span class="math notranslate nohighlight">\(K_{vs}\)</span>) (also known as gas-solvent partition coefficient) at 298 K:</p>
+<div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry-at-298-k">
+<span id="lsertoestimatethermo"></span><h3><span class="section-number">15.2.2. </span>Use of Abraham LSER to estimate thermochemistry at 298 K<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry-at-298-k" title="Permalink to this headline">¶</a></h3>
+<p>The Abraham LSER provides an estimate of the the partition coefficient (<span class="math notranslate nohighlight">\(K\)</span>)  of a solute (component 2)
+between the vapor phase and a particular solvent (component 1) at 298 K:</p>
 <div class="math notranslate nohighlight" id="equation-abmodeleqn">
-<span class="eqno">(1)<a class="headerlink" href="#equation-abmodeleqn" title="Permalink to this equation">¶</a></span>\[\log K_{vs} = c + eE + sS + aA + bB + lL\]</div>
-<p>The Abraham model is used in RMG to estimate <span class="math notranslate nohighlight">\(\Delta G\)</span> which is related to the <span class="math notranslate nohighlight">\(K_{vs}\)</span> of a solute according to the following expression:</p>
+<span class="eqno">(2)<a class="headerlink" href="#equation-abmodeleqn" title="Permalink to this equation">¶</a></span>\[\log_{10} K = c + eE + sS + aA + bB + lL\]</div>
+<p>where the partition coefficient is the ratio of the equilibrium concentrations of the solute in liquid and vapor phases</p>
+<div class="math notranslate nohighlight" id="equation-abmodeleqn">
+<span class="eqno">(3)<a class="headerlink" href="#equation-abmodeleqn" title="Permalink to this equation">¶</a></span>\[K = \frac{c_{\rm 2, liquid}}{c_{\rm 2, gas}}\]</div>
+<p>The Abraham model is used in RMG to estimate <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> which is related to the <span class="math notranslate nohighlight">\(K\)</span> of a solute according to the following expression:</p>
 <div class="math notranslate nohighlight" id="equation-partition">
-<span class="eqno">(2)<a class="headerlink" href="#equation-partition" title="Permalink to this equation">¶</a></span>\[\begin{split}\Delta G = -RT \ln K_{vs} \\
-= -2.303RT \log K_{vs}\end{split}\]</div>
+<span class="eqno">(4)<a class="headerlink" href="#equation-partition" title="Permalink to this equation">¶</a></span>\[\begin{split}\Delta G_{\rm solv}^{*}({\rm 298 K}) = -RT \ln K \\
+= -2.303RT \log_{10} K\end{split}\]</div>
 <p>The variables in the Abraham model represent solute (<cite>E, S, A, B, V, L</cite>) and solvent descriptors (<cite>c, e, s, a, b, v, l</cite>)
 for different interactions. The <cite>sS</cite> term is attributed to electrostatic interactions between the
 solute and the solvent (dipole-dipole interactions related to solvent dipolarity and the dipole-induced
-dipole interactions related to the polarizability of the solvent) <a class="reference internal" href="#vitha2006" id="id1"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id2"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#jalan2010" id="id3"><span>[Jalan2010]</span></a>. The
+dipole interactions related to the polarizability of the solvent) <a class="reference internal" href="#vitha2006" id="id2"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id3"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#jalan2010" id="id4"><span>[Jalan2010]</span></a>. The
 <cite>lL</cite> term accounts for the contribution from cavity formation and dispersion (dispersion interactions are
-known to scale with solute volume <a class="reference internal" href="#vitha2006" id="id4"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id5"><span>[Abraham1999]</span></a>. The <cite>eE</cite> term, like the <cite>sS</cite> term,
+known to scale with solute volume <a class="reference internal" href="#vitha2006" id="id5"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id6"><span>[Abraham1999]</span></a>. The <cite>eE</cite> term, like the <cite>sS</cite> term,
 accounts for residual contributions from dipolarity/polarizability related interactions for solutes
-whose blend of dipolarity/polarizability differs from that implicitly built into the <cite>S</cite> parameter <a class="reference internal" href="#vitha2006" id="id6"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id7"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#jalan2010" id="id8"><span>[Jalan2010]</span></a>.
+whose blend of dipolarity/polarizability differs from that implicitly built into the <cite>S</cite> parameter <a class="reference internal" href="#vitha2006" id="id7"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id8"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#jalan2010" id="id9"><span>[Jalan2010]</span></a>.
 The <cite>aA</cite> and <cite>bB</cite> terms account for the contribution of hydrogen bonding between the solute and
 the surrounding solvent molecules. H-bonding interactions require two terms as the solute (or solvent)
 can act as acceptor (donor) and vice versa. The descriptor <cite>A</cite> is a measure of the solute’s ability
 to donate a hydrogen bond (acidity) and the solvent descriptor <cite>a</cite> is a measure of the solvent’s ability
-to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> term <a class="reference internal" href="#vitha2006" id="id9"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id10"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#poole2009" id="id11"><span>[Poole2009]</span></a>.</p>
-<p>The solvent descriptors (<cite>c, e, s, a, b, l</cite>) are largely treated as regressed empirical coefficients. Parameters are provided in RMG’s database for the following solvents:</p>
+to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> term <a class="reference internal" href="#vitha2006" id="id10"><span>[Vitha2006]</span></a>, <a class="reference internal" href="#abraham1999" id="id11"><span>[Abraham1999]</span></a>, <a class="reference internal" href="#poole2009" id="id12"><span>[Poole2009]</span></a>.</p>
+<p>The enthalpy change associated with solvation at 298 K can be calculated from the Mintz LSER. Mintz et al. (<a class="reference internal" href="#mintz2007" id="id13"><span>[Mintz2007]</span></a>,
+<a class="reference internal" href="#mintz2007a" id="id14"><span>[Mintz2007a]</span></a>, <a class="reference internal" href="#mintz2007b" id="id15"><span>[Mintz2007b]</span></a>, <a class="reference internal" href="#mintz2007c" id="id16"><span>[Mintz2007c]</span></a>, <a class="reference internal" href="#mintz2007d" id="id17"><span>[Mintz2007d]</span></a>, <a class="reference internal" href="#mintz2008" id="id18"><span>[Mintz2008]</span></a>, <a class="reference internal" href="#mintz2008a" id="id19"><span>[Mintz2008a]</span></a>, <a class="reference internal" href="#mintz2009" id="id20"><span>[Mintz2009]</span></a>)
+have developed a linear correlation similar to the Abraham model for estimating <span class="math notranslate nohighlight">\(\Delta H_{\rm solv}^{*}\)</span>:</p>
+<div class="math notranslate nohighlight" id="equation-mintz">
+<span class="eqno">(5)<a class="headerlink" href="#equation-mintz" title="Permalink to this equation">¶</a></span>\[\Delta H_{\rm solv}^{*}({\rm 298 K}) = c' + a'A+ b'B+ e'E+ s'S+ l'L\]</div>
+<p>where <cite>A, B, E, S</cite> and <cite>L</cite> are the same solute descriptors used in the Abraham model for the estimation of
+<span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span>. The lowercase coefficients <cite>c’, a’, b’, e’, s’</cite> and <cite>l’</cite> depend only on the solvent and were obtained
+by fitting to experimental data.</p>
+<p>The solvent descriptors (<cite>c, e, s, a, b, l, c’, a’, b’, e’, s’, l’</cite>) are largely treated as regressed empirical coefficients.
+Parameters are provided in RMG’s database for the following solvents:</p>
 <ol class="arabic simple">
 <li><p>acetonitrile</p></li>
 <li><p>benzene</p></li>
@@ -196,51 +212,137 @@ to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> 
 <li><p>water</p></li>
 </ol>
 </div>
+<div class="section" id="estimation-of-delta-g-rm-solv-at-other-temperatures-linear-extrapolation">
+<h3><span class="section-number">15.2.3. </span>Estimation of <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures: linear extrapolation<a class="headerlink" href="#estimation-of-delta-g-rm-solv-at-other-temperatures-linear-extrapolation" title="Permalink to this headline">¶</a></h3>
+<p>To estimate <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at temperatures other than 298 K, a simple linear extrapolation can be employed.
+For this approach, the enthalpy and entropy of solvation are assumed to be independent of temperature.
+The entropy of solvation, <span class="math notranslate nohighlight">\(\Delta S_{\rm solv}^{*}(\rm 298 K)\)</span>, is calculated from <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}(\rm 298 K)\)</span> and
+<span class="math notranslate nohighlight">\(\Delta H_{\rm solv}^{*}(\rm 298 K)\)</span> estimated from the Abraham and Mintz LSERs.</p>
+<div class="math notranslate nohighlight" id="equation-entropy-298k">
+<span class="eqno">(6)<a class="headerlink" href="#equation-entropy-298k" title="Permalink to this equation">¶</a></span>\[\Delta S_{\rm solv}^{*}({\rm 298 K}) = \frac{\Delta H_{\rm solv}^{*}({\rm 298 K}) - \Delta G_{\rm solv}^{*}({\rm 298 K})}{\rm 298 K}\]</div>
+<p>Then <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures is approximated by simple extrapolation assuming linear temperature dependence.</p>
+<div class="math notranslate nohighlight" id="equation-linear-extrapolation">
+<span class="eqno">(7)<a class="headerlink" href="#equation-linear-extrapolation" title="Permalink to this equation">¶</a></span>\[\Delta G_{\rm solv}^{*}(T) = \Delta H_{\rm solv}^{*}({\rm 298 K}) - T\Delta S_{\rm solv}^{*}({\rm 298 K})\]</div>
+<p>This method provides a rapid, first-order approximation of the temperature dependence of solvation free energy. However,
+since the actual solvation enthalpy and entropy vary with temperature, this approximation will deviate at temperatures
+far away from 298 K. Looking at several experimental data, this approximation seems reasonable up to ~ 400 K.</p>
+</div>
+<div class="section" id="estimation-of-delta-g-rm-solv-at-other-temperatures-temperature-dependent-model">
+<h3><span class="section-number">15.2.4. </span>Estimation of <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures: temperature-dependent model<a class="headerlink" href="#estimation-of-delta-g-rm-solv-at-other-temperatures-temperature-dependent-model" title="Permalink to this headline">¶</a></h3>
+<p>This method uses a piecewise function of K-factor to estimate more accurate temperature dependent solvation free energy.
+The K-factor at infinite dilution (<span class="math notranslate nohighlight">\(K_{2,1}^{\infty}\)</span>), also known as the vapor-liquid equilibrium ratio, is
+defined as the ratio of the equilibrium mole fractions of the solute (component 2) in the gas and the liquid phases
+of the solvent (component 1):</p>
+<div class="math notranslate nohighlight" id="equation-linear-extrapolation">
+<span class="eqno">(8)<a class="headerlink" href="#equation-linear-extrapolation" title="Permalink to this equation">¶</a></span>\[K_{2,1}^{\infty} = \frac{y_{2}}{x_{2}}\]</div>
+<p>Recently, Chung et al. (<a class="reference internal" href="#chung2020" id="id21"><span>[Chung2020]</span></a>) has shown that the following piecewise function combining two separate correlations
+(<a class="reference internal" href="#japas1989" id="id22"><span>[Japas1989]</span></a>, <a class="reference internal" href="#harvey1996" id="id23"><span>[Harvey1996]</span></a>) can accurately predict the K-factor from room temperature up to the critical temperature
+of the solvent</p>
+<div class="math notranslate nohighlight" id="equation-piecewise-function-1">
+<span class="eqno">(9)<a class="headerlink" href="#equation-piecewise-function-1" title="Permalink to this equation">¶</a></span>\[{\rm For}\ \ T \leqslant 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ T_{\rm r}\ln K_{2,1}^{\infty} = A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp (1-T_{\rm r})\]</div>
+<div class="math notranslate nohighlight" id="equation-piecewise-function-2">
+<span class="eqno">(10)<a class="headerlink" href="#equation-piecewise-function-2" title="Permalink to this equation">¶</a></span>\[{\rm For}\ \ 0.75T_{\rm c} \leqslant T &lt; T_{\rm c}:\ \ \ \ \ \ \ \ \ \ T_{\rm r}\ln K_{2,1}^{\infty} = D(\frac{\rho_{1}^{\rm l}}{\rho_{\rm c, 1}}-1)\]</div>
+<p>where <span class="math notranslate nohighlight">\(A, B, C, D\)</span> are empirical parameters unique for each solvent-solute pair, <span class="math notranslate nohighlight">\(T_{\rm c}\)</span> is the critical
+temperature of the solvent, <span class="math notranslate nohighlight">\(T_{\rm r}\)</span> is the reduced temperature (<span class="math notranslate nohighlight">\(T_{\rm r} = \frac{T}{T_{\rm c}}\)</span>),
+<span class="math notranslate nohighlight">\(\rho_{1}^{\rm l}\)</span> is the saturated liquid phase density of the solvent, and <span class="math notranslate nohighlight">\(\rho_{\rm c, 1}\)</span> is the critical
+density of the solvent. The transition temperature, <span class="math notranslate nohighlight">\(0.75T_{\rm c}\)</span>, has been empirically chosen. All calculations
+are performed at the solvent’s saturation pressures such that K-factor is only a function of temperature.</p>
+<p>Solvation free energy can be calculated from K-factor from the following relation</p>
+<div class="math notranslate nohighlight" id="equation-kfactor-dgsolv-conversion">
+<span class="eqno">(11)<a class="headerlink" href="#equation-kfactor-dgsolv-conversion" title="Permalink to this equation">¶</a></span>\[\Delta G_{\rm solv}^{*} = RT\ln \left(\frac{K_{2,1}^{\infty} \rho_{1}^{\rm g}}{\rho_{1}^{\rm l}}\right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_{1}^{\rm g}\)</span> is the saturated gas phase density of the solvent.</p>
+<p>To solve for the four empirical parameters (A, B, C, D), we need four equations. The first two can be obtained by
+enforcing the continuity in values and temperature gradient of the piecewise function at the transition temperature. The
+last two can be obtained by making the K-factor value and its temperature gradient at 298 K match with those
+estimated from the solvation free energy and enthalpy at 298 K. These lead to the following four linearly independent
+equations to solve:</p>
+<div class="math notranslate nohighlight" id="equation-condition1">
+<span class="eqno">(12)<a class="headerlink" href="#equation-condition1" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = {\rm 298 K} :\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp{(1-T_{\rm r})} =T_{\rm r} \ln{K_{2,1}^{\infty}(298\ \rm K)}\]</div>
+<div class="math notranslate nohighlight" id="equation-condition2">
+<span class="eqno">(13)<a class="headerlink" href="#equation-condition2" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = {\rm 298 K}:\ \ \ \ \ -\frac{0.355B}{T_{\rm c}}(1-T_{\rm r})^{-0.645} + \frac{C\exp{(1-T_{\rm r})}}{T_{\rm c}}\left(0.59(T_{\rm r})^{-0.41} - (T_{\rm r}^{*})^{0.59}\right) = \frac{{\rm d}\left(T_{\rm r} \ln{K_{2,1}^{\infty}}\right)}{{\rm d}T}\Big|_{T=298\ {\rm K}}\]</div>
+<div class="math notranslate nohighlight" id="equation-condition3">
+<span class="eqno">(14)<a class="headerlink" href="#equation-condition3" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp{(1-T_{\rm r})} = D\Big(\frac{\rho_{1}^{\rm l}}{\rho_{\rm c,1}} - 1 \Big)\]</div>
+<div class="math notranslate nohighlight" id="equation-condition4">
+<span class="eqno">(15)<a class="headerlink" href="#equation-condition4" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ \ \ \ \ -\frac{0.355B}{T_{\rm c}}(1-T_{\rm r})^{-0.645} + \frac{C\exp{(1-T_{\rm r})}}{T_{\rm c}}\left(0.59(T_{\rm r})^{-0.41} - (T_{\rm r})^{0.59}\right) = \frac{D}{\rho_{\rm c, 1}} \frac{{\rm d}\rho_{1}^{\rm l}}{{\rm d}T}\Big|_{T=0.75T_{\rm c}}\]</div>
+<p>The temperature dependent liquid phase and gas phase densities of solvents can be evaluated at the solvent’s saturation
+pressure using CoolProp <a class="reference internal" href="#bell2014" id="id24"><span>[Bell2014]</span></a>. CoolProp is an open source fluid modeling software based on Helmholtz energy equations
+of state. It provides accurate estimations of fluid properties over the wide ranges of temperature and pressure for a variety
+of fluids. With known solvents’ densities, one can easily find the empirical parameters of the piecewise functions
+by solving the linear equations above without using any experimental data.</p>
+<p>This method has been tested for 47 solvent-solute pairs over a wide range of temperature, and the mean absolute error of
+solvation free energies has been found to be 1.6 kJ/mol <a class="reference internal" href="#chung2020" id="id25"><span>[Chung2020]</span></a>. Sample plots comparing the predictions made by this
+temperature dependent method and the linear extrapolation method are shown below. The experimental data are obtained from the
+Dortmund Databank integrated in SpringerMaterials <a class="reference internal" href="#ddbst2014" id="id26"><span>[DDBST2014]</span></a>.</p>
+<img alt="../../_images/T_dep_solvation_energy.png" class="align-center" src="../../_images/T_dep_solvation_energy.png" />
+<p>A sample ipython notebook script for temperature dependent K-factor and solvation free energy calculations can be found
+under <code class="docutils literal notranslate"><span class="pre">$RMG-Py/ipython/temperature_dependent_solvation_free_energy.ipynb</span></code>. These calculations are also available on
+a web browser from the RMG website: <a class="reference external" href="https://rmg.mit.edu/database/solvation/search/">Solvation Search</a>.</p>
+<p>However not every solvent listed in the RMG solvent database is available in CoolProp. Here is a list of solvents
+that are available in CoolProp and therefore are available for temperature dependent solvation calculations:</p>
+<ol class="arabic simple">
+<li><p>benzene</p></li>
+<li><p>cyclohexane</p></li>
+<li><p>decane</p></li>
+<li><p>dichloroethane</p></li>
+<li><p>dodecane</p></li>
+<li><p>ethanol</p></li>
+<li><p>heptane</p></li>
+<li><p>hexane</p></li>
+<li><p>nonane</p></li>
+<li><p>octane</p></li>
+<li><p>pentane</p></li>
+<li><p>toluene</p></li>
+<li><p>undecane</p></li>
+<li><p>water</p></li>
+</ol>
+</div>
+<div class="section" id="current-status-of-temperature-dependent-delta-g-rm-solv-in-rmg-liquid-reactor">
+<h3><span class="section-number">15.2.5. </span>Current status of temperature dependent <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> in RMG liquid reactor<a class="headerlink" href="#current-status-of-temperature-dependent-delta-g-rm-solv-in-rmg-liquid-reactor" title="Permalink to this headline">¶</a></h3>
+<p>Currently, RMG uses the linear extrapolation method to estimate solvation free energy at temperatures other than 298 K.
+The work is in progress to implement the temperature dependent solvation free energy estimation for available solvents.</p>
+</div>
 <div class="section" id="group-additivity-method-for-solute-descriptor-estimation">
-<h3><span class="section-number">15.2.3. </span>Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">15.2.6. </span>Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
 <p>Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach
-to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id12"><span>[Platts1999]</span></a>) proposed such a scheme
+to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id27"><span>[Platts1999]</span></a>) proposed such a scheme
 employing a set of 81 molecular fragments for estimating <cite>B, E, L, V</cite> and <cite>S</cite> and another set of 51 fragments for
-the estimation of <cite>A</cite>. Only those fragments containing C, H and O are implemented in order to match RMG’s existing
-capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each
+the estimation of <cite>A</cite>. These fragments are implemented in RMG but are limited to the compounds containing H, C,
+O, N, and S. The value of a given descriptor for a molecule is obtained by summing the contributions from each
 fragment found in the molecule and the intercept associated with that descriptor.</p>
-</div>
-<div class="section" id="mintz-model-for-enthalpy-of-solvation">
-<h3><span class="section-number">15.2.4. </span>Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
-<p>For estimating <span class="math notranslate nohighlight">\(\Delta G\)</span> at temperatures other than 298 K, the enthalpy change associated with solvation,
-<span class="math notranslate nohighlight">\(\Delta H\)</span> must be calculated separately and, along with <span class="math notranslate nohighlight">\(\Delta S\)</span>, assumed to be independent of
-temperature. Recently, Mintz et al. (<a class="reference internal" href="#mintz2007" id="id13"><span>[Mintz2007]</span></a>, <a class="reference internal" href="#mintz2007a" id="id14"><span>[Mintz2007a]</span></a>, <a class="reference internal" href="#mintz2007b" id="id15"><span>[Mintz2007b]</span></a>, <a class="reference internal" href="#mintz2007c" id="id16"><span>[Mintz2007c]</span></a>, <a class="reference internal" href="#mintz2007d" id="id17"><span>[Mintz2007d]</span></a>, <a class="reference internal" href="#mintz2008" id="id18"><span>[Mintz2008]</span></a>, <a class="reference internal" href="#mintz2008a" id="id19"><span>[Mintz2008a]</span></a>, <a class="reference internal" href="#mintz2009" id="id20"><span>[Mintz2009]</span></a>)
-have developed linear correlations similar to the Abraham model for estimating <span class="math notranslate nohighlight">\(\Delta H\)</span>:</p>
-<div class="math notranslate nohighlight" id="equation-mintz">
-<span class="eqno">(3)<a class="headerlink" href="#equation-mintz" title="Permalink to this equation">¶</a></span>\[\Delta H(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L\]</div>
-<p>where <cite>A, B, E, S</cite> and <cite>L</cite> are the same solute descriptors used in the Abraham model for the estimation of
-<span class="math notranslate nohighlight">\(\Delta G\)</span>. The lowercase coefficients <cite>c’, a’, b’, e’, s’</cite> and <cite>l’</cite> depend only on the solvent and were obtained
-by fitting to experimental data. In RMG, this equation is implemented and together with <span class="math notranslate nohighlight">\(\Delta G(298 K)\)</span> can be
-used to find <span class="math notranslate nohighlight">\(\Delta S(298 K)\)</span>. From this data, <span class="math notranslate nohighlight">\(\Delta G\)</span> at other temperatures is found by extrapolation.</p>
 </div>
 </div>
 <div class="section" id="diffusion-limited-kinetics">
 <span id="diffusionlimited"></span><h2><span class="section-number">15.3. </span>Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion
 limits. The theory behind diffusive limits in the solution phase for bimolecular reactions is well established
-(<a class="reference internal" href="#rice1985" id="id21"><span>[Rice1985]</span></a>) and has been extended to reactions of any order (<a class="reference internal" href="#flegg2016" id="id22"><span>[Flegg2016]</span></a>). The effective rate constant of a
+(<a class="reference internal" href="#rice1985" id="id28"><span>[Rice1985]</span></a>) and has been extended to reactions of any order (<a class="reference internal" href="#flegg2016" id="id29"><span>[Flegg2016]</span></a>). The effective rate constant of a
 diffusion-limited reaction is given by:</p>
 <div class="math notranslate nohighlight" id="equation-diffusive-limit">
-<span class="eqno">(4)<a class="headerlink" href="#equation-diffusive-limit" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{eff}} = \frac {k_{\mathrm{diff}} k_{\mathrm{int}}}{k_{\mathrm{diff}} + k_{\mathrm{int}}}\]</div>
+<span class="eqno">(16)<a class="headerlink" href="#equation-diffusive-limit" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{eff}} = \frac {k_{\mathrm{diff}} k_{\mathrm{int}}}{k_{\mathrm{diff}} + k_{\mathrm{int}}}\]</div>
 <p>where <span class="math notranslate nohighlight">\(k_\mathrm{int}\)</span> is the intrinsic reaction rate, and <span class="math notranslate nohighlight">\(k_\mathrm{diff}\)</span> is the diffusion-limited rate, which is given
 by:</p>
 <div class="math notranslate nohighlight" id="equation-smoluchowski">
-<span class="eqno">(5)<a class="headerlink" href="#equation-smoluchowski" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}\]</div>
+<span class="eqno">(17)<a class="headerlink" href="#equation-smoluchowski" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\alpha=(3N-5)/2\)</span> and</p>
 <div class="math notranslate nohighlight" id="equation-diff1">
-<span class="eqno">(6)<a class="headerlink" href="#equation-diff1" title="Permalink to this equation">¶</a></span>\[\hat{D}_i = D_i + \frac{1}{\sum_m^{i-1}D_m^{-1}}\]</div>
+<span class="eqno">(18)<a class="headerlink" href="#equation-diff1" title="Permalink to this equation">¶</a></span>\[\hat{D}_i = D_i + \frac{1}{\sum_m^{i-1}D_m^{-1}}\]</div>
 <div class="math notranslate nohighlight" id="equation-diff2">
-<span class="eqno">(7)<a class="headerlink" href="#equation-diff2" title="Permalink to this equation">¶</a></span>\[\Delta_N = \frac{\sum_{i=1}^N D_i^{-1}}{\sum_{i&gt;m}(D_iD_m)^{-1}}\]</div>
+<span class="eqno">(19)<a class="headerlink" href="#equation-diff2" title="Permalink to this equation">¶</a></span>\[\Delta_N = \frac{\sum_{i=1}^N D_i^{-1}}{\sum_{i&gt;m}(D_iD_m)^{-1}}\]</div>
 <p><span class="math notranslate nohighlight">\(D_i\)</span> are the individual diffusivities and <span class="math notranslate nohighlight">\(\sigma\)</span> is the Smoluchowski radius, which would usually be fitted to
 experiment, but RMG approximates it as the sum of molecular radii. RMG uses the McGowan method for estimating
 radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent
-viscosities (<span class="math notranslate nohighlight">\(\eta(T)\)</span>). In a unimolecular to bimolecular reaction, for example, the forward rate
+viscosities (<span class="math notranslate nohighlight">\(\eta(T)\)</span>):</p>
+<div class="math notranslate nohighlight" id="equation-stokeseinstein">
+<span class="eqno">(20)<a class="headerlink" href="#equation-stokeseinstein" title="Permalink to this equation">¶</a></span>\[D_{i} = \frac{k_{B}T}{6\pi\,\eta\,r_{i}}\]</div>
+<div class="math notranslate nohighlight" id="equation-smoluchowski-radius">
+<span class="eqno">(21)<a class="headerlink" href="#equation-smoluchowski-radius" title="Permalink to this equation">¶</a></span>\[\sigma = \sum_{i=1}^N r_{i}\]</div>
+<div class="math notranslate nohighlight" id="equation-raidus-from-mcgowan-volume">
+<span class="eqno">(22)<a class="headerlink" href="#equation-raidus-from-mcgowan-volume" title="Permalink to this equation">¶</a></span>\[r_{i} = \frac{\left(100\frac{3}{4}\frac{V_{i}}{\pi N_{A}}\right)^{1/3}}{100}\]</div>
+<p>where <span class="math notranslate nohighlight">\(k_B\)</span> is the Boltzmann constant, <span class="math notranslate nohighlight">\(N_A\)</span> is the Avogadro number, <span class="math notranslate nohighlight">\(r_i\)</span> is the individual molecular
+radius in meters, and <span class="math notranslate nohighlight">\(V_i\)</span> is the individual McGowan volume in cm3/mol divided by 100, which is equivalent to the
+Abraham solute parameter, <span class="math notranslate nohighlight">\(V\)</span>.</p>
+<p>In a unimolecular to bimolecular reaction, for example, the forward rate
 constant (<span class="math notranslate nohighlight">\(k_f\)</span>) can be slowed down if the reverse rate (<span class="math notranslate nohighlight">\(k_{r,\mathrm{eff}}\)</span>) is diffusion-limited
 since the equilibrium constant (<span class="math notranslate nohighlight">\(K_{eq}\)</span>) is not affected by diffusion limitations. In cases
 where both the forward and the reverse reaction rates are multimolecular, the forward rate coefficients limited in the
@@ -248,7 +350,7 @@ forward and reverse directions are calculated and the limit with the smaller for
 <p>The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line
 and a correlation for the viscosity using parameters <span class="math notranslate nohighlight">\(A, B, C, D, E\)</span>:</p>
 <div class="math notranslate nohighlight" id="equation-viscosity">
-<span class="eqno">(8)<a class="headerlink" href="#equation-viscosity" title="Permalink to this equation">¶</a></span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
+<span class="eqno">(23)<a class="headerlink" href="#equation-viscosity" title="Permalink to this equation">¶</a></span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
 <p>To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).</p>
 </div>
 <div class="section" id="example-liquid-phase-input-file-no-constant-species">
@@ -374,19 +476,22 @@ and a correlation for the viscosity using parameters <span class="math notransla
 </pre></div>
 </div>
 <dl class="citation">
-<dt class="label" id="vitha2006"><span class="brackets">Vitha2006</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id4">2</a>,<a href="#id6">3</a>,<a href="#id9">4</a>)</span></dt>
+<dt class="label" id="bennaim1987"><span class="brackets"><a class="fn-backref" href="#id1">BenNaim1987</a></span></dt>
+<dd><p>A. Ben-Naim. “Solvation Thermodynamics.” <em>Plenum Press</em> (1987).</p>
+</dd>
+<dt class="label" id="vitha2006"><span class="brackets">Vitha2006</span><span class="fn-backref">(<a href="#id2">1</a>,<a href="#id5">2</a>,<a href="#id7">3</a>,<a href="#id10">4</a>)</span></dt>
 <dd><p>M. Vitha and P.W. Carr. “The chemical interpretation and practice of linear solvation energy relationships in chromatography.” <em>J. Chromatogr. A.</em> <strong>1126(1-2)</strong>, p. 143-194 (2006).</p>
 </dd>
-<dt class="label" id="abraham1999"><span class="brackets">Abraham1999</span><span class="fn-backref">(<a href="#id2">1</a>,<a href="#id5">2</a>,<a href="#id7">3</a>,<a href="#id10">4</a>)</span></dt>
+<dt class="label" id="abraham1999"><span class="brackets">Abraham1999</span><span class="fn-backref">(<a href="#id3">1</a>,<a href="#id6">2</a>,<a href="#id8">3</a>,<a href="#id11">4</a>)</span></dt>
 <dd><p>M.H. Abraham et al. “Correlation and estimation of gas-chloroform and water-chloroformpartition coefficients by a linear free energy relationship method.” <em>J. Pharm. Sci.</em> <strong>88(7)</strong>, p. 670-679 (1999).</p>
 </dd>
-<dt class="label" id="jalan2010"><span class="brackets">Jalan2010</span><span class="fn-backref">(<a href="#id3">1</a>,<a href="#id8">2</a>)</span></dt>
+<dt class="label" id="jalan2010"><span class="brackets">Jalan2010</span><span class="fn-backref">(<a href="#id4">1</a>,<a href="#id9">2</a>)</span></dt>
 <dd><p>A. Jalan et al. “Predicting solvation energies for kinetic modeling.” <em>Annu. Rep.Prog. Chem., Sect. C</em> <strong>106</strong>, p. 211-258 (2010).</p>
 </dd>
-<dt class="label" id="poole2009"><span class="brackets"><a class="fn-backref" href="#id11">Poole2009</a></span></dt>
+<dt class="label" id="poole2009"><span class="brackets"><a class="fn-backref" href="#id12">Poole2009</a></span></dt>
 <dd><p>C.F. Poole et al. “Determination of solute descriptors by chromatographic methods.” <em>Anal. Chim. Acta</em> <strong>652(1-2)</strong> p. 32-53 (2009).</p>
 </dd>
-<dt class="label" id="platts1999"><span class="brackets"><a class="fn-backref" href="#id12">Platts1999</a></span></dt>
+<dt class="label" id="platts1999"><span class="brackets"><a class="fn-backref" href="#id27">Platts1999</a></span></dt>
 <dd><p>J. Platts and D. Butina. “Estimation of molecular linear free energy relation descriptorsusing a group contribution approach.” <em>J. Chem. Inf. Comput. Sci.</em> <strong>39</strong>, p. 835-845 (1999).</p>
 </dd>
 <dt class="label" id="mintz2007"><span class="brackets"><a class="fn-backref" href="#id13">Mintz2007</a></span></dt>
@@ -413,10 +518,25 @@ and a correlation for the viscosity using parameters <span class="math notransla
 <dt class="label" id="mintz2009"><span class="brackets"><a class="fn-backref" href="#id20">Mintz2009</a></span></dt>
 <dd><p>C. Mintz et al. “Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone.” <em>Thermochim. Acta</em> <strong>484(1-2)</strong>, p. 65-69 (2009).</p>
 </dd>
-<dt class="label" id="rice1985"><span class="brackets"><a class="fn-backref" href="#id21">Rice1985</a></span></dt>
+<dt class="label" id="chung2020"><span class="brackets">Chung2020</span><span class="fn-backref">(<a href="#id21">1</a>,<a href="#id25">2</a>)</span></dt>
+<dd><p>Y. Chung et al. “Temperature dependent vapor-liquid equilibrium and solvation free energy estimation from minimal data.” Manuscript submitted for publication (2009).</p>
+</dd>
+<dt class="label" id="japas1989"><span class="brackets"><a class="fn-backref" href="#id22">Japas1989</a></span></dt>
+<dd><p>M.L. Japas and J.M.H. Levelt Sengers. “Gas solubility and Henry’s law near the solvent’s critical point.” <em>AICHE Journal</em> <strong>35(5)</strong>, p. 705-713 (1989).</p>
+</dd>
+<dt class="label" id="harvey1996"><span class="brackets"><a class="fn-backref" href="#id23">Harvey1996</a></span></dt>
+<dd><p>A.H. Harvey. “Semiempirical correlation for Henry’s constants over large temperature ranges.” <em>AICHE Journal</em> <strong>42(5)</strong>, p. 1491-1494 (1996).</p>
+</dd>
+<dt class="label" id="bell2014"><span class="brackets"><a class="fn-backref" href="#id24">Bell2014</a></span></dt>
+<dd><p>I.H. Bell et al. “Pure and pseudo-pure fluid thermophysical property evaluation and the open source thermophysical property library CoolProp.” <em>Industrial &amp; Engineering Chemistry Research</em> <strong>53(6)</strong>, p. 2498-2508 (2014).</p>
+</dd>
+<dt class="label" id="ddbst2014"><span class="brackets"><a class="fn-backref" href="#id26">DDBST2014</a></span></dt>
+<dd><p>“Dortmund Data Bank Software and Separation Technology GmbG, &lt;Version 2014 03&gt;.” <em>Dortmund Data Bank integrated in SpringerMaterials</em> (2014). <a class="reference external" href="https://materials.springer.com.">https://materials.springer.com.</a>.</p>
+</dd>
+<dt class="label" id="rice1985"><span class="brackets"><a class="fn-backref" href="#id28">Rice1985</a></span></dt>
 <dd><p>S.A. Rice. “Diffusion-limited reactions.” In <em>Comprehensive Chemical Kinetics</em>, EditorsC.H. Bamford, C.F.H. Tipper and R.G. Compton. <strong>25</strong>, (1985).</p>
 </dd>
-<dt class="label" id="flegg2016"><span class="brackets"><a class="fn-backref" href="#id22">Flegg2016</a></span></dt>
+<dt class="label" id="flegg2016"><span class="brackets"><a class="fn-backref" href="#id29">Flegg2016</a></span></dt>
 <dd><p>M.B. Flegg. “Smoluchowski reaction kinetics for reactions of any order.” <em>SIAM J. Appl. Math.</em> <strong>76(4)</strong>, p. 1403-1432 (2016).</p>
 </dd>
 </dl>
@@ -456,9 +576,11 @@ and a correlation for the viscosity using parameters <span class="math notransla
 <li><a class="reference internal" href="#equation-of-state">15.1. Equation of state</a></li>
 <li><a class="reference internal" href="#solvation-thermochemistry">15.2. Solvation thermochemistry</a><ul>
 <li><a class="reference internal" href="#use-of-thermo-libraries-in-liquid-phase-system">15.2.1. Use of thermo libraries in liquid phase system</a></li>
-<li><a class="reference internal" href="#use-of-abraham-lser-to-estimate-thermochemistry">15.2.2. Use of Abraham LSER to estimate thermochemistry</a></li>
-<li><a class="reference internal" href="#group-additivity-method-for-solute-descriptor-estimation">15.2.3. Group additivity method for solute descriptor estimation</a></li>
-<li><a class="reference internal" href="#mintz-model-for-enthalpy-of-solvation">15.2.4. Mintz model for enthalpy of solvation</a></li>
+<li><a class="reference internal" href="#use-of-abraham-lser-to-estimate-thermochemistry-at-298-k">15.2.2. Use of Abraham LSER to estimate thermochemistry at 298 K</a></li>
+<li><a class="reference internal" href="#estimation-of-delta-g-rm-solv-at-other-temperatures-linear-extrapolation">15.2.3. Estimation of <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures: linear extrapolation</a></li>
+<li><a class="reference internal" href="#estimation-of-delta-g-rm-solv-at-other-temperatures-temperature-dependent-model">15.2.4. Estimation of <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures: temperature-dependent model</a></li>
+<li><a class="reference internal" href="#current-status-of-temperature-dependent-delta-g-rm-solv-in-rmg-liquid-reactor">15.2.5. Current status of temperature dependent <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> in RMG liquid reactor</a></li>
+<li><a class="reference internal" href="#group-additivity-method-for-solute-descriptor-estimation">15.2.6. Group additivity method for solute descriptor estimation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#diffusion-limited-kinetics">15.3. Diffusion-limited kinetics</a></li>
