@@ -33,12 +33,15 @@
 import logging
 import math
 import os.path
+import numpy as np
 from copy import deepcopy
+from CoolProp.CoolProp import PropsSI
 
 import rmgpy.constants as constants
 from rmgpy.data.base import Database, Entry, make_logic_node, DatabaseError
 from rmgpy.molecule import Molecule, Group, ATOMTYPES
 from rmgpy.species import Species
+from rmgpy.exceptions import InputError
 
 
 ################################################################################
@@ -100,6 +103,7 @@ def save_entry(f, entry):
         f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
         f.write('        beta = {0!r},\n'.format(entry.data.beta))
         f.write('        eps = {0!r},\n'.format(entry.data.eps))
+        f.write('        name_in_coolprop = "{0!s}",\n'.format(entry.data.name_in_coolprop))
         f.write('    ),\n')
     elif entry.data is None:
         f.write('    solute = None,\n')
@@ -135,7 +139,7 @@ class SolventData(object):
 
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
                  c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None,
-                 C=None, D=None, E=None, alpha=None, beta=None, eps=None):
+                 C=None, D=None, E=None, alpha=None, beta=None, eps=None, name_in_coolprop=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
@@ -159,6 +163,9 @@ class SolventData(object):
         self.beta = beta
         # This is the dielectric constant
         self.eps = eps
+        # This corresponds to the solvent's name in CoolProp. CoolProp is an external package used for
+        # fluid property calculation. If the solvent is not available in CoolProp, this is set to None
+        self.name_in_coolprop = name_in_coolprop
 
     def get_h_abs_correction(self):
         """
@@ -174,6 +181,17 @@ class SolventData(object):
         """
         return math.exp(self.A + (self.B / T) + (self.C * math.log(T)) + (self.D * (T ** self.E)))
 
+    def get_solvent_critical_temperature(self):
+        """
+        Returns the critical temperature of the solvent in K if the solvent is available in
+        CoolProp (name_in_coolprop is not None). The critical temperature is given by CoolProp function.
+        If the solvent is not available in CoolProp (name_in_coolprop is None), it raises DatabaseError
+        """
+        if self.name_in_coolprop is not None:
+            Tc = PropsSI('T_critical', self.name_in_coolprop)
+        else:
+            raise DatabaseError("Critical temperature is not available for the solvent whose `name_in_coolprop` is None")
+        return Tc
 
 class SolvationCorrection(object):
     """
@@ -186,6 +204,27 @@ class SolvationCorrection(object):
         self.entropy = entropy
         self.gibbs = gibbs
 
+class KfactorParameters(object):
+    """
+    Stores 4 coefficients (A, B, C, D) in the following K-factor relationships and
+    the transition temperature (T_transition) in K.
+    1) T <= T_transition : Harvey's semi-empirical relationship
+                    Tr*ln(K-factor) = A + B(1-Tr)^0.355 + Cexp(1-Tr)(Tr)^0.59
+    2) T_transition <= T < T_c : Japas and Levelt Sengers' linear relationship
+                    Tr*ln(K-factor) = D(rho_l / rho_c -1)
+    Relevant definitions:
+    rho_l = saturated liquid phase density of the solvent [=] mol / m^3
+    rho_c = critical density of the solvent [=] mol / m^3
+    Tr = reduced temperature = T / Tc [=] K
+    Tc = critical temperature of the solvent [=] K
+    K-factor = y_solute / x_solute.
+    y_solute = mole fraction of the solute in a gas phase at equilibrium in a binary dilute mixture
+    x_solute = mole fraction of the solute in a liquid phase at equilibrium in a binary dilute mixture
+    """
+    def __init__(self, A=None, B=None, C=None, D=None, T_transition=None):
+        self.lower_T = [A, B, C]
+        self.higher_T = D
+        self.T_transition = T_transition # in K
 
 class SoluteData(object):
     """
@@ -943,6 +982,136 @@ class SolvationDatabase(object):
         correction.entropy = self.calc_s(correction.gibbs, correction.enthalpy)
         return correction
 
+    def get_Kfactor(self, solute_data, solvent_data, T):
+        """
+        Given solute_data, solvent_data, and temperature, calculates K-factor T
+        if the solvent's name_in_coolprop is not None. K-factor = y_solute / x_solute.
+        If the temperature is above the critical temperature of the solvent, it raises InpurError.
+        If the solvent's name_in_coolprop is None, it raises DatabaseError
+        """
+        if solvent_data.name_in_coolprop is not None:
+            Tc = solvent_data.get_solvent_critical_temperature()
+            if T < Tc:
+                kfactor_parameters = self.get_Kfactor_parameters(solute_data, solvent_data)
+                A = kfactor_parameters.lower_T[0]
+                B = kfactor_parameters.lower_T[1]
+                C = kfactor_parameters.lower_T[2]
+                D = kfactor_parameters.higher_T
+                T_transition = kfactor_parameters.T_transition
+                solvent_name = solvent_data.name_in_coolprop
+                rho_c = PropsSI('rhomolar_critical', solvent_name) # critical density of the solvent in mol/m^3
+                rho_l = PropsSI('Dmolar', 'T', T, 'Q', 0, solvent_name)  # saturated liquid phase density of the solvent, in mol/m^3
+                if T < T_transition:
+                    Kfactor = math.exp((A + B * (1 - T / Tc) ** 0.355 + C * math.exp(1 - T / Tc) * (T / Tc) ** 0.59) / (T / Tc))
+                else:
+                    Kfactor = math.exp(D * (rho_l / rho_c -1) / (T / Tc))
+            else:
+                raise InputError("The input temperature {0} K cannot be greater than "
+                                 "or equal to the critical temperature, {1} K".format(T, Tc))
+        else:
+            raise DatabaseError("K-factor calculation or temperature-dependent solvation free energy calculation "
+                                "is not available for the solvent whose `name_in_coolprop` is None")
+        return Kfactor
+
+    def get_T_dep_solvation_energy(self, solute_data, solvent_data, T):
+        """
+        Given solute_data, solvent_data, and temperature, calculates the Gibbs free energy of
+        solvation at T if the solvent's name_in_coolprop is not None.
+        """
+        Kfactor = self.get_Kfactor(solute_data, solvent_data, T)
+        rho_g = PropsSI('Dmolar', 'T', T, 'Q', 1, solvent_data.name_in_coolprop) # saturated gas phase density of the solvent, in mol/m^3
+        rho_l = PropsSI('Dmolar', 'T', T, 'Q', 0, solvent_data.name_in_coolprop) # saturated liquid phase density of the solvent, in mol/m^3
+        delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
+        return delG
+
+    def get_Kfactor_parameters(self, solute_data, solvent_data, T_trans_factor=0.75):
+        """
+        Given solute_data and solvent_data object, if name_in_coolprop is not None for the solvent,
+        it finds the fitted K-factor parameters for the solvent-solute pair based on the enthalpy
+        and Gibbs free energy of solvation at 298 K.
+        The parameters (A, B, C, D) are determined by enforcing the smooth continuity of the piecewise
+        functions at transition temperature and by making K-factor match in value and temperature
+        gradient at 298 K with those estimated from Abraham and Mintz LSERs.
+        The four equations are listed here:
+            1) Match in value of K-factor with the estimate from the Abraham LSER at 298 K
+                A + B(1-Tr)^0.355 + Cexp(1-Tr)(Tr)^0.59 = Tr*ln(K-factor)
+            2) Match in temperature gradient of K-factor with the estimate from the Mintz LSER at 298 K
+                -0.355B / Tc (1-Tr)^-0.645 + Cexp(1-Tr) / Tc * (0.59(Tr)^-0.41 - (Tr)^0.59) = d(Tr*ln(K-factor))/dT
+            3) Continuity of the piecewise function at T_transition:
+                A + B(1-Tr)^0.355 + Cexp(1-Tr)(Tr)^0.59 = D(rho_l / rho_c - 1)
+            4) Continuous temperature gradient of the piecewise function at T_transition
+                -0.355B / Tc (1-Tr)^-0.645 + Cexp(1-Tr) / Tc * (0.59(Tr)^-0.41 - (Tr)^0.59) = D / rho_c * d(rho_l)/dT
+        The conversion between dGsolv estimate from the Abraham and K-factor is shown below:
+                dGsolv = RTln(K-factor * rho_g / rho_l)
+        where rho_g is the saturated gas phase density of the solvent.
+        If name_in_coolprop is None for the solvent, it raises DatabaseError
+        """
+        if solvent_data.name_in_coolprop is not None:
+            correction = self.get_solvation_correction(solute_data, solvent_data)
+            delG298 = correction.gibbs # in J/mol
+            delH298 = correction.enthalpy # in J/mol
+            delS298 = correction.entropy # in J/mol/K
+            Tc = solvent_data.get_solvent_critical_temperature()
+            T_transition = Tc * T_trans_factor # T_trans_factor is empirically set to 0.75 by default
+            solvent_name = solvent_data.name_in_coolprop
+            rho_c = PropsSI('rhomolar_critical', solvent_name)  # the critical density of the solvent, in mol/m^3
+
+            # Generate Amatrix and bvector for Ax = b
+            Amatrix = np.zeros((4, 4))
+            bvec = np.zeros((4, 1))
+            # 1. Tr*ln(K-factor) value at T = 298 K
+            rho_l_298 = PropsSI('Dmolar', 'T', 298, 'Q', 0, solvent_name)  # saturated liquid phase density of the solvent, in mol/m^3
+            rho_g_298 = PropsSI('Dmolar', 'T', 298, 'Q', 1, solvent_name)  # saturated gas phase density of the solvent, in mol/m^3
+            K298 = math.exp(delG298 / (298 * constants.R)) / rho_g_298 * rho_l_298  # K-factor
+            x298 = 298. / Tc * math.log(K298)  # Tr*ln(K-factor), in K
+            Amatrix[0][0] = 1
+            Amatrix[0][1] = (1 - 298 / Tc) ** 0.355
+            Amatrix[0][2] = math.exp(1 - 298 / Tc) * (298 / Tc) ** 0.59
+            Amatrix[0][3] = 0
+            bvec[0] = x298
+            # 2. d(Tr*ln(K-factor)) / dT at T = 298. Use finite difference method to get the temperature gradient from
+            # delG, delH, and delS at 298 K
+            T2 = 299
+            delG_T2 = delH298 - delS298 * T2
+            rho_l_T2 = PropsSI('Dmolar', 'T', T2, 'Q', 0, solvent_name)
+            rho_g_T2 = PropsSI('Dmolar', 'T', T2, 'Q', 1, solvent_name)
+            K_T2 = math.exp(delG_T2 / (T2 * constants.R)) / rho_g_T2 * rho_l_T2
+            x_T2 = T2 / Tc * math.log(K_T2)  # Tln(K-factor) at 299 K, in K
+            slope298 = (x_T2 - x298) / (T2 - 298)
+            Amatrix[1][0] = 0
+            Amatrix[1][1] = -0.355 / Tc * ((1 - 298 / Tc) ** (-0.645))
+            Amatrix[1][2] = 1 / Tc * math.exp(1 - 298 / Tc) * (0.59 * (298 / Tc) ** (-0.41) - (298 / Tc) ** 0.59)
+            Amatrix[1][3] = 0
+            bvec[1] = slope298
+            # 3. Tln(K-factor) continuity at T = T_transition
+            rho_l_Ttran = PropsSI('Dmolar', 'T', T_transition, 'Q', 0, solvent_name)
+            Amatrix[2][0] = 1
+            Amatrix[2][1] = (1 - T_transition / Tc) ** 0.355
+            Amatrix[2][2] = math.exp(1 - T_transition / Tc) * (T_transition / Tc) ** 0.59
+            Amatrix[2][3] = -(rho_l_Ttran - rho_c) / rho_c
+            bvec[2] = 0
+            # 4. d(Tln(K-factor)) / dT smooth transition at T = T_transition
+            T3 = T_transition + 1
+            rho_l_T3 = PropsSI('Dmolar', 'T', T3, 'Q', 0, solvent_name)
+            Amatrix[3][0] = 0
+            Amatrix[3][1] = -0.355 / Tc * ((1 - T_transition / Tc) ** (-0.645))
+            Amatrix[3][2] = 1 / Tc * math.exp(1 - T_transition / Tc) * (
+                        0.59 * (T_transition / Tc) ** (-0.41) - (T_transition / Tc) ** 0.59)
+            Amatrix[3][3] = - ((rho_l_T3 - rho_l_Ttran) / rho_c / (T3 - T_transition))
+            bvec[3] = 0
+            # solve for the parameters
+            param, residues, ranks, s = np.linalg.lstsq(Amatrix, bvec, rcond=None)
+            # store the results in kfactor_parameters class
+            kfactor_parameters = KfactorParameters()
+            kfactor_parameters.lower_T = [float(param[0]), float(param[1]), float(param[2])]
+            kfactor_parameters.higher_T = float(param[3])
+            kfactor_parameters.T_transition = T_transition
+        else:
+            raise DatabaseError("K-factor parameter calculation is not available for the solvent "
+                                "whose `name_in_coolprop` is None")
+
+        return kfactor_parameters
+    
     def check_solvent_in_initial_species(self, rmg, solvent_structure):
         """
         Given the instance of RMG class and the solvent_structure, it checks whether the solvent is listed as one
