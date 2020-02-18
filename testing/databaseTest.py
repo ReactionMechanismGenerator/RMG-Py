@@ -609,7 +609,8 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     a_factor = k.A
                     expected = copy(dimensionalities[molecularity])
                     # for each surface reactant but one, switch from (m3/mol) to (m2/mol)
-                    expected[pq.m] -= (surface_reactants - 1)
+                    for _ in range(surface_reactants - 1):
+                        expected[pq.m] -= 1
                     if pq.Quantity(1.0, a_factor.units).simplified.dimensionality != expected:
                         boo = True
                         logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(
