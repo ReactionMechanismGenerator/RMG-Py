@@ -552,6 +552,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     species_dict[product.label] = product
 
         tst = []
+        boo = False
         # Go through all species to make sure they are nonidentical
         species_list = list(species_dict.values())
         labeled_atoms = [species.molecule[0].get_all_labeled_atoms() for species in species_list]
@@ -566,16 +567,15 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 except KeyError:
                     # atom labels did not match, therefore not a match
                     continue
-                tst.append((species_list[i].molecule[0].is_isomorphic(species_list[j].molecule[0], initial_map),
-                            "Species {0} and species {1} in {2} database were found to be identical.".format(
-                                species_list[i].label, species_list[j].label, database.label)))
-
-        boo = False
-        for i in range(len(tst)):
-            if tst[i][0]:
-                logging.error(tst[i][1])
-                boo = True
-
+                m1 = species_list[i].molecule[0]
+                m2 = species_list[j].molecule[0]
+                if not m1.is_mapping_valid(m2, initial_map, equivalent=True):
+                    # the mapping is invalid so they're not isomorphic
+                    continue
+                if m1.is_isomorphic(m2, initial_map):
+                    logging.error("Species {0} and species {1} in {2} database were found to be identical.".format(
+                                species_list[i].label, species_list[j].label, database.label))
+                    boo = True
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
@@ -609,7 +609,8 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     a_factor = k.A
                     expected = copy(dimensionalities[molecularity])
                     # for each surface reactant but one, switch from (m3/mol) to (m2/mol)
-                    expected[pq.m] -= (surface_reactants - 1)
+                    for _ in range(surface_reactants - 1):
+                        expected[pq.m] -= 1
                     if pq.Quantity(1.0, a_factor.units).simplified.dimensionality != expected:
                         boo = True
                         logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(

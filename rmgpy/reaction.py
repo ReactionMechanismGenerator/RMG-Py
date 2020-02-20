@@ -53,8 +53,9 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-    StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP
+    StickingCoefficient, SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
+from rmgpy.kinetics.surface import SurfaceArrhenius  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -787,6 +788,29 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
+    def reverse_surface_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
+        """
+        Reverses the given k_forward, which must be a SurfaceArrhenius type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(kf=SurfaceArrhenius, kr=SurfaceArrhenius)
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
+        kf = k_forward
+        if not isinstance(kf, SurfaceArrhenius): # Only reverse SurfaceArrhenius rates
+            raise TypeError(f'Expected a SurfaceArrhenius object for k_forward but received {kf}')
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
+        kr = SurfaceArrhenius()
+        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        return kr
+
     def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
@@ -800,6 +824,7 @@ class Reaction:
         supported_types = (
             KineticsData.__name__,
             Arrhenius.__name__,
+            SurfaceArrhenius.__name__,
             MultiArrhenius.__name__,
             PDepArrhenius.__name__,
             MultiPDepArrhenius.__name__,
@@ -825,7 +850,10 @@ class Reaction:
             return kr
 
         elif isinstance(kf, Arrhenius):
-            return self.reverse_arrhenius_rate(kf, kunits, Tmin, Tmax)
+            if isinstance(kf, SurfaceArrhenius):
+                return self.reverse_surface_arrhenius_rate(kf, kunits, Tmin, Tmax)
+            else:
+                return self.reverse_arrhenius_rate(kf, kunits, Tmin, Tmax)
 
         elif network_kinetics and self.network_kinetics is not None:
             kf = self.network_kinetics

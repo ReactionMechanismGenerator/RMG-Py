@@ -696,6 +696,35 @@ class TestReaction(unittest.TestCase):
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
+    def test_reverse_surface_arrhenius_rate(self):
+        """
+        Test the Reaction.reverse_surface_arrhenius_rate() method works for SurfaceArrhenius format.
+        """
+        original_kinetics = SurfaceArrhenius(
+            A=(1.195e12, 'm^2/(mol*s)'),
+            n=0.0,
+            Ea=(14.989, 'kcal/mol'),
+            T0=(1, 'K'),
+            Tmin=(300, 'K'),
+            Tmax=(2000, 'K'),
+        )
+        self.reaction2.kinetics = original_kinetics
+
+        reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
+
+        self.reaction2.kinetics = reverse_kinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
     @work_in_progress
     def test_generate_reverse_rate_coefficient_arrhenius_ep(self):
         """

@@ -1232,12 +1232,25 @@ class KineticsFamily(Database):
             item.template = self.get_reaction_template_labels(item)
             new_degeneracy = self.calculate_degeneracy(item)
 
+            if isinstance(entry.data, SurfaceArrhenius):
+                data = SurfaceArrheniusBEP(
+                    #  analogous to Arrhenius.to_arrhenius_ep
+                    A=deepcopy(data.A),
+                    n=deepcopy(data.n),
+                    alpha=0,
+                    E0=deepcopy(data.Ea),
+                    Tmin=deepcopy(data.Tmin),
+                    Tmax=deepcopy(data.Tmax)
+                )
+            else:
+                data = data.to_arrhenius_ep()
+
             new_entry = Entry(
                 index=index,
                 label=';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                               products=[]),
-                data=data.to_arrhenius_ep(),
+                data=data,
                 rank=entry.rank,
                 reference=entry.reference,
                 short_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.short_desc,
@@ -1946,7 +1959,9 @@ class KineticsFamily(Database):
 
             # ToDo: try to remove this hard-coding of reaction family name..
             if 'adsorption' in self.label.lower() and forward:
-                if molecules_a[0].contains_surface_site() and molecules_b[0].contains_surface_site():
+                if 'Surface_Dual_Adsorption_vdW' is self.label and forward:
+                    pass
+                elif molecules_a[0].contains_surface_site() and molecules_b[0].contains_surface_site():
                     # Can't adsorb something that's already adsorbed.
                     # Both reactants either contain or are a surface site.
                     return []
