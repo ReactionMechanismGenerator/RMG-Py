@@ -485,3 +485,49 @@ def test_isotope_subgraph_isomorphism_molecule_and_group():
     assert_true(methanei.is_subgraph_isomorphic(group_methane))
     assert_true(methane.is_subgraph_isomorphic(group_methane))
     assert_false(methanei.is_isomorphic(methane))
+
+def test_isomorphism_wrong_mapping():
+    """
+    Checks isomorphism finds things not isomorphic if given a wrong mapping.
+    """
+    # These molecules are not isomorphic
+    n1butane = Molecule().from_adjacency_list("""
+        1 *1 X u0 p0 c0 {2,S}
+        2 *2 C u0 p0 c0 {1,S} {3,S} {5,S} {6,S}
+        3 *3 C u0 p0 c0 {2,S} {4,S} {7,S} {8,S}
+        4 *4 H u0 p0 c0 {3,S}
+        5    H u0 p0 c0 {2,S}
+        6    H u0 p0 c0 {2,S}
+        7    H u0 p0 c0 {3,S}
+        8    C u0 p0 c0 {3,S} {9,S} {10,S} {11,S}
+        9    H u0 p0 c0 {8,S}
+        10   H u0 p0 c0 {8,S}
+        11   C u0 p0 c0 {8,S} {12,S} {13,S} {14,S}
+        12   H u0 p0 c0 {11,S}
+        13   H u0 p0 c0 {11,S}
+        14   H u0 p0 c0 {11,S}
+        """)
+
+    n2butane = Molecule().from_adjacency_list("""
+        1 *1 X u0 p0 c0 {3,S}
+        2 *2 C u0 p0 c0 {3,S} {5,S} {6,S} {4,S}
+        3 *3 C u0 p0 c0 {2,S} {1,S} {7,S} {8,S}
+        4 *4 H u0 p0 c0 {2,S}
+        5    H u0 p0 c0 {2,S}
+        6    H u0 p0 c0 {2,S}
+        7    H u0 p0 c0 {3,S}
+        8    C u0 p0 c0 {3,S} {9,S} {10,S} {11,S}
+        9    H u0 p0 c0 {8,S}
+        10   H u0 p0 c0 {8,S}
+        11   C u0 p0 c0 {8,S} {12,S} {13,S} {14,S}
+        12   H u0 p0 c0 {11,S}
+        13   H u0 p0 c0 {11,S}
+        14   H u0 p0 c0 {11,S}
+        """)
+    assert_false(n1butane.is_isomorphic(n2butane))
+    assert_false(n1butane.is_isomorphic(n2butane, generate_initial_map=True))
+    
+    mapping = {}
+    for label in ['*1', '*2', '*3', '*4']:
+        mapping[n1butane.get_labeled_atoms(label)[0]] = n2butane.get_labeled_atoms(label)[0]
+    assert_false(n1butane.is_isomorphic(n2butane, initial_map=mapping))
