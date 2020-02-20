@@ -62,6 +62,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.rmg.pdep.PDepReaction">
 <em class="property">class </em><code class="sig-prename descclassname">rmgpy.rmg.pdep.</code><code class="sig-name descname">PDepReaction</code><span class="sig-paren">(</span><em class="sig-param">index=-1</em>, <em class="sig-param">label=''</em>, <em class="sig-param">reactants=None</em>, <em class="sig-param">products=None</em>, <em class="sig-param">specific_collider=None</em>, <em class="sig-param">network=None</em>, <em class="sig-param">kinetics=None</em>, <em class="sig-param">network_kinetics=None</em>, <em class="sig-param">reversible=True</em>, <em class="sig-param">transition_state=None</em>, <em class="sig-param">duplicate=False</em>, <em class="sig-param">degeneracy=1</em>, <em class="sig-param">pairs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
+<dt id="rmgpy.rmg.pdep.PDepReaction.SurfaceArrhenius">
+<code class="sig-name descname">SurfaceArrhenius</code><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.SurfaceArrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>SurfaceArrhenius</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.rmg.pdep.PDepReaction.allow_max_rate_violation">
 <code class="sig-name descname">allow_max_rate_violation</code><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.allow_max_rate_violation" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -629,6 +640,14 @@ and products of this reaction. Both directions are checked.</p>
 <dt id="rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_rate">
 <code class="sig-name descname">reverse_arrhenius_rate</code><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given k_forward, which must be an Arrhenius type.
+You must supply the correct units for the reverse rate.
+The equilibrium constant is evaluated from the current reaction instance (self).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.pdep.PDepReaction.reverse_surface_arrhenius_rate">
+<code class="sig-name descname">reverse_surface_arrhenius_rate</code><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.reverse_surface_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverses the given k_forward, which must be a SurfaceArrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
 </dd></dl>

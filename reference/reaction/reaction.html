@@ -148,6 +148,17 @@ Only unimolecular library reactions with high pressure limit kinetics should be 
 </tbody>
 </table>
 <dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.SurfaceArrhenius">
+<code class="sig-name descname">SurfaceArrhenius</code><a class="headerlink" href="#rmgpy.reaction.Reaction.SurfaceArrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>SurfaceArrhenius</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.reaction.Reaction.allow_max_rate_violation">
 <code class="sig-name descname">allow_max_rate_violation</code><a class="headerlink" href="#rmgpy.reaction.Reaction.allow_max_rate_violation" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -709,6 +720,14 @@ and products of this reaction. Both directions are checked.</p>
 <dt id="rmgpy.reaction.Reaction.reverse_arrhenius_rate">
 <code class="sig-name descname">reverse_arrhenius_rate</code><a class="headerlink" href="#rmgpy.reaction.Reaction.reverse_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given k_forward, which must be an Arrhenius type.
+You must supply the correct units for the reverse rate.
+The equilibrium constant is evaluated from the current reaction instance (self).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.reverse_surface_arrhenius_rate">
+<code class="sig-name descname">reverse_surface_arrhenius_rate</code><a class="headerlink" href="#rmgpy.reaction.Reaction.reverse_surface_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverses the given k_forward, which must be a SurfaceArrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
 </dd></dl>
