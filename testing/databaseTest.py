@@ -227,6 +227,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, group_name
 
+            # tests for adsorption groups
+            if 'adsorption' in group_name.lower():
+                test = lambda x: self.check_surface_thermo_groups_have_surface_attributes(group_name, group)
+                test_name = "Thermo surface groups {0}: Entry has metal attributes?".format(group_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, group_name
+
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
             test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
@@ -1198,6 +1206,31 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
+
+    def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
+        """
+        Tests that each entry in the surface thermo groups has a 'metal' and 'facet' attribute, 
+        describing which metal the data came from.
+        """
+        failed = False
+        for entry in group.entries.values():
+            if isinstance(entry.data, rmgpy.thermo.thermodata.ThermoData):
+                if 'Pt' in group_name:
+                    if entry.metal is not 'Pt':
+                        logging.error(f'Expected {entry} metal attribute in {group_name} group to match Pt, but was {entry.metal}')
+                        failed = True
+                if '111' in group_name:
+                    if entry.facet is not '111':
+                        logging.error(f'Expected {entry} facet attribute in {group_name} group to match 111, but was {entry.facet}')
+                        failed = True
+                if not entry.metal:
+                    logging.error(f'Expected a metal attribute for {entry} in {group_name} group but found {entry.metal!r}')
+                    failed = True
+                if not entry.facet:
+                    logging.error(f'Expected a facet attribute for {entry} in {group_name} group but found {entry.facet!r}')
+                    failed = True
+        if failed:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def general_check_nodes_found_in_tree(self, group_name, group):
         """
