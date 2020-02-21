@@ -116,6 +116,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, family_name
 
+            # tests for surface families
+            if 'Surface' in family_name:
+                test = lambda x: self.kinetics_check_training_reactions_have_surface_attributes(family_name)
+                test_name = "Kinetics surface family {0}: entries have surface attributes?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
             generated_trees = ["R_Recombination"]
@@ -328,6 +336,15 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             yield test, group_name
 
     # These are the actual tests, that don't start with a "test_" name:
+    def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
+        """Test that each surface training reaction has surface attributes"""
+        family = self.database.kinetics.families[family_name]
+        training = family.get_training_depository().entries.values()
+
+        for entry in training:
+            if isinstance(entry.metal, type(None)):
+                raise TypeError(f'Expected a metal attribute for {entry} in {family} family but found None')
+
     def kinetics_check_surface_library_reactions_have_surface_attributes(self, library):
         """Test that each surface reaction library has surface attributes"""
         entries = library.entries.values()
