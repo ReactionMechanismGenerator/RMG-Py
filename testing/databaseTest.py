@@ -175,6 +175,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, library_name
 
+            # tests for surface families
+            if 'surface' in library_name.lower():
+                test = lambda x: self.kinetics_check_surface_library_reactions_have_surface_attributes(library)
+                test_name = "Kinetics surface library {0}: entries have surface attributes?".format(library_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.items():
             test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
@@ -332,6 +340,27 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
         family.add_rules_from_training(thermo_database=self.database.thermo)
+
+    def kinetics_check_surface_library_reactions_have_surface_attributes(self, library):
+        """Test that each surface reaction library has surface attributes"""
+        entries = library.entries.values()
+        failed = False
+        if '_Pt' in library.label:
+            for entry in entries:
+                if entry.metal is not 'Pt':
+                    logging.error(f'Expected {entry} metal attribute in {library} library to match Pt, but was {entry.metal}')
+                    failed = True
+        if '_Ni' in library.label:
+            for entry in entries:
+                if entry.metal is not 'Ni':
+                    logging.error(f'Expected {entry} metal attribute in {library} library to match Ni, but was {entry.metal}')
+                    failed = True
+        for entry in entries:
+            if isinstance(entry.metal, type(None)):
+                logginge.error(f'Expected a metal attribute in {library} library for {entry} but found None')
+                failed = True
+        if failed:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
