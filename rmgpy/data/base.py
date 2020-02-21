@@ -71,6 +71,10 @@ class Entry(object):
     `long_desc`          A long, verbose description of the data
     `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
     `nodal_distance`     A float representing the distance of a given entry from it's parent entry
+    For surface species thermo calculations:
+    `metal`             Which metal the thermo calculation was done on (``None`` if not used)
+    `facet`             Which facet the thermo calculation was done on (``None`` if not used)
+    `site`              Which surface site the molecule prefers (``None`` if not used)
     =================== ========================================================
 
     """
@@ -88,6 +92,9 @@ class Entry(object):
                  long_desc='',
                  rank=None,
                  nodal_distance=None,
+                 metal=None,
+                 facet=None,
+                 site=None,
                  ):
         self.index = index
         self.label = label
@@ -101,6 +108,9 @@ class Entry(object):
         self.long_desc = long_desc
         self.rank = rank
         self.nodal_distance = nodal_distance
+        self.metal = metal
+        self.facet = facet
+        self.site = site
 
     def __str__(self):
         return self.label
@@ -167,6 +177,9 @@ class Database(object):
                  solvent=None,
                  short_desc='',
                  long_desc='',
+                 metal=None,
+                 site=None,
+                 facet=None,
                  ):
         self.entries = OrderedDict(entries or {})
         self.top = top or []
@@ -175,6 +188,9 @@ class Database(object):
         self.solvent = solvent
         self.short_desc = short_desc
         self.long_desc = long_desc
+        self.metal = metal
+        self.site = site
+        self.facet = facet
 
     def load(self, path, local_context=None, global_context=None):
         """
@@ -204,6 +220,9 @@ class Database(object):
         local_context['shortDesc'] = self.short_desc
         local_context['longDesc'] = self.long_desc
         local_context['RateUncertainty'] = RateUncertainty
+        local_context['metal'] = self.metal
+        local_context['site'] = self.site
+        local_context['facet'] = self.facet
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.items():
             local_context[key] = value
@@ -222,6 +241,9 @@ class Database(object):
         self.solvent = local_context['solvent']
         self.short_desc = local_context['shortDesc']
         self.long_desc = local_context['longDesc'].strip()
+        self.metal = local_context['metal']
+        self.site = local_context['site']
+        self.facet = local_context['facet']
 
         # Return the loaded database (to allow for Database().load() syntax)
         return self
@@ -1334,7 +1356,8 @@ class ForbiddenStructures(Database):
         """
         self.save_old_dictionary(path)
 
-    def load_entry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc=''):
+    def load_entry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc='',
+                   metal=None, facet=None, site=None):
         """
         Load an entry from the forbidden structures database. This method is
         automatically called during loading of the forbidden structures 
@@ -1363,6 +1386,9 @@ class ForbiddenStructures(Database):
             item=item,
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
+            metal=metal,
+            facet=facet,
+            site=site,
         )
 
     def save_entry(self, f, entry, name='entry'):

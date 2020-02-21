@@ -25,6 +25,8 @@ entry(
 ***********
 This node should be empty, ensuring that one of the nodes below is used.
 """,
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -47,7 +49,9 @@ entry(
    R
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -71,7 +75,9 @@ entry(
   R-R
    :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -96,7 +102,9 @@ entry(
  RO-R
    :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -122,7 +130,9 @@ entry(
    O
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -148,7 +158,9 @@ entry(
  RO-OR
    :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -173,7 +185,9 @@ entry(
    O--O
    |  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -200,7 +214,9 @@ entry(
    O
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -223,7 +239,9 @@ entry(
    O
    ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -251,7 +269,9 @@ entry(
    O
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -280,7 +300,9 @@ entry(
    O
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -306,7 +328,9 @@ entry(
  R2N-R
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -331,7 +355,9 @@ entry(
    NR2
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -352,7 +378,9 @@ entry(
     shortDesc="""Came from NH double-bonded on Pt(111)""",
     longDesc="""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -375,7 +403,9 @@ entry(
     N
    |||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -402,7 +432,9 @@ entry(
  R2N-OR
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -427,7 +459,9 @@ entry(
   RN=O
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -453,7 +487,9 @@ entry(
  R-N-OR
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -479,7 +515,9 @@ entry(
    N
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -504,7 +542,9 @@ entry(
    N--O
   ||  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -531,7 +571,9 @@ entry(
    N
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -559,7 +601,9 @@ entry(
  R2N-NR2
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -585,7 +629,9 @@ entry(
  RN=NR
    :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -610,7 +656,9 @@ entry(
   N==N
   |  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -637,7 +685,9 @@ entry(
  R-N-NR2
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -664,7 +714,9 @@ entry(
    N
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -692,7 +744,9 @@ entry(
    N
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -719,7 +773,9 @@ entry(
  RN--NR
   |  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -747,7 +803,9 @@ entry(
  R-N-CR3
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -775,7 +833,9 @@ entry(
    N
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -804,7 +864,9 @@ entry(
    N
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -829,7 +891,9 @@ entry(
  O-N=O
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -852,7 +916,9 @@ entry(
    C
  ||||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -877,7 +943,9 @@ entry(
   C--C
   |  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -905,7 +973,9 @@ entry(
    C
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -934,7 +1004,9 @@ entry(
    C
   |||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -960,7 +1032,9 @@ entry(
    C
   |||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -987,7 +1061,9 @@ entry(
  R-C--C-R
   ||  ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1012,7 +1088,9 @@ entry(
  R-C-R
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1041,7 +1119,9 @@ entry(
  R2C--CR2
    |  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1067,7 +1147,9 @@ entry(
    CR3
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1097,7 +1179,9 @@ entry(
  R3C-CR3
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1124,7 +1208,9 @@ entry(
   R3C-R
      :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1149,7 +1235,9 @@ entry(
   C==N
  ||  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1176,7 +1264,9 @@ entry(
     C
    ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1204,7 +1294,9 @@ entry(
    C
   |||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1230,7 +1322,9 @@ entry(
    C
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1257,7 +1351,9 @@ entry(
    C
   |||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1285,7 +1381,9 @@ entry(
  R2C--CR
    |  ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1316,7 +1414,9 @@ entry(
  R-C-CR3
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1343,7 +1443,9 @@ entry(
  R2C=NR
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1373,7 +1475,9 @@ entry(
  R-C-NR2
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1399,7 +1503,9 @@ entry(
  R2C=O
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1428,7 +1534,9 @@ entry(
   R-C-OR
     |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1457,7 +1565,9 @@ entry(
  R3C-NR2
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1485,7 +1595,9 @@ entry(
  R3C-OR
     :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1511,7 +1623,9 @@ entry(
  RC--C
   |  ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1540,7 +1654,9 @@ entry(
    C-R
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1570,7 +1686,9 @@ entry(
    C-R
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1595,7 +1713,9 @@ entry(
  RC#N
    :
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1623,7 +1743,9 @@ entry(
   C--N
  ||  ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1651,7 +1773,9 @@ entry(
    C-R
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1678,7 +1802,9 @@ entry(
  RC--NR
  ||  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1707,7 +1833,9 @@ entry(
    C-R
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1734,7 +1862,9 @@ entry(
    C=O
    |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1762,7 +1892,9 @@ entry(
   C--O
  ||  |
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1790,7 +1922,9 @@ entry(
    C-R
   ||
 ***********
-"""
+""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1840,7 +1974,9 @@ entry(
         H298=(-45.38, 'kcal/mol'),
         S298=(-38.17, 'cal/(mol*K)'),
     ),
-    shortDesc="""Average of C-*R3, N-*R2 and O-*R thermo. """
+    shortDesc="""Average of C-*R3, N-*R2 and O-*R thermo. """,
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1911,7 +2047,9 @@ entry(
         H298=(-37.29, 'kcal/mol'),
         S298=(-44.37, 'cal/(mol*K)'),
     ),
-    shortDesc="""Average of C-*R2C-*R2, C=*RN-*R, C=*RO-* and N-*RN-*R thermo. """
+    shortDesc="""Average of C-*R2C-*R2, C=*RN-*R, C=*RO-* and N-*RN-*R thermo. """,
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1928,7 +2066,9 @@ entry(
         H298=(-7.79, 'kcal/mol'),
         S298=(-20.48, 'cal/(mol*K)'),
     ),
-    shortDesc="""Average of (CR4)*, (NR3)* and (OR2)* thermo. """
+    shortDesc="""Average of (CR4)*, (NR3)* and (OR2)* thermo. """,
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1942,7 +2082,9 @@ entry(
 4 O  u0 p2 c0 {2,[S,D]} {3,[S,D]}
 """,
     thermo='N=*O-*',
-    longDesc="""Is there really any way to do N*O* besides N=*O-* ?"""
+    longDesc="""Is there really any way to do N*O* besides N=*O-* ?""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1956,7 +2098,9 @@ entry(
 4 O  u0 p2 c0 {2,S} {3,S}
 """,
     thermo='O-*O-*',
-    longDesc="""Is there really any way to do O*O* besides O-*O-* ?"""
+    longDesc="""Is there really any way to do O*O* besides O-*O-* ?""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -1983,7 +2127,9 @@ entry(
 5 R  u0 {2,S}
 """,
     thermo='(CR2NR)*',
-    longDesc="""Perhaps should be an average?"""
+    longDesc="""Perhaps should be an average?""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -2011,7 +2157,9 @@ entry(
 5 R  u0 p0 c0 {2,S}
 """,
     thermo='(NR3)*',
-    longDesc="""Do we have data for this?"""
+    longDesc="""Do we have data for this?""",
+    metal="Pt",
+    facet="111",
 )
 
 entry(
@@ -2025,7 +2173,9 @@ entry(
 4 R  u0 {2,S}
 """,
     thermo='(NRO)*',
-    longDesc="""Parent of (RN=O)* and (RN=NR)*. Should it be an average?"""
+    longDesc="""Parent of (RN=O)* and (RN=NR)*. Should it be an average?""",
+    metal="Pt",
+    facet="111",
 )
 
 tree(
