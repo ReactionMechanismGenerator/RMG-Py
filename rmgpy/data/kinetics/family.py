@@ -1957,14 +1957,15 @@ class KineticsFamily(Database):
             molecules_a = reactants[0]
             molecules_b = reactants[1]
 
-            # ToDo: try to remove this hard-coding of reaction family name..
             if 'adsorption' in self.label.lower() and forward:
-                if 'Surface_Dual_Adsorption_vdW' is self.label and forward:
-                    pass
-                elif molecules_a[0].contains_surface_site() and molecules_b[0].contains_surface_site():
-                    # Can't adsorb something that's already adsorbed.
-                    # Both reactants either contain or are a surface site.
-                    return []
+                if molecules_a[0].contains_surface_site() and molecules_b[0].contains_surface_site():
+                    if 'vdw' in self.label.lower():
+                        # can adsorb vdW species to the surface, so continue on
+                        pass
+                    else:
+                        # Can't adsorb something that's already adsorbed.
+                        # Both reactants either contain or are a surface site.
+                        return []
 
             # Iterate over all resonance isomers of the reactant
             for molecule_a in molecules_a:

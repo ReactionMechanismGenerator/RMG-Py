@@ -116,6 +116,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, family_name
 
+            # tests for surface families
+            if 'surface' in family_name.lower():
+                test = lambda x: self.kinetics_check_surface_training_reactions_can_be_used(family_name)
+                test_name = "Kinetics surface family {0}: entries can be used to generate rate rules?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
             generated_trees = ["R_Recombination"]
@@ -320,6 +328,11 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             yield test, group_name
 
     # These are the actual tests, that don't start with a "test_" name:
+    def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
+        """Test that surface training reactions can be averaged and used for generating rate rules"""
+        family = self.database.kinetics.families[family_name]
+        family.add_rules_from_training(thermo_database=self.database.thermo)
+
     def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
