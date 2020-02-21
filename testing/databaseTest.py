@@ -167,6 +167,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, library_name
 
+            # tests for surface families
+            if 'Surface' in library_name:
+                test = lambda x: self.kinetics_check_surface_library_reactions_have_surface_attributes(library)
+                test_name = "Kinetics surface library {0}: entries have surface attributes?".format(library_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.items():
             test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
@@ -320,6 +328,26 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             yield test, group_name
 
     # These are the actual tests, that don't start with a "test_" name:
+    def kinetics_check_surface_library_reactions_have_surface_attributes(self, library):
+        """Test that each surface reaction library has surface attributes"""
+        entries = library.entries.values()
+
+        if '_Pt' in library.label:
+            for entry in entries:
+                if entry.metal is not 'Pt':
+                    raise ValueError(
+                        f'Expected {entry} metal attribute in {library} library to match Pt, but was {entry.metal}')
+        if '_Ni' in library.label:
+        # elif library is ('Deutschmann_Ni' or 'Deutschmann_Ni_full'):
+            for entry in entries:
+                if entry.metal is not 'Ni':
+                    raise ValueError(
+                        f'Expected {entry} metal attribute in {library} library to match Ni, but was {entry.metal}')
+
+        for entry in entries:
+            if isinstance(entry.metal, type(None)):
+                raise TypeError(f'Expected a metal attribute in {library} library for {entry} but found None')
+
     def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
