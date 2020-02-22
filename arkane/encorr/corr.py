@@ -97,7 +97,7 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
     H doublet, C triplet, N quartet, O triplet, F doublet, Si triplet,
     P quartet, S triplet, Cl doublet, Br doublet, I doublet.
     """
-    corr = 0.0
+
     corr = [0.0,0.0]
     model_chemistry = model_chemistry.lower()
     # Step 1: Reference all energies to a model chemistry-independent
