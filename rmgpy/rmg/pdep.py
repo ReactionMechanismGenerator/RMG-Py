@@ -128,8 +128,11 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
     """
 
-    def __init__(self, index=-1, source=None):
-        rmgpy.pdep.network.Network.__init__(self, label="PDepNetwork #{0}".format(index))
+    def __init__(self, index=-1, source=None, net_dict=None):
+        if net_dict is None:
+            rmgpy.pdep.network.Network.__init__(self, label="PDepNetwork #{0}".format(index))
+        else:
+            rmgpy.pdep.network.Network.__init__(self,**net_dict)
         self.index = index
         self.source = source
         self.explored = []
