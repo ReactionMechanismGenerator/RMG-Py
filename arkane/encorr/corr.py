@@ -219,7 +219,7 @@ def get_spcs_correction(model_chemistry,mol):
     for spcs, count in spcs_dict.items():
         corr_0K -= count*spcs_energies[spcs] * constants.E_h * constants.Na
         corr_0K += count*spcs_enthalpy_corrections[spcs][0] * 4184.0
-        corr_298K -= count*spcs_enthalpy_corrections[spcs][0] * 4184.0
+        corr_298K -= count*spcs_enthalpy_corrections[spcs][1] * 4184.0
 
     return (corr_0K, corr_298K)
 
