@@ -333,7 +333,7 @@ class Species(object):
                                 ' should be a List of Species objects.'.format(species))
         return False
 
-    def from_adjacency_list(self, adjlist, raise_atomtype_exception=True):
+    def from_adjacency_list(self, adjlist, raise_atomtype_exception=True, raise_charge_exception=True):
         """
         Load the structure of a species as a :class:`Molecule` object from the
         given adjacency list `adjlist` and store it as the first entry of a 
@@ -341,7 +341,8 @@ class Species(object):
         of the loaded molecule.
         """
         self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,
-                                                        raise_atomtype_exception=raise_atomtype_exception)]
+                                                        raise_atomtype_exception=raise_atomtype_exception,
+                                                        raise_charge_exception=raise_charge_exception)]
         # If the first line is a label, then save it to the label attribute
         for label in adjlist.splitlines():
             if label.strip():

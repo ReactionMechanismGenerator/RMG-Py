@@ -65,7 +65,7 @@ cdef class Species:
 
     cpdef bint is_structure_in_list(self, list species_list) except -2
     
-    cpdef from_adjacency_list(self, adjlist, bint raise_atomtype_exception=?)
+    cpdef from_adjacency_list(self, adjlist, bint raise_atomtype_exception=?, bint raise_charge_exception=?)
 
     cpdef from_smiles(self, smiles)
     

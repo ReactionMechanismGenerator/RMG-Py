@@ -208,7 +208,8 @@ cdef class Molecule(Graph):
 
     cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
 
-    cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?)
+    cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?,
+                              bint raise_charge_exception=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, bint raise_atomtype_exception=?)
     

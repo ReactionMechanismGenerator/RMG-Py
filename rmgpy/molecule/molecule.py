@@ -1679,7 +1679,8 @@ class Molecule(Graph):
         translator.from_smarts(self, smartsstr, raise_atomtype_exception=raise_atomtype_exception)
         return self
 
-    def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True):
+    def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
+                            raise_charge_exception=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
@@ -1698,9 +1699,10 @@ class Molecule(Graph):
                 n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
             raise ValueError('Impossible multiplicity for molecule\n{0}\n multiplicity = {1} and number of '
                              'unpaired electrons = {2}'.format(self.to_adjacency_list(), multiplicity, n_rad))
-        if self.get_net_charge() != 0:
-            raise ValueError('Non-neutral molecule encountered. '
-                             'Currently, RMG does not support ion chemistry.\n {0}'.format(adjlist))
+        if raise_charge_exception:
+            if self.get_net_charge() != 0:
+                raise ValueError('Non-neutral molecule encountered. '
+                                 'Currently, RMG does not support ion chemistry.\n {0}'.format(adjlist))
         return self
 
     def from_xyz(self, atomic_nums, coordinates, raise_atomtype_exception=True):
