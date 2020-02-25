@@ -53,7 +53,7 @@ from rmgpy.quantity import Quantity
 
 from arkane.common import ArkaneSpecies
 from arkane.common import symbol_by_number
-from arkane.encorr.corr import get_atom_correction, get_bac
+from arkane.encorr.corr import get_atom_correction, get_bac, get_spcs_correction
 from arkane.gaussian import GaussianLog
 from arkane.log import Log
 from arkane.molpro import MolproLog
@@ -489,7 +489,11 @@ class StatMechJob(object):
                     isodesmic_uncertainty = self.isodesmicUncertainty
 
             if self.applyAtomEnergyCorrections:
-                atom_corrections_0K, atom_corrections_298K  = get_atom_correction(self.modelChemistry,
+                if self.modelChemistry == 'orca_ccsd(t)-f12/cc-pvdz-f12':
+                    atom_corrections_0K, atom_corrections_298K = get_spcs_correction(self.modelChemistry,
+                                                                                     self.species.molecule[0])
+                else:
+                    atom_corrections_0K, atom_corrections_298K  = get_atom_correction(self.modelChemistry,
                                                        atoms, self.atomEnergies)
 
             else:
@@ -1216,6 +1220,7 @@ def assign_frequency_scale_factor(freq_level):
                  'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
                  'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
                  'g4': 0.9854 * 1.014,
+                 'orca_ccsd(t)-f12/cc-pvdz-f12': 0.9854 * 1.014,
                  }
     scaling_factor = freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:

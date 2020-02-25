@@ -49,6 +49,11 @@ atom_hf = {'H': 51.633, 'He': -1.481,
            'Rb': 17.86, 'Ag': 66.61, 'Cd': 25.240, 'Sn': 70.50, 'I': 24.04, 'Xe': -1.481,
            'Cs': 16.80, 'Hg': 13.19, 'Pb': 15.17}
 
+# hf0K from ATcT version 1.122g (in kcal/mol)
+spcs_hf = {'CH4': -15.908, 'H2O': -57.106, 'HF': -65.171, 'HCl': -21.986, 'CH3': 35.82,
+           'OH': 8.902, 'NH3': -9.217, 'CH2': 93.467, 'NH2': 45.153,
+           'H2': 0.0}
+
 # Thermal contribution to enthalpy for the atoms reported by Gaussian thermo whitepaper
 # This will be subtracted from the corresponding value in atom_hf to produce an enthalpy used in calculating
 # the enthalpy of formation at 298 K
@@ -59,6 +64,11 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
                 'Kr': 1.481,
                 'Rb': 1.481, 'Ag': 1.481, 'Cd': 1.481, 'Sn': 1.485, 'I': 1.481, 'Xe': 1.481,
                 'Cs': 1.481, 'Hg': 1.481, 'Pb': 1.481}
+
+# Calculated at B3LYP/6-31g(2df,p) with ZPE scale factor of 0.9854
+spcs_thermal = {'CH4': 2.8, 'H2O': 2.57, 'HF': 2.16,'HCl': 2.14,
+                'CH3': 2.8,'OH': 2.15,'NH3': 2.7,'CH2': 2.55,'NH2': 2.55,
+                'H2': 2.17}
 
 # Spin orbit correction (SOC) in Hartrees
 # Values taken from ref 22 of http://dx.doi.org/10.1063/1.477794 and converted to Hartrees
@@ -307,6 +317,20 @@ atom_energies = {
     'ccsd-f12/cc-pvdz-f12': {
         'H': -0.499811124128 + SOC['H'], 'N': -54.524325513811 + SOC['N'],
         'O': -74.992326577897 + SOC['O'], 'C': -37.786213495943 + SOC['C']
+    },
+
+    # geometry : B3LYP/6-31G(2df,p) in Gaussian 16
+    # ZPE scale factor = 0.9854 
+    # Single Point calcs in ORCA 4.0.1:
+    # E_HF = RHF/UHF cc-pvtz-f12 cc-pvtz-CABS
+    # E_correlation = CCSD(T)-F12/RI cc-pvdz-f12 cc-pvdz-CABS cc-pvtz/C
+    # E_total = ZPE + E_HF + E_correlation
+    'orca_ccsd(t)-f12/cc-pvdz-f12': {
+        'CH4': -40.405106640788, 'CH3': -39.746483767017, 'CH2': -39.075046821134,
+        'H2O': -76.355336276848,'OH': -75.657621974907,
+        'HCl': -460.346899347469,'HF': -100.363596351296,
+        'NH3': -56.458318965949005,'NH2': -55.796511673688,
+        'H2': -1.1635916003470002
     },
 
     'ccsd(t)-f12/cc-pvdz-f12_noscale': {

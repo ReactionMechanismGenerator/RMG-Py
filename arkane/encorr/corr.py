@@ -35,6 +35,7 @@ corrections.
 import logging
 
 import rmgpy.constants as constants
+from collections import defaultdict
 
 import arkane.encorr.data as data
 import arkane.encorr.mbac as mbac
@@ -167,3 +168,59 @@ def get_bac(model_chemistry, bonds, coords, nums, bac_type='p', multiplicity=1):
         return -mbac.get_bac(model_chemistry, coords, nums, multiplicity=multiplicity)
     else:
         raise BondAdditivityCorrectionError('BAC type {} is not available'.format(bac_type))
+
+
+def get_spcs_correction(model_chemistry,mol):
+
+    species_match = {
+        "C": ("CH4", 4),
+        "H": ("H2", 2),
+        "O": ("H2O", 2),
+        "F": ("HF", 1),
+        "N": ("NH3", 3),
+        "Cl": ("HCl", 1),
+    }
+
+    spcs_dict = defaultdict(int)
+    spcs_energies = data.atom_energies[model_chemistry]
+    H_count = 0.0
+    corr_0K = 0.0
+    corr_298K = 0.0
+    spcs_enthalpy_corrections = {symbol: (
+        data.spcs_hf[symbol], data.spcs_thermal[symbol]) for symbol in data.spcs_hf}
+    for atom in mol.atoms:
+        symbol = atom.symbol
+        rads = atom.radical_electrons
+        if symbol == "H":
+            H_count -= 1
+        elif rads > 0:
+            if symbol == 'C':
+                if rads == 1:
+                    spcs_dict["CH3"] += 1
+                    H_count += 3
+                elif rads == 2:
+                    spcs_dict["CH2"] += 1
+                    H_count += 2
+            if symbol == 'O':
+                spcs_dict["OH"] += 1
+                H_count += 1
+            if symbol == 'N':
+                if rads == 1:
+                    spcs_dict["NH2"] += 1
+                    H_count += 2
+        else:
+            spcs, Hs = species_match[symbol]
+            spcs_dict[spcs] += 1
+            H_count += Hs
+    
+    if H_count != 0:
+        spcs_dict["H2"] = -H_count/2
+
+    for spcs, count in spcs_dict.items():
+        corr_0K -= count*spcs_energies[spcs] * constants.E_h * constants.Na
+        corr_0K += count*spcs_enthalpy_corrections[spcs][0] * 4184.0
+        corr_298K -= count*spcs_enthalpy_corrections[spcs][0] * 4184.0
+
+    return (corr_0K, corr_298K)
+
+    
