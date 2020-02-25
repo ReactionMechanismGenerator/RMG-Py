@@ -97,7 +97,7 @@ cdef inline double get_rotational_constant_energy(double inertia) except -1:
     Return the value of the rotational constant in energy units (J/mol)
     corresponding to the given moment of `inertia` in kg*m^2.
     """
-    return constants.hbar * constants.hbar / (2. * inertia) * constants.Na
+    return constants.hbar ** 2 / (2. * inertia) * constants.Na
 
 ################################################################################
 
@@ -162,12 +162,12 @@ cdef class LinearRotor(Rotation):
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef double I = self._inertia.value_si
-            cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            cdef double B = constants.h / (8 * constants.pi ** 2 * I) / (constants.c * 100.)
             return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
-            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            I = constants.h / (8 * constants.pi ** 2 * (B.value_si * constants.c * 100.))
             self._inertia = quantity.ScalarQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
     cpdef double get_level_energy(self, int J) except -1:
@@ -336,12 +336,12 @@ cdef class NonlinearRotor(Rotation):
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef np.ndarray I = self._inertia.value_si
-            cdef np.ndarray B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            cdef np.ndarray B = constants.h / (8 * constants.pi ** 2 * I) / (constants.c * 100.)
             return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef np.ndarray I
             B = quantity.Frequency(B)
-            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            I = constants.h / (8 * constants.pi ** 2 * (B.value_si * constants.c * 100.))
             self._inertia = quantity.ArrayQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
     cdef np.ndarray get_rotational_constant_energy(self):
@@ -453,6 +453,7 @@ cdef class NonlinearRotor(Rotation):
 
 ################################################################################
 
+
 cdef class KRotor(Rotation):
     """
     A statistical mechanical model of an active K-rotor (a one-dimensional
@@ -514,19 +515,19 @@ cdef class KRotor(Rotation):
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef double I = self._inertia.value_si
-            cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            cdef double B = constants.h / (8 * constants.pi ** 2 * I) / (constants.c * 100.)
             return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
-            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            I = constants.h / (8 * constants.pi ** 2 * (B.value_si * constants.c * 100.))
             self._inertia = quantity.ScalarQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
     cpdef double get_level_energy(self, int J) except -1:
         """
         Return the energy of level `J` in kJ/mol.
         """
-        return get_rotational_constant_energy(self.inertia.value_si) * J * J
+        return get_rotational_constant_energy(self.inertia.value_si) * J ** 2
 
     cpdef int get_level_degeneracy(self, int J) except -1:
         """
@@ -628,10 +629,11 @@ cdef class KRotor(Rotation):
 
 ################################################################################
 
+
 cdef class SphericalTopRotor(Rotation):
     """
     A statistical mechanical model of a three-dimensional rigid rotor with a
-    single rotational constant: a spherical top. The attributes are:
+    single rotational constant: a spherical top (e.g., CH4). The attributes are:
     
     ======================== ===================================================
     Attribute                Description
@@ -689,12 +691,12 @@ cdef class SphericalTopRotor(Rotation):
         """The rotational constant of the rotor."""
         def __get__(self):
             cdef double I = self._inertia.value_si
-            cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            cdef double B = constants.h / (8 * constants.pi ** 2 * I) / (constants.c * 100.)
             return quantity.Quantity(B, "cm^-1")
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
-            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            I = constants.h / (8 * constants.pi ** 2 * (B.value_si * constants.c * 100.))
             self._inertia = quantity.ScalarQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
     cpdef double get_level_energy(self, int J) except -1:
@@ -707,7 +709,7 @@ cdef class SphericalTopRotor(Rotation):
         """
         Return the degeneracy of level `J`.
         """
-        return (2 * J + 1) * (2 * J + 1)
+        return (2 * J + 1) ** 2
 
     cpdef double get_partition_function(self, double T) except -1:
         """
@@ -720,7 +722,7 @@ cdef class SphericalTopRotor(Rotation):
         else:
             B = get_rotational_constant_energy(self._inertia.value_si)
             theta = constants.R * T / B
-            Q = sqrt(theta * theta * theta * constants.pi) / self.symmetry
+            Q = sqrt(theta ** 3 * constants.pi) / self.symmetry
         return Q
 
     cpdef double get_heat_capacity(self, double T) except -100000000:
