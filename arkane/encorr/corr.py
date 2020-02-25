@@ -186,8 +186,6 @@ def get_spcs_correction(model_chemistry,mol):
     H_count = 0.0
     corr_0K = 0.0
     corr_298K = 0.0
-    spcs_enthalpy_corrections = {symbol: (
-        data.spcs_hf[symbol], data.spcs_thermal[symbol]) for symbol in data.spcs_hf}
     for atom in mol.atoms:
         symbol = atom.symbol
         rads = atom.radical_electrons
@@ -216,10 +214,22 @@ def get_spcs_correction(model_chemistry,mol):
     if H_count != 0:
         spcs_dict["H2"] = -H_count/2
 
+
+    reactant_str = "1*{} + ".format(mol.smiles)
+    product_str = ""
+    for spcs, v in spcs_dict.items():
+        if v<0:
+            reactant_str += "{}*{} +".format(-1*int(v),spcs)
+        if v>0:
+            product_str += "{}*{} +".format(int(v), spcs)
+    rxn = "{} -> {}".format(reactant_str[:-2],product_str[:-2])
+    logging.info("species used in work rxn: {}".format(rxn))
+
     for spcs, count in spcs_dict.items():
-        corr_0K -= count*spcs_energies[spcs] * constants.E_h * constants.Na
-        corr_0K += count*spcs_enthalpy_corrections[spcs][0] * 4184.0
-        corr_298K -= count*spcs_enthalpy_corrections[spcs][1] * 4184.0
+        corr_0K -= count * spcs_energies[spcs] * constants.E_h * constants.Na
+        corr_0K += count * data.spcs_hf[spcs] * 4184.0
+    for symbol, count in mol.get_element_count().items():
+        corr_298K -= count * data.atom_thermal[symbol] * 4184.0
 
     return (corr_0K, corr_298K)
 
