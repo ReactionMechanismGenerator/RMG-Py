@@ -39,7 +39,13 @@ import os.path
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+from rmgpy.statmech import (Conformer,
+                            HarmonicOscillator,
+                            IdealGasTranslation,
+                            LinearRotor,
+                            NonlinearRotor,
+                            SphericalTopRotor,
+                            SymmetricTopRotor)
 
 from arkane.common import check_conformer_energy, get_element_mass
 from arkane.exceptions import LogError
@@ -214,13 +220,9 @@ class QChemLog(ESSAdapter):
         you can use the `symmetry` parameter to substitute your own value;
         if not provided, the value in the QChem output file will be adopted.
         """
-        modes = []
-        freq = []
-        mmass = []
-        rot = []
-        inertia = []
-        unscaled_frequencies = []
+        modes, freq, mmass, rot, inertia, unscaled_frequencies = [], [], [], [], [], []
         e0 = 0.0
+        I_tol = 0.01
         if optical_isomers is None or symmetry is None:
             _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
             if optical_isomers is None:
@@ -298,7 +300,15 @@ class QChemLog(ESSAdapter):
                     else:
                         for i in range(3):
                             inertia[i] *= (constants.a0 / 1e-10) ** 2
-                            rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            if all([abs(inertia[i] - inertia[i + 1]) < I_tol for i in [0, 1]]):
+                                # all three moments of inertia are (nearly) equal, this is a "spherical top rotor"
+                                rotation = SphericalTopRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            elif any([abs(inertia[i] - inertia[i + 1]) < I_tol for i in [0, 1]]):
+                                # two of the moments of inertia are (nearly) equal, this is a "symmetrical top rotor"
+                                rotation = SymmetricTopRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            else:
+                                # none of the moments of inertia are (nearly) equal, this is an "asymmetric rotor"
+                                rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             # modes.append(rotation)
                         rot.append(rotation)
 

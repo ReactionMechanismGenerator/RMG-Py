@@ -39,7 +39,13 @@ import os.path
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+from rmgpy.statmech import (Conformer,
+                            HarmonicOscillator,
+                            IdealGasTranslation,
+                            LinearRotor,
+                            NonlinearRotor,
+                            SphericalTopRotor,
+                            SymmetricTopRotor)
 
 from arkane.common import check_conformer_energy, get_element_mass
 from arkane.exceptions import LogError
@@ -211,6 +217,7 @@ class GaussianLog(ESSAdapter):
         modes = []
         unscaled_frequencies = []
         e0 = 0.0
+        I_tol = 0.01
         if optical_isomers is None or symmetry is None:
             _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
             if optical_isomers is None:
@@ -250,7 +257,18 @@ class GaussianLog(ESSAdapter):
                             for i in range(3):
                                 inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
                                              * constants.Na * 1e23
-                            rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            if all([abs(inertia[i] - inertia[i + 1]) < I_tol for i in [0, 1]]):
+                                # all three moments of inertia are (nearly) equal, this is a "spherical top rotor"
+                                # e.g.:  Rotational constants (GHZ):         158.08631   158.08628   158.08627
+                                rotation = SphericalTopRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            elif any([abs(inertia[i] - inertia[i + 1]) < I_tol for i in [0, 1]]):
+                                # two of the moments of inertia are (nearly) equal, this is a "symmetrical top rotor"
+                                # e.g.: " Rotational constants (GHZ):         301.29250   301.29250   186.88271"
+                                rotation = SymmetricTopRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            else:
+                                # none of the moments of inertia are (nearly) equal, this is an "asymmetric rotor"
+                                # e.g.: " Rotational constants (GHZ):         128.49037    24.95554    24.09627"
+                                rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
