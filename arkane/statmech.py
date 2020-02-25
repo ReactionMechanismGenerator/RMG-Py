@@ -48,7 +48,7 @@ from rmgpy.exceptions import InputError, ElementError, StatmechError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import TransitionState, Species
 from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
-from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, SphericalTopRotor, SymmetricTopRotor
 from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
@@ -531,12 +531,13 @@ class StatMechJob(object):
                     break
             else:
                 self.species.conformer.modes.append(IdealGasTranslation(mass=(mass, "amu")))
-            # check that conformer has a LinearRotor or a NonlinearRotor mode, append one if it doesn't
+            # check that conformer has a Rotor mode, append one if it doesn't
             for mode in self.species.conformer.modes:
-                if isinstance(mode, (LinearRotor, NonlinearRotor)):
+                if isinstance(mode, (LinearRotor, NonlinearRotor, SphericalTopRotor, SymmetricTopRotor)):
                     break
             else:
                 # get the moments of inertia and the external symmetry
+                I_tol = 0.01
                 moments_of_inertia = get_principal_moments_of_inertia(coords=self.species.conformer.coordinates,
                                                                       numbers=self.species.conformer.number)
                 symmetry = geom_log.get_symmetry_properties()[1]
@@ -549,8 +550,16 @@ class StatMechJob(object):
                                             f'but got {moments_of_inertia}')
                     self.species.conformer.modes.append(LinearRotor(inertia=(moments_of_inertia[0], "amu*angstrom^2"),
                                                                     symmetry=symmetry))
+                elif all([abs(moments_of_inertia[i] - moments_of_inertia[i + 1]) < I_tol for i in [0, 1]]):
+                    # all three moments of inertia are (nearly) equal, this is a "spherical top rotor"
+                    self.species.conformer.modes.append(SphericalTopRotor(inertia=(moments_of_inertia, "amu*angstrom^2"),
+                                                                          symmetry=symmetry))
+                elif any([abs(moments_of_inertia[i] - moments_of_inertia[i + 1]) < I_tol for i in [0, 1]]):
+                    # two of the moments of inertia are (nearly) equal, this is a "symmetrical top rotor"
+                    self.species.conformer.modes.append(SymmetricTopRotor(inertia=(moments_of_inertia, "amu*angstrom^2"),
+                                                                          symmetry=symmetry))
                 else:
-                    # this is a non-linear rotor
+                    # none of the moments of inertia are (nearly) equal, this is an "asymmetric rotor"
                     self.species.conformer.modes.append(NonlinearRotor(inertia=(moments_of_inertia, "amu*angstrom^2"),
                                                                        symmetry=symmetry))
 
