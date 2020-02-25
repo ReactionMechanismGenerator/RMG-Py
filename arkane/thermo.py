@@ -44,7 +44,7 @@ from rmgpy.exceptions import InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import get_element_count
 from rmgpy.species import Species
-from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, SphericalTopRotor, SymmetricTopRotor
 from rmgpy.thermo.wilhoit import Wilhoit
 
 from arkane.common import ArkaneSpecies, symbol_by_number
@@ -126,14 +126,16 @@ class ThermoJob(object):
         H298 += conformer.get_enthalpy(298.) + conformer.E0.value_si
         S298 += conformer.get_entropy(298.)
 
-        if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
-            # Monatomic species
+        if (species.mol is not None and len(species.mol[0].atoms) == 1) \
+                or not any([isinstance(mode, (LinearRotor, NonlinearRotor, SphericalTopRotor, SymmetricTopRotor))
+                            for mode in conformer.modes]):
+            # this is a monatomic species
             n_freq = 0
             n_rotors = 0
             Cp0 = 2.5 * constants.R
             CpInf = 2.5 * constants.R
         else:
-            # Polyatomic species
+            # this is a polyatomic species
             linear = True if isinstance(conformer.modes[1], LinearRotor) else False
             n_freq = len(conformer.modes[2].frequencies.value)
             n_rotors = len(conformer.modes[3:])
