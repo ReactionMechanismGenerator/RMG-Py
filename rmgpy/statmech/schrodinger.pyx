@@ -48,8 +48,16 @@ cimport rmgpy.constants as constants
 def unit_degeneracy(n):
     return 1
 
+
+def unit_qka_energy(int n):
+    return 1
+
+
+def unit_qkc_energy(int n):
+    return 1
+
 cpdef double get_partition_function(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
-                                    double tol=1e-12) except -1:
+                                    double tol=1e-12, qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy) except -1:
     """
     Return the value of the partition function :math:`Q(T)` at a given
     temperature `T` in K. The solution to the Schrodinger equation is given
@@ -60,16 +68,18 @@ cpdef double get_partition_function(double T, energy, degeneracy=unit_degeneracy
     of the quantum number `nmax`.
     """
     cdef int n
-    cdef double Q, dQ, E_n
+    cdef double Q, dQ, E_n, qka, qkc
     cdef int g_n
-    cdef double beta = 1. / (constants.R * T)  # [=] mol/J
+    cdef double beta = 1. / (constants.R * T)  # in mol/J
 
     Q = 0.0
     for n in range(n0, nmax):
         E_n = energy(n)
         g_n = degeneracy(n)
+        qka = qka_energy(n)
+        qck = qkc_energy(n)
 
-        dQ = g_n * exp(-beta * E_n)
+        dQ = g_n * exp(-beta * E_n) * exp(-beta * qka) * exp(-beta * qkc)
         Q += dQ
 
         if dQ < tol * Q:
@@ -77,8 +87,8 @@ cpdef double get_partition_function(double T, energy, degeneracy=unit_degeneracy
 
     return Q
 
-cpdef double get_heat_capacity(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
-                               double tol=1e-12) except -100000000:
+cpdef double get_heat_capacity(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000, double tol=1e-12,
+                               qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy) except -100000000:
     """
     Return the value of the dimensionless heat capacity :math:`C_\\mathrm{v}(T)/R`
     at a given temperature `T` in K. The solution to the Schrodinger equation
@@ -89,9 +99,9 @@ cpdef double get_heat_capacity(double T, energy, degeneracy=unit_degeneracy, int
     maximum allowed value of the quantum number `nmax`.
     """
     cdef int n
-    cdef double Q, dQ, sumE, dsumE, sumE2, dsumE2, E_n
+    cdef double Q, dQ, sumE, dsumE, sumE2, dsumE2, E_n, qka, qkc
     cdef int g_n
-    cdef double beta = 1. / (constants.R * T)  # [=] mol/J
+    cdef double beta = 1. / (constants.R * T)  # in mol/J
 
     Q = 0.0
     sumE = 0.0
@@ -99,10 +109,12 @@ cpdef double get_heat_capacity(double T, energy, degeneracy=unit_degeneracy, int
     for n in range(n0, nmax):
         E_n = energy(n)
         g_n = degeneracy(n)
+        qka = qka_energy(n)
+        qkc = qkc_energy(n)
 
-        dQ = g_n * exp(-beta * E_n)
-        dsumE = E_n * dQ
-        dsumE2 = E_n * dsumE
+        dQ = g_n * exp(-beta * E_n) * exp(-beta * qka) * exp(-beta * qkc)
+        dsumE = E_n * qka ** 2 * qkc ** 2 * dQ
+        dsumE2 = E_n * qka ** 2 * qkc **2 * dsumE
         Q += dQ
         sumE += dsumE
         sumE2 += dsumE2
@@ -110,10 +122,10 @@ cpdef double get_heat_capacity(double T, energy, degeneracy=unit_degeneracy, int
         if dQ < tol * Q and dsumE < tol * sumE and dsumE2 < tol * sumE2:
             break
 
-    return beta * beta * (sumE2 / Q - sumE * sumE / (Q * Q))
+    return beta ** 2 * (sumE2 / Q - sumE * sumE / (Q * Q))
 
-cpdef double get_enthalpy(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
-                          double tol=1e-12) except 100000000:
+cpdef double get_enthalpy(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000, double tol=1e-12,
+                          qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy) except 100000000:
     """
     Return the value of the dimensionless enthalpy :math:`H(T)/RT` at a given
     temperature `T` in K. The solution to the Schrodinger equation is given
@@ -124,18 +136,20 @@ cpdef double get_enthalpy(double T, energy, degeneracy=unit_degeneracy, int n0=0
     of the quantum number `nmax`.
     """
     cdef int n
-    cdef double Q, dQ, sumE, dsumE, E_n
+    cdef double Q, dQ, sumE, dsumE, E_n, qka, qkc
     cdef int g_n
-    cdef double beta = 1. / (constants.R * T)  # [=] mol/J
+    cdef double beta = 1. / (constants.R * T)  # in mol/J
 
     Q = 0.0
     sumE = 0.0
     for n in range(n0, nmax):
         E_n = energy(n)
         g_n = degeneracy(n)
+        qka = qka_energy(n)
+        qkc = qkc_energy(n)
 
-        dQ = g_n * exp(-beta * E_n)
-        dsumE = E_n * dQ
+        dQ = g_n * exp(-beta * E_n)  * exp(-beta * qka) * exp(-beta * qkc)
+        dsumE = E_n * qka ** 2 * qkc ** 2 * dQ
         Q += dQ
         sumE += dsumE
 
@@ -144,8 +158,8 @@ cpdef double get_enthalpy(double T, energy, degeneracy=unit_degeneracy, int n0=0
 
     return beta * sumE / Q
 
-cpdef double get_entropy(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000,
-                         double tol=1e-12) except -100000000:
+cpdef double get_entropy(double T, energy, degeneracy=unit_degeneracy, int n0=0, int nmax=10000, double tol=1e-12,
+                         qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy) except -100000000:
     """
     Return the value of the dimensionless entropy :math:`S(T)/R` at a given
     temperature `T` in K. The solution to the Schrodinger equation is given
@@ -156,18 +170,20 @@ cpdef double get_entropy(double T, energy, degeneracy=unit_degeneracy, int n0=0,
     of the quantum number `nmax`.
     """
     cdef int n
-    cdef double Q, dQ, sumE, dsumE, E_n
+    cdef double Q, dQ, sumE, dsumE, E_n, qka, qkc
     cdef int g_n
-    cdef double beta = 1. / (constants.R * T)  # [=] mol/J
+    cdef double beta = 1. / (constants.R * T)  # in mol/J
 
     Q = 0.0
     sumE = 0.0
     for n in range(n0, nmax):
         E_n = energy(n)
         g_n = degeneracy(n)
+        qka = qka_energy(n)
+        qkc = qkc_energy(n)
 
-        dQ = g_n * exp(-beta * E_n)
-        dsumE = E_n * dQ
+        dQ = g_n * exp(-beta * E_n) * exp(-beta * qka) * exp(-beta * qkc)
+        dsumE = E_n * qka ** 2 * qkc ** 2 * dQ
         Q += dQ
         sumE += dsumE
 
@@ -178,8 +194,9 @@ cpdef double get_entropy(double T, energy, degeneracy=unit_degeneracy, int n0=0,
 
 ################################################################################
 
+
 cpdef np.ndarray get_sum_of_states(np.ndarray e_list, energy, degeneracy=unit_degeneracy, int n0=0,
-                                   np.ndarray sum_states_0=None):
+                                   np.ndarray sum_states_0=None, qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy):
     """
     Return the values of the sum of states :math:`N(E)` for a given set of
     energies `e_list` in J/mol above the ground state using an initial sum of
@@ -190,10 +207,10 @@ cpdef np.ndarray get_sum_of_states(np.ndarray e_list, energy, degeneracy=unit_de
     """
     if sum_states_0 is None:
         sum_states_0 = np.ones_like(e_list)
-    return convolve_bssr(e_list, sum_states_0, energy, degeneracy, n0)
+    return convolve_bssr(e_list, sum_states_0, energy, degeneracy, n0, qka_energy, qkc_energy)
 
 cpdef np.ndarray get_density_of_states(np.ndarray e_list, energy, degeneracy=unit_degeneracy, int n0=0,
-                                       np.ndarray dens_states_0=None):
+                                       np.ndarray dens_states_0=None, qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy):
     """
     Return the values of the dimensionless density of states
     :math:`\\rho(E) \\ dE` for a given set of energies `e_list` in J/mol above
@@ -206,9 +223,10 @@ cpdef np.ndarray get_density_of_states(np.ndarray e_list, energy, degeneracy=uni
     if dens_states_0 is None:
         dens_states_0 = np.zeros_like(e_list)
         dens_states_0[0] = 1.0
-    return convolve_bssr(e_list, dens_states_0, energy, degeneracy, n0)
+    return convolve_bssr(e_list, dens_states_0, energy, degeneracy, n0, qka_energy, qkc_energy)
 
 ################################################################################
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -231,6 +249,7 @@ def convolve(np.ndarray[np.float64_t, ndim=1] rho1, np.ndarray[np.float64_t, ndi
             rho[i] += rho2[i - j] * rho1[j]
 
     return rho
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -260,11 +279,12 @@ def convolve_bs(np.ndarray[np.float64_t, ndim=1] e_list,
 
     return rho
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def convolve_bssr(np.ndarray[np.float64_t, ndim=1] e_list,
                   np.ndarray[np.float64_t, ndim=1] rho0,
-                  energy, degeneracy=unit_degeneracy, int n0=0):
+                  energy, degeneracy=unit_degeneracy, int n0=0, qka_energy=unit_qka_energy, qkc_energy=unit_qkc_energy):
     """
     Convolve a molecular degree of freedom into a density or sum of states
     using the Beyer-Swinehart-Stein-Rabinovitch (BSSR) direct count algorithm.
@@ -273,7 +293,7 @@ def convolve_bssr(np.ndarray[np.float64_t, ndim=1] e_list,
     corresponding to the solution of the Schrodinger equation.
     """
     cdef int n = n0
-    cdef double Emax = np.max(e_list), E_n
+    cdef double Emax = np.max(e_list), E_n, qka, qkc
     cdef int i, j, nE = e_list.shape[0], g_n
     cdef np.ndarray[np.float64_t, ndim=1] rho
 
@@ -281,16 +301,19 @@ def convolve_bssr(np.ndarray[np.float64_t, ndim=1] e_list,
 
     E_n = energy(n)
     g_n = degeneracy(n)
+    qka = qka_energy(n)
+    qkc = qkc_energy(n)
     while E_n < Emax:
 
         for i in range(nE):
             for j in range(i, nE):
-                if e_list[j] - e_list[i] >= 0.9999 * E_n:
+                if e_list[j] - e_list[i] >= 0.9999 * E_n * qka * qkc:
                     rho[j] += g_n * rho0[i]
                     break
 
         n += 1
         E_n = energy(n)
         g_n = degeneracy(n)
-
+        qka = qka_energy(n)
+        qkc = qkc_energy(n)
     return rho

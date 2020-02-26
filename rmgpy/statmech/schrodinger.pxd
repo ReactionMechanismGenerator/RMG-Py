@@ -29,14 +29,20 @@ cimport numpy as np
 
 ################################################################################
 
-cpdef double get_partition_function(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -1
+cpdef double get_partition_function(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?,
+                                    qka_energy=?, qkc_energy=?) except -1
 
-cpdef double get_heat_capacity(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -100000000
+cpdef double get_heat_capacity(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?,
+                               qka_energy=?, qkc_energy=?) except -100000000
 
-cpdef double get_enthalpy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except 100000000
+cpdef double get_enthalpy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?,
+                          qka_energy=?, qkc_energy=?) except 100000000
 
-cpdef double get_entropy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -100000000
+cpdef double get_entropy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?,
+                         qka_energy=?, qkc_energy=?) except -100000000
 
-cpdef np.ndarray get_sum_of_states(np.ndarray e_list, energy, degeneracy=?, int n0=?, np.ndarray sum_states_0=?)
+cpdef np.ndarray get_sum_of_states(np.ndarray e_list, energy, degeneracy=?, int n0=?, np.ndarray sum_states_0=?,
+                                   qka_energy=?, qkc_energy=?, )
 
-cpdef np.ndarray get_density_of_states(np.ndarray e_list, energy, degeneracy=?, int n0=?, np.ndarray dens_states_0=?)
+cpdef np.ndarray get_density_of_states(np.ndarray e_list, energy, degeneracy=?, int n0=?, np.ndarray dens_states_0=?,
+                                       qka_energy=?, qkc_energy=?)
