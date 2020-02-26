@@ -32,7 +32,7 @@ initialize imports
 """
 
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.statmech.rotation import KRotor, LinearRotor, NonlinearRotor, Rotation, SphericalTopRotor
+from rmgpy.statmech.rotation import KRotor, LinearRotor, NonlinearRotor, Rotation, SphericalTopRotor, SymmetricTopRotor
 from rmgpy.statmech.torsion import HinderedRotor, Torsion
 from rmgpy.statmech.translation import IdealGasTranslation, Translation
 from rmgpy.statmech.vibration import HarmonicOscillator, Vibration

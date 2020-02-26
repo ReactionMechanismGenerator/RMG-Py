@@ -44,11 +44,12 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import StatmechError
 from rmgpy.statmech.mode cimport Mode
-from rmgpy.statmech.rotation cimport LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.rotation cimport LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor, SymmetricTopRotor
 from rmgpy.statmech.torsion cimport HinderedRotor
 from rmgpy.statmech.translation cimport IdealGasTranslation
 
 ################################################################################
+
 
 cdef class Conformer(RMGObject):
     """
@@ -266,6 +267,8 @@ cdef class Conformer(RMGObject):
             elif type(mode) == KRotor:
                 n += 1
             elif type(mode) == SphericalTopRotor:
+                n += 3
+            elif type(mode) == SymmetricTopRotor:
                 n += 3
             elif hasattr(mode, 'dof'):
                 n += mode.dof
