@@ -224,6 +224,9 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
                 raise ChemkinError('Missing TCHEB line for reaction {0}'.format(reaction))
             if chebyshev.Pmin is None or chebyshev.Pmax is None:
                 raise ChemkinError('Missing PCHEB line for reaction {0}'.format(reaction))
+            if len(kinetics['chebyshev coefficients']) != (chebyshev.degreeT * chebyshev.degreeP):
+                raise ChemkinError('Wrong number of Chebyshev coefficients '
+                    'for reaction {0}'.format(reaction))
             index = 0
             for t in range(chebyshev.degreeT):
                 for p in range(chebyshev.degreeP):
@@ -519,6 +522,9 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
             chebyshev.degreeT = int(float(tokens2[0].strip()))
             chebyshev.degreeP = int(float(tokens2[1].strip()))
             chebyshev.coeffs = np.zeros((chebyshev.degreeT, chebyshev.degreeP), np.float64)
+            # There may be some coefficients on this first line
+            kinetics['chebyshev coefficients'].extend(
+                [float(t.strip()) for t in tokens2[2:]])
         else:
             tokens2 = tokens[1].split()
             kinetics['chebyshev coefficients'].extend(
