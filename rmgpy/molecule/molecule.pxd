@@ -204,13 +204,13 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef from_inchi(self, str inchistr, backend=?)
+    cpdef from_inchi(self, str inchistr, backend=?, bint raise_atomtype_exception=?)
 
-    cpdef from_smiles(self, str smilesstr, backend=?)
+    cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
 
-    cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?)
+    cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?)
 
-    cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates)
+    cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, bint raise_atomtype_exception=?)
     
     cpdef str to_inchi(self)
 

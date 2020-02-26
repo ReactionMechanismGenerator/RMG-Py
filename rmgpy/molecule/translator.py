@@ -251,19 +251,20 @@ def to_smiles(mol, backend='default'):
         return output
 
 
-def from_inchi(mol, inchistr, backend='try-all'):
+def from_inchi(mol, inchistr, backend='try-all', raise_atomtype_exception=True):
     """
     Convert an InChI string `inchistr` to a molecular structure. Uses
     a user-specified backend for conversion, currently supporting
     rdkit (default) and openbabel.
     """
     if inchiutil.INCHI_PREFIX in inchistr:
-        return _read(mol, inchistr, 'inchi', backend)
+        return _read(mol, inchistr, 'inchi', backend, raise_atomtype_exception=raise_atomtype_exception)
     else:
-        return _read(mol, inchiutil.INCHI_PREFIX + '/' + inchistr, 'inchi', backend)
+        return _read(mol, inchiutil.INCHI_PREFIX + '/' + inchistr, 'inchi', backend,
+                     raise_atomtype_exception=raise_atomtype_exception)
 
 
-def from_augmented_inchi(mol, aug_inchi):
+def from_augmented_inchi(mol, aug_inchi, raise_atomtype_exception=True):
     """
     Creates a Molecule object from the augmented inchi.
 
@@ -287,27 +288,27 @@ def from_augmented_inchi(mol, aug_inchi):
 
     inchiutil.fix_molecule(mol, aug_inchi)
 
-    mol.update_atomtypes()
+    mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
 
     return mol
 
 
-def from_smarts(mol, smartsstr, backend='rdkit'):
+def from_smarts(mol, smartsstr, backend='rdkit', raise_atomtype_exception=True):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    return _read(mol, smartsstr, 'sma', backend)
+    return _read(mol, smartsstr, 'sma', backend, raise_atomtype_exception=raise_atomtype_exception)
 
 
-def from_smiles(mol, smilesstr, backend='try-all'):
+def from_smiles(mol, smilesstr, backend='try-all', raise_atomtype_exception=True):
     """
     Convert a SMILES string `smilesstr` to a molecular structure. Uses
     a user-specified backend for conversion, currently supporting
     rdkit (default) and openbabel.
     """
-    return _read(mol, smilesstr, 'smi', backend)
+    return _read(mol, smilesstr, 'smi', backend, raise_atomtype_exception=raise_atomtype_exception)
 
 
 def _rdkit_translator(input_object, identifier_type, mol=None):
@@ -460,7 +461,7 @@ def _check_output(mol, identifier):
     return all(conditions)
 
 
-def _read(mol, identifier, identifier_type, backend):
+def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=True):
     """
     Parses the identifier based on the type of identifier (inchi/smi/sma)
     and the backend used.
@@ -479,7 +480,7 @@ def _read(mol, identifier, identifier_type, backend):
 
     if _lookup(mol, identifier, identifier_type) is not None:
         if _check_output(mol, identifier):
-            mol.update_atomtypes()
+            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
             return mol
 
     for option in _get_backend_list(backend):
@@ -491,7 +492,7 @@ def _read(mol, identifier, identifier_type, backend):
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         if _check_output(mol, identifier):
-            mol.update_atomtypes()
+            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
             return mol
         else:
             logging.debug('Backend {0} is not able to parse identifier {1}'.format(option, identifier))
