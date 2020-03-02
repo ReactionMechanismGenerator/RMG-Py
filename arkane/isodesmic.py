@@ -453,7 +453,7 @@ class SpeciesConstraints(object):
             descriptors = self.get_descriptors(species)
             for constraint_class, descriptor_list in descriptors.items():
                 for d in descriptor_list:
-                    if d not in constraint_map[constraint_class].keys():
+                    if d not in list(constraint_map[constraint_class].keys()):
                         constraint_map[constraint_class][d] = 1
                     else:
                         constraint_map[constraint_class][d] += 1
@@ -496,7 +496,7 @@ class SpeciesConstraints(object):
                 continue
             use_constraint_class = True
             for d in descriptor_list:
-                if d not in self.constraint_map[constraint_class].keys():
+                if d not in list(self.constraint_map[constraint_class].keys()):
                     use_constraint_class = False
                     unique_descriptors[constraint_class].append(d)
             if use_constraint_class:
@@ -552,7 +552,7 @@ class SpeciesConstraints(object):
             constraint_vector = np.zeros(len(self.constraint_map[constraint_class]))
             descriptors = self.get_descriptors(species)
             for descriptor in descriptors[constraint_class]:
-                constraint_vector[self.constraint_map[constraint_class].keys().index(descriptor)] += 1
+                constraint_vector[list(self.constraint_map[constraint_class].keys()).index(descriptor)] += 1
             constraint_vectors[constraint_class] = constraint_vector
             
         # for atom in molecule.atoms:
@@ -875,10 +875,10 @@ class ErrorCancelingScheme(object):
 
         """
         if self.constraint_matrix is None:
-            try:
-                self.target_constraints, self.constraint_matrix = self.constraints.calculate_constraints()
-            except:
-                return None, None, None
+            # try:
+            self.target_constraints, self.constraint_matrix = self.constraints.calculate_constraints()
+            # except:
+                # return None, None, None
 
         reactions = self.multiple_error_canceling_reaction_search(n_reactions_max=n_reactions_max,max_ref_uncertainty=max_ref_uncertainty, milp_software=milp_software)
         if reactions is None or len(reactions) == 0:

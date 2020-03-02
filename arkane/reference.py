@@ -127,7 +127,7 @@ class ReferenceSpecies(ArkaneSpecies):
         if not value:
             self._reference_data = {}
         elif isinstance(value, dict):
-            if all(isinstance(source, str) for source in value.keys()):
+            if all(isinstance(source, str) for source in list(value.keys())):
                 if all(isinstance(data_entry, ReferenceDataEntry) for data_entry in value.values()):
                     self._reference_data = value
         else:
@@ -143,7 +143,7 @@ class ReferenceSpecies(ArkaneSpecies):
         if not value:
             self._calculated_data = {}
         elif isinstance(value, dict):
-            if all(isinstance(source, str) for source in value.keys()):
+            if all(isinstance(source, str) for source in list(value.keys())):
                 if all(isinstance(data_entry, CalculatedDataEntry) for data_entry in value.values()):
                     self._calculated_data = value
         else:
@@ -584,7 +584,7 @@ class ReferenceDatabase(object):
                 continue
             Hf298 = None
             atct_id = ''
-            for source in reference_preference + ref.reference_data.keys():
+            for source in reference_preference + list(ref.reference_data.keys()):
                 if source in ref.reference_data.keys():
                     if source == 'atct':
                         atct_id = ref.reference_data[source].atct_id
@@ -653,7 +653,7 @@ class ReferenceDatabase(object):
         reference_list = []
 
         if sets is None:  # Load in all of the sets
-            sets = self.reference_sets.keys()
+            sets = list(self.reference_sets.keys())
 
         for set_name in sets:
             current_set = self.reference_sets[set_name]
