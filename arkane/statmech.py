@@ -474,6 +474,7 @@ class StatMechJob(object):
                 e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
 
             isodesmic_correction = 0  # This will allow us to calculate the needed correction later
+            atom_corrections_0K = atom_corrections_298K = 0
             if self.useIsodesmicReactions:  # Make sure atom and bond corrections are not applied
                 if self.applyAtomEnergyCorrections:
                     logging.warning('Atom corrections requested but will not be used since isodesmic reactions are '
@@ -487,9 +488,12 @@ class StatMechJob(object):
                 if self.isodesmicCorrection is not None:
                     isodesmic_correction = self.isodesmicCorrection
                     isodesmic_uncertainty = self.isodesmicUncertainty
+                    _, atom_corrections_298K  = get_atom_correction(self.modelChemistry,
+                                                       atoms, self.atomEnergies)
+                    isodesmic_correction -= atom_corrections_298K
 
             if self.applyAtomEnergyCorrections:
-                if self.modelChemistry == 'orca_ccsd(t)-f12/cc-pvdz-f12':
+                if 'orca' in self.modelChemistry:
                     atom_corrections_0K, atom_corrections_298K = get_spcs_correction(self.modelChemistry,
                                                                                      self.species.molecule[0])
                 else:
@@ -497,8 +501,6 @@ class StatMechJob(object):
                                                        atoms, self.atomEnergies)
 
             else:
-                atom_corrections_0K = atom_corrections_298K = 0
-                # atom_corrections = 0
                 if not self.useIsodesmicReactions:
                     logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
 
