@@ -497,7 +497,8 @@ class StatMechJob(object):
                                                        atoms, self.atomEnergies)
 
             else:
-                atom_corrections = 0
+                atom_corrections_0K = atom_corrections_298K = 0
+                # atom_corrections = 0
                 if not self.useIsodesmicReactions:
                     logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
 
