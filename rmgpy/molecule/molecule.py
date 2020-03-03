@@ -1683,7 +1683,7 @@ class Molecule(Graph):
         Return a png picture of the molecule, useful for ipython-qtconsole.
         """
         from .draw import MoleculeDrawer
-        temp_file_name = 'temp_molecule.png'
+        temp_file_name = f'temp_molecule_{self.to_inchi_key()}.png'
         MoleculeDrawer().draw(self, 'png', temp_file_name)
         png = open(temp_file_name, 'rb').read()
         os.unlink(temp_file_name)
