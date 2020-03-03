@@ -68,7 +68,8 @@ class TestFamily(unittest.TestCase):
                 'Intra_R_Add_Exo_scission',
                 'intra_substitutionS_isomerization',
                 'R_Addition_COm',
-                'R_Recombination'
+                'R_Recombination',
+                'Surface_Adsorption_vdW',
             ],
         )
         cls.family = cls.database.families['intra_H_migration']
@@ -622,6 +623,51 @@ multiplicity 2
 
         self.assertEqual(len(products), 1)
         self.assertTrue(expected_products[0].is_isomorphic(products[0]))
+
+    def test_surface_adsorption_vdw(self):
+        """
+        Test that the Surface_Adsorption_vdW family doesn't adsorb radicals
+        """
+        family = self.database.families['Surface_Adsorption_vdW']
+
+        # Test it with Oj as the *1 atom
+        reactants = [Molecule().from_adjacency_list("""
+multiplicity 2
+1  *1 O u1 p2 c0 {2,S}
+2     H u0 p0 c0 {1,S}
+"""),
+            Molecule().from_adjacency_list("""
+1  *2 X u0 p0 c0
+""")]
+        products = family.apply_recipe(reactants)
+        #self.assertTrue(family.is_molecule_forbidden(products[0]), "Radical product should be forbidden")
+        t1 = family.is_molecule_forbidden(products[0]) # Should be True (but currently broken)
+
+        # Now test it the other way around
+        reactants = [Molecule().from_adjacency_list("""
+multiplicity 2
+1     O u1 p2 c0 {2,S}
+2  *1 H u0 p0 c0 {1,S}
+"""),
+            Molecule().from_adjacency_list("""
+1  *2 X u0 p0 c0
+""")]
+        products = family.apply_recipe(reactants)
+        #self.assertTrue(family.is_molecule_forbidden(products[0]), "Radical product should be forbidden")
+        t2 = family.is_molecule_forbidden(products[0]) # Should be True (but currently broken)
+
+        # Now test it with no labeling
+        reactants = [Molecule().from_adjacency_list("""
+multiplicity 2
+1   O u1 p2 c0 {2,S}
+2   H u0 p0 c0 {1,S}
+"""),
+            Molecule().from_adjacency_list("""
+1  X u0 p0 c0
+""")]
+        reactions = family.generate_reactions(reactants)
+        self.assertEqual(len(reactions), 0, "Should have made 0 reactions.")
+
 
     def test_save_family(self):
         """
