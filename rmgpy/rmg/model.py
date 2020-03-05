@@ -742,7 +742,7 @@ class CoreEdgeReactionModel:
         
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
-        qdooh = Group().fromAdjacencyList("""
+        qdooh = Group().from_adjacency_list("""
             1  O u0 p2 c0 {2,S} {4,S}
             2  O u0 p2 c0 {1,S} {3,S}
             3  R!H u1 px c0 {2,S}
@@ -873,7 +873,7 @@ class CoreEdgeReactionModel:
         # Only reactions from families should be missing kinetics
         assert isinstance(reaction, TemplateReaction)
 
-        qdooh = Group().fromAdjacencyList("""
+        qdooh = Group().from_adjacency_list("""
             1  O u0 p2 c0 {2,S} {4,S}
             2  O u0 p2 c0 {1,S} {3,S}
             3  R!H u1 px c0 {2,S}
