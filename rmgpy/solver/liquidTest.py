@@ -32,7 +32,6 @@ import unittest
 
 import numpy as np
 
-import rmgpy
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
