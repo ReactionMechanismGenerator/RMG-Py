@@ -105,6 +105,8 @@ class LiquidReactorCheck(unittest.TestCase):
 
         cls.T = 1000
 
+        cls.file_dir = os.path.join(os.path.dirname(rmgpy.__file__), 'solver', 'files', 'liquid_phase_constSPC')
+
     def test_compute_flux(self):
         """
         Test the liquid batch reactor with a simple kinetic model. 
@@ -415,11 +417,7 @@ class LiquidReactorCheck(unittest.TestCase):
         From input file reading to information storage in liquid reactor object.
         """
         rmg = RMG()
-        rmg.input_file = os.path.join(os.path.dirname(rmgpy.__file__),
-                                      'solver',
-                                      'files',
-                                      'liquid_phase_constSPC',
-                                      'input.py')
+        rmg.input_file = os.path.join(self.file_dir, 'input.py')
         rmg.initialize()
 
         for index, reactionSystem in enumerate(rmg.reaction_systems):
@@ -482,3 +480,5 @@ class LiquidReactorCheck(unittest.TestCase):
 
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+        os.remove(os.path.join(cls.file_dir, 'restart_from_seed.py'))
