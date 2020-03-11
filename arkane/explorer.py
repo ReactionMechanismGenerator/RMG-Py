@@ -321,9 +321,10 @@ class ExplorerJob(object):
             self.pdepjob.network = network
 
             if len(self.networks) > 1:
-                s1, s2 = output_file.split(".")
+                root, file_name = os.path.split(output_file)
+                s1, s2 = file_name.split(".")
                 ind = str(self.networks.index(network))
-                stot = s1 + "{}.".format(ind) + s2
+                stot = os.path.join(root, s1 + "{}.".format(ind) + s2)
             else:
                 stot = output_file
 
