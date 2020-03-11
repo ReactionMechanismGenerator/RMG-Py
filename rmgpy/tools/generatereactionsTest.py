@@ -54,6 +54,7 @@ class GenerateReactionsTest(unittest.TestCase):
         self.assertIsNotNone(rmg.reaction_model.output_reaction_list)
 
         shutil.rmtree(os.path.join(folder, 'pdep'))
+        os.remove(os.path.join(folder, 'restart_from_seed.py'))
 
     def test_duplicate_reaction(self):
         """
@@ -88,6 +89,7 @@ class GenerateReactionsTest(unittest.TestCase):
         self.assertEquals(count, 1)
 
         shutil.rmtree(os.path.join(folder, 'pdep'))
+        os.remove(os.path.join(folder, 'restart_from_seed.py'))
 
     def test_library_reaction_enters_core(self):
         """
@@ -126,6 +128,7 @@ class GenerateReactionsTest(unittest.TestCase):
         # Assert that the core only has 1 reaction
         self.assertEquals(len(rmg.reaction_model.core.reactions), 1)
         shutil.rmtree(os.path.join(folder, 'pdep'))
+        os.remove(os.path.join(folder, 'restart_from_seed.py'))
 
     def setUp(self):
         import rmgpy.data.rmg
