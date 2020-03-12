@@ -346,10 +346,10 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
     specific_collider = None
     # search for a third body collider, e.g., '(+M)', '(+m)', or a specific species like '(+N2)',
     #     matching `(+anything_other_than_ending_parenthesis)`:
-    collider = re.search(r'\(\+[^\)]+\)', reactants)
+    collider = re.search(r'\(\+[^)]+\)', reactants)
     if collider is not None:
         collider = collider.group(0)  # save string value rather than the object
-        if collider != re.search(r'\(\+[^\)]+\)', products).group(0):
+        if collider != re.search(r'\(\+[^)]+\)', products).group(0):
             raise ChemkinError(
                 'Third body colliders in reactants and products of reaction {0} are not identical!'.format(reaction))
         extra_parenthesis = collider.count('(') - 1
