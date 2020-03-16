@@ -321,7 +321,7 @@ class Species(object):
                     return True
         elif isinstance(other, Fragment):
             for molecule in self.molecule:
-                if molecule.isIdentical(other, strict=strict):
+                if molecule.is_identical(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
