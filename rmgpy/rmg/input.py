@@ -932,6 +932,9 @@ def read_input_file(path, rmg0):
         'restartFromSeed': restart_from_seed,
     }
 
+    thermo_libraries = rmg0.thermo_libraries if isinstance(rmg0.thermo_libraries, list) else None
+    reaction_libraries = rmg0.reaction_libraries if isinstance(rmg0.reaction_libraries, list) else None
+
     try:
         exec(f.read(), global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
@@ -940,6 +943,11 @@ def read_input_file(path, rmg0):
         raise
     finally:
         f.close()
+
+    if thermo_libraries is not None:
+        rmg0.thermo_libraries.extend(thermo_libraries)
+    if reaction_libraries is not None:
+        rmg0.reaction_libraries.extend(reaction_libraries)
 
     rmg.species_constraints['explicitlyAllowedMolecules'] = []
 
