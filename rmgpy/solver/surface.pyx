@@ -465,14 +465,17 @@ cdef class SurfaceReactor(ReactionSystem):
                         if third >= num_core_species: edge_species_rates[third - num_core_species] += reaction_rate
 
         for j in range(inet.shape[0]):
-            k = knet[j]
-            if inet[j, 1] == -1:  # only one reactant
-                reaction_rate = k * C[inet[j, 0]]
-            elif inet[j, 2] == -1:  # only two reactants
-                reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]]
-            else:  # three reactants!! (really?)
-                reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
-            network_leak_rates[j] = reaction_rate
+            if inet[j, 0] != -1: #all source species are in the core
+                k = knet[j]
+                if inet[j, 1] == -1:  # only one reactant
+                    reaction_rate = k * C[inet[j, 0]]
+                elif inet[j, 2] == -1:  # only two reactants
+                    reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]]
+                else:  # three reactants
+                    reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
+                    network_leak_rates[j] = reaction_rate
+            else:
+                network_leak_rates[j] = 0.0
 
         self.core_species_concentrations = core_species_concentrations
         self.core_species_rates = core_species_rates
