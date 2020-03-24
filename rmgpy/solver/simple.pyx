@@ -110,7 +110,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public list Trange
     cdef public list Prange
     cdef public int n_sims
-
+    
     def __init__(self, T, P, initial_mole_fractions, n_sims=1, termination=None, sensitive_species=None,
                  sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None):
         ReactionSystem.__init__(self, termination, sensitive_species, sensitivity_threshold)
@@ -512,14 +512,17 @@ cdef class SimpleReactor(ReactionSystem):
                         if third >= num_core_species: edge_species_rates[third - num_core_species] += reaction_rate
 
         for j in range(inet.shape[0]):
-            k = knet[j]
-            if inet[j, 1] == -1:  # only one reactant
-                reaction_rate = k * C[inet[j, 0]]
-            elif inet[j, 2] == -1:  # only two reactants
-                reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]]
-            else:  # three reactants
-                reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
-            network_leak_rates[j] = reaction_rate
+            if inet[j, 0] != -1: #all source species are in the core
+                k = knet[j]
+                if inet[j, 1] == -1:  # only one reactant
+                    reaction_rate = k * C[inet[j, 0]]
+                elif inet[j, 2] == -1:  # only two reactants
+                    reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]]
+                else:  # three reactants
+                    reaction_rate = k * C[inet[j, 0]] * C[inet[j, 1]] * C[inet[j, 2]]
+                network_leak_rates[j] = reaction_rate
+            else:
+                network_leak_rates[j] = 0.0
 
         if self.const_spc_indices is not None:
             for spc_index in self.const_spc_indices:

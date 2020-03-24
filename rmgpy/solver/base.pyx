@@ -497,10 +497,11 @@ cdef class ReactionSystem(DASx):
                 try:
                     i = self.get_species_index(spec)
                 except KeyError:
-                    # spec is probably in the edge, hence is not a key in the species_index dictionary.
-                    # Sicne network_indices is only used to identify the number of reactants, set the
-                    # corresponding value to be different than `-1`.
-                    i = -2
+                    self.network_indices[j, :] = [-1,-1,-1]
+                    break
+                if i >= self.num_core_species: #an edge species is in source
+                    self.network_indices[j, :] = [-1,-1,-1]
+                    break
                 self.network_indices[j, l] = i
 
     @cython.boundscheck(False)
