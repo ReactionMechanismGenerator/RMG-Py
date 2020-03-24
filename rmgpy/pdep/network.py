@@ -411,8 +411,9 @@ class Network(object):
                         Q += np.sum(
                             self.dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list / constants.R / T))
                     if Q == 0.:
-                        logging.warning('No density of states found for structure {1} in network {0}. '
-                                        'possibly a product witout any thermo.'.format(self.label, i))
+                        if not self.rmgmode:
+                            logging.warning('No density of states found for structure {1} in network {0}. '
+                                            'possibly a product witout any thermo.'.format(self.label, i))
                     else:
                         self.dens_states[i, :, :] /= Q
                 if np.isnan(self.dens_states).any():
