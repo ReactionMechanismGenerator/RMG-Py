@@ -36,7 +36,7 @@ import unittest
 
 from rmgpy.exceptions import InputError
 
-from arkane.ess import GaussianLog, MolproLog, QChemLog, TeraChemLog
+from arkane.ess import GaussianLog, MolproLog, OrcaLog, QChemLog, TeraChemLog
 from arkane.util import determine_qm_software
 
 ################################################################################
@@ -59,6 +59,9 @@ class TestThermo(unittest.TestCase):
         gaussian_log_path2 = os.path.join(self.data_path, 'gaussian', 'oxygen.log')
         molpro_log_path1 = os.path.join(self.data_path, 'molpro', 'HOSI_ccsd_t1.out')
         molpro_log_path2 = os.path.join(self.data_path, 'molpro', 'molpro_mrci+q.out')
+        orca_path_1 = os.path.join(self.data_path, 'orca', 'Orca_dlpno_test.log')
+        orca_path_2 = os.path.join(self.data_path, 'orca', 'Orca_opt_freq_test.log')
+        orca_path_3 = os.path.join(self.data_path, 'orca', 'Orca_TS_test.log')
         qchem_log_path1 = os.path.join(self.data_path, 'qchem', 'CH4_sp.out')
         qchem_log_path2 = os.path.join(self.data_path, 'qchem', 'co.out')
         terachem_log_path_1 = os.path.join(self.data_path, 'terachem', 'ethane_minimize_output.out')
@@ -70,15 +73,19 @@ class TestThermo(unittest.TestCase):
 
         self.assertIsInstance(determine_qm_software(gaussian_log_path1), GaussianLog)
         self.assertIsInstance(determine_qm_software(gaussian_log_path2), GaussianLog)
+
         self.assertIsInstance(determine_qm_software(molpro_log_path1), MolproLog)
         self.assertIsInstance(determine_qm_software(molpro_log_path2), MolproLog)
+
+        for orca_path in [orca_path_1, orca_path_2, orca_path_3]:
+            self.assertIsInstance(determine_qm_software(orca_path), OrcaLog)
+
         self.assertIsInstance(determine_qm_software(qchem_log_path1), QChemLog)
         self.assertIsInstance(determine_qm_software(qchem_log_path2), QChemLog)
-        self.assertIsInstance(determine_qm_software(terachem_log_path_1), TeraChemLog)
-        self.assertIsInstance(determine_qm_software(terachem_log_path_2), TeraChemLog)
-        self.assertIsInstance(determine_qm_software(terachem_log_path_3), TeraChemLog)
-        self.assertIsInstance(determine_qm_software(terachem_log_path_4), TeraChemLog)
-        self.assertIsInstance(determine_qm_software(terachem_log_path_5), TeraChemLog)
+
+        for terachem_path in [terachem_log_path_1, terachem_log_path_2, terachem_log_path_3,
+                              terachem_log_path_4, terachem_log_path_5]:
+            self.assertIsInstance(determine_qm_software(terachem_path), TeraChemLog)
 
         with self.assertRaises(InputError):
             determine_qm_software(non_ess_log_path)
