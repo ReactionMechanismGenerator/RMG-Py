@@ -32,7 +32,6 @@ import unittest
 
 import numpy as np
 
-import rmgpy
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
@@ -48,7 +47,8 @@ from rmgpy.thermo import ThermoData
 
 class LiquidReactorCheck(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         Here we choose a kinetic model consisting of the hydrogen abstraction
         reaction CH4 + C2H5 <=> CH3 + C2H6.
@@ -60,7 +60,7 @@ class LiquidReactorCheck(unittest.TestCase):
         rmgpy.data.rmg.database = None
 
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
-        self.CH4 = Species(
+        cls.CH4 = Species(
             molecule=[Molecule().from_smiles("C")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
@@ -68,7 +68,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 H298=(-17.714, "kcal/mol"),
                 S298=(44.472, "cal/(mol*K)"))
         )
-        self.CH3 = Species(
+        cls.CH3 = Species(
             molecule=[Molecule().from_smiles("[CH3]")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
@@ -76,7 +76,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 H298=(9.357, "kcal/mol"),
                 S298=(45.174, "cal/(mol*K)"))
         )
-        self.C2H6 = Species(
+        cls.C2H6 = Species(
             molecule=[Molecule().from_smiles("CC")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
@@ -84,7 +84,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 H298=(-19.521, "kcal/mol"),
                 S298=(54.799, "cal/(mol*K)"))
         )
-        self.C2H5 = Species(
+        cls.C2H5 = Species(
             molecule=[Molecule().from_smiles("C[CH2]")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
@@ -93,7 +93,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 S298=(56.687, "cal/(mol*K)"))
         )
 
-        self.H2 = Species(
+        cls.H2 = Species(
             molecule=[Molecule().from_smiles("[H][H]")],
             thermo=ThermoData(
                 Tdata=(Tlist, "K"),
@@ -102,7 +102,9 @@ class LiquidReactorCheck(unittest.TestCase):
                 S298=(31.23, "cal/(mol*K)"))
         )
 
-        self.T = 1000
+        cls.T = 1000
+
+        cls.file_dir = os.path.join(os.path.dirname(rmgpy.__file__), 'solver', 'files', 'liquid_phase_constSPC')
 
     def test_compute_flux(self):
         """
@@ -414,11 +416,7 @@ class LiquidReactorCheck(unittest.TestCase):
         From input file reading to information storage in liquid reactor object.
         """
         rmg = RMG()
-        rmg.input_file = os.path.join(os.path.dirname(rmgpy.__file__),
-                                      'solver',
-                                      'files',
-                                      'liquid_phase_constSPC',
-                                      'input.py')
+        rmg.input_file = os.path.join(self.file_dir, 'input.py')
         rmg.initialize()
 
         for index, reactionSystem in enumerate(rmg.reaction_systems):
@@ -470,7 +468,8 @@ class LiquidReactorCheck(unittest.TestCase):
                              "Core species rate has to be equal to 0 for species hold constant. "
                              "Here it is equal to {0}".format(rxn_system.core_species_rates[0]))
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """
         Reset the database & liquid parameters for solution
         """
@@ -480,3 +479,5 @@ class LiquidReactorCheck(unittest.TestCase):
 
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+        os.remove(os.path.join(cls.file_dir, 'restart_from_seed.py'))
