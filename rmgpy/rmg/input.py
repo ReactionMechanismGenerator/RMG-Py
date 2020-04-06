@@ -418,6 +418,8 @@ def continuous_stirred_tank_reactor(temperature,
                                  "entries of the same format")
             initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
     
+    F = Quantity(volumetricFlowRate).value_si
+    
     if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
         nSims = 1
 
@@ -993,7 +995,7 @@ def read_input_file(path, rmg0):
         'adjacencyList': adjacency_list,
         'simpleReactor': simple_reactor,
         'liquidReactor': liquid_reactor,
-        'cstrReactor': cstr_reactor,
+        'continuousStirredTankReactor': continuous_stirred_tank_reactor,
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
