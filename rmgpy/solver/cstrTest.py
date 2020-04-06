@@ -385,6 +385,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
         temp = 1000
+        F = 0
 
         # set up the cstr 1
         termination_conversion = []
@@ -393,12 +394,12 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         sensitivity_threshold = 0.001
         constant_species = ["CH4", "C2H6"]
         sens_conds = None
-        rxn_system1 = ContinuousStirredTankReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system1 = ContinuousStirredTankReactor(temp, c0, 4, F, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
 
         # set up the cstr 2
         constant_species = ["O2", "H2O"]
-        rxn_system2 = ContinuousStirredTankReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system2 = ContinuousStirredTankReactor(temp, c0, 4, F, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
         for reactor in [rxn_system1, rxn_system2]:
             self.assertIsNotNone(reactor.const_spc_names)
