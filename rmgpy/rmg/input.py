@@ -917,6 +917,7 @@ def read_input_file(path, rmg0):
         'adjacencyList': adjacency_list,
         'simpleReactor': simple_reactor,
         'liquidReactor': liquid_reactor,
+        'cstrReactor': cstr_reactor,
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
