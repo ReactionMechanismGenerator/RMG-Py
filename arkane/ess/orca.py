@@ -38,18 +38,19 @@ import numpy
 import rmgpy.constants as constants
 
 from arkane.common import get_element_mass
-from arkane.ess.log import Log
 from arkane.exceptions import LogError
+from arkane.ess.adapter import ESSAdapter
+from arkane.ess.factory import register_ess_adapter
 
 ################################################################################
 
 
-class OrcaLog(Log):
+class OrcaLog(ESSAdapter):
     """
     Represent an output file from Orca. The attribute `path` refers to the
     location on disk of the Orca output file of interest. Methods are provided
     to extract a variety of information into Arkane classes and/or NumPy
-    arrays.
+    arrays. OrcaLog is an adapter for the abstract class ESSAdapter.
     """
 
     def __init__(self, path):

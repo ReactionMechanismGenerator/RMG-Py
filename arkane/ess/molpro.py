@@ -42,16 +42,18 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 
 from arkane.common import get_element_mass
 from arkane.exceptions import LogError
-from arkane.ess.log import Log
+from arkane.ess.adapter import ESSAdapter
+from arkane.ess.factory import register_ess_adapter
 
 ################################################################################
 
 
-class MolproLog(Log):
+class MolproLog(ESSAdapter):
     """
     Represents a Molpro log file. The attribute `path` refers to the
     location on disk of the Molpro log file of interest. Methods are provided
     to extract a variety of information into Arkane classes and/or NumPy arrays.
+    MolproLog is an adapter for the abstract class ESSAdapter.
     """
 
     def __init__(self, path):
