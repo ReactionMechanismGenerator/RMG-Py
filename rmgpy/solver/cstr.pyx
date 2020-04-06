@@ -226,7 +226,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef int i, j, z, first, second, third
         cdef double k, V, reaction_rate
-        cdef np.ndarray[np.float64_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
+        cdef np.ndarray[np.float64_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates 
         cdef np.ndarray[np.float64_t,ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
         cdef np.ndarray[np.float64_t,ndim=1] core_species_consumption_rates, core_species_production_rates
         cdef np.ndarray[np.float64_t, ndim=1] C
@@ -247,6 +247,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         num_edge_species = len(self.edge_species_rates)
         num_edge_reactions = len(self.edge_reaction_rates)
         num_pdep_networks = len(self.network_leak_rates)
+        num_inlet_species = len(self.inlet_species_concentrations)
 
         res = np.zeros(num_core_species, np.float64)
 
@@ -261,6 +262,8 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
 
         C = np.zeros_like(self.core_species_concentrations)
         V = self.V  # constant volume reactor
+        F = self.F # constant volumetric flow rate
+        C0 = self.inlet_species_concentrations
 
         for j in range(num_core_species):
             C[j] = y[j] / V
@@ -374,7 +377,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.edge_reaction_rates = edge_reaction_rates
         self.network_leak_rates = network_leak_rates
 
-        res = core_species_rates * V
+        res = F * (C0 - core_species_concentrations) + core_species_rates * V
 
         if self.sensitivity:
             delta = np.zeros(len(y), np.float64)
