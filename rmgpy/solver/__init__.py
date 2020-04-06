@@ -32,3 +32,4 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
+from rmgpy.solver.cstr import ContinuousStirredTankReactor

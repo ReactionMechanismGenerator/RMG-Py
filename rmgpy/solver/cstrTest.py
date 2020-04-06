@@ -46,7 +46,7 @@ from rmgpy.thermo import ThermoData
 
 ################################################################################
 
-class LiquidReactorCheck(unittest.TestCase):
+class ContinuousStirredTankReactorCheck(unittest.TestCase):
 
     def setUp(self):
         """
@@ -103,10 +103,11 @@ class LiquidReactorCheck(unittest.TestCase):
         )
 
         self.T = 1000
+        self.F = 0
 
     def test_compute_flux(self):
         """
-        Test the liquid batch reactor with a simple kinetic model. 
+        Test the continuous stirred tank reactor with a simple kinetic model. 
         """
 
         rxn1 = Reaction(
@@ -122,7 +123,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
-        rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
+        rxn_system = ContinuousStirredTankReactor(self.T, c0, 1, termination=[], F = self.F)
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
@@ -261,7 +262,7 @@ class LiquidReactorCheck(unittest.TestCase):
         for rxn_num, rxn in enumerate(rxn_list):
             core_reactions = [rxn]
 
-            rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
+            rxn_system0 = ContinuousStirredTankReactor(self.T, c0, 1, termination=[])
             rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
             dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
 
@@ -330,7 +331,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
-        rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
+        rxn_system0 = ContinuousStirredTankReactor(self.T, c0, 1, termination=[])
         rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
         solver_dfdk = rxn_system0.compute_rate_derivative()
@@ -358,7 +359,7 @@ class LiquidReactorCheck(unittest.TestCase):
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
             dk = rxn_list[i].get_rate_coefficient(self.T) - k0
 
-            rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
+            rxn_system = ContinuousStirredTankReactor(self.T, c0, 1, termination=[])
             rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
             dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
@@ -392,12 +393,12 @@ class LiquidReactorCheck(unittest.TestCase):
         sensitivity_threshold = 0.001
         constant_species = ["CH4", "C2H6"]
         sens_conds = None
-        rxn_system1 = LiquidReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system1 = ContiunuousStirredTankReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
 
         # set up the liquid phase reactor 2
         constant_species = ["O2", "H2O"]
-        rxn_system2 = LiquidReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system2 = ContiunuousStirredTankReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
         for reactor in [rxn_system1, rxn_system2]:
             self.assertIsNotNone(reactor.const_spc_names)
@@ -452,7 +453,7 @@ class LiquidReactorCheck(unittest.TestCase):
         const_species = ["CH4"]
         sens_conds = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4, 'T': self.T}
 
-        rxn_system = LiquidReactor(self.T, c0, 1, termination_conversion, sensitivity, sensitivity_threshold,
+        rxn_system = ContinuousStirredTankReactor(self.T, c0, 1, termination_conversion, sensitivity, sensitivity_threshold,
                                    const_spc_names=const_species, sens_conditions=sens_conds)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxn_system.const_spc_indices = [0]
