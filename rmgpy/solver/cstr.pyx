@@ -261,9 +261,12 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         network_leak_rates = np.zeros_like(self.network_leak_rates)
 
         C = np.zeros_like(self.core_species_concentrations)
+        C_in = np.zeros_like(self.core_species_concentrations)
         V = self.V  # constant volume reactor
         F = self.F # constant volumetric flow rate
-        C0 = self.inlet_species_concentrations
+
+        for j in range(num_inlet_species):
+            C_in[j] = self.inlet_species_concentrations[j]
 
         for j in range(num_core_species):
             C[j] = y[j] / V
@@ -377,7 +380,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.edge_reaction_rates = edge_reaction_rates
         self.network_leak_rates = network_leak_rates
 
-        res = F * (C0 - core_species_concentrations) + core_species_rates * V
+        res = F * (C_in - core_species_concentrations) + core_species_rates * V
 
         if self.sensitivity:
             delta = np.zeros(len(y), np.float64)
@@ -410,7 +413,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
         cdef np.ndarray[np.float64_t, ndim=2] pd
         cdef int num_core_reactions, num_core_species, i, j
-        cdef double k, V, Ctot, deriv, corr
+        cdef double k, V, deriv, F
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -419,14 +422,21 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         kr = self.kb
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
+        num_inlet_species = len(self.inlet_species_concentrations)
 
         pd = -cj * np.identity(num_core_species, np.float64)
 
         V = self.V  # volume is constant
+        F = self.F # constant volumetric flow rate
 
         C = np.zeros_like(self.core_species_concentrations)
+        C_in = np.zeros_like(self.core_species_concentrations)
+
         for j in range(num_core_species):
             C[j] = y[j] / V
+
+        for j in range(num_inlet_species):
+            C_in[j] = self.inlet_species_concentrations[j]
 
         for j in range(num_core_reactions):
 
