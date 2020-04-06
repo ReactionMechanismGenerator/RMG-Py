@@ -123,7 +123,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
-        rxn_system = ContinuousStirredTankReactor(self.T, c0, 1, termination=[], F = self.F)
+        rxn_system = ContinuousStirredTankReactor(self.T, c0, self.F, 1, termination=[])
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
