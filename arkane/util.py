@@ -57,15 +57,15 @@ def determine_qm_software(fullpath):
             elif 'molpro' in line.lower():
                 software_log = MolproLog(fullpath)
                 break
+            elif 'O   R   C   A' in line or 'orca' in line.lower():
+                f.close()
+                software_log = OrcaLog(fullpath)
+                break
             elif 'qchem' in line.lower():
                 software_log = QChemLog(fullpath)
                 break
             elif 'terachem' in line.lower():
                 software_log = TeraChemLog(fullpath)
-                break
-            elif 'orca' in line.lower():
-                f.close()
-                software_log = OrcaLog(fullpath)
                 break
             line = f.readline()
         if software_log is None:
