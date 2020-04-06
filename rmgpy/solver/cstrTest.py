@@ -103,7 +103,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         )
 
         self.T = 1000
-        self.F = 0
+        self.F = 2
 
     def test_compute_flux(self):
         """
@@ -243,6 +243,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             jaco[2, 1:] = 0.5 * jaco[1, 1:]
             jaco[3, 1:] = -jaco[1, 1:]
             jaco[4, 1:] = -0.5 * jaco[1, 1:]
+            jaco -= self.F * np.identity(4, np.float64)
             return jaco
 
         # Analytical Jacobian for reaction 7
@@ -257,6 +258,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             jaco[2, 1:] = 0.5 * jaco[1, 1:]
             jaco[3, 1:] = -jaco[1, 1:]
             jaco[4, 1:] = -0.5 * jaco[1, 1:]
+            jaco -= self.F * np.identity(4, np.float64)
             return jaco
 
         for rxn_num, rxn in enumerate(rxn_list):
@@ -384,8 +386,6 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         """
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
-        temp = 1000
-        F = 0
 
         # set up the cstr 1
         termination_conversion = []
@@ -394,12 +394,12 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         sensitivity_threshold = 0.001
         constant_species = ["CH4", "C2H6"]
         sens_conds = None
-        rxn_system1 = ContinuousStirredTankReactor(temp, c0, 4, F, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system1 = ContinuousStirredTankReactor(self.T, c0, 4, self.F, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
 
         # set up the cstr 2
         constant_species = ["O2", "H2O"]
-        rxn_system2 = ContinuousStirredTankReactor(temp, c0, 4, F, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system2 = ContinuousStirredTankReactor(self.T, c0, 4, self.F, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
         for reactor in [rxn_system1, rxn_system2]:
             self.assertIsNotNone(reactor.const_spc_names)

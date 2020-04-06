@@ -78,7 +78,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.V = 0  # will be set from initial_concentrations in initialize_model
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
-        self.F = F
+        self.F = Quantity(F)
 
         #Constant concentration attributes
         self.const_spc_indices = None
@@ -265,7 +265,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         F = self.F # constant volumetric flow rate
 
         for j in range(num_inlet_species):
-            C_in[j] = self.y0[j] * V
+            C_in[j] = self.y0[j] / V
 
         for j in range(num_core_species):
             C[j] = y[j] / V
@@ -435,7 +435,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
             C[j] = y[j] / V
 
         for j in range(num_inlet_species):
-            C_in[j] = self.y0[j] * V
+            C_in[j] = self.y0[j] / V
 
         for j in range(num_core_reactions):
 
@@ -766,5 +766,5 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
                         if ir[j, 2] != -1:
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
-        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64) - F * np.identity(num_core_species, np.float64)
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64) - F/V * np.identity(num_core_species, np.float64)
         return pd
