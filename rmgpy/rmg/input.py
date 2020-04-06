@@ -41,6 +41,7 @@ from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.cstr import ContinuousStirredTankReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
@@ -382,6 +383,81 @@ def liquid_reactor(temperature,
                            sens_conditions, constantSpecies)
     rmg.reaction_systems.append(system)
 
+# Reaction systems
+def continuous_stirred_tank_reactor(temperature,
+                   initialConcentrations,
+                   volumetricFlowRate,
+                   terminationConversion=None,
+                   nSims=4,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   sensitivity=None,
+                   sensitivityThreshold=1e-3,
+                   sensitivityTemperature=None,
+                   sensitivityConcentrations=None,
+                   constantSpecies=None):
+    logging.debug('Found ContinuousStirredTankReactor reaction system')
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    for spec, conc in initialConcentrations.items():
+        if not isinstance(conc, list):
+            concentration = Quantity(conc)
+            # check the dimensions are ok
+            # convert to mol/m^3 (or something numerically nice? or must it be SI)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                 "entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+    
+    if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append(TerminationConversion(species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    sensitive_species = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitive_species.append(species_dict[spec])
+
+    # chatelak: check the constant species exist
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for const_spc in constantSpecies:
+            logging.debug("  {0}".format(const_spc))
+            if const_spc not in species_dict:
+                raise InputError('Species {0} not found in the input file'.format(const_spc))
+
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not any([isinstance(x, list) for x in initialConcentrations.values()]):
+        sensitivityConcentrations = initialConcentrations
+    if sensitivityConcentrations is None or sensitivityTemperature is None:
+        sens_conditions = None
+    else:
+        sens_conditions = sensitivityConcentrations
+        sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
+
+    system = ContinuousStirredTankReactor(T, initialConcentrations, F, nSims, termination, sensitive_species, sensitivityThreshold,
+                           sens_conditions, constantSpecies)
+    rmg.reaction_systems.append(system)
 
 # Reaction systems
 def surface_reactor(temperature,
