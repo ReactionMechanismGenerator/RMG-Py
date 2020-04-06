@@ -64,7 +64,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
     cdef public ScalarQuantity F #volumetric flow rate
 
     def __init__(self, T, initial_concentrations, n_sims=1, termination=None, sensitive_species=None,
-                 sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None):
+                 sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None, F):
 
         ReactionSystem.__init__(self, termination, sensitive_species, sensitivity_threshold)
 

@@ -39,7 +39,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import TerminationTime
-from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.cstr import ContinuousStirredTankReactor
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
