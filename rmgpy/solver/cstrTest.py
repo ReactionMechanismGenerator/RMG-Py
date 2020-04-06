@@ -454,7 +454,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         const_species = ["CH4"]
         sens_conds = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4, 'T': self.T}
 
-        rxn_system = ContinuousStirredTankReactor(self.T, c0, F, 1, termination_conversion, sensitivity, sensitivity_threshold,
+        rxn_system = ContinuousStirredTankReactor(self.T, c0, self.F, 1, termination_conversion, sensitivity, sensitivity_threshold,
                                    const_spc_names=const_species, sens_conditions=sens_conds)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxn_system.const_spc_indices = [0]
