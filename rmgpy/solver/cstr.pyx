@@ -45,7 +45,7 @@ from rmgpy.solver.base cimport ReactionSystem
 
 cdef class ContinuousStirredTankReactor(ReactionSystem):
     """
-    A reaction system consisting of a homogeneous, isothermal, constant volume flow
+    A reaction system consisting of a homogeneous, isothermal, constant volume, constant volumetric flow rate
     reactor. These assumptions allow for a number of optimizations that enable
     this solver to complete very rapidly, even for large kinetic models.
     """
@@ -61,7 +61,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
     cdef public list Trange
     cdef public int n_sims
     cdef public dict sens_conditions
-    cdef public ScalarQuantity F #volumetric flow rate
+    cdef public double F #volumetric flow rate
 
     def __init__(self, T, initial_concentrations, F, n_sims=1, termination=None, sensitive_species=None,
                  sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None):
@@ -78,7 +78,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.V = 0  # will be set from initial_concentrations in initialize_model
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
-        self.F = Quantity(F)
+        self.F = F
 
         #Constant concentration attributes
         self.const_spc_indices = None
@@ -206,7 +206,6 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.core_species_concentrations[i] = conc
 
-        self.inlet_species_concentrations = np.copy(self.core_species_concentrations)
         V = 1.0 / np.sum(self.core_species_concentrations)
         self.V = V
 
@@ -223,7 +222,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
-        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
+        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks, num_inlet_species
         cdef int i, j, z, first, second, third
         cdef double k, V, reaction_rate
         cdef np.ndarray[np.float64_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates 
@@ -247,7 +246,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         num_edge_species = len(self.edge_species_rates)
         num_edge_reactions = len(self.edge_reaction_rates)
         num_pdep_networks = len(self.network_leak_rates)
-        num_inlet_species = len(self.inlet_species_concentrations)
+        num_inlet_species = len(self.y0)
 
         res = np.zeros(num_core_species, np.float64)
 
@@ -266,7 +265,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         F = self.F # constant volumetric flow rate
 
         for j in range(num_inlet_species):
-            C_in[j] = self.inlet_species_concentrations[j]
+            C_in[j] = self.y0[j] * V
 
         for j in range(num_core_species):
             C[j] = y[j] / V
@@ -412,7 +411,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=2] ir, ip
         cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
         cdef np.ndarray[np.float64_t, ndim=2] pd
-        cdef int num_core_reactions, num_core_species, i, j
+        cdef int num_core_reactions, num_core_species, i, j, num_inlet_species
         cdef double k, V, deriv, F
 
         ir = self.reactant_indices
@@ -422,7 +421,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         kr = self.kb
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
-        num_inlet_species = len(self.inlet_species_concentrations)
+        num_inlet_species = len(self.y0)
 
         pd = -cj * np.identity(num_core_species, np.float64)
 
@@ -436,7 +435,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
             C[j] = y[j] / V
 
         for j in range(num_inlet_species):
-            C_in[j] = self.inlet_species_concentrations[j]
+            C_in[j] = self.y0[j] * V
 
         for j in range(num_core_reactions):
 
