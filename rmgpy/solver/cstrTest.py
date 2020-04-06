@@ -262,7 +262,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         for rxn_num, rxn in enumerate(rxn_list):
             core_reactions = [rxn]
 
-            rxn_system0 = ContinuousStirredTankReactor(self.T, c0, 1, termination=[])
+            rxn_system0 = ContinuousStirredTankReactor(self.T, c0, self.F, 1, termination=[])
             rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
             dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
 
@@ -331,7 +331,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
 
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
-        rxn_system0 = ContinuousStirredTankReactor(self.T, c0, 1, termination=[])
+        rxn_system0 = ContinuousStirredTankReactor(self.T, c0, self.F, 1, termination=[])
         rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
         solver_dfdk = rxn_system0.compute_rate_derivative()
@@ -359,7 +359,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
             dk = rxn_list[i].get_rate_coefficient(self.T) - k0
 
-            rxn_system = ContinuousStirredTankReactor(self.T, c0, 1, termination=[])
+            rxn_system = ContinuousStirredTankReactor(self.T, c0, self.F, 1, termination=[])
             rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
             dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
@@ -454,7 +454,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         const_species = ["CH4"]
         sens_conds = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4, 'T': self.T}
 
-        rxn_system = ContinuousStirredTankReactor(self.T, c0, 1, termination_conversion, sensitivity, sensitivity_threshold,
+        rxn_system = ContinuousStirredTankReactor(self.T, c0, F, 1, termination_conversion, sensitivity, sensitivity_threshold,
                                    const_spc_names=const_species, sens_conditions=sens_conds)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxn_system.const_spc_indices = [0]
