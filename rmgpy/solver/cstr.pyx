@@ -79,7 +79,6 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
         self.F = Quantity(F)
-        self.inlet_species_concentrations = None 
 
         #Constant concentration attributes
         self.const_spc_indices = None

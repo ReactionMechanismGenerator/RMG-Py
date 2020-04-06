@@ -127,6 +127,7 @@ cdef class ReactionSystem(DASx):
         self.jacobian_matrix = None
 
         self.core_species_concentrations = None
+        self.inlet_species_concentrations = None
 
         # The reaction and species rates at the current time (in mol/m^3*s)
         self.core_species_rates = None
