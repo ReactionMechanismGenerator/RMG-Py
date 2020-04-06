@@ -122,7 +122,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
                           filter_reactions=False, dict conditions=None):
         """
-        Initialize a simulation of the liquid reactor using the provided kinetic
+        Initialize a simulation of the continuous stirred tank reactor using the provided kinetic
         model.
         """
         if surface_species is None:

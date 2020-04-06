@@ -386,7 +386,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
         temp = 1000
 
-        # set up the liquid phase reactor 1
+        # set up the cstr 1
         termination_conversion = []
         termination_time = None
         sensitivity = []
@@ -396,23 +396,23 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         rxn_system1 = ContiunuousStirredTankReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
 
-        # set up the liquid phase reactor 2
+        # set up the cstr 2
         constant_species = ["O2", "H2O"]
         rxn_system2 = ContiunuousStirredTankReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
         for reactor in [rxn_system1, rxn_system2]:
             self.assertIsNotNone(reactor.const_spc_names)
 
-        # check if Constant species are different in each liquid system
+        # check if Constant species are different in each cstr system
         for spc in rxn_system1.const_spc_names:
             for spc2 in rxn_system2.const_spc_names:
                 self.assertIsNot(spc, spc2, 'Constant species declared in two different reactors seem mixed. '
                                             'Species "{0}" appears in both systems and should be.'.format(spc))
 
-    def test_liquid_input_reading(self):
+    def test_cstr_input_reading(self):
         """
         Check if constant concentration condition is well handled. 
-        From input file reading to information storage in liquid reactor object.
+        From input file reading to information storage in cstr reactor object.
         """
         rmg = RMG()
         rmg.input_file = os.path.join(os.path.dirname(rmgpy.__file__),
