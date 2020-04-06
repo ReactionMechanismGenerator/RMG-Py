@@ -61,6 +61,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
     cdef public list Trange
     cdef public int n_sims
     cdef public dict sens_conditions
+    cdef public ScalarQuantity F #volumetric flow rate
 
     def __init__(self, T, initial_concentrations, n_sims=1, termination=None, sensitive_species=None,
                  sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None):
@@ -77,6 +78,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.V = 0  # will be set from initial_concentrations in initialize_model
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
+        self.F = Quantity(F)
 
         #Constant concentration attributes
         self.const_spc_indices = None
@@ -204,6 +206,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.core_species_concentrations[i] = conc
 
+        self.inlet_species_concentrations = np.copy(self.core_species_concentrations)
         V = 1.0 / np.sum(self.core_species_concentrations)
         self.V = V
 
