@@ -130,7 +130,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
         # Integrate to get the solution at each time point
-        t, y, reaction_rates, species_rates = [], [], [], []
+        t, y, reaction_rates, species_rates, species_concentrations = [], [], [], [], []
         for t1 in tlist:
             rxn_system.advance(t1)
             t.append(rxn_system.t)
@@ -139,11 +139,13 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             y.append(rxn_system.y.copy())
             reaction_rates.append(rxn_system.core_reaction_rates.copy())
             species_rates.append(rxn_system.core_species_rates.copy())
+            species_concentrations.append(rxn_system.core_species_concentrations.copy())
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
+        species_concentrations = np.array(species_concentrations, np.float64)
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
@@ -153,7 +155,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 3], delta=1e-6 * reaction_rates[i, 0])
 
         # Check that we've reached equilibrium 
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        self.assertAlmostEqual(reaction_rates[-1, 0], self.F * (species_concentrations[-1,0] - species_concentrations[0,0]), delta=1e-2)
 
     def test_jacobian(self):
         """
@@ -243,7 +245,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             jaco[2, 1:] = 0.5 * jaco[1, 1:]
             jaco[3, 1:] = -jaco[1, 1:]
             jaco[4, 1:] = -0.5 * jaco[1, 1:]
-            jaco -= self.F * np.identity(4, np.float64)
+            jaco -= self.F * np.identity(5, np.float64)
             return jaco
 
         # Analytical Jacobian for reaction 7
@@ -258,7 +260,7 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
             jaco[2, 1:] = 0.5 * jaco[1, 1:]
             jaco[3, 1:] = -jaco[1, 1:]
             jaco[4, 1:] = -0.5 * jaco[1, 1:]
-            jaco -= self.F * np.identity(4, np.float64)
+            jaco -= self.F * np.identity(5, np.float64)
             return jaco
 
         for rxn_num, rxn in enumerate(rxn_list):
@@ -286,6 +288,8 @@ class ContinuousStirredTankReactorCheck(unittest.TestCase):
                     for j in range(num_core_species):
                         jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
                         self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j]))
+                #print('jacobian',jacobian)
+                #print('solver',solver_jacobian)
             # The forward finite difference is very unstable for reactions
             # 6 and 7. Use Jacobians calculated by hand instead.
             elif rxn_num == 6:
