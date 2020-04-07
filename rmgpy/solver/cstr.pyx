@@ -264,9 +264,6 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         V = self.V  # constant volume reactor
         F = self.F # constant volumetric flow rate
 
-        #for j in range(num_inlet_species):
-        #    C_in[j] = self.y0[j] / V
-
         for j in range(num_core_species):
             C[j] = y[j] / V
             C_in[j] = self.y0[j]/V
@@ -435,9 +432,6 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         for j in range(num_core_species):
             C[j] = y[j] / V
             C_in[j] = self.y0[j] / V
-
-        #for j in range(num_inlet_species):
-        #    C_in[j] = self.y0[j] / V
 
         for j in range(num_core_reactions):
 
