@@ -78,7 +78,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.V = 0  # will be set from initial_concentrations in initialize_model
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
-        self.F = Quantity(F)
+        self.F = F
 
         #Constant concentration attributes
         self.const_spc_indices = None
@@ -766,5 +766,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
                         if ir[j, 2] != -1:
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
-        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64) - F/V * np.identity(num_core_species, np.float64)
+        pd -= F/V * np.identity(num_core_species, np.float64)
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
+        
         return pd
