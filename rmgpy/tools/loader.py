@@ -38,6 +38,7 @@ import warnings
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.solver.base import TerminationConversion
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.cstr import ContinuousStirredTankReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.surface import SurfaceReactor
 
@@ -130,6 +131,18 @@ def load_rmg_py_job(input_file, chemkin_file=None, species_dict=None, generate_i
 
             reaction_system.initial_concentrations = dict(
                 [(species_dict[spec], conc) for spec, conc in reaction_system.initial_concentrations.items()])
+        elif isinstance(reaction_system, ContinuousStirredTankReactor):
+            if reaction_system.const_spc_names:
+                const_species_dict = {}
+                for spec0 in rmg.initial_species:
+                    for constSpecLabel in reaction_system.const_spc_names:
+                        if spec0.label == constSpecLabel:
+                            const_species_dict[constSpecLabel] = species_dict[spec0].label
+                            break
+                reaction_system.const_spc_names = [const_species_dict[sname] for sname in reaction_system.const_spc_names]
+
+            reaction_system.initial_concentrations = dict(
+                [(species_dict[spec], conc) for spec, conc in reaction_system.initial_concentrations.items()])            
         elif isinstance(reaction_system, SurfaceReactor):
             reaction_system.initial_gas_mole_fractions = dict(
                 [(species_dict[spec], frac) for spec, frac in reaction_system.initial_gas_mole_fractions.items()])
