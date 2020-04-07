@@ -37,6 +37,7 @@ from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.rmg.main import initialize_log
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.cstr import ContinuousStirredTankReactor
 from rmgpy.tools.loader import load_rmg_job
 from rmgpy.tools.plot import plot_sensitivity
 
@@ -78,7 +79,7 @@ def simulate(rmg, diffusion_limited=True):
         model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=1)
         simulator_settings = rmg.simulator_settings_list[-1]
 
-        if isinstance(reaction_system, LiquidReactor):
+        if isinstance(reaction_system, LiquidReactor) or isinstance(reaction_system, ContinuousStirredTankReactor):
             if diffusion_limited:
                 rmg.load_database()
                 solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
