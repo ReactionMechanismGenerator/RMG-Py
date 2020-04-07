@@ -264,11 +264,12 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         V = self.V  # constant volume reactor
         F = self.F # constant volumetric flow rate
 
-        for j in range(num_inlet_species):
-            C_in[j] = self.y0[j] / V
+        #for j in range(num_inlet_species):
+        #    C_in[j] = self.y0[j] / V
 
         for j in range(num_core_species):
             C[j] = y[j] / V
+            C_in[j] = self.y0[j]/V
             core_species_concentrations[j] = C[j]
 
         for j in range(ir.shape[0]):
@@ -433,9 +434,10 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
 
         for j in range(num_core_species):
             C[j] = y[j] / V
-
-        for j in range(num_inlet_species):
             C_in[j] = self.y0[j] / V
+
+        #for j in range(num_inlet_species):
+        #    C_in[j] = self.y0[j] / V
 
         for j in range(num_core_reactions):
 
@@ -767,6 +769,6 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
         pd -= F/V * np.identity(num_core_species, np.float64)
-        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
-        
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64) 
+
         return pd
