@@ -1493,7 +1493,8 @@ class CoreEdgeReactionModel:
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
             elif self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular() \
-                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius):
+                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and (self.pressure_dependence.maximum_atoms is None  \
+                            or self.pressure_dependence.maximum_atoms >= sum([len(spec.molecule[0].atoms) for spec in r.reactants])):
                 # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
                 # We should calculate a pressure-dependent rate for it
                 if len(rxn.reactants) == 1:
@@ -1590,7 +1591,8 @@ class CoreEdgeReactionModel:
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
             elif self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular() \
-                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius):
+                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and (self.pressure_dependence.maximum_atoms is None  \
+                            or self.pressure_dependence.maximum_atoms >= sum([len(spec.molecule[0].atoms) for spec in r.reactants])):
                 # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
                 # We should calculate a pressure-dependent rate for it
                 if len(rxn.reactants) == 1:
@@ -1631,7 +1633,8 @@ class CoreEdgeReactionModel:
             # Instead, we remove the comment below if the reaction is moved to
             # the core later in the mechanism generation
             if not (self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular()
-                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius)):
+                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and (self.pressure_dependence.maximum_atoms is None  \
+                            or self.pressure_dependence.maximum_atoms >= sum([len(spec.molecule[0].atoms) for spec in r.reactants]))):
                 # Don't add to the edge library reactions that were already processed
                 self.add_reaction_to_edge(rxn)
 
