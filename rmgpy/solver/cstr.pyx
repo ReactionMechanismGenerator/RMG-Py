@@ -61,9 +61,9 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
     cdef public list Trange
     cdef public int n_sims
     cdef public dict sens_conditions
-    cdef public double F #volumetric flow rate
+    cdef public double residence_time
 
-    def __init__(self, T, initial_concentrations, F, n_sims=1, termination=None, sensitive_species=None,
+    def __init__(self, T, initial_concentrations, residence_time, n_sims=1, termination=None, sensitive_species=None,
                  sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None):
 
         ReactionSystem.__init__(self, termination, sensitive_species, sensitivity_threshold)
@@ -78,7 +78,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.V = 0  # will be set from initial_concentrations in initialize_model
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
-        self.F = F
+        self.residence_time = residence_time
 
         #Constant concentration attributes
         self.const_spc_indices = None
@@ -262,7 +262,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         C = np.zeros_like(self.core_species_concentrations)
         C_in = np.zeros_like(self.core_species_concentrations)
         V = self.V  # constant volume reactor
-        F = self.F # constant volumetric flow rate
+        tau = self.residence_time # constant residence_time
 
         for j in range(num_core_species):
             C[j] = y[j] / V
@@ -377,7 +377,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         self.edge_reaction_rates = edge_reaction_rates
         self.network_leak_rates = network_leak_rates
 
-        res = F * (C_in - core_species_concentrations) + core_species_rates * V
+        res = 1/tau * (C_in - core_species_concentrations) + core_species_rates * V
 
         if self.sensitivity:
             delta = np.zeros(len(y), np.float64)
@@ -410,7 +410,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
         cdef np.ndarray[np.float64_t, ndim=2] pd
         cdef int num_core_reactions, num_core_species, i, j, num_inlet_species
-        cdef double k, V, deriv, F
+        cdef double k, V, deriv, tau
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -424,7 +424,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
         pd = -cj * np.identity(num_core_species, np.float64)
 
         V = self.V  # volume is constant
-        F = self.F # constant volumetric flow rate
+        tau = self.residence_time # constant residence_time
 
         C = np.zeros_like(self.core_species_concentrations)
         C_in = np.zeros_like(self.core_species_concentrations)
@@ -762,7 +762,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
                         if ir[j, 2] != -1:
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
-        pd -= F/V * np.identity(num_core_species, np.float64)
+        pd -= 1/tau * np.identity(num_core_species, np.float64)
         self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64) 
 
         return pd

@@ -386,7 +386,7 @@ def liquid_reactor(temperature,
 # Reaction systems
 def continuous_stirred_tank_reactor(temperature,
                    initialConcentrations,
-                   volumetricFlowRate,
+                   residenceTime,
                    terminationConversion=None,
                    nSims=4,
                    terminationTime=None,
@@ -418,7 +418,7 @@ def continuous_stirred_tank_reactor(temperature,
                                  "entries of the same format")
             initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
     
-    F = Quantity(volumetricFlowRate).value_si
+    residence_time = Quantity(residenceTime).value_si
     
     if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
         nSims = 1
@@ -457,7 +457,7 @@ def continuous_stirred_tank_reactor(temperature,
         sens_conditions = sensitivityConcentrations
         sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
 
-    system = ContinuousStirredTankReactor(T, initialConcentrations, F, nSims, termination, sensitive_species, sensitivityThreshold,
+    system = ContinuousStirredTankReactor(T, initialConcentrations, residence_time, nSims, termination, sensitive_species, sensitivityThreshold,
                            sens_conditions, constantSpecies)
     rmg.reaction_systems.append(system)
 
