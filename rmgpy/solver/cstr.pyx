@@ -762,7 +762,7 @@ cdef class ContinuousStirredTankReactor(ReactionSystem):
                         if ir[j, 2] != -1:
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
-        pd -= 1/tau * V * np.identity(num_core_species, np.float64)
+        pd -= 1/tau * np.identity(num_core_species, np.float64)
         self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64) 
 
         return pd
