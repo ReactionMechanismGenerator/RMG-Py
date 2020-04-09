@@ -774,6 +774,7 @@ class RMG(util.Subject):
 
                         if self.solvent:
                             # Set solvent viscosity for reaction filtering
+                            solvent_data = self.database.solvation.get_solvent_data(self.solvent)
                             conditions = self.rmg_memories[index].get_cond()
                             T = conditions['T']
                             reaction_system.viscosity = solvent_data.get_solvent_viscosity(T)
