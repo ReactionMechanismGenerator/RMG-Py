@@ -523,7 +523,8 @@ class RMG(util.Subject):
 
             # Set solvent viscosity for reaction filtering
             for reaction_system in self.reaction_systems:
-                reaction_system.viscosity = solvent_data.get_solvent_viscosity(reaction_system.T.value_si)
+                if reaction_system.T:
+                    reaction_system.viscosity = solvent_data.get_solvent_viscosity(reaction_system.T.value_si)
 
         try:
             self.walltime = kwargs['walltime']
@@ -783,6 +784,14 @@ class RMG(util.Subject):
                     for p in range(reaction_system.n_sims):
                         reactor_done = True
                         objects_to_enlarge = []
+
+                        conditions = self.rmg_memories[index].get_cond()
+                        if conditions and self.solvent:
+                            T = conditions['T']
+                            # Set solvent viscosity
+                            solvent_data = self.database.solvation.get_solvent_data(self.solvent)
+                            reaction_system.viscosity = solvent_data.get_solvent_viscosity(T)
+
                         self.reaction_system = reaction_system
                         # Conduct simulation
                         logging.info('Conducting simulation of reaction system %s...' % (index + 1))
