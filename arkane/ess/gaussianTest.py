@@ -197,13 +197,6 @@ class GaussianLogTest(unittest.TestCase):
         log = GaussianLog(os.path.join(self.data_path, 'isobutanolQOOH_scan.log'))
         self.assertAlmostEqual(log._load_number_scans(), 36)
 
-    def test_ess_factory(self):
-        """
-        Ensures that ess_factory returns a GaussianLog object
-        """
-        log = ess_factory(os.path.join(self.data_path, 'oxygen.log'))
-        self.assertIsInstance(log, GaussianLog)
-
     def test_gaussian_log_error_termination(self):
         """
         Ensures that error termination gaussian log file raises an logError
