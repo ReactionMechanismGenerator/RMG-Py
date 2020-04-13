@@ -398,14 +398,15 @@ cdef class ArrheniusEP(KineticsModel):
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
         """
-        cdef double Ea
-        Ea = self._alpha.value_si * dHrxn + self._E0.value_si
-        if self._E0.value_si > 0:
-            if dHrxn < 0.0 and Ea < 0.0:
-                Ea = 0.0
-            elif dHrxn > 0.0 and Ea < dHrxn:
-                Ea = dHrxn
-        return Ea
+        return self._E0.value_si
+        # cdef double Ea
+        # Ea = self._alpha.value_si * dHrxn + self._E0.value_si
+        # if self._E0.value_si > 0:
+        #     if dHrxn < 0.0 and Ea < 0.0:
+        #         Ea = 0.0
+        #     elif dHrxn > 0.0 and Ea < dHrxn:
+        #         Ea = dHrxn
+        # return Ea
 
     cpdef Arrhenius to_arrhenius(self, double dHrxn):
         """
