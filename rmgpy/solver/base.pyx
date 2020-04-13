@@ -493,15 +493,16 @@ cdef class ReactionSystem(DASx):
 
         for j, network in enumerate(pdep_networks):
             self.network_leak_coefficients[j] = network.get_leak_coefficient(self.T.value_si, self.P.value_si)
-            for l, spec in enumerate(network.source):
+            for k, spec in enumerate(network.source):
                 try:
                     i = self.get_species_index(spec)
                 except KeyError:
-                    # spec is probably in the edge, hence is not a key in the species_index dictionary.
-                    # Sicne network_indices is only used to identify the number of reactants, set the
-                    # corresponding value to be different than `-1`.
-                    i = -2
-                self.network_indices[j, l] = i
+                    self.network_indices[j, :] = [-1,-1,-1]
+                    break
+                if i >= self.num_core_species: #an edge species is in source
+                    self.network_indices[j, :] = [-1,-1,-1]
+                    break
+                self.network_indices[j, k] = i
 
     @cython.boundscheck(False)
     cpdef get_layering_indices(self):
