@@ -67,7 +67,7 @@ cdef class RateUncertainty(object):
         """
         return np.sqrt(self.var * 2.0 / np.pi) + abs(self.mu)
 
-rank_accuracy_map = {1: (0.0, 'kcal/mol'),
+rank_accuracy_map = {1: (0.2, 'kcal/mol'),
                      2: (0.5, 'kcal/mol'),
                      3: (1.0, 'kcal/mol'),
                      4: (1.5, 'kcal/mol'),
