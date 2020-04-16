@@ -256,3 +256,41 @@ class TestThermoData(unittest.TestCase):
         self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
         self.assertEqual(self.thermodata.label, thermodata.label)
         self.assertEqual(self.thermodata.comment, thermodata.comment)
+
+    def test_is_all_zeros(self):
+        """Test whether a ThermoData object has all zero values"""
+        td1 = ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+            H298=(0.0, "kJ/mol"),
+            S298=(0.0, "J/(mol*K)"),
+        )
+        td2 = ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+            H298=(3.0, "kJ/mol"),
+            S298=(0.0, "J/(mol*K)"),
+        )
+        td3 = ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([0.0, 0.0, 8.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+            H298=(0.0, "kJ/mol"),
+            S298=(0.0, "J/(mol*K)"),
+        )
+        td4 = ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+            H298=(0.0, "kJ/mol"),
+            S298=(5.0, "J/(mol*K)"),
+        )
+        td5 = ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([0.0, 78.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+            H298=(3.0, "kJ/mol"),
+            S298=(7.0, "J/(mol*K)"),
+        )
+        self.assertTrue(td1.is_all_zeros())
+        self.assertFalse(td2.is_all_zeros())
+        self.assertFalse(td3.is_all_zeros())
+        self.assertFalse(td4.is_all_zeros())
+        self.assertFalse(td5.is_all_zeros())
