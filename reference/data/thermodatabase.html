@@ -66,11 +66,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.data.thermo.ThermoDatabase.compute_group_additivity_thermo">
 <code class="sig-name descname">compute_group_additivity_thermo</code><span class="sig-paren">(</span><em class="sig-param">molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.compute_group_additivity_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
-additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
-<p>The entropy is not corrected for the symmetry of the molecule.
-This should be done later by the calling function.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <code class="docutils literal notranslate"><span class="pre">molecule</span></code> using the group additivity values
+method. If no group additivity values are loaded, a <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code>
+is raised.</p>
+<p>The entropy is not corrected for the symmetry of the molecule,
+this should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">
@@ -106,11 +106,11 @@ This should be done later by the calling function.</p>
 <dt id="rmgpy.data.thermo.ThermoDatabase.estimate_thermo_via_group_additivity">
 <code class="sig-name descname">estimate_thermo_via_group_additivity</code><span class="sig-paren">(</span><em class="sig-param">molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimate_thermo_via_group_additivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
-additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
-<p>The entropy is not corrected for the symmetry of the molecule.
-This should be done later by the calling function.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <code class="docutils literal notranslate"><span class="pre">molecule</span></code> using the group additivity values
+method. If no group additivity values are loaded, a <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code>
+is raised.</p>
+<p>The entropy is not corrected for the symmetry of the molecule,
+this should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">

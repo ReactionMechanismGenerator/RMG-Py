@@ -214,6 +214,34 @@ temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.is_all_zeros">
+<code class="sig-name descname">is_all_zeros</code><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_all_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether a ThermoData object has all zero values, e.g.:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ThermoData(</dt><dd><p>Tdata=([300, 400, 500, 600, 800, 1000, 1500], “K”),
+Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], “J/(mol*K)”),
+H298=(0.0, “kJ/mol”),
+S298=(0.0, “J/(mol*K)”),</p>
+</dd>
+</dl>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.thermo.ThermoData.is_all_zeros</span>, line 12)</p>
+<p>Definition list ends without a blank line; unexpected unindent.</p>
+</div>
+<p>)</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether all values are zeroes or not.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.thermo.ThermoData.is_identical_to">
 <code class="sig-name descname">is_identical_to</code><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
