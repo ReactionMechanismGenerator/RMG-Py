@@ -606,6 +606,14 @@ multiplicity 2
         self.assertIn('group additivity', thermo_gav.comment, 'Thermo not found from GAV, test purpose not fulfilled.')
         self.assertIn('polycyclic(s2_6_6_naphthalene)', thermo_gav.comment)
 
+    def test_identifying_missing_group(self):
+        """Test identifying a missing GAV group"""
+        # this test should be updated once data is added to the missing group
+        spc = Species(smiles='CN(C)CCCN1C2=CC=CC=C2CCC3=CC=CC=C31')
+        spc.generate_resonance_structures()
+        thermo_gav = self.database.get_thermo_data_from_groups(spc)
+        self.assertIn('missing(N3s-CbCbCs)', thermo_gav.comment)
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """
