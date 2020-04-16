@@ -2314,6 +2314,9 @@ class ThermoDatabase(object):
         in the structure ``molecule``, and add it to the existing thermo data
         ``thermo_data``.
         The parameter ``atom`` is a dictionary of label-atom pairs like {'*',atom}
+
+        Returns:
+            tuple: The combined ThermoData object and a bool flag indicating whether new data was added to it.
         """
         node0 = database.descend_tree(molecule, atom, None)
         if node0 is None:
@@ -2357,9 +2360,11 @@ class ThermoDatabase(object):
         # print result[4:]
 
         if thermo_data is None:
-            return data
+            return data, False
         else:
-            return add_thermo_data(thermo_data, data, group_additivity=True)
+            if data.is_all_zeros():
+                return thermo_data, False
+            return add_thermo_data(thermo_data, data, group_additivity=True), True
 
     def _remove_group_thermo_data(self, thermo_data, database, molecule, atom):
         """
