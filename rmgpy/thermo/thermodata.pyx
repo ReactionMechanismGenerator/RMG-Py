@@ -402,3 +402,21 @@ cdef class ThermoData(HeatCapacityModel):
         :class:`NASAPolynomial` objects.
         """
         return self.to_wilhoit().to_nasa(Tmin, Tmax, Tint, fixedTint, weighting, continuity)
+
+    cpdef bint is_all_zeros(self):
+        """
+        Check whether a ThermoData object has all zero values, e.g.: 
+        
+            ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+                H298=(0.0, "kJ/mol"),
+                S298=(0.0, "J/(mol*K)"),
+            )
+    
+        Returns:
+            bool: Whether all values are zeroes or not.
+        """
+        if self.H298.value_si == 0.0 and self.S298.value_si == 0.0 and all([cp == 0.0 for cp in self.Cpdata.value_si]):
+            return True
+        return False

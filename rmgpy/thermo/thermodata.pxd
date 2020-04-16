@@ -50,3 +50,5 @@ cdef class ThermoData(HeatCapacityModel):
     cpdef Wilhoit to_wilhoit(self, object B=?)
 
     cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)
+
+    cpdef bint is_all_zeros(self)
