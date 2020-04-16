@@ -1917,16 +1917,16 @@ class ThermoDatabase(object):
     def estimate_thermo_via_group_additivity(self, molecule):
         """
         Return the set of thermodynamic parameters corresponding to a given
-        :class:`Molecule` object `molecule` by estimation using the group
-        additivity values. If no group additivity values are loaded, a
-        :class:`DatabaseError` is raised.
-        
-        The entropy is not corrected for the symmetry of the molecule.
-        This should be done later by the calling function.
+        :class:`Molecule` object ``molecule`` using the group additivity values
+        method. If no group additivity values are loaded, a :class:`DatabaseError`
+        is raised.
+
+        The entropy is not corrected for the symmetry of the molecule,
+        this should be done later by the calling function.
         """
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
-        # will probably not visit the right atoms, and so will get the thermo wrong
+        # will probably not visit the right atoms, and so will get the thermo wrong.
         molecule.sort_atoms()
 
         if molecule.is_radical():
@@ -1938,18 +1938,18 @@ class ThermoDatabase(object):
     def compute_group_additivity_thermo(self, molecule):
         """
         Return the set of thermodynamic parameters corresponding to a given
-        :class:`Molecule` object `molecule` by estimation using the group
-        additivity values. If no group additivity values are loaded, a
-        :class:`DatabaseError` is raised.
-        
-        The entropy is not corrected for the symmetry of the molecule.
-        This should be done later by the calling function.
+        :class:`Molecule` object ``molecule`` using the group additivity values
+        method. If no group additivity values are loaded, a :class:`DatabaseError`
+        is raised.
+
+        The entropy is not corrected for the symmetry of the molecule,
+        this should be done later by the calling function.
         """
 
         assert not molecule.is_radical(), "This method is only for saturated non-radical species."
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
-        # will probably not visit the right atoms, and so will get the thermo wrong
+        # will probably not visit the right atoms, and so will get the thermo wrong.
         molecule.sort_atoms()
 
         # Create the ThermoData object
@@ -1961,7 +1961,7 @@ class ThermoDatabase(object):
         )
 
         cyclic = molecule.is_cyclic()
-        # Generate estimate of thermodynamics
+        # Generate estimates of the thermodynamics parameters
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
             if atom.is_non_hydrogen():
@@ -2310,10 +2310,10 @@ class ThermoDatabase(object):
 
     def _add_group_thermo_data(self, thermo_data, database, molecule, atom):
         """
-        Determine the group additivity thermodynamic data for the atom `atom`
-        in the structure `structure`, and add it to the existing thermo data
-        `thermo_data`.
-        The parameter `atom` is a dictionary of label-atom pairs like {'*',atom}
+        Determine the group additivity thermodynamic data for the atom ``atom``
+        in the structure ``molecule``, and add it to the existing thermo data
+        ``thermo_data``.
+        The parameter ``atom`` is a dictionary of label-atom pairs like {'*',atom}
         """
         node0 = database.descend_tree(molecule, atom, None)
         if node0 is None:
@@ -2327,7 +2327,7 @@ class ThermoDatabase(object):
             node = node.parent
         if node is None:
             raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or '
-                                'any of its ancestors.'.format(molecule, node0) )
+                                'any of its ancestors.'.format(molecule, node0))
 
         data = node.data
         comment = node.label
@@ -2345,7 +2345,7 @@ class ThermoDatabase(object):
                     comment = entry.label
                     break
             else:
-                raise DatabaseError("Node {0} points to a non-existant group called {1} in database: "
+                raise DatabaseError("Node {0} points to a non-existing group called {1} in database: "
                                     "{2}".format(node.label, data, database.label))
         data.comment = '{0}({1})'.format(database.label, comment)
 
