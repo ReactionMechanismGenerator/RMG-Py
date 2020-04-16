@@ -1966,13 +1966,21 @@ class ThermoDatabase(object):
             # Iterate over heavy (non-hydrogen) atoms
             if atom.is_non_hydrogen():
                 # Get initial thermo estimate from main group database
+                data_added = False
                 try:
-                    self._add_group_thermo_data(thermo_data, self.groups['group'], molecule, {'*': atom})
+                    data_added = self._add_group_thermo_data(thermo_data, self.groups['group'], molecule, {'*': atom})[1]
                 except KeyError:
                     logging.error("Couldn't find in main thermo database:")
                     logging.error(molecule)
                     logging.error(molecule.to_adjacency_list())
                     raise
+                if not data_added:
+                    neighbors = ''.join(sorted([atom2.atomtype.label for atom2 in atom.edges.keys()]))
+                    if thermo_data.comment:
+                        thermo_data.comment += f' + missing({atom.atomtype.label}-{neighbors})'
+                    else:
+                        thermo_data.comment = f'Thermo group additivity estimation: ' \
+                                              f'missing({atom.atomtype.label}-{neighbors})'
                 # Correct for gauche and 1,5- interactions
                 # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
                 # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
