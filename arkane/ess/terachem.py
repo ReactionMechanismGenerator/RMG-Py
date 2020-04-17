@@ -56,7 +56,7 @@ class TeraChemLog(Log):
     """
 
     def __init__(self, path):
-        super(TeraChemLog, self).__init__(path)
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -351,10 +351,4 @@ class TeraChemLog(Log):
         """Not implemented for TeraChem"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for TeraChem Logs')
 
-    def get_D1_diagnostic(self):
-        """Not implemented for TeraChem"""
-        raise NotImplementedError('The get_D1_diagnostic method is not implemented for TeraChem Logs')
-
-    def get_T1_diagnostic(self):
-        """Not implemented for TeraChem"""
-        raise NotImplementedError('The get_T1_diagnostic method is not implemented for TeraChem Logs')
+register_ess_adapter("TeraChemLog", TeraChemLog)

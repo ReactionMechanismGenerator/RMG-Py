@@ -58,7 +58,7 @@ class GaussianLog(Log):
     """
 
     def __init__(self, path):
-        super(GaussianLog, self).__init__(path)
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -509,10 +509,4 @@ class GaussianLog(Log):
             raise LogError('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
         return frequency
 
-    def get_D1_diagnostic(self):
-        """Not implemented for Gaussian"""
-        raise NotImplementedError('The get_D1_diagnostic method is not implemented for Gaussian Logs')
-
-    def get_T1_diagnostic(self):
-        """Not implemented for Gaussian"""
-        raise NotImplementedError('The get_T1_diagnostic method is not implemented for Gaussian Logs')
+register_ess_adapter("GaussianLog", GaussianLog)

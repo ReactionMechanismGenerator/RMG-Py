@@ -55,7 +55,7 @@ class MolproLog(Log):
     """
 
     def __init__(self, path):
-        super(MolproLog, self).__init__(path)
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -432,3 +432,5 @@ class MolproLog(Log):
     def load_scan_frozen_atoms(self):
         """Not implemented for Molpro"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Molpro Logs')
+
+register_ess_adapter("MolproLog", MolproLog)
