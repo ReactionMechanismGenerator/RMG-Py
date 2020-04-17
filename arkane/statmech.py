@@ -35,7 +35,7 @@ information for a single species or transition state.
 
 import logging
 import math
-import os.path
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np

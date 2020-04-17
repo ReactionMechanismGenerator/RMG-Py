@@ -33,7 +33,7 @@ A module for the abstract ESSAdapter class
 
 from abc import ABC, abstractmethod
 import logging
-import os.path
+import os
 import shutil
 
 from rmgpy.qm.qmdata import QMData
