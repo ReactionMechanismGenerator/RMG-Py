@@ -38,7 +38,7 @@ import shutil
 
 import rmgpy
 from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
-from arkane.util import determine_qm_software
+from arkane.ess.factory import ess_factory
 
 RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
 Q2DTOR_PATH = os.path.join(RMG_PATH, 'external', 'Q2DTor', 'src', 'Q2DTor.py')
@@ -97,7 +97,7 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         freqpath = os.path.join(RMG_PATH, 'arkane', 'data', 'TolueneFreq.log')
         rotpath = os.path.join(RMG_PATH, 'arkane', 'data', 'TolueneRot1.log')
-        log = determine_qm_software(freqpath)
+        log = ess_factory(freqpath)
 
         conf, unscaled_freqs = log.load_conformer(symmetry=1, spin_multiplicity=1, optical_isomers=1, label='Toulene')
         coordinates, number, mass = log.load_geometry()

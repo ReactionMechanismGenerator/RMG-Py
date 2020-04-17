@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.util` module.
+This module contains unit tests of the :mod:`arkane.ess.factory` module.
 """
 
 import os
@@ -37,23 +37,23 @@ import unittest
 from rmgpy.exceptions import InputError
 
 from arkane.ess import GaussianLog, MolproLog, OrcaLog, QChemLog, TeraChemLog
-from arkane.util import determine_qm_software
+from arkane.ess.factory import ess_factory
 
 ################################################################################
 
 
 class TestThermo(unittest.TestCase):
     """
-    Contains unit tests of the util module.
+    Contains unit tests of the factory module.
     """
     @classmethod
     def setUpClass(cls):
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(os.path.dirname(__file__), 'data')
+        cls.data_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data'))
 
-    def test_determine_qm_software(self):
+    def test_ess_factory(self):
         """Test identifying the electronic structure software from the log file"""
         gaussian_log_path1 = os.path.join(self.data_path, 'gaussian', 'ethylene_G3.log')
         gaussian_log_path2 = os.path.join(self.data_path, 'gaussian', 'oxygen.log')
@@ -69,26 +69,26 @@ class TestThermo(unittest.TestCase):
         terachem_log_path_3 = os.path.join(self.data_path, 'terachem', 'formaldehyde_sp_terachem_results.dat')
         terachem_log_path_4 = os.path.join(self.data_path, 'terachem', 'formaldehyde_coords.xyz')
         terachem_log_path_5 = os.path.join(self.data_path, 'terachem', 'formaldehyde_output.geometry')
-        non_ess_log_path = os.path.join(os.path.dirname(__file__), 'data', 'methoxy.py')
+        non_ess_log_path = os.path.abspath(os.path.join(self.data_path, 'methoxy.py'))
 
-        self.assertIsInstance(determine_qm_software(gaussian_log_path1), GaussianLog)
-        self.assertIsInstance(determine_qm_software(gaussian_log_path2), GaussianLog)
+        self.assertIsInstance(ess_factory(gaussian_log_path1), GaussianLog)
+        self.assertIsInstance(ess_factory(gaussian_log_path2), GaussianLog)
 
-        self.assertIsInstance(determine_qm_software(molpro_log_path1), MolproLog)
-        self.assertIsInstance(determine_qm_software(molpro_log_path2), MolproLog)
+        self.assertIsInstance(ess_factory(molpro_log_path1), MolproLog)
+        self.assertIsInstance(ess_factory(molpro_log_path2), MolproLog)
 
         for orca_path in [orca_path_1, orca_path_2, orca_path_3]:
-            self.assertIsInstance(determine_qm_software(orca_path), OrcaLog)
+            self.assertIsInstance(ess_factory(orca_path), OrcaLog)
 
-        self.assertIsInstance(determine_qm_software(qchem_log_path1), QChemLog)
-        self.assertIsInstance(determine_qm_software(qchem_log_path2), QChemLog)
+        self.assertIsInstance(ess_factory(qchem_log_path1), QChemLog)
+        self.assertIsInstance(ess_factory(qchem_log_path2), QChemLog)
 
         for terachem_path in [terachem_log_path_1, terachem_log_path_2, terachem_log_path_3,
                               terachem_log_path_4, terachem_log_path_5]:
-            self.assertIsInstance(determine_qm_software(terachem_path), TeraChemLog)
+            self.assertIsInstance(ess_factory(terachem_path), TeraChemLog)
 
         with self.assertRaises(InputError):
-            determine_qm_software(non_ess_log_path)
+            ess_factory(non_ess_log_path)
 
 ################################################################################
 

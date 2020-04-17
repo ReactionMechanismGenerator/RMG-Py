@@ -153,8 +153,8 @@ D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Compu
         vectors of angles (self.phi1s, self.phi2s), xyz coordinates (self.xyzs)
         energies (self.Es) and atom numbers (self.atnums) for each point
         """
-        from arkane.util import determine_qm_software
         from arkane.common import symbol_by_number
+        from arkane.ess.factory import ess_factory
         phi1s = []
         phi2s = []
         xyzs = []
@@ -171,7 +171,7 @@ D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Compu
             phi2s.append(float(phi2.split(".")[0]))
 
             fpath = os.path.join(self.calc_path, f)
-            lg = determine_qm_software(fpath)
+            lg = ess_factory(fpath)
 
             Es.append(lg.load_energy())
             xyz, atnums, _ = lg.load_geometry()
@@ -466,7 +466,7 @@ class HinderedRotorClassicalND(Mode):
         vectors of angles self.phis, xyz coordinates (self.xyzs)
         energies (self.Es) and atom numbers (self.atnums) for each point
         """
-        from arkane.util import determine_qm_software
+        from arkane.ess.factory import ess_factory
         if os.path.isdir(self.calc_path):
             massdict = {el.number: el.mass for el in element_list if el.isotope == -1}
             N = len(self.pivots)
@@ -483,7 +483,7 @@ class HinderedRotorClassicalND(Mode):
                 phivals = fill360s(phivals)
 
                 fpath = os.path.join(self.calc_path, f)
-                lg = determine_qm_software(fpath)
+                lg = ess_factory(fpath)
                 E = lg.load_energy()
                 xyz, atnum, _ = lg.load_geometry()
 
@@ -545,7 +545,7 @@ class HinderedRotorClassicalND(Mode):
                 self.xyzs = self.xyzs[inds]
         elif os.path.isfile(self.calc_path):  # reading a 1-D scan file, assume internal reduced moment of inertia is constant
             N = len(self.pivots)
-            lg = determine_qm_software(self.calc_path)
+            lg = ess_factory(self.calc_path)
             self.Es, self.phis = lg.load_scan_energies()
             self.atnums = self.conformer.number
             rootD = self.conformer.get_internal_reduced_moment_of_inertia(self.pivots[0], self.tops[0]) ** 0.5
