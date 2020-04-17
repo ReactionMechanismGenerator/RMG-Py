@@ -239,7 +239,7 @@ class StatMechJob(object):
             return ess_factory(log_path)
 
         is_ts = isinstance(self.species, TransitionState)
-        file_extension = os.path.splitext(path)[1]
+        file_extension = os.path.splitext(path)[-1]
         if file_extension in ['.yml', '.yaml']:
             self.arkane_species.load_yaml(path=path, label=self.species.label, pdep=pdep)
             self.species.conformer = self.arkane_species.conformer
