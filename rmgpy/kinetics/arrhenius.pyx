@@ -650,10 +650,9 @@ cdef class ArrheniusBM(KineticsModel):
         A = np.exp(lnA)
 
         # fill in parameters
-        if len(rxns[0].reactants) == 1:
-            self.A = (A, 's^-1')
-        elif len(rxns[0].reactants) == 2:
-            self.A = (A, 'm^3/(mol*s)')
+        A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
+        order = len(rxns[0].reactants)
+        self.A = (A, A_units[order])
 
         self.n = n
         self.w0 = (w0, 'J/mol')
