@@ -1975,12 +1975,17 @@ class ThermoDatabase(object):
                     logging.error(molecule.to_adjacency_list())
                     raise
                 if not data_added:
-                    neighbors = ''.join(sorted([atom2.atomtype.label for atom2 in atom.edges.keys()]))
-                    if thermo_data.comment:
-                        thermo_data.comment += f' + missing({atom.atomtype.label}-{neighbors})'
-                    else:
-                        thermo_data.comment = f'Thermo group additivity estimation: ' \
-                                              f'missing({atom.atomtype.label}-{neighbors})'
+                    neighbors = ''.join(sorted([atom2.atomtype.label for atom2 in atom.edges.keys()
+                                                if atom2.atomtype.label != 'H']))
+                    neighbors += 'H' * len(['H' for atom2 in atom.edges.keys() if atom2.atomtype.label == 'H'])
+                    if atom.atomtype.label == 'Cb':
+                        neighbors = neighbors.replace('Cb', '')
+                    group_str = f'{atom.atomtype.label}-{neighbors}'
+                    if group_str not in ['O2d-CO', 'S2d-CS']:
+                        if thermo_data.comment:
+                            thermo_data.comment += f' + missing({group_str})'
+                        else:
+                            thermo_data.comment = f'Thermo group additivity estimation: missing({group_str})'
                 # Correct for gauche and 1,5- interactions
                 # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
                 # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
