@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# encoding: utf-8
 
 ###############################################################################
 #                                                                             #
@@ -28,48 +29,75 @@
 ###############################################################################
 
 """
-This module contains different utilities used in Arkane.
+A module for generating ESS adapters
 """
 
 import os
+from typing import Type
+
+from arkane.ess.adapter import ESSAdapter
 
 from rmgpy.exceptions import InputError
 
-from arkane.ess import GaussianLog, MolproLog, OrcaLog, QChemLog, TeraChemLog
-
-################################################################################
+_registered_ess_adapters = {}
 
 
-def determine_qm_software(fullpath):
+def register_ess_adapter(ess: str,
+                         ess_class: Type[ESSAdapter],
+                         ) -> None:
     """
+    A register for the ESS adapters.
+
+    Args:
+        ess: A string representation for an ESS adapter
+        ess_class: The ESS adapter class
+
+    Raises:
+        TypeError: If ``ess_class`` is not an ``ESSAdapter`` instance.
+    """
+    if not issubclass(ess_class, ESSAdapter):
+        raise TypeError(f'{ess_class} is not an ESSAdapter')
+    _registered_ess_adapters[ess] = ess_class
+
+
+def ess_factory(fullpath: str) -> Type[ESSAdapter]:
+    """
+    A factory generating the ESS adapter corresponding to ``ess_adapter``.
     Given a path to the log file of a QM software, determine whether it is
-    Gaussian, Molpro, QChem, or TeraChem
+    Gaussian, Molpro, QChem, Orca, or TeraChem
+
+    Args:
+        fullpath (str): The disk location of the output file of interest.
+
+    Returns:
+        Type[ESSAdapter]: The requested ESSAdapter child, initialized with the respective arguments.
     """
-    with open(fullpath, 'r') as f:
-        software_log = None
-        if os.path.splitext(fullpath)[1] in ['.xyz', '.dat', '.geometry']:
-            software_log = TeraChemLog(fullpath)
-        line = f.readline()
-        while software_log is None and line != '':
-            if 'gaussian' in line.lower():
-                software_log = GaussianLog(fullpath)
-                break
-            elif 'molpro' in line.lower():
-                software_log = MolproLog(fullpath)
-                break
-            elif 'O   R   C   A' in line or 'orca' in line.lower():
-                f.close()
-                software_log = OrcaLog(fullpath)
-                break
-            elif 'qchem' in line.lower():
-                software_log = QChemLog(fullpath)
-                break
-            elif 'terachem' in line.lower():
-                software_log = TeraChemLog(fullpath)
-                break
+
+    ess_name = None
+    if os.path.splitext(fullpath)[-1] in ['.xyz', '.dat', '.geometry']:
+        ess_name = 'TeraChemLog'
+    else:
+        with open(fullpath, 'r') as f:
             line = f.readline()
-        if software_log is None:
-            f.close()
-            raise InputError(f'The file at {fullpath} could not be identified as a '
-                             'Gaussian, Molpro, QChem, or TeraChem log file.')
-    return software_log
+            while ess_name is None and line != '':
+                if 'gaussian' in line.lower():
+                    ess_name = 'GaussianLog'
+                    break
+                elif 'molpro' in line.lower():
+                    ess_name = 'MolproLog'
+                    break
+                elif 'O   R   C   A' in line or 'orca' in line.lower():
+                    ess_name = 'OrcaLog'
+                    break
+                elif 'qchem' in line.lower():
+                    ess_name = 'QChemLog'
+                    break
+                elif 'terachem' in line.lower():
+                    ess_name = 'TeraChemLog'
+                    break
+                line = f.readline()
+    if ess_name is None:
+        raise InputError(f'The file at {fullpath} could not be identified as a '
+                         f'Gaussian, Molpro, Orca, QChem, or TeraChem log file.')
+
+    return _registered_ess_adapters[ess_name](path=fullpath)

@@ -38,22 +38,23 @@ import numpy
 import rmgpy.constants as constants
 
 from arkane.common import get_element_mass
-from arkane.ess.log import Log
 from arkane.exceptions import LogError
+from arkane.ess.adapter import ESSAdapter
+from arkane.ess.factory import register_ess_adapter
 
 ################################################################################
 
 
-class OrcaLog(Log):
+class OrcaLog(ESSAdapter):
     """
     Represent an output file from Orca. The attribute `path` refers to the
     location on disk of the Orca output file of interest. Methods are provided
     to extract a variety of information into Arkane classes and/or NumPy
-    arrays.
+    arrays. OrcaLog is an adapter for the abstract class ESSAdapter.
     """
 
     def __init__(self, path):
-        super(OrcaLog, self).__init__(path)
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -214,10 +215,6 @@ class OrcaLog(Log):
         """Not implemented for Orca"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Orca Logs')
 
-    def get_D1_diagnostic(self):
-        """Not implemented for Orca"""
-        raise NotImplementedError('The get_D1_diagnostic method is not implemented for Orca Logs')
-
     def get_T1_diagnostic(self):
         """
         Returns the T1 diagnostic from output log.
@@ -231,3 +228,5 @@ class OrcaLog(Log):
                 items = line.split()
                 return float(items[-1])
         raise LogError('Unable to find T1 diagnostic in energy file: {}'.format(self.path))
+
+register_ess_adapter("OrcaLog", OrcaLog)

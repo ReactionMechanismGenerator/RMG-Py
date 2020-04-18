@@ -83,15 +83,15 @@ class ArkaneTest(unittest.TestCase):
         self.tst1.execute()
 
         job = self.tst1.job_list[0]
-        self.assertEquals(job.Tmin.value_si, 300.0)
-        self.assertEquals(job.minimum_grain_count, 100)
+        self.assertEqual(job.Tmin.value_si, 300.0)
+        self.assertEqual(job.minimum_grain_count, 100)
         self.assertFalse(job.rmgmode)
         self.assertTrue(job.active_j_rotor)
-        self.assertEquals(job.network.path_reactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
-        self.assertAlmostEquals(job.network.path_reactions[0].transition_state.tunneling.E0_TS.value_si, -24267.2)
-        self.assertAlmostEquals(job.network.path_reactions[0].transition_state.tunneling.frequency.value_si, -1679.04)
-        self.assertEquals(len(job.network.net_reactions[0].reactants[0].conformer.modes), 6)
-        # self.assertEquals(self.tst1.frequencyScaleFactor, 0.947)
+        self.assertEqual(job.network.path_reactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
+        self.assertAlmostEqual(job.network.path_reactions[0].transition_state.tunneling.E0_TS.value_si, -24267.2)
+        self.assertAlmostEqual(job.network.path_reactions[0].transition_state.tunneling.frequency.value_si, -1679.04)
+        self.assertEqual(len(job.network.net_reactions[0].reactants[0].conformer.modes), 6)
+        # self.assertEqual(self.tst1.frequencyScaleFactor, 0.947)
 
         # test that a network pdf was generated
         files = [f for f in os.listdir(self.directory) if os.path.isfile(os.path.join(self.directory, f))]
@@ -106,7 +106,7 @@ class ArkaneTest(unittest.TestCase):
         self.assertIsInstance(rxn.kinetics, Chebyshev)
         # Accept a delta of 0.2, which could result from numerical discrepancies
         # See RMG-Py #1682 on GitHub for discussion
-        self.assertAlmostEquals(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246, delta=0.2)
+        self.assertAlmostEqual(rxn.kinetics.get_rate_coefficient(1000.0, 1.0), 88.88253229631246, delta=0.2)
 
         files = [f for f in os.listdir(os.path.join(self.directory, 'sensitivity', ''))
                  if os.path.isfile(os.path.join(self.directory, 'sensitivity', f))]
@@ -118,7 +118,7 @@ class ArkaneTest(unittest.TestCase):
                 if '1000.0' in line:
                     break
         sa_coeff = line.split()[-2]
-        self.assertAlmostEquals(float(sa_coeff), -8.23e-6, delta=0.02e-6)
+        self.assertAlmostEqual(float(sa_coeff), -8.23e-6, delta=0.02e-6)
 
     @classmethod
     def tearDown(cls):

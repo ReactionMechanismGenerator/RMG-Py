@@ -43,20 +43,22 @@ from rmgpy.statmech import HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass, symbol_by_number
 from arkane.exceptions import LogError
-from arkane.ess.log import Log
+from arkane.ess.adapter import ESSAdapter
+from arkane.ess.factory import register_ess_adapter
 
 ################################################################################
 
 
-class TeraChemLog(Log):
+class TeraChemLog(ESSAdapter):
     """
     Represent a log file from TeraChem. The attribute `path` refers to the
     location on disk of the TeraChem log file of interest. Methods are provided
     to extract a variety of information into Arkane classes and/or NumPy arrays.
+    TeraChemLog is an adapter for the abstract class ESSAdapter.
     """
 
     def __init__(self, path):
-        super(TeraChemLog, self).__init__(path)
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -351,10 +353,4 @@ class TeraChemLog(Log):
         """Not implemented for TeraChem"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for TeraChem Logs')
 
-    def get_D1_diagnostic(self):
-        """Not implemented for TeraChem"""
-        raise NotImplementedError('The get_D1_diagnostic method is not implemented for TeraChem Logs')
-
-    def get_T1_diagnostic(self):
-        """Not implemented for TeraChem"""
-        raise NotImplementedError('The get_T1_diagnostic method is not implemented for TeraChem Logs')
+register_ess_adapter("TeraChemLog", TeraChemLog)

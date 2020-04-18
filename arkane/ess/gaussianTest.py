@@ -41,7 +41,6 @@ from external.wip import work_in_progress
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.ess.gaussian import GaussianLog
-from arkane.statmech import determine_qm_software
 from arkane.exceptions import LogError
 
 ################################################################################
@@ -197,13 +196,6 @@ class GaussianLogTest(unittest.TestCase):
         """
         log = GaussianLog(os.path.join(self.data_path, 'isobutanolQOOH_scan.log'))
         self.assertAlmostEqual(log._load_number_scans(), 36)
-
-    def test_determine_qm_software(self):
-        """
-        Ensures that determine_qm_software returns a GaussianLog object
-        """
-        log = determine_qm_software(os.path.join(self.data_path, 'oxygen.log'))
-        self.assertIsInstance(log, GaussianLog)
 
     def test_gaussian_log_error_termination(self):
         """

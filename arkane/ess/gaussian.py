@@ -43,22 +43,22 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 
 from arkane.common import check_conformer_energy, get_element_mass
 from arkane.exceptions import LogError
-from arkane.ess.log import Log
-
+from arkane.ess.adapter import ESSAdapter
+from arkane.ess.factory import register_ess_adapter
 
 ################################################################################
 
 
-class GaussianLog(Log):
+class GaussianLog(ESSAdapter):
     """
     Represent a log file from Gaussian. The attribute `path` refers to the
     location on disk of the Gaussian log file of interest. Methods are provided
     to extract a variety of information into Arkane classes and/or NumPy
-    arrays.
+    arrays. GaussianLog is an adapter for the abstract class ESSAdapter.
     """
 
     def __init__(self, path):
-        super(GaussianLog, self).__init__(path)
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -509,10 +509,4 @@ class GaussianLog(Log):
             raise LogError('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
         return frequency
 
-    def get_D1_diagnostic(self):
-        """Not implemented for Gaussian"""
-        raise NotImplementedError('The get_D1_diagnostic method is not implemented for Gaussian Logs')
-
-    def get_T1_diagnostic(self):
-        """Not implemented for Gaussian"""
-        raise NotImplementedError('The get_T1_diagnostic method is not implemented for Gaussian Logs')
+register_ess_adapter("GaussianLog", GaussianLog)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# encoding: utf-8
 
 ###############################################################################
 #                                                                             #
@@ -28,105 +29,121 @@
 ###############################################################################
 
 """
-A general class for parsing quantum mechanical log files
+A module for the abstract ESSAdapter class
 """
 
+from abc import ABC, abstractmethod
 import logging
-import os.path
+import os
 import shutil
 
 from rmgpy.qm.qmdata import QMData
 from rmgpy.qm.symmetry import PointGroupCalculator
 
-################################################################################
 
-
-class Log(object):
+class ESSAdapter(ABC):
     """
-    Represent a general log file.
-    The attribute `path` refers to the location on disk of the log file of interest.
+    An abstract ESS Adapter class
     """
 
-    def __init__(self, path):
-        self.path = path
-
+    @abstractmethod
     def get_number_of_atoms(self):
         """
         Return the number of atoms in the molecular configuration.
-        Should be implemented by a subclass.
         """
-        raise NotImplementedError("get_number_of_atoms is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
     def load_force_constant_matrix(self):
         """
-        Return the force constant matrix (in Cartesian coordinates).
-        Should be implemented by a subclass.
+        Return the force constant matrix (in Cartesian coordinates). If multiple such matrices
+        are identified, only the last is returned. The units of the returned force constants
+        are J/m^2. If no force constant matrix can be found in the log file, ``None`` is returned.
         """
-        raise NotImplementedError("load_force_constant_matrix is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
     def load_geometry(self):
         """
         Return the optimum geometry of the molecular configuration.
-        Should be implemented by a subclass.
+        If multiple such geometries are identified, only the last is returned.
         """
-        raise NotImplementedError("load_geometry is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
     def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
-        Load the molecular degree of freedom data from a frequency calculations.
-        Should be implemented by a subclass.
+        Return the optimum geometry of the molecular configuration.
         """
-        raise NotImplementedError("load_conformer is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
     def load_energy(self, zpe_scale_factor=1.):
         """
-        Load the energy.
-        Should be implemented by a subclass.
+        Load the energy in J/mol from a log file. Only the last energy in the file is returned.
+        The zero-point energy is *not* included in the returned value.
         """
-        raise NotImplementedError("load_energy is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
     def load_zero_point_energy(self):
         """
-        Load the unscaled zero-point energy.
-        Should be implemented by a subclass.
+        Load the unscaled zero-point energy in J/mol from a log file.
         """
-        raise NotImplementedError("load_zero_point_energy is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
     def load_scan_energies(self):
         """
-        Extract the optimized energies from a potential energy scan.
-        Should be implemented by a subclass.
+        Extract the optimized energies in J/mol from a torsional scan log file.
         """
-        raise NotImplementedError("load_scan_energies is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        pass
 
+    @abstractmethod
+    def load_negative_frequency(self):
+        """
+        Return the imaginary frequency from a transition state frequency
+        calculation in cm^-1.
+        """
+        pass
+
+    @abstractmethod
     def load_scan_pivot_atoms(self):
         """
         Extract the atom numbers which the rotor scan pivots around.
-        Should be implemented by a subclass.
+        Return a list of atom numbers starting with the first atom as 1.
         """
-        raise NotImplementedError("load_scan_pivot_atoms is not implemented for the Log class")
+        pass
 
+    @abstractmethod
     def load_scan_frozen_atoms(self):
         """
         Extract the atom numbers which were frozen during the scan.
-        Should be implemented by a subclass.
+        Return a list of list of atom numbers starting with the first atom as 1.
+        Each element of the outer lists represents a frozen bond.
+        Inner lists with length 2 represent frozen bond lengths.
+        Inner lists with length 3 represent frozen bond angles.
+        Inner lists with length 4 represent frozen dihedral angles.
         """
-        raise NotImplementedError("load_scan_frozen_atoms is not implemented for the Log class")
+        pass
 
-    def load_negative_frequency(self):
+    def get_D1_diagnostic(self):
         """
-        Return the imaginary frequency from a transition state frequency calculation.
-        Should be implemented by a subclass.
+        Returns the D1 diagnostic from output log.
+        If multiple occurrences exist, returns the last occurrence.
+        Should be implemented by the relevant subclass.
         """
-        raise NotImplementedError("load_negative_frequency is not implemented for the Log class. "
-                                  "This method should be implemented by a subclass.")
+        raise NotImplementedError(f"get_D1_diagnostic failed for {self.path} "
+                                  f"since the method is not implemented for all ESSAdapter subclasses.")
+
+    def get_T1_diagnostic(self):
+        """
+        Returns the T1 diagnostic from output log.
+        If multiple occurrences exist, returns the last occurrence.
+        Should be implemented by the relevant subclass.
+        """
+        raise NotImplementedError(f"get_T1_diagnostic failed for {self.path} "
+                                  f"since the method is not implemented for all ESSAdapter subclasses.")
 
     def get_symmetry_properties(self):
         """
@@ -166,17 +183,3 @@ class Log(object):
             return optical_isomers, symmetry, pg.point_group
         finally:
             shutil.rmtree(scr_dir)
-
-    def get_D1_diagnostic(self):
-        """
-        This method returns the D1 diagnostic for certain quantum jobs
-        Should be implemented by a subclass.
-        """
-        raise NotImplementedError("get_D1_diagnostic is not implemented for all Log subclasses.")
-
-    def get_T1_diagnostic(self):
-        """
-        This method returns the T1 diagnostic for certain quantum jobs
-        Should be implemented by a subclass.
-        """
-        raise NotImplementedError("get_T1_diagnostic is not implemented for all Log subclasses.")

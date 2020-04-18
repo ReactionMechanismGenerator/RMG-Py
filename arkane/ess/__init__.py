@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ###############################################################################
@@ -32,8 +32,9 @@
 Initialize imports for the ess (electronic structure software) modules
 """
 
+from arkane.ess.adapter import ESSAdapter
+from arkane.ess.factory import ess_factory, _registered_ess_adapters
 from arkane.ess.gaussian import GaussianLog
-from arkane.ess.log import Log
 from arkane.ess.molpro import MolproLog
 from arkane.ess.orca import OrcaLog
 from arkane.ess.qchem import QChemLog
