@@ -64,17 +64,21 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>Represent a log file from Gaussian. The attribute <cite>path</cite> refers to the
 location on disk of the Gaussian log file of interest. Methods are provided
 to extract a variety of information into Arkane classes and/or NumPy
-arrays.</p>
+arrays. GaussianLog is an adapter for the abstract class ESSAdapter.</p>
 <dl class="method">
 <dt id="arkane.ess.GaussianLog.get_D1_diagnostic">
 <code class="sig-name descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for Gaussian</p>
+<dd><p>Returns the D1 diagnostic from output log.
+If multiple occurrences exist, returns the last occurrence.
+Should be implemented by the relevant subclass.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="arkane.ess.GaussianLog.get_T1_diagnostic">
 <code class="sig-name descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented for Gaussian</p>
+<dd><p>Returns the T1 diagnostic from output log.
+If multiple occurrences exist, returns the last occurrence.
+Should be implemented by the relevant subclass.</p>
 </dd></dl>
 
 <dl class="method">
