@@ -59,11 +59,13 @@ class KineticsJob(object):
                 if kinetics is already given in the input, then it is False.
     """
 
-    def __init__(self, reaction, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None):
+    def __init__(self, reaction, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None,
+                 three_params=True):
         self.usedTST = False
         self.Tmin = Tmin if Tmin is not None else (298, 'K')
         self.Tmax = Tmax if Tmax is not None else (2500, 'K')
         self.Tcount = Tcount if Tcount > 3 else 50
+        self.three_params = three_params
 
         if Tlist is not None:
             self.Tlist = Tlist
