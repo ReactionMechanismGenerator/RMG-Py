@@ -588,7 +588,7 @@ def load_input_file(path):
         'SingleExponentialDown': SingleExponentialDown,
         # Kinetics
         'Arrhenius': Arrhenius,
-        'RateUncertainty' : RateUncertainty,
+        'RateUncertainty': RateUncertainty,
         # Statistical mechanics
         'IdealGasTranslation': IdealGasTranslation,
         'LinearRotor': LinearRotor,
