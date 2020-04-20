@@ -148,7 +148,8 @@ class ArkaneSpecies(RMGObject):
         """
         if species is None:
             raise ValueError('No species was passed to ArkaneSpecies')
-        self.label = species.label
+        # Don't overwrite the label if it already exists
+        self.label = self.label or species.label
         if isinstance(species, TransitionState):
             self.imaginary_frequency = species.frequency
             if species.conformer is not None:
