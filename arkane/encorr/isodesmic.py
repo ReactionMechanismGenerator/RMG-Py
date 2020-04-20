@@ -42,6 +42,8 @@ corannulene and C60 by means of inexpensive theoretical procedures. Journal of P
 https://doi.org/10.1021/jp404158v
 """
 
+import numpy as np
+
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import ScalarQuantity
 
@@ -148,6 +150,104 @@ class ErrorCancelingReaction:
         target_thermo = sum(spec[0].high_level_hf298.value_si*spec[1] for spec in self.species.items()) - \
             low_level_h_rxn
         return ScalarQuantity(target_thermo, 'J/mol')
+
+
+class SpeciesConstraints:
+    """
+    A class for defining and enumerating constraints to ReferenceSpecies objects for error canceling reactions
+    """
+
+    def __init__(self, target, reference_list, conserve_bonds=True, conserve_ring_size=True):
+        """
+        Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
+        the labels for these constraints.
+
+        To reduce the size of the linear programming problem that will try to find error canceling reactions of the
+        target and subsets of the reference species, the `reference_species` list is automatically pruned to remove
+        species that have additional atom, bond, and/or ring attributes not found in the target molecule.
+
+        Args:
+            target (ErrorCancelingSpecies): The target species of the error canceling reaction scheme
+            reference_list(list): A list of ErrorCancelingSpecies objects for the reference
+                species that can participate in the error canceling reaction scheme
+            conserve_bonds (bool, optional): Enforce the number of each bond type be conserved
+            conserve_ring_size (bool, optional): Enforce that the number of each ring size be conserved
+        """
+
+        self.target = target
+        self.all_reference_species = reference_list
+        self.reference_species = []
+        self.conserve_bonds = conserve_bonds
+        self.conserve_ring_size = conserve_ring_size
+        self.constraint_map = self._get_constraint_map()
+
+    def _get_constraint_map(self):
+        # Enumerate all of the constraints in the target molecule to initialize the constraint mapping
+        constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
+        if self.conserve_bonds:
+            j = len(constraint_map)
+            constraint_map.update(
+                {label: j + i for i, label in enumerate(self.target.molecule.enumerate_bonds().keys())})
+        if self.conserve_ring_size:
+            j = len(constraint_map)
+            possible_rings_sizes = set(f'{len(sssr)}_ring' for sssr in
+                                       self.target.molecule.get_smallest_set_of_smallest_rings())
+            constraint_map.update({label: j + i for i, label in enumerate(possible_rings_sizes)})
+
+        return constraint_map
+
+    def _enumerate_constraints(self, species):
+        """
+        Determine the constraint vector for a molecule given the enforced constraints
+
+        Args:
+            species (ErrorCancelingSpecies): Species whose constraints are to be enumerated
+
+        Returns:
+            np.ndarray: vector of the number of instances of each constraining feature e.g. number of carbon atoms
+        """
+        constraint_vector = np.zeros(len(self.constraint_map))
+        molecule = species.molecule
+
+        try:
+            atoms = molecule.get_element_count()
+            for atom_label, count in atoms.items():
+                constraint_vector[self.constraint_map[atom_label]] += count
+
+            if self.conserve_bonds:
+                bonds = molecule.enumerate_bonds()
+                for bond_label, count in bonds.items():
+                    constraint_vector[self.constraint_map[bond_label]] += count
+
+            if self.conserve_ring_size:
+                rings = molecule.get_smallest_set_of_smallest_rings()
+                for ring in rings:
+                    constraint_vector[self.constraint_map[f'{len(ring)}_ring']] += 1
+        except KeyError:  # This molecule has a feature not found in the target molecule. Return None to exclude this
+            return None
+
+        return constraint_vector
+
+    def calculate_constraints(self):
+        """
+        Calculate the constraint vector for the target and the constraint matrix for all allowable reference species
+
+        Returns:
+            tuple(np.ndarray, np.ndarray)
+            - target constraint vector (1 x len(constraints))
+            - constraint matrix for allowable reference species (len(self.reference_species) x len(constraints))
+        """
+        target_constraints = self._enumerate_constraints(self.target)
+        constraint_matrix = []
+
+        for spcs in self.all_reference_species:
+            spcs_constraints = self._enumerate_constraints(spcs)
+            if spcs_constraints is not None:  # This species is allowed
+                self.reference_species.append(spcs)
+                constraint_matrix.append(spcs_constraints)
+
+        return target_constraints, np.array(constraint_matrix, dtype=int)
+
 
 if __name__ == '__main__':
     pass
