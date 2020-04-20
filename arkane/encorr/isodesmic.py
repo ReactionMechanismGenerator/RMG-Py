@@ -249,5 +249,47 @@ class SpeciesConstraints:
         return target_constraints, np.array(constraint_matrix, dtype=int)
 
 
+class ErrorCancelingScheme:
+    """
+    A Base class for calculating target species thermochemistry using error canceling reactions
+    """
+
+    def __init__(self, target, reference_set, conserve_bonds, conserve_ring_size):
+        """
+
+        Args:
+            target (ErrorCancelingSpecies): Species whose Hf298 will be calculated using error canceling reactions
+            reference_set (list): list of reference species (as ErrorCancelingSpecies) that can participate
+                in error canceling reactions to help calculate the thermochemistry of the target
+            conserve_bonds (bool): Flag to determine if the number and type of each bond must be conserved in each error
+                canceling reaction
+            conserve_ring_size (bool): Flag to determine if the number of each ring size must be conserved in each error
+                canceling reaction
+        """
+
+        self.target = target
+        self.constraints = SpeciesConstraints(target, reference_set, conserve_bonds=conserve_bonds,
+                                              conserve_ring_size=conserve_ring_size)
+
+        self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
+        self.reference_species = self.constraints.reference_species
+
+
+class IsodesmicScheme(ErrorCancelingScheme):
+    """
+    An error canceling reaction where the number and type of both atoms and bonds are conserved
+    """
+    def __init__(self, target, reference_set):
+        super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=False)
+
+
+class IsodesmicRingScheme(ErrorCancelingScheme):
+    """
+    A stricter form of the traditional isodesmic reaction scheme where the number of each ring size is also conserved
+    """
+    def __init__(self, target, reference_set):
+        super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=True)
+
+
 if __name__ == '__main__':
     pass
