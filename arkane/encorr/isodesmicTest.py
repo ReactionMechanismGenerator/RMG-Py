@@ -233,6 +233,28 @@ class TestErrorCancelingScheme(unittest.TestCase):
             self.assertEqual(rxn.species[self.propane], 1)
             self.assertEqual(rxn.species[self.butene], 1)
 
+    def test_multiple_error_canceling_reactions(self):
+        """
+        Test that multiple error canceling reactions can be found
+        """
+        scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.pentane, self.pentene,
+                                                self.hexane, self.hexene, self.benzene])
+
+        reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
+        self.assertEqual(len(reaction_list), 20)
+        reaction_string = reaction_list.__repr__()
+        # Consider both permutations of the products in the reaction string
+        rxn_str1 = '<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*CCC + 1*C=CCC >'
+        rxn_str2 = '<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*C=CCC + 1*CCC >'
+        self.assertTrue(any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2]))
+
+        if self.pyo is not None:
+            # pyomo is slower, so don't test as many
+            reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=5, milp_software=['pyomo'])
+            self.assertEqual(len(reaction_list), 5)
+            reaction_string = reaction_list.__repr__()
+            self.assertTrue(any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2]))
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

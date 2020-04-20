@@ -43,6 +43,7 @@ https://doi.org/10.1021/jp404158v
 """
 
 import signal
+from collections import deque
 
 from lpsolve55 import lpsolve, EQ, LE
 import numpy as np
@@ -400,6 +401,42 @@ class ErrorCancelingScheme:
                     reaction.species.update({self.reference_species[reference_subset[index % split]]: v})
 
         return reaction, np.array(subset_indices)
+
+    def multiple_error_canceling_reaction_search(self, n_reactions_max=20, milp_software=None):
+        """
+        Generate multiple error canceling reactions involving the target and a subset of the reference species.
+
+        To do this, a rudimentary search is implemented whereby all possible combinations of the species participating
+        in the previously found reaction are excluded from the reference species subset for the next generation process.
+        This is implemented using a FIFO queue structure.
+
+        Args:
+            n_reactions_max (int, optional): The maximum number of found reactions that will be returned, after which no
+                further searching will occur even if there are possible subsets left in the queue.
+            milp_software (list, optional): Solvers to try in order. Defaults to ['lpsolve'] or if pyomo is available
+                defaults to ['lpsolve', 'pyomo']. lpsolve is usually faster.
+
+        Returns:
+            list: A list of the found error canceling reactions
+        """
+        subset_queue = deque()
+        subset_queue.append(np.arange(0, len(self.reference_species)))
+        reaction_list = []
+
+        while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
+            subset = subset_queue.popleft()
+            if len(subset) == 0:
+                continue
+            reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
+            if reaction is None:
+                continue
+            else:
+                reaction_list.append(reaction)
+
+                for index in subset_indices:
+                    subset_queue.append(np.delete(subset, index))
+
+        return reaction_list
 
 
 def _pyo_obj_expression(model):
