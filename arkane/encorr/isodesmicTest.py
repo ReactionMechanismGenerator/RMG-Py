@@ -215,6 +215,24 @@ class TestErrorCancelingScheme(unittest.TestCase):
 
         self.assertEqual(isodesmic_scheme.reference_species, [self.butane, self.benzene])
 
+    def test_find_error_canceling_reaction(self):
+        """
+        Test that the MILP problem can be solved to find a single isodesmic reaction
+        """
+        scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.caffeine, self.ethyne])
+
+        # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
+        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=['lpsolve'])
+        self.assertEqual(rxn.species[self.butane], -1)
+        self.assertEqual(rxn.species[self.propane], 1)
+        self.assertEqual(rxn.species[self.butene], 1)
+
+        if self.pyo is not None:
+            rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=['pyomo'])
+            self.assertEqual(rxn.species[self.butane], -1)
+            self.assertEqual(rxn.species[self.propane], 1)
+            self.assertEqual(rxn.species[self.butene], 1)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
