@@ -528,6 +528,62 @@ class ReferenceDatabase(object):
 
         return list(model_chemistry_set)
 
+    def get_species_from_index(self, indices, set_name='main'):
+        """
+        Returns a list of reference species from the requested reference set that matches the indices in order
+
+        Args:
+            indices (list): A list of reference species indices to return (in order)
+            set_name (str): The name of the reference set to search in (only one set)
+
+        Returns:
+            list
+        """
+        if not isinstance(indices, list):
+            indices = [indices]
+
+        reference_species_list = []
+        search_set = self.reference_sets[set_name]
+        for index in indices:
+            if not isinstance(index, int):
+                index = int(index)
+            for ref_spcs in search_set:
+                if ref_spcs.index == index:
+                    reference_species_list.append(ref_spcs)
+                    break
+            else:
+                raise ValueError(f'No reference species with index {index} was found in reference set {set_name}')
+
+        return reference_species_list
+
+    def get_species_from_label(self, labels, set_name='main'):
+        """
+        Returns a list of reference species from the requested reference set that matches the labels in order
+
+        Args:
+            labels (list): A list of labels that match the returned reference species (in order)
+            set_name (str): The name of the reference set to search in (only one set)
+
+        Returns:
+            list
+        """
+        if not isinstance(labels, list):
+            labels = [labels]
+
+        reference_species_list = []
+        search_set = self.reference_sets[set_name]
+        for label in labels:
+            if not isinstance(label, str):
+                label = str(label)
+            for ref_spcs in search_set:
+                if ref_spcs.label == label:
+                    reference_species_list.append(ref_spcs)
+                    break
+            else:
+                raise ValueError(f'No reference species with label "{label}" was found in reference set {set_name}')
+
+        return reference_species_list
+
 
 def _is_valid_reference_data(data_dictionary):
     """
