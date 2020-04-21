@@ -215,6 +215,13 @@ class TestReferenceDatabase(unittest.TestCase):
             if smiles == 'CCC':  # Test that `precise` is the source since it has the lowest uncertainty
                 self.assertAlmostEqual(spcs.high_level_hf298.value_si, 100.0*1000.0)
 
+    def test_list_available_chemistry(self):
+        """
+        Test that a set of available model chemistries can be return for the reference database
+        """
+        model_chemistry_list = self.database.list_available_chemistry()
+        self.assertIn('wb97m-v/def2-tzvpd', model_chemistry_list)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
