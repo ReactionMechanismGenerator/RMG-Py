@@ -67,13 +67,25 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
 # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state.
 # The splittings are obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV.
 # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226}
+SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0,
+       'F': -0.000614, 'Cl': -0.001338, 'Br': -0.005597, 'I': -0.011547226}
 
 # Atomic energies
 # All model chemistries here should be lower-case because the user input is changed to lower-case
 atom_energies = {
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections
     # to the energies here
+
+    'wb97m-v/def2-tzvpd': {
+        'H': -0.4941110259 + SOC['H'],
+        'C': -37.8458797086 + SOC['C'],
+        'N': -54.5915786724 + SOC['N'],
+        'O': -75.0762279005 + SOC['O'],
+        'S': -398.0789126541 + SOC['S'],
+        'F': -99.7434924415 + SOC['F'],
+        'Cl': -460.1100357269 + SOC['Cl'],
+        'Br': -2573.9684615505 + SOC['Br']
+    },
 
     # cbs-qb3 and cbs-qb3-paraskevas have the same corrections
     'cbs-qb3': {
