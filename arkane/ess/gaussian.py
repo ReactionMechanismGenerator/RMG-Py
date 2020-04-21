@@ -504,9 +504,10 @@ class GaussianLog(ESSAdapter):
 
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
-        frequency = [freq for freq in frequencies if freq < 0][0]
-        if frequency is None:
-            raise LogError('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
+        try:
+            frequency = [freq for freq in frequencies if freq < 0][0]
+        except IndexError:
+            raise LogError(f'Unable to find imaginary frequency in Gaussian output file {self.path}')
         return frequency
 
 register_ess_adapter("GaussianLog", GaussianLog)
