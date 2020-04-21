@@ -308,6 +308,24 @@ class ReferenceSpecies(ArkaneSpecies):
 
         return preferred_source
 
+    def get_default_xyz(self):
+        """
+        Return the XYZ coordinates of the default geometry for this species for use as a starting point for other
+        quantum chemistry calculations
+
+        Notes:
+            The attribute ``default_xyz_chemistry`` must be set for this reference species, preferable to a model
+            chemistry with a highly accurate equilibrium geometry
+
+        Returns:
+            ArrayQuantity
+        """
+        if self.default_xyz_chemistry:
+            return self.calculated_data[self.default_xyz_chemistry].xyz_dict
+        else:
+            raise ValueError(f'The default model chemistry to use for XYZ coordinates has not been set '
+                             f'for {self}')
+
 
 class ReferenceDataEntry(RMGObject):
     """
