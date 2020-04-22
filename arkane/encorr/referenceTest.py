@@ -34,8 +34,10 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 
 import os
 import unittest
+import shutil
 
-from arkane.encorr.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry
+from arkane.encorr.isodesmic import ErrorCancelingSpecies
+from arkane.encorr.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry, ReferenceDatabase
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
@@ -136,6 +138,82 @@ class TestReferenceSpecies(unittest.TestCase):
 
         data_entry_minimal = CalculatedDataEntry(self.thermo_data)
         self.assertIsInstance(data_entry_minimal.thermo_data, ThermoData)
+
+
+class TestReferenceDatabase(unittest.TestCase):
+    """
+    Test that the ReferenceDatabase class functions properly
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.database = ReferenceDatabase()
+        cls.database.load()
+
+    def test_load_main_reference_set(self):
+        """
+        Test that the main reference set can be loaded properly
+        """
+        self.assertIn('main', self.database.reference_sets)
+        self.assertIsInstance(self.database.reference_sets['main'][0], ReferenceSpecies)
+
+        # Also test that calling load again appends a new set in the database
+        data_dir = os.path.join(DATA_DIR)
+        testing_dir = os.path.join(data_dir, 'testing_set')
+        example_ref_file = os.path.join(data_dir, 'species', 'reference_species_example.yml')
+        spcs_file = os.path.join(testing_dir, '0.yml')
+        if os.path.exists(testing_dir):  # Delete the testing directory if it existed previously
+            shutil.rmtree(testing_dir)
+        os.mkdir(testing_dir)
+        shutil.copyfile(example_ref_file, spcs_file)
+        self.database.load(paths=[testing_dir])
+        self.assertIn('main', self.database.reference_sets)
+        self.assertIn('testing_set', self.database.reference_sets)
+
+        # Finally, remove the testing directory
+        shutil.rmtree(testing_dir)
+
+    def test_extract_model_chemistry(self):
+        """
+        Test that a given model chemistry can be extracted from the reference set database
+        """
+        # Create a quick example database
+        ref_data_1 = ReferenceDataEntry(ThermoData(H298=(100, 'kJ/mol', '+|-', 2)))
+        ref_data_2 = ReferenceDataEntry(ThermoData(H298=(25, 'kcal/mol', '+|-', 1)))
+
+        calc_data_1 = CalculatedDataEntry(ThermoData(H298=(110, 'kJ/mol')))
+        calc_data_2 = CalculatedDataEntry(ThermoData(H298=(120, 'kJ/mol')))
+
+        ethane = ReferenceSpecies(smiles='CC',
+                                  reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
+                                  calculated_data={'good_chem': calc_data_1, 'bad_chem': calc_data_2},
+                                  preferred_reference='less_precise')
+
+        propane = ReferenceSpecies(smiles='CCC',
+                                   reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
+                                   calculated_data={'good_chem': calc_data_1, 'bad_chem': calc_data_2})
+
+        butane = ReferenceSpecies(smiles='CCCC',
+                                  reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
+                                  calculated_data={'bad_chem': calc_data_2})
+
+        database = ReferenceDatabase()
+        database.reference_sets = {'testing_1': [ethane, butane], 'testing_2': [propane]}
+
+        model_chem_list = database.extract_model_chemistry('good_chem')
+        self.assertEqual(len(model_chem_list), 2)
+        self.assertIsInstance(model_chem_list[0], ErrorCancelingSpecies)
+
+        for spcs in model_chem_list:
+            smiles = spcs.molecule.to_smiles()
+            self.assertNotIn(smiles, ['CCCC'])
+            self.assertIn(smiles, ['CC', 'CCC'])
+
+            if smiles == 'CC':  # Test that `less_precise` is the source since it was set manually as preferred
+                self.assertAlmostEqual(spcs.high_level_hf298.value_si, 25.0*4184.0)
+
+            if smiles == 'CCC':  # Test that `precise` is the source since it has the lowest uncertainty
+                self.assertAlmostEqual(spcs.high_level_hf298.value_si, 100.0*1000.0)
 
 
 if __name__ == '__main__':

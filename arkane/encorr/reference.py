@@ -32,14 +32,25 @@
 This module defines the ReferenceSpecies class, which are used in isodesmic reaction calculations
 """
 
+import logging
+import os
 import string
+from collections import namedtuple
 
 import yaml
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
+from arkane.encorr.isodesmic import ErrorCancelingSpecies
+from rmgpy import settings
+from rmgpy.molecule import Molecule
 from rmgpy.rmgobject import RMGObject
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
+
+
+# Module level constants
+REFERENCE_DB_PATH = os.path.join(settings['database.directory'], 'reference_sets')
+MAIN_REFERENCE_PATH = os.path.join(REFERENCE_DB_PATH, 'main')
 
 
 class ReferenceSpecies(ArkaneSpecies):
@@ -178,6 +189,92 @@ class ReferenceSpecies(ArkaneSpecies):
 
         self.make_object(data, class_dict)
 
+    def to_error_canceling_spcs(self, model_chemistry, source=None):
+        """
+        Extract calculated and reference data from a specified model chemistry and source and return as a new
+        ErrorCancelingSpecies object
+
+        Args:
+            model_chemistry (str): Model chemistry (level of theory) to use as the low level data
+            source (str): Reference data source to take the high level data from
+
+        Raises:
+            KeyError: If ``model_chemistry`` is not available for this reference species
+
+        Returns:
+            ErrorCancelingSpecies
+        """
+        if model_chemistry not in self.calculated_data:
+            raise KeyError(f'Model chemistry `{model_chemistry}` not available for species {self}')
+
+        molecule = Molecule().from_adjacency_list(self.adjacency_list, raise_atomtype_exception=False,
+                                                  raise_charge_exception=False)
+
+        reference_enthalpy = self.get_reference_enthalpy(source=source)
+        low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298
+
+        return ErrorCancelingSpecies(
+            molecule, low_level_h298, model_chemistry,
+            high_level_hf298=reference_enthalpy.h298,
+            source=reference_enthalpy.source
+        )
+
+    def get_reference_enthalpy(self, source=None):
+        """
+        Extract reference data from a specified source
+
+        Notes:
+            If no source is given, the preferred source for this species. If the `preferred_source` attribute is not set
+            then the preferred source is taken as the source with the lowest non-zero uncertainty
+
+        Args:
+            source (str): Reference data source to take the high level data from
+
+        Raises:
+            ValueError: If there is no reference data for this reference species
+
+        Returns:
+            NamedTuple of ScalarQuantity containing enthalpy and preferred source
+        """
+        if not self.reference_data:
+            raise ValueError(f'No reference data is included for species {self}')
+
+        ReferenceEnthalpy = namedtuple('ReferenceEnthalpy', ['h298', 'source'])
+        preferred_source = source
+
+        if preferred_source is None:
+            preferred_source = self.get_preferred_source()
+
+        return ReferenceEnthalpy(
+            self.reference_data[preferred_source].thermo_data.H298,
+            preferred_source
+        )
+
+    def get_preferred_source(self):
+        """
+        Obtain the preferred reference data source for the species
+
+        Notes:
+            If the ``preferred_source`` attribute is set, return it,
+            otherwise use the source with the lowest non-zero uncertainty.
+
+        Returns:
+            String with the preferred source
+        """
+        if self.preferred_reference is not None:
+            preferred_source = self.preferred_reference
+        else:  # Choose the source that has the smallest uncertainty
+            sources = list(self.reference_data.keys())
+            data = list(self.reference_data.values())
+            preferred_source = sources[0]  # If all else fails, use the first source as the preferred one
+            uncertainty = data[0].thermo_data.H298.uncertainty_si
+            for i, entry in enumerate(data):
+                if 0 < entry.thermo_data.H298.uncertainty_si < uncertainty:
+                    uncertainty = entry.thermo_data.H298.uncertainty_si
+                    preferred_source = sources[i]
+
+        return preferred_source
+
 
 class ReferenceDataEntry(RMGObject):
     """
@@ -250,6 +347,113 @@ class CalculatedDataEntry(RMGObject):
                 raise ValueError('thermo_data for a CalculatedDataEntry object must be an rmgpy ThermoData object')
         else:
             self._thermo_data = None
+
+
+class ReferenceDatabase(object):
+    """
+    A class for loading and working with database of reference species, located at RMG-database/input/reference_sets/
+    """
+    def __init__(self):
+        """
+        Attributes:
+            self.reference_sets (Dict[str, ReferenceSpecies]): {'set name': [ReferenceSpecies, ...], ...}
+        """
+        self.reference_sets = {}
+
+    def load(self, paths=None, ignore_incomplete=True):
+        """
+        Load one or more set of reference species and append it on to the database
+
+        Args:
+            paths (list): A single path string, or a list of path strings pointing to a set of reference
+                species to be loaded into the database. The string should point to the folder that has the name of the
+                reference set. The name of sub-folders in a reference set directory should be indices starting from 0
+                and should contain a YAML file that defines the ReferenceSpecies object of that index, named {index}.yml
+            ignore_incomplete (bool): If ``True`` only species with both reference and calculated data will be added.
+        """
+        if paths is None:  # Default to the main reference set in RMG-database
+            paths = [MAIN_REFERENCE_PATH]
+
+        if isinstance(paths, str):  # Convert to a list with one element
+            paths = [paths]
+
+        molecule_list = []
+        for path in paths:
+            set_name = os.path.basename(path)
+            logging.info(f'Loading in reference set `{set_name}` from {path} ...')
+            spcs_files = os.listdir(path)
+            reference_set = []
+            for spcs in spcs_files:
+                if '.yml' not in spcs:
+                    continue
+                ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
+                ref_spcs.load_yaml(os.path.join(path, spcs))
+                molecule = Molecule().from_adjacency_list(ref_spcs.adjacency_list, raise_atomtype_exception=False,
+                                                          raise_charge_exception=False)
+                if ignore_incomplete:
+                    if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
+                        logging.warning(f'Molecule {ref_spcs.smiles} from reference set `{set_name}` does not have any '
+                                        f'reference data and/or calculated data. This entry will not be added')
+                        continue
+                # perform isomorphism checks to prevent duplicate species
+                for mol in molecule_list:
+                    if molecule.is_isomorphic(mol):
+                        logging.warning(f'Molecule {ref_spcs.smiles} from reference set `{set_name}` already exists in '
+                                        f'the reference database. The entry from this reference set will not be added. '
+                                        f'The path for this species is {spcs}')
+                        break
+                else:
+                    molecule_list.append(molecule)
+                    reference_set.append(ref_spcs)
+
+            self.reference_sets[set_name] = reference_set
+
+    def save(self, database_root_path=None):
+        """
+
+        Args:
+            database_root_path (str): Path to the reference set parent folder (typical subfolders include 'main' etc.)
+        """
+        if database_root_path is None:
+            database_root_path = REFERENCE_DB_PATH
+
+        for set_name, reference_set in self.reference_sets.items():
+            set_path = os.path.join(database_root_path, set_name)
+            for spcs in reference_set:
+                spcs.save_yaml(path=set_path)
+
+    def extract_model_chemistry(self, model_chemistry, sets=None, as_error_canceling_species=True):
+        """
+        Return a list of ErrorCancelingSpecies or ReferenceSpecies objects from the reference species in the database
+        that have entries for the requested model chemistry
+
+        Args:
+            model_chemistry (str): String that describes the level of chemistry used to calculate the low level data
+            sets (list): A list of the names of the reference sets to include (all sets in the database will be used if
+                not specified or ``None``)
+            as_error_canceling_species (bool): Return ErrorCancelingSpecies objects if True
+
+        Returns:
+            list
+        """
+        reference_list = []
+
+        if sets is None:  # Load in all of the sets
+            sets = self.reference_sets.keys()
+
+        for set_name in sets:
+            current_set = self.reference_sets[set_name]
+            for ref_spcs in current_set:
+                if model_chemistry not in ref_spcs.calculated_data:  # Move on to the next reference species
+                    continue
+                if not ref_spcs.reference_data:  # This reference species does not have any sources, continue on
+                    continue
+                reference_list.append(ref_spcs)
+
+        if as_error_canceling_species:
+            reference_list = [s.to_error_canceling_spcs(model_chemistry) for s in reference_list]
+
+        return reference_list
 
 
 def _is_valid_reference_data(data_dictionary):
