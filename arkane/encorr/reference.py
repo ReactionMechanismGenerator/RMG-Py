@@ -39,7 +39,7 @@ from collections import namedtuple
 
 import yaml
 
-from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
+from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, symbol_by_number
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
 from rmgpy import settings
 from rmgpy.molecule import Molecule
@@ -188,6 +188,39 @@ class ReferenceSpecies(ArkaneSpecies):
         class_dict['CalculatedDataEntry'] = CalculatedDataEntry
 
         self.make_object(data, class_dict)
+
+    def update_from_arkane_spcs(self, arkane_species):
+        """
+        Add in calculated data from an existing ArkaneSpecies object.
+
+        Notes:
+            If the model chemistry already exists then this calculated data will be overwritten by the data contained
+            in arkane_species
+
+        Args:
+            arkane_species (ArkaneSpecies):  Matching Arkane species that was run at the desired model chemistry
+        """
+        # First, check that the species matches
+        if not self.species.is_isomorphic(arkane_species.species):
+            raise ValueError(f'Cannot update reference species {self} from arkane species {arkane_species}, as these '
+                             f'species are not isomorphic. The reference species has adjacency list:\n'
+                             f'{self.species.to_adjacency_list()}\nWhile the arkane species has adjacency list:\n'
+                             f'{arkane_species.species.to_adjacency_list()}')
+
+        thermo_data = arkane_species.thermo_data
+        # Only store H298 data
+        thermo_data.Cpdata = None
+        thermo_data.Tdata = None
+        thermo_data.S298 = None
+
+        conformer = arkane_species.conformer
+        symbols = [symbol_by_number[n] for n in conformer.number.value]
+        isotopes = [int(round(m)) for m in conformer.mass.value]
+        coords = conformer.coordinates.value
+        xyz_dict = {'symbols': symbols, 'isotopes': isotopes, 'coords': coords}
+
+        calc_data = CalculatedDataEntry(thermo_data=thermo_data, xyz_dict=xyz_dict)
+        self.calculated_data[arkane_species.level_of_theory] = calc_data
 
     def to_error_canceling_spcs(self, model_chemistry, source=None):
         """
