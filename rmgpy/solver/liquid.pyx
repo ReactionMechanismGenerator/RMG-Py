@@ -45,9 +45,11 @@ from rmgpy.solver.base cimport ReactionSystem
 
 cdef class LiquidReactor(ReactionSystem):
     """
-    A reaction system consisting of a homogeneous, isothermal, constant volume batch
-    reactor. These assumptions allow for a number of optimizations that enable
-    this solver to complete very rapidly, even for large kinetic models.
+    A reaction system consisting of a homogeneous, isothermal liquid reactor,
+    which can be either a constant volume batch reactor, a constant volume CSTR, 
+    or a semi-batch reactor based on inputs. These assumptions allow for a number 
+    of optimizations that enable this solver to complete very rapidly, even for large 
+    kinetic models.
     """
 
     cdef public ScalarQuantity T
@@ -57,12 +59,15 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public double viscosity
     cdef public list const_spc_names
     cdef public list const_spc_indices
-    cdef public dict initial_concentrations
+    cdef public dict initial_concentrations, inlet_concentrations
     cdef public list Trange
     cdef public int n_sims
     cdef public dict sens_conditions
+    cdef public double residence_time # for cstr
+    cdef public double v_in # for semi-batch
+    cdef public double V_0 # for semi-batch
 
-    def __init__(self, T, initial_concentrations, n_sims=1, termination=None, sensitive_species=None,
+    def __init__(self, T, initial_concentrations, residence_time=None, v_in=None, inlet_concentrations=None, V_0=None, n_sims=1, termination=None, sensitive_species=None,
                  sensitivity_threshold=1e-3, sens_conditions=None, const_spc_names=None):
 
         ReactionSystem.__init__(self, termination, sensitive_species, sensitivity_threshold)
@@ -74,9 +79,25 @@ cdef class LiquidReactor(ReactionSystem):
 
         self.P = Quantity(100000., 'kPa')  # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initial_concentrations = initial_concentrations  # should be passed in SI
-        self.V = 0  # will be set from initial_concentrations in initialize_model
+        self.V = 0  # will be set in initialize_model using initial_concentrations for CSTR and batch, or calculated using V_0, v_in, and t for semi-batch 
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
+        self.residence_time = -1.0
+        self.v_in = -1.0
+        self.V_0 = -1.0
+        self.inlet_concentrations = {}
+        
+        # CSTR
+        if residence_time:
+            self.residence_time = residence_time
+
+        if inlet_concentrations:
+            self.inlet_concentrations = inlet_concentrations
+
+        if v_in and V_0: #semi-batch reactor
+            self.v_in = v_in
+            self.V_0 = V_0
+            self.constant_volume = False # volume will be calculated with V_0, v_in, and t
 
         #Constant concentration attributes
         self.const_spc_indices = None
@@ -87,14 +108,20 @@ cdef class LiquidReactor(ReactionSystem):
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
         Convert the initial_concentrations dictionary from species names into species objects,
-        using the given dictionary of species.
+        using the given dictionary of species. Also convert the inlet_concentrations dictionary if given.
         """
         initial_concentrations = {}
-        for label, moleFrac in self.initial_concentrations.items():
+        for label, conc in self.initial_concentrations.items():
             if label == 'T':
                 continue
-            initial_concentrations[species_dict[label]] = moleFrac
+            initial_concentrations[species_dict[label]] = conc
         self.initial_concentrations = initial_concentrations
+
+        inlet_concentrations = {}
+        if self.inlet_concentrations:
+            for label, conc in self.inlet_concentrations.items():
+                inlet_concentrations[species_dict[label]] = conc
+            self.inlet_concentrations = inlet_concentrations
 
         conditions = {}
         if self.sens_conditions is not None:
@@ -204,7 +231,24 @@ cdef class LiquidReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.core_species_concentrations[i] = conc
 
-        V = 1.0 / np.sum(self.core_species_concentrations)
+        # CSTR / semi-batch + specifying concentrations
+        if self.inlet_concentrations:
+            for spec, conc in self.inlet_concentrations.items():
+                i = self.get_species_index(spec)
+                self.inlet_species_concentrations[i] = conc
+            self.num_inlet_species = len(self.inlet_species_concentrations)
+        # CSTR + not specifying inlet concentrations
+        elif self.residence_time != -1.0:
+            for spec, conc in self.initial_concentrations.items():
+                i = self.get_species_index(spec)
+                self.inlet_species_concentrations[i] = conc
+            self.num_inlet_species = len(self.inlet_species_concentrations)            
+
+        if not self.constant_volume:
+            V = self.V_0
+        else:
+            V = 1.0 / np.sum(self.core_species_concentrations)
+
         self.V = V
 
         for j in range(self.num_core_species):
@@ -226,7 +270,7 @@ cdef class LiquidReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
         cdef np.ndarray[np.float64_t,ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
         cdef np.ndarray[np.float64_t,ndim=1] core_species_consumption_rates, core_species_production_rates
-        cdef np.ndarray[np.float64_t, ndim=1] C
+        cdef np.ndarray[np.float64_t, ndim=1] C, C_in
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
 
         ir = self.reactant_indices
@@ -257,11 +301,21 @@ cdef class LiquidReactor(ReactionSystem):
         network_leak_rates = np.zeros_like(self.network_leak_rates)
 
         C = np.zeros_like(self.core_species_concentrations)
-        V = self.V  # constant volume reactor
+        C_in = np.zeros_like(self.core_species_concentrations)
+        
+        if not self.constant_volume:
+            self.V = self.v_in * t + self.V_0
+
+        V = self.V # constant volume reactor for batch reactor and CSTR
 
         for j in range(num_core_species):
             C[j] = y[j] / V
             core_species_concentrations[j] = C[j]
+
+        # CSTR or semi-batch
+        if (self.residence_time != -1.0) or (not self.constant_volume):
+            for j in range(self.num_inlet_species):
+                C_in[j] = self.inlet_species_concentrations[j]
 
         for j in range(ir.shape[0]):
             k = kf[j]
@@ -374,7 +428,12 @@ cdef class LiquidReactor(ReactionSystem):
         self.edge_reaction_rates = edge_reaction_rates
         self.network_leak_rates = network_leak_rates
 
-        res = core_species_rates * V
+        if self.residence_time != -1.0:
+            res = 1/self.residence_time * V * (C_in - core_species_concentrations) + core_species_rates * V
+        elif not self.constant_volume:
+            res = self.v_in * C_in + core_species_rates * V
+        else:
+            res = core_species_rates * V
 
         if self.sensitivity:
             delta = np.zeros(len(y), np.float64)
@@ -419,9 +478,13 @@ cdef class LiquidReactor(ReactionSystem):
 
         pd = -cj * np.identity(num_core_species, np.float64)
 
-        V = self.V  # volume is constant
+        if not self.constant_volume:
+            self.V = self.v_in * t + self.V_0
+
+        V = self.V  # volume is constant for batch reactor and CSTR
 
         C = np.zeros_like(self.core_species_concentrations)
+
         for j in range(num_core_species):
             C[j] = y[j] / V
 
@@ -754,5 +817,9 @@ cdef class LiquidReactor(ReactionSystem):
                         if ir[j, 2] != -1:
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
+        if self.residence_time != -1.0:
+            pd -= 1/self.residence_time * np.identity(num_core_species, np.float64)
+
         self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
+
         return pd
