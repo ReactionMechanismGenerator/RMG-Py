@@ -104,11 +104,17 @@ class LiquidReactorCheck(unittest.TestCase):
 
         cls.T = 1000
 
+        #residence time, v_in, inlet_concentrations, V_0
+        cls.flow_conditions = {'batch': (None, None, None, None), #batch system
+                    'residence_time': (1, None, None, None), #specifying residence time
+                    'semi-batch': (None, 1, {cls.CH4: 0.1}, 100) #
+                    }
+
         cls.file_dir = os.path.join(os.path.dirname(rmgpy.__file__), 'solver', 'files', 'liquid_phase_constSPC')
 
     def test_compute_flux(self):
         """
-        Test the liquid batch reactor with a simple kinetic model. 
+        Test the liquid batch reactor, cstr, and semi-batch reactor with a simple kinetic model. 
         """
 
         rxn1 = Reaction(
@@ -124,37 +130,50 @@ class LiquidReactorCheck(unittest.TestCase):
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
-        rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
+        for condition in self.flow_conditions:
+            (residence_time, v_in, inlet_concentrations, V_0) = self.flow_conditions[condition]
 
-        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+            rxn_system = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 1, termination=[])
 
-        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
+            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        # Integrate to get the solution at each time point
-        t, y, reaction_rates, species_rates = [], [], [], []
-        for t1 in tlist:
-            rxn_system.advance(t1)
-            t.append(rxn_system.t)
-            # You must make a copy of y because it is overwritten by DASSL at
-            # each call to advance()
-            y.append(rxn_system.y.copy())
-            reaction_rates.append(rxn_system.core_reaction_rates.copy())
-            species_rates.append(rxn_system.core_species_rates.copy())
+            tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
-        # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+            # Integrate to get the solution at each time point
+            t, y, V, reaction_rates, species_rates, species_concentrations = [], [], [], [], [], []
+            for t1 in tlist:
+                rxn_system.advance(t1)
+                t.append(rxn_system.t)
+                # You must make a copy of y because it is overwritten by DASSL at
+                # each call to advance()
+                y.append(rxn_system.y.copy())
+                V.append(rxn_system.V)
+                reaction_rates.append(rxn_system.core_reaction_rates.copy())
+                species_rates.append(rxn_system.core_species_rates.copy())
+                species_concentrations.append(rxn_system.core_species_concentrations.copy())
 
-        # Check that we're computing the species fluxes correctly
-        for i in range(t.shape[0]):
-            self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 0], delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 1], delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 2], delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 3], delta=1e-6 * reaction_rates[i, 0])
+            # Convert the solution vectors to np arrays
+            t = np.array(t, np.float64)
+            reaction_rates = np.array(reaction_rates, np.float64)
+            species_rates = np.array(species_rates, np.float64)
+            species_concentrations = np.array(species_concentrations, np.float64)
 
-        # Check that we've reached equilibrium 
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+            # Check that we're computing the species fluxes correctly
+            for i in range(t.shape[0]):
+                self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 0], delta=1e-6 * reaction_rates[i, 0])
+                self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 1], delta=1e-6 * reaction_rates[i, 0])
+                self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 2], delta=1e-6 * reaction_rates[i, 0])
+                self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 3], delta=1e-6 * reaction_rates[i, 0])
+
+            # Check that we've reached equilibrium 
+            if condition == 'batch':
+                self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+            elif condition == 'residence_time':
+                self.assertAlmostEqual(reaction_rates[-1, 0], 1/residence_time * (species_concentrations[-1, 0] - species_concentrations[0, 0]), delta=1e-2)
+            else:
+                self.assertAlmostEqual(reaction_rates[-1, 0], - (v_in * species_concentrations[0, 0])/V[-1], delta=1e-2)
+                
+
 
     def test_jacobian(self):
         """
@@ -233,7 +252,9 @@ class LiquidReactorCheck(unittest.TestCase):
         ]
 
         # Analytical Jacobian for reaction 6
-        def jacobian_rxn6(c, kf, kr, s):
+        def jacobian_rxn6(condition, c, kf, kr, s):
+            (residence_time, _, _, _) = self.flow_conditions[condition]
+
             c1, c2, c3, c4 = c[s[1]], c[s[2]], c[s[3]], c[s[4]]
             jaco = np.zeros((5, 5))
 
@@ -244,10 +265,16 @@ class LiquidReactorCheck(unittest.TestCase):
             jaco[2, 1:] = 0.5 * jaco[1, 1:]
             jaco[3, 1:] = -jaco[1, 1:]
             jaco[4, 1:] = -0.5 * jaco[1, 1:]
+
+            if condition == 'residence_time':
+                jaco -= 1/residence_time * np.identity(5, np.float64)
+
             return jaco
 
         # Analytical Jacobian for reaction 7
-        def jacobian_rxn7(c, kf, kr, s):
+        def jacobian_rxn7(condition, c, kf, kr, s):
+            (residence_time, _, _, _) = self.flow_conditions[condition]
+
             c1, c2, c3, c4 = c[s[1]], c[s[2]], c[s[3]], c[s[4]]
             jaco = np.zeros((5, 5))
 
@@ -258,49 +285,55 @@ class LiquidReactorCheck(unittest.TestCase):
             jaco[2, 1:] = 0.5 * jaco[1, 1:]
             jaco[3, 1:] = -jaco[1, 1:]
             jaco[4, 1:] = -0.5 * jaco[1, 1:]
+
+            if condition == 'residence_time':
+                jaco -= 1/residence_time * np.identity(5, np.float64)
+
             return jaco
 
-        for rxn_num, rxn in enumerate(rxn_list):
-            core_reactions = [rxn]
+        for condition in self.flow_conditions:
+            (residence_time, v_in, inlet_concentrations, V_0) = self.flow_conditions[condition]
 
-            rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
-            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
-            dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
+            for rxn_num, rxn in enumerate(rxn_list):
+                core_reactions = [rxn]
 
-            dN = .000001 * sum(rxn_system0.y)
+                rxn_system0 = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 1, termination=[])
+                rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+                dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
 
-            # Let the solver compute the jacobian
-            solver_jacobian = rxn_system0.jacobian(0.0, rxn_system0.y, dydt0, 0.0)
+                dN = .000001 * sum(rxn_system0.y)
 
-            if rxn_num not in (6, 7):
-                dydt = []
-                for i in range(num_core_species):
-                    rxn_system0.y[i] += dN
-                    dydt.append(rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0])
-                    rxn_system0.y[i] -= dN  # reset y
+                # Let the solver compute the jacobian
+                solver_jacobian = rxn_system0.jacobian(0.0, rxn_system0.y, dydt0, 0.0)
+                if rxn_num not in (6, 7):
+                    dydt = []
+                    for i in range(num_core_species):
+                        rxn_system0.y[i] += dN
+                        dydt.append(rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0])
+                        rxn_system0.y[i] -= dN  # reset y
 
-                # Compute the jacobian using finite differences
-                jacobian = np.zeros((num_core_species, num_core_species))
-                for i in range(num_core_species):
-                    for j in range(num_core_species):
-                        jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
-                        self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j]))
-            # The forward finite difference is very unstable for reactions
-            # 6 and 7. Use Jacobians calculated by hand instead.
-            elif rxn_num == 6:
-                kforward = rxn.get_rate_coefficient(self.T)
-                kreverse = kforward / rxn.get_equilibrium_constant(self.T)
-                jacobian = jacobian_rxn6(c0, kforward, kreverse, core_species)
-                for i in range(num_core_species):
-                    for j in range(num_core_species):
-                        self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j]))
-            elif rxn_num == 7:
-                kforward = rxn.get_rate_coefficient(self.T)
-                kreverse = kforward / rxn.get_equilibrium_constant(self.T)
-                jacobian = jacobian_rxn7(c0, kforward, kreverse, core_species)
-                for i in range(num_core_species):
-                    for j in range(num_core_species):
-                        self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j]))
+                    # Compute the jacobian using finite differences
+                    jacobian = np.zeros((num_core_species, num_core_species))
+                    for i in range(num_core_species):
+                        for j in range(num_core_species):
+                            jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
+                            self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j])+1e-20)
+                # The forward finite difference is very unstable for reactions
+                # 6 and 7. Use Jacobians calculated by hand instead.
+                elif rxn_num == 6:
+                    kforward = rxn.get_rate_coefficient(self.T)
+                    kreverse = kforward / rxn.get_equilibrium_constant(self.T)
+                    jacobian = jacobian_rxn6(condition, c0, kforward, kreverse, core_species)
+                    for i in range(num_core_species):
+                        for j in range(num_core_species):
+                            self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j])+1e-20)
+                elif rxn_num == 7:
+                    kforward = rxn.get_rate_coefficient(self.T)
+                    kreverse = kforward / rxn.get_equilibrium_constant(self.T)
+                    jacobian = jacobian_rxn7(condition, c0, kforward, kreverse, core_species)
+                    for i in range(num_core_species):
+                        for j in range(num_core_species):
+                            self.assertAlmostEqual(jacobian[i, j], solver_jacobian[i, j], delta=abs(1e-4 * jacobian[i, j])+1e-20)
 
     def test_compute_derivative(self):
         rxn_list = [
@@ -332,51 +365,50 @@ class LiquidReactorCheck(unittest.TestCase):
 
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
-        rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
-        rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
-        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
-        solver_dfdk = rxn_system0.compute_rate_derivative()
-        # print 'Solver d(dy/dt)/dk'
-        # print solver_dfdk
+        for condition in self.flow_conditions:
+            (residence_time, v_in, inlet_concentrations, V_0) = self.flow_conditions[condition]
 
-        integration_time = 1e-8
+            rxn_system0 = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 1, termination=[])
+            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+            dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
+            solver_dfdk = rxn_system0.compute_rate_derivative()
 
-        model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
-        simulator_settings = SimulatorSettings()
+            integration_time = 1e-8
 
-        rxn_system0.termination.append(TerminationTime((integration_time, 's')))
-
-        rxn_system0.simulate(core_species, core_reactions, [], [], [], [],
-                             model_settings=model_settings, simulator_settings=simulator_settings)
-
-        y0 = rxn_system0.y
-
-        dfdk = np.zeros((num_core_species, len(rxn_list)))  # d(dy/dt)/dk
-
-        c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
-
-        for i in range(len(rxn_list)):
-            k0 = rxn_list[i].get_rate_coefficient(self.T)
-            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
-            dk = rxn_list[i].get_rate_coefficient(self.T) - k0
-
-            rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
-            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
-
-            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
-            dfdk[:, i] = (dfdt - dfdt0) / dk
-
-            rxn_system.termination.append(TerminationTime((integration_time, 's')))
             model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
             simulator_settings = SimulatorSettings()
-            rxn_system.simulate(core_species, core_reactions, [], [], [], [],
-                                model_settings=model_settings, simulator_settings=simulator_settings)
 
-            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
+            rxn_system0.termination.append(TerminationTime((integration_time, 's')))
 
-        for i in range(num_core_species):
-            for j in range(len(rxn_list)):
-                self.assertAlmostEqual(dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3 * dfdk[i, j]))
+            rxn_system0.simulate(core_species, core_reactions, [], [], [], [],
+                                 model_settings=model_settings, simulator_settings=simulator_settings)
+
+            y0 = rxn_system0.y
+
+            dfdk = np.zeros((num_core_species, len(rxn_list)))  # d(dy/dt)/dk
+
+            for i in range(len(rxn_list)):
+                k0 = rxn_list[i].get_rate_coefficient(self.T)
+                rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
+                dk = rxn_list[i].get_rate_coefficient(self.T) - k0
+
+                rxn_system = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 1, termination=[])
+                rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+
+                dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
+                dfdk[:, i] = (dfdt - dfdt0) / dk
+
+                rxn_system.termination.append(TerminationTime((integration_time, 's')))
+                model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
+                simulator_settings = SimulatorSettings()
+                rxn_system.simulate(core_species, core_reactions, [], [], [], [],
+                                    model_settings=model_settings, simulator_settings=simulator_settings)
+
+                rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
+
+            for i in range(num_core_species):
+                for j in range(len(rxn_list)):
+                    self.assertAlmostEqual(dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3 * dfdk[i, j]))
 
     def test_store_constant_species_names(self):
         """
@@ -385,7 +417,6 @@ class LiquidReactorCheck(unittest.TestCase):
         """
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
-        temp = 1000
 
         # set up the liquid phase reactor 1
         termination_conversion = []
@@ -394,12 +425,17 @@ class LiquidReactorCheck(unittest.TestCase):
         sensitivity_threshold = 0.001
         constant_species = ["CH4", "C2H6"]
         sens_conds = None
-        rxn_system1 = LiquidReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        residence_time = None
+        v_in = None
+        V_0 = None
+        inlet_concentrations = None
+
+        rxn_system1 = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
 
         # set up the liquid phase reactor 2
         constant_species = ["O2", "H2O"]
-        rxn_system2 = LiquidReactor(temp, c0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
+        rxn_system2 = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 4, termination_conversion, sensitivity, sensitivity_threshold, sens_conds,
                                     constant_species)
         for reactor in [rxn_system1, rxn_system2]:
             self.assertIsNotNone(reactor.const_spc_names)
@@ -449,8 +485,12 @@ class LiquidReactorCheck(unittest.TestCase):
         sensitivity_threshold = 0.001
         const_species = ["CH4"]
         sens_conds = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4, 'T': self.T}
+        residence_time = None
+        v_in = None
+        inlet_concentrations = None
+        V_0 = None
 
-        rxn_system = LiquidReactor(self.T, c0, 1, termination_conversion, sensitivity, sensitivity_threshold,
+        rxn_system = LiquidReactor(self.T, c0, residence_time, v_in, inlet_concentrations, V_0, 1, termination_conversion, sensitivity, sensitivity_threshold,
                                    const_spc_names=const_species, sens_conditions=sens_conds)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxn_system.const_spc_indices = [0]
