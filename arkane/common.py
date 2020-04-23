@@ -60,6 +60,27 @@ from arkane.pdep import PressureDependenceJob
 
 ################################################################################
 
+# Class dictionary for recreating objects from YAML files. This is needed elsewhere, so store as a module level variable
+ARKANE_CLASS_DICT = {'ScalarQuantity': ScalarQuantity,
+                     'ArrayQuantity': ArrayQuantity,
+                     'Conformer': Conformer,
+                     'LinearRotor': LinearRotor,
+                     'NonlinearRotor': NonlinearRotor,
+                     'KRotor': KRotor,
+                     'SphericalTopRotor': SphericalTopRotor,
+                     'HinderedRotor': HinderedRotor,
+                     'FreeRotor': FreeRotor,
+                     'IdealGasTranslation': IdealGasTranslation,
+                     'HarmonicOscillator': HarmonicOscillator,
+                     'TransportData': TransportData,
+                     'SingleExponentialDown': SingleExponentialDown,
+                     'Wilhoit': Wilhoit,
+                     'NASA': NASA,
+                     'NASAPolynomial': NASAPolynomial,
+                     'ThermoData': ThermoData,
+                     'np_array': np.array,
+                     }
+
 
 # Add a custom string representer to use block literals for multiline strings
 def str_repr(dumper, data):
@@ -84,7 +105,7 @@ class ArkaneSpecies(RMGObject):
                  chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
                  molecular_weight=None, symmetry_number=None, transport_data=None, energy_transfer_model=None,
                  thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None, reactants=None,
-                 products=None, reaction_label=None, is_ts=None):
+                 products=None, reaction_label=None, is_ts=None, charge=None, formula=None, multiplicity=None):
         # reactants/products/reaction_label need to be in the init() to avoid error when loading a TS YAML file,
         # but we don't use them
         super(ArkaneSpecies, self).__init__()
@@ -108,6 +129,8 @@ class ArkaneSpecies(RMGObject):
         self.xyz = xyz
         self.molecular_weight = molecular_weight
         self.symmetry_number = symmetry_number
+        self.charge = charge
+        self.multiplicity = multiplicity
         self.is_ts = is_ts if is_ts is not None else isinstance(species, TransitionState)
         if not self.is_ts:
             self.chemkin_thermo_string = chemkin_thermo_string
@@ -119,6 +142,7 @@ class ArkaneSpecies(RMGObject):
             self.energy_transfer_model = energy_transfer_model
             self.thermo = thermo
             self.thermo_data = thermo_data
+            self.formula = formula
         else:
             # initialize TS-related attributes
             self.imaginary_frequency = None
@@ -158,6 +182,9 @@ class ArkaneSpecies(RMGObject):
         elif species.molecule is not None and len(species.molecule) > 0:
             self.smiles = species.molecule[0].to_smiles()
             self.adjacency_list = species.molecule[0].to_adjacency_list()
+            self.charge = species.molecule[0].get_net_charge()
+            self.multiplicity = species.molecule[0].multiplicity
+            self.formula = species.molecule[0].get_formula()
             try:
                 inchi = to_inchi(species.molecule[0], backend='try-all', aug_level=0)
             except ValueError:
@@ -260,25 +287,6 @@ class ArkaneSpecies(RMGObject):
         if class_name != 'ArkaneSpecies':
             raise KeyError("Expected a ArkaneSpecies object, but got {0}".format(class_name))
         del data['class']
-        class_dict = {'ScalarQuantity': ScalarQuantity,
-                      'ArrayQuantity': ArrayQuantity,
-                      'Conformer': Conformer,
-                      'LinearRotor': LinearRotor,
-                      'NonlinearRotor': NonlinearRotor,
-                      'KRotor': KRotor,
-                      'SphericalTopRotor': SphericalTopRotor,
-                      'HinderedRotor': HinderedRotor,
-                      'FreeRotor': FreeRotor,
-                      'IdealGasTranslation': IdealGasTranslation,
-                      'HarmonicOscillator': HarmonicOscillator,
-                      'TransportData': TransportData,
-                      'SingleExponentialDown': SingleExponentialDown,
-                      'Wilhoit': Wilhoit,
-                      'NASA': NASA,
-                      'NASAPolynomial': NASAPolynomial,
-                      'ThermoData': ThermoData,
-                      'np_array': np.array,
-                      }
         freq_data = None
         if 'imaginary_frequency' in data:
             freq_data = data['imaginary_frequency']
@@ -296,10 +304,10 @@ class ArkaneSpecies(RMGObject):
             # Finally, set the species label so that the special attributes are updated properly
             data['species'].label = data['label']
 
-        self.make_object(data=data, class_dict=class_dict)
+        self.make_object(data=data, class_dict=ARKANE_CLASS_DICT)
         if freq_data is not None:
             self.imaginary_frequency = ScalarQuantity()
-            self.imaginary_frequency.make_object(data=freq_data, class_dict=class_dict)
+            self.imaginary_frequency.make_object(data=freq_data, class_dict=ARKANE_CLASS_DICT)
 
         if pdep and not self.is_ts and self.smiles is None and self.adjacency_list is None \
                 and self.inchi is None and self.molecular_weight is None:
