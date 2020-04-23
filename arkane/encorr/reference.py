@@ -39,6 +39,7 @@ import yaml
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
 from rmgpy.rmgobject import RMGObject
 from rmgpy.species import Species
+from rmgpy.thermo import ThermoData
 
 
 class ReferenceSpecies(ArkaneSpecies):
@@ -176,6 +177,39 @@ class ReferenceSpecies(ArkaneSpecies):
         class_dict['CalculatedDataEntry'] = CalculatedDataEntry
 
         self.make_object(data, class_dict)
+
+
+class ReferenceDataEntry(RMGObject):
+    """
+    A class for storing reference data for a specific species from a single source
+    """
+    def __init__(self, thermo_data, atct_id=None):
+        """
+
+        Args:
+            thermo_data (rmgpy.thermo.ThermoData): Thermochemistry (Hf298, Cp, ...) from the reference for a species
+            atct_id (str): ID number in the Active Thermochemical Tables if the source is ATcT
+        """
+        super().__init__()
+        self.thermo_data = thermo_data
+        self.atct_id = atct_id
+
+    def __repr__(self):
+        return str(self.as_dict())
+
+    @property
+    def thermo_data(self):
+        return self._thermo_data
+
+    @thermo_data.setter
+    def thermo_data(self, value):
+        if value is not None:
+            if isinstance(value, ThermoData):
+                self._thermo_data = value
+            else:
+                raise ValueError('thermo_data for a ReferenceDataEntry object must be an rmgpy ThermoData instance')
+        else:
+            self._thermo_data = None
 
 
 def _is_valid_reference_data(data_dictionary):
