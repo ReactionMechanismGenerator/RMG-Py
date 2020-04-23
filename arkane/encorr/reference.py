@@ -212,6 +212,46 @@ class ReferenceDataEntry(RMGObject):
             self._thermo_data = None
 
 
+class CalculatedDataEntry(RMGObject):
+    """
+    A class for storing a single entry of statistical mechanical and thermochemistry information calculated at a single
+    model chemistry or level of theory
+    """
+    def __init__(self, thermo_data, xyz_dict=None, t1_diagnostic=None, fod=None):
+        """
+
+        Args:
+            thermo_data (rmgpy.thermo.ThermoData): Actual thermochemistry values calculated using statistical mechanics
+                at select points. Arkane fits a heat capacity model to this data
+            xyz_dict (dict): An ARC style xyz dictionary for the cartesian coordinates
+            t1_diagnostic (float): T1 diagnostic for coupled cluster calculations to check if single reference methods
+                are suitable
+            fod (float): Fractional Occupation number weighted electron Density
+        """
+        super().__init__()
+        self.thermo_data = thermo_data
+        self.xyz_dict = xyz_dict
+        self.t1_diagnostic = t1_diagnostic
+        self.fod = fod
+
+    def __repr__(self):
+        return str(self.as_dict())
+
+    @property
+    def thermo_data(self):
+        return self._thermo_data
+
+    @thermo_data.setter
+    def thermo_data(self, value):
+        if value is not None:
+            if isinstance(value, ThermoData):
+                self._thermo_data = value
+            else:
+                raise ValueError('thermo_data for a CalculatedDataEntry object must be an rmgpy ThermoData object')
+        else:
+            self._thermo_data = None
+
+
 def _is_valid_reference_data(data_dictionary):
     """
     Determine if the given reference_data dictionary is supplied in a valid format

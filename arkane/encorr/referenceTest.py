@@ -35,7 +35,7 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 import os
 import unittest
 
-from arkane.encorr.reference import ReferenceSpecies, ReferenceDataEntry
+from arkane.encorr.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
@@ -59,8 +59,6 @@ class TestReferenceSpecies(unittest.TestCase):
 
         cls.thermo_data = ThermoData(H298=(100.0, 'kJ/mol'), S298=(100.0, 'J/(mol*K)'))
         cls.xyz_dict = {'symbols': ('H', 'H'), 'isotopes': (1, 1), 'coords': ((0.0, 0.0, 0.0), (0.708, 0.0, 0.0))}
-        cls.unscaled_freqs = ArrayQuantity([3000.0], 'cm^-1')
-        cls.electronic_energy = ScalarQuantity(10.0, 'J/mol')
         cls.t1_diagnostic = 0.101
 
     def test_instantiate_reference_species(self):
@@ -127,6 +125,17 @@ class TestReferenceSpecies(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ReferenceDataEntry({'H298': (100.0, 'kJ/mol')})
+
+    def test_calculated_data_entry(self):
+        """
+        Test that the CalculatedDataEntry class functions properly and enforces the standard for storing data
+        """
+        data_entry = CalculatedDataEntry(self.thermo_data, xyz_dict=self.xyz_dict, t1_diagnostic=self.t1_diagnostic)
+        self.assertEqual(data_entry.thermo_data.H298.value_si, 100000.0)
+        self.assertIsInstance(data_entry.xyz_dict, dict)
+
+        data_entry_minimal = CalculatedDataEntry(self.thermo_data)
+        self.assertIsInstance(data_entry_minimal.thermo_data, ThermoData)
 
 
 if __name__ == '__main__':
