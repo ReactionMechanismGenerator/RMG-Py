@@ -57,6 +57,9 @@ class KineticsJob(object):
 
     `usedTST` - a boolean representing if TST was used to calculate the kinetics
                 if kinetics is already given in the input, then it is False.
+    `three_params` - a boolean representing if the modified three-parameter Arrhenius equation is used to calculate
+                     high pressure kinetic rate coefficients. If it is False, the classical two-parameter Arrhenius
+                     equation is used.
     """
 
     def __init__(self, reaction, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None,
@@ -184,7 +187,8 @@ class KineticsJob(object):
         self.K_eq_units = {2: 'mol^2/cm^6', 1: 'mol/cm^3', 0: '       ', -1: 'cm^3/mol', -2: 'cm^6/mol^2'}[
             len(self.reaction.products) - len(self.reaction.reactants)]
         self.k_r_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
-        self.reaction.kinetics = Arrhenius().fit_to_data(self.Tlist.value_si, klist, kunits=self.k_units)
+        self.reaction.kinetics = Arrhenius().fit_to_data(self.Tlist.value_si, klist, kunits=self.k_units,
+                                                         three_params=self.three_params)
         self.reaction.elementary_high_p = True
 
     def write_output(self, output_directory):
@@ -263,11 +267,20 @@ class KineticsJob(object):
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
-            kinetics_0_rev = Arrhenius().fit_to_data(t_list, np.array(k0_revs), kunits=self.k_r_units)
-            kinetics_rev = Arrhenius().fit_to_data(t_list, np.array(k_revs), kunits=self.k_r_units)
+            kinetics_0_rev = Arrhenius().fit_to_data(t_list, np.array(k0_revs), kunits=self.k_r_units,
+                                                     three_params=self.three_params)
+            kinetics_rev = Arrhenius().fit_to_data(t_list, np.array(k_revs), kunits=self.k_r_units,
+                                                   three_params=self.three_params)
 
             f.write('# k_rev (TST) = {0} \n'.format(kinetics_0_rev))
             f.write('# k_rev (TST+T) = {0} \n\n'.format(kinetics_rev))
+
+        if self.three_params:
+            f.write('# kinetics fitted using the modified three-parameter Arrhenius equation '
+                    'k = A * (T/T0)^n * exp(-Ea/RT) \n')
+        else:
+            f.write('# kinetics fitted using the two-parameter Arrhenius equation k = A * exp(-Ea/RT) \n')
+
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         rxn_str = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(rxn_str)))
