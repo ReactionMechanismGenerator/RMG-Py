@@ -438,6 +438,30 @@ class ErrorCancelingScheme:
 
         return reaction_list
 
+    def calculate_target_enthalpy(self, n_reactions_max=20, milp_software=None):
+        """
+        Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
+        median hf298 value from among the error canceling reactions found
+
+        Args:
+            n_reactions_max (int, optional): The maximum number of found reactions that will returned, after which no
+                further searching will occur even if there are possible subsets left in the queue.
+            milp_software (list, optional): Solvers to try in order. Defaults to ['lpsolve'] or if pyomo is available
+                defaults to ['lpsolve', 'pyomo']. lpsolve is usually faster.
+
+        Returns:
+            tuple(ScalarQuantity, list)
+            - Standard heat of formation at 298 K calculated for the target species
+            - reaction list containing all error canceling reactions found
+        """
+        reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
+        h298_list = np.zeros(len(reaction_list))
+
+        for i, rxn in enumerate(reaction_list):
+            h298_list[i] = rxn.calculate_target_thermo().value_si
+
+        return ScalarQuantity(np.median(h298_list), 'J/mol'), reaction_list
+
 
 def _pyo_obj_expression(model):
     return pyo.summation(model.v, model.s, index=model.i)

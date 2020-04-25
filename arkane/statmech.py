@@ -54,7 +54,10 @@ from rmgpy.quantity import Quantity
 from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments_of_inertia
 from arkane.encorr.corr import get_atom_correction, get_bac
 from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, GaussianLog, QChemLog
+from arkane.encorr.isodesmic import ErrorCancelingSpecies, IsodesmicRingScheme
 from arkane.output import prettify
+from arkane.encorr.reference import ReferenceDatabase
+from arkane.thermo import ThermoJob
 
 ################################################################################
 
@@ -183,6 +186,9 @@ class StatMechJob(object):
         self.modelChemistry = ''
         self.frequencyScaleFactor = 1.0
         self.includeHinderedRotors = True
+        self.useIsodesmicReactions = False
+        self.isodesmicReactionList = None
+        self.referenceSets = None
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
         self.bondEnergyCorrectionType = 'p'
@@ -462,6 +468,19 @@ class StatMechJob(object):
                 e_electronic = energy_log.load_energy(zpe_scale_factor)  # in J/mol
             else:
                 e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
+
+            # Make sure that isodesmic reactions are configured properly if requested
+            if self.useIsodesmicReactions:  # Make sure atom and bond corrections are not applied
+                if not self.applyAtomEnergyCorrections:
+                    logging.warning('Atom corrections not requested but MUST be used since isodesmic reactions are '
+                                    'being used')
+                    self.applyAtomEnergyCorrections = True
+                if self.applyBondEnergyCorrections:
+                    logging.warning('Bond corrections requested but will not be used since isodesmic reactions are '
+                                    'being used')
+                    self.applyBondEnergyCorrections = False
+
+            # Apply atom corrections
             if self.applyAtomEnergyCorrections:
                 atom_corrections = get_atom_correction(self.modelChemistry,
                                                        atoms, self.atomEnergies)
@@ -469,6 +488,8 @@ class StatMechJob(object):
             else:
                 atom_corrections = 0
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
+
+            # Apply bond corrections
             if self.applyBondEnergyCorrections:
                 if not self.bonds and hasattr(self.species, 'molecule') and self.species.molecule:
                     self.bonds = self.species.molecule[0].enumerate_bonds()
@@ -482,14 +503,9 @@ class StatMechJob(object):
             zpe = statmech_log.load_zero_point_energy() * zpe_scale_factor if len(number) > 1 else 0
             logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
 
-            e0 = e_electronic_with_corrections + zpe
-
             logging.debug('         Harmonic frequencies scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
             logging.debug('         Zero point energy scaling factor used = {0:g}'.format(zpe_scale_factor))
             logging.debug('         Scaled ZPE (0 K) = {0:g} kcal/mol'.format(zpe / 4184.))
-            logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
-
-        conformer.E0 = (e0 * 0.001, "kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
@@ -503,123 +519,8 @@ class StatMechJob(object):
         hessian = statmech_log.load_force_constant_matrix()
 
         if hessian is not None and len(mass) > 1 and len(rotors) > 0:
-
-            logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
-            rotor_count = 0
-            for j, q in enumerate(rotors):
-                symmetry = None
-                if len(q) == 3:
-                    # No potential scan is given, this is a free rotor
-                    pivots, top, symmetry = q
-                    inertia = conformer.get_internal_reduced_moment_of_inertia(pivots, top) * constants.Na * 1e23
-                    rotor = FreeRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                    conformer.modes.append(rotor)
-                    rotor_count += 1
-                elif len(q) == 8:
-                    scan_dir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry = q
-                    logging.info("Calculating energy levels for 2D-HR, may take a while...")
-                    rotor = HinderedRotor2D(name='r' + str(j), torsigma1=symmetry1, torsigma2=symmetry2,
-                                            symmetry=symmetry, calc_path=os.path.join(directory, scan_dir),
-                                            pivots1=pivots1, pivots2=pivots2, top1=top1, top2=top2)
-                    rotor.run()
-                    conformer.modes.append(rotor)
-                    rotor_count += 2
-                elif len(q) == 5 and isinstance(q[1][0], list):
-                    scan_dir, pivots, tops, sigmas, semiclassical = q
-                    rotor = HinderedRotorClassicalND(pivots, tops, sigmas, calc_path=os.path.join(directory, scan_dir),
-                                                     conformer=conformer, F=hessian,
-                                                     semiclassical=semiclassical, is_linear=linear, is_ts=is_ts)
-                    rotor.run()
-                    conformer.modes.append(rotor)
-                    rotor_count += len(pivots)
-                elif len(q) in [4, 5]:
-                    # This is a hindered rotor
-                    if len(q) == 5:
-                        scan_log, pivots, top, symmetry, fit = q
-                    elif len(q) == 4:
-                        # the symmetry number will be derived from the scan
-                        scan_log, pivots, top, fit = q
-                    # Load the hindered rotor scan energies
-                    if isinstance(scan_log, ScanLog):
-                        if not os.path.isfile(scan_log.path):
-                            modified_scan_path = os.path.join(directory, scan_log.path)
-                            if not os.path.isfile(modified_scan_path):
-                                raise InputError('Could not find scan energy file for species {0} '
-                                                 'in the specified path {1}'.format(self.species.label, scan_log.path))
-                            else:
-                                scan_log.path = modified_scan_path
-                    if isinstance(scan_log, (GaussianLog, QChemLog)):
-                        v_list, angle = scan_log.load_scan_energies()
-                        try:
-                            pivot_atoms = scan_log.load_scan_pivot_atoms()
-                        except Exception as e:
-                            logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
-                            pivot_atoms = 'N/A'
-                        try:
-                            frozen_atoms = scan_log.load_scan_frozen_atoms()
-                        except Exception as e:
-                            logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
-                            frozen_atoms = 'N/A'
-                    elif isinstance(scan_log, ScanLog):
-                        angle, v_list = scan_log.load()
-                        # no way to find pivot atoms or frozen atoms from ScanLog
-                        pivot_atoms = 'N/A'
-                        frozen_atoms = 'N/A'
-                    else:
-                        raise InputError('Invalid log file type {0} for scan log.'.format(scan_log.__class__))
-
-                    if symmetry is None:
-                        symmetry = determine_rotor_symmetry(v_list, self.species.label, pivots)
-                    self.raw_hindered_rotor_data.append((self.species.label, rotor_count, symmetry, angle,
-                                                         v_list, pivot_atoms, frozen_atoms))
-                    inertia = conformer.get_internal_reduced_moment_of_inertia(pivots, top) * constants.Na * 1e23
-
-                    cosine_rotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                    cosine_rotor.fit_cosine_potential_to_data(angle, v_list)
-                    fourier_rotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                    fourier_rotor.fit_fourier_potential_to_data(angle, v_list)
-
-                    Vlist_cosine = np.zeros_like(angle)
-                    Vlist_fourier = np.zeros_like(angle)
-                    for i in range(angle.shape[0]):
-                        Vlist_cosine[i] = cosine_rotor.get_potential(angle[i])
-                        Vlist_fourier[i] = fourier_rotor.get_potential(angle[i])
-
-                    if fit == 'cosine':
-                        rotor = cosine_rotor
-                        rotor_count += 1
-                        conformer.modes.append(rotor)
-                    elif fit == 'fourier':
-                        rotor = fourier_rotor
-                        rotor_count += 1
-                        conformer.modes.append(rotor)
-                    elif fit == 'best':
-                        rms_cosine = np.sqrt(np.sum((Vlist_cosine - v_list) * (Vlist_cosine - v_list)) /
-                                             (len(v_list) - 1)) / 4184.
-                        rms_fourier = np.sqrt(np.sum((Vlist_fourier - v_list) * (Vlist_fourier - v_list)) /
-                                              (len(v_list) - 1)) / 4184.
-
-                        # Keep the rotor with the most accurate potential
-                        rotor = cosine_rotor if rms_cosine < rms_fourier else fourier_rotor
-                        # However, keep the cosine rotor if it is accurate enough, the
-                        # fourier rotor is not significantly more accurate, and the cosine
-                        # rotor has the correct symmetry
-                        if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 \
-                                and symmetry == cosine_rotor.symmetry:
-                            rotor = cosine_rotor
-
-                        conformer.modes.append(rotor)
-                        if plot:
-                            try:
-                                self.create_hindered_rotor_figure(angle, v_list, cosine_rotor, fourier_rotor, rotor,
-                                                                  rotor_count)
-                            except Exception as e:
-                                logging.warning("Could not plot hindered rotor graph due to error: {0}".format(e))
-
-                        rotor_count += 1
-
-            logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = np.array(project_rotors(conformer, hessian, rotors, linear, is_ts, label=self.species.label))
+            frequencies, rotors, conformer = self._fit_rotors(rotors, conformer, hessian, is_ts, linear, directory,
+                                                              plot)
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
@@ -641,6 +542,39 @@ class StatMechJob(object):
         for mode in conformer.modes:
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor, "cm^-1")
+
+        if self.useIsodesmicReactions:
+            # First, check that a species structure has been given
+            if not self.species.molecule:
+                raise InputError('A structure must be defined in the species block of the input file to perform '
+                                 'isodesmic reaction calculations. For example, append the following to the species '
+                                 'block: `structure=SMILES(CC)` using ethane as an example here.')
+
+            # Next, load the reference set database
+            reference_db = ReferenceDatabase()
+            reference_db.load(paths=self.referenceSets)
+
+            # Set the uncorrected value for E0 on the conformer object so that we can perform the uncorrected thermo job
+            conformer.E0 = ((e_electronic_with_corrections + zpe) * 0.001, 'kJ/mol')
+            self.species.conformer = conformer
+
+            uncorrected_thermo_job = ThermoJob(species=self.species, thermo_class='nasa')
+            uncorrected_thermo_job.generate_thermo()
+
+            uncorrected_thermo = self.species.thermo.get_enthalpy(298)
+
+            scheme = IsodesmicRingScheme(target=ErrorCancelingSpecies(self.species.molecule[0],
+                                                                      (uncorrected_thermo, 'J/mol'),
+                                                                      self.modelChemistry),
+                                         reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
+            isodesmic_thermo, self.isodesmicReactionList = scheme.calculate_target_enthalpy()
+
+            # Set the difference as the isodesmic EO correction
+            e_electronic_with_corrections += isodesmic_thermo.value_si - uncorrected_thermo
+
+        e0 = e_electronic_with_corrections + zpe
+        logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
+        conformer.E0 = (e0 * 0.001, "kJ/mol")
 
         # save supporting information for calculation
         self.supporting_info = [self.species.label]
@@ -679,6 +613,126 @@ class StatMechJob(object):
         self.supporting_info.append(d1d)
         # save conformer
         self.species.conformer = conformer
+
+    def _fit_rotors(self, rotors, conformer, hessian, is_ts, linear, directory, plot):
+        logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
+        rotor_count = 0
+        for j, q in enumerate(rotors):
+            symmetry = None
+            if len(q) == 3:
+                # No potential scan is given, this is a free rotor
+                pivots, top, symmetry = q
+                inertia = conformer.get_internal_reduced_moment_of_inertia(pivots, top) * constants.Na * 1e23
+                rotor = FreeRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                conformer.modes.append(rotor)
+                rotor_count += 1
+            elif len(q) == 8:
+                scan_dir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry = q
+                logging.info("Calculating energy levels for 2D-HR, may take a while...")
+                rotor = HinderedRotor2D(name='r' + str(j), torsigma1=symmetry1, torsigma2=symmetry2,
+                                        symmetry=symmetry, calc_path=os.path.join(directory, scan_dir),
+                                        pivots1=pivots1, pivots2=pivots2, top1=top1, top2=top2)
+                rotor.run()
+                conformer.modes.append(rotor)
+                rotor_count += 2
+            elif len(q) == 5 and isinstance(q[1][0], list):
+                scan_dir, pivots, tops, sigmas, semiclassical = q
+                rotor = HinderedRotorClassicalND(pivots, tops, sigmas, calc_path=os.path.join(directory, scan_dir),
+                                                 conformer=conformer, F=hessian,
+                                                 semiclassical=semiclassical, is_linear=linear, is_ts=is_ts)
+                rotor.run()
+                conformer.modes.append(rotor)
+                rotor_count += len(pivots)
+            elif len(q) in [4, 5]:
+                # This is a hindered rotor
+                if len(q) == 5:
+                    scan_log, pivots, top, symmetry, fit = q
+                elif len(q) == 4:
+                    # the symmetry number will be derived from the scan
+                    scan_log, pivots, top, fit = q
+                # Load the hindered rotor scan energies
+                if isinstance(scan_log, ScanLog):
+                    if not os.path.isfile(scan_log.path):
+                        modified_scan_path = os.path.join(directory, scan_log.path)
+                        if not os.path.isfile(modified_scan_path):
+                            raise InputError('Could not find scan energy file for species {0} '
+                                             'in the specified path {1}'.format(self.species.label, scan_log.path))
+                        else:
+                            scan_log.path = modified_scan_path
+                if isinstance(scan_log, (GaussianLog, QChemLog)):
+                    v_list, angle = scan_log.load_scan_energies()
+                    try:
+                        pivot_atoms = scan_log.load_scan_pivot_atoms()
+                    except Exception as e:
+                        logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
+                        pivot_atoms = 'N/A'
+                    try:
+                        frozen_atoms = scan_log.load_scan_frozen_atoms()
+                    except Exception as e:
+                        logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
+                        frozen_atoms = 'N/A'
+                elif isinstance(scan_log, ScanLog):
+                    angle, v_list = scan_log.load()
+                    # no way to find pivot atoms or frozen atoms from ScanLog
+                    pivot_atoms = 'N/A'
+                    frozen_atoms = 'N/A'
+                else:
+                    raise InputError('Invalid log file type {0} for scan log.'.format(scan_log.__class__))
+
+                if symmetry is None:
+                    symmetry = determine_rotor_symmetry(v_list, self.species.label, pivots)
+                self.raw_hindered_rotor_data.append((self.species.label, rotor_count, symmetry, angle,
+                                                     v_list, pivot_atoms, frozen_atoms))
+                inertia = conformer.get_internal_reduced_moment_of_inertia(pivots, top) * constants.Na * 1e23
+
+                cosine_rotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                cosine_rotor.fit_cosine_potential_to_data(angle, v_list)
+                fourier_rotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                fourier_rotor.fit_fourier_potential_to_data(angle, v_list)
+
+                Vlist_cosine = np.zeros_like(angle)
+                Vlist_fourier = np.zeros_like(angle)
+                for i in range(angle.shape[0]):
+                    Vlist_cosine[i] = cosine_rotor.get_potential(angle[i])
+                    Vlist_fourier[i] = fourier_rotor.get_potential(angle[i])
+
+                if fit == 'cosine':
+                    rotor = cosine_rotor
+                    rotor_count += 1
+                    conformer.modes.append(rotor)
+                elif fit == 'fourier':
+                    rotor = fourier_rotor
+                    rotor_count += 1
+                    conformer.modes.append(rotor)
+                elif fit == 'best':
+                    rms_cosine = np.sqrt(np.sum((Vlist_cosine - v_list) * (Vlist_cosine - v_list)) /
+                                         (len(v_list) - 1)) / 4184.
+                    rms_fourier = np.sqrt(np.sum((Vlist_fourier - v_list) * (Vlist_fourier - v_list)) /
+                                          (len(v_list) - 1)) / 4184.
+
+                    # Keep the rotor with the most accurate potential
+                    rotor = cosine_rotor if rms_cosine < rms_fourier else fourier_rotor
+                    # However, keep the cosine rotor if it is accurate enough, the
+                    # fourier rotor is not significantly more accurate, and the cosine
+                    # rotor has the correct symmetry
+                    if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 \
+                            and symmetry == cosine_rotor.symmetry:
+                        rotor = cosine_rotor
+
+                    conformer.modes.append(rotor)
+                    if plot:
+                        try:
+                            self.create_hindered_rotor_figure(angle, v_list, cosine_rotor, fourier_rotor, rotor,
+                                                              rotor_count)
+                        except Exception as e:
+                            logging.warning("Could not plot hindered rotor graph due to error: {0}".format(e))
+
+                    rotor_count += 1
+
+        logging.debug('    Determining frequencies from reduced force constant matrix...')
+        frequencies = np.array(project_rotors(conformer, hessian, rotors, linear, is_ts, label=self.species.label))
+
+        return frequencies, rotors, conformer
 
     def write_output(self, output_directory):
         """
