@@ -35,6 +35,7 @@ Generator (RMG).
 import copy
 import gc
 import logging
+import marshal
 import os
 import resource
 import shutil
@@ -99,6 +100,7 @@ class RMG(util.Subject):
     Attribute                           Description
     =================================== ================================================
     `input_file`                        The path to the input file
+    `profiler`                          A cProfile.Profile object for time profiling RMG
     ----------------------------------- ------------------------------------------------
     `database_directory`                The directory containing the RMG database
     `thermo_libraries`                  The thermodynamics libraries to load
@@ -140,6 +142,7 @@ class RMG(util.Subject):
     `ml_estimator`                      To use thermo estimation with machine learning
     `ml_settings`                       Settings for ML estimation
     `walltime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
+    `max_iterations`                    The maximum number of RMG iterations allowed, after which the job will terminate
     `kinetics_datastore`                ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initialization_time`               The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
@@ -148,13 +151,15 @@ class RMG(util.Subject):
     
     """
 
-    def __init__(self, input_file=None, output_directory=None):
+    def __init__(self, input_file=None, output_directory=None, profiler=None, stats_file=None):
         super(RMG, self).__init__()
         self.input_file = input_file
         self.output_directory = output_directory
+        self.profiler = profiler
         self.clear()
         self.model_settings_list = []
         self.simulator_settings_list = []
+        self.max_iterations = None
         self.Tmin = 0.0
         self.Tmax = 0.0
         self.Pmin = 0.0
@@ -214,6 +219,8 @@ class RMG(util.Subject):
         self.ml_settings = None
         self.species_constraints = {}
         self.walltime = '00:00:00:00'
+        self.save_seed_modulus = -1
+        self.max_iterations = None
         self.initialization_time = 0
         self.kinetics_datastore = None
         self.restart = False
@@ -523,6 +530,11 @@ class RMG(util.Subject):
         except KeyError:
             pass
 
+        try:
+            self.max_iterations = kwargs['max_iterations']
+        except KeyError:
+            pass
+
         data = self.walltime.split(':')
         if not len(data) == 4:
             raise ValueError('Invalid format for wall time {0}; should be DD:HH:MM:SS.'.format(self.walltime))
@@ -749,11 +761,12 @@ class RMG(util.Subject):
 
             # Main RMG loop
             while not self.done:
-                if self.generate_seed_each_iteration:
-                    self.make_seed_mech()
-
+                # iteration number starts at 0. Increment it before entering make_seed_mech
                 self.reaction_model.iteration_num += 1
                 self.done = True
+
+                if self.generate_seed_each_iteration:
+                    self.make_seed_mech()
 
                 all_terminated = True
                 num_core_species = len(self.reaction_model.core.species)
@@ -947,17 +960,24 @@ class RMG(util.Subject):
                         logging.info('The current model edge has %s species and %s reactions' % (edge_spec, edge_reac))
                         return
 
+                if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
+                    logging.info('MODEL GENERATION TERMINATED')
+                    logging.info('')
+                    logging.info('The maximum number of iterations of {0} has been reached'.format(self.max_iterations))
+                    logging.info('The output model may be incomplete.')
+                    logging.info('')
+                    core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+                    logging.info('The current model core has %s species and %s reactions' % (core_spec, core_reac))
+                    logging.info('The current model edge has %s species and %s reactions' % (edge_spec, edge_reac))
+                    return
+                    
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(
                     model_settings.max_num_species, q + 1))
                 max_num_spcs_hit = False
-                continue
 
         # Save the final seed mechanism
-        if self.generate_seed_each_iteration:
-            self.make_seed_mech()
-        else:
-            self.make_seed_mech()
+        self.make_seed_mech()
 
         self.run_model_analysis()
 
@@ -1237,6 +1257,7 @@ class RMG(util.Subject):
         1. Create the initial seed mechanism folder (the seed from a previous iterations will be deleted)
         2. Save the restart-from-seed file (unless the current job is itself a restart job)
         3. Ensure that we don't overwrite existing libraries in the database that have the same name as this job
+        4. Create the previous_seeds directory to save intermediate seeds if the user gives a value for saveSeedModulus
         """
         # Make the initial seed mechanism folder
         seed_dir = os.path.join(self.output_directory, 'seed')
@@ -1264,6 +1285,12 @@ class RMG(util.Subject):
                     q += 1
                 self.name = name + str(q)
 
+        previous_seeds_dir = os.path.join(self.output_directory, 'previous_seeds')
+        if os.path.exists(previous_seeds_dir):  # These are seeds from a previous RMG run. Delete them
+            shutil.rmtree(previous_seeds_dir)
+        if self.save_seed_modulus != -1:
+            os.makedirs(previous_seeds_dir, exist_ok=True)
+
     def make_seed_mech(self):
         """
         Save a seed mechanism (both core and edge) in the 'seed' sub-folder of the output directory. Additionally, save
@@ -1281,6 +1308,7 @@ class RMG(util.Subject):
 
         seed_dir = os.path.join(self.output_directory, 'seed')
         filter_dir = os.path.join(seed_dir, 'filters')
+        previous_seeds_dir = os.path.join(self.output_directory, 'previous_seeds')
         temp_seed_dir = os.path.join(self.output_directory, 'seed_tmp')
 
         # Move the seed from the previous iteration to a temporary directory in case we run into errors
@@ -1391,6 +1419,12 @@ class RMG(util.Subject):
 
             with open(os.path.join(filter_dir, 'species_map.yml'), 'w') as f:
                 yaml.dump(data=spcs_map, stream=f)
+
+            # Also, save the seed to the previous_seeds directory on specified iterations
+            if self.save_seed_modulus != -1 and self.reaction_model.iteration_num % self.save_seed_modulus == 0:
+                dst = os.path.join(previous_seeds_dir, 'iteration_number_{0}'.format(self.reaction_model.iteration_num))
+                logging.info('Copying seed from seed directory to {0}'.format(dst))
+                shutil.copytree(seed_dir, dst)
 
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(temp_seed_dir):
@@ -1719,12 +1753,18 @@ class RMG(util.Subject):
                             for k in range(prev_num_core_species, num_core_species):
                                 self.trimolecular_react[i, j, k] = True
 
+    def save_profiler_info(self):
+        if self.profiler:  # Save the profile information in case the job crashes
+            with open(os.path.join(self.output_directory, 'RMG.profile'), 'wb') as f:
+                self.profiler.snapshot_stats()
+                marshal.dump(self.profiler.stats, f)
+
     def save_everything(self):
         """
-        Saves the output HTML and the Chemkin file
+        Saves the output HTML and the Chemkin file. If the job is being profiled this is saved as well.
         """
         # If the user specifies it, add unused reaction library reactions to
-        # an additional output species and reaction list which is written to the ouput HTML
+        # an additional output species and reaction list which is written to the output HTML
         # file as well as the chemkin file
 
         if self.reaction_libraries:
@@ -1739,6 +1779,8 @@ class RMG(util.Subject):
 
         # Notify registered listeners:
         self.notify()
+
+        self.save_profiler_info()
 
     def finish(self):
         """
@@ -2304,7 +2346,7 @@ def process_profile_stats(stats_file, log_file):
     stats.print_callees(25)
 
 
-def make_profile_graph(stats_file):
+def make_profile_graph(stats_file, force_graph_generation=False):
     """
     Uses gprof2dot to create a graphviz dot file of the profiling information.
     
@@ -2314,77 +2356,101 @@ def make_profile_graph(stats_file):
     
     Rendering the ps2 file to pdf requires an external pdf converter
     `ps2pdf output.ps2` which produces a `output.ps2.pdf` file.
-    """
-    try:
-        from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes
-    except ImportError:
-        logging.warning('Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.')
-        logging.warning('Try getting the latest version with something like `pip install --upgrade gprof2dot`.')
-        return
-    import subprocess
 
-    # create an Options class to mimic optparser output as much as possible:
-    class Options(object):
+    Will only generate a graph if a display is present as errors can occur otherwise. If `force_graph_generation` is
+    True then the graph generation will be attempted either way
+    """
+    # Making the profile graph requires a display. See if one is available first
+    display_found = False
+
+    try:
+        display_found = bool(os.environ['DISPLAY'])
+    except KeyError:  # This means that no display was found
         pass
 
-    options = Options()
-    options.node_thres = 0.8
-    options.edge_thres = 0.1
-    options.strip = False
-    options.show_samples = False
-    options.root = ""
-    options.leaf = ""
-    options.wrap = True
+    if display_found or force_graph_generation:
+        try:
+            from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes, TIME, TIME_RATIO, TOTAL_TIME, TOTAL_TIME_RATIO
+        except ImportError:
+            logging.warning('Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.')
+            logging.warning('Try getting the latest version with something like `pip install --upgrade gprof2dot`.')
+            return
+        import subprocess
 
-    theme = themes['color']  # bw color gray pink
-    theme.fontname = "ArialMT"  # default "Arial" leads to PostScript warnings in dot (on Mac OS)
-    parser = PstatsParser(stats_file)
-    profile = parser.parse()
+        # create an Options class to mimic optparser output as much as possible:
+        class Options(object):
+            pass
 
-    dot_file = stats_file + '.dot'
-    output = open(dot_file, 'wt')
-    dot = DotWriter(output)
-    dot.strip = options.strip
-    dot.wrap = options.wrap
+        options = Options()
+        options.node_thres = 0.8
+        options.edge_thres = 0.1
+        options.strip = False
+        options.show_samples = False
+        options.root = ""
+        options.leaf = ""
+        options.wrap = True
 
-    if options.show_samples:
-        dot.show_function_events.append(SAMPLES)
+        theme = themes['color']  # bw color gray pink
+        theme.fontname = "ArialMT"  # default "Arial" leads to PostScript warnings in dot (on Mac OS)
+        parser = PstatsParser(stats_file)
+        profile = parser.parse()
 
-    profile = profile
-    profile.prune(options.node_thres / 100.0, options.edge_thres / 100.0, [], False)
+        dot_file = stats_file + '.dot'
+        output = open(dot_file, 'wt')
+        dot = DotWriter(output)
+        dot.strip = options.strip
+        dot.wrap = options.wrap
 
-    if options.root:
-        root_id = profile.getFunctionId(options.root)
-        if not root_id:
-            sys.stderr.write('root node ' + options.root + ' not found (might already be pruned : try -E0 -n0 flags)\n')
-            sys.exit(1)
-        profile.prune_root(root_id)
-    if options.leaf:
-        leaf_id = profile.getFunctionId(options.leaf)
-        if not leaf_id:
-            sys.stderr.write('leaf node ' + options.leaf + ' not found (maybe already pruned : try -E0 -n0 flags)\n')
-            sys.exit(1)
-        profile.prune_leaf(leaf_id)
+        # Add both total time and self time in seconds to the graph output
+        dot.show_function_events = [TOTAL_TIME, TOTAL_TIME_RATIO, TIME, TIME_RATIO]
 
-    dot.graph(profile, theme)
+        if options.show_samples:
+            dot.show_function_events.append(SAMPLES)
 
-    output.close()
+        profile = profile
+        profile.prune(options.node_thres / 100.0, options.edge_thres / 100.0, [], False)
 
-    try:
-        subprocess.check_call(['dot', '-Tps2', dot_file, '-o', '{0}.ps2'.format(dot_file)])
-    except subprocess.CalledProcessError:
-        logging.error("Error returned by 'dot' when generating graph of the profile statistics.")
-        logging.info("To try it yourself:\n     dot -Tps2 {0} -o {0}.ps2".format(dot_file))
-    except OSError:
-        logging.error("Couldn't run 'dot' to create graph of profile statistics. Check graphviz is installed properly "
-                      "and on your path.")
-        logging.info("Once you've got it, try:\n     dot -Tps2 {0} -o {0}.ps2".format(dot_file))
+        if options.root:
+            root_id = profile.getFunctionId(options.root)
+            if not root_id:
+                sys.stderr.write('root node ' + options.root + ' not found (might already be pruned : try -E0 -n0 flags)\n')
+                sys.exit(1)
+            profile.prune_root(root_id)
+        if options.leaf:
+            leaf_id = profile.getFunctionId(options.leaf)
+            if not leaf_id:
+                sys.stderr.write('leaf node ' + options.leaf + ' not found (maybe already pruned : try -E0 -n0 flags)\n')
+                sys.exit(1)
+            profile.prune_leaf(leaf_id)
 
-    try:
-        subprocess.check_call(['ps2pdf', '{0}.ps2'.format(dot_file), '{0}.pdf'.format(dot_file)])
-    except OSError:
-        logging.error("Couldn't run 'ps2pdf' to create pdf graph of profile statistics. Check that ps2pdf converter "
-                      "is installed.")
-        logging.info("Once you've got it, try:\n     pd2pdf {0}.ps2 {0}.pdf".format(dot_file))
+        dot.graph(profile, theme)
+
+        output.close()
+
+        try:
+            subprocess.check_call(['dot', '-Tps2', dot_file, '-o', '{0}.ps2'.format(dot_file)])
+        except subprocess.CalledProcessError:
+            logging.error("Error returned by 'dot' when generating graph of the profile statistics.")
+            logging.info("To try it yourself:\n     dot -Tps2 {0} -o {0}.ps2".format(dot_file))
+        except OSError:
+            logging.error("Couldn't run 'dot' to create graph of profile statistics. Check graphviz is installed properly "
+                          "and on your path.")
+            logging.info("Once you've got it, try:\n     dot -Tps2 {0} -o {0}.ps2".format(dot_file))
+
+        try:
+            subprocess.check_call(['ps2pdf', '{0}.ps2'.format(dot_file), '{0}.pdf'.format(dot_file)])
+        except OSError:
+            logging.error("Couldn't run 'ps2pdf' to create pdf graph of profile statistics. Check that ps2pdf converter "
+                          "is installed.")
+            logging.info("Once you've got it, try:\n     pd2pdf {0}.ps2 {0}.pdf".format(dot_file))
+        else:
+            logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
+
     else:
-        logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
+        logging.warning('Could not find a display, which is required in order to generate the profile graph. This '
+                        'is likely due to this job being run on a remote server without performing X11 forwarding '
+                        'or running the job through a job manager like SLURM.\n\n The graph can be generated later '
+                        'by running with the postprocessing flag `rmg.py -P input.py` from any directory/computer '
+                        'where both the input file and RMG.profile file are located and a display is available.\n\n'
+                        'Note that if the postprocessing flag is specified, this will force the graph generation '
+                        'regardless of if a display was found, which could cause this program to crash or freeze.')

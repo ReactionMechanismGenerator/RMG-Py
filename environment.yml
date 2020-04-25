@@ -32,6 +32,7 @@ dependencies:
   - numdifftools
   - numpy >=1.10.0
   - openbabel
+  - pandas
   - psutil
   - pydas >=1.0.1
   - pydot
@@ -46,4 +47,5 @@ dependencies:
   - scikit-learn
   - scipy
   - symmetry
+  - xlrd
   - xlwt

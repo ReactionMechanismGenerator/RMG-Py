@@ -51,6 +51,7 @@ requirements:
     - numdifftools
     - {{ pin_compatible('numpy') }}
     - openbabel
+    - pandas
     - psutil
     - pydas >=1.0.2
     - pydot
@@ -67,6 +68,7 @@ requirements:
     - scikit-learn
     - scipy
     - symmetry
+    - xlrd
     - xlwt
 test:
   source_files:

@@ -74,31 +74,38 @@ def main():
         'restart': args.restart,
         'walltime': args.walltime,
         'maxproc': args.maxproc,
-        'kineticsdatastore': args.kineticsdatastore
+        'kineticsdatastore': args.kineticsdatastore,
+        'max_iterations': args.maxiter,
     }
 
     if args.profile:
         import cProfile
+        rmg_profiler = cProfile.Profile()
+        stats_file = os.path.join(args.output_directory, 'RMG.profile')
+
         global_vars = {}
         local_vars = {
             'inputFile': args.file,
             'output_dir': args.output_directory,
             'kwargs': kwargs,
-            'RMG': RMG
+            'RMG': RMG,
+            'rmg_profiler': rmg_profiler,
         }
 
-        command = """rmg = RMG(input_file=inputFile, output_directory=output_dir); rmg.execute(**kwargs)"""
+        command = """rmg = RMG(input_file=inputFile, output_directory=output_dir, profiler=rmg_profiler); rmg.execute(**kwargs)"""
 
-        stats_file = os.path.join(args.output_directory, 'RMG.profile')
         print("Running under cProfile")
         if not args.postprocess:
             # actually run the program!
-            cProfile.runctx(command, global_vars, local_vars, stats_file)
+            rmg_profiler.runctx(command, global_vars, local_vars)
+            rmg_profiler.dump_stats(stats_file)
         # postprocess the stats
         log_file = os.path.join(args.output_directory, 'RMG.log')
         process_profile_stats(stats_file, log_file)
-        make_profile_graph(stats_file)
 
+        # Make the profile graph. Force graph generation regardless of display status if args.postprocess
+        make_profile_graph(stats_file, force_graph_generation=args.postprocess)
+        
     else:
 
         rmg = RMG(input_file=args.file, output_directory=args.output_directory)
