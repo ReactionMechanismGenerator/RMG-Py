@@ -35,6 +35,8 @@ from unittest.mock import patch
 
 from nose.plugins.attrib import attr
 
+import pandas as pd
+
 from rmgpy.rmg.main import RMG, initialize_log, make_profile_graph
 from rmgpy.rmg.main import RMG_Memory
 from rmgpy import get_path
@@ -243,6 +245,56 @@ class TestRestartNoFilters(unittest.TestCase):
         self.rmg.execute()
         with open(os.path.join(self.outputDir, 'RMG.log'), 'r') as f:
             self.assertIn('MODEL GENERATION COMPLETED', f.read())
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+        # Reset module level database
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
+        # Remove output directory
+        shutil.rmtree(cls.outputDir)
+
+
+@attr('functional')
+class TestMainFunctions(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'mainTest')
+        cls.outputDir = os.path.join(cls.testDir, 'output')
+        cls.databaseDirectory = settings['database.directory']
+
+        os.mkdir(os.path.join(cls.testDir, cls.outputDir))
+
+        cls.max_iter = 10
+
+        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'superminimal_input.py'),
+                      output_directory=cls.outputDir)
+
+        cls.rmg.execute(max_iterations=cls.max_iter)
+
+    def test_save_seed_modulus(self):
+        """
+        Test that saveSeedModulus argument from superminimal_input.py saved the correct number of seeds
+        """
+        path = os.path.join(self.outputDir, 'previous_seeds')
+        num_dir_actual = sum(os.path.isdir(os.path.join(path, i)) for i in os.listdir(path))
+        num_dir_expected = self.max_iter//2 + 1   # +1 is for saving iteration 0
+        self.assertEqual(num_dir_actual, num_dir_expected)
+
+    def test_max_iter(self):
+        """
+        Test the command line argument of -i
+        """
+        df = pd.read_excel(os.path.join(self.outputDir, 'statistics.xls'))
+        num_rows = df.shape[0]
+
+        num_iter_actual = num_rows
+        num_iter_expected = self.max_iter + 1  # +1 is for saving iteration 0
+        self.assertEqual(num_iter_actual, num_iter_expected)
 
     @classmethod
     def tearDownClass(cls):
