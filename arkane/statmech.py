@@ -768,6 +768,23 @@ class StatMechJob(object):
             pass
         result += ')'
         f.write('{0}\n\n'.format(prettify(result)))
+
+        if self.useIsodesmicReactions:
+            f.write('\n#Isodesmic Reactions Used:\n#------------------------\n#')
+            for i, rxn in enumerate(self.isodesmicReactionList):
+                thermo = rxn.calculate_target_thermo()
+                f.write('Reaction {0}: {1:9.3f} kcal/mol\n#'.format(i+1, thermo.value_si/4184.0))
+                reactant_string = '\tReactants:\n#\t\t1.0*{0}\n#'.format(rxn.target.molecule.to_smiles())
+                product_string = '\tProducts:\n#'
+                for spcs, v in rxn.species.items():
+                    if v > 0:  # Product
+                        product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.to_smiles())
+                    else:  # Reactant
+                        reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.to_smiles())
+                f.write(reactant_string + product_string + '\n#')
+
+            f.write('\n')
+
         f.close()
 
     def create_hindered_rotor_figure(self, angle, v_list, cosine_rotor, fourier_rotor, rotor, rotor_index):
