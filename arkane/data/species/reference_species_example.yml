@@ -1,0 +1,81 @@
+adjacency_list: |
+  multiplicity 2
+  1 C u1 p0 c0 {2,S} {4,S} {5,S}
+  2 C u0 p0 c0 {1,S} {3,T}
+  3 C u0 p0 c0 {2,T} {6,S}
+  4 H u0 p0 c0 {1,S}
+  5 H u0 p0 c0 {1,S}
+  6 H u0 p0 c0 {3,S}
+formula: C3H3
+inchi: InChI=1S/C3H3/c1-3-2/h1H,2H2
+inchi_key: DITHIFQMPPCBCU-UHFFFAOYSA-N
+label: example_reference_species
+smiles: C#C[CH2]
+charge: 0
+molecular_weight:
+  class: ScalarQuantity
+  units: amu
+  value: 39.05592359170969
+multiplicity: 2
+symmetry_number: 2.0
+RMG_version: 3.0.0
+calculated_data:
+  wb97m-v/def2-tzvpd:
+    class: CalculatedDataEntry
+    thermo_data:
+      H298:
+        class: ScalarQuantity
+        units: kcal/mol
+        value: 83.86752171537404
+      class: ThermoData
+    xyz_dict:
+      coords:
+        class: np_array
+        object:
+        - - 1.2538171909999998
+          - -4.9532e-06
+          - -3.73521e-05
+        - - -0.11561755469999997
+          - 2.95326e-05
+          - -8.74248e-05
+        - - -1.3324832514999996
+          - 6.15559e-05
+          - -0.0001342557
+        - - 1.8028762971999999
+          - 0.9298563913
+          - -2.0730399999999997e-05
+        - - 1.8028305968
+          - -0.9298933411
+          - -2.08201e-05
+        - - -2.3952063750999995
+          - 9.09833e-05
+          - -0.0001810534
+      isotopes:
+      - 12
+      - 12
+      - 12
+      - 1
+      - 1
+      - 1
+      symbols:
+      - C
+      - C
+      - C
+      - H
+      - H
+      - H
+class: ReferenceSpecies
+datetime: 2020-02-24 11:05
+default_xyz_chemistry: wb97m-v/def2-tzvpd
+index: 149
+reference_data:
+  ATcT:
+    class: ReferenceDataEntry
+    thermo_data:
+      H298:
+        class: ScalarQuantity
+        uncertainty: 0.38
+        uncertainty_type: +|-
+        units: kJ/mol
+        value: 351.43
+      class: ThermoData
