@@ -89,3 +89,20 @@ Currently, multiprocessing is implemented for reaction generation and the genera
 
 In python 3.4 new forking contexts 'spawn' and 'forkserver' are available. These methods will create new processes which share nothing or limited state with the parent and all memory passing is explicit. Once RMG is transferred to python 3 it is recommended to use the spawn or forkserver forking context to potentially allow for an increased number of processes.
 
+
+Details on profiling RMG jobs
+-----------------------------
+
+Here, we explain how to profile an RMG job. For starters, use the ``saveSeedModulus`` option in the input file, as described in the Section :ref:`Miscellaneous Options <miscellaneousoptions>`, to save the seed mechanism at regular intervals, perhaps every 50 or 100 iterations depending on the size of the mechanism. This option is particularly important for saving intermediate steps when working with large mechanisms; it may be prudent to save and examine how the chemistry changes over mechanism development rather than just obtaining the final seed mechanism.
+
+
+These seeds can then be restarted with use of the ``-r`` flag, as described in the Section :ref:`Input Flags <inputflags>` above. Additionally, restarting these seeds with the ``-i`` flag allows examination of how computational effort, time spent in each module, individual processor memory consumption if using the the ``-n`` flag, and overall memory consumption change over the course of mechanism development. To time profile, one could use::
+
+	rmg.py -r <path_to_seed>/seed -p -i 15 restart_from_seed.py
+
+such that 15 iterations was arbitrarily chosen as a representative sample size to obtain profiling information. To run memory profiling, one option is to install a `python memory profiler <https://github.com/pythonprofilers/memory_profiler>`_ as an additional dependency. As detailed in their linked GitHub, there are options for line-by-line memory usage of small functions and for time-based memory usage. 
+An example of memory profiling is::
+
+	mprof run --multiprocess rmg.py -r <path_to_seed>/seed -i 15 -n 3 restart_from_seed.py
+
+such that this example demonstrates how to obtain memory consumption for each of three specified processes and again use 15 iterations to obtain representative profiling information. Please see the linked GitHub to learn more about how the memory profiler tool can help characterize your process. 
