@@ -67,7 +67,9 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
 # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state.
 # The splittings are obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV.
 # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226}
+# Spin orbit correction for F, Si, Cl, Br and B taken form https://cccbdb.nist.gov/elecspin.asp
+SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226,
+        'F': -0.000614, 'Si': -0.000682 , 'Cl': -0.001338, 'Br': -0.005597 , 'B': -0.000046 } 
 
 # Atomic energies
 # All model chemistries here should be lower-case because the user input is changed to lower-case
@@ -324,6 +326,20 @@ atom_energies = {
         'O': -74.97847534 + SOC['O'], 'S': -397.6571654 + SOC['S']
     },
 
+    # Calculated atomic energies fitted orca 4.2.1  dlpno-ccsd(t)/def2-tzvp NormalPNO
+    # fitted using Colin's BAC algorithm and SOC are included in the correction
+    # AEs are fitted to neutral molecules with RMSE and MAE 7.99 and 5.96 kJ/mol respectively.
+    'dlpno-ccsd(t)/def2-tzvp': {
+        'H': -0.49641082, 'C': -37.77274125, 'N': -54.50388932, 'O': -74.96760414,
+        'F': -99.62044819, 'S': -397.63480236, 'Cl': -459.65784960
+    },
+    # wb97xd/def2tzvp conducted using G16. 
+    # fitted using Colin's BAC algorithm and SOC are included in the correction
+    # AEs are fitted to neutral molecules with RMSE and MAE 9.16 and 6.66 kJ/mol respectively.
+    'wb97xd/def2tzvp': {
+        'H': -0.50224721, 'C': -37.84235323, 'N': -54.58757237, 'O': -75.06982154,
+        'F': -99.74180094, 'S': -398.10765642, 'Cl': -460.14650064
+    },
 }
 
 # Petersson-type bond additivity correction parameters
@@ -400,6 +416,29 @@ pbac = {
         'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52,
     },
 
+    # fitted using Colin's BAC algorithm and AC are included in the correction units kcal/mol
+    # BACs are fitted to neutral molecules with RMSE and MAE 5.50 and 3.58 kJ/mol respectively.
+    'dlpno-ccsd(t)/def2-tzvp': {
+    'Cl-F': -0.07683, 'N=N': 1.20853, 'N=O': 1.49303, 'Cl-H': 0.00108,
+    'Cl-N': -0.31383, 'Cl-O': 0.13871, 'Cl-S': -1.26284, 'C-O': -0.04381, 'C-N': -0.42627,
+    'C-Cl': -0.03151, 'Cl-Cl': -0.22919, 'C-H': 0.12906, 'C-F': 0.37444, 'C-C': -0.43463,
+    'S=S': -0.39416, 'C#O': 2.70341, 'C#N': 1.37471, 'C-S': -0.03749, 'C#C': -0.66008,
+    'O-O': 0.09663, 'C=S': 0.80888, 'H-S': 1.23648, 'C=O': 0.88066, 'C=N': 0.03998,
+    'H-N': -0.49564, 'H-O': -0.41183, 'H-H': 0.6263, 'N#N': 3.71325, 'N-N': 0.74915, 
+    'N-O': -0.62156, 'C=C': -0.63901, 'O=S': -1.39626, 'O-S': -1.37002, 'S-S': 0.1515,
+    'F-S': -0.68693, 'F-O': 0.09202, 'F-H': -1.68214, 'F-F': 0.95483, 'O=O': -2.64949
+    },
+    # fitted using Colin's BAC algorithm and AC are included in the correction units kcal/mol
+    # BACs are fitted to neutral molecules with RMSE and MAE 6.01 and 4.40 kJ/mol respectively.
+    'wb97xd/def2tzvp': {    
+    'Cl-F': -0.28278, 'N=N': 0.33647, 'N=O': -0.03659, 'Cl-H': -0.7062,
+    'Cl-N': 0.74929, 'Cl-O': -0.30864, 'Cl-S': 0.09203, 'C-O': 0.11458, 'C-N': 0.5263, 'C-Cl': 0.10176,
+    'Cl-Cl': 0.76157, 'C-H': -0.05318, 'C-F': 0.54033, 'C-C': 0.19475, 'S=S': -2.68004, 'C#O': -2.32306,
+    'C#N': -2.28647, 'C-S': -0.10163, 'C#C': -2.4399, 'O-O': 0.34803, 'C=S': -0.16988, 'H-S': 0.74414,
+    'C=O': 1.00501, 'C=N': -0.68305, 'H-N': -0.52232, 'H-O': -1.18129, 'H-H': -1.76862, 'N#N': -3.84259,
+    'N-N': 2.66325, 'N-O': 1.69619, 'C=C': -0.11192, 'O=S': -1.33397, 'O-S': -1.71863, 'S-S': 0.5224,
+    'F-S': -1.28933, 'F-O': -0.03756, 'F-H': -3.71018, 'F-F': -1.71494, 'O=O': -6.70857
+    },
 }
 
 # Melius-type bond additivity correction parameters
