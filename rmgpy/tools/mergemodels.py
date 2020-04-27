@@ -166,16 +166,11 @@ def combine_models(models):
     print('The merged model has {0:d} species and {1:d} reactions'
           ''.format(len(final_model.species), len(final_model.reactions)))
 
-    # ensure no species with same name and index
-    label_index_dict = {}
-    for s in final_model.species:
-        if s.label not in label_index_dict:
-            label_index_dict[s.label] = [s.index]
-        else:
-            if s.index in label_index_dict[s.label]:
-                # obtained a duplicate
-                s.index = max(label_index_dict[s.label]) + 1
-                print("Reindexed {0} due to dublicate labels and index".format(s.label))
-            label_index_dict[s.label].append(s.index)
+    # reindex the unique species (to avoid name conflicts on save)
+    speciesIndex = 0
+    for spec in final_model.species:
+        if spec.label not in ['Ar', 'N2', 'Ne', 'He']:
+            spec.index = speciesIndex + 1
+            speciesIndex += 1
 
     return final_model

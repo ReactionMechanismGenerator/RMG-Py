@@ -53,16 +53,7 @@ class MergeModelsTest(unittest.TestCase):
         # make sure all species are included
         self.assertEqual(len(species), 15)
 
-        # make sure indexes are not unnecessarily redone
-        for s in species:
-            if s.label == 'CH2O':
-                self.assertEqual(s.index, 150)
-            elif s.label == 'CH3':
-                self.assertEqual(s.index, -1)
-            elif s.label == 'C3H7':
-                self.assertEqual(s.index, 14)
-
-        # make sure indexes are redone when there is a conflict
+        # make sure indexes are redone by checking a random species
         h_index = False
         for s in species:
             if s.label == 'H':
