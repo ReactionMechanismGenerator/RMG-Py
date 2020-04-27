@@ -107,6 +107,15 @@ computations:</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">'p'</span></code> for Petersson-type (default) or <code class="docutils literal notranslate"><span class="pre">'m'</span></code> for Melius-type bond additivity corrections</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">useIsodesmicReactions</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if isodesmic reactions are used to apply corrections. Will automatically turn
+on atom corrections and disable bond corrections</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">referenceSets</span></code></p></td>
+<td><p>A list of reference sets to use for isodesmic reactions. By default if left blank only the
+main reference set is used, which is the recommended. All reference sets are located at
+RMG-database/input/reference_sets/</p></td>
+</tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">species</span></code></p></td>
 <td><p>Contains parameters for non-transition states</p></td>
 </tr>
@@ -155,9 +164,10 @@ chemistry. The <code class="docutils literal notranslate"><span class="pre">mode
 <cite>CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)</cite>, just the <cite>single point</cite>, e.g., <cite>CCSD(T)-F12a/aug-cc-pVTZ</cite>,
 or a composite method, e.g., <cite>CBS-QB3</cite>.</p>
 <p>Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
-states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
+states by applying atom and spin-orbit coupling energy corrections. Additionally, bond additivity corrections OR
+isodesmic reactions corrections can be applied (but not both). This is particularly
 important for <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> calculations (see below). Note that the user must specify under the
-<code class="docutils literal notranslate"><span class="pre">species()</span></code> function the type and number of bonds for Arkane to apply these corrections.
+<code class="docutils literal notranslate"><span class="pre">species()</span></code> function the type and number of bonds for Arkane to apply bond additivity corrections.
 The frequency level is used to determine the frequency scaling factor if not given in the input file, and if it exists
 in Arkane (see the below table for existing frequency scaling factors).
 The example below specifies CBS-QB3 as the model chemistry:</p>
