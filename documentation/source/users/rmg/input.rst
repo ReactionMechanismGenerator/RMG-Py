@@ -866,6 +866,7 @@ Miscellaneous options::
         saveEdgeSpecies=True,
         keepIrreversible=True,
         trimolecularProductReversible=False,
+        saveSeedModulus=-1
     )
 
 The ``name`` field is the name of any generated seed mechanisms
@@ -891,6 +892,7 @@ Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions 
 
 Setting ``trimolecularProductReversible`` to ``False`` will not allow families with three products to react in the reverse direction. Default is ``True``.
 
+Setting ``saveSeedModulus`` to ``-1`` will only save the seed from the last iteration at the end of an RMG job. Alternatively, the seed can be saved every ``n`` iterations by setting ``saveSeedModulus`` to ``n``.
 
 Species Constraints
 =====================
