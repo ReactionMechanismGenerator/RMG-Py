@@ -77,6 +77,17 @@ atom_energies = {
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections
     # to the energies here
 
+    'wb97m-v/def2-tzvpd': {
+        'H': -0.4941110259 + SOC['H'],
+        'C': -37.8458797086 + SOC['C'],
+        'N': -54.5915786724 + SOC['N'],
+        'O': -75.0762279005 + SOC['O'],
+        'S': -398.0789126541 + SOC['S'],
+        'F': -99.7434924415 + SOC['F'],
+        'Cl': -460.1100357269 + SOC['Cl'],
+        'Br': -2573.9684615505 + SOC['Br']
+    },
+
     # cbs-qb3 and cbs-qb3-paraskevas have the same corrections
     'cbs-qb3': {
         'H': -0.499818 + SOC['H'], 'N': -54.520543 + SOC['N'], 'O': -74.987624 + SOC['O'],

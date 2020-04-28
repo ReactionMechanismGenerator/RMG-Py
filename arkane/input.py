@@ -624,6 +624,8 @@ def load_input_file(path):
     use_atom_corrections = local_context.get('useAtomCorrections', True)
     use_bond_corrections = local_context.get('useBondCorrections', False)
     bac_type = local_context.get('bondCorrectionType', 'p')
+    use_isodesmic_reactions = local_context.get('useIsodesmicReactions', False)
+    reference_sets = local_context.get('referenceSets', None)
     atom_energies = local_context.get('atomEnergies', None)
 
     directory = os.path.dirname(path)
@@ -641,6 +643,8 @@ def load_input_file(path):
             job.applyBondEnergyCorrections = use_bond_corrections
             job.bondEnergyCorrectionType = bac_type
             job.atomEnergies = atom_energies
+            job.useIsodesmicReactions = use_isodesmic_reactions
+            job.referenceSets = reference_sets
         if isinstance(job, ThermoJob):
             job.arkane_species.author = author
             job.arkane_species.level_of_theory = model_chemistry
