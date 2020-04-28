@@ -399,6 +399,10 @@ class TransportDatabase(object):
         # assume that the stablest resonance isomer has already been put as the first
         # and that we want the transport properties of this isomer
         molecule = species.molecule[0]
+        if molecule.is_aromatic(): #don't use aromatic resonance structures as there are no groups for them currently
+            molecule = molecule.copy(deep=True)
+            molecule.kekulize()
+
         molecule.clear_labeled_atoms()
         molecule.update_atomtypes()
         critical_point = self.estimate_critical_properties_via_group_additivity(molecule)

@@ -33,6 +33,7 @@ import unittest
 from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
+from rmgpy.molecule import Molecule
 from rmgpy.quantity import Energy, Length
 from rmgpy.species import Species
 from rmgpy.transport import TransportData
@@ -164,23 +165,30 @@ class TestTransportDatabase(unittest.TestCase):
 
     @work_in_progress
     def test_joback_on_benzene_bonds(self):
-        """Test Joback doesn't crash on Cb desription of benzene"""
-        species = Species().from_adjacency_list("""
-                                              1  C u0 p0 {2,B} {6,B} {7,S}
-                                              2  C u0 p0 {1,B} {3,B} {8,S}
-                                              3  C u0 p0 {2,B} {4,B} {9,S}
-                                              4  C u0 p0 {3,B} {5,B} {10,S}
-                                              5  C u0 p0 {4,B} {6,B} {11,S}
-                                              6  C u0 p0 {1,B} {5,B} {12,S}
-                                              7  H u0 p0 {1,S}
-                                              8  H u0 p0 {2,S}
-                                              9  H u0 p0 {3,S}
-                                              10 H u0 p0 {4,S}
-                                              11 H u0 p0 {5,S}
-                                              12 H u0 p0 {6,S}
-                                              """)
-        transport_data, blank, blank2 = self.database.get_transport_properties_via_group_estimates(species)
-        self.assertIsNotNone(transport_data)
+        """
+        Test Joback doesn't crash on Cb desription of benzene
+
+        Notes:
+            If this test fails as WIP, then the method ``get_transport_properties_via_group_estimates`` needs to be
+            updated so that aromatic molecules are not kekulized. See RMG-Py PR#1936
+        """
+        molecule = Molecule().from_adjacency_list("""
+                                                  1  C u0 p0 {2,B} {6,B} {7,S}
+                                                  2  C u0 p0 {1,B} {3,B} {8,S}
+                                                  3  C u0 p0 {2,B} {4,B} {9,S}
+                                                  4  C u0 p0 {3,B} {5,B} {10,S}
+                                                  5  C u0 p0 {4,B} {6,B} {11,S}
+                                                  6  C u0 p0 {1,B} {5,B} {12,S}
+                                                  7  H u0 p0 {1,S}
+                                                  8  H u0 p0 {2,S}
+                                                  9  H u0 p0 {3,S}
+                                                  10 H u0 p0 {4,S}
+                                                  11 H u0 p0 {5,S}
+                                                  12 H u0 p0 {6,S}
+                                                  """)
+        
+        critical_point = self.database.estimate_critical_properties_via_group_additivity(molecule)
+        self.assertIsNotNone(critical_point)
 
     def test_get_transport_properties(self):
         """Test that we can retrieve best transport properties for a species."""
