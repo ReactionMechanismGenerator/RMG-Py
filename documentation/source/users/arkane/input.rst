@@ -113,12 +113,16 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'B3LYP/6-31G(d,p)'``                            v    v         v (0.961)  H, C, O, S
 ``'MRCI+Davidson/aug-cc-pV(T+d)Z'``               v         v               H, C, N, O, S
 ``'wb97x-d/aug-cc-pvtz'``                         v         v               H, C, N, O
+``DLPNO-CCSD(T)/def2-tzvp``                       v    v    v               H, C, N, O, S, F, Cl
+``wb97xd/def2tzvp``                               v    v    v               H, C, N, O, S, F, Cl
 ================================================ ===== ==== ==== ========== ====================
 
 Notes:
 
 - The ``'CBS-QB3-Paraskevas'`` model chemistry is identical to ``'CBS-QB3'`` except for BCs for C/H/O bonds, which are from Paraskevas et al. (DOI: 10.1002/chem.201301381) instead of Petersson et al. (DOI: 10.1063/1.477794). Beware, combining BCs from different sources may lead to unforeseen results.
 - In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points.
+- In ``DLPNO-CCSD(T)/def2-tzvp`` run using Orca 4.2.1 with NormalPNO
+- In ``wb97xd/def2tzvp`` run using Gaussian16. Do n't use the AEC and BC for wb97xd calculated with Qchem.
 
 - Refer to paper by Goldsmith et al. (*Goldsmith, C. F.; Magoon, G. R.; Green, W. H., Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057*) for definition of ``'Klip_2'`` (*QCI(tz,qz)*) and ``'Klip_3'`` (*QCI(dz,qz)*).
 
