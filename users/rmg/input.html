@@ -829,6 +829,7 @@ chemical kinetics, thermodynamics, and transport processes; <a class="reference 
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">keepIrreversible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">trimolecularProductReversible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">saveSeedModulus</span><span class="o">=-</span><span class="mi">1</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -844,6 +845,7 @@ HTML file for your model containing all the species and reactions.  Turning this
 <p>Setting <code class="docutils literal notranslate"><span class="pre">saveEdgeSpecies</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as <code class="docutils literal notranslate"><span class="pre">chem_edge.inp</span></code> and <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.inp</span></code> files located inside the <code class="docutils literal notranslate"><span class="pre">chemkin</span></code> folder.  These files will be helpful in viewing RMG’s estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">keepIrreversible</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if <code class="docutils literal notranslate"><span class="pre">False</span></code> (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">trimolecularProductReversible</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code> will not allow families with three products to react in the reverse direction. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">saveSeedModulus</span></code> to <code class="docutils literal notranslate"><span class="pre">-1</span></code> will only save the seed from the last iteration at the end of an RMG job. Alternatively, the seed can be saved every <code class="docutils literal notranslate"><span class="pre">n</span></code> iterations by setting <code class="docutils literal notranslate"><span class="pre">saveSeedModulus</span></code> to <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 </div>
 <div class="section" id="species-constraints">
 <h2><span class="section-number">4.12. </span>Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
