@@ -36,7 +36,7 @@ import logging
 import os
 import string
 from collections import namedtuple
-from typing import Union
+from typing import List, Union
 
 import yaml
 
@@ -236,7 +236,7 @@ class ReferenceSpecies(ArkaneSpecies):
 
         self.make_object(data, class_dict)
 
-    def update_from_arkane_spcs(self, arkane_species, check_isomorphism=True):
+    def update_from_arkane_spcs(self, arkane_species, check_isomorphism=True, model_chemistry=None):
         """
         Add in calculated data from an existing ArkaneSpecies object.
 
@@ -248,6 +248,8 @@ class ReferenceSpecies(ArkaneSpecies):
             arkane_species (ArkaneSpecies):  Matching Arkane species that was run at the desired model chemistry
             check_isomorphism (bool): If True (default) the species will only be updated if the Arkane species supplied
                 is isomorphic to the reference species
+            model_chemistry (str): The model chemistry string matching the Arkane format. If not supplied the model
+                chemistry will be taken from the ArkaneSpecies object
         """
         if check_isomorphism:
             # Check that the species matches
@@ -270,7 +272,9 @@ class ReferenceSpecies(ArkaneSpecies):
         xyz_dict = {'symbols': symbols, 'isotopes': isotopes, 'coords': coords}
 
         calc_data = CalculatedDataEntry(thermo_data=thermo_data, xyz_dict=xyz_dict)
-        self.calculated_data[arkane_species.level_of_theory] = calc_data
+        if model_chemistry is None:
+            model_chemistry = arkane_species.level_of_theory
+        self.calculated_data[model_chemistry] = calc_data
 
     def to_error_canceling_spcs(self, model_chemistry, source=None):
         """
@@ -663,6 +667,58 @@ def _is_valid_calculated_data(data_dictionary):
         if all(isinstance(data_entry, CalculatedDataEntry) for data_entry in data_dictionary.values()):
             return True
     return False
+
+
+def update_reference_db(path: str, model_chemistry: str = None, ref_paths: List[str] = None) -> None:
+    """
+    Update the reference species database from a collection of ArkaneSpecies YAML files. All of the YAML files should
+    be included in a single folder.
+
+    Notes:
+        ArkaneSpecies YAML files must end in either '.yml' or '.yaml'
+
+    Args:
+        path (str): The path to a directory containing all of the ArkaneSpecies YAML files
+        model_chemistry (str): Model chemistry string matching the Arkane format to be updated. If not supplied will
+            default to the ``level_of_theory`` parameter of the ArkaneSpecies objects
+        ref_paths (list): A list to the paths of reference sets to load. By default only the main reference set is
+            loaded
+
+    Returns:
+        None
+    """
+    spcs_list = []
+    for f in os.listdir(path):
+        if any(file_extension in f.lower() for file_extension in ['.yml', '.yaml']):
+            spc = ArkaneSpecies.__new__(ArkaneSpecies)
+            spc.load_yaml(path=os.path.join(path, f))
+            spcs_list.append(spc)
+
+    database = ReferenceDatabase()
+    database.load(ref_paths)
+    ref_spcs_list = [ref_spcs for ref_set in database.reference_sets.values() for ref_spcs in ref_set]
+
+    for arkane_spc in spcs_list:
+        species = Species().from_adjacency_list(arkane_spc.adjacency_list, raise_atomtype_exception=False,
+                                                raise_charge_exception=False)
+        # Try to generate resonance structures
+        try:
+            species.generate_resonance_structures()
+        except (AtomTypeError, ValueError):  # This can fail for charged or unusual species. Move on without it
+            pass
+
+        for ref_spcs in ref_spcs_list:
+            if ref_spcs.is_isomorphic(species, generate_resonance_structures=False):
+                if model_chemistry in ref_spcs.calculated_data.keys():
+                    logging.warning(f'Overwriting data for {model_chemistry} for species {ref_spcs}')
+                ref_spcs.update_from_arkane_spcs(arkane_spc, check_isomorphism=False, model_chemistry=model_chemistry)
+                break
+
+        else:
+            logging.warning(f'Unable to find a reference species in the database that matches {arkane_spc.label}, '
+                            f'which has adjacency list {arkane_spc.adjacency_list}.')
+
+    database.save()
 
 
 if __name__ == '__main__':
