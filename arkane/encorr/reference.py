@@ -42,6 +42,7 @@ import yaml
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, symbol_by_number
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
 from rmgpy import settings
+from rmgpy.exceptions import AtomTypeError
 from rmgpy.molecule import Molecule
 from rmgpy.rmgobject import RMGObject
 from rmgpy.species import Species
@@ -99,6 +100,7 @@ class ReferenceSpecies(ArkaneSpecies):
 
         super().__init__(species=species, label=label, **kwargs)
 
+        self.species = species
         self.reference_data = reference_data
         self.calculated_data = calculated_data
         self.index = index
@@ -109,6 +111,12 @@ class ReferenceSpecies(ArkaneSpecies):
         # Alter the symmetry number calculated by RMG to the one provided by the user
         if symmetry_number:
             self.symmetry_number = symmetry_number
+
+        # Attempt to generate resonance isomers. This will fail if the species is charged, or if the species is unusual
+        try:
+            self.species.generate_resonance_structures()
+        except (AtomTypeError, ValueError):  # Move on for now
+            pass
 
     def __repr__(self):
         if self.index:
@@ -151,6 +159,10 @@ class ReferenceSpecies(ArkaneSpecies):
 
         # Don't include "is_ts" attribute, as no reference species are transition states
         del dictionary['is_ts']
+
+        # Species objects cannot be represented as a dictionary. Remove this attribute
+        del dictionary['species']
+
         return dictionary
 
     def save_yaml(self, path=MAIN_REFERENCE_PATH):
