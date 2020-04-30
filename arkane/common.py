@@ -292,10 +292,11 @@ class ArkaneSpecies(RMGObject):
             freq_data = data['imaginary_frequency']
             del data['imaginary_frequency']
         if not data['is_ts']:
-            if 'smiles' in data:
+            if 'adjacency_list' in data:
+                data['species'] = Species().from_adjacency_list(data['adjacency_list'], raise_atomtype_exception=False,
+                                                                raise_charge_exception=False)
+            elif 'smiles' in data:
                 data['species'] = Species(smiles=data['smiles'])
-            elif 'adjacency_list' in data:
-                data['species'] = Species().from_adjacency_list(data['adjacency_list'])
             elif 'inchi' in data:
                 data['species'] = Species(inchi=data['inchi'])
             else:
