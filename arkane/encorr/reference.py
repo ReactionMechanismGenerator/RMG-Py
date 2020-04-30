@@ -36,6 +36,7 @@ import logging
 import os
 import string
 from collections import namedtuple
+from typing import Union
 
 import yaml
 
@@ -165,6 +166,40 @@ class ReferenceSpecies(ArkaneSpecies):
 
         return dictionary
 
+    def is_isomorphic(self, species: Union[ArkaneSpecies, Species], generate_resonance_structures: bool = True) -> bool:
+        """
+        Determine if the reference species is isomorphic to another ReferenceSpecies, ArkaneSpecies, or rmgpy Species
+        object. Only the 2D graph representations are compared (i.e. this is not a statement about equality of the
+        objects themselves).
+
+        Notes:
+            Since generating resonance isomers for charged species or species with unusual atom types is currently not
+            supported, it is possible that this check will fail when the two species are in fact isomorphic because the
+            representations are resonance isomers unknown to RMG.
+
+        Args:
+            species (ArkaneSpecies): A ReferenceSpecies, ArkaneSpecies, or rmgpy Species
+                object
+            generate_resonance_structures (bool): If True (default) resonance isomers will be generated for the species.
+                If resonance isomers had already been generated for the species settings this to False can save time.
+
+        Returns:
+            bool
+        """
+        # Create rmgpy species objects if not given already
+        if isinstance(species, ArkaneSpecies):  # This catches the subclass as well
+            species = Species().from_adjacency_list(species.adjacency_list, raise_atomtype_exception=False,
+                                                    raise_charge_exception=False)
+
+        if generate_resonance_structures:
+            # If possible generate resonance isomers
+            try:
+                species.generate_resonance_structures()
+            except (AtomTypeError, ValueError):  # Can fail for unusual structures. Move on without it
+                pass
+
+        return self.species.is_isomorphic(species)
+
     def save_yaml(self, path=MAIN_REFERENCE_PATH):
         """
         Save the reference species to a .yml file
@@ -201,7 +236,7 @@ class ReferenceSpecies(ArkaneSpecies):
 
         self.make_object(data, class_dict)
 
-    def update_from_arkane_spcs(self, arkane_species):
+    def update_from_arkane_spcs(self, arkane_species, check_isomorphism=True):
         """
         Add in calculated data from an existing ArkaneSpecies object.
 
@@ -211,13 +246,16 @@ class ReferenceSpecies(ArkaneSpecies):
 
         Args:
             arkane_species (ArkaneSpecies):  Matching Arkane species that was run at the desired model chemistry
+            check_isomorphism (bool): If True (default) the species will only be updated if the Arkane species supplied
+                is isomorphic to the reference species
         """
-        # First, check that the species matches
-        if not self.species.is_isomorphic(arkane_species.species):
-            raise ValueError(f'Cannot update reference species {self} from arkane species {arkane_species}, as these '
-                             f'species are not isomorphic. The reference species has adjacency list:\n'
-                             f'{self.species.to_adjacency_list()}\nWhile the arkane species has adjacency list:\n'
-                             f'{arkane_species.species.to_adjacency_list()}')
+        if check_isomorphism:
+            # Check that the species matches
+            if not self.is_isomorphic(arkane_species):
+                raise ValueError(f'Cannot update reference species {self} from arkane species {arkane_species}, as '
+                                 f'these species are not isomorphic. The reference species has adjacency list:\n'
+                                 f'{self.adjacency_list}\nWhile the arkane species has adjacency list:\n'
+                                 f'{arkane_species.adjacency_list}')
 
         thermo_data = arkane_species.thermo_data
         # Only store H298 data
@@ -440,7 +478,7 @@ class ReferenceDatabase(object):
         if isinstance(paths, str):  # Convert to a list with one element
             paths = [paths]
 
-        molecule_list = []
+        all_ref_spcs = []
         for path in paths:
             set_name = os.path.basename(path)
             logging.info(f'Loading in reference set `{set_name}` from {path} ...')
@@ -451,22 +489,22 @@ class ReferenceDatabase(object):
                     continue
                 ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
                 ref_spcs.load_yaml(os.path.join(path, spcs))
-                molecule = Molecule().from_adjacency_list(ref_spcs.adjacency_list, raise_atomtype_exception=False,
-                                                          raise_charge_exception=False)
+
                 if ignore_incomplete:
                     if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
                         logging.warning(f'Molecule {ref_spcs.smiles} from reference set `{set_name}` does not have any '
                                         f'reference data and/or calculated data. This entry will not be added')
                         continue
+
                 # perform isomorphism checks to prevent duplicate species
-                for mol in molecule_list:
-                    if molecule.is_isomorphic(mol):
+                for ref in all_ref_spcs:
+                    if ref_spcs.is_isomorphic(ref, generate_resonance_structures=False):  # structures already generated
                         logging.warning(f'Molecule {ref_spcs.smiles} from reference set `{set_name}` already exists in '
                                         f'the reference database. The entry from this reference set will not be added. '
                                         f'The path for this species is {spcs}')
                         break
                 else:
-                    molecule_list.append(molecule)
+                    all_ref_spcs.append(ref_spcs)
                     reference_set.append(ref_spcs)
 
             self.reference_sets[set_name] = reference_set
