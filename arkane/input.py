@@ -63,10 +63,11 @@ from rmgpy.transport import TransportData
 from rmgpy.util import as_list
 
 from arkane.common import is_pdep
+from arkane.encorr.corr import assign_frequency_scale_factor
 from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
 from arkane.pdep import PressureDependenceJob
-from arkane.statmech import StatMechJob, assign_frequency_scale_factor
+from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
 
 ################################################################################
