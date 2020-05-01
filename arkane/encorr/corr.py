@@ -28,8 +28,7 @@
 ###############################################################################
 
 """
-This module provides methods for applying energy and bond additivity
-corrections.
+This module provides methods for applying energy, frequency scale factor, and bond additivity corrections.
 """
 
 import logging
@@ -166,3 +165,32 @@ def get_bac(model_chemistry, bonds, coords, nums, bac_type='p', multiplicity=1):
         return -mbac.get_bac(model_chemistry, coords, nums, multiplicity=multiplicity)
     else:
         raise BondAdditivityCorrectionError('BAC type {} is not available'.format(bac_type))
+
+
+def assign_frequency_scale_factor(freq_level):
+    """
+    Assign the frequency scaling factor according to the model chemistry.
+    Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
+
+    Sources:
+        [1] I.M. Alecu, J. Zheng, Y. Zhao, D.G. Truhlar, J. Chem. Theory Comput. 2010, 6, 2872, DOI: 10.1021/ct100326h
+        [2] http://cccbdb.nist.gov/vibscalejust.asp
+        [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
+        [4] Calculated as described in 10.1021/ct100326h
+        [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
+
+    Args:
+        freq_level (str, unicode): The frequency level of theory.
+
+    Returns:
+        float: The frequency scaling factor (1 by default).
+    """
+    scaling_factor = data.freq_dict.get(freq_level.lower(), 1)
+    if scaling_factor == 1:
+        logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
+                        'This will affect the partition function and all quantities derived from it '
+                        '(thermo quantities and rate coefficients).'.format(freq_level))
+    else:
+        logging.info('Assigned a frequency scale factor of {0} for the frequency level of theory {1}'.format(
+            scaling_factor, freq_level))
+    return scaling_factor
