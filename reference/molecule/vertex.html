@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.molecule.graph.Vertex &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,7 +58,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-molecule-graph-vertex">
 <h1>rmgpy.molecule.graph.Vertex<a class="headerlink" href="#rmgpy-molecule-graph-vertex" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.molecule.graph.Vertex">
 <em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.graph.</code><code class="sig-name descname">Vertex</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for vertices in a graph. Contains several connectivity values
@@ -99,7 +99,7 @@ useful for accelerating isomorphism searches, as proposed by
 </tr>
 </tbody>
 </table>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.connectivity1">
 <code class="sig-name descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity1" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -110,7 +110,7 @@ useful for accelerating isomorphism searches, as proposed by
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.connectivity2">
 <code class="sig-name descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity2" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -121,7 +121,7 @@ useful for accelerating isomorphism searches, as proposed by
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.connectivity3">
 <code class="sig-name descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity3" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -132,15 +132,15 @@ useful for accelerating isomorphism searches, as proposed by
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.copy">
-<code class="sig-name descname">copy</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the vertex. The default implementation assumes that no
 semantic information is associated with each vertex, and therefore
 simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vertex</span></code></a> object.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.edges">
 <code class="sig-name descname">edges</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.edges" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -151,15 +151,15 @@ simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.V
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.equivalent">
-<code class="sig-name descname">equivalent</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">equivalent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex other</em>, <em class="sig-param">bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
 equivalent, or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this
 function in a derived class if your vertices have semantic information.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.ignore">
 <code class="sig-name descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.ignore" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -170,15 +170,15 @@ function in a derived class if your vertices have semantic information.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.is_specific_case_of">
-<code class="sig-name descname">is_specific_case_of</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_specific_case_of</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
 class if your edges have semantic information.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.mapping">
 <code class="sig-name descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.graph.Vertex</p>
@@ -189,13 +189,13 @@ class if your edges have semantic information.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.reset_connectivity_values">
-<code class="sig-name descname">reset_connectivity_values</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset_connectivity_values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.sorting_label">
 <code class="sig-name descname">sorting_label</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.sorting_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -206,7 +206,7 @@ class if your edges have semantic information.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.terminal">
 <code class="sig-name descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.terminal" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -310,7 +310,7 @@ class if your edges have semantic information.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

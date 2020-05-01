@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>arkane.KineticsJob &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,88 +58,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="arkane-kineticsjob">
 <h1>arkane.KineticsJob<a class="headerlink" href="#arkane-kineticsjob" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="arkane.KineticsJob">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.</code><code class="sig-name descname">KineticsJob</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em>, <em class="sig-param">Tlist=None</em>, <em class="sig-param">Tcount=0</em>, <em class="sig-param">sensitivity_conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of an Arkane kinetics job. This job is used to compute
-and save the high-pressure-limit kinetics information for a single reaction.</p>
-<dl class="simple">
-<dt><cite>usedTST</cite> - a boolean representing if TST was used to calculate the kinetics</dt><dd><p>if kinetics is already given in the input, then it is False.</p>
-</dd>
-</dl>
-<dl class="method">
-<dt id="arkane.KineticsJob.Tlist">
-<em class="property">property </em><code class="sig-name descname">Tlist</code><a class="headerlink" href="#arkane.KineticsJob.Tlist" title="Permalink to this definition">¶</a></dt>
-<dd><p>The temperatures at which the k(T) values are computed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.Tmax">
-<em class="property">property </em><code class="sig-name descname">Tmax</code><a class="headerlink" href="#arkane.KineticsJob.Tmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum temperature at which the computed k(T) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.Tmin">
-<em class="property">property </em><code class="sig-name descname">Tmin</code><a class="headerlink" href="#arkane.KineticsJob.Tmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum temperature at which the computed k(T) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.draw">
-<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em>, <em class="sig-param">file_format='pdf'</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.draw" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a PDF drawing of the reaction.
-This requires that Cairo and its Python wrapper be available; if not,
-the drawing is not generated.</p>
-<p>You may also generate different formats of drawings, by changing format to
-one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.execute">
-<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">output_directory=None</em>, <em class="sig-param">plot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the kinetics job, saving the results within
-the <cite>output_directory</cite>.</p>
-<p>If <cite>plot</cite> is True, then plots of the raw and fitted values for the kinetics
-will be saved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.generate_kinetics">
-<code class="sig-name descname">generate_kinetics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.generate_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot both the raw kinetics data and the Arrhenius fit versus
-temperature. The plot is saved to the file <code class="docutils literal notranslate"><span class="pre">kinetics.pdf</span></code> in the
-output directory. The plot is not generated if <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is not
-installed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.save_yaml">
-<code class="sig-name descname">save_yaml</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.save_yaml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a YAML file for TSs if structures of the respective reactant/s and product/s are known</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.write_chemkin">
-<code class="sig-name descname">write_chemkin</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.write_chemkin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Appends the kinetics rates to <cite>chem.inp</cite> in <cite>outut_directory</cite></p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.KineticsJob.write_output">
-<code class="sig-name descname">write_output</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.write_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the kinetics job to the <cite>output.py</cite> file located
-in <cite>output_directory</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 
 
@@ -231,7 +149,7 @@ in <cite>output_directory</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

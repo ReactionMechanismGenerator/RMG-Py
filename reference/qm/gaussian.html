@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.qm.gaussian &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,32 +58,32 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-qm-gaussian">
 <h1>rmgpy.qm.gaussian<a class="headerlink" href="#rmgpy-qm-gaussian" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.gaussian.Gaussian">
 <em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">Gaussian</code><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all QM calculations that use Gaussian.</p>
 <p>Classes such as <a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol" title="rmgpy.qm.gaussian.GaussianMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianMol</span></code></a> will inherit from this class.</p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.gaussian.Gaussian.failureKeys">
 <code class="sig-name descname">failureKeys</code><em class="property"> = ['ERROR TERMINATION', 'IMAGINARY FREQUENCIES']</em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.failureKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.Gaussian.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Gaussian calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.gaussian.Gaussian.successKeys">
 <code class="sig-name descname">successKeys</code><em class="property"> = ['Normal termination of Gaussian']</em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.successKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.Gaussian.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -101,18 +101,18 @@ If all are satisfied, it will return True.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.gaussian.GaussianMol">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">GaussianMol</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">GaussianMol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base Class for calculations of molecules using Gaussian.</p>
 <p>Inherits from both <code class="xref py py-class docutils literal notranslate"><span class="pre">QMMolecule</span></code> and <a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian" title="rmgpy.qm.gaussian.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -120,135 +120,135 @@ If all are satisfied, it will return True.</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top keywords for attempt number <cite>attempt</cite>.</p>
 <p>NB. <cite>attempt</cite> begins at 1, not 0.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -264,28 +264,28 @@ given (augmented) InChI Key.</p>
 If all are satisfied, it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">GaussianMolPM3</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">GaussianMolPM3</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gaussian PM3 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s only the ‘pm3’ in the keywords that differs.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -293,141 +293,141 @@ but for now it’s only the ‘pm3’ in the keywords that differs.</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top keywords for attempt number <cite>attempt</cite>.</p>
 <p>NB. <cite>attempt</cite> begins at 1, not 0.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.keywords">
 <code class="sig-name descname">keywords</code><em class="property"> = ['# pm3 opt=(verytight,gdiis) freq IOP(2/16=3)', '# pm3 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)', '# pm3 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm', '# pm3 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm', '# pm3 opt=(verytight,gdiis,small) freq IOP(2/16=3)', '# pm3 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)', '# pm3 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)', '# pm3 opt=tight freq IOP(2/16=3)', '# pm3 opt=tight freq=numerical IOP(2/16=3)', '# pm3 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)', '# pm3 opt freq IOP(2/16=3)', '# pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)', '# pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm', '# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm', '# pm3 opt=(verytight,gdiis,calcall) IOP(2/16=3)', '# pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm', '# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm', '# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)']</em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords that will be added at the top of the qm input file</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -443,28 +443,28 @@ given (augmented) InChI Key.</p>
 If all are satisfied, it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">GaussianMolPM6</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.gaussian.</code><code class="sig-name descname">GaussianMolPM6</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gaussian PM6 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s only the ‘pm6’ in the keywords that differs.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -472,141 +472,141 @@ but for now it’s only the ‘pm6’ in the keywords that differs.</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top keywords for attempt number <cite>attempt</cite>.</p>
 <p>NB. <cite>attempt</cite> begins at 1, not 0.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.keywords">
 <code class="sig-name descname">keywords</code><em class="property"> = ['# pm6 opt=(verytight,gdiis) freq IOP(2/16=3)', '# pm6 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)', '# pm6 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm', '# pm6 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm', '# pm6 opt=(verytight,gdiis,small) freq IOP(2/16=3)', '# pm6 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)', '# pm6 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)', '# pm6 opt=tight freq IOP(2/16=3)', '# pm6 opt=tight freq=numerical IOP(2/16=3)', '# pm6 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)', '# pm6 opt freq IOP(2/16=3)', '# pm6 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)', '# pm6 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm', '# pm6 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm', '# pm6 opt=(verytight,gdiis,calcall) IOP(2/16=3)', '# pm6 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm', '# pm6 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm', '# pm6 opt=(calcall,small,maxcyc=100) IOP(2/16=3)']</em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords that will be added at the top of the qm input file</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -622,9 +622,9 @@ given (augmented) InChI Key.</p>
 If all are satisfied, it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
@@ -722,7 +722,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

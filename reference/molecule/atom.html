@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.molecule.Atom &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-molecule-atom">
 <h1>rmgpy.molecule.Atom<a class="headerlink" href="#rmgpy-molecule-atom" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.molecule.Atom">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Atom</code><span class="sig-paren">(</span><em class="sig-param">element=None</em>, <em class="sig-param">radical_electrons=0</em>, <em class="sig-param">charge=0</em>, <em class="sig-param">label=u''</em>, <em class="sig-param">lone_pairs=-100</em>, <em class="sig-param">coords=np.array([])</em>, <em class="sig-param">id=-1</em>, <em class="sig-param">props=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.</code><code class="sig-name descname">Atom</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">radical_electrons</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">charge</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">lone_pairs</span><span class="o">=</span><span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">coords</span><span class="o">=</span><span class="default_value">np.array([])</span></em>, <em class="sig-param"><span class="n">id</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">props</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -132,16 +132,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>Additionally, the <code class="docutils literal notranslate"><span class="pre">mass</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>, and <code class="docutils literal notranslate"><span class="pre">symbol</span></code> attributes of the
 atom’s element can be read (but not written) directly from the atom object,
 e.g. <code class="docutils literal notranslate"><span class="pre">atom.symbol</span></code> instead of <code class="docutils literal notranslate"><span class="pre">atom.element.symbol</span></code>.</p>
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.apply_action">
-<code class="sig-name descname">apply_action</code><a class="headerlink" href="#rmgpy.molecule.Atom.apply_action" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">apply_action</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.apply_action" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the atom pattern as a result of applying <cite>action</cite>, a tuple
 containing the name of the reaction recipe action along with any
 required parameters. The available actions can be found
 <a class="reference internal" href="recipe.html#reaction-recipe-actions"><span class="std std-ref">here</span></a>.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.atomtype">
 <code class="sig-name descname">atomtype</code><a class="headerlink" href="#rmgpy.molecule.Atom.atomtype" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.atomtype.AtomType</p>
@@ -152,7 +152,7 @@ required parameters. The available actions can be found
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.charge">
 <code class="sig-name descname">charge</code><a class="headerlink" href="#rmgpy.molecule.Atom.charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -163,7 +163,7 @@ required parameters. The available actions can be found
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.connectivity1">
 <code class="sig-name descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.Atom.connectivity1" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -174,7 +174,7 @@ required parameters. The available actions can be found
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.connectivity2">
 <code class="sig-name descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.Atom.connectivity2" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -185,7 +185,7 @@ required parameters. The available actions can be found
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.connectivity3">
 <code class="sig-name descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.Atom.connectivity3" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -196,7 +196,7 @@ required parameters. The available actions can be found
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.coords">
 <code class="sig-name descname">coords</code><a class="headerlink" href="#rmgpy.molecule.Atom.coords" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -207,27 +207,27 @@ required parameters. The available actions can be found
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.copy">
-<code class="sig-name descname">copy</code><a class="headerlink" href="#rmgpy.molecule.Atom.copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.Atom.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a deep copy of the current atom. Modifying the
 attributes of the copy will not affect the original.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.decrement_lone_pairs">
-<code class="sig-name descname">decrement_lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.Atom.decrement_lone_pairs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">decrement_lone_pairs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.decrement_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the lone electron pairs pattern as a result of applying a LOSE_PAIR action.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.decrement_radical">
-<code class="sig-name descname">decrement_radical</code><a class="headerlink" href="#rmgpy.molecule.Atom.decrement_radical" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">decrement_radical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.decrement_radical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the atom pattern as a result of applying a LOSE_RADICAL action,
 where <cite>radical</cite> specifies the number of radical electrons to remove.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.edges">
 <code class="sig-name descname">edges</code><a class="headerlink" href="#rmgpy.molecule.Atom.edges" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -238,7 +238,7 @@ where <cite>radical</cite> specifies the number of radical electrons to remove.<
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.element">
 <code class="sig-name descname">element</code><a class="headerlink" href="#rmgpy.molecule.Atom.element" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.element.Element</p>
@@ -249,9 +249,9 @@ where <cite>radical</cite> specifies the number of radical electrons to remove.<
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.equivalent">
-<code class="sig-name descname">equivalent</code><a class="headerlink" href="#rmgpy.molecule.Atom.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">equivalent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex other</em>, <em class="sig-param">bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this atom, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. If <cite>other</cite> is an <a class="reference internal" href="#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object, then all
 attributes except <cite>label</cite> and ‘ID’ must match exactly. If <cite>other</cite> is an
@@ -260,9 +260,9 @@ combinations in the atom pattern. If <code class="docutils literal notranslate">
 the element is compared and electrons are ignored.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.get_total_bond_order">
-<code class="sig-name descname">get_total_bond_order</code><a class="headerlink" href="#rmgpy.molecule.Atom.get_total_bond_order" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_total_bond_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.get_total_bond_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>This helper function is to help calculate total bond orders for an
 input atom.</p>
 <p>Some special consideration for the order <cite>B</cite> bond. For atoms having
@@ -270,7 +270,7 @@ three <cite>B</cite> bonds, the order for each is 4/3.0, while for atoms having 
 than three <cite>B</cite> bonds, the order for  each is 3/2.0</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.id">
 <code class="sig-name descname">id</code><a class="headerlink" href="#rmgpy.molecule.Atom.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -281,7 +281,7 @@ than three <cite>B</cite> bonds, the order for  each is 3/2.0</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.ignore">
 <code class="sig-name descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.Atom.ignore" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -292,92 +292,92 @@ than three <cite>B</cite> bonds, the order for  each is 3/2.0</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.increment_lone_pairs">
-<code class="sig-name descname">increment_lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.Atom.increment_lone_pairs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">increment_lone_pairs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.increment_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the lone electron pairs pattern as a result of applying a GAIN_PAIR action.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.increment_radical">
-<code class="sig-name descname">increment_radical</code><a class="headerlink" href="#rmgpy.molecule.Atom.increment_radical" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">increment_radical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.increment_radical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the atom pattern as a result of applying a GAIN_RADICAL action,
 where <cite>radical</cite> specifies the number of radical electrons to add.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_carbon">
-<code class="sig-name descname">is_carbon</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_carbon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_carbon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_carbon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a carbon atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_chlorine">
-<code class="sig-name descname">is_chlorine</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_chlorine" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_chlorine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_chlorine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a chlorine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_fluorine">
-<code class="sig-name descname">is_fluorine</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_fluorine" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_fluorine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_fluorine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a fluorine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_hydrogen">
-<code class="sig-name descname">is_hydrogen</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_hydrogen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_hydrogen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_hydrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a hydrogen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_iodine">
-<code class="sig-name descname">is_iodine</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_iodine" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_iodine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_iodine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an iodine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_nitrogen">
-<code class="sig-name descname">is_nitrogen</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_nitrogen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_nitrogen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_nitrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a nitrogen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_non_hydrogen">
-<code class="sig-name descname">is_non_hydrogen</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_non_hydrogen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_non_hydrogen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_non_hydrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom does not represent a hydrogen atom or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> if it does.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_nos">
-<code class="sig-name descname">is_nos</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_nos" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_nos</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_nos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represent either nitrogen, sulfur, or oxygen
 <code class="docutils literal notranslate"><span class="pre">False</span></code> if it does not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_oxygen">
-<code class="sig-name descname">is_oxygen</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_oxygen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_oxygen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_oxygen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_silicon">
-<code class="sig-name descname">is_silicon</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_silicon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_silicon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_silicon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a silicon atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_specific_case_of">
-<code class="sig-name descname">is_specific_case_of</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_specific_case_of</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. If <cite>other</cite> is an <a class="reference internal" href="#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object, then this is the same
 as the <a class="reference internal" href="#rmgpy.molecule.Atom.equivalent" title="rmgpy.molecule.Atom.equivalent"><code class="xref py py-meth docutils literal notranslate"><span class="pre">equivalent()</span></code></a> method. If <cite>other</cite> is an
@@ -385,20 +385,20 @@ as the <a class="reference internal" href="#rmgpy.molecule.Atom.equivalent" titl
 specific than any of the combinations in the atom pattern.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_sulfur">
-<code class="sig-name descname">is_sulfur</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_sulfur" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_sulfur</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_sulfur" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.is_surface_site">
-<code class="sig-name descname">is_surface_site</code><a class="headerlink" href="#rmgpy.molecule.Atom.is_surface_site" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_surface_site</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.is_surface_site" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a surface site or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.label">
 <code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.molecule.Atom.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
@@ -409,7 +409,7 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.lone_pairs">
 <code class="sig-name descname">lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.Atom.lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -420,7 +420,7 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.mapping">
 <code class="sig-name descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.Atom.mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.graph.Vertex</p>
@@ -431,7 +431,7 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.props">
 <code class="sig-name descname">props</code><a class="headerlink" href="#rmgpy.molecule.Atom.props" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -442,7 +442,7 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.radical_electrons">
 <code class="sig-name descname">radical_electrons</code><a class="headerlink" href="#rmgpy.molecule.Atom.radical_electrons" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -453,25 +453,25 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.reset_connectivity_values">
-<code class="sig-name descname">reset_connectivity_values</code><a class="headerlink" href="#rmgpy.molecule.Atom.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset_connectivity_values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.set_lone_pairs">
-<code class="sig-name descname">set_lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.Atom.set_lone_pairs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_lone_pairs</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">int lone_pairs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.set_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the number of lone electron pairs.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.sorting_key">
 <code class="sig-name descname">sorting_key</code><a class="headerlink" href="#rmgpy.molecule.Atom.sorting_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sorting key for comparing Atom objects. Read-only</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.sorting_label">
 <code class="sig-name descname">sorting_label</code><a class="headerlink" href="#rmgpy.molecule.Atom.sorting_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
@@ -482,7 +482,7 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.molecule.Atom.terminal">
 <code class="sig-name descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.Atom.terminal" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -493,9 +493,9 @@ not.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.molecule.Atom.update_charge">
-<code class="sig-name descname">update_charge</code><a class="headerlink" href="#rmgpy.molecule.Atom.update_charge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_charge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.update_charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update self.charge, according to the valence, and the
 number and types of bonds, radicals, and lone pairs.</p>
 </dd></dl>
@@ -593,7 +593,7 @@ number and types of bonds, radicals, and lone pairs.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

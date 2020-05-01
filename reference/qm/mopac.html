@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.qm.mopac &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,38 +58,38 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-qm-mopac">
 <h1>rmgpy.qm.mopac<a class="headerlink" href="#rmgpy-qm-mopac" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.mopac.Mopac">
 <em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">Mopac</code><a class="headerlink" href="#rmgpy.qm.mopac.Mopac" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all QM calculations that use MOPAC.</p>
 <p>Classes such as <a class="reference internal" href="#rmgpy.qm.mopac.MopacMol" title="rmgpy.qm.mopac.MopacMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">MopacMol</span></code></a> will inherit from this class.</p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.mopac.Mopac.failureKeys">
 <code class="sig-name descname">failureKeys</code><em class="property"> = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failureKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.Mopac.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.mopac.Mopac.successKeys">
 <code class="sig-name descname">successKeys</code><em class="property"> = ['DESCRIPTION OF VIBRATIONS', 'MOPAC DONE']</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.successKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.mopac.Mopac.usePolar">
 <code class="sig-name descname">usePolar</code><em class="property"> = False</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.usePolar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.Mopac.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -107,18 +107,18 @@ If all succeed, then it will return True.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.mopac.MopacMol">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMol</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base Class for calculations of molecules using MOPAC.</p>
 <p>Inherits from both <code class="xref py py-class docutils literal notranslate"><span class="pre">QMMolecule</span></code> and <a class="reference internal" href="#rmgpy.qm.mopac.Mopac" title="rmgpy.qm.mopac.Mopac"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mopac</span></code></a>.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -126,140 +126,140 @@ If all succeed, then it will return True.</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top, bottom, and polar keywords.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.mopac.MopacMol.keywords">
 <code class="sig-name descname">keywords</code><em class="property"> = [{'top': 'precise nosym THREADS=1', 'bottom': 'oldgeo thermo nosym precise THREADS=1 '}, {'top': 'precise nosym gnorm=0.0 nonr THREADS=1', 'bottom': 'oldgeo thermo nosym precise THREADS=1 '}, {'top': 'precise nosym gnorm=0.0 THREADS=1', 'bottom': 'oldgeo thermo nosym precise THREADS=1 '}, {'top': 'precise nosym gnorm=0.0 bfgs THREADS=1', 'bottom': 'oldgeo thermo nosym precise THREADS=1 '}, {'top': 'precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000 THREADS=1', 'bottom': 'oldgeo thermo nosym precise THREADS=1 '}]</em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords that will be added at the top and bottom of the qm input file</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -275,28 +275,28 @@ given (augmented) InChI Key.</p>
 If all succeed, then it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMol.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.mopac.MopacMolPM3">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMolPM3</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMolPM3</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM3 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s the same as all the MOPAC PMn calculations, only pm3</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -304,135 +304,135 @@ but for now it’s the same as all the MOPAC PMn calculations, only pm3</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top, bottom, and polar keywords for attempt number <cite>attempt</cite>.</p>
 <p>NB. <cite>attempt</cite> begins at 1, not 0.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -448,28 +448,28 @@ given (augmented) InChI Key.</p>
 If all succeed, then it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.mopac.MopacMolPM6">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMolPM6</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMolPM6</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM6 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s the same as all the MOPAC PMn calculations, only pm6</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -477,135 +477,135 @@ but for now it’s the same as all the MOPAC PMn calculations, only pm6</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top, bottom, and polar keywords for attempt number <cite>attempt</cite>.</p>
 <p>NB. <cite>attempt</cite> begins at 1, not 0.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -621,28 +621,28 @@ given (augmented) InChI Key.</p>
 If all succeed, then it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.mopac.MopacMolPM7">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMolPM7</code><span class="sig-paren">(</span><em class="sig-param">molecule</em>, <em class="sig-param">settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.mopac.</code><code class="sig-name descname">MopacMolPM7</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM7 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s the same as all the MOPAC PMn calculations, only pm7</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.calculate_chirality_correction">
 <code class="sig-name descname">calculate_chirality_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.calculate_chirality_correction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.calculate_thermo_data">
 <code class="sig-name descname">calculate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.calculate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the thermodynamic properties.</p>
@@ -650,135 +650,135 @@ but for now it’s the same as all the MOPAC PMn calculations, only pm7</p>
 self.qm_data and self.point_group need to be generated before this method is called.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.create_geometry">
 <code class="sig-name descname">create_geometry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.create_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.determine_point_group">
 <code class="sig-name descname">determine_point_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.generate_qm_data">
 <code class="sig-name descname">generate_qm_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.generate_qm_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.generate_thermo_data">
 <code class="sig-name descname">generate_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.generate_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Thermo Data via a QM calc.</p>
 <p>Returns None if it fails.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.get_augmented_inchi_key">
 <code class="sig-name descname">get_augmented_inchi_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the augmented InChI from self.molecule</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.get_file_path">
-<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param">extension</em>, <em class="sig-param">scratch=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_file_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_file_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">extension</span></em>, <em class="sig-param"><span class="n">scratch</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path to the file with the given extension.</p>
 <p>The provided extension should include the leading dot.
 If called with <cite>scratch=False</cite> then it will be in the <cite>fileStore</cite> directory,
 else <cite>scratch=True</cite> is assumed and it will be in the <cite>scratchDirectory</cite> directory.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.get_mol_file_path_for_calculation">
-<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mol_file_path_for_calculation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_mol_file_path_for_calculation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
 <p>If attempt &lt;= self.script_attempts then we use the refined coordinates,
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.get_parser">
-<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param">output_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the appropriate cclib parser.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.get_thermo_file_path">
 <code class="sig-name descname">get_thermo_file_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.get_thermo_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the path the thermo data file.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.input_file_keywords">
-<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">input_file_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the top, bottom, and polar keywords for attempt number <cite>attempt</cite>.</p>
 <p>NB. <cite>attempt</cite> begins at 1, not 0.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.load_thermo_data">
 <code class="sig-name descname">load_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.load_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try loading a thermo data from a previous run.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.max_attempts">
 <em class="property">property </em><code class="sig-name descname">max_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.output_file_path">
 <em class="property">property </em><code class="sig-name descname">output_file_path</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.parse">
 <code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the results of the Mopac calculation, and returns a QMData object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.save_thermo_data">
 <code class="sig-name descname">save_thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.save_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the generated thermo data.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.script_attempts">
 <em class="property">property </em><code class="sig-name descname">script_attempts</code><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.verify_output_file">
 <code class="sig-name descname">verify_output_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.verify_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check’s that an output file exists and was successful.</p>
@@ -794,9 +794,9 @@ given (augmented) InChI Key.</p>
 If all succeed, then it will return True.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param">attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attempt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
@@ -894,7 +894,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

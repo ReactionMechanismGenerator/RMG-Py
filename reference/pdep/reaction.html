@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Reaction events &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Reaction events<a class="headerlink" href="#reaction-events" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="microcanonical-rate-coefficients">
 <h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient">
 <code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">calculate_microcanonical_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray reac_dens_states</em>, <em class="sig-param">ndarray prod_dens_states=None</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> for the reaction
@@ -88,7 +88,7 @@ inverse Laplace transform method.</p>
 </div>
 <div class="section" id="rrkm-theory">
 <h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.pdep.reaction.apply_rrkm_theory">
 <code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">apply_rrkm_theory</code><span class="sig-paren">(</span><em class="sig-param">transition_state</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient for a reaction using RRKM
@@ -118,7 +118,7 @@ than the inverse Laplace transform method.</p>
 </div>
 <div class="section" id="inverse-laplace-transform-method">
 <h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">
 <code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">apply_inverse_laplace_transform_method</code><span class="sig-paren">(</span><em class="sig-param">transition_state</em>, <em class="sig-param">Arrhenius kinetics</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient for a reaction using the
@@ -254,7 +254,7 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.kinetics.Troe &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-kinetics-troe">
 <h1>rmgpy.kinetics.Troe<a class="headerlink" href="#rmgpy-kinetics-troe" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.kinetics.Troe">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">Troe</code><span class="sig-paren">(</span><em class="sig-param">arrheniusHigh=None</em>, <em class="sig-param">arrheniusLow=None</em>, <em class="sig-param">alpha=0.0</em>, <em class="sig-param">T3=None</em>, <em class="sig-param">T1=None</em>, <em class="sig-param">T2=None</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em>, <em class="sig-param">Pmin=None</em>, <em class="sig-param">Pmax=None</em>, <em class="sig-param">efficiencies=None</em>, <em class="sig-param">comment=u''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">Troe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arrheniusHigh</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arrheniusLow</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">T3</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T1</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Tmin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Tmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Pmin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Pmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">efficiencies</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">comment</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient <span class="math notranslate nohighlight">\(k(T, P)\)</span>
 using the Troe formulation. The attributes are:</p>
 <table class="docutils align-default">
@@ -125,49 +125,49 @@ low-pressure and high-pressure limit kinetics, respectively. The broadening
 factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</p>
 <div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\log F &amp;= \left\{1 + \left[ \frac{\log P_\mathrm{r} + c}{n - d (\log P_\mathrm{r} + c)} \right]^2 \right\}^{-1} \log F_\mathrm{cent}\\c &amp;= -0.4 - 0.67 \log F_\mathrm{cent}\\n &amp;= 0.75 - 1.27 \log F_\mathrm{cent}\\d &amp;= 0.14\\F_\mathrm{cent} &amp;= (1 - \alpha) \exp \left( -T/T_3 \right) + \alpha \exp \left( -T/T_1 \right) + \exp \left( -T_2/T \right)\end{aligned}\end{align} \]</div>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.Pmax">
 <code class="sig-name descname">Pmax</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Pmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.Pmin">
 <code class="sig-name descname">Pmin</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Pmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.T1">
 <code class="sig-name descname">T1</code><a class="headerlink" href="#rmgpy.kinetics.Troe.T1" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Troe <span class="math notranslate nohighlight">\(T_1\)</span> parameter.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.T2">
 <code class="sig-name descname">T2</code><a class="headerlink" href="#rmgpy.kinetics.Troe.T2" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Troe <span class="math notranslate nohighlight">\(T_2\)</span> parameter.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.T3">
 <code class="sig-name descname">T3</code><a class="headerlink" href="#rmgpy.kinetics.Troe.T3" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Troe <span class="math notranslate nohighlight">\(T_3\)</span> parameter.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.Tmax">
 <code class="sig-name descname">Tmax</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.Tmin">
 <code class="sig-name descname">Tmin</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.alpha">
 <code class="sig-name descname">alpha</code><a class="headerlink" href="#rmgpy.kinetics.Troe.alpha" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
@@ -178,7 +178,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.arrheniusHigh">
 <code class="sig-name descname">arrheniusHigh</code><a class="headerlink" href="#rmgpy.kinetics.Troe.arrheniusHigh" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.arrhenius.Arrhenius</p>
@@ -189,7 +189,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.arrheniusLow">
 <code class="sig-name descname">arrheniusLow</code><a class="headerlink" href="#rmgpy.kinetics.Troe.arrheniusLow" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.arrhenius.Arrhenius</p>
@@ -200,13 +200,13 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.change_rate">
-<code class="sig-name descname">change_rate</code><a class="headerlink" href="#rmgpy.kinetics.Troe.change_rate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">change_rate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double factor</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.change_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes kinetics rate by a multiple <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.comment">
 <code class="sig-name descname">comment</code><a class="headerlink" href="#rmgpy.kinetics.Troe.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
@@ -217,13 +217,13 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.discrepancy">
-<code class="sig-name descname">discrepancy</code><a class="headerlink" href="#rmgpy.kinetics.Troe.discrepancy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discrepancy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">KineticsModel other_kinetics</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.Troe.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.efficiencies">
 <code class="sig-name descname">efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.Troe.efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -234,32 +234,32 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.get_cantera_efficiencies">
-<code class="sig-name descname">get_cantera_efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.Troe.get_cantera_efficiencies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_cantera_efficiencies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">species_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.get_cantera_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary containing the collider efficiencies for this PDepKineticsModel object
 suitable for setting the efficiencies in the following cantera reaction objects:
 <cite>ThreeBodyReaction</cite>, <cite>FalloffReaction</cite>,`ChemicallyActivatedReaction`</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.get_effective_collider_efficiencies">
-<code class="sig-name descname">get_effective_collider_efficiencies</code><a class="headerlink" href="#rmgpy.kinetics.Troe.get_effective_collider_efficiencies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_effective_collider_efficiencies</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list species</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.kinetics.Troe.get_effective_collider_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective collider efficiencies for all species in the form of
 a numpy array.  This function helps assist rapid effective pressure calculations in the solver.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.get_effective_pressure">
-<code class="sig-name descname">get_effective_pressure</code><a class="headerlink" href="#rmgpy.kinetics.Troe.get_effective_pressure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_effective_pressure</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double P</em>, <em class="sig-param">list species</em>, <em class="sig-param">ndarray fractions</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.Troe.get_effective_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective pressure in Pa for a system at a given pressure
 <cite>P</cite> in Pa composed of the given list of <cite>species</cite> (Species or Molecule objects) with the given
 <cite>fractions</cite>.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.get_rate_coefficient">
-<code class="sig-name descname">get_rate_coefficient</code><a class="headerlink" href="#rmgpy.kinetics.Troe.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">double P=0.0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.Troe.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the rate coefficient <span class="math notranslate nohighlight">\(k(T)\)</span> in units of m^3,
 mol, and s at the specified temperature <cite>T</cite> in K and pressure <cite>P</cite> in
 Pa. If you wish to consider collision efficiencies, then you should
@@ -267,7 +267,7 @@ first use <a class="reference internal" href="#rmgpy.kinetics.Troe.get_effective
 pressure, and pass that value as the pressure to this method.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.highPlimit">
 <code class="sig-name descname">highPlimit</code><a class="headerlink" href="#rmgpy.kinetics.Troe.highPlimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.model.KineticsModel</p>
@@ -278,59 +278,59 @@ pressure, and pass that value as the pressure to this method.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.is_identical_to">
-<code class="sig-name descname">is_identical_to</code><a class="headerlink" href="#rmgpy.kinetics.Troe.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_identical_to</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">KineticsModel other_kinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to see if kinetics matches that of other kinetics and returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
 if coeffs, kunits, Tmin,</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.is_pressure_dependent">
-<code class="sig-name descname">is_pressure_dependent</code><a class="headerlink" href="#rmgpy.kinetics.Troe.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_pressure_dependent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.is_pressure_valid">
-<code class="sig-name descname">is_pressure_valid</code><a class="headerlink" href="#rmgpy.kinetics.Troe.is_pressure_valid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_pressure_valid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double P</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.is_pressure_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
 pressure range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum pressure are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.is_similar_to">
-<code class="sig-name descname">is_similar_to</code><a class="headerlink" href="#rmgpy.kinetics.Troe.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_similar_to</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">KineticsModel other_kinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.is_temperature_valid">
-<code class="sig-name descname">is_temperature_valid</code><a class="headerlink" href="#rmgpy.kinetics.Troe.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_temperature_valid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.set_cantera_kinetics">
-<code class="sig-name descname">set_cantera_kinetics</code><a class="headerlink" href="#rmgpy.kinetics.Troe.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_cantera_kinetics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">ct_reaction</span></em>, <em class="sig-param"><span class="n">species_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the efficiencies, kinetics, and troe falloff parameters
 for a cantera FalloffReaction.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Troe.to_html">
-<code class="sig-name descname">to_html</code><a class="headerlink" href="#rmgpy.kinetics.Troe.to_html" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_html</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.to_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Troe.uncertainty">
 <code class="sig-name descname">uncertainty</code><a class="headerlink" href="#rmgpy.kinetics.Troe.uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
@@ -434,7 +434,7 @@ for a cantera FalloffReaction.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

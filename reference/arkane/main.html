@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>arkane.Arkane &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,73 +58,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="arkane-arkane">
 <h1>arkane.Arkane<a class="headerlink" href="#arkane-arkane" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="arkane.Arkane">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.</code><code class="sig-name descname">Arkane</code><span class="sig-paren">(</span><em class="sig-param">input_file=None</em>, <em class="sig-param">output_directory=None</em>, <em class="sig-param">verbose=20</em>, <em class="sig-param">save_rmg_libraries=True</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <a class="reference internal" href="#arkane.Arkane" title="arkane.Arkane"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arkane</span></code></a> class represents an instance of Arkane, a tool for
-computing properties of chemical species and reactions. The attributes are:</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 75%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Attribute</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><cite>job_list</cite></p></td>
-<td><p>A list of the jobs to execute</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>input_file</cite></p></td>
-<td><p>The path of the input file defining the jobs to execute</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>output_directory</cite></p></td>
-<td><p>The directory in which to write the output files</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>verbose</cite></p></td>
-<td><p>The level of detail in the generated logging messages</p></td>
-</tr>
-</tbody>
-</table>
-<p>The output directory defaults to the same directory as the input file if
-not explicitly specified.</p>
-<p>To use this class programmatically, create an instance and set its
-attributes using either the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code> method or by directly
-accessing the attributes, and then invoke the <a class="reference internal" href="#arkane.Arkane.execute" title="arkane.Arkane.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> method.
-You can also populate the attributes from the command line using the
-<a class="reference internal" href="#arkane.Arkane.parse_command_line_arguments" title="arkane.Arkane.parse_command_line_arguments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_command_line_arguments()</span></code></a> method before running <a class="reference internal" href="#arkane.Arkane.execute" title="arkane.Arkane.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a>.</p>
-<dl class="method">
-<dt id="arkane.Arkane.execute">
-<code class="sig-name descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute, in order, the jobs found in input file specified by the
-<cite>input_file</cite> attribute.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.Arkane.get_libraries">
-<code class="sig-name descname">get_libraries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.get_libraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get RMG kinetics and thermo libraries</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.Arkane.load_input_file">
-<code class="sig-name descname">load_input_file</code><span class="sig-paren">(</span><em class="sig-param">input_file</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.load_input_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a set of jobs from the given <cite>input_file</cite> on disk. Returns the
-loaded set of jobs as a list.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.Arkane.parse_command_line_arguments">
-<code class="sig-name descname">parse_command_line_arguments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.parse_command_line_arguments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the command-line arguments being passed to Arkane. This uses the
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code> module, which ensures that the command-line arguments are
-sensible, parses them, and returns them.</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 
 
@@ -216,7 +149,7 @@ sensible, parses them, and returns them.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

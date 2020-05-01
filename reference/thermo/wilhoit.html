@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.thermo.Wilhoit &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-thermo-wilhoit">
 <h1>rmgpy.thermo.Wilhoit<a class="headerlink" href="#rmgpy-thermo-wilhoit" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="thermowilhoit"></span><dl class="class">
+<span class="target" id="thermowilhoit"></span><dl class="py class">
 <dt id="rmgpy.thermo.Wilhoit">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.thermo.</code><code class="sig-name descname">Wilhoit</code><span class="sig-paren">(</span><em class="sig-param">Cp0=None</em>, <em class="sig-param">CpInf=None</em>, <em class="sig-param">a0=0.0</em>, <em class="sig-param">a1=0.0</em>, <em class="sig-param">a2=0.0</em>, <em class="sig-param">a3=0.0</em>, <em class="sig-param">H0=None</em>, <em class="sig-param">S0=None</em>, <em class="sig-param">B=None</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em>, <em class="sig-param">label=u''</em>, <em class="sig-param">comment=u''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.thermo.</code><code class="sig-name descname">Wilhoit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Cp0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">CpInf</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">a0</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">a1</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">a2</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">a3</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">H0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">S0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">B</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Tmin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Tmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">comment</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on the Wilhoit equation. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -141,57 +141,57 @@ molecules and <span class="math notranslate nohighlight">\(4R\)</span> for nonli
 <span class="math notranslate nohighlight">\(\left[ 3 N_\mathrm{atoms} - (2 + 0.5 N_\mathrm{rotors}) \right] R\)</span>
 for nonlinear molecules, for a molecule composed of <span class="math notranslate nohighlight">\(N_\mathrm{atoms}\)</span>
 atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.B">
 <code class="sig-name descname">B</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.B" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Wilhoit scaled temperature coefficient.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.Cp0">
 <code class="sig-name descname">Cp0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.Cp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The heat capacity at zero temperature.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.CpInf">
 <code class="sig-name descname">CpInf</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.CpInf" title="Permalink to this definition">¶</a></dt>
 <dd><p>The heat capacity at infinite temperature.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.E0">
 <code class="sig-name descname">E0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.E0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground state energy (J/mol) at zero Kelvin, including zero point energy.</p>
 <p>For the Wilhoit class, this is calculated as the Enthalpy at 0.001 Kelvin.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.H0">
 <code class="sig-name descname">H0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.H0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The integration constant for enthalpy.</p>
 <p>NB. this is not equal to the enthlapy at 0 Kelvin, which you can access via E0</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.S0">
 <code class="sig-name descname">S0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.S0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The integration constant for entropy.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.Tmax">
 <code class="sig-name descname">Tmax</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.Tmin">
 <code class="sig-name descname">Tmin</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.a0">
 <code class="sig-name descname">a0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a0" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
@@ -202,7 +202,7 @@ atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.a1">
 <code class="sig-name descname">a1</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a1" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
@@ -213,7 +213,7 @@ atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.a2">
 <code class="sig-name descname">a2</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a2" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
@@ -224,7 +224,7 @@ atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.a3">
 <code class="sig-name descname">a3</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a3" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
@@ -235,13 +235,13 @@ atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.as_dict">
-<code class="sig-name descname">as_dict</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.as_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.thermo.Wilhoit.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for YAML parsing</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.comment">
 <code class="sig-name descname">comment</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
@@ -252,23 +252,23 @@ atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.copy">
-<code class="sig-name descname">copy</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Wilhoit<a class="headerlink" href="#rmgpy.thermo.Wilhoit.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the Wilhoit object.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.discrepancy">
-<code class="sig-name descname">discrepancy</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.discrepancy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discrepancy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
 <p>The measure is arbitrary, but hopefully useful for sorting purposes.
 Discrepancy of 0 means they are identical</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.fit_to_data">
-<code class="sig-name descname">fit_to_data</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fit_to_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fit_to_data</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tdata</em>, <em class="sig-param">ndarray Cpdata</em>, <em class="sig-param">double Cp0</em>, <em class="sig-param">double CpInf</em>, <em class="sig-param">double H298</em>, <em class="sig-param">double S298</em>, <em class="sig-param">double B0=500.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fit_to_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Wilhoit model to the data points provided, allowing the
 characteristic temperature <cite>B</cite> to vary so as to improve the fit. This
 procedure requires an optimization, using the <code class="docutils literal notranslate"><span class="pre">fminbound</span></code> function
@@ -281,9 +281,9 @@ number of vibrational frequencies, and number of internal rotors
 limits at zero and infinite temperature.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.fit_to_data_for_constant_b">
-<code class="sig-name descname">fit_to_data_for_constant_b</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fit_to_data_for_constant_b" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fit_to_data_for_constant_b</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tdata</em>, <em class="sig-param">ndarray Cpdata</em>, <em class="sig-param">double Cp0</em>, <em class="sig-param">double CpInf</em>, <em class="sig-param">double H298</em>, <em class="sig-param">double S298</em>, <em class="sig-param">double B</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fit_to_data_for_constant_b" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Wilhoit model to the data points provided using a specified value
 of the characteristic temperature <cite>B</cite>. The data consists of a set
 of dimensionless heat capacity points <cite>Cpdata</cite> at a given set of
@@ -292,58 +292,58 @@ at zero and infinite temperature, the dimensionless enthalpy <cite>H298</cite> a
 298 K, and the dimensionless entropy <cite>S298</cite> at 298 K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.get_enthalpy">
-<code class="sig-name descname">get_enthalpy</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_enthalpy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.get_entropy">
-<code class="sig-name descname">get_entropy</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_entropy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_entropy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.get_free_energy">
-<code class="sig-name descname">get_free_energy</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_free_energy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol at the specified temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.get_heat_capacity">
-<code class="sig-name descname">get_heat_capacity</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_heat_capacity</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.is_identical_to">
-<code class="sig-name descname">is_identical_to</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_identical_to</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.is_similar_to">
-<code class="sig-name descname">is_similar_to</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_similar_to</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.is_temperature_valid">
-<code class="sig-name descname">is_temperature_valid</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_temperature_valid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.thermo.Wilhoit.label">
 <code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
@@ -354,9 +354,9 @@ returned.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.make_object">
-<code class="sig-name descname">make_object</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.make_object" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_object</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dict data</em>, <em class="sig-param">dict class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -371,9 +371,9 @@ returned.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.to_nasa">
-<code class="sig-name descname">to_nasa</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.to_nasa" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_nasa</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double Tmin</em>, <em class="sig-param">double Tmax</em>, <em class="sig-param">double Tint</em>, <em class="sig-param">bool fixedTint=False</em>, <em class="sig-param">bool weighting=True</em>, <em class="sig-param">int continuity=3</em><span class="sig-paren">)</span> &#x2192; NASA<a class="headerlink" href="#rmgpy.thermo.Wilhoit.to_nasa" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Wilhoit object to a <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> object. You must specify
 the minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K,
 as well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge
@@ -402,9 +402,9 @@ polynomial (rather than two).</p>
 <a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASAPolynomial</span></code></a> objects.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.thermo.Wilhoit.to_thermo_data">
-<code class="sig-name descname">to_thermo_data</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.to_thermo_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; ThermoData<a class="headerlink" href="#rmgpy.thermo.Wilhoit.to_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Wilhoit model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoData</span></code></a> object.</p>
 </dd></dl>
 
@@ -501,7 +501,7 @@ polynomial (rather than two).</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

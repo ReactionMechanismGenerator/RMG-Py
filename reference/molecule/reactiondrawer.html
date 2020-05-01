@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.molecule.draw.ReactionDrawer &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-molecule-draw-reactiondrawer">
 <h1>rmgpy.molecule.draw.ReactionDrawer<a class="headerlink" href="#rmgpy-molecule-draw-reactiondrawer" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.molecule.draw.ReactionDrawer">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.draw.</code><code class="sig-name descname">ReactionDrawer</code><span class="sig-paren">(</span><em class="sig-param">options=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.draw.</code><code class="sig-name descname">ReactionDrawer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides functionality for drawing chemical reactions using the
 skeletal formula of each reactant and product molecule via the Cairo 2D
 graphics engine. The most common use case is simply:</p>
@@ -70,9 +70,9 @@ graphics engine. The most common use case is simply:</p>
 <p>where <code class="docutils literal notranslate"><span class="pre">reaction</span></code> is the <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code> object to draw. You can also
 pass a dict of options to the constructor to affect how the molecules are
 drawn.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.molecule.draw.ReactionDrawer.draw">
-<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">file_format</em>, <em class="sig-param">path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer.draw" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em>, <em class="sig-param"><span class="n">file_format</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw the given <cite>reaction</cite> using the given image <cite>file_format</cite> - pdf, svg,
 ps, or png. If <cite>path</cite> is given, the drawing is saved to that location
 on disk.</p>
@@ -174,7 +174,7 @@ tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</ci
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

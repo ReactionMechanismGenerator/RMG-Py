@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.species.TransitionState &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-species-transitionstate">
 <h1>rmgpy.species.TransitionState<a class="headerlink" href="#rmgpy-species-transitionstate" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.species.TransitionState">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.species.</code><code class="sig-name descname">TransitionState</code><span class="sig-paren">(</span><em class="sig-param">label=u''</em>, <em class="sig-param">conformer=None</em>, <em class="sig-param">frequency=None</em>, <em class="sig-param">tunneling=None</em>, <em class="sig-param">degeneracy=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.species.</code><code class="sig-name descname">TransitionState</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">conformer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frequency</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tunneling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">degeneracy</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical transition state, representing a first-order saddle point on a
 potential energy surface. The attributes are:</p>
 <table class="docutils align-default">
@@ -91,21 +91,21 @@ potential energy surface. The attributes are:</p>
 </tr>
 </tbody>
 </table>
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.calculate_tunneling_factor">
-<code class="sig-name descname">calculate_tunneling_factor</code><a class="headerlink" href="#rmgpy.species.TransitionState.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_tunneling_factor</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.species.TransitionState.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the canonical tunneling correction
 factor for the reaction at the given temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.calculate_tunneling_function">
-<code class="sig-name descname">calculate_tunneling_function</code><a class="headerlink" href="#rmgpy.species.TransitionState.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_tunneling_function</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray e_list</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.species.TransitionState.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the microcanonical tunneling
 correction for the reaction at the given energies <cite>e_list</cite> in J/mol.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.species.TransitionState.conformer">
 <code class="sig-name descname">conformer</code><a class="headerlink" href="#rmgpy.species.TransitionState.conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.statmech.conformer.Conformer</p>
@@ -116,7 +116,7 @@ correction for the reaction at the given energies <cite>e_list</cite> in J/mol.<
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.species.TransitionState.degeneracy">
 <code class="sig-name descname">degeneracy</code><a class="headerlink" href="#rmgpy.species.TransitionState.degeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -127,62 +127,62 @@ correction for the reaction at the given energies <cite>e_list</cite> in J/mol.<
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.species.TransitionState.frequency">
 <code class="sig-name descname">frequency</code><a class="headerlink" href="#rmgpy.species.TransitionState.frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>The negative frequency of the first-order saddle point.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_density_of_states">
-<code class="sig-name descname">get_density_of_states</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_density_of_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_density_of_states</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray e_list</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.species.TransitionState.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>e_list</cite> in J/mol above the ground state.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_enthalpy">
-<code class="sig-name descname">get_enthalpy</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_enthalpy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.species.TransitionState.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the transition state at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_entropy">
-<code class="sig-name descname">get_entropy</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_entropy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_entropy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.species.TransitionState.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the transition state at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_free_energy">
-<code class="sig-name descname">get_free_energy</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_free_energy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.species.TransitionState.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol for the transition state at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_heat_capacity">
-<code class="sig-name descname">get_heat_capacity</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_heat_capacity</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.species.TransitionState.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the transition state at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_partition_function">
-<code class="sig-name descname">get_partition_function</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_partition_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_partition_function</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.species.TransitionState.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function for the transition state at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.species.TransitionState.get_sum_of_states">
-<code class="sig-name descname">get_sum_of_states</code><a class="headerlink" href="#rmgpy.species.TransitionState.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_sum_of_states</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray e_list</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.species.TransitionState.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in J/mol.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.species.TransitionState.label">
 <code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.species.TransitionState.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
@@ -193,7 +193,7 @@ in J/mol.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.species.TransitionState.tunneling">
 <code class="sig-name descname">tunneling</code><a class="headerlink" href="#rmgpy.species.TransitionState.tunneling" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.model.TunnelingModel</p>
@@ -297,7 +297,7 @@ in J/mol.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

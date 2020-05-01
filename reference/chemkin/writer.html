@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Writing Chemkin files &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -60,26 +60,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Writing Chemkin files<a class="headerlink" href="#writing-chemkin-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="main-functions">
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.save_chemkin_file">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_chemkin_file</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">species</em>, <em class="sig-param">reactions</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">check_for_duplicates=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_chemkin_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_chemkin_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">reactions</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">check_for_duplicates</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_chemkin_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
 of <cite>species</cite> and <cite>reactions</cite>.
 If check_for_duplicates is False then we don’t check for unlabeled duplicate reactions,
 thus saving time (eg. if you are sure you’ve already labeled them as duplicate).</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.save_species_dictionary">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_species_dictionary</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">species</em>, <em class="sig-param">old_style=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_species_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_species_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">old_style</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_species_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the given list of <cite>species</cite> as adjacency lists in a text file <cite>path</cite>
 on disk.</p>
 <p>If <cite>old_style==True</cite> then it saves it in the old RMG-Java syntax.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.save_transport_file">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_transport_file</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_transport_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_transport_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_transport_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Chemkin transport properties file to <cite>path</cite> on disk containing the
 transport properties of the given list of <cite>species</cite>.</p>
 <p>The syntax is from the Chemkin TRANSPORT manual.
@@ -100,15 +100,15 @@ if it is 2, the molecule is nonlinear.</p></li>
 </ol>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.save_html_file">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_html_file</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">read_comments=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_html_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_html_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">read_comments</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_html_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an output HTML file from the contents of a RMG-Java output folder</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.save_java_kinetics_library">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_java_kinetics_library</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">species</em>, <em class="sig-param">reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_java_kinetics_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">save_java_kinetics_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.save_java_kinetics_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
 and reactions.txt given a list of reactions, with species.txt containing the
 RMG-Java formatted dictionary.</p>
@@ -117,18 +117,18 @@ RMG-Java formatted dictionary.</p>
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.get_species_identifier">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">get_species_identifier</code><span class="sig-paren">(</span><em class="sig-param">species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.get_species_identifier" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">get_species_identifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.get_species_identifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string identifier for the provided <cite>species</cite> that can be used in a
 Chemkin file. Although the Chemkin format allows up to 16 characters for a
 species identifier, this function uses a maximum of 10 to ensure that all
 reaction equations fit in the maximum limit of 52 characters.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.write_kinetics_entry">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">write_kinetics_entry</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">species_list</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">java_library=False</em>, <em class="sig-param">commented=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.write_kinetics_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">write_kinetics_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em>, <em class="sig-param"><span class="n">species_list</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">java_library</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">commented</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.write_kinetics_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string representation of the reaction as used in a Chemkin
 file. Use <cite>verbose = True</cite> to turn on kinetics comments.
 Use <cite>commented = True</cite> to comment out the entire reaction.
@@ -136,17 +136,17 @@ Use java_library = True in order to generate a kinetics entry suitable
 for an RMG-Java kinetics library.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.write_thermo_entry">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">write_thermo_entry</code><span class="sig-paren">(</span><em class="sig-param">species</em>, <em class="sig-param">element_counts=None</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.write_thermo_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">write_thermo_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">element_counts</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.write_thermo_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string representation of the NASA model readable by Chemkin.
 To use this method you must have exactly two NASA polynomials in your
 model, and you must use the seven-coefficient forms for each.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.chemkin.mark_duplicate_reactions">
-<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">mark_duplicate_reactions</code><span class="sig-paren">(</span><em class="sig-param">reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.mark_duplicate_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.chemkin.</code><code class="sig-name descname">mark_duplicate_reactions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.mark_duplicate_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given list of <cite>reactions</cite>, mark all of the duplicate reactions as
 understood by Chemkin.</p>
 <p>This is pretty slow (quadratic in size of reactions list) so only call it if you’re really worried
@@ -254,7 +254,7 @@ you may have undetected duplicate reactions.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.data.kinetics.ReactionRecipe &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-kinetics-reactionrecipe">
 <h1>rmgpy.data.kinetics.ReactionRecipe<a class="headerlink" href="#rmgpy-data-kinetics-reactionrecipe" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.data.kinetics.ReactionRecipe">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">ReactionRecipe</code><span class="sig-paren">(</span><em class="sig-param">actions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">ReactionRecipe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">actions</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a list of actions that, when executed, result in the conversion
 of a set of reactants to a set of products. There are currently five such
 actions:</p>
@@ -110,29 +110,29 @@ actions:</p>
 <p>The actions are stored as a list in the <cite>actions</cite> attribute. Each action is
 a list of items; the first is the action name, while the rest are the
 action parameters as indicated above.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.add_action">
-<code class="sig-name descname">add_action</code><span class="sig-paren">(</span><em class="sig-param">action</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.add_action" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_action</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.add_action" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>action</cite> to the reaction recipe, where <cite>action</cite> is a list
 containing the action name and the required parameters, as indicated in
 the table above.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.apply_forward">
-<code class="sig-name descname">apply_forward</code><span class="sig-paren">(</span><em class="sig-param">struct</em>, <em class="sig-param">unique=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">apply_forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">struct</span></em>, <em class="sig-param"><span class="n">unique</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the forward reaction recipe to <cite>molecule</cite>, a single
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.apply_reverse">
-<code class="sig-name descname">apply_reverse</code><span class="sig-paren">(</span><em class="sig-param">struct</em>, <em class="sig-param">unique=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_reverse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">apply_reverse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">struct</span></em>, <em class="sig-param"><span class="n">unique</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_reverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the reverse reaction recipe to <cite>molecule</cite>, a single
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.get_reverse">
 <code class="sig-name descname">get_reverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.get_reverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a reaction recipe that, when applied, does the opposite of
@@ -233,7 +233,7 @@ of the reaction that this is the recipe for.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

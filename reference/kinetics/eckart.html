@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.kinetics.Eckart &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-kinetics-eckart">
 <h1>rmgpy.kinetics.Eckart<a class="headerlink" href="#rmgpy-kinetics-eckart" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.kinetics.Eckart">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">Eckart</code><span class="sig-paren">(</span><em class="sig-param">frequency</em>, <em class="sig-param">E0_reac</em>, <em class="sig-param">E0_TS</em>, <em class="sig-param">E0_prod=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Eckart" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">Eckart</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frequency</span></em>, <em class="sig-param"><span class="n">E0_reac</span></em>, <em class="sig-param"><span class="n">E0_TS</span></em>, <em class="sig-param"><span class="n">E0_prod</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Eckart" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tunneling model based on the Eckart model. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -137,39 +137,39 @@ products should also be given. (The former is called the symmetric
 Eckart correction, the latter the asymmetric Eckart correction.) This
 extra information allows the Eckart correction to generally give a
 better result than the Wigner correction.</p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Eckart.E0_TS">
 <code class="sig-name descname">E0_TS</code><a class="headerlink" href="#rmgpy.kinetics.Eckart.E0_TS" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground-state energy of the transition state.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Eckart.E0_prod">
 <code class="sig-name descname">E0_prod</code><a class="headerlink" href="#rmgpy.kinetics.Eckart.E0_prod" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground-state energy of the products.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Eckart.E0_reac">
 <code class="sig-name descname">E0_reac</code><a class="headerlink" href="#rmgpy.kinetics.Eckart.E0_reac" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground-state energy of the reactants.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Eckart.calculate_tunneling_factor">
-<code class="sig-name descname">calculate_tunneling_factor</code><a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_tunneling_factor</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Eckart tunneling correction for
 the reaction at the temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Eckart.calculate_tunneling_function">
-<code class="sig-name descname">calculate_tunneling_function</code><a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_tunneling_function</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Eckart tunneling function for
 the reaction at the energies <cite>e_list</cite> in J/mol.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Eckart.frequency">
 <code class="sig-name descname">frequency</code><a class="headerlink" href="#rmgpy.kinetics.Eckart.frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>The negative frequency along the reaction coordinate.</p>
@@ -268,7 +268,7 @@ the reaction at the energies <cite>e_list</cite> in J/mol.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

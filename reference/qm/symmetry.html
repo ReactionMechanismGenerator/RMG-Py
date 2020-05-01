@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.qm.symmetry &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-qm-symmetry">
 <h1>rmgpy.qm.symmetry<a class="headerlink" href="#rmgpy-qm-symmetry" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.symmetry.PointGroup">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.symmetry.</code><code class="sig-name descname">PointGroup</code><span class="sig-paren">(</span><em class="sig-param">point_group</em>, <em class="sig-param">symmetry_number</em>, <em class="sig-param">chiral</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroup" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.symmetry.</code><code class="sig-name descname">PointGroup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">point_group</span></em>, <em class="sig-param"><span class="n">symmetry_number</span></em>, <em class="sig-param"><span class="n">chiral</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>A symmetry Point Group.</p>
 <p>Attributes are:</p>
 <blockquote>
@@ -73,16 +73,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </div></blockquote>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.symmetry.PointGroupCalculator">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.symmetry.</code><code class="sig-name descname">PointGroupCalculator</code><span class="sig-paren">(</span><em class="sig-param">settings</em>, <em class="sig-param">unique_id</em>, <em class="sig-param">qm_data</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroupCalculator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.symmetry.</code><code class="sig-name descname">PointGroupCalculator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">unique_id</span></em>, <em class="sig-param"><span class="n">qm_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroupCalculator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper type to determine molecular symmetry point groups based on 3D coords information.</p>
 <p>Will point to a specific algorithm, like SYMMETRY that is able to do this.</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.symmetry.SymmetryJob">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.symmetry.</code><code class="sig-name descname">SymmetryJob</code><span class="sig-paren">(</span><em class="sig-param">settings</em>, <em class="sig-param">unique_id</em>, <em class="sig-param">qm_data</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.symmetry.</code><code class="sig-name descname">SymmetryJob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">unique_id</span></em>, <em class="sig-param"><span class="n">qm_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the point group using the SYMMETRY program</p>
 <p>(<a class="reference external" href="http://www.cobalt.chem.ucalgary.ca/ps/symmetry/">http://www.cobalt.chem.ucalgary.ca/ps/symmetry/</a>).</p>
 <p>Required input is a line with number of atoms followed by lines for each atom
@@ -91,7 +91,7 @@ including:
 2) x,y,z coordinates</p>
 <p>finalTol determines how loose the point group criteria are;
 values are comparable to those specified in the GaussView point group interface</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.symmetry.SymmetryJob.calculate">
 <code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.calculate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do the entire point group calculation.</p>
@@ -99,31 +99,31 @@ values are comparable to those specified in the GaussView point group interface<
 with different parameters, until a point group is found and returned.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.symmetry.SymmetryJob.input_file_path">
 <em class="property">property </em><code class="sig-name descname">input_file_path</code><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The input file’s path</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.symmetry.SymmetryJob.parse">
-<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">output</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the <cite>output</cite> string and extract the resulting point group, which is returned.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.symmetry.SymmetryJob.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">command</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">command</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the command, wait for it to finish, and return the stdout.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.qm.symmetry.SymmetryJob.unique_id">
 <code class="sig-name descname">unique_id</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.unique_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The object that holds information from a previous QM Job on 3D coords, molecule etc…</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.symmetry.SymmetryJob.write_input_file">
 <code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the input file for the SYMMETRY program.</p>
@@ -222,7 +222,7 @@ with different parameters, until a point group is found and returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>arkane.StatMechJob &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,52 +58,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="arkane-statmechjob">
 <h1>arkane.StatMechJob<a class="headerlink" href="#arkane-statmechjob" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="arkane.StatMechJob">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.</code><code class="sig-name descname">StatMechJob</code><span class="sig-paren">(</span><em class="sig-param">species</em>, <em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of a Arkane statistical mechanics job. This job is used
-to compute and save the statistical mechanics information for a single
-species or transition state.</p>
-<dl class="method">
-<dt id="arkane.StatMechJob.create_hindered_rotor_figure">
-<code class="sig-name descname">create_hindered_rotor_figure</code><span class="sig-paren">(</span><em class="sig-param">angle</em>, <em class="sig-param">v_list</em>, <em class="sig-param">cosine_rotor</em>, <em class="sig-param">fourier_rotor</em>, <em class="sig-param">rotor</em>, <em class="sig-param">rotor_index</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.create_hindered_rotor_figure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
-series potential fits, and save it in the <cite>hindered_rotor_plots</cite> attribute.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.StatMechJob.execute">
-<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">output_directory=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the statmech job, saving the results within
-the <cite>output_directory</cite>.</p>
-<p>If <cite>plot</cite> is True, then plots of the hindered rotor fits will be saved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.StatMechJob.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param">pdep=False</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the statistical mechanics parameters for each conformer from
-the associated files on disk. Creates <code class="xref py py-class docutils literal notranslate"><span class="pre">Conformer</span></code> objects for
-each conformer and appends them to the list of conformers on the
-species object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.StatMechJob.save_hindered_rotor_figures">
-<code class="sig-name descname">save_hindered_rotor_figures</code><span class="sig-paren">(</span><em class="sig-param">directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save_hindered_rotor_figures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save hindered rotor plots as set of files of the form
-<code class="docutils literal notranslate"><span class="pre">rotor_[species_label]_0.pdf</span></code> in the specified directory</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="arkane.StatMechJob.write_output">
-<code class="sig-name descname">write_output</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.write_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the statmech job to the <cite>output.py</cite> file located
-in <cite>output_directory</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 
 
@@ -195,7 +149,7 @@ in <cite>output_directory</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

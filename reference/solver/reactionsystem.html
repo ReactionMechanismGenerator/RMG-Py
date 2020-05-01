@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.solver.ReactionSystem &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-solver-reactionsystem">
 <h1>rmgpy.solver.ReactionSystem<a class="headerlink" href="#rmgpy-solver-reactionsystem" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.solver.ReactionSystem">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.solver.</code><code class="sig-name descname">ReactionSystem</code><span class="sig-paren">(</span><em class="sig-param">termination=None</em>, <em class="sig-param">sensitive_species=None</em>, <em class="sig-param">sensitivity_threshold=1e-3</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.solver.</code><code class="sig-name descname">ReactionSystem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">termination</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensitive_species</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensitivity_threshold</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all RMG reaction systems.</p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.Keq">
 <code class="sig-name descname">Keq</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.Keq" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -73,14 +73,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.add_reactions_to_surface">
 <code class="sig-name descname">add_reactions_to_surface</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list new_surface_reactions</em>, <em class="sig-param">list new_surface_reaction_inds</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em>, <em class="sig-param">list edge_species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>moves new surface reactions to the surface
 done after the while loop before the simulate call ends</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.advance">
 <code class="sig-name descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
@@ -90,7 +90,7 @@ values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.atol_array">
 <code class="sig-name descname">atol_array</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.atol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -101,7 +101,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.bimolecular_threshold">
 <code class="sig-name descname">bimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -112,9 +112,9 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.compute_network_variables">
-<code class="sig-name descname">compute_network_variables</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">pdep_networks=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.compute_network_variables" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">compute_network_variables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">pdep_networks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.compute_network_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the arrays containing network information:</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -132,14 +132,14 @@ product side of a reaction.</p>
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.compute_rate_derivative">
-<code class="sig-name descname">compute_rate_derivative</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">compute_rate_derivative</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
 k_j is the rate parameter for the jth core reaction.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.core_reaction_rates">
 <code class="sig-name descname">core_reaction_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -150,7 +150,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.core_species_concentrations">
 <code class="sig-name descname">core_species_concentrations</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -161,7 +161,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.core_species_consumption_rates">
 <code class="sig-name descname">core_species_consumption_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -172,7 +172,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.core_species_production_rates">
 <code class="sig-name descname">core_species_production_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -183,7 +183,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.core_species_rates">
 <code class="sig-name descname">core_species_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.core_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -194,7 +194,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.dydt0">
 <code class="sig-name descname">dydt0</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.dydt0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -205,7 +205,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.edge_reaction_rates">
 <code class="sig-name descname">edge_reaction_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -216,7 +216,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.edge_species_rates">
 <code class="sig-name descname">edge_species_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.edge_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -227,41 +227,41 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.generate_reactant_product_indices">
-<code class="sig-name descname">generate_reactant_product_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_reactions</em>, <em class="sig-param">edge_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_reactant_product_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_reactions</span></em>, <em class="sig-param"><span class="n">edge_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a matrix for the reactants and products.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.generate_reaction_indices">
-<code class="sig-name descname">generate_reaction_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_reactions</em>, <em class="sig-param">edge_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_reaction_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_reactions</span></em>, <em class="sig-param"><span class="n">edge_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each reaction (core first, then edge) and
 store the (reaction, index) pair in a dictionary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.generate_species_indices">
-<code class="sig-name descname">generate_species_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">core_species</em>, <em class="sig-param">edge_species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.generate_species_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_species_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_species</span></em>, <em class="sig-param"><span class="n">edge_species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.generate_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each species (core first, then edge) and
 store the (species, index) pair in a dictionary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.get_layering_indices">
-<code class="sig-name descname">get_layering_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.get_layering_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_layering_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.get_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>determines the edge reaction indices that indicate reactions that are valid for movement from
 edge to surface based on the layering constraint</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.get_species_index">
-<code class="sig-name descname">get_species_index</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">spc</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.get_species_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_species_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">spc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.get_species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the index that is associated with the parameter species
 from the species index dictionary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DASPK solver by setting the initial values of the
@@ -274,7 +274,7 @@ respectively, either as single values for all dependent variables or
 individual values for each dependent variable.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.initialize_model">
 <code class="sig-name descname">initialize_model</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list edge_species</em>, <em class="sig-param">list edge_reactions</em>, <em class="sig-param">list surface_species=None</em>, <em class="sig-param">list surface_reactions=None</em>, <em class="sig-param">list pdep_networks=None</em>, <em class="sig-param">atol=1e-16</em>, <em class="sig-param">rtol=1e-8</em>, <em class="sig-param">sensitivity=False</em>, <em class="sig-param">sens_atol=1e-6</em>, <em class="sig-param">sens_rtol=1e-4</em>, <em class="sig-param">filter_reactions=False</em>, <em class="sig-param">dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initialize_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the reaction system using the provided
@@ -283,12 +283,12 @@ method in the derived class; don’t forget to also call the base class
 version, too.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.initialize_solver">
-<code class="sig-name descname">initialize_solver</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initialize_solver" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">initialize_solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initialize_solver" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.initialize_surface">
 <code class="sig-name descname">initialize_surface</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initialize_surface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
@@ -300,13 +300,13 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.initiate_tolerances">
-<code class="sig-name descname">initiate_tolerances</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">atol=1e-16</em>, <em class="sig-param">rtol=1e-8</em>, <em class="sig-param">sensitivity=False</em>, <em class="sig-param">sens_atol=1e-6</em>, <em class="sig-param">sens_rtol=1e-4</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">initiate_tolerances</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">atol</span><span class="o">=</span><span class="default_value">1e-16</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">sensitivity</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sens_atol</span><span class="o">=</span><span class="default_value">1e-06</span></em>, <em class="sig-param"><span class="n">sens_rtol</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.jacobian_matrix">
 <code class="sig-name descname">jacobian_matrix</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -317,7 +317,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.kb">
 <code class="sig-name descname">kb</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.kb" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -328,7 +328,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.kf">
 <code class="sig-name descname">kf</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.kf" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -339,19 +339,19 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.log_conversions">
-<code class="sig-name descname">log_conversions</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">species_index</em>, <em class="sig-param">y0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.log_conversions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_conversions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">species_index</span></em>, <em class="sig-param"><span class="n">y0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.log_conversions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current conversion values.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.log_rates">
 <code class="sig-name descname">log_rates</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double char_rate</em>, <em class="sig-param">species</em>, <em class="sig-param">double species_rate</em>, <em class="sig-param">double max_dif_ln_accum_num</em>, <em class="sig-param">network</em>, <em class="sig-param">double network_rate</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.log_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current maximum species and network rates.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.max_edge_species_rate_ratios">
 <code class="sig-name descname">max_edge_species_rate_ratios</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -362,7 +362,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.max_network_leak_rate_ratios">
 <code class="sig-name descname">max_network_leak_rate_ratios</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -373,7 +373,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.neq">
 <code class="sig-name descname">neq</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.neq" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -384,7 +384,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.network_indices">
 <code class="sig-name descname">network_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -395,7 +395,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.network_leak_coefficients">
 <code class="sig-name descname">network_leak_coefficients</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -406,7 +406,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.network_leak_rates">
 <code class="sig-name descname">network_leak_rates</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.network_leak_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -417,7 +417,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.num_core_reactions">
 <code class="sig-name descname">num_core_reactions</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.num_core_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -428,7 +428,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.num_core_species">
 <code class="sig-name descname">num_core_species</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.num_core_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -439,7 +439,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.num_edge_reactions">
 <code class="sig-name descname">num_edge_reactions</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -450,7 +450,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.num_edge_species">
 <code class="sig-name descname">num_edge_species</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.num_edge_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -461,7 +461,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.num_pdep_networks">
 <code class="sig-name descname">num_pdep_networks</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
@@ -472,7 +472,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.product_indices">
 <code class="sig-name descname">product_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -483,7 +483,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.prunable_network_indices">
 <code class="sig-name descname">prunable_network_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -494,7 +494,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.prunable_networks">
 <code class="sig-name descname">prunable_networks</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.prunable_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
@@ -505,7 +505,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.prunable_species">
 <code class="sig-name descname">prunable_species</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.prunable_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
@@ -516,7 +516,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.prunable_species_indices">
 <code class="sig-name descname">prunable_species_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -527,7 +527,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.reactant_indices">
 <code class="sig-name descname">reactant_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.reactant_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -538,7 +538,7 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.reaction_index">
 <code class="sig-name descname">reaction_index</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.reaction_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -549,15 +549,15 @@ version, too.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.reset_max_edge_species_rate_ratios">
-<code class="sig-name descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function sets max_edge_species_rate_ratios back to zero
 for pruning of ranged reactors it is important to avoid doing this
 every initialization</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.residual">
 <code class="sig-name descname">residual</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the residual function for this model, given the current value
@@ -567,7 +567,7 @@ function and an integer with status information (0 if okay, -2 to
 terminate).</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.rtol_array">
 <code class="sig-name descname">rtol_array</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.rtol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -578,7 +578,7 @@ terminate).</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.sensitive_species">
 <code class="sig-name descname">sensitive_species</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.sensitive_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
@@ -589,7 +589,7 @@ terminate).</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.sensitivity_coefficients">
 <code class="sig-name descname">sensitivity_coefficients</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -600,7 +600,7 @@ terminate).</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.sensitivity_threshold">
 <code class="sig-name descname">sensitivity_threshold</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
@@ -611,9 +611,9 @@ terminate).</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.set_initial_conditions">
-<code class="sig-name descname">set_initial_conditions</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_initial_conditions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the common initial conditions of the rate equations that
 represent the reaction system.</p>
 <ul class="simple">
@@ -622,24 +622,24 @@ represent the reaction system.</p>
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.set_initial_derivative">
-<code class="sig-name descname">set_initial_derivative</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_initial_derivative</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the derivative of the species moles with respect to the independent variable (time)
 equal to the residual.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.set_initial_reaction_thresholds">
-<code class="sig-name descname">set_initial_reaction_thresholds</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_initial_reaction_thresholds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.set_prunable_indices">
-<code class="sig-name descname">set_prunable_indices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">edge_species</em>, <em class="sig-param">pdep_networks</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_prunable_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">edge_species</span></em>, <em class="sig-param"><span class="n">pdep_networks</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.simulate">
 <code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list edge_species</em>, <em class="sig-param">list edge_reactions</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em>, <em class="sig-param">list pdep_networks=None</em>, <em class="sig-param">bool prune=False</em>, <em class="sig-param">bool sensitivity=False</em>, <em class="sig-param">list sens_worksheet=None</em>, <em class="sig-param">model_settings=None</em>, <em class="sig-param">simulator_settings=None</em>, <em class="sig-param">dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
@@ -652,7 +652,7 @@ the desired termination criteria and the model remains valid throughout,
 <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.snapshots">
 <code class="sig-name descname">snapshots</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.snapshots" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
@@ -663,7 +663,7 @@ the desired termination criteria and the model remains valid throughout,
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.species_index">
 <code class="sig-name descname">species_index</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -674,7 +674,7 @@ the desired termination criteria and the model remains valid throughout,
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.solver.ReactionSystem.step">
 <code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
@@ -684,7 +684,7 @@ values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.surface_reaction_indices">
 <code class="sig-name descname">surface_reaction_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -695,7 +695,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.surface_species_indices">
 <code class="sig-name descname">surface_species_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.surface_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -706,7 +706,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.t0">
 <code class="sig-name descname">t0</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.t0" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
@@ -717,7 +717,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.termination">
 <code class="sig-name descname">termination</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.termination" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
@@ -728,7 +728,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.trimolecular">
 <code class="sig-name descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.trimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
@@ -739,7 +739,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.trimolecular_threshold">
 <code class="sig-name descname">trimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -750,7 +750,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.unimolecular_threshold">
 <code class="sig-name descname">unimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -761,7 +761,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.valid_layering_indices">
 <code class="sig-name descname">valid_layering_indices</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -772,7 +772,7 @@ and <cite>dydt</cite> attributes.</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.solver.ReactionSystem.y0">
 <code class="sig-name descname">y0</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.y0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
@@ -876,7 +876,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

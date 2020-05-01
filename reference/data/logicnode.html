@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.data.base.LogicNode &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,19 +58,19 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-base-logicnode">
 <h1>rmgpy.data.base.LogicNode<a class="headerlink" href="#rmgpy-data-base-logicnode" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.data.base.LogicNode">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">LogicNode</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">invert</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicNode" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">LogicNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="n">invert</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for AND and OR logic nodes.</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.data.base.LogicAnd">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">LogicAnd</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">invert</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicAnd" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">LogicAnd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="n">invert</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicAnd" title="Permalink to this definition">¶</a></dt>
 <dd><p>A logical AND node. Structure must match all components.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.base.LogicAnd.match_to_structure">
-<code class="sig-name descname">match_to_structure</code><span class="sig-paren">(</span><em class="sig-param">database</em>, <em class="sig-param">structure</em>, <em class="sig-param">atoms</em>, <em class="sig-param">strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicAnd.match_to_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">match_to_structure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database</span></em>, <em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">strict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicAnd.match_to_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
 <p>Setting <cite>strict</cite> to True makes enforces matching of atomLabels in the structure to every
 atomLabel in the node.</p>
@@ -78,26 +78,26 @@ atomLabel in the node.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.data.base.LogicOr">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">LogicOr</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">invert</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">LogicOr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="n">invert</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr" title="Permalink to this definition">¶</a></dt>
 <dd><p>A logical OR node. Structure can match any component.</p>
 <p>Initialize with a list of component items and a boolean instruction to invert the answer.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.base.LogicOr.get_possible_structures">
-<code class="sig-name descname">get_possible_structures</code><span class="sig-paren">(</span><em class="sig-param">entries</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.get_possible_structures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_possible_structures</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">entries</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.get_possible_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the possible structures below this node.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.base.LogicOr.match_logic_or">
-<code class="sig-name descname">match_logic_or</code><span class="sig-paren">(</span><em class="sig-param">other</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.match_logic_or" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">match_logic_or</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.match_logic_or" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is other the same LogicOr group as self?</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.data.base.LogicOr.match_to_structure">
-<code class="sig-name descname">match_to_structure</code><span class="sig-paren">(</span><em class="sig-param">database</em>, <em class="sig-param">structure</em>, <em class="sig-param">atoms</em>, <em class="sig-param">strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.match_to_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">match_to_structure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">database</span></em>, <em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">strict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.match_to_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
 <p>Setting <cite>strict</cite> to True makes enforces matching of atomLabels in the structure to every
 atomLabel in the node.</p>
@@ -105,9 +105,9 @@ atomLabel in the node.</p>
 
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="rmgpy.data.base.make_logic_node">
-<code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">make_logic_node</code><span class="sig-paren">(</span><em class="sig-param">string</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.make_logic_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">make_logic_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.make_logic_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates and returns a node in the tree which is a logic node.</p>
 <p>String should be of the form:</p>
 <ul class="simple">
@@ -210,7 +210,7 @@ atomLabel in the node.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.kinetics.Wigner &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-kinetics-wigner">
 <h1>rmgpy.kinetics.Wigner<a class="headerlink" href="#rmgpy-kinetics-wigner" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.kinetics.Wigner">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">Wigner</code><span class="sig-paren">(</span><em class="sig-param">frequency</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Wigner" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.kinetics.</code><code class="sig-name descname">Wigner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frequency</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Wigner" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tunneling model based on the Wigner formula. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -90,21 +90,21 @@ expansion for a parabolic barrier <a class="reference internal" href="#bell" id=
 in the limit of a small tunneling correction. There are many cases for which
 the tunneling correction is very large; for these cases the Wigner model is
 inappropriate.</p>
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Wigner.calculate_tunneling_factor">
-<code class="sig-name descname">calculate_tunneling_factor</code><a class="headerlink" href="#rmgpy.kinetics.Wigner.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_tunneling_factor</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.Wigner.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Wigner tunneling correction for
 the reaction at the temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="rmgpy.kinetics.Wigner.calculate_tunneling_function">
-<code class="sig-name descname">calculate_tunneling_function</code><a class="headerlink" href="#rmgpy.kinetics.Wigner.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_tunneling_function</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.kinetics.Wigner.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raises <code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code>, as the Wigner tunneling model
 does not have a well-defined energy-dependent tunneling function.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="rmgpy.kinetics.Wigner.frequency">
 <code class="sig-name descname">frequency</code><a class="headerlink" href="#rmgpy.kinetics.Wigner.frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>The negative frequency along the reaction coordinate.</p>
@@ -211,7 +211,7 @@ does not have a well-defined energy-dependent tunneling function.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

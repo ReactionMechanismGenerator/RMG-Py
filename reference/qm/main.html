@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>rmgpy.qm.main &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -58,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-qm-main">
 <h1>rmgpy.qm.main<a class="headerlink" href="#rmgpy-qm-main" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.main.QMSettings">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.main.</code><code class="sig-name descname">QMSettings</code><span class="sig-paren">(</span><em class="sig-param">software=None</em>, <em class="sig-param">method='pm3'</em>, <em class="sig-param">fileStore=None</em>, <em class="sig-param">scratchDirectory=None</em>, <em class="sig-param">onlyCyclics=True</em>, <em class="sig-param">maxRadicalNumber=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMSettings" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.main.</code><code class="sig-name descname">QMSettings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">software</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'pm3'</span></em>, <em class="sig-param"><span class="n">fileStore</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scratchDirectory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">onlyCyclics</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">maxRadicalNumber</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMSettings" title="Permalink to this definition">¶</a></dt>
 <dd><p>A minimal class to store settings related to quantum mechanics calculations.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -101,7 +101,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </tr>
 </tbody>
 </table>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMSettings.check_all_set">
 <code class="sig-name descname">check_all_set</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMSettings.check_all_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that all the required settings are set.</p>
@@ -109,9 +109,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="rmgpy.qm.main.QMCalculator">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.main.</code><code class="sig-name descname">QMCalculator</code><span class="sig-paren">(</span><em class="sig-param">software=None</em>, <em class="sig-param">method='pm3'</em>, <em class="sig-param">fileStore=None</em>, <em class="sig-param">scratchDirectory=None</em>, <em class="sig-param">onlyCyclics=True</em>, <em class="sig-param">maxRadicalNumber=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.main.</code><code class="sig-name descname">QMCalculator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">software</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'pm3'</span></em>, <em class="sig-param"><span class="n">fileStore</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scratchDirectory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">onlyCyclics</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">maxRadicalNumber</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Quantum Mechanics calculator object, to store settings.</p>
 <p>The attributes are:</p>
 <table class="docutils align-default">
@@ -137,41 +137,41 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </tr>
 </tbody>
 </table>
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMCalculator.check_paths">
 <code class="sig-name descname">check_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.check_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMCalculator.check_ready">
 <code class="sig-name descname">check_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.check_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMCalculator.get_thermo_data">
-<code class="sig-name descname">get_thermo_data</code><span class="sig-paren">(</span><em class="sig-param">molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.get_thermo_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.get_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate thermo data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> via a quantum mechanics calculation.</p>
 <p>Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
 (I.e. the code that chooses whether to call this method should consider those settings).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMCalculator.initialize">
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any startup tasks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMCalculator.run_jobs">
-<code class="sig-name descname">run_jobs</code><span class="sig-paren">(</span><em class="sig-param">spc_list</em>, <em class="sig-param">procnum=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.run_jobs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_jobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spc_list</span></em>, <em class="sig-param"><span class="n">procnum</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.run_jobs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run QM jobs for the provided species list (in parallel if requested).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="rmgpy.qm.main.QMCalculator.set_default_output_directory">
-<code class="sig-name descname">set_default_output_directory</code><span class="sig-paren">(</span><em class="sig-param">output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.set_default_output_directory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_default_output_directory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_directory</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.set_default_output_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>IF the fileStore or scratchDirectory are not already set, put them in here.</p>
 </dd></dl>
 
@@ -268,7 +268,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

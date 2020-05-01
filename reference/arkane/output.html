@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Saving Arkane output &#8212; RMG-Py 3.0.0 Documentation</title>
@@ -59,71 +59,71 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="module-arkane.output">
 <span id="saving-arkane-output"></span><h1>Saving Arkane output<a class="headerlink" href="#module-arkane.output" title="Permalink to this headline">¶</a></h1>
 <p>This module contains helper functionality for writing Arkane output files.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="arkane.output.PrettifyVisitor">
-<em class="property">class </em><code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">PrettifyVisitor</code><span class="sig-paren">(</span><em class="sig-param">level=0</em>, <em class="sig-param">indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">PrettifyVisitor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for traversing an abstract syntax tree to assemble a prettier
 version of the code used to create the tree. Used by the <a class="reference internal" href="#arkane.output.prettify" title="arkane.output.prettify"><code class="xref py py-func docutils literal notranslate"><span class="pre">prettify()</span></code></a>
 function.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.generic_visit">
-<code class="sig-name descname">generic_visit</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.generic_visit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generic_visit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.generic_visit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called if no explicit visitor function exists for a node.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit">
-<code class="sig-name descname">visit</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visit a node.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_Call">
-<code class="sig-name descname">visit_Call</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_Call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Call" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the class or function call represented by <cite>node</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_Dict">
-<code class="sig-name descname">visit_Dict</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_Dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the dict represented by <cite>node</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_List">
-<code class="sig-name descname">visit_List</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_List" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_List</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_List" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the list represented by <cite>node</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_Num">
-<code class="sig-name descname">visit_Num</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Num" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_Num</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Num" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the number represented by <cite>node</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_Str">
-<code class="sig-name descname">visit_Str</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Str" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_Str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the string represented by <cite>node</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_Tuple">
-<code class="sig-name descname">visit_Tuple</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Tuple" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_Tuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Tuple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the tuple represented by <cite>node</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="arkane.output.PrettifyVisitor.visit_UnaryOp">
-<code class="sig-name descname">visit_UnaryOp</code><span class="sig-paren">(</span><em class="sig-param">node</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_UnaryOp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">visit_UnaryOp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_UnaryOp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the number represented by <cite>node</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="arkane.output.get_str_xyz">
-<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">get_str_xyz</code><span class="sig-paren">(</span><em class="sig-param">spc</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.get_str_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">get_str_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.get_str_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a string representation of the 3D coordinates from the conformer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -138,18 +138,18 @@ function.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="arkane.output.prettify">
-<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">prettify</code><span class="sig-paren">(</span><em class="sig-param">string</em>, <em class="sig-param">indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.prettify" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">prettify</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em>, <em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.prettify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a “pretty” version of the given <cite>string</cite>, representing a snippet of
 Python code such as a representation of an object or function. This
 involves splitting of tuples, lists, and dicts (including parameter lists)
 onto multiple lines, indenting as appropriate for readability.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="arkane.output.save_kinetics_lib">
-<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">save_kinetics_lib</code><span class="sig-paren">(</span><em class="sig-param">rxn_list</em>, <em class="sig-param">path</em>, <em class="sig-param">name</em>, <em class="sig-param">lib_long_desc</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_kinetics_lib" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">save_kinetics_lib</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rxn_list</span></em>, <em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">lib_long_desc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_kinetics_lib" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an RMG kinetics library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -163,9 +163,9 @@ onto multiple lines, indenting as appropriate for readability.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="arkane.output.save_thermo_lib">
-<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">save_thermo_lib</code><span class="sig-paren">(</span><em class="sig-param">species_list</em>, <em class="sig-param">path</em>, <em class="sig-param">name</em>, <em class="sig-param">lib_long_desc</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_thermo_lib" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arkane.output.</code><code class="sig-name descname">save_thermo_lib</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species_list</span></em>, <em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">lib_long_desc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_thermo_lib" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an RMG thermo library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -270,7 +270,7 @@ onto multiple lines, indenting as appropriate for readability.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
