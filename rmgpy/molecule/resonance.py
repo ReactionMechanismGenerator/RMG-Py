@@ -221,8 +221,8 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
         if features['is_radical'] and not features['is_aryl_radical']:
             _generate_resonance_structures(mol_list, [generate_kekule_structure],
                                            keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-            _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
-                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+            # _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
+            #                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
         if features['isPolycyclicAromatic'] and clar_structures:
             _generate_resonance_structures(mol_list, [generate_clar_structures],
                                            keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
