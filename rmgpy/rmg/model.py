@@ -1357,6 +1357,10 @@ class CoreEdgeReactionModel:
         ensure it is supposed to be a core reaction (i.e. all of its reactants
         AND all of its products are in the list of core species).
         """
+        if any([spc.label == 'API' for spc in rxn.reactants + rxn.products]) \
+                and not isinstance(rxn, LibraryReaction):
+            logging.info(f'\n\n!!!!!\nNot considering reaction\n{rxn}\n\n')
+            return None
         if rxn not in self.core.reactions:
             self.core.reactions.append(rxn)
         if rxn in self.edge.reactions:
