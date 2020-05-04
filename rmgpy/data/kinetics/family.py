@@ -1835,6 +1835,12 @@ class KineticsFamily(Database):
                                          relabel_atoms=relabel_atoms,
                                          consider_only_direction=True,
                                          ))
+
+        # filter out reactions that have number of reactants or products that do not match the family
+        if self.reactant_num and self.product_num:
+            reaction_list = [rxn for rxn in reaction_list if
+                             len(rxn.reactants) == self.reactant_num and len(rxn.products) == self.product_num]
+
         return reaction_list
 
     def add_reverse_attribute(self, rxn, react_non_reactive=True, consider_only_direction=False):
