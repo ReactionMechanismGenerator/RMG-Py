@@ -661,12 +661,16 @@ class BAC:
                 _x[idx] = np.array(flist)
             return _x
 
+        # Assume that variance of observations is unity. This is clearly
+        # not true because we know the uncertainties but we often care
+        # more about less certain molecules.
         x = make_feature_mat(features)
         y = self.dataset.ref_data - self.dataset.calc_data
-        w = np.linalg.solve(x.T @ x, x.T @ y)
+        weights = np.diag(self.dataset.weight)
+        w = np.linalg.solve(x.T @ weights @ x, x.T @ weights @ y)
         ypred = x @ w
 
-        covariance = np.linalg.inv(x.T @ x)
+        covariance = np.linalg.inv(x.T @ weights @ x)
         self.correlation = _covariance_to_correlation(covariance)
 
         self.dataset.bac_data = self.dataset.calc_data + ypred
@@ -733,10 +737,13 @@ class BAC:
             )
             return self.dataset.calc_data + corr
 
+        # Construct weight matrix
+        weights = np.diag(self.dataset.weight)
+
         def residuals(_w: np.ndarray) -> Union[float, np.ndarray]:
             """Calculate residuals"""
             bac_data = get_bac_data(_w)
-            return self.dataset.ref_data - bac_data
+            return np.sqrt(weights) @ (self.dataset.ref_data - bac_data)
 
         global_opt_iter = global_opt_iter if global_opt else 1
         results = []
@@ -762,7 +769,7 @@ class BAC:
         w = res.x
 
         # Estimate parameter covariance matrix using Jacobian
-        covariance = np.linalg.inv(res.jac.T @ res.jac)
+        covariance = np.linalg.inv(res.jac.T @ weights @ res.jac)
         self.correlation = _covariance_to_correlation(covariance)
 
         self.dataset.bac_data = get_bac_data(w)
