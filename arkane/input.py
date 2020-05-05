@@ -509,7 +509,7 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
     job_list.append(job)
 
 
-def bac(model_chemistry, bac_type='p', train_names='main',
+def bac(model_chemistry, bac_type='p', train_names='main', weighted=False,
         write_to_database=False, overwrite=False,
         fit_mol_corr=True, global_opt=True, global_opt_iter=10):
     """Generate a BAC job"""
@@ -518,6 +518,7 @@ def bac(model_chemistry, bac_type='p', train_names='main',
         model_chemistry,
         bac_type=bac_type,
         db_names=train_names,
+        weighted=weighted,
         write_to_database=write_to_database,
         overwrite=overwrite,
         fit_mol_corr=fit_mol_corr,

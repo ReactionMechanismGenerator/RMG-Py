@@ -578,13 +578,14 @@ class BAC:
             self._k_coeffs[mol.id] = coeff
         return coeff
 
-    def fit(self, db_names: Union[str, List[str]] = 'main', **kwargs):
+    def fit(self, weighted: bool = False, db_names: Union[str, List[str]] = 'main', **kwargs):
         """
         Fits bond additivity corrections using calculated and reference
         data available in the RMG database. The resulting BACs stored
         in self.bacs will be based on kcal/mol.
 
         Args:
+            weighted: Perform weighted least squares by balancing training data.
             db_names: Optionally specify database names to train on (defaults to main).
             kwargs: Keyword arguments for fitting Melius-type BACs (see self._fit_melius).
         """
@@ -594,6 +595,9 @@ class BAC:
         self.dataset = extract_dataset(self.ref_databases[self.database_key], self.model_chemistry)
         if len(self.dataset) == 0:
             raise BondAdditivityCorrectionError(f'No species available for {self.model_chemistry} model chemistry')
+
+        if weighted:
+            self.dataset.compute_weights()
 
         if self.bac_type == 'm':
             logging.info(f'Fitting Melius-type BACs for {self.model_chemistry}...')

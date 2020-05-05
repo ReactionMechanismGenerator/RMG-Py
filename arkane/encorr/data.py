@@ -48,6 +48,7 @@ from rmgpy import settings
 from rmgpy.molecule import Atom, Bond, get_element
 from rmgpy.molecule import Molecule as RMGMolecule
 
+from arkane.encorr.decomp import get_substructs
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 
@@ -105,6 +106,7 @@ class BACDatapoint:
         self._ref_data = None
         self._calc_data = None
         self._bac_data = None
+        self._substructs = None
         self.weight = 1
 
     @property
@@ -182,6 +184,29 @@ class BACDatapoint:
     def bac_data(self, val: float):
         self._bac_data = val
 
+    @property
+    def substructs(self) -> Counter:
+        """Decompose into substructures"""
+        if self._substructs is None:
+            self._substructs = get_substructs(self.spc.smiles)
+
+            # Add charge and multiplicity "substructures"
+            if self.spc.charge == 0:
+                self._substructs['neutral'] = 1
+            elif self.spc.charge > 0:
+                self._substructs['cation'] = 1
+            elif self.spc.charge < 0:
+                self._substructs['anion'] = 1
+
+            if self.spc.multiplicity == 1:
+                self._substructs['singlet'] = 1
+            elif self.spc.multiplicity == 2:
+                self._substructs['doublet'] = 1
+            elif self.spc.multiplicity >= 3:
+                self._substructs['triplet+'] = 1
+
+        return self._substructs
+
 
 class DatasetProperty:
     """
@@ -257,6 +282,7 @@ class BACDataset:
     ref_data = DatasetProperty('ref_data', asarray=True)
     calc_data = DatasetProperty('calc_data', asarray=True)
     bac_data = DatasetProperty('bac_data', asarray=True, settable=True)
+    substructs = DatasetProperty('substructs')
     weight = DatasetProperty('weight', asarray=True, settable=True)
     weights = weight  # Alias for weight
 
@@ -279,6 +305,30 @@ class BACDataset:
         rmse = np.sqrt(np.dot(diff, diff) / len(self.ref_data))
         mae = np.sum(np.abs(diff)) / len(self.ref_data)
         return Stats(rmse, mae)
+
+    def compute_weights(self, weight_type: str = 'substructs'):
+        """
+        Set weights for each datapoint such that molecular diversity is
+        maximized. I.e., effectively balance dataset by having higher
+        weights for molecules with underrepresented substructures.
+
+        Args:
+            weight_type: Currently only supports 'substructs'.
+        """
+        if weight_type == 'substructs':
+            # Counts of substructures across all molecules
+            all_substructs = Counter()
+            for s in self.substructs:
+                all_substructs += s
+
+            # Compute weight for each molecule as average across substructure frequencies
+            self.weights = [
+                sum(1 / all_substructs[s] for s in substructs.elements())  # Sum of frequencies
+                / sum(substructs.values())  # Divide by number of substructures in molecule
+                for substructs in self.substructs  # For each molecule
+            ]
+        else:
+            raise NotImplementedError(f'{weight_type} weight type is unavailable')
 
 
 def extract_dataset(ref_database: ReferenceDatabase, model_chemistry: str) -> BACDataset:
