@@ -396,15 +396,16 @@ class KineticsFamily(Database):
     Attribute           Type                            Description
     =================== =============================== ========================
     `reverse`           ``string``                      The name of the reverse reaction family
-    `reversible`        `Boolean`                       Is family reversible? (True by default)
+    `reversible`        ``Boolean``                     Is family reversible? (True by default)
     `forward_template`  :class:`Reaction`               The forward reaction template
     `forward_recipe`    :class:`ReactionRecipe`         The steps to take when applying the forward reaction to a set of reactants
     `reverse_template`  :class:`Reaction`               The reverse reaction template
     `reverse_recipe`    :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
-    `own_reverse`       `Boolean`                       It's its own reverse?
+    `own_reverse`       ``Boolean``                     It's its own reverse?
     'boundary_atoms'    list                            Labels which define the boundaries of end groups in backbone/end families
     `tree_distances`    dict                            The default distance from parent along each tree, if not set default is 1 for every tree
+    'save_order'        ``Boolean``                     Whether to preserve atom order when manipulating structures.
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -431,7 +432,8 @@ class KineticsFamily(Database):
                  reverse_recipe=None,
                  forbidden=None,
                  boundary_atoms=None,
-                 tree_distances=None
+                 tree_distances=None,
+                 save_order=False,
                  ):
         Database.__init__(self, entries, top, label, name, short_desc, long_desc)
         self.reverse = reverse
@@ -444,6 +446,7 @@ class KineticsFamily(Database):
         self.own_reverse = forward_template is not None and reverse_template is None
         self.boundary_atoms = boundary_atoms
         self.tree_distances = tree_distances
+        self.save_order = save_order
 
         # Kinetics depositories of training and test data
         self.groups = None
@@ -1500,7 +1503,10 @@ class KineticsFamily(Database):
         # Make sure we don't create a different net charge between reactants and products
         reactant_net_charge = product_net_charge = 0
         for struc in reactant_structures:
-            struc.update()
+            if isinstance(struc, Molecule):
+                struc.update(sort_atoms=not self.save_order)
+            else:
+                struc.update()
             reactant_net_charge += struc.get_net_charge()
 
         for struct in product_structures:
@@ -1508,7 +1514,7 @@ class KineticsFamily(Database):
             # If product structures are Group objects and the reaction is in certain families
             # (families with charged substances), the charge of structures will be updated
             if isinstance(struct, Molecule):
-                struct.update()
+                struct.update(sort_atoms=not self.save_order)
             elif isinstance(struct, Group):
                 struct.reset_ring_membership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
@@ -1666,13 +1672,13 @@ class KineticsFamily(Database):
                 if child_structure.contains_surface_site() != reactant_contains_surface_site:
                     # An adsorbed template can't match a gas-phase species and vice versa
                     continue
-                mappings.extend(reactant.find_subgraph_isomorphisms(child_structure))
+                mappings.extend(reactant.find_subgraph_isomorphisms(child_structure, save_order=self.save_order))
             return mappings
         elif isinstance(struct, Group):
             if struct.contains_surface_site() != reactant_contains_surface_site:
                 # An adsorbed template can't match a gas-phase species and vice versa
                 return []
-            return reactant.find_subgraph_isomorphisms(struct)
+            return reactant.find_subgraph_isomorphisms(struct, save_order=self.save_order)
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
@@ -2754,7 +2760,7 @@ class KineticsFamily(Database):
         # this prevents overwriting of attributes of species objects by this method
         for index, species in enumerate(products):
             for labeled_molecule in labeled_products:
-                if species.is_isomorphic(labeled_molecule):
+                if species.is_isomorphic(labeled_molecule, save_order=self.save_order):
                     species.molecule = [labeled_molecule]
                     reaction.products[index] = species
                     break
@@ -2763,7 +2769,7 @@ class KineticsFamily(Database):
                                   'reaction {}'.format(species, reaction))
         for index, species in enumerate(reactants):
             for labeled_molecule in labeled_reactants:
-                if species.is_isomorphic(labeled_molecule):
+                if species.is_isomorphic(labeled_molecule, save_order=self.save_order):
                     species.molecule = [labeled_molecule]
                     reaction.reactants[index] = species
                     break
@@ -4203,7 +4209,7 @@ class KineticsFamily(Database):
                                          '{2} family.'.format(reaction, training_reaction_index, self.label))
 
                 # Sometimes the matched kinetics could be in the reverse direction..... 
-                if reaction.is_isomorphic(training_entry.item, either_direction=False):
+                if reaction.is_isomorphic(training_entry.item, either_direction=False, save_order=self.save_order):
                     reverse = False
                 else:
                     reverse = True

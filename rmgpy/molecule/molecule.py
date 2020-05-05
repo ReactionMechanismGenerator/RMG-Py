@@ -1116,11 +1116,11 @@ class Molecule(Graph):
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
-    def update(self, log_species=True, raise_atomtype_exception=True):
+    def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
         Update connectivity values, atom types of atoms.
-        Update multiplicity, and sort atoms using the new
-        connectivity values.
+        Update multiplicity, and sort atoms (if ``sort_atoms`` is ``True``)
+        using the new connectivity values.
         """
 
         for atom in self.atoms:
@@ -1128,7 +1128,8 @@ class Molecule(Graph):
 
         self.update_atomtypes(log_species=log_species, raise_exception=raise_atomtype_exception)
         self.update_multiplicity()
-        self.sort_atoms()
+        if sort_atoms:
+            self.sort_atoms()
         self.identify_ring_membership()
 
     def get_formula(self):

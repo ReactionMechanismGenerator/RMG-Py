@@ -276,23 +276,26 @@ class Species(object):
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
 
-    def is_isomorphic(self, other, generate_initial_map=False, strict=True):
+    def is_isomorphic(self, other, generate_initial_map=False, save_order=False, strict=True):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
 
         Args:
             generate_initial_map (bool, optional): If ``True``, make initial map by matching labeled atoms
-            strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
+            save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
+            strict (bool, optional):               If ``False``, perform isomorphism ignoring electrons.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map, strict=strict):
+                if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
+                                          save_order=save_order, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map, strict=strict):
+                    if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map,
+                                               save_order=save_order, strict=strict):
                         return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'

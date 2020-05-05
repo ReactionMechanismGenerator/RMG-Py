@@ -71,7 +71,7 @@ class PseudoSpecies(object):
     def __str__(self):
         return self.label
 
-    def is_isomorphic(self, other, generate_initial_map=False, strict=True):
+    def is_isomorphic(self, other, generate_initial_map=False, strict=True, save_order=False):
         return self.label.lower() == other.label.lower()
 
 
