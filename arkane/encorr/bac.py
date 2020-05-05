@@ -40,6 +40,7 @@ Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747
 
 import logging
 import re
+from typing import Dict, Iterable, Union
 
 import numpy as np
 import pybel
@@ -61,7 +62,7 @@ class BAC:
     }
     exp_coeff = 3.0  # Melius-type parameter (Angstrom^-1)
 
-    def __init__(self, model_chemistry, bac_type='p'):
+    def __init__(self, model_chemistry: str, bac_type: str = 'p'):
         """
         Initialize a BAC instance.
 
@@ -78,11 +79,11 @@ class BAC:
         self.bac_type = bac_type
 
     @property
-    def bac_type(self):
+    def bac_type(self) -> str:
         return self._bac_type
 
     @bac_type.setter
-    def bac_type(self, val):
+    def bac_type(self, val: str):
         """Check validity and update BACs every time the BAC type is changed."""
         if val not in {'m', 'p'}:
             raise BondAdditivityCorrectionError(f'Invalid BAC type: {val}')
@@ -90,11 +91,11 @@ class BAC:
         self._update_bacs()
 
     @property
-    def model_chemistry(self):
+    def model_chemistry(self) -> str:
         return self._model_chemistry
 
     @model_chemistry.setter
-    def model_chemistry(self, val):
+    def model_chemistry(self, val: str):
         """Update BACs every time the model chemistry is changed."""
         self._model_chemistry = val
         self._update_bacs()
@@ -109,7 +110,11 @@ class BAC:
         except KeyError:
             pass
 
-    def get_correction(self, bonds=None, coords=None, nums=None, multiplicity=None):
+    def get_correction(self,
+                       bonds: Dict[str, int] = None,
+                       coords: np.ndarray = None,
+                       nums: Iterable[int] = None,
+                       multiplicity: int = None) -> float:
         """
         Returns the bond additivity correction in J/mol.
 
@@ -132,9 +137,9 @@ class BAC:
             The bond correction to the electronic energy in J/mol.
         """
         if self.bacs is None:
+            bac_type_str = 'Melius' if self.bac_type == 'm' else 'Petersson'
             raise BondAdditivityCorrectionError(
-                'Missing {}-type BAC parameters for model chemistry {}'.format(
-                    'Melius' if self.bac_type == 'm' else 'Petersson', self.model_chemistry)
+                f'Missing {bac_type_str}-type BAC parameters for model chemistry {self.model_chemistry}'
             )
 
         if self.bac_type == 'm':
@@ -142,7 +147,7 @@ class BAC:
         elif self.bac_type == 'p':
             return self._get_petersson_correction(bonds)
 
-    def _get_petersson_correction(self, bonds):
+    def _get_petersson_correction(self, bonds: Dict[str, int]) -> float:
         """
         Given the model_chemistry and a dictionary of bonds, return the
         total BAC.
@@ -170,11 +175,15 @@ class BAC:
                 if symbol_flipped in self.bacs:
                     bac += count * self.bacs[symbol_flipped]
                 else:
-                    logging.warning('Bond correction not applied for unknown bond type {}.'.format(symbol))
+                    logging.warning(f'Bond correction not applied for unknown bond type {symbol}.')
 
         return bac * 4184.0  # Convert kcal/mol to J/mol
 
-    def _get_melius_correction(self, coords=None, nums=None, multiplicity=None, params=None):
+    def _get_melius_correction(self,
+                               coords: np.ndarray = None,
+                               nums: Iterable[int] = None,
+                               multiplicity: int = None,
+                               params: Dict[str, Union[float, Dict[str, float]]] = None) -> float:
         """
         Given the model chemistry, molecular coordinates, atomic numbers,
         and dictionaries of BAC parameters, return the total BAC.
@@ -243,7 +252,7 @@ class BAC:
         return -(bac_mol + bac_atom + bac_bond) * 4184.0  # Convert kcal/mol to J/mol
 
 
-def _geo_to_mol(nums, coords):
+def _geo_to_mol(nums: Iterable[int], coords: np.ndarray) -> Molecule:
     """
     Convert molecular geometry specified by atomic coordinates and
     atomic numbers to RMG molecule.
@@ -257,14 +266,14 @@ def _geo_to_mol(nums, coords):
         mol.from_xyz(nums, coords)
     else:
         symbols = [get_element(int(n)).symbol for n in nums]
-        xyz = '{}\n\n'.format(len(symbols))
-        xyz += '\n'.join('{0}  {1[0]: .10f}  {1[1]: .10f}  {1[2]: .10f}'.format(n, c) for n, c in zip(symbols, coords))
+        xyz = f'{len(symbols)}\n\n'
+        xyz += '\n'.join(f'{s}  {c[0]: .10f}  {c[1]: .10f}  {c[2]: .10f}' for s, c in zip(symbols, coords))
         mol = pybel.readstring('xyz', xyz)
         mol = _pybel_to_rmg(mol)
     return mol
 
 
-def _pybel_to_rmg(pybel_mol):
+def _pybel_to_rmg(pybel_mol: pybel.Molecule) -> Molecule:
     """
     Convert Pybel molecule to RMG molecule but ignore charge,
     multiplicity, and bond orders.
