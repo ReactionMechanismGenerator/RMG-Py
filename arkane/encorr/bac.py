@@ -43,11 +43,10 @@ import re
 from typing import Dict, Iterable, Union
 
 import numpy as np
-import pybel
-
-from rmgpy.molecule import Atom, Bond, Molecule, get_element
 
 import arkane.encorr.data as data
+from arkane.encorr.data import BACDatapoint, geo_to_mol
+from arkane.encorr.reference import ReferenceSpecies
 from arkane.exceptions import BondAdditivityCorrectionError
 
 
@@ -114,6 +113,8 @@ class BAC:
                        bonds: Dict[str, int] = None,
                        coords: np.ndarray = None,
                        nums: Iterable[int] = None,
+                       datapoint: BACDatapoint = None,
+                       spc: ReferenceSpecies = None,
                        multiplicity: int = None) -> float:
         """
         Returns the bond additivity correction in J/mol.
@@ -131,6 +132,8 @@ class BAC:
             bonds: A dictionary of bond types (e.g., 'C=O') with their associated counts.
             coords: A Numpy array of Cartesian molecular coordinates.
             nums: A sequence of atomic numbers.
+            datapoint: If not using bonds, coords, nums, use BACDatapoint.
+            spc: Alternatively, use ReferenceSpecies.
             multiplicity: The spin multiplicity of the molecule.
 
         Returns:
@@ -142,12 +145,15 @@ class BAC:
                 f'Missing {bac_type_str}-type BAC parameters for model chemistry {self.model_chemistry}'
             )
 
-        if self.bac_type == 'm':
-            return self._get_melius_correction(coords, nums, multiplicity=multiplicity)
-        elif self.bac_type == 'p':
-            return self._get_petersson_correction(bonds)
+        if datapoint is None and spc is not None:
+            datapoint = BACDatapoint(spc, model_chemistry=self.model_chemistry)
 
-    def _get_petersson_correction(self, bonds: Dict[str, int]) -> float:
+        if self.bac_type == 'm':
+            return self._get_melius_correction(coords=coords, nums=nums, datapoint=datapoint, multiplicity=multiplicity)
+        elif self.bac_type == 'p':
+            return self._get_petersson_correction(bonds=bonds, datapoint=datapoint)
+
+    def _get_petersson_correction(self, bonds: Dict[str, int] = None, datapoint: BACDatapoint = None) -> float:
         """
         Given the model_chemistry and a dictionary of bonds, return the
         total BAC.
@@ -160,10 +166,16 @@ class BAC:
                     'C=C': C=C_bond_count,
                     ...
                 }
+            datapoint: BACDatapoint instead of bonds.
 
         Returns:
             Petersson-type bond additivity correction in J/mol.
         """
+        if datapoint is not None:
+            if bonds is None:
+                bonds = datapoint.bonds
+            else:
+                logging.warning(f'Species {datapoint.spc.label} will not be used because `bonds` was specified')
 
         # Sum up corrections for all bonds
         bac = 0.0
@@ -182,6 +194,7 @@ class BAC:
     def _get_melius_correction(self,
                                coords: np.ndarray = None,
                                nums: Iterable[int] = None,
+                               datapoint: BACDatapoint = None,
                                multiplicity: int = None,
                                params: Dict[str, Union[float, Dict[str, float]]] = None) -> float:
         """
@@ -200,7 +213,8 @@ class BAC:
         Args:
             coords: Numpy array of Cartesian atomic coordinates.
             nums: Sequence of atomic numbers.
-            multiplicity: Multiplicity of the molecule.
+            datapoint: BACDatapoint instead of molecule.
+            multiplicity: Multiplicity of the molecule (not necessary if using datapoint).
             params: Optionally provide parameters other than those stored in self.
 
         Returns:
@@ -214,7 +228,17 @@ class BAC:
         mol_corr = params.get('mol_corr', 0.0)
 
         # Get single-bonded RMG molecule
-        mol = _geo_to_mol(nums, coords)
+        mol = None
+        if datapoint is not None:
+            if nums is None or coords is None:
+                mol = datapoint.to_mol(from_geo=True)
+                multiplicity = datapoint.spc.multiplicity  # Use species multiplicity instead
+            else:
+                logging.warning(
+                    f'Species {datapoint.spc.label} will not be used because `nums` and `coords` were specified'
+                )
+        if mol is None:
+            mol = geo_to_mol(coords, nums=nums)
 
         # Molecular correction
         if mol_corr != 0 and multiplicity is None:
@@ -250,42 +274,3 @@ class BAC:
 
         # Note the minus sign
         return -(bac_mol + bac_atom + bac_bond) * 4184.0  # Convert kcal/mol to J/mol
-
-
-def _geo_to_mol(nums: Iterable[int], coords: np.ndarray) -> Molecule:
-    """
-    Convert molecular geometry specified by atomic coordinates and
-    atomic numbers to RMG molecule.
-
-    Use Open Babel for most cases because it's better at recognizing
-    long bonds. Use RMG for hydrogen because Open Babel can't do it for
-    mysterious reasons.
-    """
-    if list(nums) == [1, 1]:
-        mol = Molecule()
-        mol.from_xyz(nums, coords)
-    else:
-        symbols = [get_element(int(n)).symbol for n in nums]
-        xyz = f'{len(symbols)}\n\n'
-        xyz += '\n'.join(f'{s}  {c[0]: .10f}  {c[1]: .10f}  {c[2]: .10f}' for s, c in zip(symbols, coords))
-        mol = pybel.readstring('xyz', xyz)
-        mol = _pybel_to_rmg(mol)
-    return mol
-
-
-def _pybel_to_rmg(pybel_mol: pybel.Molecule) -> Molecule:
-    """
-    Convert Pybel molecule to RMG molecule but ignore charge,
-    multiplicity, and bond orders.
-    """
-    mol = Molecule()
-    for pybel_atom in pybel_mol:
-        element = get_element(pybel_atom.atomicnum)
-        atom = Atom(element=element, coords=np.array(pybel_atom.coords))
-        mol.vertices.append(atom)
-    for obbond in pybel.ob.OBMolBondIter(pybel_mol.OBMol):
-        begin_idx = obbond.GetBeginAtomIdx() - 1  # Open Babel indexes atoms starting at 1
-        end_idx = obbond.GetEndAtomIdx() - 1
-        bond = Bond(mol.vertices[begin_idx], mol.vertices[end_idx])
-        mol.add_bond(bond)
-    return mol
