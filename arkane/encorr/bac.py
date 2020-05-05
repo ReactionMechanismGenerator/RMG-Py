@@ -42,13 +42,14 @@ import importlib
 import json
 import logging
 import re
+from collections import Counter, defaultdict
 from typing import Dict, Iterable, List, Tuple, Union
 
 import numpy as np
 import scipy.optimize as optimize
 
 import arkane.encorr.data as data
-from arkane.encorr.data import BACDatapoint, extract_dataset, geo_to_mol
+from arkane.encorr.data import Molecule, BACDatapoint, extract_dataset, geo_to_mol
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 
@@ -84,6 +85,9 @@ class BAC:
         # Attributes related to fitting BACs for a given model chemistry
         self.database_key = None  # Dictionary key to access reference database
         self.dataset = None  # Collection of BACDatapoints in BACDataset
+
+        # Define attributes for memoization during fitting
+        self._reset_memoization()
 
     @property
     def bac_type(self) -> str:
@@ -147,6 +151,12 @@ class BAC:
         if not (isinstance(paths, str) or (isinstance(paths, list) and all(isinstance(p, str) for p in paths))):
             raise ValueError(f'{paths} paths is invalid')
         return tuple(sorted(paths)) if isinstance(paths, list) else paths
+
+    def _reset_memoization(self):
+        self._alpha_coeffs = {}
+        self._beta_coeffs = {}
+        self._gamma_coeffs = {}
+        self._k_coeffs = {}
 
     def get_correction(self,
                        bonds: Dict[str, int] = None,
@@ -282,37 +292,137 @@ class BAC:
         # Molecular correction
         if mol_corr != 0 and multiplicity is None:
             raise BondAdditivityCorrectionError(f'Missing multiplicity for {mol}')
-        spin = 0.5 * (multiplicity - 1)
-        bac_mol = mol_corr * (spin - sum(self.atom_spins[atom.element.symbol] for atom in mol.atoms))
+        bac_mol = mol_corr * self._get_mol_coeff(mol, multiplicity=multiplicity)
 
         # Atomic correction
-        bac_atom = sum(atom_corr[atom.element.symbol] for atom in mol.atoms)
+        bac_atom = sum(count * atom_corr[symbol] for symbol, count in self._get_atom_counts(mol).items())
 
         # Bond correction
-        bac_bond = 0.0
+        bac_length = sum(
+            coeff * (bond_corr_length[symbol[0]] * bond_corr_length[symbol[1]]) ** 0.5 if isinstance(symbol, tuple)
+            else coeff * bond_corr_length[symbol]
+            for symbol, coeff in self._get_length_coeffs(mol).items()
+        )
+        bac_neighbor = sum(count * bond_corr_neighbor[symbol] for
+                           symbol, count in self._get_neighbor_coeffs(mol).items())
+        bac_bond = bac_length + bac_neighbor
+
+        # Note the minus sign
+        return -(bac_mol + bac_atom + bac_bond) * 4184.0  # Convert kcal/mol to J/mol
+
+    def _get_atom_counts(self, mol: Molecule) -> Counter:
+        """
+        Get a counter containing how many atoms of each type are
+        present in the molecule.
+
+        Args:
+            mol: RMG-Py molecule.
+
+        Returns:
+            Counter containing atom counts.
+        """
+        if hasattr(mol, 'id') and mol.id is not None:
+            if mol.id in self._alpha_coeffs:
+                return self._alpha_coeffs[mol.id]
+
+        atom_counts = Counter(atom.element.symbol for atom in mol.atoms)
+
+        if hasattr(mol, 'id'):
+            self._alpha_coeffs[mol.id] = atom_counts
+        return atom_counts
+
+    def _get_length_coeffs(self, mol: Molecule) -> defaultdict:
+        """
+        Get a dictionary containing the coefficients for the beta
+        (bond_corr_length) variables. There is one coefficient per atom
+        type and an additional coefficient for each combination of atom
+        types.
+
+        Example: If the atoms are H, C, and O, there are (at most)
+        coefficients for H, C, O, (C, H), (H, O), and (C, O).
+
+        Args:
+            mol: RMG-Py molecule.
+
+        Returns:
+            Defaultdict containing beta coefficients.
+        """
+        if hasattr(mol, 'id') and mol.id is not None:
+            if mol.id in self._beta_coeffs:
+                return self._beta_coeffs[mol.id]
+
+        coeffs = defaultdict(float)
+
         for bond in mol.get_all_edges():
             atom1 = bond.atom1
             atom2 = bond.atom2
             symbol1 = atom1.element.symbol
             symbol2 = atom2.element.symbol
 
-            # Bond length correction
-            length_corr = (bond_corr_length[symbol1] * bond_corr_length[symbol2]) ** 0.5
-            length = np.linalg.norm(atom1.coords - atom2.coords)
-            bac_bond += length_corr * np.exp(-self.exp_coeff * length)
+            c = np.exp(-self.exp_coeff * np.linalg.norm(atom1.coords - atom2.coords))
+            k = symbol1 if symbol1 == symbol2 else tuple(sorted([symbol1, symbol2]))
+            coeffs[k] += c
 
-            # Neighbor correction
-            for other_atom, other_bond in mol.get_bonds(atom1).items():  # Atoms adjacent to atom1
-                if other_bond is not bond:
-                    other_symbol = other_atom.element.symbol
-                    bac_bond += bond_corr_neighbor[symbol1] + bond_corr_neighbor[other_symbol]
-            for other_atom, other_bond in mol.get_bonds(atom2).items():  # Atoms adjacent to atom2
-                if other_bond is not bond:
-                    other_symbol = other_atom.element.symbol
-                    bac_bond += bond_corr_neighbor[symbol2] + bond_corr_neighbor[other_symbol]
+        if hasattr(mol, 'id'):
+            self._beta_coeffs[mol.id] = coeffs
+        return coeffs
 
-        # Note the minus sign
-        return -(bac_mol + bac_atom + bac_bond) * 4184.0  # Convert kcal/mol to J/mol
+    def _get_neighbor_coeffs(self, mol: Molecule) -> Counter:
+        """
+        Get a counter containing the coefficients for the gamma
+        (bond_corr_neighbor) variables.
+
+        Args:
+            mol: RMG-Py molecule.
+
+        Returns:
+            Counter containing gamma coefficients.
+        """
+        if hasattr(mol, 'id') and mol.id is not None:
+            if mol.id in self._gamma_coeffs:
+                return self._gamma_coeffs[mol.id]
+
+        coeffs = Counter()
+
+        for bond in mol.get_all_edges():
+            atom1 = bond.atom1
+            atom2 = bond.atom2
+
+            # Atoms adjacent to atom1
+            counts1 = Counter(a.element.symbol for a, b in atom1.bonds.items() if b is not bond)
+            counts1[atom1.element.symbol] += max(0, len(atom1.bonds) - 1)
+
+            # Atoms adjacent to atom2
+            counts2 = Counter(a.element.symbol for a, b in atom2.bonds.items() if b is not bond)
+            counts2[atom2.element.symbol] += max(0, len(atom2.bonds) - 1)
+
+            coeffs += counts1 + counts2
+
+        if hasattr(mol, 'id'):
+            self._gamma_coeffs[mol.id] = coeffs
+        return coeffs
+
+    def _get_mol_coeff(self, mol: Molecule, multiplicity: int = 1) -> float:
+        """
+        Get the coefficient for the K (mol_corr) variable.
+
+        Args:
+            mol: RMG-Py molecule.
+            multiplicity: Multiplicity of the molecule.
+
+        Returns:
+            K coefficient.
+        """
+        if hasattr(mol, 'id') and mol.id is not None:
+            if mol.id in self._k_coeffs:
+                return self._k_coeffs[mol.id]
+
+        spin = 0.5 * (multiplicity - 1)
+        coeff = spin - sum(self.atom_spins[atom.element.symbol] for atom in mol.atoms)
+
+        if hasattr(mol, 'id'):
+            self._k_coeffs[mol.id] = coeff
+        return coeff
 
     def fit(self, db_names: Union[str, List[str]] = 'main', **kwargs):
         """
@@ -324,6 +434,7 @@ class BAC:
             db_names: Optionally specify database names to train on (defaults to main).
             kwargs: Keyword arguments for fitting Melius-type BACs (see self._fit_melius).
         """
+        self._reset_memoization()
         self.database_key = self.load_database(names=db_names)
 
         self.dataset = extract_dataset(self.ref_databases[self.database_key], self.model_chemistry)
@@ -385,6 +496,8 @@ class BAC:
             lsq_max_nfev: Maximum function evaluations in least squares optimizer.
         """
         mols = self.dataset.get_mols(from_geo=True)
+        for i, mol in enumerate(mols):
+            mol.id = i
 
         all_atom_symbols = list({atom.element.symbol for mol in mols for atom in mol.atoms})
         all_atom_symbols.sort()
