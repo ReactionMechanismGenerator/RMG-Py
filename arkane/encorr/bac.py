@@ -49,7 +49,7 @@ import numpy as np
 import scipy.optimize as optimize
 
 import arkane.encorr.data as data
-from arkane.encorr.data import Molecule, BACDatapoint, extract_dataset, geo_to_mol
+from arkane.encorr.data import Molecule, BACDatapoint, BACDataset, extract_dataset, geo_to_mol
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 
@@ -452,6 +452,40 @@ class BAC:
         stats_after = self.dataset.calculate_stats(for_bac_data=True)
         logging.info(f'RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol')
         logging.info(f'RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol')
+
+    def test(self,
+             species: List[ReferenceSpecies] = None,
+             dataset: BACDataset = None,
+             db_names: Union[str, List[str]] = None) -> BACDataset:
+        """
+        Test on data.
+
+        Note:
+            Only one of `species`, `dataset`, or `db_names` can be specified.
+
+        Args:
+            species: Species to test on.
+            dataset: BACDataset to test on.
+            db_names: Database names to test on..
+
+        Returns:
+            BACDataset containing the calculated BAC enthalpies in `bac_data`.
+        """
+        if sum(1 for arg in (species, dataset, db_names) if arg is not None) > 1:
+            raise BondAdditivityCorrectionError('Cannot specify several data sources')
+
+        if species is not None:
+            dataset = BACDataset([BACDatapoint(spc, model_chemistry=self.model_chemistry) for spc in species])
+        elif db_names is not None:
+            database_key = self.load_database(names=db_names)
+            dataset = extract_dataset(self.ref_databases[database_key], self.model_chemistry)
+
+        if dataset is None or len(dataset) == 0:
+            raise BondAdditivityCorrectionError('No data available for evaluation')
+
+        corr = np.array([self.get_correction(datapoint=d) / 4184 for d in dataset])
+        dataset.bac_data = dataset.calc_data + corr
+        return dataset
 
     def _fit_petersson(self):
         """
