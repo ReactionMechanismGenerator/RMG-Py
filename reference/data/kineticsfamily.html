@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.kinetics.KineticsFamily<a class="headerlink" href="#rmgpy-data-kinetics-kineticsfamily" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.kinetics.KineticsFamily">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">KineticsFamily</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">entries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">top</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reverse</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reversible</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">forward_template</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forward_recipe</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reverse_template</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reverse_recipe</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forbidden</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_atoms</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tree_distances</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">KineticsFamily</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">entries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">top</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reverse</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reversible</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">forward_template</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forward_recipe</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reverse_template</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reverse_recipe</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forbidden</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_atoms</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tree_distances</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">save_order</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with an RMG kinetics family: a set of reactions with
 similar chemistry, and therefore similar reaction rates. The attributes
 are:</p>
@@ -82,7 +82,7 @@ are:</p>
 <td><p>The name of the reverse reaction family</p></td>
 </tr>
 <tr class="row-odd"><td><p><cite>reversible</cite></p></td>
-<td><p><cite>Boolean</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Boolean</span></code></p></td>
 <td><p>Is family reversible? (True by default)</p></td>
 </tr>
 <tr class="row-even"><td><p><cite>forward_template</cite></p></td>
@@ -106,7 +106,7 @@ are:</p>
 <td><p>(Optional) Forbidden product structures in either direction</p></td>
 </tr>
 <tr class="row-odd"><td><p><cite>own_reverse</cite></p></td>
-<td><p><cite>Boolean</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Boolean</span></code></p></td>
 <td><p>It’s its own reverse?</p></td>
 </tr>
 <tr class="row-even"><td><p>‘boundary_atoms’</p></td>
@@ -117,15 +117,19 @@ are:</p>
 <td><p>dict</p></td>
 <td><p>The default distance from parent along each tree, if not set default is 1 for every tree</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>groups</cite></p></td>
+<tr class="row-even"><td><p>‘save_order’</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Boolean</span></code></p></td>
+<td><p>Whether to preserve atom order when manipulating structures.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>groups</cite></p></td>
 <td><p><a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsGroups</span></code></a></p></td>
 <td><p>The set of kinetics group additivity values</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>rules</cite></p></td>
+<tr class="row-even"><td><p><cite>rules</cite></p></td>
 <td><p><a class="reference internal" href="kineticsrules.html#rmgpy.data.kinetics.KineticsRules" title="rmgpy.data.kinetics.KineticsRules"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsRules</span></code></a></p></td>
 <td><p>The set of kinetics rate rules from RMG-Java</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>depositories</cite></p></td>
+<tr class="row-odd"><td><p><cite>depositories</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
 <td><p>A set of additional depositories used to store kinetics data from various sources</p></td>
 </tr>

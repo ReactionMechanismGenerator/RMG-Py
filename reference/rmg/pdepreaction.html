@@ -498,7 +498,7 @@ each side of the reaction equation, or <code class="docutils literal notranslate
 
 <dl class="py method">
 <dt id="rmgpy.rmg.pdep.PDepReaction.is_isomorphic">
-<code class="sig-name descname">is_isomorphic</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Reaction other</em>, <em class="sig-param">bool either_direction=True</em>, <em class="sig-param">bool check_identical=False</em>, <em class="sig-param">bool check_only_label=False</em>, <em class="sig-param">bool check_template_rxn_products=False</em>, <em class="sig-param">bool generate_initial_map=False</em>, <em class="sig-param">bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_isomorphic</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Reaction other</em>, <em class="sig-param">bool either_direction=True</em>, <em class="sig-param">bool check_identical=False</em>, <em class="sig-param">bool check_only_label=False</em>, <em class="sig-param">bool check_template_rxn_products=False</em>, <em class="sig-param">bool generate_initial_map=False</em>, <em class="sig-param">bool strict=True</em>, <em class="sig-param">bool save_order=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if this reaction is the same as the <cite>other</cite> reaction,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if they are different. The comparison involves comparing
 isomorphism of reactants and products, and doesn’t use any kinetic
@@ -514,6 +514,7 @@ ignoring molecular structure comparisons</p></li>
 (used when we know the reactants are identical, i.e. in generating reactions)</p></li>
 <li><p><strong>generate_initial_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, initialize map by pairing atoms with same labels</p></li>
 <li><p><strong>strict</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, perform isomorphism ignoring electrons</p></li>
+<li><p><strong>save_order</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, perform isomorphism saving atom order</p></li>
 </ul>
 </dd>
 </dl>
