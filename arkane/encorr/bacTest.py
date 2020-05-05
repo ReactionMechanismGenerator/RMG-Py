@@ -42,6 +42,7 @@ import pybel
 
 from rmgpy import settings
 from rmgpy.molecule import Molecule
+from rmgpy.quantity import ScalarQuantity
 
 from arkane.encorr.bac import BAC
 from arkane.encorr.data import BACDataset, BOND_SYMBOLS, _pybel_to_rmg
@@ -122,7 +123,7 @@ class TestBAC(unittest.TestCase):
         self.bac.model_chemistry = self.model_chem_get
         self.bac.bac_type = 'p'
         corr = self.bac.get_correction(bonds=self.bonds)
-        self.assertIsInstance(corr, float)
+        self.assertIsInstance(corr, ScalarQuantity)
 
         # Can use actual Melius parameters once they're available in database
         self.bac.bac_type = 'm'
@@ -131,7 +132,7 @@ class TestBAC(unittest.TestCase):
             self.bac._get_melius_correction(coords=self.coords, nums=self.nums, params=self.tmp_melius_params)
         corr1 = self.bac._get_melius_correction(coords=self.coords, nums=self.nums, multiplicity=self.multiplicity,
                                                 params=self.tmp_melius_params)
-        self.assertIsInstance(corr1, float)
+        self.assertIsInstance(corr1, ScalarQuantity)
 
         self.bac.model_chemistry = self.model_chem_nonexisting
         with self.assertRaises(BondAdditivityCorrectionError):

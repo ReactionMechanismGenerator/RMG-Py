@@ -173,7 +173,7 @@ def get_bac(model_chemistry: str,
     """
     model_chemistry = model_chemistry.lower()
     bac = BAC(model_chemistry, bac_type=bac_type)
-    return bac.get_correction(bonds=bonds, coords=coords, nums=nums, multiplicity=multiplicity)
+    return bac.get_correction(bonds=bonds, coords=coords, nums=nums, multiplicity=multiplicity).value_si
 
 
 def assign_frequency_scale_factor(freq_level: str) -> Union[int, float]:

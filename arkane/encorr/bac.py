@@ -50,6 +50,8 @@ from typing import Dict, Iterable, List, Tuple, Union
 import numpy as np
 import scipy.optimize as optimize
 
+from rmgpy.quantity import ScalarQuantity
+
 import arkane.encorr.data as data
 from arkane.encorr.data import Molecule, BACDatapoint, BACDataset, extract_dataset, geo_to_mol
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
@@ -318,9 +320,9 @@ class BAC:
                        nums: Iterable[int] = None,
                        datapoint: BACDatapoint = None,
                        spc: ReferenceSpecies = None,
-                       multiplicity: int = None) -> float:
+                       multiplicity: int = None) -> ScalarQuantity:
         """
-        Returns the bond additivity correction in J/mol.
+        Returns the bond additivity correction.
 
         There are two bond additivity corrections currently supported.
         Peterson-type corrections can be specified by setting
@@ -340,7 +342,7 @@ class BAC:
             multiplicity: The spin multiplicity of the molecule.
 
         Returns:
-            The bond correction to the electronic energy in J/mol.
+            The bond correction to the electronic energy.
         """
         if self.bacs is None:
             bac_type_str = 'Melius' if self.bac_type == 'm' else 'Petersson'
@@ -356,7 +358,7 @@ class BAC:
         elif self.bac_type == 'p':
             return self._get_petersson_correction(bonds=bonds, datapoint=datapoint)
 
-    def _get_petersson_correction(self, bonds: Dict[str, int] = None, datapoint: BACDatapoint = None) -> float:
+    def _get_petersson_correction(self, bonds: Dict[str, int] = None, datapoint: BACDatapoint = None) -> ScalarQuantity:
         """
         Given the model_chemistry and a dictionary of bonds, return the
         total BAC.
@@ -372,7 +374,7 @@ class BAC:
             datapoint: BACDatapoint instead of bonds.
 
         Returns:
-            Petersson-type bond additivity correction in J/mol.
+            Petersson-type bond additivity correction.
         """
         if datapoint is not None:
             if bonds is None:
@@ -392,14 +394,14 @@ class BAC:
                 else:
                     logging.warning(f'Bond correction not applied for unknown bond type {symbol}.')
 
-        return bac * 4184.0  # Convert kcal/mol to J/mol
+        return ScalarQuantity(bac, 'kcal/mol')
 
     def _get_melius_correction(self,
                                coords: np.ndarray = None,
                                nums: Iterable[int] = None,
                                datapoint: BACDatapoint = None,
                                multiplicity: int = None,
-                               params: Dict[str, Union[float, Dict[str, float]]] = None) -> float:
+                               params: Dict[str, Union[float, Dict[str, float]]] = None) -> ScalarQuantity:
         """
         Given the model chemistry, molecular coordinates, atomic numbers,
         and dictionaries of BAC parameters, return the total BAC.
@@ -421,7 +423,7 @@ class BAC:
             params: Optionally provide parameters other than those stored in self.
 
         Returns:
-            Melius-type bond additivity correction in J/mol.
+            Melius-type bond additivity correction.
         """
         if params is None:
             params = self.bacs
@@ -462,7 +464,7 @@ class BAC:
         bac_bond = bac_length + bac_neighbor
 
         # Note the minus sign
-        return -(bac_mol + bac_atom + bac_bond) * 4184.0  # Convert kcal/mol to J/mol
+        return ScalarQuantity(-(bac_mol + bac_atom + bac_bond), 'kcal/mol')
 
     def _get_atom_counts(self, mol: Molecule) -> Counter:
         """
@@ -641,7 +643,7 @@ class BAC:
         if dataset is None or len(dataset) == 0:
             raise BondAdditivityCorrectionError('No data available for evaluation')
 
-        corr = np.array([self.get_correction(datapoint=d) / 4184 for d in dataset])
+        corr = np.array([self.get_correction(datapoint=d).value_si / 4184 for d in dataset])
         dataset.bac_data = dataset.calc_data + corr
         return dataset
 
@@ -737,7 +739,7 @@ class BAC:
 
         def get_bac_data(_w: np.ndarray) -> np.ndarray:
             corr = np.array(
-                [self._get_melius_correction(datapoint=d, params=get_params(_w)) / 4184 for d in self.dataset]
+                [self._get_melius_correction(datapoint=d, params=get_params(_w)).value_si / 4184 for d in self.dataset]
             )
             return self.dataset.calc_data + corr
 
