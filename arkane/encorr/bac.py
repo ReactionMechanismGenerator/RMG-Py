@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module provides a class for deriving and applying two types of
+This module provides classes for deriving and applying two types of
 bond additivity corrections (BACs).
 
 The first type, Petersson-type BACs, are described in:
@@ -38,9 +38,11 @@ The second type, Melius-type BACs, are described in:
 Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747
 """
 
+import csv
 import importlib
 import json
 import logging
+import os
 import re
 from collections import Counter, defaultdict
 from typing import Dict, Iterable, List, Tuple, Union
@@ -52,6 +54,153 @@ import arkane.encorr.data as data
 from arkane.encorr.data import Molecule, BACDatapoint, BACDataset, extract_dataset, geo_to_mol
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
+
+
+class BACJob:
+    """
+    A representation of an Arkane BAC job. This job is used to fit and
+    save bond additivity corrections.
+    """
+
+    def __init__(self,
+                 model_chemistry: str,
+                 bac_type: str = 'p',
+                 write_to_database: bool = False,
+                 overwrite: bool = False,
+                 **kwargs):
+        """
+        Initialize a BACJob instance.
+
+        Args:
+            model_chemistry: The model chemistry that will be used to get training data from the RMG database.
+            bac_type: 'p' for Petersson-style BACs, 'm' for Melius-style BACs.
+            write_to_database: Save the fitted BACs directly to the RMG database.
+            overwrite: Overwrite BACs in the RMG database if they already exist.
+            kwargs: Additional parameters passed to BAC.fit.
+        """
+        self.model_chemistry = model_chemistry
+        self.bac_type = bac_type
+        self.write_to_database = write_to_database
+        self.overwrite = overwrite
+        self.kwargs = kwargs
+        self.bac = BAC(model_chemistry, bac_type=bac_type)
+
+    def execute(self, output_directory: str = None, plot: bool = False, jobnum: int = 1):
+        """
+        Execute the BAC job.
+
+        Args:
+            output_directory: Save the results in this directory.
+            plot: Save plots of results.
+            jobnum: Job number.
+        """
+        logging.info(f'Running BAC job {jobnum}')
+        self.bac.fit(**self.kwargs)
+
+        if output_directory is not None:
+            os.makedirs(output_directory, exist_ok=True)
+            self.write_output(output_directory, jobnum=jobnum)
+
+            if plot:
+                self.plot(output_directory, jobnum=jobnum)
+
+        if self.write_to_database:
+            try:
+                self.bac.write_to_database(overwrite=self.overwrite)
+            except IOError as e:
+                logging.warning('Could not write BACs to database. Captured error:')
+                logging.warning(str(e))
+
+    def write_output(self, output_directory: str, jobnum: int = 1):
+        """
+        Save the BACs to the `output.py` file located in
+        `output_directory` and save a CSV file of the results.
+
+        Args:
+            output_directory: Save the results in this directory.
+            jobnum: Job number.
+        """
+        model_chemistry_formatted = self.model_chemistry.replace('/', '_')
+        output_file1 = os.path.join(output_directory, 'output.py')
+        output_file2 = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}.csv')
+        logging.info(f'Saving results for {self.model_chemistry}...')
+
+        with open(output_file1, 'a') as f:
+            stats_before = self.bac.dataset.calculate_stats()
+            stats_after = self.bac.dataset.calculate_stats(for_bac_data=True)
+            f.write(f'# BAC job {jobnum}: {"Melius" if self.bac.bac_type == "m" else "Petersson"}-type BACs:\n')
+            f.write(f'# RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol\n')
+            f.write(f'# RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol\n')
+            f.writelines(self.bac.format_bacs())
+            f.write('\n')
+
+        with open(output_file2, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                'Smiles',
+                'InChI',
+                'Formula',
+                'Multiplicity',
+                'Charge',
+                'Reference Enthalpy',
+                'Calculated Enthalpy',
+                'Corrected Enthalpy',
+                'Source'
+            ])
+            for d in self.bac.dataset:
+                writer.writerow([
+                    d.spc.smiles,
+                    d.spc.inchi,
+                    d.spc.formula,
+                    d.spc.multiplicity,
+                    d.spc.charge,
+                    f'{d.ref_data:.3f}',
+                    f'{d.calc_data:.3f}',
+                    f'{d.bac_data:.3f}',
+                    d.spc.get_preferred_source()
+                ])
+
+    def plot(self, output_directory: str, jobnum: int = 1):
+        """
+        Plot the distribution of errors before and after fitting BACs.
+
+        Args:
+            output_directory: Save the plots in this directory.
+            jobnum: Job number
+        """
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            return
+
+        plt.rcParams.update({'font.size': 16})
+        model_chemistry_formatted = self.model_chemistry.replace('/', '_')
+        fig_path = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}.pdf')
+
+        fig = plt.figure(figsize=(10, 7))
+        ax = fig.gca()
+
+        error_before = self.bac.dataset.calc_data - self.bac.dataset.ref_data
+        error_after = self.bac.dataset.bac_data - self.bac.dataset.ref_data
+        _, _, patches = ax.hist(
+            (error_before, error_after),
+            bins=50,
+            label=('before fitting', 'after fitting'),
+            edgecolor='black',
+            linewidth=0.5
+        )
+        ax.set_xlabel('Error (kcal/mol)')
+        ax.set_ylabel('Count')
+
+        hatches = ('////', '----')
+        for patch_set, hatch in zip(patches, hatches):
+            plt.setp(patch_set, hatch=hatch)
+        ax.tick_params(bottom=False)
+        ax.set_axisbelow(True)
+        ax.grid()
+        ax.legend()
+
+        fig.savefig(fig_path, bbox_inches='tight', pad_inches=0)
 
 
 class BAC:
