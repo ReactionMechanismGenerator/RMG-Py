@@ -411,7 +411,35 @@ class ReferenceDatabase(object):
         """
         self.reference_sets = {}
 
-    def load(self, paths=None, ignore_incomplete=True):
+    @staticmethod
+    def get_database_paths(paths=None, names=None):
+        """
+        Get the full paths to the reference databases
+
+        Args:
+            paths (list): A single path string, or a list of path strings pointing to a set of reference
+                species to be loaded into the database. The string should point to the folder that has the name of the
+                reference set. The name of sub-folders in a reference set directory should be indices starting from 0
+                and should contain a YAML file that defines the ReferenceSpecies object of that index, named {index}.yml
+            names (list): Same functionality as `paths` but using names of the folders in the database.
+
+        Returns:
+            list of paths
+        """
+        if paths is None and names is None:  # Default to the main reference set in RMG-database
+            return [MAIN_REFERENCE_PATH]
+        elif names is not None:
+            if paths is not None:
+                raise ValueError('Cannot specify both `paths` and `names`')
+            if isinstance(names, str):
+                names = [names]
+            return [os.path.join(REFERENCE_DB_PATH, name) for name in names]
+        elif paths is not None:
+            if isinstance(paths, str):  # Convert to a list with one element
+                paths = [paths]
+            return paths
+
+    def load(self, paths=None, names=None, ignore_incomplete=True):
         """
         Load one or more set of reference species and append it on to the database
 
@@ -420,13 +448,10 @@ class ReferenceDatabase(object):
                 species to be loaded into the database. The string should point to the folder that has the name of the
                 reference set. The name of sub-folders in a reference set directory should be indices starting from 0
                 and should contain a YAML file that defines the ReferenceSpecies object of that index, named {index}.yml
+            names (list): Same functionality as `paths` but using names of the folders in the database.
             ignore_incomplete (bool): If ``True`` only species with both reference and calculated data will be added.
         """
-        if paths is None:  # Default to the main reference set in RMG-database
-            paths = [MAIN_REFERENCE_PATH]
-
-        if isinstance(paths, str):  # Convert to a list with one element
-            paths = [paths]
+        paths = self.get_database_paths(paths=paths, names=names)
 
         molecule_list = []
         for path in paths:

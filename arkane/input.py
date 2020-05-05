@@ -63,6 +63,7 @@ from rmgpy.transport import TransportData
 from rmgpy.util import as_list
 
 from arkane.common import is_pdep
+from arkane.encorr.bac import BACJob
 from arkane.encorr.corr import assign_frequency_scale_factor
 from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
@@ -508,6 +509,24 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
     job_list.append(job)
 
 
+def bac(model_chemistry, bac_type='p', train_names='main', weighted=False,
+        write_to_database=False, overwrite=False,
+        fit_mol_corr=True, global_opt=True, global_opt_iter=10):
+    """Generate a BAC job"""
+    global job_list
+    job = BACJob(
+        model_chemistry,
+        bac_type=bac_type,
+        db_names=train_names,
+        weighted=weighted,
+        write_to_database=write_to_database,
+        overwrite=overwrite,
+        fit_mol_corr=fit_mol_corr,
+        global_opt=global_opt,
+        global_opt_iter=global_opt_iter)
+    job_list.append(job)
+
+
 def SMILES(smiles):
     """Make a Molecule object from SMILES"""
     return Molecule().from_smiles(smiles)
@@ -596,6 +615,7 @@ def load_input_file(path):
         'thermo': thermo,
         'pressureDependence': pressureDependence,
         'explorer': explorer,
+        'bac': bac,
         # Miscellaneous
         'SMILES': SMILES,
         'adjacencyList': adjacencyList,

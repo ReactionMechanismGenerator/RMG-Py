@@ -32,20 +32,29 @@ This module provides methods for applying energy, frequency scale factor, and bo
 """
 
 import logging
+from typing import Dict, Iterable, Union
+
+import numpy as np
 
 import rmgpy.constants as constants
 
 import arkane.encorr.data as data
-import arkane.encorr.mbac as mbac
-import arkane.encorr.pbac as pbac
-from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectionError
+from arkane.encorr.bac import BAC
+from arkane.exceptions import AtomEnergyCorrectionError
 
 ################################################################################
 
 
-def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplicity=1,
-                          atom_energies=None, apply_atom_corrections=True,
-                          apply_bac=False, bac_type='p'):
+def get_energy_correction(model_chemistry: str,
+                          atoms: Dict[str, int],
+                          bonds: Dict[str, int],
+                          coords: np.ndarray,
+                          nums: Iterable[int],
+                          multiplicity: int = 1,
+                          atom_energies: Dict[str, float] = None,
+                          apply_atom_corrections: bool = True,
+                          apply_bac: bool = False,
+                          bac_type: str = 'p') -> float:
     """
     Calculate a correction to the electronic energy obtained from a
     quantum chemistry calculation at a given model chemistry such that
@@ -80,7 +89,7 @@ def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplic
     return corr
 
 
-def get_atom_correction(model_chemistry, atoms, atom_energies=None):
+def get_atom_correction(model_chemistry: str, atoms: Dict[str, int], atom_energies: Dict[str, float] = None) -> float:
     """
     Calculate a correction to the electronic energy obtained from a
     quantum chemistry calculation at a given model chemistry such that
@@ -106,17 +115,17 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
         try:
             atom_energies = data.atom_energies[model_chemistry]
         except KeyError:
-            raise AtomEnergyCorrectionError('Missing atom energies for model chemistry {}'.format(model_chemistry))
+            raise AtomEnergyCorrectionError(f'Missing atom energies for model chemistry {model_chemistry}')
 
     for symbol, count in atoms.items():
         if symbol in atom_energies:
             corr -= count * atom_energies[symbol] * 4.35974394e-18 * constants.Na  # Convert Hartree to J/mol
         else:
             raise AtomEnergyCorrectionError(
-                'An energy correction for element "{}" is unavailable for model chemistry "{}".'
+                f'An energy correction for element "{symbol}" is unavailable for model chemistry "{model_chemistry}".'
                 ' Turn off atom corrections if only running a kinetics jobs'
                 ' or supply a dictionary of atom energies'
-                ' as `atomEnergies` in the input file.'.format(symbol, model_chemistry)
+                ' as `atomEnergies` in the input file.'
             )
 
     # Step 2: Atom energy corrections to reach gas-phase reference state
@@ -126,15 +135,20 @@ def get_atom_correction(model_chemistry, atoms, atom_energies=None):
             corr += count * atom_enthalpy_corrections[symbol] * 4184.0  # Convert kcal/mol to J/mol
         else:
             raise AtomEnergyCorrectionError(
-                'Element "{}" is not yet supported in Arkane.'
+                f'Element "{symbol}" is not yet supported in Arkane.'
                 ' To include it, add its experimental heat of formation in the atom_hf'
-                ' and atom_thermal dictionaries in arkane/encorr/data.py'.format(symbol)
+                ' and atom_thermal dictionaries in arkane/encorr/data.py'
             )
 
     return corr
 
 
-def get_bac(model_chemistry, bonds, coords, nums, bac_type='p', multiplicity=1):
+def get_bac(model_chemistry: str,
+            bonds: Dict[str, int],
+            coords: np.ndarray,
+            nums: Iterable[int],
+            bac_type: str = 'p',
+            multiplicity: int = 1) -> float:
     """
     Returns the bond additivity correction in J/mol.
 
@@ -158,16 +172,11 @@ def get_bac(model_chemistry, bonds, coords, nums, bac_type='p', multiplicity=1):
         The bond correction to the electronic energy in J/mol.
     """
     model_chemistry = model_chemistry.lower()
-    if bac_type.lower() == 'p':  # Petersson-type BACs
-        return pbac.get_bac(model_chemistry, bonds)
-    elif bac_type.lower() == 'm':  # Melius-type BACs
-        # Return negative because the correction is subtracted in the Melius paper
-        return -mbac.get_bac(model_chemistry, coords, nums, multiplicity=multiplicity)
-    else:
-        raise BondAdditivityCorrectionError('BAC type {} is not available'.format(bac_type))
+    bac = BAC(model_chemistry, bac_type=bac_type)
+    return bac.get_correction(bonds=bonds, coords=coords, nums=nums, multiplicity=multiplicity).value_si
 
 
-def assign_frequency_scale_factor(freq_level):
+def assign_frequency_scale_factor(freq_level: str) -> Union[int, float]:
     """
     Assign the frequency scaling factor according to the model chemistry.
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
@@ -187,10 +196,12 @@ def assign_frequency_scale_factor(freq_level):
     """
     scaling_factor = data.freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:
-        logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
-                        'This will affect the partition function and all quantities derived from it '
-                        '(thermo quantities and rate coefficients).'.format(freq_level))
+        logging.warning(
+            f'No frequency scaling factor found for model chemistry {freq_level}. Assuming a value of unity.'
+            ' This will affect the partition function and all quantities derived from it '
+            ' (thermo quantities and rate coefficients).')
     else:
-        logging.info('Assigned a frequency scale factor of {0} for the frequency level of theory {1}'.format(
-            scaling_factor, freq_level))
+        logging.info(
+            f'Assigned a frequency scale factor of {scaling_factor} for the frequency level of theory {freq_level}'
+        )
     return scaling_factor

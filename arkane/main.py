@@ -55,6 +55,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.exceptions import InputError
 
 from arkane.common import is_pdep
+from arkane.encorr.bac import BACJob
 from arkane.explorer import ExplorerJob
 from arkane.input import load_input_file
 from arkane.kinetics import KineticsJob
@@ -204,6 +205,7 @@ class Arkane(object):
         # run thermo and statmech jobs (also writes thermo blocks to Chemkin file)
         supporting_info = []
         hindered_rotor_info = []
+        bacjob_num = 1
         for job in self.job_list:
             if isinstance(job, ThermoJob):
                 job.execute(output_directory=self.output_directory, plot=self.plot)
@@ -214,6 +216,9 @@ class Arkane(object):
                 if hasattr(job, 'raw_hindered_rotor_data'):
                     for hr_info in job.raw_hindered_rotor_data:
                         hindered_rotor_info.append(hr_info)
+            if isinstance(job, BACJob):
+                job.execute(output_directory=self.output_directory, plot=self.plot, jobnum=bacjob_num)
+                bacjob_num += 1
 
         with open(chemkin_file, 'a') as f:
             f.write('\n')
