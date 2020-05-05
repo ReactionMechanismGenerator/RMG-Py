@@ -56,7 +56,7 @@ class TestArkaneExamples(unittest.TestCase):
         """A function that is run ONCE before all unit tests in this class."""
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         cls.failed = []
-        cls.example_types = ['species', 'reactions', 'explorer', 'networks']
+        cls.example_types = ['species', 'reactions', 'explorer', 'networks', 'bac']
 
     def test_arkane_examples(self):
         for example_type in self.example_types:
@@ -64,7 +64,7 @@ class TestArkaneExamples(unittest.TestCase):
             for example in sorted(os.listdir(example_type_path)):
                 path = os.path.join(example_type_path, example)
                 arkane = Arkane(input_file=os.path.join(path, 'input.py'), output_directory=path)
-                arkane.plot = True
+                arkane.plot = example_type != 'bac'  # Don't plot BAC examples because they require a lot of memory
                 logging.info("running {}".format(example))
                 arkane.execute()
                 with open(os.path.join(path, 'arkane.log'), 'r') as f:
