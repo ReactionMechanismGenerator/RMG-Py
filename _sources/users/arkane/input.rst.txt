@@ -1037,6 +1037,30 @@ for all network reactions (both directions if reversible) at all requested condi
 automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.
 
 
+Bond Additivity Correction Fitting
+==================================
+
+If calculated data is available in the reference database, Arkane can fit and save bond additivity corrections (BACs).
+There are two different types available: Petersson-type (Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579), which
+fits one parameter for each bond type, and Melius-type (Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747),
+which fits three parameters per atom type and an optional molecular parameter. Each BAC fitting calculation must be
+specified using a ``bac()`` function, which accepts the following parameters:
+
+====================== ==================== =========================================================================================
+Parameter              Required?            Description
+====================== ==================== =========================================================================================
+``model_chemistry``    Yes                  Calculated data will be extracted from the reference database using this model chemistry
+``bac_type``           No                   BAC type: 'p' for Petersson (default), 'm' for Melius
+``train_name``         No                   Names of training data folders in the RMG database (default: 'main')
+``weighted``           No                   Weight the data to diversify substructures (default: False)
+``write_to_database``  No                   Write the BACs to the database (default: False)
+``overwrite``          No                   If BACs already exist, overwrite them (default: False)
+``fit_mol_corr``       No                   Fit the optional molecular correction term (Melius only, default: True)
+``global_opt``         No                   Perform a global optimization (Melius only, default: True)
+``global_opt_iter``    No                   Number of global optimization iterations (Melius only, default: 10)
+====================== ==================== =========================================================================================
+
+
 Examples
 ========
 

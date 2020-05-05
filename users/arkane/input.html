@@ -1570,14 +1570,73 @@ for all network reactions (both directions if reversible) at all requested condi
 automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.</p>
 </div>
 </div>
+<div class="section" id="bond-additivity-correction-fitting">
+<h2><span class="section-number">3.11. </span>Bond Additivity Correction Fitting<a class="headerlink" href="#bond-additivity-correction-fitting" title="Permalink to this headline">¶</a></h2>
+<p>If calculated data is available in the reference database, Arkane can fit and save bond additivity corrections (BACs).
+There are two different types available: Petersson-type (Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579), which
+fits one parameter for each bond type, and Melius-type (Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747),
+which fits three parameters per atom type and an optional molecular parameter. Each BAC fitting calculation must be
+specified using a <code class="docutils literal notranslate"><span class="pre">bac()</span></code> function, which accepts the following parameters:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Required?</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model_chemistry</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Calculated data will be extracted from the reference database using this model chemistry</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bac_type</span></code></p></td>
+<td><p>No</p></td>
+<td><p>BAC type: ‘p’ for Petersson (default), ‘m’ for Melius</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train_name</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Names of training data folders in the RMG database (default: ‘main’)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">weighted</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Weight the data to diversify substructures (default: False)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">write_to_database</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Write the BACs to the database (default: False)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">overwrite</span></code></p></td>
+<td><p>No</p></td>
+<td><p>If BACs already exist, overwrite them (default: False)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fit_mol_corr</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Fit the optional molecular correction term (Melius only, default: True)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">global_opt</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Perform a global optimization (Melius only, default: True)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">global_opt_iter</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Number of global optimization iterations (Melius only, default: 10)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <div class="section" id="examples">
-<h2><span class="section-number">3.11. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.12. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the <code class="docutils literal notranslate"><span class="pre">examples/arkane</span></code> directory.</p>
 </div>
 <div class="section" id="troubleshooting-and-faqs">
-<h2><span class="section-number">3.12. </span>Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.13. </span>Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
 <p>1) The network that Arkane generated and the resulting pdf file show abnormally large
 absolute values. What’s going on?</p>
 <blockquote>
@@ -1585,7 +1644,7 @@ absolute values. What’s going on?</p>
 </div></blockquote>
 </div>
 <div class="section" id="arkane-user-checklist">
-<h2><span class="section-number">3.13. </span>Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.14. </span>Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
 <p>Using Arkane, or any rate theory package for that matter, requires careful consideration and management of a large
 amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was
 made to minimize such mistakes for users:</p>
@@ -1670,9 +1729,10 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
 <li><a class="reference internal" href="#sensitivity-analysis">3.10.3. Sensitivity analysis</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">3.11. Examples</a></li>
-<li><a class="reference internal" href="#troubleshooting-and-faqs">3.12. Troubleshooting and FAQs</a></li>
-<li><a class="reference internal" href="#arkane-user-checklist">3.13. Arkane User Checklist</a></li>
+<li><a class="reference internal" href="#bond-additivity-correction-fitting">3.11. Bond Additivity Correction Fitting</a></li>
+<li><a class="reference internal" href="#examples">3.12. Examples</a></li>
+<li><a class="reference internal" href="#troubleshooting-and-faqs">3.13. Troubleshooting and FAQs</a></li>
+<li><a class="reference internal" href="#arkane-user-checklist">3.14. Arkane User Checklist</a></li>
 </ul>
 </li>
 </ul>
