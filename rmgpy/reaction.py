@@ -432,7 +432,7 @@ class Reaction:
             return False
 
     def is_isomorphic(self, other, either_direction=True, check_identical=False, check_only_label=False,
-                      check_template_rxn_products=False, generate_initial_map=False, strict=True):
+                      check_template_rxn_products=False, generate_initial_map=False, strict=True, save_order=False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -448,6 +448,7 @@ class Reaction:
                                                           (used when we know the reactants are identical, i.e. in generating reactions)
             generate_initial_map (bool, optional):        if ``True``, initialize map by pairing atoms with same labels
             strict (bool, optional):                      if ``False``, perform isomorphism ignoring electrons
+            save_order (bool, optional):                  if ``True``, perform isomorphism saving atom order
         """
         if check_template_rxn_products:
             try:
@@ -460,21 +461,24 @@ class Reaction:
                                       check_identical=check_identical,
                                       only_check_label=check_only_label,
                                       generate_initial_map=generate_initial_map,
-                                      strict=strict)
+                                      strict=strict,
+                                      save_order=save_order)
 
         # Compare reactants to reactants
         forward_reactants_match = same_species_lists(self.reactants, other.reactants,
                                                      check_identical=check_identical,
                                                      only_check_label=check_only_label,
                                                      generate_initial_map=generate_initial_map,
-                                                     strict=strict)
+                                                     strict=strict,
+                                                     save_order=save_order)
 
         # Compare products to products
         forward_products_match = same_species_lists(self.products, other.products,
                                                     check_identical=check_identical,
                                                     only_check_label=check_only_label,
                                                     generate_initial_map=generate_initial_map,
-                                                    strict=strict)
+                                                    strict=strict,
+                                                    save_order=save_order)
 
         # Compare specific_collider to specific_collider
         collider_match = (self.specific_collider == other.specific_collider)
@@ -490,14 +494,16 @@ class Reaction:
                                                      check_identical=check_identical,
                                                      only_check_label=check_only_label,
                                                      generate_initial_map=generate_initial_map,
-                                                     strict=strict)
+                                                     strict=strict,
+                                                     save_order=save_order)
 
         # Compare products to reactants
         reverse_products_match = same_species_lists(self.products, other.reactants,
                                                     check_identical=check_identical,
                                                     only_check_label=check_only_label,
                                                     generate_initial_map=generate_initial_map,
-                                                    strict=strict)
+                                                    strict=strict,
+                                                    save_order=save_order)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return reverse_reactants_match and reverse_products_match and collider_match
@@ -1350,7 +1356,7 @@ class Reaction:
 
 
 def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False,
-                       strict=True):
+                       strict=True, save_order=False):
     """
     This method compares whether two lists of species or molecules are the same,
     given the comparison options provided. It is used for the `is_same` method
@@ -1363,19 +1369,21 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         only_check_label (bool, optional):     if ``True``, only compare the label attribute of each species
         generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
         strict (bool, optional):               if ``False``, perform isomorphism ignoring electrons
+        save_order (bool, optional):           if ``True``, perform isomorphism saving atom order
 
     Returns:
         ``True`` if the lists are the same and ``False`` otherwise
     """
 
     def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
-             _generate_initial_map=generate_initial_map, _strict=strict):
+             _generate_initial_map=generate_initial_map, _strict=strict, save_order=save_order):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.is_identical(object2, strict=_strict)
         else:
-            return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map, strict=_strict)
+            return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
+                                         strict=_strict, save_order=save_order)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):
