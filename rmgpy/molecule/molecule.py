@@ -1284,7 +1284,7 @@ class Molecule(Graph):
         for atom in hydrogens:
             self.remove_atom(atom)
 
-    def connect_the_dots(self, raise_atomtype_exception=True):
+    def connect_the_dots(self, critical_distance_factor=0.45, raise_atomtype_exception=True):
         """
         Delete all bonds, and set them again based on the Atoms' coords.
         Does not detect bond type.
@@ -1311,7 +1311,8 @@ class Molecule(Graph):
         for i, atom1 in enumerate(sorted_atoms):
             for atom2 in sorted_atoms[i + 1:]:
                 # Set upper limit for bond distance
-                critical_distance = (atom1.element.cov_radius + atom2.element.cov_radius + 0.45) ** 2
+                critical_distance = (
+                    atom1.element.cov_radius + atom2.element.cov_radius + critical_distance_factor) ** 2
 
                 # First atom that is more than 4.0 Anstroms away in the z-axis, break the loop
                 # Atoms are sorted along the z-axis, so all following atoms should be even further
@@ -1706,7 +1707,7 @@ class Molecule(Graph):
                                  'Currently, RMG does not support ion chemistry.\n {0}'.format(adjlist))
         return self
 
-    def from_xyz(self, atomic_nums, coordinates, raise_atomtype_exception=True):
+    def from_xyz(self, atomic_nums, coordinates, critical_distance_factor=0.45, raise_atomtype_exception=True):
         """
         Create an RMG molecule from a list of coordinates and a corresponding
         list of atomic numbers. These are typically received from CCLib and the
@@ -1719,7 +1720,7 @@ class Molecule(Graph):
             atom = Atom(_rdkit_periodic_table.GetElementSymbol(int(at_num)))
             atom.coords = coordinates[i]
             self.add_atom(atom)
-        return self.connect_the_dots(raise_atomtype_exception=raise_atomtype_exception)
+        return self.connect_the_dots(critical_distance_factor=critical_distance_factor,raise_atomtype_exception=raise_atomtype_exception)
 
     def to_single_bonds(self, raise_atomtype_exception=True):
         """
