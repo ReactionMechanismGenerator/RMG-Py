@@ -555,27 +555,55 @@ class Reaction:
                 raise
         return dGrxn
 
-    def get_equilibrium_constant(self, T, type='Kc'):
+    def get_equilibrium_constant(self, T, type='Kc', surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
-        temperature `T` in K. The `type` parameter lets	you specify the
-        quantities used in the equilibrium constant: ``Ka`` for	activities,
-        ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
-        this function currently assumes an ideal gas mixture.
+        temperature `T` in K and reference `surface_site_density`
+        in mol/m^2 (2.5e-05 default) The `type` parameter lets you specify
+        the quantities used in the equilibrium constant: ``Ka`` for activities,
+        ``Kc`` for concentrations (default), or ``Kp`` for pressures.  This
+        function assumes a reference pressure of 1e5 Pa for gas phases species
+        and uses the ideal gas law to determine reference concentrations. For
+        surface species, the `surface_site_density` is the assumed reference.
         """
         cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T)
         K = np.exp(-dGrxn / constants.R / T)
         # Convert Ka to Kc or Kp if specified
+        # Assume a pressure of 1e5 Pa for gas phase species
         P0 = 1e5
+        # Determine the number of gas phase reactants and products. For gas species,
+        # we will use 1e5 Pa and ideal gas law to determine reference concentration.
+        try:
+            number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
+            number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
+        except IndexError:
+            logging.warning("Species do not have an rmgpy.molecule.Molecule "
+                            "Cannot determine phases of species. We will assume "
+                            "ideal gas mixture when calculating Kc and Kp.")
+            number_of_gas_reactants = len(self.reactants)
+            number_of_gas_products = len(self.products)
+
+        # Determine the number of surface reactants and products.  For surface species,
+        # we will use the provided `surface_site_density` as the reference
+        number_of_surface_reactants = len(self.reactants) - number_of_gas_reactants
+        number_of_surface_products = len(self.products) - number_of_gas_products
+
+        # Determine the change in the number of mols of gas and surface species in the reaction
+        dN_surf = number_of_surface_products - number_of_surface_reactants # change in mols of surface spcs
+        dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
+
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
-            C0 = P0 / constants.R / T
-            K *= C0 ** (len(self.products) - len(self.reactants))
+            if dN_gas:
+                C0 = P0 / constants.R / T
+                K *= C0 ** dN_gas
+            if dN_surf:
+                K *= surface_site_density ** dN_surf
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
-            K *= P0 ** (len(self.products) - len(self.reactants))
+            K *= P0 ** dN_gas
         elif type != 'Ka' and type != '':
             raise ReactionError('Invalid type "{0}" passed to Reaction.get_equilibrium_constant(); '
                                 'should be "Ka", "Kc", or "Kp".'.format(type))
