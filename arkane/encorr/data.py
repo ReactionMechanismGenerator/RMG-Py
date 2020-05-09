@@ -327,18 +327,22 @@ atom_energies = {
     },
 
     # Calculated atomic energies fitted orca 4.2.1  dlpno-ccsd(t)/def2-tzvp NormalPNO
+    # geometries are optimized at wb97xd/def2ztvp (g16)
     # fitted using Colin's BAC algorithm and SOC are included in the correction
-    # AEs are fitted to neutral molecules with RMSE and MAE 7.99 and 5.96 kJ/mol respectively.
+    # AEs are fitted to neutral  and cation molecules with RMSE and MAE 7.99 and 5.96 kJ/mol respectively.
     'dlpno-ccsd(t)/def2-tzvp': {
-        'H': -0.49641082, 'C': -37.77274125, 'N': -54.50388932, 'O': -74.96760414,
-        'F': -99.62044819, 'S': -397.63480236, 'Cl': -459.65784960
+        'H': -0.49641082 + SOC['H'], 'C': -37.77260625 + SOC['C'], 'N': -54.50388932 + SOC['N'],
+        'O': -74.96724914 + SOC['O'], 'F': -99.61983419 + SOC['F'], 'S': -397.63390936 + SOC['S'],
+        'Cl': -459.6565116 + SOC['Cl']
     },
-    # wb97xd/def2tzvp conducted using G16. 
+    # wb97xd/def2tzvp conducted using G16.
+    # geometries are optimized at wb97xd/def2ztvp (g16)
     # fitted using Colin's BAC algorithm and SOC are included in the correction
-    # AEs are fitted to neutral molecules with RMSE and MAE 9.16 and 6.66 kJ/mol respectively.
+    # AEs are fitted to neutral and cation molecules with RMSE and MAE 9.16 and 6.66 kJ/mol respectively.
     'wb97xd/def2tzvp': {
-        'H': -0.50224721, 'C': -37.84235323, 'N': -54.58757237, 'O': -75.06982154,
-        'F': -99.74180094, 'S': -398.10765642, 'Cl': -460.14650064
+        'H': -0.50224721 + SOC['H'], 'C': -37.84221823 + SOC['C'], 'N': -54.58757237 + SOC['N'],
+        'O': -75.06946654 + SOC['O'], 'F': -99.74118694 + SOC['F'], 'S': -398.10676342 + SOC['S'],
+        'Cl': -460.14516264 + SOC['Cl']
     },
 }
 
@@ -442,4 +446,25 @@ pbac = {
 }
 
 # Melius-type bond additivity correction parameters
-mbac = {}
+# units are kcal/mol
+mbac = {
+    # fitted using Colin's BAC algorithm and AC are included in the correction units kcal/mol
+    # BACs are fitted to neutral molecules with RMSE and MAE 5.69 and 3.86 kJ/mol respectively.
+    'dlpno-ccsd(t)/def2-tzvp': {
+        'atom_corr': {
+            'C': -2.54554, 'F': -0.40263, 'H': 0.26804, 'Cl': -0.54209, 'O': -0.57949, 'N': -2.20529, 'S': -1.84913},
+        'bond_corr_length': {
+            'C': -0.23276, 'F': -0.04107, 'H': 0.23988, 'Cl': 0.22409, 'O': 0.38914, 'N': 0.10006, 'S': 0.21389},
+        'bond_corr_neighbor': {
+            'C': 4.29082, 'F': 0.47779, 'H': 0.01691, 'Cl': 0.46756, 'O': 0.03281, 'N': 1.41962, 'S': 0.70839}},
+
+    # fitted using Colin's BAC algorithm and AC are included in the correction units kcal/mol
+    # BACs are fitted to neutral molecules with RMSE and MAE 7.36 and 5.44 kJ/mol respectively.
+    'wb97xd/def2tzvp': {
+        'atom_corr': {
+            'C': 0.62251, 'F': -0.89735, 'H': -0.17636, 'Cl': -0.71731, 'O': -1.80025, 'N': 1.28276, 'S': -1.37114},
+        'bond_corr_length': {
+            'C': -0.04942, 'F': 0.13823, 'H': 0.08243, 'Cl': 0.25196, 'O': 0.25446, 'N': -0.19574, 'S': 0.16428},
+        'bond_corr_neighbor': {
+            'C': 0.0, 'F': 1.12461, 'H': 0.89579, 'Cl': 0.57391, 'O': 2.4297, 'N': 0.01577, 'S': 0.79889}}
+}
