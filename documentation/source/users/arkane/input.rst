@@ -29,6 +29,11 @@ Component                   Description
 ``useAtomCorrections``      ``True`` (by default) if atom corrections are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` (by default) if not
 ``bondCorrectionType``      ``'p'`` for Petersson-type (default) or ``'m'`` for Melius-type bond additivity corrections
+``useIsodesmicReactions``   ``True`` if isodesmic reactions are used to apply corrections. Will automatically turn
+                            on atom corrections and disable bond corrections
+``referenceSets``           A list of reference sets to use for isodesmic reactions. By default if left blank only the
+                            main reference set is used, which is the recommended. All reference sets are located at
+                            RMG-database/input/reference_sets/
 ``species``                 Contains parameters for non-transition states
 ``transitionState``         Contains parameters for transition state(s)
 ``reaction``                Required for performing kinetic computations
@@ -56,9 +61,10 @@ chemistry. The ``modelChemistry`` could either be in a `single point // frequenc
 or a composite method, e.g., `CBS-QB3`.
 
 Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
-states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
+states by applying atom and spin-orbit coupling energy corrections. Additionally, bond additivity corrections OR
+isodesmic reactions corrections can be applied (but not both). This is particularly
 important for ``thermo()`` calculations (see below). Note that the user must specify under the
-``species()`` function the type and number of bonds for Arkane to apply these corrections.
+``species()`` function the type and number of bonds for Arkane to apply bond additivity corrections.
 The frequency level is used to determine the frequency scaling factor if not given in the input file, and if it exists
 in Arkane (see the below table for existing frequency scaling factors).
 The example below specifies CBS-QB3 as the model chemistry::
