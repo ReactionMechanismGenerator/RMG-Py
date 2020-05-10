@@ -33,8 +33,10 @@ Arkane common module
 
 import logging
 import os.path
+import shutil
 import string
 import time
+from typing import List
 
 import numpy as np
 import yaml
@@ -690,3 +692,33 @@ def get_principal_moments_of_inertia(coords, numbers=None, symbols=None):
     principal_moments_of_inertia, axes = zip(*sorted(zip(np.ndarray.tolist(principal_moments_of_inertia),
                                                          np.ndarray.tolist(axes)), reverse=True))
     return principal_moments_of_inertia, axes
+
+
+def clean_dir(base_dir_path: str = '',
+              files_to_delete: List[str] = None,
+              file_extensions_to_delete: List[str] = None,
+              files_to_keep: List[str] = None,
+              sub_dir_to_keep: List[str] = None,
+              ) -> None:
+    """
+    Clean up a directory. Commonly used for removing unwanted files after unit tests.
+
+    Args:
+        base_dir_path (str): absolute path of the directory to clean up.
+        files_to_delete (list[str]): full name of the file (includes extension) to delete.
+        file_extensions_to_delete: extensions of files to delete.
+        files_to_keep: full name of the file (includes extension) to keep, files specified here will NOT be deleted even
+                       if its extension is also in file_extensions_to_delete.
+        sub_dir_to_keep: name of the subdirectories in the base directory to keep.
+    """
+    for item in os.listdir(base_dir_path):
+        item_path = os.path.join(base_dir_path, item)
+        if os.path.isfile(item_path):
+            item_extension = os.path.splitext(item_path)[-1]
+            if item in files_to_delete or (item_extension in file_extensions_to_delete and item not in files_to_keep):
+                os.remove(item_path)
+        else:
+            # item is sub-directory
+            if os.path.split(item_path)[-1] in sub_dir_to_keep:
+                continue
+            shutil.rmtree(item_path)
