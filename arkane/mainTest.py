@@ -41,6 +41,7 @@ from nose.plugins.attrib import attr
 import rmgpy
 
 from arkane import Arkane
+from arkane.common import clean_dir
 
 ################################################################################
 
@@ -55,6 +56,7 @@ class TestArkaneExamples(unittest.TestCase):
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'testing', 'arkane')
         cls.failed = []
         cls.example_types = ['species', 'reactions', 'explorer', 'networks', 'bac']
 
@@ -79,11 +81,34 @@ class TestArkaneExamples(unittest.TestCase):
             error_message += '{1} in {0}; '.format(example_name, example_type)
         self.assertFalse(self.failed, error_message)
 
+    def test_arkane_two_parameter_arrhenius_fit(self):
+        test_path = os.path.join(self.test_base_path, 'two_parameter_arrhenius_fit')
+        file_to_remove = ['output.py', 'chem.inp', 'supporting_information.csv']
+        for file in file_to_remove:
+            if os.path.exists(os.path.join(test_path, file)):
+                os.remove(os.path.join(test_path, file))
+        arkane = Arkane(input_file=os.path.join(test_path, 'input.py'), output_directory=test_path)
+        arkane.plot = False
+        arkane.save_rmg_libraries = False
+        arkane.execute()
+        with open(os.path.join(test_path, 'output.py'), 'r') as f:
+            output = f.readlines()
+        reverse_output = output[::-1]
+        for i, line in enumerate(reverse_output):
+            if 'kinetics fitted using' in line:
+                msg_output = line.rstrip()
+                n_output = reverse_output[i-5].split('=')[1].strip().replace(',', '')
+                break
+        msg_expected = '# kinetics fitted using the two-parameter Arrhenius equation k = A * exp(-Ea/RT)'
+        self.assertEqual(msg_output, msg_expected)
+        n_expected = '0'
+        self.assertEqual(n_output, n_expected)
+
     @classmethod
     def tearDownClass(cls):
         """A function that is run ONCE after all unit tests in this class."""
         cls.extensions_to_delete = ['pdf', 'csv', 'txt', 'inp']
-        cls.files_to_delete = ['arkane.log', 'output.py']
+        cls.files_to_delete = ['arkane.log', 'output.py', 'supporting_information.csv']
         cls.files_to_keep = ['README.txt']  # files to keep that have extensions marked for deletion
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         for example_type in cls.example_types:
@@ -91,18 +116,16 @@ class TestArkaneExamples(unittest.TestCase):
             for example in os.listdir(example_type_path):
                 # clean working folder from all previous test output
                 example_path = os.path.join(example_type_path, example)
-                for name in os.listdir(example_path):
-                    item_path = os.path.join(example_path, name)
-                    if os.path.isfile(item_path):
-                        extension = name.split('.')[-1]
-                        if name in cls.files_to_delete or \
-                                (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
-                            os.remove(item_path)
-                    else:
-                        if os.path.split(item_path)[-1] in ['r0']:
-                            continue
-                        # This is a sub-directory. remove.
-                        shutil.rmtree(item_path)
+                clean_dir(base_dir_path=example_path, files_to_delete=cls.files_to_delete,
+                          file_extensions_to_delete=cls.extensions_to_delete, files_to_keep=cls.files_to_keep,
+                          sub_dir_to_keep=['r0'])
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'testing', 'arkane')
+        tests = ['two_parameter_arrhenius_fit']
+        for test in tests:
+            test_path = os.path.join(cls.test_base_path, test)
+            clean_dir(base_dir_path=test_path, files_to_delete=cls.files_to_delete,
+                      file_extensions_to_delete=cls.extensions_to_delete)
+
 
 ################################################################################
 
