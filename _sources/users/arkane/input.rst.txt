@@ -869,7 +869,23 @@ Use a ``kinetics()`` function to make Arkane execute the high-pressure limit kin
 parameters computation for a reaction. The ``'label'`` string must correspond to that of
 a defined ``reaction()`` function.
 
-You have three options for specifying the temperature to which a modified Arrhenius
+By default, Arkane outputs high pressure kinetic rate coefficients in the modified three-parameter Arrhenius equation
+format:
+
+  .. math :: k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_a}{RT} \right)
+
+Alternatively, the user may request to output the rate in the classical two-parameter Arrhenius format:
+
+  .. math :: k(T) = A \exp \left( -\frac{E_a}{RT} \right)
+
+by passing ``three_params = False`` in the ``kinetics()`` function::
+
+    kinetics(
+    label = 'H + C2H4 <=> C2H5',
+    three_params = False,
+    )
+
+You have three options for specifying the temperature to which a modified/classical Arrhenius
 expression will be fit.
 
 Give an explicit list of temperatures to fit::

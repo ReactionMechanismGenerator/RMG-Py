@@ -1365,7 +1365,25 @@ output file.</p>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The <code class="docutils literal notranslate"><span class="pre">'label'</span></code> string must correspond to that of
 a defined <code class="docutils literal notranslate"><span class="pre">reaction()</span></code> function.</p>
-<p>You have three options for specifying the temperature to which a modified Arrhenius
+<p>By default, Arkane outputs high pressure kinetic rate coefficients in the modified three-parameter Arrhenius equation
+format:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_a}{RT} \right)\]</div>
+</div></blockquote>
+<p>Alternatively, the user may request to output the rate in the classical two-parameter Arrhenius format:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[k(T) = A \exp \left( -\frac{E_a}{RT} \right)\]</div>
+</div></blockquote>
+<p>by passing <code class="docutils literal notranslate"><span class="pre">three_params</span> <span class="pre">=</span> <span class="pre">False</span></code> in the <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+<span class="n">three_params</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>You have three options for specifying the temperature to which a modified/classical Arrhenius
 expression will be fit.</p>
 <p>Give an explicit list of temperatures to fit:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span>
