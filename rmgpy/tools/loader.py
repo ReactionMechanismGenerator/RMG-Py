@@ -130,6 +130,10 @@ def load_rmg_py_job(input_file, chemkin_file=None, species_dict=None, generate_i
 
             reaction_system.initial_concentrations = dict(
                 [(species_dict[spec], conc) for spec, conc in reaction_system.initial_concentrations.items()])
+            if reaction_system.inlet_concentrations:
+                reaction_system.inlet_concentrations = dict(
+                    [(species_dict[spec], conc) for spec, conc in reaction_system.inlet_concentrations.items()])
+
         elif isinstance(reaction_system, SurfaceReactor):
             reaction_system.initial_gas_mole_fractions = dict(
                 [(species_dict[spec], frac) for spec, frac in reaction_system.initial_gas_mole_fractions.items()])
