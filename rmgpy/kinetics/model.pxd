@@ -32,7 +32,7 @@ from rmgpy.kinetics.uncertainties cimport RateUncertainty
 
 ################################################################################
 
-cpdef str get_rate_coefficient_units_from_reaction_order(order)
+cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=?)
 
 cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1
 
