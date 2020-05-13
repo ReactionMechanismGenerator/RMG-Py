@@ -886,6 +886,7 @@ class SolvationDatabase(object):
                     pass
 
         solute_data = self.remove_h_bonding(saturated_struct, added_to_radicals, added_to_pairs, solute_data)
+        solute_data.comment = solute_data.comment[:-3]
 
         return solute_data
 
@@ -933,7 +934,7 @@ class SolvationDatabase(object):
         solute_data.E += data.E
         solute_data.L += data.L
         solute_data.A += data.A
-        solute_data.comment += comment + "+"
+        solute_data.comment += comment + " + "
 
         return solute_data
 
