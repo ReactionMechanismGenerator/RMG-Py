@@ -1070,13 +1070,16 @@ def save_input_file(path, rmg):
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
 
-    if rmg.surfaceSiteDenisty or rmg.binding_energies:
-        f.write('catalystProperties(\n')
-        if rmg.surfaceSiteDenisty:
-            f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
-        if rmg.binding_energies:
-            f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
-        f.write(')\n\n')
+    try:
+        if rmg.surface_site_denisty or rmg.binding_energies:
+            f.write('catalystProperties(\n')
+            if rmg.surface_site_denisty:
+                f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
+            if rmg.binding_energies:
+                f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
+            f.write(')\n\n')
+    except AttributeError:
+        pass
 
     # Species
     for spcs in rmg.initial_species:
@@ -1096,7 +1099,15 @@ def save_input_file(path, rmg):
             f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
-                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+                f.write('        "{0!s}": ({1:g},"mol/m^3"),\n'.format(spcs.label, conc))
+            if system.residence_time:
+                f.write('    residenceTime = ({0:g}, "s"),\n').format(system.residence_time)
+            if not system.constant_volume:
+                f.write('    inletVolumetricFlowRate = ({0:g}, "m^3/s"),\n'.format(system.v_in))
+                f.write('    inletConcentrations={\n')
+                for spcs, conc in system.inlet_concentrations.items():
+                    f.write('        "{0!s}": ({1:g},"mol/m^3"),\n'.format(spcs.label, conc))
+                f.write('    initialVolume = ({0:g}, "m^3"),\n'.format(system.V_0))
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
