@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
+
+"""
+This script contains unit tests for the :mod:`arkane.encorr.ae` module.
+"""
+
+import importlib
+import os
+import tempfile
+import unittest
+
+from arkane.encorr.ae import AE, SPECIES_LABELS
+
+
+class TestAE(unittest.TestCase):
+    """
+    A class for testing that the AEJob class functions properly.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.species_energies = {lbl: i+1 for i, lbl in enumerate(SPECIES_LABELS)}
+        cls.ae = AE(cls.species_energies)
+
+    def test_load_refdata(self):
+        """
+        Test that the species for fitting can be loaded.
+        """
+        self.ae._load_refdata()
+        self.assertIsNotNone(self.ae.ref_data)
+        for spc in self.ae.ref_data.values():
+            spc_ref_data = spc.reference_data[self.ae.ref_data_src]
+            self.assertIsNotNone(spc_ref_data.atomization_energy)
+            self.assertIsNotNone(spc_ref_data.zpe)
+
+        # Test that new instance already has data loaded
+        ae = AE(self.species_energies)
+        self.assertIsNotNone(ae.ref_data)
+
+    def test_fit(self):
+        """
+        Test that atom energies can be fitted.
+        """
+        self.assertIsNone(self.ae.atom_energies)
+        self.assertIsNone(self.ae.confidence_intervals)
+
+        self.ae.fit()
+        self.assertIsNotNone(self.ae.atom_energies)
+        self.assertIsNotNone(self.ae.confidence_intervals)
+
+    def test_write_to_database(self):
+        """
+        Test that results can be written to the database.
+        """
+        # Check that error is raised when no energies are available
+        self.ae.atom_energies = None
+        with self.assertRaises(ValueError) as e:
+            self.ae.write_to_database('test')
+        self.assertIn('No atom energies', str(e.exception))
+
+        # Check that error is raised if energies already exist
+        self.ae.atom_energies = {'H': 1.0, 'C': 2.0}
+        tmp_datafile_fd, tmp_datafile_path = tempfile.mkstemp(suffix='.py')
+
+        lot = 'wb97m-v/def2-tzvpd'
+        with self.assertRaises(ValueError) as e:
+            self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
+        self.assertIn('overwrite', str(e.exception))
+
+        # Dynamically set data file as module
+        spec = importlib.util.spec_from_file_location(os.path.basename(tmp_datafile_path), tmp_datafile_path)
+        module = importlib.util.module_from_spec(spec)
+
+        # Check that existing energies can be overwritten
+        self.ae.write_to_database(lot, overwrite=True, alternate_path=tmp_datafile_path)
+        spec.loader.exec_module(module)  # Load data as module
+        self.assertEqual(self.ae.atom_energies, module.atom_energies[lot])
+
+        # Check that new energies can be written
+        lot = 'test'
+        self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
+        spec.loader.exec_module(module)  # Reload data module
+        self.assertEqual(self.ae.atom_energies, module.atom_energies[lot])
+
+        os.close(tmp_datafile_fd)
+        os.remove(tmp_datafile_path)
+
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
