@@ -331,16 +331,22 @@ class ReferenceDataEntry(RMGObject):
     """
     A class for storing reference data for a specific species from a single source
     """
-    def __init__(self, thermo_data, atct_id=None):
+    def __init__(self, thermo_data=None, atct_id=None, atomization_energy=None, xyz_dict=None, zpe=None):
         """
 
         Args:
             thermo_data (rmgpy.thermo.ThermoData): Thermochemistry (Hf298, Cp, ...) from the reference for a species
             atct_id (str): ID number in the Active Thermochemical Tables if the source is ATcT
+            atomization_energy (rmgpy.quantity.ScalarQuantity): Atomization energy at zero Kelvin
+            xyz_dict (dict): An ARC style xyz dictionary for the cartesian coordinates
+            zpe (rmgpy.quantity.ScalarQuantity): Zero-point energy
         """
         super().__init__()
         self.thermo_data = thermo_data
         self.atct_id = atct_id
+        self.atomization_energy = atomization_energy
+        self.xyz_dict = xyz_dict
+        self.zpe = zpe
 
     def __repr__(self):
         return str(self.as_dict())
