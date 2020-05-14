@@ -140,7 +140,7 @@ def convert_binding_energies(bindingEnergies):
     return new_dict
 
 
-def species(label, structure, reactive=True):
+def species(label, structure, reactive=True, cut=False):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive',
                                                          label,
                                                          structure.to_smiles()))
@@ -148,15 +148,40 @@ def species(label, structure, reactive=True):
     if '+' in label:
         raise InputError('species {0} label cannot include a + sign'.format(label))
 
-    spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
-    if not is_new:
-        raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
-                                                                                                          spec.label))
-    # Force RMG to add the species to edge first, prior to where it is added to the core, in case it is found in 
-    # any reaction libraries along the way
-    rmg.reaction_model.add_species_to_edge(spec)
-    rmg.initial_species.append(spec)
-    species_dict[label] = spec
+    if cut:
+        from afm.fragment import Fragment
+        mol_to_frag[label] = {} # key:original molecule label, value:created fragment label
+        cut_frag_list = Fragment().cut_molecule(structure)
+        logging.info('The original molecule {0} is divided into several fragments:'.format(label))
+        for initial_frag in cut_frag_list:
+            frag_label = initial_frag.to_smiles()
+
+            logging.info(frag_label)
+
+            if frag_label not in mol_to_frag[label]:
+                mol_to_frag[label][frag_label] = 1
+            else:
+                mol_to_frag[label][frag_label] += 1
+
+            spec, is_new = rmg.reaction_model.make_new_species(initial_frag, label=frag_label, reactive=reactive)
+            # if duplicated fragment is created, combine and add to initialMoleFractions
+            if not is_new:
+                continue
+            # Force RMG to add the species to edge first, prior to where it is added to the core, in case it is found in
+            # any reaction libraries along the way
+            rmg.reaction_model.add_species_to_edge(spec)
+            rmg.initial_species.append(spec)
+            species_dict[frag_label] = spec
+    else:
+        spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
+        if not is_new:
+            raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
+                                                                                                            spec.label))
+        # Force RMG to add the species to edge first, prior to where it is added to the core, in case it is found in
+        # any reaction libraries along the way
+        rmg.reaction_model.add_species_to_edge(spec)
+        rmg.initial_species.append(spec)
+        species_dict[label] = spec
 
 
 def smarts(string):
@@ -199,6 +224,25 @@ def simple_reactor(temperature,
                    sensitivityMoleFractions=None,
                    constantSpecies=None):
     logging.debug('Found SimpleReactor reaction system')
+
+    if mol_to_frag:
+        # calculate total as denominator
+        total = float(0)
+        for initial_mol, value in initialMoleFractions.items():
+            total += value * sum(mol_to_frag[initial_mol].values())
+        for key, frag_dict in mol_to_frag.items():
+            # if not perform cutting, no need to modify initialMoleFractions
+            if len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                continue
+            for frag_label, number in frag_dict.items():
+                if frag_label in initialMoleFractions:
+                    initialMoleFractions[frag_label] += initialMoleFractions[key] * number / total
+                else:
+                    initialMoleFractions[frag_label] = initialMoleFractions[key] * number / total
+            del initialMoleFractions[key]
+        logging.info('After cutting, new compositions:')
+        for spec, molfrac in initialMoleFractions.items():
+            logging.info('{0} = {1}'.format(spec, molfrac))
 
     for key, value in initialMoleFractions.items():
         if not isinstance(value, list):
@@ -254,7 +298,13 @@ def simple_reactor(temperature,
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.items():
-            termination.append(TerminationConversion(species_dict[spec], conv))
+            # check whether key is in species_dict (not if molecule cut provided)
+            if spec not in species_dict:
+                # select first fragment as species used for terminationConversion
+                repr_frag = sorted(mol_to_frag[spec].keys())[0]
+                termination.append(TerminationConversion(species_dict[repr_frag], conv))
+            else:
+                termination.append(TerminationConversion(species_dict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
     if terminationRateRatio is not None:
@@ -891,7 +941,7 @@ def read_input_file(path, rmg0):
     Read an RMG input file at `path` on disk into the :class:`RMG` object 
     `rmg`.
     """
-    global rmg, species_dict
+    global rmg, species_dict, mol_to_frag
 
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
@@ -910,6 +960,7 @@ def read_input_file(path, rmg0):
     rmg.initial_species = []
     rmg.reaction_systems = []
     species_dict = {}
+    mol_to_frag = {}
 
     global_context = {'__builtins__': None}
     local_context = {
