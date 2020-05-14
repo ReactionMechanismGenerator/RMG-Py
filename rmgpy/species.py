@@ -408,7 +408,7 @@ class Species(object):
             if not isinstance(vertex, CuttingLabel):
                 symbol = vertex.element.symbol
             else: # that means this vertex is CuttingLabel
-                symbol = 'Cl'
+                symbol = 'H'
             if symbol not in element_dict:
                 element_dict[symbol] = 1
             else:
