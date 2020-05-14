@@ -68,6 +68,7 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
         # correction is added to the entropy and enthalpy
         wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
         wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+        wilhoit.comment += ' + Solvation correction with {} as solvent and solute estimated using {}'.format(solvent_name, solute_data.comment)
 
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
