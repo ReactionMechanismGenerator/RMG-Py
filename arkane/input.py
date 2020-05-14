@@ -63,6 +63,7 @@ from rmgpy.transport import TransportData
 from rmgpy.util import as_list
 
 from arkane.common import is_pdep
+from arkane.encorr.ae import AEJob
 from arkane.encorr.bac import BACJob
 from arkane.encorr.corr import assign_frequency_scale_factor
 from arkane.explorer import ExplorerJob
@@ -509,6 +510,18 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
     job_list.append(job)
 
 
+def ae(species_energies, level_of_theory=None, write_to_database=False, overwrite=False):
+    """Generate an atom energy job"""
+    global job_list
+    job = AEJob(
+        species_energies,
+        level_of_theory=level_of_theory,
+        write_to_database=write_to_database,
+        overwrite=overwrite
+    )
+    job_list.append(job)
+
+
 def bac(model_chemistry, bac_type='p', train_names='main',
         exclude_elements=None, charge='all', multiplicity='all',
         weighted=False, write_to_database=False, overwrite=False,
@@ -622,6 +635,7 @@ def load_input_file(path):
         'pressureDependence': pressureDependence,
         'explorer': explorer,
         'bac': bac,
+        'ae': ae,
         # Miscellaneous
         'SMILES': SMILES,
         'adjacencyList': adjacencyList,

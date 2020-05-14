@@ -55,6 +55,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.exceptions import InputError
 
 from arkane.common import is_pdep
+from arkane.encorr.ae import AEJob
 from arkane.encorr.bac import BACJob
 from arkane.explorer import ExplorerJob
 from arkane.input import load_input_file
@@ -219,6 +220,8 @@ class Arkane(object):
             if isinstance(job, BACJob):
                 job.execute(output_directory=self.output_directory, plot=self.plot, jobnum=bacjob_num)
                 bacjob_num += 1
+            if isinstance(job, AEJob):
+                job.execute(output_file=output_file)
 
         with open(chemkin_file, 'a') as f:
             f.write('\n')
