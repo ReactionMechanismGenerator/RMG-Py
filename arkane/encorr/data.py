@@ -39,7 +39,7 @@ import importlib.util
 import os
 from collections import Counter
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Union
+from typing import Callable, Iterable, List, Sequence, Set, Union
 
 import numpy as np
 import pybel
@@ -331,19 +331,42 @@ class BACDataset:
             raise NotImplementedError(f'{weight_type} weight type is unavailable')
 
 
-def extract_dataset(ref_database: ReferenceDatabase, model_chemistry: str) -> BACDataset:
+def extract_dataset(ref_database: ReferenceDatabase,
+                    model_chemistry: str,
+                    exclude_elements: Union[Sequence[str], Set[str], str] = None,
+                    charge: Union[Sequence[Union[str, int]], Set[Union[str, int]], str, int] = 'all',
+                    multiplicity: Union[Sequence[int], Set[int], int, str] = 'all') -> BACDataset:
     """
     Extract species for a given model chemistry from a reference
     database and convert to a BACDataset.
 
     Args:
-         ref_database: Reference database
+         ref_database: Reference database.
          model_chemistry: Model chemistry.
+         exclude_elements: Sequence of element symbols to exclude.
+         charge: Allowable charges. Possible values are 'all'; a combination of 'neutral, 'positive', and 'negative';
+                 or a sequence of integers.
+         multiplicity: Allowable multiplicites. Possible values are 'all' or positive integers.
 
     Returns:
         BACDataset containing species with data available at given model chemistry.
     """
     species = ref_database.extract_model_chemistry(model_chemistry, as_error_canceling_species=False)
+
+    if exclude_elements is not None:
+        elements = {exclude_elements} if isinstance(exclude_elements, str) else set(exclude_elements)
+        species = [spc for spc in species if not any(e in spc.formula for e in elements)]
+    if charge != 'all':
+        charges = {charge} if isinstance(charge, (str, int)) else set(charge)
+        species = [spc for spc in species
+                   if spc.charge == 0 and 'neutral' in charges
+                   or spc.charge > 0 and 'positive' in charges
+                   or spc.charge < 0 and 'negative' in charges
+                   or spc.charge in charges]
+    if multiplicity != 'all':
+        multiplicities = {multiplicity} if isinstance(multiplicity, int) else set(multiplicity)
+        species = [spc for spc in species if spc.multiplicity in multiplicities]
+
     return BACDataset([BACDatapoint(spc, model_chemistry=model_chemistry) for spc in species])
 
 

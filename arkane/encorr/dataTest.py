@@ -347,6 +347,44 @@ class TestFuncs(unittest.TestCase):
         dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY)
         self.assertIsInstance(dataset, BACDataset)
 
+        # Test excluding elements
+        elements = 'N'
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, exclude_elements=elements)
+        for d in dataset:
+            self.assertFalse(elements in d.spc.formula)
+        elements = ['N', 'O']
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, exclude_elements=elements)
+        for d in dataset:
+            self.assertFalse(any(e in d.spc.formula for e in elements))
+
+        # Test specifying charge
+        charges = 'negative'
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        for d in dataset:
+            self.assertTrue(d.spc.charge < 0)
+        charges = 1
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        for d in dataset:
+            self.assertTrue(d.spc.charge == 1)
+        charges = ['positive', 'neutral']
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        for d in dataset:
+            self.assertTrue(d.spc.charge >= 0)
+        charges = [-1, 'positive']
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        for d in dataset:
+            self.assertTrue(d.spc.charge > 0 or d.spc.charge == -1)
+
+        # Test specifying multiplicity
+        multiplicities = 2
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, multiplicity=multiplicities)
+        for d in dataset:
+            self.assertTrue(d.spc.multiplicity == 2)
+        multiplicities = [2, 3]
+        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, multiplicity=multiplicities)
+        for d in dataset:
+            self.assertTrue(d.spc.multiplicity in {2, 3})
+
     def test_geo_to_mol(self):
         """
         Test that a geometry can be converted to an RMG molecule.
