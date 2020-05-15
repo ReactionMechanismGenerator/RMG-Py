@@ -190,7 +190,7 @@ includes both external and internal modes.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Molecule.connect_the_dots">
-<code class="sig-name descname">connect_the_dots</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">raise_atomtype_exception</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.connect_the_dots" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">connect_the_dots</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">critical_distance_factor</span><span class="o">=</span><span class="default_value">0.45</span></em>, <em class="sig-param"><span class="n">raise_atomtype_exception</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.connect_the_dots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete all bonds, and set them again based on the Atoms’ coords.
 Does not detect bond type.</p>
 </dd></dl>
@@ -363,7 +363,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Molecule.from_xyz">
-<code class="sig-name descname">from_xyz</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray atomic_nums</em>, <em class="sig-param">ndarray coordinates</em>, <em class="sig-param">bool raise_atomtype_exception=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_xyz</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray atomic_nums</em>, <em class="sig-param">ndarray coordinates</em>, <em class="sig-param">float critical_distance_factor=0.45</em>, <em class="sig-param">bool raise_atomtype_exception=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an RMG molecule from a list of coordinates and a corresponding
 list of atomic numbers. These are typically received from CCLib and the
 molecule is sent to <cite>ConnectTheDots</cite> so will only contain single bonds.</p>
