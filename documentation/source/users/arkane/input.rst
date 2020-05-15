@@ -1062,19 +1062,22 @@ fits one parameter for each bond type, and Melius-type (Anantharaman and Melius,
 which fits three parameters per atom type and an optional molecular parameter. Each BAC fitting calculation must be
 specified using a ``bac()`` function, which accepts the following parameters:
 
-====================== ==================== =========================================================================================
-Parameter              Required?            Description
-====================== ==================== =========================================================================================
-``model_chemistry``    Yes                  Calculated data will be extracted from the reference database using this model chemistry
-``bac_type``           No                   BAC type: 'p' for Petersson (default), 'm' for Melius
-``train_name``         No                   Names of training data folders in the RMG database (default: 'main')
-``weighted``           No                   Weight the data to diversify substructures (default: False)
-``write_to_database``  No                   Write the BACs to the database (default: False)
-``overwrite``          No                   If BACs already exist, overwrite them (default: False)
-``fit_mol_corr``       No                   Fit the optional molecular correction term (Melius only, default: True)
-``global_opt``         No                   Perform a global optimization (Melius only, default: True)
-``global_opt_iter``    No                   Number of global optimization iterations (Melius only, default: 10)
-====================== ==================== =========================================================================================
+====================== ============ =============================================================================================================================
+Parameter              Required?    Description
+====================== ============ =============================================================================================================================
+``model_chemistry``    Yes          Calculated data will be extracted from the reference database using this model chemistry
+``bac_type``           No           BAC type: 'p' for Petersson (default), 'm' for Melius
+``train_names``        No           Names of training data folders in the RMG database (default: 'main')
+``exclude_elements``   No           Exclude molecules with the elements in this list from the training data (default: None)
+``charge``             No           Set the allowed charges ('neutral', 'positive', 'negative', or integers) for molecules in the training data (default: 'all')
+``multiplicity``       No           Set the allowed multiplicities for molecules in the training data (default: 'all')
+``weighted``           No           Weight the data to diversify substructures (default: False)
+``write_to_database``  No           Write the BACs to the database (default: False)
+``overwrite``          No           If BACs already exist, overwrite them (default: False)
+``fit_mol_corr``       No           Fit the optional molecular correction term (Melius only, default: True)
+``global_opt``         No           Perform a global optimization (Melius only, default: True)
+``global_opt_iter``    No           Number of global optimization iterations (Melius only, default: 10)
+====================== ============ =============================================================================================================================
 
 
 Examples
