@@ -45,7 +45,7 @@ import logging
 import os
 import re
 from collections import Counter, defaultdict
-from typing import Dict, Iterable, List, Tuple, Union
+from typing import Dict, Iterable, List, Sequence, Set, Tuple, Union
 
 import numpy as np
 import scipy.optimize as optimize
@@ -580,7 +580,13 @@ class BAC:
             self._k_coeffs[mol.id] = coeff
         return coeff
 
-    def fit(self, weighted: bool = False, db_names: Union[str, List[str]] = 'main', **kwargs):
+    def fit(self,
+            weighted: bool = False,
+            db_names: Union[str, List[str]] = 'main',
+            exclude_elements: Union[Sequence[str], Set[str], str] = None,
+            charge: Union[Sequence[Union[str, int]], Set[Union[str, int]], str, int] = 'all',
+            multiplicity: Union[Sequence[int], Set[int], int, str] = 'all',
+            **kwargs):
         """
         Fits bond additivity corrections using calculated and reference
         data available in the RMG database. The resulting BACs stored
@@ -589,12 +595,16 @@ class BAC:
         Args:
             weighted: Perform weighted least squares by balancing training data.
             db_names: Optionally specify database names to train on (defaults to main).
+            exclude_elements: Molecules with any of the elements in this sequence are excluded from training data.
+            charge: Allowable charges for molecules in training data.
+            multiplicity: Allowable multiplicites for molecules in training data.
             kwargs: Keyword arguments for fitting Melius-type BACs (see self._fit_melius).
         """
         self._reset_memoization()
         self.database_key = self.load_database(names=db_names)
 
-        self.dataset = extract_dataset(self.ref_databases[self.database_key], self.model_chemistry)
+        self.dataset = extract_dataset(self.ref_databases[self.database_key], self.model_chemistry,
+                                       exclude_elements=exclude_elements, charge=charge, multiplicity=multiplicity)
         if len(self.dataset) == 0:
             raise BondAdditivityCorrectionError(f'No species available for {self.model_chemistry} model chemistry')
 
