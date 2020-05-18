@@ -123,14 +123,17 @@ def save_entry(f, entry):
             f.write('        CpInf = {0!r},\n'.format(entry.data.CpInf))
         f.write('    ),\n')
     else:
-        f.write('    thermo = {0!r},\n'.format(entry.data))
+        if entry.data:
+            f.write('    thermo = u{0!r},\n'.format(entry.data))
+        else:
+            f.write('    thermo = {0!r},\n'.format(entry.data))
 
     if entry.reference is not None:
         f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.reference_type != "":
         f.write('    referenceType = "{0}",\n'.format(entry.reference_type))
-    f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
-    f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
+    f.write(f'    shortDesc = u"""{entry.short_desc.strip()}""",\n')
+    f.write(f'    longDesc = \nu"""\n{entry.long_desc.strip()}\n""",\n')
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
 

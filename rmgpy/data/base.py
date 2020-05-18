@@ -322,7 +322,7 @@ class Database(object):
                 f.write(species_dict[label].molecule[0].to_adjacency_list(label=label, remove_h=False))
                 f.write('\n')
 
-    def save(self, path):
+    def save(self, path, reindex=True):
         """
         Save the current database to the file at location `path` on disk. 
         """
@@ -330,14 +330,18 @@ class Database(object):
             os.makedirs(os.path.dirname(path))
         except OSError:
             pass
-        entries = self.get_entries_to_save()
+        if reindex is True:
+            entries = self.get_entries_to_save()
+        else:
+            entries = self.entries.values()
+
 
         f = codecs.open(path, 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
-        f.write('shortDesc = "{0}"\n'.format(self.short_desc))
-        f.write('longDesc = """\n')
+        f.write('shortDesc = u"{0}"\n'.format(self.short_desc))
+        f.write('longDesc = u"""\n')
         f.write(self.long_desc.strip() + '\n')
         f.write('"""\n')
 
