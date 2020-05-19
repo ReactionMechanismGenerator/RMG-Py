@@ -191,7 +191,7 @@ rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmet
         statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
         statmech_job.level_of_theory = LevelOfTheory('b3lyp', '6-311+g(3df,2p)')
         statmech_job.load(pdep=False, plot=False)
-        self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
+        self.assertAlmostEqual(h2o2.conformer.E0.value_si, -145935.26733679877)
         os.remove(h2o2_path)
 
     def test_hinder_rotor_from_1d_array(self):
