@@ -1597,9 +1597,9 @@ which fits three parameters per atom type and an optional molecular parameter. E
 specified using a <code class="docutils literal notranslate"><span class="pre">bac()</span></code> function, which accepts the following parameters:</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 17%" />
-<col style="width: 15%" />
-<col style="width: 68%" />
+<col style="width: 14%" />
+<col style="width: 8%" />
+<col style="width: 79%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
@@ -1616,31 +1616,43 @@ specified using a <code class="docutils literal notranslate"><span class="pre">b
 <td><p>No</p></td>
 <td><p>BAC type: ‘p’ for Petersson (default), ‘m’ for Melius</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train_name</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train_names</span></code></p></td>
 <td><p>No</p></td>
 <td><p>Names of training data folders in the RMG database (default: ‘main’)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">weighted</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">exclude_elements</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Exclude molecules with the elements in this list from the training data (default: None)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">charge</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Set the allowed charges (‘neutral’, ‘positive’, ‘negative’, or integers) for molecules in the training data (default: ‘all’)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">multiplicity</span></code></p></td>
+<td><p>No</p></td>
+<td><p>Set the allowed multiplicities for molecules in the training data (default: ‘all’)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">weighted</span></code></p></td>
 <td><p>No</p></td>
 <td><p>Weight the data to diversify substructures (default: False)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">write_to_database</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">write_to_database</span></code></p></td>
 <td><p>No</p></td>
 <td><p>Write the BACs to the database (default: False)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">overwrite</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">overwrite</span></code></p></td>
 <td><p>No</p></td>
 <td><p>If BACs already exist, overwrite them (default: False)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fit_mol_corr</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fit_mol_corr</span></code></p></td>
 <td><p>No</p></td>
 <td><p>Fit the optional molecular correction term (Melius only, default: True)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">global_opt</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">global_opt</span></code></p></td>
 <td><p>No</p></td>
 <td><p>Perform a global optimization (Melius only, default: True)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">global_opt_iter</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">global_opt_iter</span></code></p></td>
 <td><p>No</p></td>
 <td><p>Number of global optimization iterations (Melius only, default: 10)</p></td>
 </tr>
