@@ -55,6 +55,7 @@ from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments
 from arkane.encorr.corr import get_atom_correction, get_bac
 from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, GaussianLog, QChemLog
 from arkane.encorr.isodesmic import ErrorCancelingSpecies, IsodesmicRingScheme
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory, standardize_name
 from arkane.output import prettify
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.thermo import ThermoJob
@@ -183,7 +184,7 @@ class StatMechJob(object):
     def __init__(self, species, path):
         self.species = species
         self.path = path
-        self.modelChemistry = ''
+        self.level_of_theory = None
         self.frequencyScaleFactor = 1.0
         self.includeHinderedRotors = True
         self.useIsodesmicReactions = False
@@ -276,7 +277,9 @@ class StatMechJob(object):
             'HinderedRotor2D': hinderedRotor2D,
             'HinderedRotorClassicalND': hinderedRotorClassicalND,
             'ScanLog': ScanLog,
-            'Log': create_log  # The Log class no longer exists, so route the path to ess_factory instead
+            'Log': create_log,  # The Log class no longer exists, so route the path to ess_factory instead
+            'LevelOfTheory': LevelOfTheory,
+            'CompositeLevelOfTheory': CompositeLevelOfTheory,
         }
 
         local_context.update({ess_adapter_name: create_log for ess_adapter_name in _registered_ess_adapters.keys()})
@@ -320,17 +323,31 @@ class StatMechJob(object):
         except KeyError:
             raise InputError('Required attribute "energy" not found in species file {0!r}.'.format(path))
         if isinstance(energy, dict):
-            energy = {k.lower(): v for k, v in energy.items()}  # Make model chemistries lower-case
+            # Standardize model chemistry names
+            energy = {standardize_name(k) if isinstance(k, str) else k: v for k, v in energy.items()}
+            freq_level = getattr(self.level_of_theory, 'freq', self.level_of_theory)
+            energy_level = getattr(self.level_of_theory, 'energy', self.level_of_theory)
             try:
-                energy = energy[self.modelChemistry]
+                energy = energy[energy_level.to_model_chem()]
             except KeyError:
-                raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
-                                 '{1!r}.'.format(self.modelChemistry, path))
+                try:
+                    energy = energy[energy_level]
+                except KeyError:
+                    raise InputError(f'{energy_level} not found in dictionary of energy values in species file {path}.')
+        else:
+            freq_level = energy_level = None
 
         e0, e_electronic = None, None  # E0 = e_electronic + ZPE
         energy_log = None
         if isinstance(energy, ESSAdapter):
             energy_log = energy
+            # Update energy level of theory with software
+            if energy_level is not None:
+                energy_software = energy_log.get_software()
+                if energy_level.software is not None and energy_level.software != energy_software:
+                    logging.warning(f'{energy_level.software} was specified as energy software but does not match'
+                                    f' detected software. Software will be updated to {energy_software}.')
+                energy_level = energy_level.update(software=energy_software)
         elif isinstance(energy, float):
             e_electronic = energy
         elif isinstance(energy, tuple) and len(energy) == 2:
@@ -357,6 +374,19 @@ class StatMechJob(object):
         except KeyError:
             geom_log = statmech_log
             logging.debug("Reading geometry from the specified frequencies file.")
+
+        # Update frequency level of theory with software and set new composite level of theory
+        if freq_level is not None:
+            freq_software = statmech_log.get_software()
+            if freq_level.software is not None and freq_level.software != freq_software:
+                logging.warning(f'{freq_level.software} was specified as frequency software but does not match detected'
+                                f' software. Software will be updated to {freq_software}.')
+            freq_level = freq_level.update(software=freq_software)
+        if freq_level is not None and energy_level is not None:
+            if energy_level == freq_level:
+                self.level_of_theory = energy_level
+            else:
+                self.level_of_theory = CompositeLevelOfTheory(freq=freq_level, energy=energy_level)
 
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
@@ -482,7 +512,7 @@ class StatMechJob(object):
 
             # Apply atom corrections
             if self.applyAtomEnergyCorrections:
-                atom_corrections = get_atom_correction(self.modelChemistry,
+                atom_corrections = get_atom_correction(self.level_of_theory,
                                                        atoms, self.atomEnergies)
 
             else:
@@ -493,7 +523,7 @@ class StatMechJob(object):
             if self.applyBondEnergyCorrections:
                 if not self.bonds and hasattr(self.species, 'molecule') and self.species.molecule:
                     self.bonds = self.species.molecule[0].enumerate_bonds()
-                bond_corrections = get_bac(self.modelChemistry, self.bonds, coordinates, number,
+                bond_corrections = get_bac(self.level_of_theory, self.bonds, coordinates, number,
                                            bac_type=self.bondEnergyCorrectionType,
                                            multiplicity=conformer.spin_multiplicity)
             else:
@@ -565,8 +595,8 @@ class StatMechJob(object):
 
             scheme = IsodesmicRingScheme(target=ErrorCancelingSpecies(self.species.molecule[0],
                                                                       (uncorrected_thermo, 'J/mol'),
-                                                                      self.modelChemistry),
-                                         reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
+                                                                      self.level_of_theory),
+                                         reference_set=reference_db.extract_level_of_theory(self.level_of_theory))
             isodesmic_thermo, self.isodesmicReactionList = scheme.calculate_target_enthalpy()
 
             # Set the difference as the isodesmic EO correction
