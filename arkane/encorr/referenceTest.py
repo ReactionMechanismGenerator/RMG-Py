@@ -37,6 +37,7 @@ import unittest
 import shutil
 
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
+from arkane.modelchem import LevelOfTheory
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry, ReferenceDatabase
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
@@ -173,9 +174,9 @@ class TestReferenceDatabase(unittest.TestCase):
         # Finally, remove the testing directory
         shutil.rmtree(testing_dir)
 
-    def test_extract_model_chemistry(self):
+    def test_extract_level_of_theory(self):
         """
-        Test that a given model chemistry can be extracted from the reference set database
+        Test that a given level of theory can be extracted from the reference set database
         """
         # Create a quick example database
         ref_data_1 = ReferenceDataEntry(ThermoData(H298=(100, 'kJ/mol', '+|-', 2)))
@@ -186,21 +187,23 @@ class TestReferenceDatabase(unittest.TestCase):
 
         ethane = ReferenceSpecies(smiles='CC',
                                   reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
-                                  calculated_data={'good_chem': calc_data_1, 'bad_chem': calc_data_2},
+                                  calculated_data={LevelOfTheory('good_chem'): calc_data_1,
+                                                   LevelOfTheory('bad_chem'): calc_data_2},
                                   preferred_reference='less_precise')
 
         propane = ReferenceSpecies(smiles='CCC',
                                    reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
-                                   calculated_data={'good_chem': calc_data_1, 'bad_chem': calc_data_2})
+                                   calculated_data={LevelOfTheory('good_chem'): calc_data_1,
+                                                    LevelOfTheory('bad_chem'): calc_data_2})
 
         butane = ReferenceSpecies(smiles='CCCC',
                                   reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
-                                  calculated_data={'bad_chem': calc_data_2})
+                                  calculated_data={LevelOfTheory('bad_chem'): calc_data_2})
 
         database = ReferenceDatabase()
         database.reference_sets = {'testing_1': [ethane, butane], 'testing_2': [propane]}
 
-        model_chem_list = database.extract_model_chemistry('good_chem')
+        model_chem_list = database.extract_level_of_theory(LevelOfTheory('good_chem'))
         self.assertEqual(len(model_chem_list), 2)
         self.assertIsInstance(model_chem_list[0], ErrorCancelingSpecies)
 
@@ -217,10 +220,10 @@ class TestReferenceDatabase(unittest.TestCase):
 
     def test_list_available_chemistry(self):
         """
-        Test that a set of available model chemistries can be return for the reference database
+        Test that a set of available levels of theory can be return for the reference database
         """
-        model_chemistry_list = self.database.list_available_chemistry()
-        self.assertIn('wb97m-v/def2-tzvpd', model_chemistry_list)
+        level_of_theory_list = self.database.list_available_chemistry()
+        self.assertIn(LevelOfTheory(method='wb97m-v', basis='def2-tzvpd', software='qchem'), level_of_theory_list)
 
     def test_get_species_from_index(self):
         """
