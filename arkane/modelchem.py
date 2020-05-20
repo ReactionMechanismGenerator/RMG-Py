@@ -33,10 +33,26 @@ Model chemistry standardization module
 
 from __future__ import annotations
 
+import os
+import yaml
 from dataclasses import dataclass, Field, fields, MISSING, replace
 from typing import Iterable, Union
 
+from rmgpy import settings
 from rmgpy.rmgobject import RMGObject
+
+
+def standardize_name(name: str) -> str:
+    """Remove spaces, hyphens, and make lowercase"""
+    if isinstance(name, str):
+        return name.replace('-', '').replace(' ', '').lower()
+    else:
+        return name
+
+
+with open(os.path.join(settings['database.directory'], 'quantum_corrections', 'lot_constraints.yml')) as f:
+    METHODS_THAT_REQUIRE_SOFTWARE = yaml.safe_load(f)['METHODS_THAT_REQUIRE_SOFTWARE']
+METHODS_THAT_REQUIRE_SOFTWARE = {standardize_name(method) for method in METHODS_THAT_REQUIRE_SOFTWARE}
 
 
 @dataclass(frozen=True)
@@ -60,7 +76,8 @@ class LOT(RMGObject):
         and don't include spaces.
         """
         r = (self.__class__.__qualname__ + '('
-             + ','.join(f"{f.name}={getattr(self, f.name)!r}" for f in fields(self) if not self._is_default(f))
+             + ','.join(f"{f.name}={getattr(self, f.name)!r}" for f in fields(self)
+                        if f.repr and f.init and not self._is_default(f))
              + ')')
         return r.replace(' ', '')
 
@@ -105,7 +122,7 @@ class LevelOfTheory(LOT):
 
     def __post_init__(self):
         """
-        Standardize attribute values.
+        Standardize attribute values and check if software is set.
 
         __post_init__ should allow mutating attributes of frozen
         instances, but it doesn't, so use object.__setattr__ to get
@@ -123,14 +140,22 @@ class LevelOfTheory(LOT):
                     std_fn = standardize_name
                 object.__setattr__(self, attr, std_fn(val))
 
+        if self.method in METHODS_THAT_REQUIRE_SOFTWARE and self.software is None:
+            raise ValueError(f'Software must be set when using {self.method} method')
+
     def simple(self) -> LevelOfTheory:
         """
         Convert to level of theory containing only method and basis.
+        If the method requires the software attribute to be set,
+        include it in the simple representation.
 
         Returns:
             New instance with only method and basis attributes set.
         """
-        return LevelOfTheory(method=self.method, basis=self.basis)
+        if self.method in METHODS_THAT_REQUIRE_SOFTWARE:
+            return LevelOfTheory(method=self.method, basis=self.basis, software=self.software)
+        else:
+            return LevelOfTheory(method=self.method, basis=self.basis)
 
     def to_model_chem(self) -> str:
         """
@@ -247,14 +272,6 @@ def str_to_lot(s: str) -> Union[LevelOfTheory, CompositeLevelOfTheory]:
     """
     return eval(s, {'__builtins__': None},
                 {'LevelOfTheory': LevelOfTheory, 'CompositeLevelOfTheory': CompositeLevelOfTheory})
-
-
-def standardize_name(name: str) -> str:
-    """Remove spaces, hyphens, and make lowercase"""
-    if isinstance(name, str):
-        return name.replace('-', '').replace(' ', '').lower()
-    else:
-        return name
 
 
 # Map from multiple names for a software to a single standard identifier
