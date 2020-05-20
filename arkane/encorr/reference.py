@@ -296,15 +296,16 @@ class ReferenceSpecies(ArkaneSpecies):
         """
         if self.preferred_reference is not None:
             preferred_source = self.preferred_reference
-        else:  # Choose the source that has the smallest uncertainty
-            sources = list(self.reference_data.keys())
-            data = list(self.reference_data.values())
-            preferred_source = sources[0]  # If all else fails, use the first source as the preferred one
-            uncertainty = data[0].thermo_data.H298.uncertainty_si
-            for i, entry in enumerate(data):
-                if 0 < entry.thermo_data.H298.uncertainty_si < uncertainty:
-                    uncertainty = entry.thermo_data.H298.uncertainty_si
-                    preferred_source = sources[i]
+        else:
+            data_w_thermo = {s: d for s, d in self.reference_data.items() if d.thermo_data is not None}
+            data_w_thermo_unc = {s: d for s, d in data_w_thermo.items() if d.thermo_data.H298.uncertainty_si > 0}
+            if data_w_thermo_unc:  # Use source with smallest uncertainty
+                preferred_source = min(data_w_thermo_unc,
+                                       key=lambda s: data_w_thermo_unc[s].thermo_data.H298.uncertainty_si)
+            elif data_w_thermo:  # Use first source with thermo data
+                preferred_source = list(data_w_thermo.keys())[0]
+            else:  # If all else fails, use the first source, even if it doesn't have thermo
+                preferred_source = list(self.reference_data.keys())[0]
 
         return preferred_source
 
@@ -331,16 +332,22 @@ class ReferenceDataEntry(RMGObject):
     """
     A class for storing reference data for a specific species from a single source
     """
-    def __init__(self, thermo_data, atct_id=None):
+    def __init__(self, thermo_data=None, atct_id=None, atomization_energy=None, xyz_dict=None, zpe=None):
         """
 
         Args:
             thermo_data (rmgpy.thermo.ThermoData): Thermochemistry (Hf298, Cp, ...) from the reference for a species
             atct_id (str): ID number in the Active Thermochemical Tables if the source is ATcT
+            atomization_energy (rmgpy.quantity.ScalarQuantity): Atomization energy at zero Kelvin
+            xyz_dict (dict): An ARC style xyz dictionary for the cartesian coordinates
+            zpe (rmgpy.quantity.ScalarQuantity): Zero-point energy
         """
         super().__init__()
         self.thermo_data = thermo_data
         self.atct_id = atct_id
+        self.atomization_energy = atomization_energy
+        self.xyz_dict = xyz_dict
+        self.zpe = zpe
 
     def __repr__(self):
         return str(self.as_dict())

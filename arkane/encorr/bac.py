@@ -850,7 +850,7 @@ class BAC:
         if alternate_path is None:
             importlib.reload(data)
 
-    def format_bacs(self, indent=False):
+    def format_bacs(self, indent: bool = False) -> List[str]:
         """
         Obtain a list of nicely formatted BACs suitable for writelines.
 
@@ -868,7 +868,7 @@ class BAC:
             bacs_formatted = ['    ' + e for e in bacs_formatted]
         return bacs_formatted
 
-    def save_correlation_mat(self, path, labels=None):
+    def save_correlation_mat(self, path: str, labels: List[str] = None):
         """
         Save a visual representation of the parameter correlation matrix.
 
@@ -920,7 +920,7 @@ class BAC:
         fig.savefig(path, dpi=600, bbox_inches='tight', pad_inches=0)
 
 
-def _covariance_to_correlation(cov):
+def _covariance_to_correlation(cov: np.ndarray) -> np.ndarray:
     """Convert (unscaled) covariance matrix to correlation matrix"""
     v = np.sqrt(np.diag(cov))
     corr = cov / np.outer(v, v)
