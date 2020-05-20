@@ -158,7 +158,7 @@ class Arkane(object):
         """
         self.input_file = input_file
         self.job_list, self.reaction_dict, self.species_dict, self.transition_state_dict, self.network_dict, \
-            self.model_chemistry = load_input_file(self.input_file)
+            self.level_of_theory = load_input_file(self.input_file)
         logging.info('')
         return self.job_list
 
@@ -306,8 +306,8 @@ class Arkane(object):
                         if all([len(species.molecule) for species in reaction.reactants + reaction.products]):
                             reactions.append(reaction)
             lib_path = os.path.join(self.output_directory, 'RMG_libraries')
-            model_chemistry = f' at the {self.model_chemistry} level of theory' if self.model_chemistry else ''
-            lib_long_desc = f'Calculated using Arkane v{__version__}{model_chemistry}.'
+            level_of_theory = f' using {self.level_of_theory}' if self.level_of_theory is not None else ''
+            lib_long_desc = f'Calculated using Arkane v{__version__}{level_of_theory}.'
             save_thermo_lib(species_list=species, path=lib_path, name='thermo', lib_long_desc=lib_long_desc)
             save_kinetics_lib(rxn_list=reactions, path=lib_path, name='kinetics', lib_long_desc=lib_long_desc)
 
