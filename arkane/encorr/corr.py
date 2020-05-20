@@ -40,12 +40,13 @@ import rmgpy.constants as constants
 
 import arkane.encorr.data as data
 from arkane.encorr.bac import BAC
-from arkane.exceptions import AtomEnergyCorrectionError
+from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectionError
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
 ################################################################################
 
 
-def get_energy_correction(model_chemistry: str,
+def get_energy_correction(level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
                           atoms: Dict[str, int],
                           bonds: Dict[str, int],
                           coords: np.ndarray,
@@ -57,12 +58,12 @@ def get_energy_correction(model_chemistry: str,
                           bac_type: str = 'p') -> float:
     """
     Calculate a correction to the electronic energy obtained from a
-    quantum chemistry calculation at a given model chemistry such that
+    quantum chemistry calculation at a given level of theory such that
     it is consistent with the normal gas-phase reference states.
     Optionally, correct the energy using bond additivity corrections.
 
     Args:
-        model_chemistry: The model chemistry, typically specified as method/basis.
+        level_of_theory: The level of theory.
         atoms: A dictionary of element symbols with their associated counts.
         bonds: A dictionary of bond types (e.g., 'C=O') with their associated counts.
         coords: A Numpy array of Cartesian molecular coordinates.
@@ -78,25 +79,26 @@ def get_energy_correction(model_chemistry: str,
     """
     logging.warning('get_energy_correction has be deprecated, use get_atom_correction '
                     'and get_bac instead')
-    model_chemistry = model_chemistry.lower()
 
     corr = 0.0
     if apply_atom_corrections:
-        corr += get_atom_correction(model_chemistry, atoms, atom_energies=atom_energies)
+        corr += get_atom_correction(level_of_theory, atoms, atom_energies=atom_energies)
     if apply_bac:
-        corr += get_bac(model_chemistry, bonds, coords, nums, bac_type=bac_type, multiplicity=multiplicity)
+        corr += get_bac(level_of_theory, bonds, coords, nums, bac_type=bac_type, multiplicity=multiplicity)
 
     return corr
 
 
-def get_atom_correction(model_chemistry: str, atoms: Dict[str, int], atom_energies: Dict[str, float] = None) -> float:
+def get_atom_correction(level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
+                        atoms: Dict[str, int],
+                        atom_energies: Dict[str, float] = None) -> float:
     """
     Calculate a correction to the electronic energy obtained from a
-    quantum chemistry calculation at a given model chemistry such that
+    quantum chemistry calculation at a given level of theory such that
     it is consistent with the normal gas-phase reference states.
 
     Args:
-        model_chemistry: The model chemistry, typically specified as method/basis.
+        level_of_theory: The level of theory.
         atoms: A dictionary of element symbols with their associated counts.
         atom_energies: A dictionary of element symbols with their associated atomic energies in Hartree.
 
@@ -108,21 +110,27 @@ def get_atom_correction(model_chemistry: str, atoms: Dict[str, int], atom_energi
     P quartet, S triplet, Cl doublet, Br doublet, I doublet.
     """
     corr = 0.0
-    model_chemistry = model_chemistry.lower()
-    # Step 1: Reference all energies to a model chemistry-independent
-    # basis by subtracting out that model chemistry's atomic energies
+    # Step 1: Reference all energies to a level of theory-independent
+    # basis by subtracting out that level of theory's atomic energies
     if atom_energies is None:
+        energy_level = getattr(level_of_theory, 'energy', level_of_theory)
         try:
-            atom_energies = data.atom_energies[model_chemistry]
+            atom_energies = data.atom_energies[energy_level]
         except KeyError:
-            raise AtomEnergyCorrectionError(f'Missing atom energies for model chemistry {model_chemistry}')
+            try:
+                atom_energies = data.atom_energies[energy_level.simple()]
+            except KeyError:
+                raise AtomEnergyCorrectionError(f'Missing atom energies for {energy_level}')
+            else:
+                logging.warning(f'No exact atom energy match found for {energy_level}.'
+                                f' Using {energy_level.simple()} instead.')
 
     for symbol, count in atoms.items():
         if symbol in atom_energies:
             corr -= count * atom_energies[symbol] * 4.35974394e-18 * constants.Na  # Convert Hartree to J/mol
         else:
             raise AtomEnergyCorrectionError(
-                f'An energy correction for element "{symbol}" is unavailable for model chemistry "{model_chemistry}".'
+                f'An energy correction for element "{symbol}" is unavailable for {level_of_theory}.'
                 ' Turn off atom corrections if only running a kinetics jobs'
                 ' or supply a dictionary of atom energies'
                 ' as `atomEnergies` in the input file.'
@@ -137,13 +145,13 @@ def get_atom_correction(model_chemistry: str, atoms: Dict[str, int], atom_energi
             raise AtomEnergyCorrectionError(
                 f'Element "{symbol}" is not yet supported in Arkane.'
                 ' To include it, add its experimental heat of formation in the atom_hf'
-                ' and atom_thermal dictionaries in arkane/encorr/data.py'
+                ' and atom_thermal dictionaries in input/quantum_corrections/data.py in the RMG database.'
             )
 
     return corr
 
 
-def get_bac(model_chemistry: str,
+def get_bac(level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
             bonds: Dict[str, int],
             coords: np.ndarray,
             nums: Iterable[int],
@@ -161,7 +169,7 @@ def get_bac(model_chemistry: str,
     in `coords` and array of atomic numbers of atoms as well as the structure's multiplicity.
 
     Args:
-        model_chemistry: The model chemistry, typically specified as method/basis.
+        level_of_theory: The level of theory.
         bonds: A dictionary of bond types (e.g., 'C=O') with their associated counts.
         coords: A Numpy array of Cartesian molecular coordinates.
         nums: A sequence of atomic numbers.
@@ -171,14 +179,44 @@ def get_bac(model_chemistry: str,
     Returns:
         The bond correction to the electronic energy in J/mol.
     """
-    model_chemistry = model_chemistry.lower()
-    bac = BAC(model_chemistry, bac_type=bac_type)
-    return bac.get_correction(bonds=bonds, coords=coords, nums=nums, multiplicity=multiplicity).value_si
+    def _get_bac(_lot):
+        """Helper function to get BACs"""
+        bac = BAC(_lot, bac_type=bac_type)
+        return bac.get_correction(bonds=bonds, coords=coords, nums=nums, multiplicity=multiplicity).value_si
+
+    # Try to match each of these levels of theory, but issue warning if full level of theory cannot be matched
+    lots_to_attempt = [
+        level_of_theory,  # Full level of theory
+        level_of_theory.simple()  # Only method and basis
+    ]
+    if isinstance(level_of_theory, CompositeLevelOfTheory):
+        lots_to_attempt.extend([
+            level_of_theory.energy,  # Full energy level
+            level_of_theory.energy.simple()  # Energy level with only method and basis
+        ])
+    for lot in lots_to_attempt:
+        try:
+            corr = _get_bac(lot)
+        except BondAdditivityCorrectionError as e:
+            if lot is not lots_to_attempt[-1]:
+                continue
+            else:
+                if 'BAC parameters' in str(e):
+                    bac_type_str = 'Melius' if bac_type == 'm' else 'Petersson'
+                    raise BondAdditivityCorrectionError(
+                        f'Missing {bac_type_str}-type BAC parameters for {level_of_theory}'
+                    )
+                else:
+                    raise
+        else:
+            if lot is not lots_to_attempt[0]:
+                logging.warning(f'No exact BAC match found for {level_of_theory}. Using {lot} instead.')
+            return corr
 
 
-def assign_frequency_scale_factor(freq_level: str) -> Union[int, float]:
+def assign_frequency_scale_factor(level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory]) -> Union[int, float]:
     """
-    Assign the frequency scaling factor according to the model chemistry.
+    Assign the frequency scaling factor according to the level of theory.
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
 
     Sources:
@@ -189,19 +227,31 @@ def assign_frequency_scale_factor(freq_level: str) -> Union[int, float]:
         [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
 
     Args:
-        freq_level (str, unicode): The frequency level of theory.
+        level_of_theory (LevelOfTheory, CompositeLevelOfTheory): The level of theory.
 
     Returns:
         float: The frequency scaling factor (1 by default).
     """
-    scaling_factor = data.freq_dict.get(freq_level.lower(), 1)
+    if level_of_theory is None:
+        return 1
+    freq_level = getattr(level_of_theory, 'freq', level_of_theory)
+    try:
+        scaling_factor = data.freq_dict[freq_level]
+    except KeyError:
+        try:
+            scaling_factor = data.freq_dict[freq_level.simple()]
+        except KeyError:
+            scaling_factor = 1
+        else:
+            logging.warning(f'No exact frequency scaling factor match found for {freq_level}.'
+                            f' Using {freq_level.simple()} instead.')
     if scaling_factor == 1:
         logging.warning(
-            f'No frequency scaling factor found for model chemistry {freq_level}. Assuming a value of unity.'
+            f'No frequency scaling factor found for {freq_level}. Assuming a value of unity.'
             ' This will affect the partition function and all quantities derived from it '
             ' (thermo quantities and rate coefficients).')
     else:
         logging.info(
-            f'Assigned a frequency scale factor of {scaling_factor} for the frequency level of theory {freq_level}'
+            f'Assigned a frequency scale factor of {scaling_factor} for {level_of_theory}'
         )
     return scaling_factor
