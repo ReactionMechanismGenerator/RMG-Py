@@ -1053,6 +1053,25 @@ for all network reactions (both directions if reversible) at all requested condi
 automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.
 
 
+Atom Energy Fitting
+==================================
+
+Atom energies can be fitted using a small selection of species (see ``SPECIES_LABELS`` in ``arkane/encorr/ae.py``). To
+do this, the single-point electronic energies calculated using the experimental geometries from the reference database
+of each of the species should be provided as a dictionary of the species labels and their energies in Hartree.
+Zero-point energies should not be included in the electronic energies. Each atom energy fitting calculation must be
+specified using a ``ae()`` function, which accepts the following parameters:
+
+====================== ==================== =========================================================================================
+Parameter              Required?            Description
+====================== ==================== =========================================================================================
+``species_energies``   Yes                  Dictionary of species labels and single-point energies
+``level_of_theory``    No                   Level of theory used as key if writing to the database dictionary
+``write_to_database``  No                   Write the atom energies to the database; requires ``level_of_theory`` (default: False)
+``overwrite``          No                   If atom energies already exist, overwrite them (default: False)
+====================== ==================== =========================================================================================
+
+
 Bond Additivity Correction Fitting
 ==================================
 
