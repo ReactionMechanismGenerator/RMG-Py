@@ -58,6 +58,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
 from rmgpy.transport import TransportData
 
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 from arkane.pdep import PressureDependenceJob
 
 ################################################################################
@@ -81,6 +82,8 @@ ARKANE_CLASS_DICT = {'ScalarQuantity': ScalarQuantity,
                      'NASAPolynomial': NASAPolynomial,
                      'ThermoData': ThermoData,
                      'np_array': np.array,
+                     'LevelOfTheory': LevelOfTheory,
+                     'CompositeLevelOfTheory': CompositeLevelOfTheory
                      }
 
 
