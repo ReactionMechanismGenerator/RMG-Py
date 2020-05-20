@@ -36,7 +36,7 @@ import importlib
 import json
 import logging
 from collections import Counter
-from typing import Dict, List
+from typing import Dict, Hashable, List, Union
 
 import numpy as np
 from scipy.stats import distributions
@@ -46,6 +46,7 @@ from rmgpy.molecule import get_element, Molecule
 
 import arkane.encorr.data as data
 from arkane.encorr.reference import ReferenceDatabase
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
 # List of species labels that will be used for fitting (labels should match reference database)
 SPECIES_LABELS = [
@@ -75,7 +76,7 @@ class AEJob:
 
     def __init__(self,
                  species_energies: Dict[str, float],
-                 level_of_theory: str = None,
+                 level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory] = None,
                  write_to_database: bool = False,
                  overwrite: bool = False):
         """
@@ -92,7 +93,7 @@ class AEJob:
 
         Args:
             species_energies: Dictionary of species labels with single-point electronic energies (Hartree).
-            level_of_theory: Dictionary key for saving atom energies to the database
+            level_of_theory: Dictionary key for saving atom energies to the database.
             write_to_database: Save the fitted atom energies directly to the RMG database.
             overwrite: Overwrite atom energies in the RMG database if they already exist.
         """
@@ -199,7 +200,7 @@ class AE:
         ci = tdist * se  # confidence interval half-width
         self.confidence_intervals = dict(zip(elements, ci))  # Parameter estimates are w +/- ci
 
-    def write_to_database(self, key: str, overwrite: bool = False, alternate_path: str = None):
+    def write_to_database(self, key: Hashable, overwrite: bool = False, alternate_path: str = None):
         """
         Write atom energies to database.
 
@@ -225,7 +226,7 @@ class AE:
                         # Does not overwrite comments
                         del_idx_start = del_idx_end = None
                         for j, line2 in enumerate(lines[i:]):
-                            if key in line2:
+                            if repr(key) in line2:
                                 del_idx_start = i + j
                                 del_idx_end = None
                             elif line2.rstrip() == '    },':  # Can't have a comment after final brace
@@ -249,7 +250,7 @@ class AE:
         if alternate_path is None:
             importlib.reload(data)
 
-    def format_atom_energies(self, key: str, indent: bool = False) -> List[str]:
+    def format_atom_energies(self, key: Hashable, indent: bool = False) -> List[str]:
         """
         Obtain a list of nicely formatted atom energies suitable for
         writelines.
