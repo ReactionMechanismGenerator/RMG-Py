@@ -20,8 +20,6 @@ computations:
 Component                   Description
 =========================== ============================================================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations, see ``Model Chemistry`` table below
-``levelOfTheory``           Level of theory, free text format (only used for archiving). Suggested format:
-                            ``energy_method/basis_set//geometry_method/basis_set, rotors at rotor_method/basis_set``
 ``author``                  Author's name. Used when saving statistical mechanics properties as a .yml file.
 ``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
@@ -54,11 +52,37 @@ Component                   Description
 
 Model Chemistry
 ===============
-
 The first item in the input file should be a ``modelChemistry`` assignment with a string describing the model
 chemistry. The ``modelChemistry`` could either be in a `single point // frequency` format, e.g.,
 `CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)`, just the `single point`, e.g., `CCSD(T)-F12a/aug-cc-pVTZ`,
 or a composite method, e.g., `CBS-QB3`.
+
+Alternatively, ``modelChemistry`` can be specified using a ``LevelOfTheory`` or ``CompositeLevelOfTheory`` object. The
+basic syntax for ``LevelOfTheory`` is::
+
+    LevelOfTheory(
+        method='B3LYP',
+        basis='6-311++G(3df,3pd)'
+    )
+
+See ``arkane/modelchem.py`` for additional options (e.g., software, solvent). Note that the software generally does not
+have to be specified because it is inferred from the provided quantum chemistry logs. An example
+``CompositeLevelOfTheory`` is given by::
+
+    CompositeLevelOfTheory(
+        freq=LevelOfTheory(
+            method='B3LYP',
+            basis='6-311++G(3df,3pd)'
+        )
+        energy=LevelOfTheory(
+            method='CCSD(T)-F12',
+            basis='aug-cc-pVTZ'
+        )
+    )
+
+There are some methods that require the software to be specified. Currently, it is not possible to infer the software
+for such methods directly from the log files because Arkane requires the software prior to reading the log files. The
+methods for which this is the case are listed in the RMG-database in ``input/quantum_corrections/lot_constraints.yml``.
 
 Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
 states by applying atom and spin-orbit coupling energy corrections. Additionally, bond additivity corrections OR
@@ -1084,7 +1108,7 @@ specified using a ``bac()`` function, which accepts the following parameters:
 ====================== ============ =============================================================================================================================
 Parameter              Required?    Description
 ====================== ============ =============================================================================================================================
-``model_chemistry``    Yes          Calculated data will be extracted from the reference database using this model chemistry
+``level_of_theory``    Yes          Calculated data will be extracted from the reference database using this level of theory
 ``bac_type``           No           BAC type: 'p' for Petersson (default), 'm' for Melius
 ``train_names``        No           Names of training data folders in the RMG database (default: 'main')
 ``exclude_elements``   No           Exclude molecules with the elements in this list from the training data (default: None)
