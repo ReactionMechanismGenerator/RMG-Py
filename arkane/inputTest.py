@@ -45,6 +45,7 @@ from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.transport import TransportData
 
 from arkane.input import species, transitionState, reaction, SMILES, load_input_file, process_model_chemistry
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
 ################################################################################
 
@@ -231,26 +232,31 @@ class InputTest(unittest.TestCase):
         self.assertEqual(len(network_dict), 1)
         self.assertTrue('acetyl + O2' in network_dict)
 
-        self.assertEqual(model_chemistry, '')
+        self.assertIsNone(model_chemistry)
 
     def test_process_model_chemistry(self):
         """
         Test processing the model chemistry to derive the sp and freq levels
         """
         mc = 'ccsd(t)-f12a/aug-cc-pvtz//b3lyp/6-311++g(3df,3pd)'
-        sp, freq = process_model_chemistry(mc)
-        self.assertEqual(sp, 'ccsd(t)-f12a/aug-cc-pvtz')
-        self.assertEqual(freq, 'b3lyp/6-311++g(3df,3pd)')
+        lot = process_model_chemistry(mc)
+        self.assertIsInstance(lot, CompositeLevelOfTheory)
+        self.assertEqual(lot.energy, LevelOfTheory('ccsd(t)-f12a', 'aug-cc-pvtz'))
+        self.assertEqual(lot.freq, LevelOfTheory('b3lyp', '6-311++g(3df,3pd)'))
 
-        mc = 'wb97x-d3/def2-tzvp'
-        sp, freq = process_model_chemistry(mc)
-        self.assertEqual(sp, 'wb97x-d3/def2-tzvp')
-        self.assertEqual(freq, 'wb97x-d3/def2-tzvp')
+        mc = 'b3lyp-d3/def2-tzvp'
+        lot = process_model_chemistry(mc)
+        self.assertIsInstance(lot, LevelOfTheory)
+        self.assertEqual(lot, LevelOfTheory('b3lyp-d3', 'def2-tzvp'))
 
         mc = 'cbs-qb3'
-        sp, freq = process_model_chemistry(mc)
-        self.assertEqual(sp, 'cbs-qb3')
-        self.assertEqual(freq, 'cbs-qb3')
+        lot = process_model_chemistry(mc)
+        self.assertIsInstance(lot, LevelOfTheory)
+        self.assertEqual(lot, LevelOfTheory('cbs-qb3'))
+
+        mc = LevelOfTheory('test')
+        lot = process_model_chemistry(mc)
+        self.assertIs(mc, lot)
 
         with self.assertRaises(InputError):
             process_model_chemistry('CCSD(T)-F12a/aug-cc-pVTZ//CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)')
