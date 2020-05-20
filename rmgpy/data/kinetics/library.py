@@ -184,8 +184,8 @@ class LibraryReaction(Reaction):
             if isinstance(self.kinetics, (Lindemann, Troe)):
                 self.network_kinetics = self.kinetics.arrheniusHigh
                 self.network_kinetics.comment = self.kinetics.comment
-                # self.network_kinetics.comment = "Kinetics taken from the arrheniusHigh attribute of a" \
-                #     " Troe/Lindemann exprssion. Originally from reaction library {0}".format(self.library)
+                self.network_kinetics.comment = "Kinetics taken from the arrheniusHigh attribute of a" \
+                    " Troe/Lindemann exprssion. Originally from reaction library {0}".format(self.library)
                 return True
             if isinstance(self.kinetics, PDepArrhenius):
                 if self.kinetics.pressures.value_si[-1] >= 9000000:  # Pa units
