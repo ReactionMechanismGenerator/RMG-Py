@@ -39,15 +39,48 @@ import pybel
 
 from rmgpy.molecule import Molecule as RMGMolecule
 
+import arkane.encorr.data as data
 from arkane.encorr.data import (Molecule, Stats, BACDatapoint, DatasetProperty, BACDataset,
                                 extract_dataset, geo_to_mol, _pybel_to_rmg)
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
-from arkane.modelchem import LevelOfTheory
+from arkane.modelchem import LOT, LevelOfTheory
 
 DATABASE = ReferenceDatabase()
 DATABASE.load()
 LEVEL_OF_THEORY = LevelOfTheory(method='wb97m-v', basis='def2-tzvpd', software='qchem')
+
+
+class TestDataLoading(unittest.TestCase):
+    """
+    A class for testing that the quantum correction data is loaded
+    correctly from the RMG database.
+    """
+
+    def test_contains_data(self):
+        """
+        Test that the necessary dictionaries are available.
+        """
+        self.assertTrue(hasattr(data, 'atom_hf'))
+        self.assertTrue(hasattr(data, 'atom_thermal'))
+        self.assertTrue(hasattr(data, 'SOC'))
+        self.assertTrue(hasattr(data, 'atom_energies'))
+        self.assertTrue(hasattr(data, 'pbac'))
+        self.assertTrue(hasattr(data, 'mbac'))
+        self.assertTrue(hasattr(data, 'freq_dict'))
+
+    def test_level_of_theory(self):
+        """
+        Test that level of theory objects were created.
+        """
+        for lot in data.atom_energies.keys():
+            self.assertIsInstance(lot, LOT)
+        for lot in data.pbac.keys():
+            self.assertIsInstance(lot, LOT)
+        for lot in data.mbac.keys():
+            self.assertIsInstance(lot, LOT)
+        for lot in data.freq_dict.keys():
+            self.assertIsInstance(lot, LOT)
 
 
 class TestMolecule(unittest.TestCase):
