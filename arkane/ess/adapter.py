@@ -127,6 +127,13 @@ class ESSAdapter(ABC):
         """
         pass
 
+    def get_software(self):
+        """
+        Return the name of the software. Should correspond to the class
+        name without 'Log'.
+        """
+        return self.__class__.__name__.replace('Log', '')
+
     def get_D1_diagnostic(self):
         """
         Returns the D1 diagnostic from output log.
