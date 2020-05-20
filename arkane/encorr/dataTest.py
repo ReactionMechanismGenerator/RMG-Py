@@ -43,10 +43,11 @@ from arkane.encorr.data import (Molecule, Stats, BACDatapoint, DatasetProperty, 
                                 extract_dataset, geo_to_mol, _pybel_to_rmg)
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
+from arkane.modelchem import LevelOfTheory
 
 DATABASE = ReferenceDatabase()
 DATABASE.load()
-MODEL_CHEMISTRY = 'wb97m-v/def2-tzvpd'
+LEVEL_OF_THEORY = LevelOfTheory(method='wb97m-v', basis='def2-tzvpd', software='qchem')
 
 
 class TestMolecule(unittest.TestCase):
@@ -90,14 +91,14 @@ class TestBACDatapoint(unittest.TestCase):
         cls.spc = list(DATABASE.reference_sets.values())[0][0]
 
     def setUp(self):
-        self.datapoint = BACDatapoint(self.spc, model_chemistry=MODEL_CHEMISTRY)
+        self.datapoint = BACDatapoint(self.spc, level_of_theory=LEVEL_OF_THEORY)
 
-    def test_assert_model_chemistry(self):
+    def test_assert_level_of_theory(self):
         """
-        Test that decorator correctly determines when a model chemistry
+        Test that decorator correctly determines when a level of theory
         is not defined.
         """
-        self.datapoint.model_chemistry = None
+        self.datapoint.level_of_theory = None
         with self.assertRaises(BondAdditivityCorrectionError):
             _ = self.datapoint.calc_data
 
@@ -125,7 +126,7 @@ class TestBACDatapoint(unittest.TestCase):
         mol_geo = self.datapoint.to_mol(from_geo=True)
         self.assertIsNot(mol_geo, mol_adj)  # Check that cached molecule is NOT used
         coords_spc = np.vstack(tuple(a.coords for a in mol_geo.atoms))
-        coords_dp = self.spc.calculated_data[MODEL_CHEMISTRY].xyz_dict['coords']
+        coords_dp = self.spc.calculated_data[LEVEL_OF_THEORY].xyz_dict['coords']
         self.assertIsNone(np.testing.assert_allclose(coords_dp, coords_spc))
         self.assertIsInstance(mol_geo, Molecule)
         self.assertIs(mol_geo, self.datapoint.mol)
@@ -260,7 +261,7 @@ class TestBACDataset(unittest.TestCase):
         cls.species = list(DATABASE.reference_sets.values())[0][:5]
 
     def setUp(self):
-        self.dataset = BACDataset([BACDatapoint(spc, model_chemistry=MODEL_CHEMISTRY) for spc in self.species])
+        self.dataset = BACDataset([BACDatapoint(spc, level_of_theory=LEVEL_OF_THEORY) for spc in self.species])
 
     def test_append(self):
         """
@@ -344,44 +345,44 @@ class TestFuncs(unittest.TestCase):
         """
         Test that a reference dataset can be extracted.
         """
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY)
         self.assertIsInstance(dataset, BACDataset)
 
         # Test excluding elements
         elements = 'N'
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, exclude_elements=elements)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)
         for d in dataset:
             self.assertFalse(elements in d.spc.formula)
         elements = ['N', 'O']
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, exclude_elements=elements)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)
         for d in dataset:
             self.assertFalse(any(e in d.spc.formula for e in elements))
 
         # Test specifying charge
         charges = 'negative'
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge < 0)
         charges = 1
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge == 1)
         charges = ['positive', 'neutral']
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge >= 0)
         charges = [-1, 'positive']
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, charge=charges)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge > 0 or d.spc.charge == -1)
 
         # Test specifying multiplicity
         multiplicities = 2
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, multiplicity=multiplicities)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities)
         for d in dataset:
             self.assertTrue(d.spc.multiplicity == 2)
         multiplicities = [2, 3]
-        dataset = extract_dataset(DATABASE, MODEL_CHEMISTRY, multiplicity=multiplicities)
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities)
         for d in dataset:
             self.assertTrue(d.spc.multiplicity in {2, 3})
 
