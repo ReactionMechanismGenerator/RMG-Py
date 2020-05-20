@@ -32,6 +32,7 @@ This script contains unit tests of the :mod:`rmgobject` module.
 """
 
 import unittest
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -399,6 +400,22 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         Test that numpy arrays can be recreated from their dictionary representation
         """
         self.assertTrue(np.array_equal(recursive_make_object(self.np_dict, self.class_dictionary), self.np_array))
+
+    def test_hashable_class_key_creation(self):
+        """
+        Test that dictionaries with hashable class instances as keys can be recreated
+        """
+        @dataclass(frozen=True)
+        class Data:
+            arg: str
+
+        input_dict = {"Data(arg='test')": 'test'}
+        class_dictionary = {'Data': Data}
+        key, val = list(recursive_make_object(input_dict, class_dictionary).items())[0]
+
+        self.assertIsInstance(key, Data)
+        self.assertEqual(key, Data('test'))
+        self.assertEqual(val, 'test')
 
 
 ################################################################################
