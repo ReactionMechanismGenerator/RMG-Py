@@ -148,6 +148,10 @@ class AE:
         self.atom_energies = None
         self.confidence_intervals = None
 
+        for lbl in SPECIES_LABELS:
+            if lbl not in self.species_energies:
+                logging.warning(f'{lbl} missing from provided species energies!')
+
     @classmethod
     def _load_refdata(cls):
         if cls.ref_data is None:
@@ -168,7 +172,7 @@ class AE:
                 self.ref_data[lbl].adjacency_list,
                 raise_atomtype_exception=False,
                 raise_charge_exception=False
-            ) for lbl in SPECIES_LABELS
+            ) for lbl in self.species_energies
         ]
         atom_counts = [Counter(atom.element.symbol for atom in mol.atoms) for mol in mols]
         elements = sorted({element for ac in atom_counts for element in ac}, key=lambda s: get_element(s).number)
@@ -176,13 +180,13 @@ class AE:
 
         atomization_energies = np.array([
             self.ref_data[lbl].reference_data[self.ref_data_src].atomization_energy.value_si
-            / constants.E_h / constants.Na for lbl in SPECIES_LABELS
+            / constants.E_h / constants.Na for lbl in self.species_energies
         ])
         zpes = np.array([
             self.ref_data[lbl].reference_data[self.ref_data_src].zpe.value_si
-            / constants.E_h / constants.Na for lbl in SPECIES_LABELS
+            / constants.E_h / constants.Na for lbl in self.species_energies
         ])
-        elec_energies = np.array([self.species_energies[lbl] for lbl in SPECIES_LABELS])  # Should already be in Hartree
+        elec_energies = np.array(list(self.species_energies.values()))  # Should already be in Hartree
         y = atomization_energies + elec_energies + zpes
 
         w = np.linalg.solve(x.T @ x, x.T @ y)
