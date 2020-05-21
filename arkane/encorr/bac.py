@@ -56,6 +56,7 @@ import arkane.encorr.data as data
 from arkane.encorr.data import Molecule, BACDatapoint, BACDataset, extract_dataset, geo_to_mol
 from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
 
 class BACJob:
@@ -65,7 +66,7 @@ class BACJob:
     """
 
     def __init__(self,
-                 model_chemistry: str,
+                 level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
                  bac_type: str = 'p',
                  write_to_database: bool = False,
                  overwrite: bool = False,
@@ -74,18 +75,18 @@ class BACJob:
         Initialize a BACJob instance.
 
         Args:
-            model_chemistry: The model chemistry that will be used to get training data from the RMG database.
+            level_of_theory: The level of theory that will be used to get training data from the RMG database.
             bac_type: 'p' for Petersson-style BACs, 'm' for Melius-style BACs.
             write_to_database: Save the fitted BACs directly to the RMG database.
             overwrite: Overwrite BACs in the RMG database if they already exist.
             kwargs: Additional parameters passed to BAC.fit.
         """
-        self.model_chemistry = model_chemistry
+        self.level_of_theory = level_of_theory
         self.bac_type = bac_type
         self.write_to_database = write_to_database
         self.overwrite = overwrite
         self.kwargs = kwargs
-        self.bac = BAC(model_chemistry, bac_type=bac_type)
+        self.bac = BAC(level_of_theory, bac_type=bac_type)
 
     def execute(self, output_directory: str = None, plot: bool = False, jobnum: int = 1):
         """
@@ -122,10 +123,10 @@ class BACJob:
             output_directory: Save the results in this directory.
             jobnum: Job number.
         """
-        model_chemistry_formatted = self.model_chemistry.replace('/', '_')
+        model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')
         output_file1 = os.path.join(output_directory, 'output.py')
         output_file2 = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}.csv')
-        logging.info(f'Saving results for {self.model_chemistry}...')
+        logging.info(f'Saving results for {self.level_of_theory}...')
 
         with open(output_file1, 'a') as f:
             stats_before = self.bac.dataset.calculate_stats()
@@ -176,7 +177,7 @@ class BACJob:
         except ImportError:
             return
 
-        model_chemistry_formatted = self.model_chemistry.replace('/', '_')
+        model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')
         correlation_path = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}_correlation.pdf')
         self.bac.save_correlation_mat(correlation_path)
 
@@ -221,7 +222,7 @@ class BAC:
     }
     exp_coeff = 3.0  # Melius-type parameter (Angstrom^-1)
 
-    def __init__(self, model_chemistry: str, bac_type: str = 'p'):
+    def __init__(self, level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory], bac_type: str = 'p'):
         """
         Initialize a BAC instance.
 
@@ -230,11 +231,11 @@ class BAC:
             Melius-type: Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747
 
         Args:
-            model_chemistry: Model chemistry to get preexisting BACs or data from reference database.
+            level_of_theory: Level of theory to get preexisting BACs or data from reference database.
             bac_type: Type of BACs to get/fit ('p' for Petersson and 'm' for Melius).
         """
-        self._model_chemistry = self._bac_type = None  # Set these first to avoid errors in setters
-        self.model_chemistry = model_chemistry
+        self._level_of_theory = self._bac_type = None  # Set these first to avoid errors in setters
+        self.level_of_theory = level_of_theory
         self.bac_type = bac_type
 
         # Attributes related to fitting BACs for a given model chemistry
@@ -258,22 +259,22 @@ class BAC:
         self._update_bacs()
 
     @property
-    def model_chemistry(self) -> str:
-        return self._model_chemistry
+    def level_of_theory(self) -> Union[LevelOfTheory, CompositeLevelOfTheory]:
+        return self._level_of_theory
 
-    @model_chemistry.setter
-    def model_chemistry(self, val: str):
-        """Update BACs every time the model chemistry is changed."""
-        self._model_chemistry = val
+    @level_of_theory.setter
+    def level_of_theory(self, val: Union[LevelOfTheory, CompositeLevelOfTheory]):
+        """Update BACs every time the level of theory is changed."""
+        self._level_of_theory = val
         self._update_bacs()
 
     def _update_bacs(self):
         self.bacs = None
         try:
             if self.bac_type == 'm':
-                self.bacs = data.mbac[self.model_chemistry]
+                self.bacs = data.mbac[self.level_of_theory]
             elif self.bac_type == 'p':
-                self.bacs = data.pbac[self.model_chemistry]
+                self.bacs = data.pbac[self.level_of_theory]
         except KeyError:
             pass
 
@@ -347,11 +348,11 @@ class BAC:
         if self.bacs is None:
             bac_type_str = 'Melius' if self.bac_type == 'm' else 'Petersson'
             raise BondAdditivityCorrectionError(
-                f'Missing {bac_type_str}-type BAC parameters for model chemistry {self.model_chemistry}'
+                f'Missing {bac_type_str}-type BAC parameters for {self.level_of_theory}'
             )
 
         if datapoint is None and spc is not None:
-            datapoint = BACDatapoint(spc, model_chemistry=self.model_chemistry)
+            datapoint = BACDatapoint(spc, level_of_theory=self.level_of_theory)
 
         if self.bac_type == 'm':
             return self._get_melius_correction(coords=coords, nums=nums, datapoint=datapoint, multiplicity=multiplicity)
@@ -360,7 +361,7 @@ class BAC:
 
     def _get_petersson_correction(self, bonds: Dict[str, int] = None, datapoint: BACDatapoint = None) -> ScalarQuantity:
         """
-        Given the model_chemistry and a dictionary of bonds, return the
+        Given the level of theory and a dictionary of bonds, return the
         total BAC.
 
         Args:
@@ -403,7 +404,7 @@ class BAC:
                                multiplicity: int = None,
                                params: Dict[str, Union[float, Dict[str, float]]] = None) -> ScalarQuantity:
         """
-        Given the model chemistry, molecular coordinates, atomic numbers,
+        Given the level of theory, molecular coordinates, atomic numbers,
         and dictionaries of BAC parameters, return the total BAC.
 
         Notes:
@@ -603,19 +604,19 @@ class BAC:
         self._reset_memoization()
         self.database_key = self.load_database(names=db_names)
 
-        self.dataset = extract_dataset(self.ref_databases[self.database_key], self.model_chemistry,
+        self.dataset = extract_dataset(self.ref_databases[self.database_key], self.level_of_theory,
                                        exclude_elements=exclude_elements, charge=charge, multiplicity=multiplicity)
         if len(self.dataset) == 0:
-            raise BondAdditivityCorrectionError(f'No species available for {self.model_chemistry} model chemistry')
+            raise BondAdditivityCorrectionError(f'No species available for {self.level_of_theory}')
 
         if weighted:
             self.dataset.compute_weights()
 
         if self.bac_type == 'm':
-            logging.info(f'Fitting Melius-type BACs for {self.model_chemistry}...')
+            logging.info(f'Fitting Melius-type BACs for {self.level_of_theory}...')
             self._fit_melius(**kwargs)
         elif self.bac_type == 'p':
-            logging.info(f'Fitting Petersson-type BACs for {self.model_chemistry}...')
+            logging.info(f'Fitting Petersson-type BACs for {self.level_of_theory}...')
             self._fit_petersson()
 
         stats_before = self.dataset.calculate_stats()
@@ -645,10 +646,10 @@ class BAC:
             raise BondAdditivityCorrectionError('Cannot specify several data sources')
 
         if species is not None:
-            dataset = BACDataset([BACDatapoint(spc, model_chemistry=self.model_chemistry) for spc in species])
+            dataset = BACDataset([BACDatapoint(spc, level_of_theory=self.level_of_theory) for spc in species])
         elif db_names is not None:
             database_key = self.load_database(names=db_names)
-            dataset = extract_dataset(self.ref_databases[database_key], self.model_chemistry)
+            dataset = extract_dataset(self.ref_databases[database_key], self.level_of_theory)
 
         if dataset is None or len(dataset) == 0:
             raise BondAdditivityCorrectionError('No data available for evaluation')
@@ -816,12 +817,12 @@ class BAC:
         for i, line in enumerate(lines):
             if keyword in line:
                 if has_entries:
-                    if self.model_chemistry in bac_dict:
+                    if self.level_of_theory in bac_dict:
                         if overwrite:
                             # Does not overwrite comments
                             del_idx_start = del_idx_end = None
                             for j, line2 in enumerate(lines[i:]):
-                                if self.model_chemistry in line2:
+                                if repr(self.level_of_theory) in line2:
                                     del_idx_start = i + j
                                     del_idx_end = None
                                 elif line2.rstrip() == '    },':  # Can't have comment after final brace
@@ -834,7 +835,7 @@ class BAC:
                                     break
                         else:
                             raise IOError(
-                                f'{self.model_chemistry} model chemistry already exists. Set `overwrite` to True.'
+                                f'{self.level_of_theory} already exists. Set `overwrite` to True.'
                             )
                     else:
                         lines[(i+1):(i+1)] = ['\n'] + bacs_formatted
@@ -861,7 +862,7 @@ class BAC:
             Formatted list of BACs.
         """
         bacs_formatted = json.dumps(self.bacs, indent=4).replace('"', "'").split('\n')
-        bacs_formatted[0] = f"'{self.model_chemistry}': " + bacs_formatted[0]
+        bacs_formatted[0] = f'"{self.level_of_theory!r}": ' + bacs_formatted[0]
         bacs_formatted[-1] += ','
         bacs_formatted = [e + '\n' for e in bacs_formatted]
         if indent:

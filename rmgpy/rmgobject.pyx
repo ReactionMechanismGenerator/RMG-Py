@@ -25,6 +25,8 @@
 #                                                                             #
 ###############################################################################
 
+import collections
+
 import numpy as np
 
 ################################################################################
@@ -88,7 +90,7 @@ cpdef expand_to_dict(obj):
         Any: dictionary representation of the object (dict, unless str, int, or float, which are returned as themselves)
 
     """
-    if isinstance(obj, list):
+    if isinstance(obj, (list, tuple)):
         return [expand_to_dict(x) for x in obj]
 
     elif isinstance(obj, dict):
@@ -101,8 +103,12 @@ cpdef expand_to_dict(obj):
             try:
                 new_obj[new_key] = new_value
             except TypeError:
-                raise NotImplementedError('Cannot expand objects that are serving as dictionary keys ({0} is serving as'
-                                          'a key). The returned dictionary would not be hashable'.format(key))
+                # Check if the key is a hashable object and use its string representation if so
+                if isinstance(key, collections.Hashable):
+                    new_obj[repr(key)] = new_value
+                else:
+                    raise NotImplementedError(f'Cannot expand objects that are serving as dictionary keys ({key} is'
+                                              'serving as a key). The returned dictionary would not be hashable')
         return new_obj
 
     elif isinstance(obj, np.ndarray):
@@ -184,8 +190,16 @@ cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
                 else:
                     return int(obj)
 
-            except (ValueError, TypeError):  # If we made it here then obj must be just a string
-                return obj
+            except (ValueError, TypeError):
+                # Next, check if the string is a representation of a class instance,
+                # which can occur if hashable classes are used as keys
+                for class_name in class_dictionary.keys():
+                    if class_name in obj:
+                        try:
+                            return eval(obj, {'__builtins__': None}, class_dictionary)
+                        except NameError:  # Probably just included the class name as a comment
+                            pass
+                return obj  # If we made it here then obj must be just a string
 
     else:
         return obj

@@ -41,6 +41,7 @@ import yaml
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, symbol_by_number
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
+from arkane.modelchem import LOT
 from rmgpy import settings
 from rmgpy.molecule import Molecule
 from rmgpy.rmgobject import RMGObject
@@ -143,7 +144,7 @@ class ReferenceSpecies(ArkaneSpecies):
         elif isinstance(value, dict) and _is_valid_calculated_data(value):
             self._calculated_data = value
         else:
-            raise ValueError('Calculated data must be given as a dictionary of the model chemistry (string) and '
+            raise ValueError('Calculated data must be given as a dictionary of the level of theory and '
                              'associated CalculatedDataEntry object')
 
     def as_dict(self):
@@ -222,32 +223,32 @@ class ReferenceSpecies(ArkaneSpecies):
         calc_data = CalculatedDataEntry(thermo_data=thermo_data, xyz_dict=xyz_dict)
         self.calculated_data[arkane_species.level_of_theory] = calc_data
 
-    def to_error_canceling_spcs(self, model_chemistry, source=None):
+    def to_error_canceling_spcs(self, level_of_theory, source=None):
         """
         Extract calculated and reference data from a specified model chemistry and source and return as a new
         ErrorCancelingSpecies object
 
         Args:
-            model_chemistry (str): Model chemistry (level of theory) to use as the low level data
+            level_of_theory ((Composite)LevelOfTheory): Level of theory to use as the low level data
             source (str): Reference data source to take the high level data from
 
         Raises:
-            KeyError: If ``model_chemistry`` is not available for this reference species
+            KeyError: If ``level_of_theory`` is not available for this reference species
 
         Returns:
             ErrorCancelingSpecies
         """
-        if model_chemistry not in self.calculated_data:
-            raise KeyError(f'Model chemistry `{model_chemistry}` not available for species {self}')
+        if level_of_theory not in self.calculated_data:
+            raise KeyError(f'Level of theory `{level_of_theory}` not available for species {self}')
 
         molecule = Molecule().from_adjacency_list(self.adjacency_list, raise_atomtype_exception=False,
                                                   raise_charge_exception=False)
 
         reference_enthalpy = self.get_reference_enthalpy(source=source)
-        low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298
+        low_level_h298 = self.calculated_data[level_of_theory].thermo_data.H298
 
         return ErrorCancelingSpecies(
-            molecule, low_level_h298, model_chemistry,
+            molecule, low_level_h298, level_of_theory,
             high_level_hf298=reference_enthalpy.h298,
             source=reference_enthalpy.source
         )
@@ -505,13 +506,13 @@ class ReferenceDatabase(object):
             for spcs in reference_set:
                 spcs.save_yaml(path=set_path)
 
-    def extract_model_chemistry(self, model_chemistry, sets=None, as_error_canceling_species=True):
+    def extract_level_of_theory(self, level_of_theory, sets=None, as_error_canceling_species=True):
         """
         Return a list of ErrorCancelingSpecies or ReferenceSpecies objects from the reference species in the database
-        that have entries for the requested model chemistry
+        that have entries for the requested level of theory
 
         Args:
-            model_chemistry (str): String that describes the level of chemistry used to calculate the low level data
+            level_of_theory ((Composite)LevelOfTheory): Level of theory used to calculate the data
             sets (list): A list of the names of the reference sets to include (all sets in the database will be used if
                 not specified or ``None``)
             as_error_canceling_species (bool): Return ErrorCancelingSpecies objects if True
@@ -527,20 +528,20 @@ class ReferenceDatabase(object):
         for set_name in sets:
             current_set = self.reference_sets[set_name]
             for ref_spcs in current_set:
-                if model_chemistry not in ref_spcs.calculated_data:  # Move on to the next reference species
+                if level_of_theory not in ref_spcs.calculated_data:  # Move on to the next reference species
                     continue
                 if not ref_spcs.reference_data:  # This reference species does not have any sources, continue on
                     continue
                 reference_list.append(ref_spcs)
 
         if as_error_canceling_species:
-            reference_list = [s.to_error_canceling_spcs(model_chemistry) for s in reference_list]
+            reference_list = [s.to_error_canceling_spcs(level_of_theory) for s in reference_list]
 
         return reference_list
 
     def list_available_chemistry(self, sets=None):
         """
-        List the set of available model chemistries present in at least one reference species in the database
+        List the set of available levels of theory present in at least one reference species in the database
 
         Args:
             sets (list): A list of the names of the reference sets to include (all sets in the database will be used if
@@ -549,16 +550,16 @@ class ReferenceDatabase(object):
         Returns:
             list
         """
-        model_chemistry_set = set()
+        level_of_theory_set = set()
         if sets is None:  # Load in all of the sets
             sets = self.reference_sets.keys()
 
         for set_name in sets:
             current_set = self.reference_sets[set_name]
             for ref_spcs in current_set:
-                model_chemistry_set.update(ref_spcs.calculated_data.keys())
+                level_of_theory_set.update(ref_spcs.calculated_data.keys())
 
-        return list(model_chemistry_set)
+        return list(level_of_theory_set)
 
     def get_species_from_index(self, indices, set_name='main'):
         """
@@ -641,7 +642,7 @@ def _is_valid_calculated_data(data_dictionary):
     Returns:
         bool
     """
-    if all(isinstance(source, str) for source in data_dictionary.keys()):
+    if all(isinstance(source, LOT) for source in data_dictionary.keys()):
         if all(isinstance(data_entry, CalculatedDataEntry) for data_entry in data_dictionary.values()):
             return True
     return False

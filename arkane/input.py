@@ -68,6 +68,7 @@ from arkane.encorr.bac import BACJob
 from arkane.encorr.corr import assign_frequency_scale_factor
 from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
+from arkane.modelchem import LOT, LevelOfTheory, CompositeLevelOfTheory, model_chem_to_lot
 from arkane.pdep import PressureDependenceJob
 from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
@@ -522,14 +523,14 @@ def ae(species_energies, level_of_theory=None, write_to_database=False, overwrit
     job_list.append(job)
 
 
-def bac(model_chemistry, bac_type='p', train_names='main',
+def bac(level_of_theory, bac_type='p', train_names='main',
         exclude_elements=None, charge='all', multiplicity='all',
         weighted=False, write_to_database=False, overwrite=False,
         fit_mol_corr=True, global_opt=True, global_opt_iter=10):
     """Generate a BAC job"""
     global job_list
     job = BACJob(
-        model_chemistry,
+        level_of_theory,
         bac_type=bac_type,
         db_names=train_names,
         exclude_elements=exclude_elements,
@@ -640,6 +641,8 @@ def load_input_file(path):
         'SMILES': SMILES,
         'adjacencyList': adjacencyList,
         'InChI': InChI,
+        'LevelOfTheory': LevelOfTheory,
+        'CompositeLevelOfTheory': CompositeLevelOfTheory,
     }
 
     load_necessary_databases()
@@ -651,16 +654,18 @@ def load_input_file(path):
             logging.error('The input file {0!r} was invalid:'.format(path))
             raise
 
-    model_chemistry = local_context.get('modelChemistry', '').lower()
-    sp_level, freq_level = process_model_chemistry(model_chemistry)
+    model_chemistry = local_context.get('modelChemistry', None)
+    level_of_theory = process_model_chemistry(model_chemistry)
+    if isinstance(model_chemistry, LOT):
+        model_chemistry = model_chemistry.to_model_chem()
 
     author = local_context.get('author', '')
     if 'frequencyScaleFactor' in local_context:
         frequency_scale_factor = local_context.get('frequencyScaleFactor')
     else:
-        logging.debug('Tying to assign a frequencyScaleFactor according to the frequency '
-                      'level of theory {0}'.format(freq_level))
-        frequency_scale_factor = assign_frequency_scale_factor(freq_level)
+        logging.debug('Tying to assign a frequencyScaleFactor according to the '
+                      'level of theory {0}'.format(level_of_theory))
+        frequency_scale_factor = assign_frequency_scale_factor(level_of_theory)
     use_hindered_rotors = local_context.get('useHinderedRotors', True)
     use_atom_corrections = local_context.get('useAtomCorrections', True)
     use_bond_corrections = local_context.get('useBondCorrections', False)
@@ -677,7 +682,7 @@ def load_input_file(path):
     for job in job_list:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
-            job.modelChemistry = sp_level
+            job.level_of_theory = level_of_theory
             job.frequencyScaleFactor = frequency_scale_factor
             job.includeHinderedRotors = use_hindered_rotors
             job.applyAtomEnergyCorrections = use_atom_corrections
@@ -688,14 +693,15 @@ def load_input_file(path):
             job.referenceSets = reference_sets
         if isinstance(job, ThermoJob):
             job.arkane_species.author = author
-            job.arkane_species.level_of_theory = model_chemistry
+            job.arkane_species.level_of_theory = level_of_theory
+            job.arkane_species.model_chemistry = model_chemistry
             job.arkane_species.frequency_scale_factor = frequency_scale_factor
             job.arkane_species.use_hindered_rotors = use_hindered_rotors
             job.arkane_species.use_bond_corrections = use_bond_corrections
             if atom_energies is not None:
                 job.arkane_species.atom_energies = atom_energies
 
-    return job_list, reaction_dict, species_dict, transition_state_dict, network_dict, model_chemistry
+    return job_list, reaction_dict, species_dict, transition_state_dict, network_dict, level_of_theory
 
 
 def process_model_chemistry(model_chemistry):
@@ -707,19 +713,15 @@ def process_model_chemistry(model_chemistry):
                                         or a composite method, e.g. 'CBS-QB3'.
 
     Returns:
-        str, unicode: The single point energy level of theory
-        str, unicode: The frequency level of theory
+        LevelOfTheory, CompositeLevelOfTheory: The level of theory
     """
+    if not model_chemistry:
+        return model_chemistry
+    if isinstance(model_chemistry, LOT):
+        return model_chemistry
     if model_chemistry.count('//') > 1:
         raise InputError('The model chemistry seems wrong. It should either be a composite method (like CBS-QB3) '
                          'or of the form sp//geometry, e.g., CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd), '
                          'and should not contain more than one appearance of "//".\n'
                          'Got: {0}'.format(model_chemistry))
-    elif '//' in model_chemistry:
-        # assume this is an sp//freq format, split
-        sp_level, freq_level = model_chemistry.split('//')
-    else:
-        # assume the sp and freq levels are the same, assign the model chemistry to both
-        # (this could also be a composite method, and we'll expect the same behavior)
-        sp_level = freq_level = model_chemistry
-    return sp_level, freq_level
+    return model_chem_to_lot(model_chemistry)

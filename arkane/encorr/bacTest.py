@@ -48,6 +48,7 @@ from arkane.encorr.bac import BAC
 from arkane.encorr.data import BACDataset, BOND_SYMBOLS, _pybel_to_rmg
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
+from arkane.modelchem import LevelOfTheory
 
 
 class TestBAC(unittest.TestCase):
@@ -57,11 +58,11 @@ class TestBAC(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.model_chem_get = 'ccsd(t)-f12/cc-pvtz-f12'
-        cls.model_chem_fit = 'wb97m-v/def2-tzvpd'
-        cls.model_chem_nonexisting = 'notamethod/notabasis'
+        cls.lot_get = LevelOfTheory(method='CCSD(T)-F12', basis='cc-pVTZ-F12', software='Molpro')
+        cls.lot_fit = LevelOfTheory(method='wB97M-V', basis='def2-TZVPD', software='Q-Chem')
+        cls.lot_nonexisting = LevelOfTheory('notamethod')
 
-        cls.bac = BAC(cls.model_chem_get)
+        cls.bac = BAC(cls.lot_get)
 
         cls.tmp_melius_params = {
             'atom_corr': {'H': 1.0, 'C': 2.0, 'N': 3.0, 'O': 4.0, 'S': 5.0, 'F': 6.0, 'Cl': 7.0, 'Br': 8.0},
@@ -89,14 +90,14 @@ class TestBAC(unittest.TestCase):
 
     def test_loading_parameters(self):
         """
-        Test that BAC parameters for model chemistries are loaded
+        Test that BAC parameters for levels of theory are loaded
         correctly and that errors are raised otherwise.
         """
-        self.bac.model_chemistry = self.model_chem_get
+        self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = 'p'
         self.assertIsInstance(self.bac.bacs, dict)
 
-        self.bac.model_chemistry = self.model_chem_nonexisting
+        self.bac.level_of_theory = self.lot_nonexisting
         self.bac.bac_type = 'm'
         self.assertIsNone(self.bac.bacs)
 
@@ -113,14 +114,14 @@ class TestBAC(unittest.TestCase):
         self.assertIsInstance(self.bac.ref_databases[key], ReferenceDatabase)
 
         # Test that other instance already has loaded database
-        bac = BAC(self.model_chem_fit)
+        bac = BAC(self.lot_fit)
         self.assertIsInstance(bac.ref_databases[key], ReferenceDatabase)
 
     def test_get_correction(self):
         """
         Test that BAC corrections can be obtained.
         """
-        self.bac.model_chemistry = self.model_chem_get
+        self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = 'p'
         corr = self.bac.get_correction(bonds=self.bonds)
         self.assertIsInstance(corr, ScalarQuantity)
@@ -134,7 +135,7 @@ class TestBAC(unittest.TestCase):
                                                 params=self.tmp_melius_params)
         self.assertIsInstance(corr1, ScalarQuantity)
 
-        self.bac.model_chemistry = self.model_chem_nonexisting
+        self.bac.level_of_theory = self.lot_nonexisting
         with self.assertRaises(BondAdditivityCorrectionError):
             self.bac.get_correction()
 
@@ -153,7 +154,7 @@ class TestBAC(unittest.TestCase):
         """
         Test that Petersson BAC parameters can be derived.
         """
-        self.bac.model_chemistry = self.model_chem_fit
+        self.bac.level_of_theory = self.lot_fit
         self.bac.bac_type = 'p'
         self._clear_bac_data()
         self.bac.fit()
@@ -161,7 +162,7 @@ class TestBAC(unittest.TestCase):
         self._check_bac_data()
         self.assertIn('C-H', self.bac.bacs)
 
-        self.bac.model_chemistry = self.model_chem_nonexisting
+        self.bac.level_of_theory = self.lot_nonexisting
         with self.assertRaises(BondAdditivityCorrectionError):
             self.bac.fit()
 
@@ -169,7 +170,7 @@ class TestBAC(unittest.TestCase):
         """
         Test that Melius BAC parameters can be derived.
         """
-        self.bac.model_chemistry = self.model_chem_fit
+        self.bac.level_of_theory = self.lot_fit
         self.bac.bac_type = 'm'
         self._clear_bac_data()
 
@@ -198,13 +199,13 @@ class TestBAC(unittest.TestCase):
             self.bac.test(species=[])
         self.assertIn('No data', str(e.exception))
 
-        self.bac.model_chemistry = self.model_chem_fit
+        self.bac.level_of_theory = self.lot_fit
         self.bac.bac_type = 'm'
         self.bac.bacs = self.tmp_melius_params
 
         # Get a few species to test on
         key = self.bac.load_database(names='main')
-        species = self.bac.ref_databases[key].extract_model_chemistry(self.bac.model_chemistry,
+        species = self.bac.ref_databases[key].extract_level_of_theory(self.bac.level_of_theory,
                                                                       as_error_canceling_species=False)[:10]
 
         dataset = self.bac.test(species=species)
@@ -221,7 +222,7 @@ class TestBAC(unittest.TestCase):
             self.bac.write_to_database()
         self.assertIn('No BACs', str(e.exception))
 
-        self.bac.model_chemistry = self.model_chem_get
+        self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = 'p'
         self.bac.bacs = self.tmp_petersson_params
 
@@ -239,21 +240,21 @@ class TestBAC(unittest.TestCase):
         # Check that existing Petersson BACs can be overwritten
         self.bac.write_to_database(overwrite=True, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Load data as module
-        self.assertEqual(self.bac.bacs, module.pbac[self.bac.model_chemistry])
+        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
 
         # Check that new Petersson BACs can be written
-        self.bac.model_chemistry = self.model_chem_nonexisting
+        self.bac.level_of_theory = self.lot_nonexisting
         self.bac.bacs = self.tmp_petersson_params
         self.bac.write_to_database(alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Reload data module
-        self.assertEqual(self.bac.bacs, module.pbac[self.bac.model_chemistry])
+        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
 
         # Check that new Melius BACs can be written
         self.bac.bac_type = 'm'
         self.bac.bacs = self.tmp_melius_params
         self.bac.write_to_database(alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)
-        self.assertEqual(self.bac.bacs, module.mbac[self.bac.model_chemistry])
+        self.assertEqual(self.bac.bacs, module.mbac[repr(self.bac.level_of_theory)])
 
         os.close(tmp_datafile_fd)
         os.remove(tmp_datafile_path)

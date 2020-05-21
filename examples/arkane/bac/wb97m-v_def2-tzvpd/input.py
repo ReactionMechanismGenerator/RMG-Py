@@ -1,8 +1,14 @@
 title = 'Bond additivity correction fitting for wB97M-V/def2-TZVPD level of theory'
 
+lot = LevelOfTheory(
+    method='wB97M-V',
+    basis='def2-TZVPD',
+    software='Q-Chem'
+)
+
 # Petersson-type
 bac(
-    model_chemistry='wb97m-v/def2-tzvpd',
+    level_of_theory=lot,
     bac_type='p',  # Petersson
     weighted=True,
     write_to_database=False,
@@ -11,7 +17,7 @@ bac(
 
 # Melius-type
 bac(
-    model_chemistry='wb97m-v/def2-tzvpd',
+    level_of_theory=lot,
     bac_type='m',  # Melius
     write_to_database=False,
     overwrite=False,

@@ -49,6 +49,7 @@ from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass, get_center_of_mass, \
     get_moment_of_inertia_tensor, get_principal_moments_of_inertia
 from arkane.input import job_list
+from arkane.modelchem import LevelOfTheory
 from arkane.statmech import InputError, StatMechJob
 
 ################################################################################
@@ -229,7 +230,7 @@ class TestArkaneInput(unittest.TestCase):
     def setUp(cls):
         """Preparation for all unit tests in this class."""
         cls.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
-        cls.modelChemistry = "cbs-qb3"
+        cls.level_of_theory = LevelOfTheory("cbs-qb3")
         cls.frequencyScaleFactor = 0.99
         cls.useHinderedRotors = False
         cls.useBondCorrections = True
@@ -244,7 +245,7 @@ class TestArkaneInput(unittest.TestCase):
         """Test loading of statmech job from species input file."""
         job = job_list[-1]
         self.assertTrue(isinstance(job, StatMechJob))
-        job.modelChemistry = self.modelChemistry
+        job.level_of_theory = self.level_of_theory
         job.frequencyScaleFactor = self.frequencyScaleFactor
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
@@ -273,7 +274,7 @@ class TestArkaneInput(unittest.TestCase):
         """Test loading of statmech job from transition state input file."""
         job = job_list[-1]
         self.assertTrue(isinstance(job, StatMechJob))
-        job.modelChemistry = self.modelChemistry
+        job.level_of_theory = self.level_of_theory
         job.frequencyScaleFactor = self.frequencyScaleFactor
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
@@ -365,7 +366,7 @@ class TestArkaneSpecies(unittest.TestCase):
         self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4)  # HarmonicOsc.
         self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
         self.assertFalse(arkane_spc.is_ts)
-        self.assertEqual(arkane_spc.level_of_theory, 'cbs-qb3')
+        self.assertEqual(arkane_spc.level_of_theory, LevelOfTheory('cbs-qb3'))
         self.assertIsInstance(arkane_spc.thermo_data, ThermoData)
         self.assertTrue(arkane_spc.use_hindered_rotors)
         self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)

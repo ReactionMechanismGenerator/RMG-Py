@@ -37,6 +37,7 @@ import tempfile
 import unittest
 
 from arkane.encorr.ae import AE, SPECIES_LABELS
+from arkane.modelchem import LevelOfTheory
 
 
 class TestAE(unittest.TestCase):
@@ -89,7 +90,7 @@ class TestAE(unittest.TestCase):
         self.ae.atom_energies = {'H': 1.0, 'C': 2.0}
         tmp_datafile_fd, tmp_datafile_path = tempfile.mkstemp(suffix='.py')
 
-        lot = 'wb97m-v/def2-tzvpd'
+        lot = LevelOfTheory(method='wb97m-v', basis='def2-tzvpd', software='Q-Chem')
         with self.assertRaises(ValueError) as e:
             self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
         self.assertIn('overwrite', str(e.exception))
@@ -101,13 +102,13 @@ class TestAE(unittest.TestCase):
         # Check that existing energies can be overwritten
         self.ae.write_to_database(lot, overwrite=True, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Load data as module
-        self.assertEqual(self.ae.atom_energies, module.atom_energies[lot])
+        self.assertEqual(self.ae.atom_energies, module.atom_energies[repr(lot)])
 
         # Check that new energies can be written
-        lot = 'test'
+        lot = LevelOfTheory('test')
         self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Reload data module
-        self.assertEqual(self.ae.atom_energies, module.atom_energies[lot])
+        self.assertEqual(self.ae.atom_energies, module.atom_energies[repr(lot)])
 
         os.close(tmp_datafile_fd)
         os.remove(tmp_datafile_path)

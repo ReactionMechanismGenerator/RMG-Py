@@ -41,6 +41,7 @@ from rmgpy.species import Species
 
 from arkane.encorr.isodesmic import ErrorCancelingScheme, ErrorCancelingSpecies, ErrorCancelingReaction, \
     IsodesmicScheme, SpeciesConstraints
+from arkane.modelchem import LevelOfTheory
 
 ################################################################################
 
@@ -63,12 +64,13 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         """
         Test that ErrorCancelingSpecies can be created properly
         """
-        error_canceling_species = ErrorCancelingSpecies(self.molecule1, (123.4, 'kcal/mol'), 'test', (100.0, 'kJ/mol'))
+        lot = LevelOfTheory('test')
+        error_canceling_species = ErrorCancelingSpecies(self.molecule1, (123.4, 'kcal/mol'), lot, (100.0, 'kJ/mol'))
         self.assertIsInstance(error_canceling_species, ErrorCancelingSpecies)
         self.assertAlmostEqual(error_canceling_species.low_level_hf298.value_si, 123.4*4184)
 
         # For target species the high level data is not given
-        target_species = ErrorCancelingSpecies(self.molecule2, (10.1, 'J/mol'), 'test')
+        target_species = ErrorCancelingSpecies(self.molecule2, (10.1, 'J/mol'), lot)
         self.assertIs(target_species.high_level_hf298, None)
 
     def test_molecule_input_in_error_canceling_species(self):
@@ -76,27 +78,29 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         Test that an exception is raised if an rmgpy Molecule object is not passed to an ErrorCancelingSpecies
         """
         with self.assertRaises(ValueError):
-            ErrorCancelingSpecies(self.species, (100.0, 'J/mol'), 'test')
+            ErrorCancelingSpecies(self.species, (100.0, 'J/mol'), LevelOfTheory('test'))
 
     def test_error_canceling_reactions(self):
         """
         Test that ErrorCancelingReaction object can be created and that hf298 can be calculated for the target
         """
         # Take ethane as the target
-        ethane = ErrorCancelingSpecies(self.molecule1, (100.0, 'kJ/mol'), 'test')
-        methyl = ErrorCancelingSpecies(self.molecule2, (20.0, 'kcal/mol'), 'test', (21000.0, 'cal/mol'))
+        lot = LevelOfTheory('test')
+        ethane = ErrorCancelingSpecies(self.molecule1, (100.0, 'kJ/mol'), lot)
+        methyl = ErrorCancelingSpecies(self.molecule2, (20.0, 'kcal/mol'), lot, (21000.0, 'cal/mol'))
 
         # This reaction is not an isodesmic reaction, but that does not matter for the unit test
         rxn = ErrorCancelingReaction(ethane, {methyl: 2})
         self.assertAlmostEqual(rxn.calculate_target_thermo().value_si, 2*21000.0*4.184-(2*20.0*4184-100.0*1000))
 
-    def test_model_chemistry_consistency(self):
+    def test_level_of_theory_consistency(self):
         """
-        Test that ErrorCancelingReaction objects properly check that all species use the same model chemistry
+        Test that ErrorCancelingReaction objects properly check that all species use the same level of theory
         """
         # Take ethane as the target
-        ethane = ErrorCancelingSpecies(self.molecule1, (100.0, 'kJ/mol'), 'test_A')
-        methyl = ErrorCancelingSpecies(self.molecule2, (20.0, 'kcal/mol'), 'test_B', (21000.0, 'cal/mol'))
+        ethane = ErrorCancelingSpecies(self.molecule1, (100.0, 'kJ/mol'), LevelOfTheory('test_A'))
+        methyl = ErrorCancelingSpecies(self.molecule2, (20.0, 'kcal/mol'), LevelOfTheory('test_B'),
+                                       (21000.0, 'cal/mol'))
 
         # This should throw an exception because the model chemistry is different
         with self.assertRaises(ValueError):
@@ -116,11 +120,12 @@ class TestSpeciesConstraints(unittest.TestCase):
         # Give all species a low level Hf298 of 100 J/mol--this is not important for this test
         hf = (100.0, 'J/mol')
 
-        cls.propene = ErrorCancelingSpecies(Molecule(smiles='CC=C'), hf, 'test')
-        cls.butane = ErrorCancelingSpecies(Molecule(smiles='CCCC'), hf, 'test')
-        cls.benzene = ErrorCancelingSpecies(Molecule(smiles='c1ccccc1'), hf, 'test')
-        cls.caffeine = ErrorCancelingSpecies(Molecule(smiles='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), hf, 'test')
-        cls.ethyne = ErrorCancelingSpecies(Molecule(smiles='C#C'), hf, 'test')
+        lot = LevelOfTheory('test')
+        cls.propene = ErrorCancelingSpecies(Molecule(smiles='CC=C'), hf, lot)
+        cls.butane = ErrorCancelingSpecies(Molecule(smiles='CCCC'), hf, lot)
+        cls.benzene = ErrorCancelingSpecies(Molecule(smiles='c1ccccc1'), hf, lot)
+        cls.caffeine = ErrorCancelingSpecies(Molecule(smiles='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), hf, lot)
+        cls.ethyne = ErrorCancelingSpecies(Molecule(smiles='C#C'), hf, lot)
 
     def test_initializing_constraint_map(self):
         """
@@ -194,17 +199,18 @@ class TestErrorCancelingScheme(unittest.TestCase):
             pyo = None
         cls.pyo = pyo
 
-        cls.propene = ErrorCancelingSpecies(Molecule(smiles='CC=C'), (100, 'kJ/mol'), 'test', (105, 'kJ/mol'))
-        cls.propane = ErrorCancelingSpecies(Molecule(smiles='CCC'), (75, 'kJ/mol'), 'test', (80, 'kJ/mol'))
-        cls.butane = ErrorCancelingSpecies(Molecule(smiles='CCCC'), (150, 'kJ/mol'), 'test', (145, 'kJ/mol'))
-        cls.butene = ErrorCancelingSpecies(Molecule(smiles='C=CCC'), (175, 'kJ/mol'), 'test', (180, 'kJ/mol'))
-        cls.pentane = ErrorCancelingSpecies(Molecule(smiles='CCCCC'), (200, 'kJ/mol'), 'test', (190, 'kJ/mol'))
-        cls.pentene = ErrorCancelingSpecies(Molecule(smiles='C=CCCC'), (225, 'kJ/mol'), 'test', (220, 'kJ/mol'))
-        cls.hexane = ErrorCancelingSpecies(Molecule(smiles='CCCCCC'), (250, 'kJ/mol'), 'test', (260, 'kJ/mol'))
-        cls.hexene = ErrorCancelingSpecies(Molecule(smiles='C=CCCCC'), (275, 'kJ/mol'), 'test', (275, 'kJ/mol'))
-        cls.benzene = ErrorCancelingSpecies(Molecule(smiles='c1ccccc1'), (-50, 'kJ/mol'), 'test', (-80, 'kJ/mol'))
-        cls.caffeine = ErrorCancelingSpecies(Molecule(smiles='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), (300, 'kJ/mol'), 'test')
-        cls.ethyne = ErrorCancelingSpecies(Molecule(smiles='C#C'), (200, 'kJ/mol'), 'test')
+        lot = LevelOfTheory('test')
+        cls.propene = ErrorCancelingSpecies(Molecule(smiles='CC=C'), (100, 'kJ/mol'), lot, (105, 'kJ/mol'))
+        cls.propane = ErrorCancelingSpecies(Molecule(smiles='CCC'), (75, 'kJ/mol'), lot, (80, 'kJ/mol'))
+        cls.butane = ErrorCancelingSpecies(Molecule(smiles='CCCC'), (150, 'kJ/mol'), lot, (145, 'kJ/mol'))
+        cls.butene = ErrorCancelingSpecies(Molecule(smiles='C=CCC'), (175, 'kJ/mol'), lot, (180, 'kJ/mol'))
+        cls.pentane = ErrorCancelingSpecies(Molecule(smiles='CCCCC'), (200, 'kJ/mol'), lot, (190, 'kJ/mol'))
+        cls.pentene = ErrorCancelingSpecies(Molecule(smiles='C=CCCC'), (225, 'kJ/mol'), lot, (220, 'kJ/mol'))
+        cls.hexane = ErrorCancelingSpecies(Molecule(smiles='CCCCCC'), (250, 'kJ/mol'), lot, (260, 'kJ/mol'))
+        cls.hexene = ErrorCancelingSpecies(Molecule(smiles='C=CCCCC'), (275, 'kJ/mol'), lot, (275, 'kJ/mol'))
+        cls.benzene = ErrorCancelingSpecies(Molecule(smiles='c1ccccc1'), (-50, 'kJ/mol'), lot, (-80, 'kJ/mol'))
+        cls.caffeine = ErrorCancelingSpecies(Molecule(smiles='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), (300, 'kJ/mol'), lot)
+        cls.ethyne = ErrorCancelingSpecies(Molecule(smiles='C#C'), (200, 'kJ/mol'), lot)
 
     def test_creating_error_canceling_schemes(self):
         scheme = ErrorCancelingScheme(self.propene, [self.butane, self.benzene, self.caffeine, self.ethyne], True, True)
