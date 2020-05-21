@@ -82,56 +82,52 @@ computations:</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code></p></td>
 <td><p>Level of theory from quantum chemical calculations, see <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">Chemistry</span></code> table below</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">levelOfTheory</span></code></p></td>
-<td><p>Level of theory, free text format (only used for archiving). Suggested format:
-<code class="docutils literal notranslate"><span class="pre">energy_method/basis_set//geometry_method/basis_set,</span> <span class="pre">rotors</span> <span class="pre">at</span> <span class="pre">rotor_method/basis_set</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
 <td><p>Author’s name. Used when saving statistical mechanics properties as a .yml file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">atomEnergies</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">atomEnergies</span></code></p></td>
 <td><p>Dictionary of atomic energies at <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> level</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">frequencyScaleFactor</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">frequencyScaleFactor</span></code></p></td>
 <td><p>A factor by which to scale all frequencies</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">useHinderedRotors</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">useHinderedRotors</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> (by default) if hindered rotors are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> (by default) if atom corrections are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">useBondCorrections</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">useBondCorrections</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if bond corrections are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> (by default) if not</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">'p'</span></code> for Petersson-type (default) or <code class="docutils literal notranslate"><span class="pre">'m'</span></code> for Melius-type bond additivity corrections</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">useIsodesmicReactions</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">useIsodesmicReactions</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if isodesmic reactions are used to apply corrections. Will automatically turn
 on atom corrections and disable bond corrections</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">referenceSets</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">referenceSets</span></code></p></td>
 <td><p>A list of reference sets to use for isodesmic reactions. By default if left blank only the
 main reference set is used, which is the recommended. All reference sets are located at
 RMG-database/input/reference_sets/</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">species</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">species</span></code></p></td>
 <td><p>Contains parameters for non-transition states</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></p></td>
 <td><p>Contains parameters for transition state(s)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reaction</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reaction</span></code></p></td>
 <td><p>Required for performing kinetic computations</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">statmech</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">statmech</span></code></p></td>
 <td><p>Loads statistical mechanics parameters</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">thermo</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">thermo</span></code></p></td>
 <td><p>Performs a thermodynamics computation</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></p></td>
 <td><p>Performs a high-pressure limit kinetic computation</p></td>
 </tr>
 </tbody>
@@ -163,6 +159,32 @@ RMG-database/input/reference_sets/</p></td>
 chemistry. The <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> could either be in a <cite>single point // frequency</cite> format, e.g.,
 <cite>CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)</cite>, just the <cite>single point</cite>, e.g., <cite>CCSD(T)-F12a/aug-cc-pVTZ</cite>,
 or a composite method, e.g., <cite>CBS-QB3</cite>.</p>
+<p>Alternatively, <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> can be specified using a <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> or <code class="docutils literal notranslate"><span class="pre">CompositeLevelOfTheory</span></code> object. The
+basic syntax for <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LevelOfTheory</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;B3LYP&#39;</span><span class="p">,</span>
+    <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;6-311++G(3df,3pd)&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>See <code class="docutils literal notranslate"><span class="pre">arkane/modelchem.py</span></code> for additional options (e.g., software, solvent). Note that the software generally does not
+have to be specified because it is inferred from the provided quantum chemistry logs. An example
+<code class="docutils literal notranslate"><span class="pre">CompositeLevelOfTheory</span></code> is given by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CompositeLevelOfTheory</span><span class="p">(</span>
+    <span class="n">freq</span><span class="o">=</span><span class="n">LevelOfTheory</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;B3LYP&#39;</span><span class="p">,</span>
+        <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;6-311++G(3df,3pd)&#39;</span>
+    <span class="p">)</span>
+    <span class="n">energy</span><span class="o">=</span><span class="n">LevelOfTheory</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;CCSD(T)-F12&#39;</span><span class="p">,</span>
+        <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;aug-cc-pVTZ&#39;</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>There are some methods that require the software to be specified. Currently, it is not possible to infer the software
+for such methods directly from the log files because Arkane requires the software prior to reading the log files. The
+methods for which this is the case are listed in the RMG-database in <code class="docutils literal notranslate"><span class="pre">input/quantum_corrections/lot_constraints.yml</span></code>.</p>
 <p>Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
 states by applying atom and spin-orbit coupling energy corrections. Additionally, bond additivity corrections OR
 isodesmic reactions corrections can be applied (but not both). This is particularly
@@ -1647,9 +1669,9 @@ specified using a <code class="docutils literal notranslate"><span class="pre">b
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model_chemistry</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code></p></td>
 <td><p>Yes</p></td>
-<td><p>Calculated data will be extracted from the reference database using this model chemistry</p></td>
+<td><p>Calculated data will be extracted from the reference database using this level of theory</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bac_type</span></code></p></td>
 <td><p>No</p></td>
