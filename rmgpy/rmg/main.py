@@ -1220,8 +1220,10 @@ class RMG(util.Subject):
                         '\n{2}\n{3}'.format(spc.label, spc2.label, spc.to_adjacency_list(), spc2.to_adjacency_list())
                     )
 
-        # Check all core reactions (in both directions) for collision limit violation
+        # Check all core reactions (in both directions) for collision limit violation and large negative Ea reactions
         violators = []
+        large_negative_activation_energy_rxns = []
+
         for rxn in self.reaction_model.core.reactions:
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
@@ -1230,15 +1232,12 @@ class RMG(util.Subject):
                                                                 p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
                 violators.extend(violator_list)
+            if rxn.kinetics.to_arrhenius.Ea.value_si < -20900: # -5 kcal/mol
+                large_negative_activation_energy_rxns.append(rxn)
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
-        new_file = os.path.join(self.output_directory, 'collision_rate_violators.log')
-        old_file = os.path.join(self.output_directory, 'collision_rate_violators_OLD.log')
-        if os.path.isfile(new_file):
-            # If there are no violators, yet the violators log exists (probably from a previous run
-            # in the same folder), rename it.
-            if os.path.isfile(old_file):
-                os.remove(old_file)
-            os.rename(new_file, old_file)
+
+        new_file = add_warning_files(self.output_directory, 'collision_rate_violators')
+
         if violators:
             logging.info("\n")
             logging.warning("{0} CORE reactions violate the collision rate limit!"
@@ -1258,6 +1257,17 @@ class RMG(util.Subject):
                                       f'Violation condition: {condition}\n\n\n')
         else:
             logging.info("No collision rate violators found in the model's core.")
+
+        new_file = add_warning_files(self.output_directory, 'large_negative_activation_energy_reactions')
+
+        if large_negative_activation_energy_rxns:
+            logging.info("\n")
+            logging.warning("{0} CORE reactions have large negative activation energy. The rate estimation might be wrong."
+                            "\nSee the 'large_negative_activation_energy_reactions.log' for details.\n\n".format(len(large_negative_activation_energy_rxns)))
+            with open(new_file, 'w') as negative_Ea_f:
+                negative_Ea_f.write('*** The following reactions have large negative activation energy. The rate estimation might be wrong. ***\n')
+                for rxn in large_negative_activation_energy_rxns:
+                    negative_Ea_f.write('{0}\n'.format(rxn.to_chemkin()))
 
     def initialize_seed_mech(self):
         """
@@ -2056,6 +2066,8 @@ class RMG(util.Subject):
 
 ################################################################################
 
+
+
 def determine_procnum_from_ram():
     """
     Get available RAM (GB)and procnum dependent on OS.
@@ -2134,6 +2146,14 @@ def initialize_log(verbose, log_file_name):
     logger.addHandler(ch)
     logger.addHandler(fh)
 
+def add_warning_files(output_directory, file_name):
+    new_file = os.path.join(output_directory, file_name+'.log')
+    old_file = os.path.join(output_directory, file_name+'_OLD.log')
+    if os.path.isfile(new_file):
+        if os.path.isfile(old_file):
+            os.remove(old_file)
+        os.rename(new_file, old_file)
+    return new_file
 
 ################################################################################
 class RMG_Memory(object):
