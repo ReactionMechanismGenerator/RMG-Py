@@ -122,7 +122,8 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     )
 
     for family in rmg_database.kinetics.families.values():  # load training
-        family.add_rules_from_training(thermo_database=rmg_database.thermo)
+        if not family.auto_generated:
+            family.add_rules_from_training(thermo_database=rmg_database.thermo)
 
     for family in rmg_database.kinetics.families.values():
         family.fill_rules_by_averaging_up(verbose=True)
