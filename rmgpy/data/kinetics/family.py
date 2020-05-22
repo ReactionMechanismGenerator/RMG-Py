@@ -3299,7 +3299,7 @@ class KineticsFamily(Database):
                 if len(items) > 1 and entry not in mult_completed_nodes:
                     splitable_entry_num += 1
 
-            for label in template_rxn_map.keys():
+            for label in list(template_rxn_map.keys()):
                 entry = self.groups.entries[label]
                 if not isinstance(entry.item, Group):  # skip logic nodes
                     continue
