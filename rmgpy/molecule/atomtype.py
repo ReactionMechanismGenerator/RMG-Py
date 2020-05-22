@@ -752,10 +752,10 @@ def get_atomtype(atom, bonds):
         else:
             return specific_atom_type
     else:
-        single, _, r_double, o_double, s_double, triple, quadruple, benzene, lone_pairs, charge = mol_feature_list
+        single, all_double, r_double, o_double, s_double, triple, quadruple, benzene, lone_pairs, charge = mol_feature_list
 
         raise AtomTypeError(
             f'Unable to determine atom type for atom {atom}, which has {single:d} single bonds, '
-            f'{r_double:d} double bonds to C, {o_double:d} double bonds to O, {s_double:d} double '
-            f'bonds to S, {triple:d} triple bonds, {quadruple:d} quadruple bonds, {benzene:d} '
-            f'benzene bonds, {lone_pairs:d} lone pairs, and {charge:d} charge.')
+            f'{all_double:d} double bonds ({o_double:d} to O, {s_double:d} to S, '
+            f'{r_double:d} others), {triple:d} triple bonds, {quadruple:d} quadruple bonds, '
+            f'{benzene:d} benzene bonds, {lone_pairs:d} lone pairs, and {charge:+d} charge.')
