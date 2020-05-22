@@ -861,6 +861,7 @@ class Molecule(Graph):
     ======================= =========== ========================================
     `atoms`                 ``list``    A list of Atom objects in the molecule
     `symmetry_number`       ``float``   The (estimated) external + internal symmetry number of the molecule, modified for chirality
+    `charge`                ``int``     The charge of this species
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
     `reactive`              ``bool``    ``True`` (by default) if the molecule participates in reaction families.
                                             It is set to ``False`` by the filtration functions if a non
@@ -972,6 +973,10 @@ class Molecule(Graph):
     @atoms.setter
     def atoms(self, atoms):
         self.vertices = atoms
+
+    @property
+    def charge(self):
+        return sum(atom.charge for atom in self.atoms)
 
     @property
     def fingerprint(self):
@@ -1429,7 +1434,7 @@ class Molecule(Graph):
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
-        Also ensures multiplicities are also equal.
+        Also ensures charges and multiplicities are also equal.
 
         Args:
             initial_map (dict, optional):          initial atom mapping to use
@@ -1449,6 +1454,8 @@ class Molecule(Graph):
             return False
         # check multiplicity
         if self.multiplicity != other.multiplicity:
+            return False
+        if self.charge != other.charge:
             return False
 
         if generate_initial_map:
@@ -1495,6 +1502,8 @@ class Molecule(Graph):
             return []
         # check multiplicity
         if self.multiplicity != other.multiplicity:
+            return []
+        if self.charge != other.charge:
             return []
 
         # Do the isomorphism comparison
@@ -2138,7 +2147,7 @@ class Molecule(Graph):
         Iterate through the atoms in the structure and calculate the net charge
         on the overall molecule.
         """
-        return sum([atom.charge for atom in self.vertices])
+        return self.charge
 
     def get_charge_span(self):
         """
