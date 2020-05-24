@@ -143,7 +143,7 @@ cdef class Arrhenius(KineticsModel):
         self._T0.value_si = T0
 
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, np.ndarray weights=None,
-                      bint three_params=True):
+                      bint three_params=False):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in

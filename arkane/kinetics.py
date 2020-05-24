@@ -188,7 +188,7 @@ class KineticsJob(object):
             len(self.reaction.products) - len(self.reaction.reactants)]
         self.k_r_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
         self.reaction.kinetics = Arrhenius().fit_to_data(self.Tlist.value_si, klist, kunits=self.k_units,
-                                                         three_params=self.three_params)
+                                                         three_params=False)
         self.reaction.elementary_high_p = True
 
     def write_output(self, output_directory):
@@ -268,9 +268,9 @@ class KineticsJob(object):
             f.write('\n\n')
 
             kinetics_0_rev = Arrhenius().fit_to_data(t_list, np.array(k0_revs), kunits=self.k_r_units,
-                                                     three_params=self.three_params)
+                                                     three_params=False)
             kinetics_rev = Arrhenius().fit_to_data(t_list, np.array(k_revs), kunits=self.k_r_units,
-                                                   three_params=self.three_params)
+                                                   three_params=False)
 
             f.write('# k_rev (TST) = {0} \n'.format(kinetics_0_rev))
             f.write('# k_rev (TST+T) = {0} \n\n'.format(kinetics_rev))
