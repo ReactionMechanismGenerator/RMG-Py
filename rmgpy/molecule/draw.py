@@ -176,7 +176,8 @@ class MoleculeDrawer(object):
         surface_sites = []
         for atom in self.molecule.atoms:
             if atom.is_hydrogen() and atom.label == '':
-                atoms_to_remove.append(atom)
+                if not any(bond.is_hydrogen_bond() for bond in atom.bonds.values()):
+                    atoms_to_remove.append(atom)
             elif atom.is_surface_site():
                 surface_sites.append(atom)
         if len(atoms_to_remove) < len(self.molecule.atoms) - len(surface_sites):
@@ -385,6 +386,18 @@ class MoleculeDrawer(object):
                     # need to keep self.coordinates and coordinates referring to the same object
                     self.coordinates = coordinates = np.dot(coordinates, rot)
 
+            # If two atoms lie on top of each other, push them apart a bit
+            # This is ugly, but at least the mess you end up with isn't as misleading
+            # as leaving everything piled on top of each other at the origin
+            import itertools
+            for atom1, atom2 in itertools.combinations(backbone, 2):
+                i1, i2 = atoms.index(atom1), atoms.index(atom2)
+                if np.linalg.norm(coordinates[i1, :] - coordinates[i2, :]) < 0.5:
+                    coordinates[i1, 0] -= 0.3
+                    coordinates[i2, 0] += 0.3
+                    coordinates[i1, 1] -= 0.2
+                    coordinates[i2, 1] += 0.2
+
             # Center backbone at origin
             xmin = np.min(coordinates[:, 0])
             xmax = np.max(coordinates[:, 0])
@@ -557,6 +570,8 @@ class MoleculeDrawer(object):
                     if count == 1 or count == 2:
                         if cycle is None or len(cycle0) > len(cycle): cycle = cycle0
             cycle0 = cycle1
+            if cycle is None:
+                break
             atoms.remove(cycle)
 
             # Shuffle atoms in cycle such that the common atoms come first
@@ -1037,16 +1052,22 @@ class MoleculeDrawer(object):
         self.right += padding
         self.bottom += padding
 
-    def _draw_line(self, cr, x1, y1, x2, y2, dashed=False):
+    def _draw_line(self, cr, x1, y1, x2, y2, dashed=False, dash_sizes=None):
         """
         Draw a line on the given Cairo context `cr` from (`x1`, `y1`) to
         (`x2`,`y2`), and update the bounding rectangle if necessary.
+
+        For a dashed line set ``dashed=True``.
+        Then the optional `dash_sizes` can be a list of on/off segment lengths,
+        which defaults to [3.5, 3.5] if not specified.
         """
 
         cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         cr.set_line_width(1.0)
         if dashed:
-            cr.set_dash([3.5])
+            if dash_sizes is None:
+                dash_sizes = [3.5, 3.5]
+            cr.set_dash(dash_sizes)
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
         cr.move_to(x1, y1)
         cr.line_to(x2, y2)
@@ -1137,6 +1158,9 @@ class MoleculeDrawer(object):
                 dv *= 1.6
                 self._draw_line(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
                 self._draw_line(cr, x1 + du, y1 + dv, x2 + du, y2 + dv, dashed=True)
+            elif bond.is_hydrogen_bond():
+                # Draw a dashed line
+                self._draw_line(cr, x1, y1, x2, y2, dashed=True, dash_sizes=[0.5, 3.5])
             else:
                 self._draw_line(cr, x1, y1, x2, y2)
         else:
