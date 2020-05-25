@@ -60,7 +60,7 @@ class ReferenceSpecies(ArkaneSpecies):
     selections for use in isodesmic reaction calculations
     """
 
-    def __init__(self, species=None, smiles=None, adjacency_list=None, inchi=None, reference_data=None,
+    def __init__(self, species=None, smiles=None, adjacency_list=None, inchi=None, inchi_key=None, reference_data=None,
                  calculated_data=None, preferred_reference=None, index=None, label=None, cas_number=None,
                  symmetry_number=None, default_xyz_chemistry=None, **kwargs):
         """
@@ -71,6 +71,7 @@ class ReferenceSpecies(ArkaneSpecies):
             smiles (str): SMILES string representing the reference species
             adjacency_list (str): An RMG adjacency list representation of the reference species
             inchi (str): InChI string representing the reference species
+            inchi_key (str): InChI key hash of the InChI string
             reference_data (dict): Formatted as {'source_string': ReferenceDataEntry, ...}
             calculated_data (dict): Formatted as {'model_chemistry': CalculatedDataEntry, ...}
             preferred_reference (str): The source string key for the reference data to use for isodesmic reactions
@@ -110,6 +111,12 @@ class ReferenceSpecies(ArkaneSpecies):
         # Alter the symmetry number calculated by RMG to the one provided by the user
         if symmetry_number:
             self.symmetry_number = symmetry_number
+
+        # Reset to the provided identifiers to avoid translation errors. Note that `''` should not be a valid identifier
+        self.smiles = smiles or self.smiles
+        self.adjacency_list = adjacency_list or self.adjacency_list
+        self.inchi = inchi or self.inchi
+        self.inchi_key = inchi_key or self.inchi_key
 
     def __repr__(self):
         if self.index:
