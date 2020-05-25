@@ -208,10 +208,6 @@ def ensure_independent_atom_ids(input_species, resonance=True):
                 species.generate_resonance_structures(keep_isomorphic=True)
             if len(unreactive_mol_list):
                 species.molecule.extend(unreactive_mol_list)
-    elif resonance:
-        # IDs are already independent, generate resonance structures if needed
-        for species in input_species:
-            species.generate_resonance_structures(keep_isomorphic=True)
 
 
 def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None,
