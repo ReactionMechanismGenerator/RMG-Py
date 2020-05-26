@@ -236,10 +236,10 @@ def assign_frequency_scale_factor(level_of_theory: Union[LevelOfTheory, Composit
         return 1
     freq_level = getattr(level_of_theory, 'freq', level_of_theory)
     try:
-        scaling_factor = data.freq_dict[freq_level]
+        scaling_factor = data.freq_dict[str(freq_level)]
     except KeyError:
         try:
-            scaling_factor = data.freq_dict[freq_level.simple()]
+            scaling_factor = data.freq_dict[str(freq_level.simple())]
         except KeyError:
             scaling_factor = 1
         else:
