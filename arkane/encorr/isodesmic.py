@@ -173,9 +173,12 @@ class SpeciesConstraints:
         Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
         the labels for these constraints.
 
-        To reduce the size of the linear programming problem that will try to find error canceling reactions of the
-        target and subsets of the reference species, the `reference_species` list is automatically pruned to remove
-        species that have additional atom, bond, and/or ring attributes not found in the target molecule.
+        Notes:
+            To reduce the size of the linear programming problem that will try to find error canceling reactions of the
+            target and subsets of the reference species, the `reference_species` list is automatically pruned to remove
+            species that have additional atom, bond, and/or ring attributes not found in the target molecule.
+
+            Charge is also explicitly conserved, as there are charged species in the reference database
 
         Args:
             target (ErrorCancelingSpecies): The target species of the error canceling reaction scheme
@@ -195,6 +198,10 @@ class SpeciesConstraints:
     def _get_constraint_map(self):
         # Enumerate all of the constraints in the target molecule to initialize the constraint mapping
         constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
+
+        # Conserve charge
+        constraint_map.update({'charge': self.target.molecule.get_net_charge()})
+
         if self.conserve_bonds:
             j = len(constraint_map)
             constraint_map.update(
@@ -219,6 +226,9 @@ class SpeciesConstraints:
         """
         constraint_vector = np.zeros(len(self.constraint_map))
         molecule = species.molecule
+
+        # Conserve charge
+        constraint_vector[self.constraint_map['charge']] = molecule.get_net_charge()
 
         try:
             atoms = molecule.get_element_count()
