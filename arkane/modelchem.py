@@ -35,8 +35,8 @@ from __future__ import annotations
 
 import os
 import yaml
-from dataclasses import dataclass, Field, fields, MISSING, replace
-from typing import Iterable, Union
+from dataclasses import dataclass, Field, field, fields, MISSING, replace
+from typing import Any, Iterable, Tuple, Union
 
 from rmgpy import settings
 from rmgpy.rmgobject import RMGObject
@@ -50,8 +50,8 @@ def standardize_name(name: str) -> str:
         return name
 
 
-with open(os.path.join(settings['database.directory'], 'quantum_corrections', 'lot_constraints.yml')) as f:
-    METHODS_THAT_REQUIRE_SOFTWARE = yaml.safe_load(f)['METHODS_THAT_REQUIRE_SOFTWARE']
+with open(os.path.join(settings['database.directory'], 'quantum_corrections', 'lot_constraints.yml')) as _f:
+    METHODS_THAT_REQUIRE_SOFTWARE = yaml.safe_load(_f)['METHODS_THAT_REQUIRE_SOFTWARE']
 METHODS_THAT_REQUIRE_SOFTWARE = {standardize_name(method) for method in METHODS_THAT_REQUIRE_SOFTWARE}
 
 
@@ -72,14 +72,12 @@ class LOT(RMGObject):
 
     def __repr__(self) -> str:
         """
-        Don't include attributes that are set to their default values,
-        and don't include spaces.
+        Don't include attributes that are set to their default values.
         """
-        r = (self.__class__.__qualname__ + '('
-             + ','.join(f"{f.name}={getattr(self, f.name)!r}" for f in fields(self)
-                        if f.repr and f.init and not self._is_default(f))
-             + ')')
-        return r.replace(' ', '')
+        return (self.__class__.__qualname__ + '('
+                + ','.join(f"{f.name}={getattr(self, f.name)!r}" for f in fields(self)
+                           if f.repr and f.init and not self._is_default(f))
+                + ')')
 
     def update(self, **kwargs) -> LOT:
         """
@@ -109,6 +107,7 @@ class LevelOfTheory(LOT):
         solvent: Solvent.
         solvation_method: Solvation method.
         args: Tuple of additional arguments provided to the software.
+        _std_tuple: Standardized tuple representation of object.
     """
     method: str
     basis: str = None
@@ -119,29 +118,52 @@ class LevelOfTheory(LOT):
     solvent: str = None
     solvation_method: str = None
     args: Union[str, Iterable[str]] = None
+    _std_tuple: Tuple[Any, ...] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         """
-        Standardize attribute values and check if software is set.
+        Save standardized representation, and check if software is set.
 
         __post_init__ should allow mutating attributes of frozen
         instances, but it doesn't, so use object.__setattr__ to get
         around that issue.
         """
-        for attr, val in self.__dict__.items():
-            if val is not None:
-                if attr == 'software':
-                    std_fn = get_software_id
-                elif attr == 'args':  # Standardize and sort args to make unique; convert to tuple
-                    def std_fn(args):
-                        args = (args,) if isinstance(args, str) else args
-                        return tuple(sorted(standardize_name(a) for a in args))
-                else:
-                    std_fn = standardize_name
-                object.__setattr__(self, attr, std_fn(val))
+        object.__setattr__(self, '_std_tuple', tuple(self._get_std_val(f.name) for f in fields(self) if f.compare))
 
-        if self.method in METHODS_THAT_REQUIRE_SOFTWARE and self.software is None:
+        if self._get_std_val('method') in METHODS_THAT_REQUIRE_SOFTWARE and self.software is None:
             raise ValueError(f'Software must be set when using {self.method} method')
+
+    def __eq__(self, other: LevelOfTheory) -> bool:
+        """
+        Override the automatically generated __eq__ method such that
+        equality is checked using the standardized representations of
+        the attributes.
+        """
+        if other.__class__ is self.__class__:
+            return self._std_tuple == other._std_tuple
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        """
+        Override __hash__ such that it uses the standardized attribute
+        representations.
+        """
+        return hash(self._std_tuple)
+
+    def _get_std_val(self, attr: str) -> Union[None, int, float, str, Tuple[str, ...]]:
+        """Get standardized value of attribute"""
+        val = getattr(self, attr)
+        if val is not None:
+            if attr == 'software':
+                std_fn = get_software_id
+            elif attr == 'args':  # Standardize and sort args to make unique; convert to tuple
+                def std_fn(args):
+                    args = (args,) if isinstance(args, str) else args
+                    return tuple(sorted(standardize_name(a) for a in args))
+            else:
+                std_fn = standardize_name
+            return std_fn(val)
+        return val
 
     def simple(self) -> LevelOfTheory:
         """
@@ -152,22 +174,27 @@ class LevelOfTheory(LOT):
         Returns:
             New instance with only method and basis attributes set.
         """
-        if self.method in METHODS_THAT_REQUIRE_SOFTWARE:
+        if self._get_std_val('method') in METHODS_THAT_REQUIRE_SOFTWARE:
             return LevelOfTheory(method=self.method, basis=self.basis, software=self.software)
         else:
             return LevelOfTheory(method=self.method, basis=self.basis)
 
-    def to_model_chem(self) -> str:
+    def to_model_chem(self, nonstandard: bool = False) -> str:
         """
         Return model chemistry containing method and basis.
+
+        Args:
+            nonstandard: Don't use standardized representations of method and basis.
 
         Returns:
             Model chemistry string.
         """
-        if self.basis is None:
-            return self.method
+        method = self.method if nonstandard else self._get_std_val('method')
+        basis = self.basis if nonstandard else self._get_std_val('basis')
+        if basis is None:
+            return method
         else:
-            return f'{self.method}/{self.basis}'
+            return f'{method}/{basis}'
 
 
 @dataclass(repr=False, frozen=True)
@@ -200,14 +227,18 @@ class CompositeLevelOfTheory(LOT):
         """
         return CompositeLevelOfTheory(freq=self.freq.simple(), energy=self.energy.simple())
 
-    def to_model_chem(self) -> str:
+    def to_model_chem(self, nonstandard: bool = False) -> str:
         """
         Return model chemistry containing methods and bases.
+
+        Args:
+            nonstandard: Don't use standardized representations of method and basis.
 
         Returns:
             Model chemistry string.
         """
-        return f'{self.energy.to_model_chem()}//{self.freq.to_model_chem()}'
+        return (f'{self.energy.to_model_chem(nonstandard=nonstandard)}//'
+                f'{self.freq.to_model_chem(nonstandard=nonstandard)}')
 
 
 def _to_lot_helper(model_chem: str, **kwargs) -> LevelOfTheory:

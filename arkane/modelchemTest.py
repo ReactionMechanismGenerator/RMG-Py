@@ -55,23 +55,23 @@ COMPOSITE = CompositeLevelOfTheory(
 )
 
 # Representations corresponding to instances
-FREQ_REPR = "LevelOfTheory(method='wb97xd',basis='def2tzvp',software='gaussian',args=('verytight',))"
-ENERGY_REPR = "LevelOfTheory(method='dlpnoccsd(t)f12',basis='def2tzvp',software='orca')"
+FREQ_REPR = "LevelOfTheory(method='wB97X-D',basis='def2-TZVP',software='Gaussian 16',args='very-tight')"
+ENERGY_REPR = "LevelOfTheory(method='DLPNO-CCSD(T)-F12',basis='def2-TZVP',software='Orca')"
 COMPOSITE_REPR = f"CompositeLevelOfTheory(freq={FREQ_REPR},energy={ENERGY_REPR})"
 
 # Dictionaries corresponding to instances
 FREQ_DICT = {
     'class': 'LevelOfTheory',
-    'method': 'wb97xd',
-    'basis': 'def2tzvp',
-    'software': 'gaussian',
-    'args': ['verytight']  # This is a list instead of tuple because that's what YAML files expect
+    'method': 'wB97X-D',
+    'basis': 'def2-TZVP',
+    'software': 'Gaussian 16',
+    'args': 'very-tight'
 }
 ENERGY_DICT = {
     'class': 'LevelOfTheory',
-    'method': 'dlpnoccsd(t)f12',
-    'basis': 'def2tzvp',
-    'software': 'orca',
+    'method': 'DLPNO-CCSD(T)-F12',
+    'basis': 'def2-TZVP',
+    'software': 'Orca',
 }
 COMPOSITE_DICT = {
     'class': 'CompositeLevelOfTheory',
@@ -80,9 +80,12 @@ COMPOSITE_DICT = {
 }
 
 # Model chemistries corresponding to instances
-FREQ_MODELCHEM = 'wb97xd/def2tzvp'
-ENERGY_MODELCHEM = 'dlpnoccsd(t)f12/def2tzvp'
+FREQ_MODELCHEM = 'wB97X-D/def2-TZVP'
+FREQ_MODELCHEM_STD = 'wb97xd/def2tzvp'
+ENERGY_MODELCHEM = 'DLPNO-CCSD(T)-F12/def2-TZVP'
+ENERGY_MODELCHEM_STD = 'dlpnoccsd(t)f12/def2tzvp'
 COMPOSITE_MODELCHEM = f'{ENERGY_MODELCHEM}//{FREQ_MODELCHEM}'
+COMPOSITE_MODELCHEM_STD = f'{ENERGY_MODELCHEM_STD}//{FREQ_MODELCHEM_STD}'
 
 
 class TestLevelOfTheory(unittest.TestCase):
@@ -94,10 +97,12 @@ class TestLevelOfTheory(unittest.TestCase):
         """
         Test that instance behaves correctly.
         """
-        self.assertEqual(FREQ.method, 'wb97xd')
-        self.assertEqual(FREQ.basis, 'def2tzvp')
-        self.assertEqual(FREQ.software, 'gaussian')
-        self.assertTupleEqual(FREQ.args, ('verytight',))
+        self.assertEqual(FREQ.method, 'wB97X-D')
+        self.assertEqual(FREQ.basis, 'def2-TZVP')
+        self.assertEqual(FREQ.software, 'Gaussian 16')
+        self.assertEqual(FREQ.args, 'very-tight')
+        self.assertTupleEqual(FREQ._std_tuple,
+                              ('wb97xd', 'def2tzvp', None, None, 'gaussian', None, None, None, ('verytight',)))
         with self.assertRaises(FrozenInstanceError):
             FREQ.method = ''
 
@@ -107,6 +112,7 @@ class TestLevelOfTheory(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = LevelOfTheory(method=FREQ.method)
         lot = LevelOfTheory(method=FREQ.method, software=FREQ.software)
+        self.assertTupleEqual(lot._std_tuple, ('wb97xd', None, None, None, 'gaussian', None, None, None, None))
         self.assertIsNone(lot.basis)
         self.assertIsNone(lot.auxiliary_basis)
         self.assertIsNone(lot.cabs)
@@ -116,6 +122,7 @@ class TestLevelOfTheory(unittest.TestCase):
         self.assertIsNone(lot.args)
 
         self.assertIsInstance(FREQ, LOT)
+        self.assertIsInstance(ENERGY, LOT)
 
     def test_comparison(self):
         """
@@ -125,6 +132,16 @@ class TestLevelOfTheory(unittest.TestCase):
         self.assertNotEqual(FREQ, ENERGY)
         with self.assertRaises(TypeError):
             _ = ENERGY > FREQ
+
+        # Test that equality does not depend on spaces, hyphens, and capitalization
+        lot = LevelOfTheory(
+            method='w b  97xd',
+            basis='def2-tzvp',
+            software='gau',
+            args=['VeryTight']
+        )
+        self.assertEqual(lot, FREQ)
+        self.assertEqual(hash(lot), hash(FREQ))
 
         # Test args in different order
         lot1 = LevelOfTheory('method', args=('arg1', 'arg2'))
@@ -141,20 +158,23 @@ class TestLevelOfTheory(unittest.TestCase):
         self.assertEqual(lot.basis, FREQ.basis)
         self.assertEqual(lot.software, FREQ.software)
         for attr, val in lot.__dict__.items():
-            if attr not in {'method', 'basis', 'software'}:
+            if not attr.startswith('_') and attr not in {'method', 'basis', 'software'}:
                 self.assertIsNone(val)
 
     def test_to_model_chem(self):
         """
         Test conversion to model chemistry.
         """
-        self.assertEqual(FREQ.to_model_chem(), FREQ_MODELCHEM)
-        self.assertEqual(ENERGY.to_model_chem(), ENERGY_MODELCHEM)
+        self.assertEqual(FREQ.to_model_chem(nonstandard=True), FREQ_MODELCHEM)
+        self.assertEqual(ENERGY.to_model_chem(nonstandard=True), ENERGY_MODELCHEM)
+        self.assertEqual(FREQ.to_model_chem(), FREQ_MODELCHEM_STD)
+        self.assertEqual(ENERGY.to_model_chem(), ENERGY_MODELCHEM_STD)
 
         lot = LevelOfTheory(
             method='CBS-QB3',
             software='g16'
         )
+        self.assertEqual(lot.to_model_chem(nonstandard=True), 'CBS-QB3')
         self.assertEqual(lot.to_model_chem(), 'cbsqb3')
 
     def test_update(self):
@@ -163,7 +183,7 @@ class TestLevelOfTheory(unittest.TestCase):
         """
         lot = FREQ.update(software='Q-Chem')
         self.assertIsNot(lot, FREQ)
-        self.assertEqual(lot.software, 'qchem')
+        self.assertEqual(lot.software, 'Q-Chem')
         with self.assertRaises(TypeError):
             FREQ.update(test='test')
 
@@ -202,6 +222,17 @@ class TestCompositeLevelOfTheory(unittest.TestCase):
         with self.assertRaises(TypeError):
             _ = COMPOSITE > other
 
+        lot1 = CompositeLevelOfTheory(
+            freq=LevelOfTheory('test1', args=['arg1', 'arg2']),
+            energy=LevelOfTheory('test2')
+        )
+        lot2 = CompositeLevelOfTheory(
+            freq=LevelOfTheory('T est-1', args=('ARG 2', 'Arg-1')),
+            energy=LevelOfTheory(' TEST-2')
+        )
+        self.assertEqual(lot1, lot2)
+        self.assertEqual(hash(lot1), hash(lot2))
+
     def test_simple(self):
         """
         Test that simple level of theory can be obtained.
@@ -214,17 +245,18 @@ class TestCompositeLevelOfTheory(unittest.TestCase):
         self.assertEqual(lot.energy.method, COMPOSITE.energy.method)
         self.assertEqual(lot.energy.basis, COMPOSITE.energy.basis)
         for attr, val in lot.freq.__dict__.items():
-            if attr not in {'method', 'basis', 'software'}:
+            if not attr.startswith('_') and attr not in {'method', 'basis', 'software'}:
                 self.assertIsNone(val)
         for attr, val in lot.energy.__dict__.items():
-            if attr not in {'method', 'basis'}:
+            if not attr.startswith('_') and attr not in {'method', 'basis'}:
                 self.assertIsNone(val)
 
     def test_to_model_chem(self):
         """
         Test conversion to model chemistry.
         """
-        self.assertEqual(COMPOSITE.to_model_chem(), COMPOSITE_MODELCHEM)
+        self.assertEqual(COMPOSITE.to_model_chem(nonstandard=True), COMPOSITE_MODELCHEM)
+        self.assertEqual(COMPOSITE.to_model_chem(), COMPOSITE_MODELCHEM_STD)
 
     def test_as_dict(self):
         """
