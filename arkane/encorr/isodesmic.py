@@ -55,6 +55,7 @@ from arkane.modelchem import LOT
 
 # Optional Imports
 try:
+    raise ImportError
     import pyomo.environ as pyo
 except ImportError:
     pyo = None
