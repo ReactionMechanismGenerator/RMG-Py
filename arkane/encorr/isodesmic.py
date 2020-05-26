@@ -169,7 +169,7 @@ class SpeciesConstraints:
     A class for defining and enumerating constraints to ReferenceSpecies objects for error canceling reactions
     """
 
-    def __init__(self, target, reference_list, conserve_bonds=True, conserve_ring_size=True):
+    def __init__(self, target, reference_list, conserve_bonds=True, conserve_ring_size=True, limit_charges=True):
         """
         Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
         the labels for these constraints.
@@ -187,6 +187,8 @@ class SpeciesConstraints:
                 species that can participate in the error canceling reaction scheme
             conserve_bonds (bool, optional): Enforce the number of each bond type be conserved
             conserve_ring_size (bool, optional): Enforce that the number of each ring size be conserved
+            limit_charges (bool, optional): Only allow species in the reaction that are within the range [C, 0] for
+                anions or [0, C] for cations where "C" is the charge of the target
         """
 
         self.target = target
@@ -194,6 +196,8 @@ class SpeciesConstraints:
         self.reference_species = []
         self.conserve_bonds = conserve_bonds
         self.conserve_ring_size = conserve_ring_size
+        self.limit_charges = limit_charges
+        self.allowable_charges = None  # Initialize to None. We check self.limit_charges before using
         self.constraint_map = self._get_constraint_map()
 
     def _get_constraint_map(self):
@@ -201,7 +205,13 @@ class SpeciesConstraints:
         constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
 
         # Conserve charge
-        constraint_map.update({'charge': self.target.molecule.get_net_charge()})
+        charge = self.target.molecule.get_net_charge()
+        constraint_map.update({'charge': charge})
+        if self.limit_charges:
+            if charge < 0:
+                self.allowable_charges = list(range(charge, 0))
+            else:
+                self.allowable_charges = list(range(0, charge + 1))
 
         if self.conserve_bonds:
             j = len(constraint_map)
@@ -229,7 +239,11 @@ class SpeciesConstraints:
         molecule = species.molecule
 
         # Conserve charge
-        constraint_vector[self.constraint_map['charge']] = molecule.get_net_charge()
+        charge = molecule.get_net_charge()
+        constraint_vector[self.constraint_map['charge']] = charge
+        if self.limit_charges:
+            if charge not in self.allowable_charges:  # Return None to exclude this species
+                return None
 
         try:
             atoms = molecule.get_element_count()
