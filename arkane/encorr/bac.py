@@ -141,6 +141,8 @@ class BACJob:
         with open(output_file2, 'w') as f:
             writer = csv.writer(f)
             writer.writerow([
+                'Index',
+                'Label',
                 'Smiles',
                 'InChI',
                 'Formula',
@@ -153,6 +155,8 @@ class BACJob:
             ])
             for d in self.bac.dataset:
                 writer.writerow([
+                    d.spc.index,
+                    d.spc.label,
                     d.spc.smiles,
                     d.spc.inchi,
                     d.spc.formula,
