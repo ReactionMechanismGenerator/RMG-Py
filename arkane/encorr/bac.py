@@ -586,6 +586,8 @@ class BAC:
     def fit(self,
             weighted: bool = False,
             db_names: Union[str, List[str]] = 'main',
+            idxs: Union[Sequence[int], Set[int], int] = None,
+            exclude_idxs: Union[Sequence[int], Set[int], int] = None,
             exclude_elements: Union[Sequence[str], Set[str], str] = None,
             charge: Union[Sequence[Union[str, int]], Set[Union[str, int]], str, int] = 'all',
             multiplicity: Union[Sequence[int], Set[int], int, str] = 'all',
@@ -598,6 +600,8 @@ class BAC:
         Args:
             weighted: Perform weighted least squares by balancing training data.
             db_names: Optionally specify database names to train on (defaults to main).
+            idxs: Only include reference species with these indices in the training data.
+            exclude_idxs: Exclude reference species with these indices from the training data.
             exclude_elements: Molecules with any of the elements in this sequence are excluded from training data.
             charge: Allowable charges for molecules in training data.
             multiplicity: Allowable multiplicites for molecules in training data.
@@ -607,6 +611,7 @@ class BAC:
         self.database_key = self.load_database(names=db_names)
 
         self.dataset = extract_dataset(self.ref_databases[self.database_key], self.level_of_theory,
+                                       idxs=idxs, exclude_idxs=exclude_idxs,
                                        exclude_elements=exclude_elements, charge=charge, multiplicity=multiplicity)
         if len(self.dataset) == 0:
             raise BondAdditivityCorrectionError(f'No species available for {self.level_of_theory}')
