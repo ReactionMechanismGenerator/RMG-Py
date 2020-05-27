@@ -381,6 +381,27 @@ class TestFuncs(unittest.TestCase):
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY)
         self.assertIsInstance(dataset, BACDataset)
 
+        # Test only retrieving specific indices
+        idxs = 211
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, idxs=idxs)
+        self.assertEqual(len(dataset), 1)
+        self.assertEqual(dataset[0].spc.index, idxs)
+        idxs = [211, 362]
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, idxs=idxs)
+        self.assertEqual(len(dataset), 2)
+        for d in dataset:
+            self.assertTrue(d.spc.index in {211, 362})
+
+        # Test excluding indices
+        idxs = 211
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_idxs=idxs)
+        for d in dataset:
+            self.assertNotEqual(d.spc.index, idxs)
+        idxs = [211, 362]
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_idxs=idxs)
+        for d in dataset:
+            self.assertTrue(d.spc.index not in {211, 362})
+
         # Test excluding elements
         elements = 'N'
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)

@@ -340,6 +340,8 @@ class BACDataset:
 
 def extract_dataset(ref_database: ReferenceDatabase,
                     level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
+                    idxs: Union[Sequence[int], Set[int], int] = None,
+                    exclude_idxs: Union[Sequence[int], Set[int], int] = None,
                     exclude_elements: Union[Sequence[str], Set[str], str] = None,
                     charge: Union[Sequence[Union[str, int]], Set[Union[str, int]], str, int] = 'all',
                     multiplicity: Union[Sequence[int], Set[int], int, str] = 'all') -> BACDataset:
@@ -350,6 +352,8 @@ def extract_dataset(ref_database: ReferenceDatabase,
     Args:
          ref_database: Reference database.
          level_of_theory: Level of theory.
+         idxs: Only include reference species with these indices in the returned data.
+         exclude_idxs: Exclude reference species with these indices from the returned data.
          exclude_elements: Sequence of element symbols to exclude.
          charge: Allowable charges. Possible values are 'all'; a combination of 'neutral, 'positive', and 'negative';
                  or a sequence of integers.
@@ -360,6 +364,12 @@ def extract_dataset(ref_database: ReferenceDatabase,
     """
     species = ref_database.extract_level_of_theory(level_of_theory, as_error_canceling_species=False)
 
+    if idxs is not None:
+        idxs = {idxs} if isinstance(idxs, int) else set(idxs)
+        species = [spc for spc in species if spc.index in idxs]
+    if exclude_idxs is not None:
+        exclude_idxs = {exclude_idxs} if isinstance(exclude_idxs, int) else set(exclude_idxs)
+        species = [spc for spc in species if spc.index not in exclude_idxs]
     if exclude_elements is not None:
         elements = {exclude_elements} if isinstance(exclude_elements, str) else set(exclude_elements)
         species = [spc for spc in species if not any(e in spc.formula for e in elements)]
