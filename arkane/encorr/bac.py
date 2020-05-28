@@ -49,6 +49,7 @@ from typing import Dict, Iterable, List, Sequence, Set, Tuple, Union
 
 import numpy as np
 import scipy.optimize as optimize
+from scipy.stats import distributions
 
 from rmgpy.quantity import ScalarQuantity
 
@@ -242,6 +243,7 @@ class BAC:
         self.database_key = None  # Dictionary key to access reference database
         self.dataset = None  # Collection of BACDatapoints in BACDataset
         self.correlation = None  # Correlation matrix for BAC parameters
+        self.confidence_intervals = None  # 95% confidence intervals for BAC parameters
 
         # Define attributes for memoization during fitting
         self._reset_memoization()
@@ -687,7 +689,8 @@ class BAC:
         w = np.linalg.solve(x.T @ weights @ x, x.T @ weights @ y)
         ypred = x @ w
 
-        covariance = np.linalg.inv(x.T @ weights @ x)
+        ci, covariance = get_confidence_intervals(x, y, ypred, weights=weights)
+        self.confidence_intervals = dict(zip(feature_keys, ci))  # Parameter estimates are w +/- ci
         self.correlation = _covariance_to_correlation(covariance)
 
         self.dataset.bac_data = self.dataset.calc_data + ypred
@@ -785,13 +788,15 @@ class BAC:
         res = min(results, key=lambda r: r.cost)
         w = res.x
 
-        # Estimate parameter covariance matrix using Jacobian
-        covariance = np.linalg.inv(res.jac.T @ weights @ res.jac)
-        self.correlation = _covariance_to_correlation(covariance)
-
         self.dataset.bac_data = get_bac_data(w)
         self.bacs = get_params(w)
 
+        # Estimate parameter covariance matrix using Jacobian
+        ci, covariance = get_confidence_intervals(res.jac, self.dataset.ref_data, self.dataset.bac_data,
+                                                  weights=weights)
+        self.confidence_intervals = get_params(ci)
+        self.correlation = _covariance_to_correlation(covariance)
+        
     def write_to_database(self, overwrite: bool = False, alternate_path: str = None):
         """
         Write BACs to database.
@@ -935,6 +940,39 @@ class BAC:
         ax.tick_params(bottom=False, top=False, left=False, right=False)
 
         fig.savefig(path, dpi=600, bbox_inches='tight', pad_inches=0)
+
+
+def get_confidence_intervals(x: np.ndarray,
+                             y: np.ndarray,
+                             ypred: np.ndarray,
+                             weights: np.ndarray = None,
+                             alpha: float = 0.05):
+    """
+    Compute confidence intervals with two-sided t-test.
+
+    Args:
+        x: Feature matrix.
+        y: Target vector.
+        ypred: Vector of predictions.
+        weights: Weight matrix.
+        alpha: Significance level (e.g., alpha=0.05 are 95% confidence intervals).
+
+    Returns:
+        Vector of confidence interval half-widths
+        and variance-covariance matrix.
+    """
+    n = len(y)  # Ndata
+    p = len(x.T)  # Nparam
+    if weights is None:
+        weights = np.eye(n)
+
+    e = y - ypred  # Residuals
+    sigma2 = e.T @ weights @ e / (n - p)  # MSE
+    cov = sigma2 * np.linalg.inv(x.T @ weights @ x)  # covariance matrix
+    se = np.sqrt(np.diag(cov))  # standard error
+    tdist = distributions.t.ppf(1 - alpha / 2, n - p)  # student-t
+    ci = tdist * se  # confidence interval half-width
+    return ci, cov
 
 
 def _covariance_to_correlation(cov: np.ndarray) -> np.ndarray:
