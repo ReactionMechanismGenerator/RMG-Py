@@ -135,7 +135,7 @@ class BACJob:
             f.write(f'# BAC job {jobnum}: {"Melius" if self.bac.bac_type == "m" else "Petersson"}-type BACs:\n')
             f.write(f'# RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol\n')
             f.write(f'# RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol\n')
-            f.writelines(self.bac.format_bacs())
+            f.writelines(self.bac.format_bacs(ci=True))
             f.write('\n')
 
         with open(output_file2, 'w') as f:
@@ -796,7 +796,7 @@ class BAC:
                                                   weights=weights)
         self.confidence_intervals = get_params(ci)
         self.correlation = _covariance_to_correlation(covariance)
-        
+
     def write_to_database(self, overwrite: bool = False, alternate_path: str = None):
         """
         Write BACs to database.
@@ -872,12 +872,13 @@ class BAC:
         if alternate_path is None:
             importlib.reload(data)
 
-    def format_bacs(self, indent: bool = False) -> List[str]:
+    def format_bacs(self, indent: bool = False, ci: bool = False) -> List[str]:
         """
         Obtain a list of nicely formatted BACs suitable for writelines.
 
         Args:
             indent: Indent each line for printing in database.
+            ci: Append confidence intervals.
 
         Returns:
             Formatted list of BACs.
@@ -888,6 +889,13 @@ class BAC:
         bacs_formatted = [e + '\n' for e in bacs_formatted]
         if indent:
             bacs_formatted = ['    ' + e for e in bacs_formatted]
+
+        if ci:
+            ci_formatted = ['95% Confidence interval half-widths:']
+            ci_formatted += json.dumps(self.confidence_intervals, indent=4).replace('"', "'").split('\n')
+            ci_formatted = ['# ' + e + '\n' for e in ci_formatted]
+            bacs_formatted.extend(ci_formatted)
+
         return bacs_formatted
 
     def save_correlation_mat(self, path: str, labels: List[str] = None):
