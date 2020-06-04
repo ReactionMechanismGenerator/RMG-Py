@@ -84,8 +84,13 @@ def main():
         depository=False,  # Don't bother loading the depository information, as we don't use it
     )
     family = database.kinetics.families[family_name]
+    num_training_rxns = len(family.get_training_depository().entries)
+    max_batch_size = 800
     family.clean_tree()
-    family.generate_tree(thermo_database=database.thermo, nprocs=min(4, nprocs))
+    if (num_training_rxns/max_batch_size > 1) and (num_training_rxns/max_batch_size <= 1.3):
+        family.generate_tree(thermo_database=database.thermo, nprocs=min(4, nprocs), max_batch_size=num_training_rxns)
+    else:
+        family.generate_tree(thermo_database=database.thermo, nprocs=min(4, nprocs)) 
     family.check_tree()
     family.regularize()
     template_rxn_map = family.get_reaction_matches(thermo_database=database.thermo, remove_degeneracy=True,
