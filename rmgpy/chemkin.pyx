@@ -726,7 +726,7 @@ def read_reaction_comments(reaction, comments, read=True):
                                   'for reaction {1}.'.format(prod_str, reaction))
                     continue
                 reaction.pairs.append((reactant, product))
-            assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
+            # assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
         elif isinstance(reaction, TemplateReaction) and 'rate rule ' in line:
             bracketed_rule = tokens[-1]
