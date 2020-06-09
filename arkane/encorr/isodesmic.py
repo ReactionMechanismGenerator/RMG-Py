@@ -44,11 +44,13 @@ https://doi.org/10.1021/jp404158v
 
 import signal
 from collections import deque
+from copy import deepcopy
+from typing import List
 
 from lpsolve55 import lpsolve, EQ, LE
 import numpy as np
 
-from rmgpy.molecule import Molecule
+from rmgpy.molecule import Bond, Molecule
 from rmgpy.quantity import ScalarQuantity
 
 from arkane.modelchem import LOT
@@ -163,6 +165,124 @@ class ErrorCancelingReaction:
         target_thermo = sum(spec[0].high_level_hf298.value_si*spec[1] for spec in self.species.items()) - \
             low_level_h_rxn
         return ScalarQuantity(target_thermo, 'J/mol')
+
+
+class AtomConstraint:
+
+    def __init__(self, label, connections=None):
+        self.label = label
+        self.connections = connections if connections is not None else []
+
+    def __eq__(self, other):
+        if isinstance(other, AtomConstraint):
+            if self.label == other.label:
+                if len(self.connections) == len(other.connections):
+                    connections = deepcopy(other.connections)
+                    for c in self.connections:
+                        for i, c_other in enumerate(connections):
+                            if c == c_other:
+                                break
+                        else:
+                            return False
+                        connections.pop(i)
+
+                    return True
+
+            return False
+
+        else:
+            raise NotImplementedError(f'AtomConstraint object has no __eq__ defined for other object of type '
+                                      f'{type(other)}')
+
+    def __repr__(self):
+        return f'{self.label}' + ''.join([f'({c})' for c in self.connections])
+
+
+class BondConstraint:
+
+    def __init__(self, atom1, atom2, bond_order):
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.bond_order = bond_order
+
+    def __eq__(self, other):
+        if isinstance(other, BondConstraint):
+            if self.bond_order == other.bond_order:
+                if ((self.atom1 == other.atom1 and self.atom2 == other.atom2) or
+                        (self.atom1 == other.atom2 and self.atom2 == other.atom1)):
+                    return True
+            return False
+
+        else:
+            raise NotImplementedError(f'BondConstraint object has no __eq__ defined for other object of type '
+                                      f'{type(other)}')
+
+    def __repr__(self):
+        symbols = ['', '-', '=', '#']
+        return f'{self.atom1}{symbols[self.bond_order]}{self.atom2}'
+
+
+class Connection:
+
+    def __init__(self, atom, bond_order):
+        self.atom = atom
+        self.bond_order = bond_order
+
+    def __eq__(self, other):
+        if isinstance(other, Connection):
+            if self.bond_order == other.bond_order:
+                if self.atom == other.atom:
+                    return True
+            return False
+
+        else:
+            raise NotImplementedError(f'Connection object has no __eq__ defined for other object of type {type(other)}')
+
+    def __repr__(self):
+        symbols = ['', '-', '=', '#']
+        return f'{symbols[self.bond_order]}{self.atom}'
+
+
+def bond_centric_constraints(species: ErrorCancelingSpecies, constraint_class: str) -> List[BondConstraint]:
+    constraints = []
+    contraint_func = CONSTRAINT_CLASSES[constraint_class]
+    molecule = species.molecule
+
+    for bond in molecule.get_all_edges():
+        constraints.append(contraint_func(bond))
+
+    return constraints
+
+
+def _buerger_rc2(bond: Bond) -> BondConstraint:
+    atom1 = AtomConstraint(label=bond.atom1.symbol)
+    atom2 = AtomConstraint(label=bond.atom2.symbol)
+
+    return BondConstraint(atom1=atom1, atom2=atom2, bond_order=int(bond.order))
+
+
+def _buerger_rc3(bond: Bond) -> BondConstraint:
+    atom1 = bond.atom1
+    atom2 = bond.atom2
+
+    atom1 = AtomConstraint(label=f'{atom1.symbol}{atom1.connectivity1}')
+    atom2 = AtomConstraint(label=f'{atom2.symbol}{atom2.connectivity1}')
+
+    return BondConstraint(atom1=atom1, atom2=atom2, bond_order=int(bond.order))
+
+
+def _buerger_rc4(bond: Bond) -> BondConstraint:
+    atoms = []
+
+    for atom in [bond.atom1, bond.atom2]:
+        connections = []
+        for a, b in atom.bonds.items():
+            ac = AtomConstraint(label=f'{a.symbol}{a.connectivity1}')
+            bond_order = b.order
+            connections.append(Connection(atom=ac, bond_order=bond_order))
+        atoms.append(AtomConstraint(label=f'{atom.symbol}{atom.connectivity1}', connections=connections))
+
+    return BondConstraint(atom1=atoms[0], atom2=atoms[1], bond_order=int(bond.order))
 
 
 class SpeciesConstraints:
@@ -513,6 +633,9 @@ class IsodesmicRingScheme(ErrorCancelingScheme):
     """
     def __init__(self, target, reference_set):
         super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=True)
+
+
+CONSTRAINT_CLASSES = {'rc2': _buerger_rc2, 'rc3': _buerger_rc3, 'rc4': _buerger_rc4}
 
 
 if __name__ == '__main__':
