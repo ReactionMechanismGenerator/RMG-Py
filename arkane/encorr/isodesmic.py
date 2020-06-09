@@ -438,6 +438,18 @@ class SpeciesConstraints:
 
         return target_constraints, reference_constraints
 
+    def _clean_up_constraints(self, target_constraints, reference_constraints):
+        target_constraints = np.array(target_constraints, dtype=int)
+        constraint_matrix = np.array(reference_constraints, dtype=int)
+
+        # Remove any columns that are all zeros
+        zero_indices = np.where(~constraint_matrix.any(axis=0))[0]
+        indices = [i for i in range(constraint_matrix.shape[1]) if i not in zero_indices]
+        constraint_matrix = np.take(constraint_matrix, indices=indices, axis=1)
+        target_constraints = np.take(target_constraints, indices=indices)
+
+        return target_constraints, constraint_matrix
+
     def calculate_constraints(self):
         """
         Calculate the constraint vector for the target and the constraint matrix for all allowable reference species
@@ -452,7 +464,7 @@ class SpeciesConstraints:
         target_constraints, reference_constraints = self._enumerate_charge_constraints(target_constraints,
                                                                                        reference_constraints)
 
-        return np.array(target_constraints, dtype=int), np.array(reference_constraints, dtype=int)
+        return self._clean_up_constraints(target_constraints, reference_constraints)
 
 
 class ErrorCancelingScheme:
