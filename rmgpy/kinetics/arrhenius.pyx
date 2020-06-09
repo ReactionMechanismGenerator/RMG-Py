@@ -30,7 +30,7 @@
 import numpy as np
 cimport numpy as np
 from libc.math cimport exp, sqrt, log10
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fsolve
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
@@ -597,57 +597,83 @@ cdef class ArrheniusBM(KineticsModel):
             w0s = get_w0s(recipe, rxns)
             w0 = sum(w0s) / len(w0s)
 
-        # define optimization function
-        def kfcn(xs, lnA, n, E0):
-            out = []
-            for x in xs:
-                T = x[0]
-                dHrxn = x[1]
-                if dHrxn < -4 * E0:
-                    Ea = 0.0
-                elif dHrxn > 4 * E0:
-                    Ea = dHrxn
-                else:
-                    Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                    Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
+        if len(rxns) == 1:
+            T = 1000.0
+            rxn = rxns[0]
+            dHrxn = rxn.get_enthalpy_of_reaction(T)
+            A = rxn.kinetics.A.value_si
+            n = rxn.kinetics.n.value_si
+            Ea = rxn.kinetics.Ea.value_si
+            
+            def kfcn(E0):
+                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                return out
 
-                out.append(lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T))))
-            return out
+            if abs(dHrxn) > 4 * w0 / 10.0:
+                E0 = w0 / 10.0
+            else:
+                E0 = fsolve(kfcn, w0 / 10.0)[0]
 
-        # get (T,dHrxn(T)) -> (Ln(k) mappings
-        xdata = []
-        ydata = []
-        sigmas = []
-        for rxn in rxns:
-            # approximately correct the overall uncertainties to std deviations
-            s = rank_accuracy_map[rxn.rank].value_si/2.0
-            for T in Ts:
-                xdata.append([T, rxn.get_enthalpy_of_reaction(T)])
-                ydata.append(np.log(rxn.get_rate_coefficient(T)))
+            self.Tmin = rxn.kinetics.Tmin
+            self.Tmax = rxn.kinetics.Tmax
+            self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
+        else:
+            # define optimization function
+            def kfcn(xs, lnA, n, E0):
+                out = []
+                for x in xs:
+                    T = x[0]
+                    dHrxn = x[1]
+                    if dHrxn < -4 * E0:
+                        Ea = 0.0
+                    elif dHrxn > 4 * E0:
+                        Ea = dHrxn
+                    else:
+                        Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                        Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
 
-                sigmas.append(s / (8.314 * T))
+                    out.append(lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T))))
+                return out
 
-        xdata = np.array(xdata)
-        ydata = np.array(ydata)
+            # get (T,dHrxn(T)) -> (Ln(k) mappings
+            xdata = []
+            ydata = []
+            sigmas = []
+            for rxn in rxns:
+                # approximately correct the overall uncertainties to std deviations
+                s = rank_accuracy_map[rxn.rank].value_si/2.0
+                for T in Ts:
+                    xdata.append([T, rxn.get_enthalpy_of_reaction(T)])
+                    ydata.append(np.log(rxn.get_rate_coefficient(T)))
 
-        # fit parameters
-        boo = True
-        xtol = 1e-8
-        ftol = 1e-8
-        while boo:
-            boo = False
-            try:
-                params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
-            except RuntimeError:
-                if xtol < 1.0:
-                    boo = True
-                    xtol *= 10.0
-                    ftol *= 10.0
-                else:
-                    raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
+                    sigmas.append(s / (8.314 * T))
 
-        lnA, n, E0 = params[0].tolist()
-        A = np.exp(lnA)
+            xdata = np.array(xdata)
+            ydata = np.array(ydata)
+
+            # fit parameters
+            boo = True
+            xtol = 1e-8
+            ftol = 1e-8
+            while boo:
+                boo = False
+                try:
+                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
+                except RuntimeError:
+                    if xtol < 1.0:
+                        boo = True
+                        xtol *= 10.0
+                        ftol *= 10.0
+                    else:
+                        raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
+
+            lnA, n, E0 = params[0].tolist()
+            A = np.exp(lnA)
+
+            self.Tmin = (np.min(Ts), "K")
+            self.Tmax = (np.max(Ts), "K")
+            self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         # fill in parameters
         A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
@@ -657,9 +683,6 @@ cdef class ArrheniusBM(KineticsModel):
         self.n = n
         self.w0 = (w0, 'J/mol')
         self.E0 = (E0, 'J/mol')
-        self.Tmin = (np.min(Ts), "K")
-        self.Tmax = (np.max(Ts), "K")
-        self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         return self
 
