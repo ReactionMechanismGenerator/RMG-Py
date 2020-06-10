@@ -437,9 +437,9 @@ class GaussianLog(ESSAdapter):
             vlist = vlist[:-1]
 
         # Determine the set of dihedral angles corresponding to the loaded energies
-        # This assumes that you start at 0.0, finish at 360.0, and take
-        # constant step sizes in between
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), np.float64)
+        # This assumes that all of the angles are evenly spaced with a constant step size
+        scan_res = math.pi / 180 * self._load_scan_angle()
+        angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
 
         return vlist, angle
 
