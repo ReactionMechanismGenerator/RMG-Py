@@ -397,6 +397,13 @@ class Atom(Vertex):
         """
         return self.element.number == 17
 
+    def is_bromine(self):
+        """
+        Return ``True`` if the atom represents a bromine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 35
+
     def is_iodine(self):
         """
         Return ``True`` if the atom represents an iodine atom or ``False`` if
