@@ -385,6 +385,18 @@ class MoleculeDrawer(object):
                                     [-math.sin(angle), math.cos(angle)]], np.float64)
                     # need to keep self.coordinates and coordinates referring to the same object
                     self.coordinates = coordinates = np.dot(coordinates, rot)
+            
+            # If two atoms lie on top of each other, push them apart a bit
+            # This is ugly, but at least the mess you end up with isn't as misleading
+            # as leaving everything piled on top of each other at the origin
+            import itertools
+            for atom1, atom2 in itertools.combinations(backbone, 2):
+                i1, i2 = atoms.index(atom1), atoms.index(atom2)
+                if np.linalg.norm(coordinates[i1, :] - coordinates[i2, :]) < 0.5:
+                    coordinates[i1, 0] -= 0.3
+                    coordinates[i2, 0] += 0.3
+                    coordinates[i1, 1] -= 0.2
+                    coordinates[i2, 1] += 0.2
 
             # If two atoms lie on top of each other, push them apart a bit
             # This is ugly, but at least the mess you end up with isn't as misleading
