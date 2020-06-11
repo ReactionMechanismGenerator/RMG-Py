@@ -345,16 +345,29 @@ def liquid_reactor(temperature,
                                  "entries of the same format")
             initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
 
-    if inletVolumetricFlowRate or initialVolume or inletConcentrations or residenceTime:
-        if (inletVolumetricFlowRate or initialVolume or inletConcentrations) and residenceTime:
-            raise InputError('Specify the residence time if a CSTR is desired, or enter the inlet volumetric flow rate,'
-                             'the intlet concentrations, and the initial volume if a semi-batch reactor is'
-                             'desired. Specifying both is not allowed.')
+    if inletVolumetricFlowRate or initialVolume or inletConcentrations or residenceTime: #CSTR or semi-batch
+
+        # Check input: either inletVolumetricFlowRate + initialVolume + inletConcentrations for semi-batch
+        # or residence time + optional inletVolumetricFlowRate for CSTR
+        if (inletVolumetricFlowRate or initialVolume) and residenceTime:
+            raise InputError('Specify the residence time and the optional inlet concentrations if a CSTR is desired,' 
+                             'or enter the inlet volumetric flow rate, the intlet concentrations, and the initial volume' 
+                             'if a semi-batch reactor is desired.')
+
+        # CSTR
         if residenceTime:
             if len(residenceTime) != 2:
                 raise InputError('Residence time must be in the form of (number,units)')
             residenceTime = Quantity(residenceTime).value_si
 
+            if inletConcentrations:    
+                for spec, conc in inletConcentrations.items():
+                    if len(inletConcentrations[spec]) != 2:
+                        raise InputError("Inlet concentration values must be in the form of (number, units).")
+                    concentration = Quantity(conc)
+                    inletConcentrations[spec] = concentration.value_si
+
+        # Semi-batch
         else:
             if not (inletVolumetricFlowRate and inletConcentrations and initialVolume):
                 raise InputError('Inlet volumetric flow rate, inlet concentrations, and initial volume must be specified'
@@ -1096,7 +1109,15 @@ def save_input_file(path, rmg):
             f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
-                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+                f.write('        "{0!s}": ({1:g},"mol/m^3"),\n'.format(spcs.label, conc))
+            if system.residence_time:
+                f.write('    residenceTime = ({0:g}, "s"),\n').format(system.residence_time)
+            if not system.constant_volume:
+                f.write('    inletVolumetricFlowRate = ({0:g}, "m^3/s"),\n'.format(system.v_in))
+                f.write('    inletConcentrations={\n')
+                for spcs, conc in system.inlet_concentrations.items():
+                    f.write('        "{0!s}": ({1:g},"mol/m^3"),\n'.format(spcs.label, conc))
+                f.write('    initialVolume = ({0:g}, "m^3"),\n'.format(system.V_0))
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
