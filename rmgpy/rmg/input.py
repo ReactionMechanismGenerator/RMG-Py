@@ -1075,21 +1075,21 @@ def save_input_file(path, rmg):
     # Databases
     f.write('database(\n')
     # f.write('    "{0}",\n'.format(rmg.database_directory))
-    f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermo_libraries))
-    f.write('    reactionLibraries = {0!r},\n'.format(rmg.reaction_libraries))
-    f.write('    seedMechanisms = {0!r},\n'.format(rmg.seed_mechanisms))
-    f.write('    kinetics_depositories = {0!r},\n'.format(rmg.kinetics_depositories))
-    f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kinetics_families))
-    f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
+    f.write(f'    thermoLibraries = {rmg.thermo_libraries!r},\n')
+    f.write(f'    reactionLibraries = {rmg.reaction_libraries!r},\n')
+    f.write(f'    seedMechanisms = {rmg.seed_mechanisms!r},\n')
+    f.write(f'    kinetics_depositories = {rmg.kinetics_depositories!r},\n')
+    f.write(f'    kineticsFamilies = {rmg.kinetics_families!r},\n')
+    f.write(f'    kineticsEstimator = {rmg.kinetics_estimator!r},\n')
     f.write(')\n\n')
 
     try:
         if rmg.surface_site_denisty or rmg.binding_energies:
             f.write('catalystProperties(\n')
             if rmg.surface_site_denisty:
-                f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
+                f.write(f'    surface_site_density = {rmg.surface_site_density!r},')
             if rmg.binding_energies:
-                f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
+                f.write(f'    binding_energies = {rmg.binding_energies!r},')
             f.write(')\n\n')
     except AttributeError:
         pass
@@ -1097,8 +1097,8 @@ def save_input_file(path, rmg):
     # Species
     for spcs in rmg.initial_species:
         f.write('species(\n')
-        f.write('    label = "{0}",\n'.format(spcs.label))
-        f.write('    reactive = {0},\n'.format(spcs.reactive))
+        f.write(f'    label = "{spcs.label}",\n')
+        f.write(f'    reactive = {spcs.reactive},\n')
         f.write('    structure = adjacencyList(\n')
         f.write('"""\n')
         f.write(spcs.molecule[0].to_adjacency_list())
@@ -1109,37 +1109,39 @@ def save_input_file(path, rmg):
     for system in rmg.reaction_systems:
         if rmg.solvent:
             f.write('liquidReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+            f.write(f'    temperature = ({system.T.value:g},"{system.T.units!s}"),\n')
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
-                f.write('        "{0!s}": ({1:g},"mol/m^3"),\n'.format(spcs.label, conc))
+                f.write(f'        "{spcs.label!s}": ({conc:g},"mol/m^3"),\n')
             if system.residence_time:
-                f.write('    residenceTime = ({0:g}, "s"),\n').format(system.residence_time)
-            if not system.constant_volume:
-                f.write('    inletVolumetricFlowRate = ({0:g}, "m^3/s"),\n'.format(system.v_in))
+                f.write(f'    residenceTime = ({system.residence_time:g}, "s"),\n')
+            if system.inlet_concentrations:
                 f.write('    inletConcentrations={\n')
                 for spcs, conc in system.inlet_concentrations.items():
-                    f.write('        "{0!s}": ({1:g},"mol/m^3"),\n'.format(spcs.label, conc))
-                f.write('    initialVolume = ({0:g}, "m^3"),\n'.format(system.V_0))
+                    f.write(f'        "{spcs.label!s}": ({conc:g},"mol/m^3"),\n')
+            if system.inlet_volumetric_flow_rate:
+                f.write(f'    inletVolumetricFlowRate = ({system.v_in:g}, "m^3/s"),\n')
+            if system.initial_volume:
+                f.write(f'    initialVolume = ({system.V_0:g}, "m^3"),\n')
         else:
             f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+            f.write(f'    temperature = ({system.T.value:g},"{system.T.units!s}"),\n')
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
+            f.write(f'    pressure = ({system.P.value,:g},"{system.P.units!s}"),\n')
             f.write('    initialMoleFractions={\n')
             for spcs, molfrac in system.initial_mole_fractions.items():
-                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+                f.write(f'        "{spcs.label!s}": {molfrac:g},\n')
         f.write('    },\n')
 
         # Termination criteria
         conversions = ''
         for term in system.termination:
             if isinstance(term, TerminationTime):
-                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
+                f.write(f'    terminationTime = ({term.time.value:g},"{term.time.units!s}"),\n')
 
             else:
-                conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+                conversions += f'        "{term.species.label:s}": {term.conversion:g},\n'
         if conversions:
             f.write('    terminationConversion = {\n')
             f.write(conversions)
@@ -1150,74 +1152,62 @@ def save_input_file(path, rmg):
             sensitivity = []
             for item in system.sensitive_species:
                 sensitivity.append(item.label)
-            f.write('    sensitivity = {0},\n'.format(sensitivity))
-            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivity_threshold))
+            f.write(f'    sensitivity = {sensitivity},\n')
+            f.write(f'    sensitivityThreshold = {system.sensitivity_threshold},\n')
 
         f.write(')\n\n')
 
     if rmg.solvent:
-        f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
+        f.write(f"solvation(\n    solvent = '{rmg.solvent!s}'\n)\n\n")
 
     # Simulator tolerances
-    f.write('simulator(\n')
-    f.write('    atol = {0:g},\n'.format(rmg.simulator_settings_list[0].atol))
-    f.write('    rtol = {0:g},\n'.format(rmg.simulator_settings_list[0].rtol))
-    f.write('    sens_atol = {0:g},\n'.format(rmg.simulator_settings_list[0].sens_atol))
-    f.write('    sens_rtol = {0:g},\n'.format(rmg.simulator_settings_list[0].sens_rtol))
+    f.write(f'simulator(\n')
+    f.write(f'    atol = {rmg.simulator_settings_list[0].atol:g},\n')
+    f.write(f'    rtol = {rmg.simulator_settings_list[0].rtol:g},\n')
+    f.write(f'    sens_atol = {rmg.simulator_settings_list[0].sens_atol:g},\n')
+    f.write(f'    sens_rtol = {rmg.simulator_settings_list[0].sens_rtol:g},\n')
     f.write(')\n\n')
 
     # Model
     f.write('model(\n')
-    f.write('    toleranceMoveToCore = {0:g},\n'.format(rmg.model_settings_list[0].tol_move_to_core))
-    f.write('    toleranceKeepInEdge = {0:g},\n'.format(rmg.model_settings_list[0].tol_keep_in_edge))
-    f.write('    toleranceInterruptSimulation = {0:g},\n'.format(rmg.model_settings_list[0].tol_interrupt_simulation))
-    f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.model_settings_list[0].maximum_edge_species))
-    f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_core_size_for_prune))
-    f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_species_exist_iterations_for_prune))
-    f.write('    filterReactions = {0:d},\n'.format(rmg.model_settings_list[0].filter_reactions))
-    f.write('    filterThreshold = {0:g},\n'.format(rmg.model_settings_list[0].filter_threshold))
+    f.write(f'    toleranceMoveToCore = {rmg.model_settings_list[0].tol_move_to_core:g},\n')
+    f.write(f'    toleranceKeepInEdge = {rmg.model_settings_list[0].tol_keep_in_edge:g},\n')
+    f.write(f'    toleranceInterruptSimulation = {rmg.model_settings_list[0].tol_interrupt_simulation:g},\n')
+    f.write(f'    maximumEdgeSpecies = {rmg.model_settings_list[0].maximum_edge_species:d},\n')
+    f.write(f'    minCoreSizeForPrune = {rmg.model_settings_list[0].min_core_size_for_prune:d},\n')
+    f.write(f'    minSpeciesExistIterationsForPrune = {rmg.model_settings_list[0].min_species_exist_iterations_for_prune:d},\n')
+    f.write(f'    filterReactions = {rmg.model_settings_list[0].filter_reactions:d},\n')
+    f.write(f'    filterThreshold = {rmg.model_settings_list[0].filter_threshold:g},\n')
     f.write(')\n\n')
 
     # Pressure Dependence
     if rmg.pressure_dependence:
         f.write('pressureDependence(\n')
-        f.write('    method = {0!r},\n'.format(rmg.pressure_dependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.grain_size.value,
-                                                                   rmg.pressure_dependence.grain_size.units))
-        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.grain_count))
-        f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
-            rmg.pressure_dependence.Tmin.value,
-            rmg.pressure_dependence.Tmax.value,
-            rmg.pressure_dependence.Tmax.units,
-            rmg.pressure_dependence.Tcount,
-        ))
-        f.write('    pressures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
-            rmg.pressure_dependence.Pmin.value,
-            rmg.pressure_dependence.Pmax.value,
-            rmg.pressure_dependence.Pmax.units,
-            rmg.pressure_dependence.Pcount,
-        ))
-        f.write('    interpolation = {0},\n'.format(rmg.pressure_dependence.interpolation_model))
-        f.write('    maximumAtoms = {0}, \n'.format(rmg.pressure_dependence.maximum_atoms))
+        f.write(f'    method = {rmg.pressure_dependence.method!r},\n')
+        f.write(f'    maximumGrainSize = ({rmg.pressure_dependence.grain_size.value:g},"{rmg.pressure_dependence.grain_size.units!s}"),\n')
+        f.write(f'    minimumNumberOfGrains = {rmg.pressure_dependence.grain_count},\n')
+        f.write(f'    temperatures = ({rmg.pressure_dependence.Tmin.value:g},{rmg.pressure_dependence.Tmax.value:g},"{rmg.pressure_dependence.Tmax.units!s}",{rmg.pressure_dependence.Tcount:d}),\n')
+        f.write(f'    pressures = ({rmg.pressure_dependence.Pmin.value:g},{rmg.pressure_dependence.Pmax.value:g},"{rmg.pressure_dependence.Pmax.units!s}",{rmg.pressure_dependence.Pcount:d}),\n')
+        f.write(f'    interpolation = {rmg.pressure_dependence.interpolation_model},\n')
+        f.write(f'    maximumAtoms = {rmg.pressure_dependence.maximum_atoms}, \n')
         f.write(')\n\n')
 
     # Quantum Mechanics
     if rmg.quantum_mechanics:
         f.write('quantumMechanics(\n')
-        f.write('    software = {0!r},\n'.format(rmg.quantum_mechanics.settings.software))
-        f.write('    method = {0!r},\n'.format(rmg.quantum_mechanics.settings.method))
+        f.write(f'    software = {rmg.quantum_mechanics.settings.software!r},\n')
+        f.write(f'    method = {rmg.quantum_mechanics.settings.method!r},\n')
         # Split paths created by QMSettings
         if rmg.quantum_mechanics.settings.fileStore:
-            f.write('    fileStore = {0!r},\n'.format(os.path.split(rmg.quantum_mechanics.settings.fileStore)[0]))
+            f.write(f'    fileStore = {os.path.split(rmg.quantum_mechanics.settings.fileStore)[0]!r},\n')
         else:
             f.write('    fileStore = None,\n')
         if rmg.quantum_mechanics.settings.scratchDirectory:
-            f.write('    scratchDirectory = {0!r},\n'.format(
-                os.path.split(rmg.quantum_mechanics.settings.scratchDirectory)[0]))
+            f.write(f'    scratchDirectory = {os.path.split(rmg.quantum_mechanics.settings.scratchDirectory)[0]!r},\n')
         else:
             f.write('    scratchDirectory = None,\n')
-        f.write('    onlyCyclics = {0},\n'.format(rmg.quantum_mechanics.settings.onlyCyclics))
-        f.write('    maxRadicalNumber = {0},\n'.format(rmg.quantum_mechanics.settings.maxRadicalNumber))
+        f.write(f'    onlyCyclics = {rmg.quantum_mechanics.settings.onlyCyclics},\n')
+        f.write(f'    maxRadicalNumber = {rmg.quantum_mechanics.settings.maxRadicalNumber},\n')
         f.write(')\n\n')
 
     # Species Constraints
@@ -1225,20 +1215,20 @@ def save_input_file(path, rmg):
         f.write('generatedSpeciesConstraints(\n')
         for constraint, value in sorted(list(rmg.species_constraints.items()), key=lambda constraint: constraint[0]):
             if value is not None:
-                f.write('    {0} = {1},\n'.format(constraint, value))
+                f.write(f'    {constraint} = {value},\n')
         f.write(')\n\n')
 
     # Options
     f.write('options(\n')
-    f.write('    units = "{0}",\n'.format(rmg.units))
-    f.write('    generateOutputHTML = {0},\n'.format(rmg.generate_output_html))
-    f.write('    generatePlots = {0},\n'.format(rmg.generate_plots))
-    f.write('    saveSimulationProfiles = {0},\n'.format(rmg.save_simulation_profiles))
-    f.write('    saveEdgeSpecies = {0},\n'.format(rmg.save_edge_species))
-    f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))
-    f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
-    f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
-    f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write(f'    units = "{rmg.units}",\n')
+    f.write(f'    generateOutputHTML = {rmg.generate_output_html},\n')
+    f.write(f'    generatePlots = {rmg.generate_plots},\n')
+    f.write(f'    saveSimulationProfiles = {rmg.save_simulation_profiles},\n')
+    f.write(f'    saveEdgeSpecies = {rmg.save_edge_species},\n')
+    f.write(f'    keepIrreversible = {rmg.keep_irreversible},\n')
+    f.write(f'    trimolecularProductReversible = {rmg.trimolecular_product_reversible},\n')
+    f.write(f'    verboseComments = {rmg.verbose_comments},\n')
+    f.write(f'    wallTime = {rmg.walltime},\n')
     f.write(')\n\n')
 
     f.close()
