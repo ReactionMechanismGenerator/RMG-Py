@@ -1413,6 +1413,13 @@ class ForbiddenStructures(Database):
         else:
             f.write('    group = "{0}",\n'.format(entry.item))
 
+        if entry.metal:
+            f.write('    metal = "{0}",\n'.format(entry.metal))
+        if entry.facet:
+            f.write('    facet = "{0}",\n'.format(entry.facet))
+        if entry.site:
+            f.write('    site = "{0}",\n'.format(entry.site))
+
         f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
         f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
