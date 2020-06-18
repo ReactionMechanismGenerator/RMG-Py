@@ -100,6 +100,7 @@ class ReactionModel:
             for spec0 in search_species[spec.molecular_weight.value]:
                 if spec.is_isomorphic(spec0):
                     common_species[spec] = spec0
+                    search_species[spec.molecular_weight.value].discard(spec0)
                     if spec0.label not in ['Ar', 'N2', 'Ne', 'He']:
                         if not spec0.thermo.is_identical_to(spec.thermo):
                             print('Species {0} thermo from model 1 did not match that of model 2.'.format(spec.label))
@@ -130,6 +131,7 @@ class ReactionModel:
             for rxn0 in search_rxns[mw]:
                 if rxn.is_isomorphic(rxn0, either_direction=True):
                     common_reactions[rxn] = rxn0
+                    search_rxns[mw].discard(rxn0)
                     if not rxn0.kinetics.is_identical_to(rxn.kinetics):
                         print('Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0)))
                     break
