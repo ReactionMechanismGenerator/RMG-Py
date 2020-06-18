@@ -35,6 +35,7 @@ import gc
 import itertools
 import logging
 import os
+from collections import defaultdict
 
 import numpy as np
 
@@ -92,8 +93,11 @@ class ReactionModel:
         # Determine which species in other are already in self
         common_species = {}
         unique_species = []
+        search_species = defaultdict(set)
+        for spec0 in final_model.species:
+            search_species[spec0.molecular_weight.value].add(spec0)
         for spec in other.species:
-            for spec0 in final_model.species:
+            for spec0 in search_species[spec.molecular_weight.value]:
                 if spec.is_isomorphic(spec0):
                     common_species[spec] = spec0
                     if spec0.label not in ['Ar', 'N2', 'Ne', 'He']:
@@ -107,8 +111,23 @@ class ReactionModel:
         # Determine which reactions in other are already in self
         common_reactions = {}
         unique_reactions = []
+        search_rxns = defaultdict(set)
+        for rxn0 in final_model.reactions:
+            mw = 0
+            for spec0 in rxn0.reactants:
+                if isinstance(spec0.molecular_weight,rmgpy.quantity.ScalarQuantity):
+                    mw += spec0.molecular_weight.value
+                else:
+                    mw += spec0.molecular_weight
+            search_rxns[mw].add(rxn0)
         for rxn in other.reactions:
-            for rxn0 in final_model.reactions:
+            mw = 0
+            for spec in rxn.reactants:
+                if isinstance(spec.molecular_weight,rmgpy.quantity.ScalarQuantity):
+                    mw += spec.molecular_weight.value
+                else:
+                    mw += spec.molecular_weight
+            for rxn0 in search_rxns[mw]:
                 if rxn.is_isomorphic(rxn0, either_direction=True):
                     common_reactions[rxn] = rxn0
                     if not rxn0.kinetics.is_identical_to(rxn.kinetics):
