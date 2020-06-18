@@ -858,8 +858,11 @@ class SolvationDatabase(object):
         # Change lone pairs to radicals based on valency
         if (sum([atom.lone_pairs for atom in saturated_struct.atoms]) > 0 and  # molecule contains lone pairs
                 not any([atom.atomtype.label == 'C2tc' for atom in saturated_struct.atoms])):  # and is not [C-]#[O+]
-            saturated_struct, added_to_pairs = self.transform_lone_pairs(saturated_struct)
-
+            try:
+                saturated_struct, added_to_pairs = self.transform_lone_pairs(saturated_struct)
+            except:
+                logging.error("Could not transform_lone_pairs and estimate solute_data for {}".format(molecule.to_smiles()))
+                return solute_data
         # Now saturate radicals with H
         if sum([atom.radical_electrons for atom in saturated_struct.atoms]) > 0:  # radical species
             added_to_radicals = saturated_struct.saturate_radicals()
