@@ -116,18 +116,12 @@ class ReactionModel:
         for rxn0 in final_model.reactions:
             mw = 0
             for spec0 in rxn0.reactants:
-                if isinstance(spec0.molecular_weight,rmgpy.quantity.ScalarQuantity):
-                    mw += spec0.molecular_weight.value
-                else:
-                    mw += spec0.molecular_weight
+                mw += spec0.molecular_weight.value
             search_rxns[mw].add(rxn0)
         for rxn in other.reactions:
             mw = 0
             for spec in rxn.reactants:
-                if isinstance(spec.molecular_weight,rmgpy.quantity.ScalarQuantity):
-                    mw += spec.molecular_weight.value
-                else:
-                    mw += spec.molecular_weight
+                mw += spec.molecular_weight.value
             for rxn0 in search_rxns[mw]:
                 if rxn.is_isomorphic(rxn0, either_direction=True):
                     common_reactions[rxn] = rxn0
