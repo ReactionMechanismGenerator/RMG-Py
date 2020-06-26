@@ -93,7 +93,7 @@ class ReactionModel:
         # Determine which species in other are already in self
         common_species = {}
         unique_species = []
-        search_species = defaultdict(set)
+        search_species = defaultdict(set) # Create a dictionary of species to search, keyed by molecular weight
         for spec0 in final_model.species:
             search_species[spec0.molecular_weight.value].add(spec0)
         for spec in other.species:
@@ -112,20 +112,20 @@ class ReactionModel:
         # Determine which reactions in other are already in self
         common_reactions = {}
         unique_reactions = []
-        search_rxns = defaultdict(set)
+        search_rxns = defaultdict(set) # Create a dictionary of reactions to search, keyed by molecular weight of reactants
         for rxn0 in final_model.reactions:
-            mw = 0
+            reactants_mw = 0
             for spec0 in rxn0.reactants:
-                mw += spec0.molecular_weight.value
-            search_rxns[mw].add(rxn0)
+                reactants_mw += spec0.molecular_weight.value
+            search_rxns[reactants_mw].add(rxn0)
         for rxn in other.reactions:
-            mw = 0
+            reactants_mw = 0
             for spec in rxn.reactants:
-                mw += spec.molecular_weight.value
-            for rxn0 in search_rxns[mw]:
+                reactants_mw += spec.molecular_weight.value
+            for rxn0 in search_rxns[reactants_mw]:
                 if rxn.is_isomorphic(rxn0, either_direction=True):
                     common_reactions[rxn] = rxn0
-                    search_rxns[mw].discard(rxn0)
+                    search_rxns[reactants_mw].discard(rxn0)
                     if not rxn0.kinetics.is_identical_to(rxn.kinetics):
                         print('Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0)))
                     break
