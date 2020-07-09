@@ -525,11 +525,11 @@ This is an example of an input file for a liquid-phase system with constant spec
 
 .. [Mintz2009] \ C. Mintz et al. "Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone." *Thermochim. Acta* **484(1-2)**, p. 65-69 (2009).
 
-.. [Chung2020] \ Y. Chung et al. "Temperature dependent vapor-liquid equilibrium and solvation free energy estimation from minimal data." Manuscript submitted for publication (2009).
+.. [Chung2020] \ Y. Chung et al. "Temperature dependent vapor-liquid equilibrium and solvation free energy estimation from minimal data." *AIChE Journal* **66(6)**, e16976 (2020).
 
-.. [Japas1989] \ M.L. Japas and J.M.H. Levelt Sengers. "Gas solubility and Henry's law near the solvent's critical point." *AICHE Journal* **35(5)**, p. 705-713 (1989).
+.. [Japas1989] \ M.L. Japas and J.M.H. Levelt Sengers. "Gas solubility and Henry's law near the solvent's critical point." *AIChE Journal* **35(5)**, p. 705-713 (1989).
 
-.. [Harvey1996] \ A.H. Harvey. "Semiempirical correlation for Henry's constants over large temperature ranges." *AICHE Journal* **42(5)**, p. 1491-1494 (1996).
+.. [Harvey1996] \ A.H. Harvey. "Semiempirical correlation for Henry's constants over large temperature ranges." *AIChE Journal* **42(5)**, p. 1491-1494 (1996).
 
 .. [Bell2014] \ I.H. Bell et al. "Pure and pseudo-pure fluid thermophysical property evaluation and the open source thermophysical property library CoolProp." *Industrial & Engineering Chemistry Research* **53(6)**, p. 2498-2508 (2014).
 
