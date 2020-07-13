@@ -48,6 +48,7 @@ from rmgpy.ml.estimator import MLEstimator
 from rmgpy.molecule import Molecule, Bond, Group
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
+from afm.fragment import Fragment
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1: 'S', 2: 'D', 3: 'T', 4: 'Q', 5: 'V'}
@@ -650,7 +651,10 @@ class ThermoLibrary(Database):
         Note that these argument names are retained for backward compatibility.
         """
 
-        molecule = Molecule().from_adjacency_list(molecule)
+        try:
+            molecule = Molecule().from_adjacency_list(molecule)
+        except TypeError:
+            molecule = Fragment().from_adjacency_list(molecule)
 
         # Internal checks for adding entry to the thermo library
         if label in list(self.entries.keys()):
