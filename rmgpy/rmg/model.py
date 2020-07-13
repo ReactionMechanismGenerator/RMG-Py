@@ -54,6 +54,7 @@ from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
 from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
+from afm.fragment import Fragment
 
 
 ################################################################################
@@ -257,7 +258,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
-    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True):
+    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -282,19 +283,29 @@ class CoreEdgeReactionModel:
                 return spec, False
 
         # If we're here then we're ready to make the new species
+        if check_cut:
+            # molecule = Fragment().from_smiles_like_string(molecule.to_smiles())
+            mols = Fragment().cut_molecule(molecule, cut_through = False)
+            if len(mols) == 1:
+                molecule = mols[0]
+            else:
+                return [self.make_new_species(mol) for mol in mols]
+
+        try:
+            spec = Species(label=label,molecule=[molecule],reactive=reactive,thermo=object.thermo, transport_data=object.transport_data)
+        except AttributeError:
+            spec = Species(label=label, molecule=[molecule], reactive=reactive)
+
+        spec.generate_resonance_structures()
+
         if reactive:
             self.species_counter += 1  # count only reactive species
-            species_index = self.species_counter
+            spec.index = self.species_counter
         else:
-            species_index = -1
-        try:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive,
-                           thermo=object.thermo, transport_data=object.transport_data)
-        except AttributeError:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive)
+            spec.index = -1
 
         spec.creation_iteration = self.iteration_num
-        spec.generate_resonance_structures()
+        #spec.generate_resonance_structures()
         spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
 
         if generate_thermo:
@@ -402,7 +413,7 @@ class CoreEdgeReactionModel:
 
         return False, None
 
-    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True):
+    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, perform_cut = True):
         """
         Make a new reaction given a :class:`Reaction` object `forward`. 
         The reaction is added to the global list of reactions.
