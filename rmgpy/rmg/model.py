@@ -57,6 +57,7 @@ from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
 from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface
+from afm.fragment import Fragment
 
 ################################################################################
 
@@ -269,7 +270,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
-    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_decay=False):
+    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -294,6 +295,14 @@ class CoreEdgeReactionModel:
                 return spec, False
 
         # If we're here then we're ready to make the new species
+        if check_cut:
+            # molecule = Fragment().from_smiles_like_string(molecule.to_smiles())
+            mols = Fragment().cut_molecule(molecule, cut_through = False)
+            if len(mols) == 1:
+                molecule = mols[0]
+            else:
+                return [self.make_new_species(mol) for mol in mols]
+
         try:
             spec = Species(label=label,molecule=[molecule],reactive=reactive,thermo=object.thermo, transport_data=object.transport_data)
         except AttributeError:
@@ -432,7 +441,7 @@ class CoreEdgeReactionModel:
 
         return False, None
 
-    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, generate_kinetics=True):
+    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, generate_kinetics=True, perform_cut = True):
         """
         Make a new reaction given a :class:`Reaction` object `forward`.
         The reaction is added to the global list of reactions.
