@@ -291,12 +291,16 @@ class Species(object):
                 if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
                                           save_order=save_order, strict=strict):
                     return True
+                elif not strict:
+                    return False
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
                     if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map,
                                                save_order=save_order, strict=strict):
                         return True
+                    elif not strict:
+                        return False
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'
                              ' should be a Molecule or Species object.'.format(other))
