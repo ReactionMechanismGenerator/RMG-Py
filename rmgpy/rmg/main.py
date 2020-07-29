@@ -63,6 +63,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
+from rmgpy.kinetics import ThirdBody
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
@@ -1244,7 +1245,10 @@ class RMG(util.Subject):
                                   '"Violation factor" is the ratio of the rate coefficient to the collision limit'
                                   ' rate at the relevant conditions\n\n')
                 for violator in violators:
-                    rxn_string = violator[0].to_chemkin()
+                    if isinstance(violator[0].kinetics, ThirdBody):
+                        rxn_string = violator[0].to_chemkin(self.reaction_model.core.species)
+                    else:
+                        rxn_string = violator[0].to_chemkin()
                     direction = violator[1]
                     ratio = violator[2]
                     condition = violator[3]
