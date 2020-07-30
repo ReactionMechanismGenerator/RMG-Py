@@ -11,12 +11,12 @@ database(
 
 catalystProperties(
     bindingEnergies = {  # default values for Pt(111)    
-                          'H': (-2.479, 'eV/molecule'),
-                          'O': (-3.586, 'eV/molecule'),
-                          'C': (-6.750, 'eV/molecule'),
-                          'N': (-4.352, 'eV/molecule'),
+                          'H': (-2.754, 'eV/molecule'),
+                          'O': (-3.811, 'eV/molecule'),
+                          'C': (-7.025, 'eV/molecule'),
+                          'N': (-4.632, 'eV/molecule'),
                       },
-    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'), # Default for Pt(111)
+    surfaceSiteDensity=(2.483e-9, 'mol/cm^2'), # Default for Pt(111)
 )
 
 species(
