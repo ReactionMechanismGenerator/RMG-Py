@@ -63,6 +63,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
+from rmgpy.kinetics import ThirdBody
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
@@ -674,12 +675,8 @@ class RMG(util.Subject):
         # determine min and max values for T and P (don't determine P values for liquid reactors)
         self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
         self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
-        try:
-            self.Pmin = min([x.Prange[0].value_si if x.Prange else x.P.value_si for x in self.reaction_systems])
-            self.Pmax = max([x.Prange[1].value_si if x.Prange else x.P.value_si for x in self.reaction_systems])
-        except AttributeError:
-            # For LiquidReactor, Pmin and Pmax remain with the default value of `None`
-            pass
+        self.Pmin = min([x.Prange[0].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
+        self.Pmax = max([x.Prange[1].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
 
         self.rmg_memories = []
 
@@ -1248,7 +1245,10 @@ class RMG(util.Subject):
                                   '"Violation factor" is the ratio of the rate coefficient to the collision limit'
                                   ' rate at the relevant conditions\n\n')
                 for violator in violators:
-                    rxn_string = violator[0].to_chemkin()
+                    if isinstance(violator[0].kinetics, ThirdBody):
+                        rxn_string = violator[0].to_chemkin(self.reaction_model.core.species)
+                    else:
+                        rxn_string = violator[0].to_chemkin()
                     direction = violator[1]
                     ratio = violator[2]
                     condition = violator[3]
