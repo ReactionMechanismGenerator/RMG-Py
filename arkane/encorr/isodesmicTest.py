@@ -260,11 +260,10 @@ class TestErrorCancelingScheme(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         try:
-            #import pyomo as pyo
-            pass
+            import pyomo as pyo
         except ImportError:
             pyo = None
-        cls.pyo = None
+        cls.pyo = pyo
 
         lot = LevelOfTheory('test')
         cls.propene = ErrorCancelingSpecies(Molecule(smiles='CC=C'), (100, 'kJ/mol'), lot, (105, 'kJ/mol'))

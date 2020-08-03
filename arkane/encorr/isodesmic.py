@@ -44,6 +44,7 @@ https://doi.org/10.1021/jp404158v
 import signal
 from collections import deque
 from copy import deepcopy
+from pyutilib.common import ApplicationError
 from typing import List, Union
 
 from lpsolve55 import lpsolve, EQ, LE
@@ -56,7 +57,6 @@ from arkane.modelchem import LOT
 
 # Optional Imports
 try:
-    raise ImportError
     import pyomo.environ as pyo
 except ImportError:
     pyo = None
@@ -438,18 +438,6 @@ class SpeciesConstraints:
 
         return target_constraints, reference_constraints
 
-    def _clean_up_constraints(self, target_constraints, reference_constraints):
-        target_constraints = np.array(target_constraints, dtype=int)
-        constraint_matrix = np.array(reference_constraints, dtype=int)
-
-        # Remove any columns that are all zeros
-        zero_indices = np.where(~constraint_matrix.any(axis=0))[0]
-        indices = [i for i in range(constraint_matrix.shape[1]) if i not in zero_indices]
-        constraint_matrix = np.take(constraint_matrix, indices=indices, axis=1)
-        target_constraints = np.take(target_constraints, indices=indices)
-
-        return target_constraints, constraint_matrix
-
     def calculate_constraints(self):
         """
         Calculate the constraint vector for the target and the constraint matrix for all allowable reference species
@@ -464,7 +452,24 @@ class SpeciesConstraints:
         target_constraints, reference_constraints = self._enumerate_charge_constraints(target_constraints,
                                                                                        reference_constraints)
 
-        return self._clean_up_constraints(target_constraints, reference_constraints)
+        target_constraints = np.array(target_constraints, dtype=int)
+        constraint_matrix = np.array(reference_constraints, dtype=int)
+
+        return _clean_up_constraints(target_constraints, constraint_matrix)
+
+
+def _clean_up_constraints(target_constraints, constraint_matrix):
+    # make sure that the constraint matrix is 2d
+    if len(constraint_matrix.shape) == 1:
+        constraint_matrix = np.array([constraint_matrix], dtype=int)
+
+    # Remove any columns that are all zeros
+    zero_indices = np.where(~constraint_matrix.any(axis=0))[0]
+    indices = [i for i in range(constraint_matrix.shape[1]) if i not in zero_indices]
+    constraint_matrix = np.take(constraint_matrix, indices=indices, axis=1)
+    target_constraints = np.take(target_constraints, indices=indices)
+
+    return target_constraints, constraint_matrix
 
 
 class ErrorCancelingScheme:
@@ -514,9 +519,14 @@ class ErrorCancelingScheme:
 
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
+
+        # Remove unnecessary constraints
+        target_constraint, c_matrix = _clean_up_constraints(self.target_constraint, c_matrix)
+
+        # Setup MILP problem
         c_matrix = np.tile(c_matrix, (2, 1))
         sum_constraints = np.sum(c_matrix, 1, dtype=int)
-        targets = -1*self.target_constraint
+        targets = -1*target_constraint
         m = c_matrix.shape[0]
         n = c_matrix.shape[1]
         split = int(m/2)
@@ -545,7 +555,10 @@ class ErrorCancelingScheme:
 
                 # Solve the MILP problem using the GLPK MILP solver (https://www.gnu.org/software/glpk/)
                 opt = pyo.SolverFactory('glpk')
-                results = opt.solve(lp_model, timelimit=1)
+                try:
+                    results = opt.solve(lp_model, timelimit=1)
+                except ApplicationError:
+                    continue
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if results.solver.termination_condition == pyo.TerminationCondition.optimal:
