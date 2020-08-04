@@ -85,7 +85,7 @@ cdef class Reaction:
 
     cpdef double get_entropy_of_reaction(self, double T)
 
-    cpdef double get_free_energy_of_reaction(self, double T)
+    cpdef double get_free_energy_of_reaction(self, double T, V=?)
 
     cpdef double get_equilibrium_constant(self, double T, str type=?, double surface_site_density=?)
 
