@@ -55,7 +55,7 @@ from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Li
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
     StickingCoefficient, SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
-from rmgpy.kinetics.surface import SurfaceArrhenius  # Separate because we cimport from rmgpy.kinetics.surface
+from rmgpy.kinetics.surface import SurfaceArrhenius, SurfaceChargeTransfer  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
