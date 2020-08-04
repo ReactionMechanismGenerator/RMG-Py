@@ -31,7 +31,7 @@ from rmgpy.molecule.molecule cimport Atom, Molecule
 from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
-from rmgpy.kinetics.surface cimport SurfaceArrhenius
+from rmgpy.kinetics.surface cimport SurfaceArrhenius, SurfaceChargeTransfer
 
 cimport numpy as np
 
@@ -48,6 +48,7 @@ cdef class Reaction:
     cdef public KineticsModel kinetics
     cdef public Arrhenius network_kinetics
     cdef public SurfaceArrhenius
+    cdef public SurfaceChargeTransfer
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
