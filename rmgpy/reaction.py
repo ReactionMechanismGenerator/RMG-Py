@@ -564,25 +564,35 @@ class Reaction:
             dSrxn += product.get_entropy(T)
         return dSrxn
 
-    def get_free_energy_of_reaction(self, T):
+    def get_free_energy_of_reaction(self, T, V=None):
         """
         Return the Gibbs free energy of reaction in J/mol evaluated at
-        temperature `T` in K.
+        temperature `T` in K and Potential `V` in Volts (optional)
         """
         cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
         dGrxn = 0.0
-        for reactant in self.reactants:
-            try:
-                dGrxn -= reactant.get_free_energy(T)
-            except Exception:
-                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
-                raise
-        for product in self.products:
-            try:
-                dGrxn += product.get_free_energy(T)
-            except Exception:
-                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
-                raise
+
+        if reaction.is_charge_transfer_reaction() and reaction.V0:
+            dGrxn = -1 * abs(self.ne) * constants.F * reaction.V0.value_si # G = -nFE0
+        else:
+            for reactant in self.reactants:
+                if not reactant.is_electron():
+                    try:
+                        dGrxn -= reactant.get_free_energy(T)
+                    except Exception:
+                        logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
+                        raise
+            for product in self.products:
+                if not product.is_electron():
+                    try:
+                        dGrxn += product.get_free_energy(T)
+                    except Exception:
+                        logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
+                        raise
+
+        if self.is_charge_transfer_reaction() and V is not None:
+            dGrxn += self.ne * constants.F * (reaction.V0.value_si - V)  # Not sure about sign here or equation G = -nFE0 + nF(V0-V)
+                                                                         # where nF(V0-V) is from applied potential
         return dGrxn
 
     def get_equilibrium_constant(self, T, type='Kc', surface_site_density=2.5e-05):
