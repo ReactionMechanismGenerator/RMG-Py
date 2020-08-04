@@ -109,7 +109,9 @@ cdef class Reaction:
 
     cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
+    cpdef reverse_surface_charge_transfer_arrhenius_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?, double V=?)
+
+    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double V=?)
 
     cpdef np.ndarray calculate_tst_rate_coefficients(self, np.ndarray Tlist)
 
