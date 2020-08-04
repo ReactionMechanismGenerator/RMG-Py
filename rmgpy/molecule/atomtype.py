@@ -30,7 +30,7 @@
 """
 This module defines the atom types that are available for representing
 molecular functional groups and substructure patterns. Each available atom type
-is defined as an instance of the :class:`AtomType` class. The atom types 
+is defined as an instance of the :class:`AtomType` class. The atom types
 themselves are available in the ``ATOMTYPES`` module-level variable, or as
 the return value from the :meth:`get_atomtype()` method.
 
@@ -202,7 +202,7 @@ class AtomType:
         atom type `atomType2` or ``False``  otherwise.
         """
         return self is other or self in other.specific
-    
+
     def get_features(self):
         """
         Returns a list of the features that are checked to determine atomtype
@@ -240,6 +240,9 @@ Some charged atom types were merged together, and are marked as '*Composite atom
 
 ATOMTYPES = {}
 
+# Electron
+ATOMTYPES['e']   = AtomType(label='e', generic=[], specific=[], lone_pairs=[0], charge=[-1])
+
 # Surface sites:
 ATOMTYPES['X']   = AtomType(label='X', generic=[], specific=['Xv', 'Xo'])
 
@@ -256,7 +259,7 @@ ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
 ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
     'H',
     'R!H',
-    'Val4','Val5','Val6','Val7',    
+    'Val4','Val5','Val6','Val7',
     'He','Ne','Ar',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
@@ -618,6 +621,9 @@ ATOMTYPES['F'] = AtomType('F', generic=['R', 'R!H', 'Val7'], specific=['F1s'])
 ATOMTYPES['F1s'] = AtomType('F1s', generic=['R', 'R!H', 'F', 'Val7'], specific=[],
                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
+
+
+ATOMTYPES['e'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 
 ATOMTYPES['X'].set_actions(increment_bond=['X'], decrement_bond=['X'], form_bond=['X'], break_bond=['X'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xv'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Xo'], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
