@@ -182,11 +182,12 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                       " definition.".format(mol.to_adjacency_list()))
         raise
     if mol.get_net_charge() != 0:
-        raise ValueError("Got the following structure:\nSMILES: {0}\nAdjacencyList:\n{1}\nNet charge: {2}\n\n"
+        logging.error("Got the following structure:\nSMILES: {0}\nAdjacencyList:\n{1}\nNet charge: {2}\n\n"
                          "Currently RMG cannot process charged species correctly."
                          "\nIf this structure was entered in SMILES, try using the adjacencyList format for an"
-                         " unambiguous definition.".format(mol.to_smiles(), mol.to_adjacency_list(), mol.get_net_charge()))
-
+                         " unambiguous definition."
+                         "Returning the input mol".format(mol.to_smiles(), mol.to_adjacency_list(), mol.get_net_charge()))
+        return [mol]
     if not mol.reactive:
         raise ResonanceError('Can only generate resonance structures for reactive molecules! Got the following '
                              'unreactive structure:\n{0}Reactive = {1}'.format(mol.to_adjacency_list(), mol.reactive))
@@ -253,7 +254,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         copy                if False, append new resonance structures to input list (default)
                             if True, make a new list with all of the resonance structures
     """
-    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule)
+    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule, input_charge=cython.int)
 
     if copy:
         # Make a copy of the list so we don't modify the input list
@@ -299,12 +300,14 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         index += 1
 
     # check net charge
-    for mol in mol_list:
-        if mol.get_net_charge() != 0:
-            raise ResonanceError('Resonance generation gave a net charged molecule:\n{0}'
-                                 'Ions are not yet supported in RMG.'.format(
-                mol.to_adjacency_list()))
+    input_charge = mol_list[0].get_net_charge()
 
+    for mol in mol_list[1:]:
+        if mol.get_net_charge() != input_charge:
+            mol_list.remove(mol)
+            logging.warning('Resonance generation created a molecule {0} with a net charge of {1}\n'
+                            'which does not match the input mol charge of {2}'
+                            'Removing {0} from resonance structures'.format(mol.smiles,mol.get_net_charge(),input_charge))
     return mol_list
 
 
