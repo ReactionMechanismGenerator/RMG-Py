@@ -326,7 +326,7 @@ class ScalarQuantity(Units):
 
     def is_uncertainty_multiplicative(self):
         """
-        Return ``True`` if the uncertainty is specified in multiplicative 
+        Return ``True`` if the uncertainty is specified in multiplicative
         format and ``False`` otherwise.
         """
         return self.uncertainty_type == '*|/'
@@ -338,7 +338,7 @@ class ScalarQuantity(Units):
 class ArrayQuantity(Units):
     """
     The :class:`ArrayQuantity` class provides a representation of an array of
-    physical quantity values, with optional units and uncertainty information. 
+    physical quantity values, with optional units and uncertainty information.
     The attributes are:
 
     =================== ========================================================
@@ -355,7 +355,7 @@ class ArrayQuantity(Units):
     It is often more convenient to perform computations using SI units instead
     of the given units of the quantity. For this reason, the SI equivalent of
     the `value` attribute can be directly accessed using the `value_si`
-    attribute. This value is cached on the :class:`ArrayQuantity` object for 
+    attribute. This value is cached on the :class:`ArrayQuantity` object for
     speed.
     """
 
@@ -510,8 +510,8 @@ class ArrayQuantity(Units):
     def uncertainty_type(self, v):
         """
         Check the uncertainty type is valid, then set it.
-        
-        If you set the uncertainty then change the type, we have no idea what to do with 
+
+        If you set the uncertainty then change the type, we have no idea what to do with
         the units. This ensures you set the type first.
         """
         if v not in ['+|-', '*|/']:
@@ -577,7 +577,7 @@ class ArrayQuantity(Units):
 
     def is_uncertainty_multiplicative(self):
         """
-        Return ``True`` if the uncertainty is specified in multiplicative 
+        Return ``True`` if the uncertainty is specified in multiplicative
         format and ``False`` otherwise.
         """
         return self.uncertainty_type == '*|/'
@@ -590,19 +590,19 @@ def Quantity(*args, **kwargs):
     Create a :class:`ScalarQuantity` or :class:`ArrayQuantity` object for a
     given physical quantity. The physical quantity can be specified in several
     ways:
-    
+
     * A scalar-like or array-like value (for a dimensionless quantity)
-    
+
     * An array of arguments (including keyword arguments) giving some or all of
       the `value`, `units`, `uncertainty`, and/or `uncertainty_type`.
-    
-    * A tuple of the form ``(value,)``, ``(value,units)``, 
-      ``(value,units,uncertainty)``, or 
+
+    * A tuple of the form ``(value,)``, ``(value,units)``,
+      ``(value,units,uncertainty)``, or
       ``(value,units,uncertainty_type,uncertainty)``
-    
+
     * An existing :class:`ScalarQuantity` or :class:`ArrayQuantity` object, for
       which a copy is made
-    
+
     """
     # Initialize attributes
     value = None
@@ -617,7 +617,7 @@ def Quantity(*args, **kwargs):
     if isinstance(args, tuple) and len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
-    # Process args    
+    # Process args
     n_args = len(args)
     if n_args == 1 and isinstance(args[0], (ScalarQuantity, ArrayQuantity)):
         # We were given another quantity object, so make a (shallow) copy of it
@@ -776,6 +776,8 @@ Mass = UnitType('amu', extra_dimensionality={'kg/mol': 1000. * constants.amu})
 
 Momentum = UnitType('kg*m/s^2')
 
+Potential = UnitType('V')
+
 Power = UnitType('W')
 
 Pressure = UnitType('Pa', common_units=['bar', 'atm', 'torr', 'psi', 'mbar'])
@@ -792,7 +794,7 @@ Volume = UnitType('m^3')
 """
 What's called Polarizability in the transport properties is in fact a polarizability volume,
 which is related by $4*\pi*\epsilon_0$ where $\epsilon_0$ is the permittivity of free space.
-Rather than mess around with conversions, I suggest we just use "Volume" as the units for 
+Rather than mess around with conversions, I suggest we just use "Volume" as the units for
 what we call 'polarizability'. Chemkin expects it in Angstrom^3. We'll store it in m^3.
 """
 
