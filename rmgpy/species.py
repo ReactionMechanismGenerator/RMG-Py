@@ -51,7 +51,7 @@ import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
-from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.molecule import Atom, Bond, Molecule, Electron, ElectronMol
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
