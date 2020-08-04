@@ -397,6 +397,18 @@ class Reaction:
                 return True
         return False
 
+    def is_charge_transfer_reaction(self):
+        """
+        Return ``True`` if one or more reactants or products are electrons
+        """
+        for spec in self.reactants:
+            if spec.is_electron():
+                return True
+        for spec in self.products:
+            if spec.is_electron():
+                return True
+        return False
+
     def has_template(self, reactants, products):
         """
         Return ``True`` if the reaction matches the template of `reactants`
