@@ -43,7 +43,7 @@ RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 cdef class StickingCoefficient(KineticsModel):
     """
     A kinetics model to give Sticking Coefficients for surface adsorption,
-    following Arrhenius form. 
+    following Arrhenius form.
     Similar to :class:`Arrhenius` but with different units for `A`.
     The attributes are:
 
@@ -60,7 +60,7 @@ cdef class StickingCoefficient(KineticsModel):
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
-    
+
     """
 
     def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0, "K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
@@ -121,7 +121,7 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef double get_sticking_coefficient(self, double T) except -1:
         """
-        Return the sticking coefficient (dimensionless) at temperature `T` in K. 
+        Return the sticking coefficient (dimensionless) at temperature `T` in K.
         """
         cdef double A, n, Ea, T0, stickingCoefficient
         A = self._A.value_si
@@ -189,7 +189,7 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef change_t0(self, double T0):
         """
-        Changes the reference temperature used in the exponent to `T0` in K, 
+        Changes the reference temperature used in the exponent to `T0` in K,
         and adjusts the preexponential factor accordingly.
         """
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
@@ -220,9 +220,9 @@ cdef class StickingCoefficient(KineticsModel):
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
     """
-    A kinetics model based on the Arrhenius expression, to give 
+    A kinetics model based on the Arrhenius expression, to give
     Sticking Coefficient for surface adsorption, using the
-    Bronsted-Evans-Polanyi equation to determine the activation energy. 
+    Bronsted-Evans-Polanyi equation to determine the activation energy.
     Similar to :class:`ArrheniusEP`, but with different units for `A`.
     Sticking Coefficients are between 0 and 1.
     The attributes are:
@@ -240,7 +240,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
-    
+
     """
 
     def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
@@ -303,7 +303,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the sticking coefficient (dimensionless) at
-        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
+        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol.
         """
         cdef double A, n, Ea, stickingCoefficient
         Ea = self.get_activation_energy(dHrxn)
@@ -331,7 +331,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
         """
         Return an :class:`StickingCoefficient` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
-        
+
         Note that despite its name it does not return a :class:`Arrhenius` object.
         """
         return StickingCoefficient(
@@ -377,9 +377,9 @@ cdef class StickingCoefficientBEP(KineticsModel):
 cdef class SurfaceArrhenius(Arrhenius):
     """
     A kinetics model based on (modified) Arrhenius for surface reactions.
-    
+
     It is very similar to the gas phase :class:`Arrhenius`
-    
+
     The attributes are:
 
     =============== =============================================================
@@ -398,8 +398,8 @@ cdef class SurfaceArrhenius(Arrhenius):
     =============== =============================================================
     """
     property A:
-        """The preexponential factor. 
-    
+        """The preexponential factor.
+
         This is the only thing different from a normal Arrhenius class."""
         def __get__(self):
             return self._A
@@ -434,12 +434,12 @@ cdef class SurfaceArrhenius(Arrhenius):
 cdef class SurfaceArrheniusBEP(ArrheniusEP):
     """
     A kinetics model based on the (modified) Arrhenius equation, using the
-    Bronsted-Evans-Polanyi equation to determine the activation energy. 
-    
+    Bronsted-Evans-Polanyi equation to determine the activation energy.
+
     It is very similar to the gas-phase :class:`ArrheniusEP`.
     The only differences being the A factor has different units,
     (and the catalysis community prefers to call it BEP rather than EP!)
-    
+
     The attributes are:
 
     =============== =============================================================
@@ -456,11 +456,11 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
     `uncertainty`   Uncertainty information
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
-    
+
     """
     property A:
-        """The preexponential factor. 
-    
+        """The preexponential factor.
+
         This is the only thing different from a normal ArrheniusEP class."""
         def __get__(self):
             return self._A
@@ -494,9 +494,9 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         """
         Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
-        
+
         Note that despite its name it does not return a :class:`Arrhenius` object
-        (although :class:`SurfaceArrhenius` is a subclass of :class:`Arrhenius` 
+        (although :class:`SurfaceArrhenius` is a subclass of :class:`Arrhenius`
         so in a way, it does).
         """
         return SurfaceArrhenius(
@@ -509,3 +509,218 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
             uncertainty = self.uncertainty,
             comment=self.comment,
         )
+
+################################################################################
+
+cdef class SurfaceChargeTransfer(KineticsModel):
+
+    """
+    A kinetics model based on (modified) Arrhenius for surface reactions.
+
+    It is very similar to the gas phase :class:`Arrhenius`
+
+    The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `a`             The charge transfer coefficient
+    `A`             The preexponential factor
+    `T0`            The reference temperature
+    `n`             The temperature exponent
+    `Ea`            The activation energy
+    `ne`            The stochiometry coeff for electrons (negative if reactant, positive if product)
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+
+    """
+
+    def __init__(self, a=0.5, A=None, n=0.0, Ea=None, T0=(1.0, "K"), ne=1, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
+                 uncertainty=None, comment=''):
+
+        self.A = A
+        self.n = n
+        self.Ea = Ea
+        self.T0 = T0
+        self.a = a
+        self.ne = ne
+
+    property A:
+        """The preexponential factor."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.RateCoefficient(value)
+
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property Ea:
+        """The activation energy."""
+        def __get__(self):
+            return self._Ea
+        def __set__(self, value):
+            self._Ea = quantity.Energy(value)
+
+    property T0:
+        """The reference temperature."""
+        def __get__(self):
+            return self._T0
+        def __set__(self, value):
+            self._T0 = quantity.Temperature(value)
+
+    property ne:
+        """The number of electrons transferred."""
+        def __get__(self):
+            return self._ne
+        def __set__(self, value):
+            self._ne = quantity.Dimensionless(value)
+
+    property a:
+        """The charge transfer coefficient."""
+        def __get__(self):
+            return self._a
+        def __set__(self, value):
+            self._a = quantity.Dimensionless(value)
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        Arrhenius object.
+        """
+        string = 'SurfaceChargeTransfer(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}, a={4!r}, ne={5!r}, '.format(self.A, self.n, self.Ea, self.T0, self.a, self.ne)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an Arrhenius object.
+        """
+        return (SurfaceChargeTransfer, (self.a, self.A, self.n, self.ne, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.uncertainty, self.comment))
+
+    cpdef double get_rate_coefficient(self, double T, double P=0.0, double V=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^2,
+        mol, and s at temperature `T` in K.
+        """
+        cdef double A, n, Ea, T0, ne, a
+        A = self._A.value_si
+        a = self._a.value_si
+        n = self._n.value_si
+        ne = self._ne.value_si
+        Ea = self._Ea.value_si
+        T0 = self._T0.value_si
+
+        return A * (T / T0) ** n * exp(-Ea / (constants.R * T)) * exp((a * ne * constants.F * V) / (constants.R * T)) # NOT SURE ABOUT SIGN
+
+    cpdef change_t0(self, double T0):
+        """
+        Changes the reference temperature used in the exponent to `T0` in K,
+        and adjusts the preexponential factor accordingly.
+        """
+        self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
+        self._T0.value_si = T0
+
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, double V=0.0, np.ndarray weights=None,
+                      bint three_params=True):
+        """
+        Fit the Arrhenius parameters to a set of rate coefficient data `klist`
+        in units of `kunits` corresponding to a set of temperatures `Tlist` in
+        K. A linear least-squares fit is used, which guarantees that the
+        resulting parameters provide the best possible approximation to the
+        data.
+        """
+        import scipy.stats
+        if not all(np.isfinite(klist)):
+            raise  ValueError("Rates must all be finite, not inf or NaN")
+        if any(klist<0):
+            if not all(klist<0):
+                raise ValueError("Rates must all be positive or all be negative.")
+            rate_sign_multiplier = -1
+            klist = -1 * klist
+        else:
+            rate_sign_multiplier = 1
+
+        for i in range(len(Tlist)):
+            klist[i] /= np.exp((self.a * self.ne * constants.F * V) / (constants.R * Tlist[i])) # NOT SURE ABOUT SIGN HERE
+
+        assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
+        if len(Tlist) < 3 + three_params:
+            raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
+        if three_params:
+            A = np.zeros((len(Tlist), 3), np.float64)
+            A[:, 0] = np.ones_like(Tlist)
+            A[:, 1] = np.log(Tlist / T0)
+            A[:, 2] = -1.0 / constants.R / Tlist
+        else:
+            A = np.zeros((len(Tlist), 2), np.float64)
+            A[:, 0] = np.ones_like(Tlist)
+            A[:, 1] = -1.0 / constants.R / Tlist
+        b = np.log(klist)
+        if weights is not None:
+            for n in range(b.size):
+                A[n, :] *= weights[n]
+                b[n] *= weights[n]
+        x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
+
+        # Determine covarianace matrix to obtain parameter uncertainties
+        count = klist.size
+        cov = residues[0] / (count - 3) * np.linalg.inv(np.dot(A.T, A))
+        t = scipy.stats.t.ppf(0.975, count - 3)
+
+        if not three_params:
+            x = np.array([x[0], 0, x[1]])
+            cov = np.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
+
+        self.A = (rate_sign_multiplier * exp(x[0]), kunits)
+        self.n = x[1]
+        self.Ea = (x[2] * 0.001, "kJ/mol")
+        self.T0 = (T0, "K")
+        self.Tmin = (np.min(Tlist), "K")
+        self.Tmax = (np.max(Tlist), "K")
+        self.comment = 'Fitted to {0:d} data points; dA = *|/ {1:g}, dn = +|- {2:g}, dEa = +|- {3:g} kJ/mol'.format(
+            len(Tlist),
+            exp(sqrt(cov[0, 0])),
+            sqrt(cov[1, 1]),
+            sqrt(cov[2, 2]) * 0.001,
+        )
+
+        return self
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(other_kinetics, SurfaceChargeTransfer):
+            return False
+        if not KineticsModel.is_identical_to(self, other_kinetics):
+            return False
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.Ea.equals(other_kinetics.Ea) or not self.T0.equals(other_kinetics.T0)
+                or not self.a.equals(other_kinetics.Ea) or not self.ne.equals(other_kinetics.ne)):
+            return False
+
+        return True
+
+    cpdef change_rate(self, double factor):
+        """
+        Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
