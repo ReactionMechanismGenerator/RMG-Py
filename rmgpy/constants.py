@@ -39,7 +39,7 @@ so as to not place the constants in the importing module's global namespace.
 The constants defined in this module are listed in the table below:
 
 .. table:: Physical constants defined in the :mod:`rmgpy.constants` module
-    
+
     ======================= =================== =========================================================== ============================================================
     Symbol                  Constant            Value                                                       Description
     ======================= =================== =========================================================== ============================================================
@@ -59,7 +59,7 @@ The constants defined in this module are listed in the table below:
     :math:`m_\mathrm{n}`    :data:`m_n`         :math:`1.674927351 \times 10^{-27} \ \mathrm{kg}`           neutron rest mass
     :math:`m_\mathrm{p}`    :data:`m_p`         :math:`1.672621777 \times 10^{-27} \ \mathrm{kg}`           proton rest mass
     :math:`m_\mathrm{u}`    :data:`amu`         :math:`1.660538921 \times 10^{-27} \ \mathrm{kg}`           atomic mass unit
-    :math:`\pi`             :data:`pi`          :math:`3.14159 \ldots`      
+    :math:`\pi`             :data:`pi`          :math:`3.14159 \ldots`
     ======================= =================== =========================================================== ============================================================
 
 """
@@ -71,7 +71,7 @@ import math
 #: The Hartree energy :math:`E_\mathrm{h}` in :math:`\mathrm{J}`
 E_h = 4.35974434e-18
 
-#: The Avogadro constant :math:`N_\mathrm{A}` in :math:`\mathrm{mol^{-1}}`       
+#: The Avogadro constant :math:`N_\mathrm{A}` in :math:`\mathrm{mol^{-1}}`
 Na = 6.02214179e23
 
 #: The gas law constant :math:`R` in :math:`\mathrm{J/mol \cdot K}`
@@ -107,8 +107,11 @@ m_n = 1.674927351e-27
 #: The mass of a proton :math:`m_\mathrm{p}` in :math:`\mathrm{kg}`
 m_p = 1.672621777e-27
 
-#: :math:`\pi = 3.14159 \ldots`      
+#: :math:`\pi = 3.14159 \ldots`
 pi = float(math.pi)
+
+#: Faradays Constant F in C/mol
+F = 96485.3321233100184
 
 ################################################################################
 
@@ -130,4 +133,5 @@ globals().update({
     'm_n': m_n,
     'm_p': m_p,
     'pi': pi,
+    'F': F
 })
