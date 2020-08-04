@@ -34,7 +34,7 @@ from rmgpy.molecule.element cimport Element
 from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 
 ################################################################################
-cdef dict bond_orders 
+cdef dict bond_orders
 
 cdef class Atom(Vertex):
 
@@ -47,7 +47,7 @@ cdef class Atom(Vertex):
     cdef public short lone_pairs
     cdef public int id
     cdef public dict props
-    
+
     cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint is_specific_case_of(self, Vertex other) except -2
@@ -77,25 +77,30 @@ cdef class Atom(Vertex):
     cpdef bint is_iodine(self)
 
     cpdef bint is_nos(self)
-    
+
     cpdef bint is_surface_site(self)
-    
+
     cpdef increment_radical(self)
 
     cpdef decrement_radical(self)
-    
+
     cpdef set_lone_pairs(self, int lone_pairs)
-    
+
     cpdef increment_lone_pairs(self)
-    
+
     cpdef decrement_lone_pairs(self)
-    
+
     cpdef update_charge(self)
 
     cpdef get_total_bond_order(self)
-    
+
 ################################################################################
-    
+
+cdef class Electron(Atom):
+
+    cdef public float potential
+
+################################################################################
 cdef class Bond(Edge):
 
     cdef public float order
@@ -105,15 +110,15 @@ cdef class Bond(Edge):
     cpdef bint is_specific_case_of(self, Edge other) except -2
 
     cpdef str get_order_str(self)
-    
+
     cpdef set_order_str(self, str new_order)
-    
+
     cpdef float get_order_num(self)
-    
+
     cpdef set_order_num(self, float new_order)
 
     cpdef Edge copy(self)
-    
+
     cpdef bint is_order(self, float other_order)
 
     cpdef bint is_van_der_waals(self) except -2
@@ -123,9 +128,9 @@ cdef class Bond(Edge):
     cpdef bint is_double(self) except -2
 
     cpdef bint is_triple(self) except -2
-    
+
     cpdef bint is_quadruple(self) except -2
-    
+
     cpdef bint is_benzene(self) except -2
 
     cpdef increment_order(self)
@@ -161,7 +166,7 @@ cdef class Molecule(Graph):
     cpdef bint is_electron(self)
 
     cpdef bint contains_surface_site(self)
-    
+
     cpdef bint is_surface_site(self)
 
     cpdef remove_atom(self, Atom atom)
@@ -171,7 +176,7 @@ cdef class Molecule(Graph):
     cpdef remove_van_der_waals_bonds(self)
 
     cpdef sort_atoms(self)
-    
+
     cpdef str get_formula(self)
 
     cpdef short get_radical_count(self)
@@ -218,7 +223,7 @@ cdef class Molecule(Graph):
                               bint raise_charge_exception=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
-    
+
     cpdef str to_inchi(self)
 
     cpdef str to_augmented_inchi(self)
@@ -240,9 +245,9 @@ cdef class Molecule(Graph):
     cpdef double calculate_cp0(self) except -1
 
     cpdef double calculate_cpinf(self) except -1
-    
+
     cpdef update_atomtypes(self, bint log_species=?, bint raise_exception=?)
-    
+
     cpdef bint is_radical(self) except -2
 
     cpdef bint has_lone_pairs(self) except -2
@@ -270,5 +275,13 @@ cdef class Molecule(Graph):
     cpdef bint is_identical(self, Molecule other, bint strict=?) except -2
 
     cpdef dict enumerate_bonds(self)
+
+################################################################################
+
+cdef class ElectronMol(Molecule):
+
+    cdef public float potential
+
+################################################################################
 
 cdef atom_id_counter
