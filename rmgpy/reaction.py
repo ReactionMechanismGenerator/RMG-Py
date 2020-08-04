@@ -595,7 +595,7 @@ class Reaction:
                                                                          # where nF(V0-V) is from applied potential
         return dGrxn
 
-    def get_equilibrium_constant(self, T, type='Kc', surface_site_density=2.5e-05):
+    def get_equilibrium_constant(self, T, V=None, type='Kc', surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
         temperature `T` in K and reference `surface_site_density`
@@ -606,9 +606,9 @@ class Reaction:
         and uses the ideal gas law to determine reference concentrations. For
         surface species, the `surface_site_density` is the assumed reference.
         """
-        cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
+        cython.declare(prods=cython.int, reacts=cython.int, dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
-        dGrxn = self.get_free_energy_of_reaction(T)
+        dGrxn = self.get_free_energy_of_reaction(T,V)
         K = np.exp(-dGrxn / constants.R / T)
         # Convert Ka to Kc or Kp if specified
         # Assume a pressure of 1e5 Pa for gas phase species
@@ -616,23 +616,25 @@ class Reaction:
         # Determine the number of gas phase reactants and products. For gas species,
         # we will use 1e5 Pa and ideal gas law to determine reference concentration.
         try:
-            number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
-            number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
+            dN_gas = 0 # change in mols of gas spcs
+            dN_surf = 0 # change in mols of surface spcs
+            for prod in self.products():
+                if not prod.is_electron(): # don't count electrons
+                    if prod.contains_surface_site():
+                        dN_surf += 1
+                    else:
+                        dN_gas += 1
+            for react in self.reactants():
+                if not react.is_electron(): # dont count electrons
+                    if react.contains_surface_site():
+                        dN_surf -= 1
+                    else:
+                        dN_gas -= 1
         except IndexError:
             logging.warning("Species do not have an rmgpy.molecule.Molecule "
                             "Cannot determine phases of species. We will assume "
                             "ideal gas mixture when calculating Kc and Kp.")
-            number_of_gas_reactants = len(self.reactants)
-            number_of_gas_products = len(self.products)
-
-        # Determine the number of surface reactants and products.  For surface species,
-        # we will use the provided `surface_site_density` as the reference
-        number_of_surface_reactants = len(self.reactants) - number_of_gas_reactants
-        number_of_surface_products = len(self.products) - number_of_gas_products
-
-        # Determine the change in the number of mols of gas and surface species in the reaction
-        dN_surf = number_of_surface_products - number_of_surface_reactants # change in mols of surface spcs
-        dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
+            dN_gas = len(self.products) - len(self.reactants) # change in mols of gas spcs
 
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
