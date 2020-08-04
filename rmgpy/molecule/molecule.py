@@ -516,7 +516,7 @@ class Atom(Vertex):
         This helper function is to help calculate total bond orders for an
         input atom.
 
-        Some special consideration for the order `B` bond. For atoms having 
+        Some special consideration for the order `B` bond. For atoms having
         three `B` bonds, the order for each is 4/3.0, while for atoms having other
         than three `B` bonds, the order for  each is 3/2.0
         """
@@ -535,6 +535,45 @@ class Atom(Vertex):
 
         return order
 
+################################################################################
+
+class Electron(Atom):
+    """
+    An electron. The attributes are:
+
+    ==================== =================== ====================================
+    Attribute            Type                Description
+    ==================== =================== ====================================
+    `atomtype`           :class:`AtomType`   The :ref:`atom type <atom-types>`
+    `element`            :class:`Element`    The chemical element the atom represents
+    `radical_electrons`  ``short``           The number of radical electrons
+    `charge`             ``short``           The formal charge of the atom
+    `label`              ``str``             A string label that can be used to tag individual atoms
+    `coords`             ``numpy array``     The (x,y,z) coordinates in Angstrom
+    `lone_pairs`         ``short``           The number of lone electron pairs
+    `id`                 ``int``             Number assignment for atom tracking purposes
+    `bonds`              ``dict``            Dictionary of bond objects with keys being neighboring atoms
+    `props`              ``dict``            Dictionary for storing additional atom properties
+    `mass`               ``int``             atomic mass of element (read only)
+    `number`             ``int``             atomic number of element (read only)
+    `symbol`             ``str``             atomic symbol of element (read only)
+    ==================== =================== ====================================
+
+    Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
+    atom's element can be read (but not written) directly from the atom object,
+    e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
+    """
+
+    def __init__(self, potential=0.0):
+
+        element = 'e'
+        radical_electrons = 0
+        charge = -1
+        label = 'e-'
+        lone_pairs = 0
+
+        super().__init__(element, radical_electrons, charge, label, lone_pairs)
+        self.potential = potential
 
 ################################################################################
 
@@ -729,7 +768,7 @@ class Bond(Edge):
 
     def is_van_der_waals(self):
         """
-        Return ``True`` if the bond represents a van der Waals bond or 
+        Return ``True`` if the bond represents a van der Waals bond or
         ``False`` if not.
         """
         return self.is_order(0)
@@ -738,7 +777,7 @@ class Bond(Edge):
         """
         Return ``True`` if the bond is of order other_order or ``False`` if
         not. This compares floats that takes into account floating point error
-        
+
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
@@ -1165,7 +1204,7 @@ class Molecule(Graph):
             element_dict[symbol] = element_dict.get(symbol, 0) + 1
 
         # Use the Hill system to generate the formula.
-        # If you change this algorithm consider also updating 
+        # If you change this algorithm consider also updating
         # the chemkin.write_thermo_entry method
         formula = ''
 
@@ -1354,7 +1393,7 @@ class Molecule(Graph):
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
-        
+
         If `raise_exception` is `False`, then the generic atomtype 'R' will
         be prescribed to any atom when get_atomtype fails. Currently used for
         resonance hybrid atom types.
@@ -1379,7 +1418,7 @@ class Molecule(Graph):
         """
         # Assume this is always true
         # There are cases where 2 radical_electrons is a singlet, but
-        # the triplet is often more stable, 
+        # the triplet is often more stable,
         self.multiplicity = self.get_radical_count() + 1
 
     def clear_labeled_atoms(self):
@@ -1749,7 +1788,7 @@ class Molecule(Graph):
     def to_single_bonds(self, raise_atomtype_exception=True):
         """
         Returns a copy of the current molecule, consisting of only single bonds.
-        
+
         This is useful for isomorphism comparison against something that was made
         via from_xyz, which does not attempt to perceive bond orders
         """
@@ -1774,9 +1813,9 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
-        
+
         or
-        
+
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
@@ -1786,7 +1825,7 @@ class Molecule(Graph):
         """
         Adds an extra layer to the InChI denoting the multiplicity
         of the molecule.
-        
+
         Separate layer with a forward slash character.
         """
         return translator.to_inchi(self, aug_level=2)
@@ -1795,9 +1834,9 @@ class Molecule(Graph):
         """
         Convert a molecular structure to an InChI Key string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        
-        or 
-        
+
+        or
+
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
@@ -1823,13 +1862,13 @@ class Molecule(Graph):
 
     def to_smiles(self):
         """
-        Convert a molecular structure to an SMILES string. 
-        
+        Convert a molecular structure to an SMILES string.
+
         If there is a Nitrogen atom present it uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
         and the SMILES may or may not be canonical.
-        
-        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the 
+
+        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the
         conversion, so it will be canonical SMILES.
         While converting to an RDMolecule it will perceive aromaticity
         and removes Hydrogen atoms.
@@ -1894,8 +1933,8 @@ class Molecule(Graph):
             1) An atom can only be hydrogen bonded to one other atom
             2) Only two H-bonds can exist in a given molecule
 
-        the second is done to avoid explosive growth in the number of 
-        structures as without this constraint the number of possible 
+        the second is done to avoid explosive growth in the number of
+        structures as without this constraint the number of possible
         structures grows 2^n where n is the number of possible H-bonds
         """
         structs = []
@@ -1973,10 +2012,10 @@ class Molecule(Graph):
         return False
 
     def is_aromatic(self):
-        """ 
-        Returns ``True`` if the molecule is aromatic, or ``False`` if not.  
-        Iterates over the SSSR's and searches for rings that consist solely of Cb 
-        atoms.  Assumes that aromatic rings always consist of 6 atoms. 
+        """
+        Returns ``True`` if the molecule is aromatic, or ``False`` if not.
+        Iterates over the SSSR's and searches for rings that consist solely of Cb
+        atoms.  Assumes that aromatic rings always consist of 6 atoms.
         In cases of naphthalene, where a 6 + 4 aromatic system exists,
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
@@ -2094,7 +2133,7 @@ class Molecule(Graph):
             if atom.lone_pairs > 0:
                 return True
         return False
-    
+
     def has_charge(self):
         for atom in self.vertices:
             if atom.charge != 0:
@@ -2187,7 +2226,7 @@ class Molecule(Graph):
 
     def saturate_radicals(self, raise_atomtype_exception=True):
         """
-        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
+        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.
         """
         cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
@@ -2359,7 +2398,7 @@ class Molecule(Graph):
         by short length and then high atomic number instead of just short length (for cases where
         multiple cycles with same length are found, `get_smallest_set_of_smallest_rings` outputs
         non-determinstically).
-        
+
         For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
         output from `get_smallest_set_of_smallest_rings`, which leads to non-deterministic bicyclic decomposition.
         Using this new method can effectively prevent this situation.
@@ -2578,6 +2617,46 @@ class Molecule(Graph):
         return dict(bond_count)
 
 
-# this variable is used to name atom IDs so that there are as few conflicts by 
+#################################################################################
+
+class ElectronMol(Molecule):
+    """
+    A representation of a molecular structure using a graph data type, extending
+    the :class:`Graph` class. Attributes are:
+
+    ======================= =========== ========================================
+    Attribute               Type        Description
+    ======================= =========== ========================================
+    `atoms`                 ``list``    A list of Atom objects in the molecule
+    `symmetry_number`       ``float``   The (estimated) external + internal symmetry number of the molecule, modified for chirality
+    `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
+    `reactive`              ``bool``    ``True`` (by default) if the molecule participates in reaction families.
+                                            It is set to ``False`` by the filtration functions if a non
+                                            representative resonance structure was generated by a template reaction
+    `props`                 ``dict``    A list of properties describing the state of the molecule.
+    `inchi`                 ``str``     A string representation of the molecule in InChI
+    `smiles`                ``str``     A string representation of the molecule in SMILES
+    `fingerprint`           ``str``     A representation for fast comparison, set as molecular formula
+    ======================= =========== ========================================
+
+    A new molecule object can be easily instantiated by passing the `smiles` or
+    `inchi` string representing the molecular structure.
+    """
+
+    def __init__(self, potential=0.0):
+
+        atoms = [Electron(potential=potential)]
+        super().__init__(atoms)
+
+    @property
+    def potential(self):
+        return self.atoms[0].potential
+
+    def __repr__(self):
+
+        return "Electron({0})".format(self.potential)
+
+
+# this variable is used to name atom IDs so that there are as few conflicts by
 # using the entire space of integer objects
 atom_id_counter = -2 ** 15
