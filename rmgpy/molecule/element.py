@@ -173,6 +173,8 @@ def get_element(value, isotope=-1):
 # Recommended IUPAC nomenclature is used throughout (including 'aluminium' and
 # 'caesium')
 
+# electron
+e = Element(-1,   'e', 'electron'      , 5.486e-7)
 
 # Surface site
 X = Element(0,    'X', 'surface_site'   , 0.0)
@@ -310,6 +312,7 @@ Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
 element_list = [
+    e,
     X,
     H, D, T, He,
     Li, Be, B, C, C13, N, O, O18, F, Ne,
