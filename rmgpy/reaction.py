@@ -30,8 +30,8 @@
 """
 This module contains classes and functions for working with chemical reactions.
 
-From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
+From the `IUPAC Compendium of Chemical Terminology
+<http://dx.doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
@@ -68,7 +68,7 @@ from rmgpy.species import Species
 class Reaction:
     """
     A chemical reaction. The attributes are:
-    
+
     =================== =========================== ============================
     Attribute           Type                        Description
     =================== =========================== ============================
@@ -92,7 +92,7 @@ class Reaction:
     `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     `rank`              ``int``                     Integer indicating the accuracy of the kinetics for this reaction
     =================== =========================== ============================
-    
+
     """
 
     def __init__(self,
@@ -169,7 +169,7 @@ class Reaction:
 
     def to_labeled_str(self, use_index=False):
         """
-        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than
         the labels plus the index in parentheses
         """
         arrow = ' <=> ' if self.reversible else ' => '
@@ -231,10 +231,28 @@ class Reaction:
         # set new degeneracy
         self._degeneracy = new
 
+    @property
+    def ne(self):
+        """
+        The stochiometric coeff for electrons in charge transfer reactions
+        """
+        if self.is_charge_transfer_reaction():
+            self._ne = 0
+            for prod in self.products:
+                if prod.is_electron():
+                    self._ne += 1
+            for react in self.reactants:
+                if react.is_electron():
+                    self._ne -= 1
+        else:
+            self._ne = 0
+
+        return self._ne
+
     def to_chemkin(self, species_list=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
-        
+
         If `kinetics` is set to True, the chemkin format kinetics will also
         be returned (requires the `species_list` to figure out third body colliders.)
         Otherwise, only the reaction string will be returned.
@@ -321,9 +339,9 @@ class Reaction:
             if isinstance(ct_reaction, list):
                 for rxn in ct_reaction:
                     rxn.reversible = self.reversible
-                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius 
+                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius
                     rxn.duplicate = True
-                    # Set the ID flag to the original rmg index 
+                    # Set the ID flag to the original rmg index
                     rxn.ID = str(self.index)
             else:
                 ct_reaction.reversible = self.reversible
@@ -674,7 +692,7 @@ class Reaction:
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
-        
+
         If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
@@ -760,7 +778,7 @@ class Reaction:
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
         and ensures the activation energy is at least the endothermicity
-        for endothermic reactions, and is not negative only as a result 
+        for endothermic reactions, and is not negative only as a result
         of using Evans Polanyi with an exothermic reaction.
         If `force_positive` is True, then all reactions
         are forced to have a non-negative barrier.
@@ -859,7 +877,7 @@ class Reaction:
 
     def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None):
         """
-        Generate and return a rate coefficient model for the reverse reaction. 
+        Generate and return a rate coefficient model for the reverse reaction.
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
         """
@@ -1034,14 +1052,14 @@ class Reaction:
         reactant density of states is required; if the reaction is reversible, then
         both are required. This function will try to use the best method that it
         can based on the input data available:
-        
+
         * If detailed information has been provided for the transition state (i.e.
           the molecular degrees of freedom), then RRKM theory will be used.
-        
+
         * If the above is not possible but high-pressure limit kinetics
-          :math:`k_\\infty(T)` have been provided, then the inverse Laplace 
+          :math:`k_\\infty(T)` have been provided, then the inverse Laplace
           transform method will be used.
-    
+
         The density of states for the product `prod_dens_states` and the temperature
         of interest `T` in K can also be provided. For isomerization and association
         reactions `prod_dens_states` is required; for dissociation reactions it is
@@ -1091,7 +1109,7 @@ class Reaction:
         Generate the reactant-product pairs to use for this reaction when
         performing flux analysis. The exact procedure for doing so depends on
         the reaction type:
-        
+
         =================== =============== ========================================
         Reaction type       Template        Resulting pairs
         =================== =============== ========================================
@@ -1100,8 +1118,8 @@ class Reaction:
         Association         A + B -> C      (A,C), (B,C)
         Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
         =================== =============== ========================================
-        
-        There are a number of ways of determining the correct pairing for 
+
+        There are a number of ways of determining the correct pairing for
         bimolecular reactions. Here we try a simple similarity analysis by comparing
         the number of heavy atoms. This should work most of the time, but a more
         rigorous algorithm may be needed for some cases.
@@ -1161,9 +1179,9 @@ class Reaction:
     # Build the transition state geometry
     def generate_3d_ts(self, reactants, products):
         """
-        Generate the 3D structure of the transition state. Called from 
+        Generate the 3D structure of the transition state. Called from
         model.generate_kinetics().
-        
+
         self.reactants is a list of reactants
         self.products is a list of products
         """
@@ -1173,7 +1191,7 @@ class Reaction:
         atoms involved in the reaction. If a radical is involved, can find the atom
         with radical electrons. If a more reliable method can be found, would greatly
         improve the method.
-        
+
         Repeat for the products
         """
         for i in range(0, len(reactants)):
