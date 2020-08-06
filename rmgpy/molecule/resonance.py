@@ -182,10 +182,10 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                       " definition.".format(mol.to_adjacency_list()))
         raise
     if mol.get_net_charge() != 0:
-        logging.error("Got the following structure:\nSMILES: {0}\nAdjacencyList:\n{1}\nNet charge: {2}\n\n"
+        logging.info("Got the following structure:\nSMILES: {0}\nAdjacencyList:\n{1}\nNet charge: {2}\n\n"
                          "Currently RMG cannot process charged species correctly."
                          "\nIf this structure was entered in SMILES, try using the adjacencyList format for an"
-                         " unambiguous definition."
+                         " unambiguous definition. "
                          "Returning the input mol".format(mol.to_smiles(), mol.to_adjacency_list(), mol.get_net_charge()))
         return [mol]
     if not mol.reactive:
