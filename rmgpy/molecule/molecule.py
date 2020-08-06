@@ -111,6 +111,9 @@ class Atom(Vertex):
         self.id = id
         self.props = props or {}
 
+        if self.is_electron():
+            self.charge = -1
+
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -481,6 +484,9 @@ class Atom(Vertex):
         """
         if self.is_surface_site():
             self.charge = 0
+            return
+        if self.is_electron():
+            self.charge = -1
             return
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.get_total_bond_order()
