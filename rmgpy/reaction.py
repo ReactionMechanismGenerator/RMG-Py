@@ -572,8 +572,8 @@ class Reaction:
         cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
         dGrxn = 0.0
 
-        if reaction.is_charge_transfer_reaction() and reaction.V0:
-            dGrxn = -1 * abs(self.ne) * constants.F * reaction.V0.value_si # G = -nFE0
+        if self.is_charge_transfer_reaction() and self.V0:
+            dGrxn = -1 * abs(self.ne) * constants.F * self.V0.value_si # G = -nFE0
         else:
             for reactant in self.reactants:
                 if not reactant.is_electron():
@@ -591,7 +591,7 @@ class Reaction:
                         raise
 
         if self.is_charge_transfer_reaction() and V is not None:
-            dGrxn += self.ne * constants.F * (reaction.V0.value_si - V)  # Not sure about sign here or equation G = -nFE0 + nF(V0-V)
+            dGrxn += self.ne * constants.F * (self.V0.value_si - V)  # Not sure about sign here or equation G = -nFE0 + nF(V0-V)
                                                                          # where nF(V0-V) is from applied potential
         return dGrxn
 
