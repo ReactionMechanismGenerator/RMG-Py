@@ -1187,6 +1187,8 @@ class Molecule(Graph):
         If you need that, call update_connectivity_values()
         """
 
+        self.update_lone_pairs()
+
         for atom in self.atoms:
             atom.update_charge()
 
