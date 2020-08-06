@@ -280,7 +280,7 @@ cdef class Molecule(Graph):
 
 cdef class ElectronMol(Molecule):
 
-    cdef public float potential
+    pass
 
 ################################################################################
 
