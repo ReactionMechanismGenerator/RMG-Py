@@ -85,7 +85,12 @@ SMILES_LOOKUPS = {
         """
         multiplicity 1
         1 X u0
+        """,
+    'e':
         """
+        multiplicity 1
+        1 e u0 p0 c-1
+        """,
 }
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
