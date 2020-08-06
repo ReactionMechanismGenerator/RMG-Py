@@ -89,7 +89,7 @@ class ConsistencyChecker(object):
         the theoretical one:
 
         """
-        if atom.symbol == 'X':
+        if atom.symbol in ('X','e'):
             return  # because we can't check it.
 
         valence = PeriodicSystem.valence_electrons[atom.symbol]
@@ -163,7 +163,7 @@ class ConsistencyChecker(object):
 def from_old_adjacency_list(adjlist, group=False, saturate_h=False):
     """
     Convert a pre-June-2014 string adjacency list `adjlist` into a set of :class:`Atom` and
-    :class:`Bond` objects. 
+    :class:`Bond` objects.
     It can read both "old style" that existed for years, an the "intermediate style" that
     existed for a few months in 2014, with the extra column of integers for lone pairs.
     """
@@ -244,7 +244,7 @@ def from_old_adjacency_list(adjlist, group=False, saturate_h=False):
                 elif e == '1':
                     radical_electrons.append(1)
                     additional_lone_pairs.append(0)
-                elif e == '2': 
+                elif e == '2':
                     if not group:
                         raise InvalidAdjacencyListError(
                             "Error in adjacency list:\n{0}\nNumber of radical electrons = 2 is not specific enough. "
@@ -810,7 +810,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
 
     if group:
         if multiplicity:
-            # Functional group should have a list of possible multiplicities.  
+            # Functional group should have a list of possible multiplicities.
             # If the list is empty, then it does not need to be written
             adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
     else:
@@ -999,7 +999,7 @@ def get_old_electron_state(atom):
 
 def to_old_adjacency_list(atoms, multiplicity=None, label=None, group=False, remove_h=False):
     """
-    Convert a chemical graph defined by a list of `atoms` into a string old-style 
+    Convert a chemical graph defined by a list of `atoms` into a string old-style
     adjacency list that can be used in RMG-Java.  Currently not working for groups.
     """
     warnings.warn("The old adjacency lists are no longer supported and may be"
