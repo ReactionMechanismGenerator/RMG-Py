@@ -58,6 +58,8 @@ cdef class Atom(Vertex):
 
     cpdef bint is_non_hydrogen(self)
 
+    cpdef bint is_halogen(self)
+
     cpdef bint is_carbon(self)
 
     cpdef bint is_oxygen(self)
