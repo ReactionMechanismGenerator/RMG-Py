@@ -2074,7 +2074,7 @@ class Group(Graph):
         for index, atom in enumerate(self.atoms):
             claimed_atom_type = atom.atomtype[0]
             # Do not perform is this atom has wildCards
-            if atom.hasWildCards:
+            if atom.has_wildcards():
                 continue
             elif claimed_atom_type is ATOMTYPES['CO'] or claimed_atom_type is ATOMTYPES['CS']:
                 for bond12 in atom.bonds.values():
