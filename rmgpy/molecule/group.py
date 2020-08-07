@@ -1952,6 +1952,19 @@ class Group(Graph):
                         return False
         return True
 
+    def has_wildcards(self):
+        """
+        This function is a Group level wildcards checker.
+
+        Returns a 'True' if any of the atoms in this group has wildcards.
+        """
+
+        for atom1 in self.atoms:
+            if atom1.has_wildcards():
+                return True
+
+        return False
+
     def standardize_atomtype(self):
         """
         This function changes the atomtypes in a group if the atom must
