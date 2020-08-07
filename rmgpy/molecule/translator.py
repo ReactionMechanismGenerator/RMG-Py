@@ -497,7 +497,7 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         if _check_output(mol, identifier):
-            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception)
+            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception, sort_atoms=False)
             return mol
         else:
             logging.debug('Backend {0} is not able to parse identifier {1}'.format(option, identifier))
