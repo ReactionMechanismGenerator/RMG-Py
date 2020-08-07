@@ -1130,10 +1130,17 @@ class RMG(util.Subject):
 
                                     
                             Tlist = ([reaction_system.sens_conditions['T']], 'K')
-                            Plist = ([reaction_system.sens_conditions['P']], 'Pa')
+                            try:
+                                Plist = ([reaction_system.sens_conditions['P']], 'Pa')
+                            except KeyError:
+                                #LiquidReactor
+                                Plist = ([1e8], 'Pa')
+                                logging.warning('Using 1e8 Pa as the reaction system pressure to approximate liquid phase density.')
+
                             mol_frac_list = [reaction_system.sens_conditions.copy()]
                             del mol_frac_list[0]['T']
-                            del mol_frac_list[0]['P']
+                            if 'P' in mol_frac_list[0]:
+                                del mol_frac_list[0]['P']
 
                             # Set up Cantera reactor
                             job = Cantera(species_list=uncertainty.species_list, reaction_list=uncertainty.reaction_list,
