@@ -1985,9 +1985,7 @@ class Group(Graph):
         modified = False
 
         # If this atom or any of its ligands has wild cards, then don't try to standardize
-        if self.hasWildCards: return modified
-        for bond12, atom2 in self.bonds.items():
-            if atom2.hasWildCards: return modified
+        if self.has_wildcards(): return modified
 
         # list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
         specifics = [elementLabel for elementLabel in allElements if elementLabel not in nonSpecifics]
