@@ -208,6 +208,17 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.is_chlorine())
 
+    def test_is_bromine(self):
+        """
+        Test the Atom.is_bromine() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label='*1', lone_pairs=3)
+            if element.symbol == 'Br':
+                self.assertTrue(atom.is_bromine())
+            else:
+                self.assertFalse(atom.is_bromine())
+
     def test_is_iodine(self):
         """
         Test the Atom.is_iodine() method.
