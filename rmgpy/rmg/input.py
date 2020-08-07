@@ -816,7 +816,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
         'correlated': correlated,
         'localnum': localNumber,
         'globalnum': globalNumber,
-        'time': terminationTime,
+        'time': Quantity(terminationTime) if terminationTime else terminationTime,
         'pcetime': pceRunTime,
         'pcetol': pceErrorTol,
         'pceevals': pceMaxEvals,

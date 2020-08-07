@@ -61,7 +61,7 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError
+from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.kinetics import ThirdBody
 from rmgpy.molecule import Molecule
@@ -1121,12 +1121,26 @@ class RMG(util.Subject):
                                     time_criteria = ([criteria.time.value], criteria.time.units)
                                     break
                             else:
-                                time_criteria = self.uncertainty['time']
+                                if self.uncertainty['time']:
+                                    time_criteria = ([self.uncertainty['time'].value], self.uncertainty['time'].units)
+                                else:
+                                    raise InputError('If terminationTime was not specified in the reactor options block, it'
+                                                    'must be specified in the uncertainty options block for global uncertainty'
+                                                    'analysis.')
+
+                                    
                             Tlist = ([reaction_system.sens_conditions['T']], 'K')
-                            Plist = ([reaction_system.sens_conditions['P']], 'Pa')
+                            try:
+                                Plist = ([reaction_system.sens_conditions['P']], 'Pa')
+                            except KeyError:
+                                #LiquidReactor
+                                Plist = ([1e8], 'Pa')
+                                logging.warning('Using 1e8 Pa as the reaction system pressure to approximate liquid phase density.')
+
                             mol_frac_list = [reaction_system.sens_conditions.copy()]
                             del mol_frac_list[0]['T']
-                            del mol_frac_list[0]['P']
+                            if 'P' in mol_frac_list[0]:
+                                del mol_frac_list[0]['P']
 
                             # Set up Cantera reactor
                             job = Cantera(species_list=uncertainty.species_list, reaction_list=uncertainty.reaction_list,
