@@ -564,7 +564,7 @@ class Reaction:
             dSrxn += product.get_entropy(T)
         return dSrxn
 
-    def get_free_energy_of_reaction(self, T, potential=None):
+    def get_free_energy_of_reaction(self, T, potential=0):
         """
         Return the Gibbs free energy of reaction in J/mol evaluated at
         temperature `T` in K and potential in Volts (if applicable)
@@ -573,7 +573,7 @@ class Reaction:
         dGrxn = 0.0
 
         if self.is_charge_transfer_reaction() and self.V0:
-            dGrxn = -1 * abs(self.ne) * constants.F * self.V0.value_si # G = -nFE0 in J/mol
+            dGrxn = -1 * abs(self.ne) * constants.F * self.V0.value_si # G = -nFE0 in J/mol, not sure about sign
         else:
             for reactant in self.reactants:
                 if not reactant.is_electron():
@@ -590,12 +590,12 @@ class Reaction:
                         logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
                         raise
 
-        if self.is_charge_transfer_reaction() and potential is not None:
-            dGrxn += (dGrxn - self.ne * constants.F * potential)    # Not sure about sign here or equation G = -nFE0 + nF(V0-V)
-                                                                    # where nF(V0-V) is from applied potential
+        if self.is_charge_transfer_reaction() and potential != 0:
+            dGrxn -=  self.ne * constants.F * potential    # Not sure about sign here
+
         return dGrxn
 
-    def get_equilibrium_constant(self, T, potential=None, type='Kc', surface_site_density=2.5e-05):
+    def get_equilibrium_constant(self, T, potential=0, type='Kc', surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
         temperature `T` in K and reference `surface_site_density`
