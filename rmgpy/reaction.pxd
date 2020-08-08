@@ -85,9 +85,9 @@ cdef class Reaction:
 
     cpdef double get_entropy_of_reaction(self, double T)
 
-    cpdef double get_free_energy_of_reaction(self, double T, V=?)
+    cpdef double get_free_energy_of_reaction(self, double T, potential=?)
 
-    cpdef double get_equilibrium_constant(self, double T, V=?, str type=?, double surface_site_density=?)
+    cpdef double get_equilibrium_constant(self, double T, potential=?, str type=?, double surface_site_density=?)
 
     cpdef np.ndarray get_enthalpies_of_reaction(self, np.ndarray Tlist)
 
@@ -109,9 +109,9 @@ cdef class Reaction:
 
     cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef reverse_surface_charge_transfer_arrhenius_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?, double V=?)
+    cpdef reverse_surface_charge_transfer_arrhenius_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?, double potential=?)
 
-    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double V=?)
+    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double potential=?)
 
     cpdef np.ndarray calculate_tst_rate_coefficients(self, np.ndarray Tlist)
 
