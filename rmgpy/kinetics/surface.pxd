@@ -77,10 +77,13 @@ cdef class SurfaceChargeTransfer(KineticsModel):
     cdef public ScalarQuantity _n
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
+    cdef public ScalarQuantity _V0
     cdef public ScalarQuantity _a
     cdef public ScalarQuantity _ne
 
-    cpdef double get_rate_coefficient(self, double T, double P=?, double V=?) except -1
+    cpdef double get_activation_energy_from_potential(self, double V=?, bint non_negative=?)
+
+    cpdef double get_rate_coefficient(self, double T, double V=?) except -1
 
     cpdef change_rate(self, double factor)
 
