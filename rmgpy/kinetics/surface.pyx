@@ -527,6 +527,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
     `a`             The charge transfer coefficient
     `A`             The preexponential factor
     `T0`            The reference temperature
+    `V0`            The reference potential
     `n`             The temperature exponent
     `Ea`            The activation energy
     `ne`            The stochiometry coeff for electrons (negative if reactant, positive if product)
@@ -539,7 +540,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
 
     """
 
-    def __init__(self, a=0.5, A=None, n=0.0, Ea=None, T0=(1.0, "K"), ne=1, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
+    def __init__(self, a=0.5, A=None, n=0.0, Ea=None, T0=(1.0, "K"), V0=(0.0, "V"), ne=-1, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
                  uncertainty=None, comment=''):
 
         self.A = A
@@ -548,6 +549,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         self.T0 = T0
         self.a = a
         self.ne = ne
+        self.V0 = V0
 
     property A:
         """The preexponential factor."""
@@ -576,6 +578,13 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             return self._T0
         def __set__(self, value):
             self._T0 = quantity.Temperature(value)
+
+    property V0:
+        """The reference potential"""
+        def __get__(self):
+            return self._V0
+        def __set__(self, value):
+            self._V0 = quantity.Potential(value)
 
     property ne:
         """The number of electrons transferred."""
@@ -613,20 +622,35 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         return (SurfaceChargeTransfer, (self.a, self.A, self.n, self.ne, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.uncertainty, self.comment))
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0, double V=0.0) except -1:
+    cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=True):
+        """
+        Return the effective activation energy (in J/mol) at specificed potential (in Volts).
+        """
+        cdef double ne, Ea, V0
+        
+        ne = self._ne.value_si
+        Ea = self._Ea.value_si
+        V0 = self._V0.value_si
+
+        Ea -= ne * constants.F * (V-V0)
+
+        if non_negative is True:
+            return max(0.0,Ea)
+        else:
+            return Ea
+
+    cpdef double get_rate_coefficient(self, double T, double V=0.0) except -1:
         """
         Return the rate coefficient in the appropriate combination of m^2,
         mol, and s at temperature `T` in K.
         """
-        cdef double A, n, Ea, T0, ne, a
+        cdef double A, n, Ea, T0
         A = self._A.value_si
-        a = self._a.value_si
         n = self._n.value_si
-        ne = self._ne.value_si
-        Ea = self._Ea.value_si
+        Ea = self.get_activation_energy_from_potential(V)
         T0 = self._T0.value_si
 
-        return A * (T / T0) ** n * exp(-Ea / (constants.R * T)) * exp((a * ne * constants.F * V) / (constants.R * T)) # NOT SURE ABOUT SIGN
+        return A * (T / T0) ** n * exp(-Ea / (constants.R * T)) 
 
     cpdef change_t0(self, double T0):
         """
