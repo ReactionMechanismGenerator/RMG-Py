@@ -119,6 +119,7 @@ class RMG(util.Subject):
     ----------------------------------- ------------------------------------------------
     `model_settings_list`               List of ModelSettings objects containing information related to how to manage species/reaction movement
     `simulator_settings_list`           List of SimulatorSettings objects containing information on how to run simulations
+    `init_react_tuples`                 List of name tuples of species to react at beginning of run
     `trimolecular`                      ``True`` to consider reactions between three species (i.e., if trimolecular reaction families are present)
     `unimolecular_threshold`            Array of flags indicating whether a species is above the unimolecular reaction threshold
     `bimolecular_threshold`             Array of flags indicating whether two species are above the bimolecular reaction threshold
@@ -195,6 +196,7 @@ class RMG(util.Subject):
         self.balance_species = None
 
         self.filter_reactions = False
+        self.init_react_tuples = []
         self.trimolecular = False
         self.unimolecular_react = None
         self.bimolecular_react = None
