@@ -119,6 +119,7 @@ class RMG(util.Subject):
     ----------------------------------- ------------------------------------------------
     `model_settings_list`               List of ModelSettings objects containing information related to how to manage species/reaction movement
     `simulator_settings_list`           List of SimulatorSettings objects containing information on how to run simulations
+    `init_react_tuples`                 List of name tuples of species to react at beginning of run
     `trimolecular`                      ``True`` to consider reactions between three species (i.e., if trimolecular reaction families are present)
     `unimolecular_threshold`            Array of flags indicating whether a species is above the unimolecular reaction threshold
     `bimolecular_threshold`             Array of flags indicating whether two species are above the bimolecular reaction threshold
@@ -195,6 +196,7 @@ class RMG(util.Subject):
         self.balance_species = None
 
         self.filter_reactions = False
+        self.init_react_tuples = []
         self.trimolecular = False
         self.unimolecular_react = None
         self.bimolecular_react = None
@@ -628,6 +630,8 @@ class RMG(util.Subject):
                         self.reaction_model.core.species)  # call the function to identify indices in the solver
 
         self.initialize_reaction_threshold_and_react_flags()
+        if self.filter_reactions and self.init_react_tuples:
+            self.react_init_tuples()
         self.reaction_model.initialize_index_species_dict()
 
         self.initialize_seed_mech()
@@ -1699,7 +1703,40 @@ class RMG(util.Subject):
                         self.bimolecular_react[:num_restart_spcs, :num_restart_spcs] = False
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
+                
+    def react_init_tuples(self):
+        """
+        Reacts tuples given in the react block
+        """
+        logging.info("Reacting Given Initial Tuples...")
+        num_core_species = len(self.reaction_model.core.species)
+        self.unimolecular_react = np.zeros((num_core_species), bool)
+        self.bimolecular_react = np.zeros((num_core_species, num_core_species), bool)
+        if self.trimolecular:
+            self.trimolecular_react = np.zeros((num_core_species, num_core_species, num_core_species), bool)
 
+        sts = [spc.label for spc in self.reaction_model.core.species]
+        for tup in self.init_react_tuples:
+            if len(tup) == 1:
+                ind = sts.index(tup[0])
+                if not self.unimolecular_threshold[ind]:
+                    self.unimolecular_react[ind] = True
+                    self.unimolecular_threshold[ind] = True
+            elif len(tup) == 2:
+                inds = sorted([sts.index(it) for it in tup])
+                if not self.bimolecular_threshold[inds[0], inds[1]]:
+                    self.bimolecular_react[inds[0], inds[1]] = True 
+                    self.bimolecular_threshold[inds[0], inds[1]] = True
+            elif self.trimolecular and len(tup) == 3:
+                inds = sorted([sts.index(it) for it in tup])
+                if not self.trimolecular_threshold[inds[0], inds[1], inds[2]]:
+                    self.trimolecular_react[inds[0], inds[1], inds[2]] = True 
+                    self.trimolecular_threshold[inds[0], inds[1], inds[2]] = True
+        self.reaction_model.enlarge(react_edge=True,
+                                    unimolecular_react=self.unimolecular_react,
+                                    bimolecular_react=self.bimolecular_react,
+                                    trimolecular_react=self.trimolecular_react)
+        
     def update_reaction_threshold_and_react_flags(self,
                                                   rxn_sys_unimol_threshold=None,
                                                   rxn_sys_bimol_threshold=None,
