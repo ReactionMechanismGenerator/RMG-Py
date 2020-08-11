@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rmgpy.thermo.NASA &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -147,14 +147,14 @@ temperature range.</p>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.NASA.change_base_enthalpy">
-<code class="sig-name descname">change_base_enthalpy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double deltaH</em><span class="sig-paren">)</span> &#x2192; NASA<a class="headerlink" href="#rmgpy.thermo.NASA.change_base_enthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">change_base_enthalpy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double deltaH</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA">NASA</a><a class="headerlink" href="#rmgpy.thermo.NASA.change_base_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add deltaH in J/mol to the base enthalpy of formation H298 and return the
 modified NASA object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.NASA.change_base_entropy">
-<code class="sig-name descname">change_base_entropy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double deltaS</em><span class="sig-paren">)</span> &#x2192; NASA<a class="headerlink" href="#rmgpy.thermo.NASA.change_base_entropy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">change_base_entropy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double deltaS</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA">NASA</a><a class="headerlink" href="#rmgpy.thermo.NASA.change_base_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add deltaS in J/molK to the base entropy of formation S298 and return the
 modified NASA object</p>
 </dd></dl>
@@ -300,7 +300,7 @@ returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.NASA.select_polynomial">
-<code class="sig-name descname">select_polynomial</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; NASAPolynomial<a class="headerlink" href="#rmgpy.thermo.NASA.select_polynomial" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">select_polynomial</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial">NASAPolynomial</a><a class="headerlink" href="#rmgpy.thermo.NASA.select_polynomial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -311,14 +311,14 @@ returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.NASA.to_thermo_data">
-<code class="sig-name descname">to_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; ThermoData<a class="headerlink" href="#rmgpy.thermo.NASA.to_thermo_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData">ThermoData</a><a class="headerlink" href="#rmgpy.thermo.NASA.to_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the NASAPolynomial model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoData</span></code></a> object.</p>
 <p>If Cp0 and CpInf are omitted or 0, they are None in the returned ThermoData.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.NASA.to_wilhoit">
-<code class="sig-name descname">to_wilhoit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Wilhoit<a class="headerlink" href="#rmgpy.thermo.NASA.to_wilhoit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_wilhoit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit">Wilhoit</a><a class="headerlink" href="#rmgpy.thermo.NASA.to_wilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a <code class="xref py py-class docutils literal notranslate"><span class="pre">MultiNASA</span></code> object <cite>multiNASA</cite> to a <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wilhoit</span></code></a>
 object. You must specify the linearity of the molecule <cite>linear</cite>, the number
 of vibrational modes <cite>Nfreq</cite>, and the number of hindered rotor modes
@@ -454,7 +454,7 @@ limits at zero and infinite temperature.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

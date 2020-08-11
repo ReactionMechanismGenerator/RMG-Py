@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rmgpy.molecule.Group &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -122,7 +122,7 @@ exist in the graph, or a <code class="xref py py-class docutils literal notransl
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Group.add_implicit_atoms_from_atomtype">
-<code class="sig-name descname">add_implicit_atoms_from_atomtype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Group<a class="headerlink" href="#rmgpy.molecule.Group.add_implicit_atoms_from_atomtype" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_implicit_atoms_from_atomtype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group">Group</a><a class="headerlink" href="#rmgpy.molecule.Group.add_implicit_atoms_from_atomtype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: a modified group with implicit atoms added
 Add implicit double/triple bonded atoms O, S or R, for which we will use a C</p>
 <p>Not designed to work with wildcards</p>
@@ -130,7 +130,7 @@ Add implicit double/triple bonded atoms O, S or R, for which we will use a C</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Group.add_implicit_benzene">
-<code class="sig-name descname">add_implicit_benzene</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Group<a class="headerlink" href="#rmgpy.molecule.Group.add_implicit_benzene" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_implicit_benzene</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group">Group</a><a class="headerlink" href="#rmgpy.molecule.Group.add_implicit_benzene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: A modified group with any implicit benzene rings added</p>
 <p>This method currently does not if there are wildcards in atomtypes or bond orders
 The current algorithm also requires that all Cb and Cbf are atomtyped</p>
@@ -211,7 +211,7 @@ original vertices and edges are used in the new graph.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Group.create_and_connect_atom">
-<code class="sig-name descname">create_and_connect_atom</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list atomtypes</em>, <em class="sig-param">GroupAtom connecting_atom</em>, <em class="sig-param">list bond_orders</em><span class="sig-paren">)</span> &#x2192; GroupAtom<a class="headerlink" href="#rmgpy.molecule.Group.create_and_connect_atom" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_and_connect_atom</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list atomtypes</em>, <em class="sig-param">GroupAtom connecting_atom</em>, <em class="sig-param">list bond_orders</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom">GroupAtom</a><a class="headerlink" href="#rmgpy.molecule.Group.create_and_connect_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method creates an non-radical, uncharged, :class:GroupAtom with specified list of atomtypes and
 connects it to one atom of the group, ‘connecting_atom’. This is useful for making sample atoms.</p>
 <dl class="field-list simple">
@@ -335,7 +335,7 @@ same label, the value is converted to a list of these atoms.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Group.get_bond">
-<code class="sig-name descname">get_bond</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">GroupAtom atom1</em>, <em class="sig-param">GroupAtom atom2</em><span class="sig-paren">)</span> &#x2192; GroupBond<a class="headerlink" href="#rmgpy.molecule.Group.get_bond" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_bond</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">GroupAtom atom1</em>, <em class="sig-param">GroupAtom atom2</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond">GroupBond</a><a class="headerlink" href="#rmgpy.molecule.Group.get_bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the bond connecting atoms <cite>atom1</cite> and <cite>atom2</cite>.</p>
 </dd></dl>
 
@@ -579,7 +579,7 @@ cycles in the graph, or <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Group.make_sample_molecule">
-<code class="sig-name descname">make_sample_molecule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; Molecule<a class="headerlink" href="#rmgpy.molecule.Group.make_sample_molecule" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_sample_molecule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="molecule.html#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule">Molecule</a><a class="headerlink" href="#rmgpy.molecule.Group.make_sample_molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: A sample class :Molecule: from the group</p>
 </dd></dl>
 
@@ -593,7 +593,7 @@ object is returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.Group.merge_groups">
-<code class="sig-name descname">merge_groups</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Group other</em>, <em class="sig-param">bool keep_identical_labels=False</em><span class="sig-paren">)</span> &#x2192; Group<a class="headerlink" href="#rmgpy.molecule.Group.merge_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">merge_groups</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Group other</em>, <em class="sig-param">bool keep_identical_labels=False</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group">Group</a><a class="headerlink" href="#rmgpy.molecule.Group.merge_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function takes <cite>other</cite> :class:Group object and returns a merged :class:Group object based
 on overlapping labeled atoms between self and other</p>
 <p>Currently assumes <cite>other</cite> can be merged at the closest labelled atom
@@ -952,7 +952,7 @@ isomorphism checks.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

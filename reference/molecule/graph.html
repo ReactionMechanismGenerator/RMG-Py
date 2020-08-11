@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rmgpy.molecule.graph.Graph &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -71,20 +71,20 @@ will be raised if the edge does not exist. All edges of a vertex can be
 accessed using the <a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edges" title="rmgpy.molecule.graph.Graph.get_edges"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_edges()</span></code></a> method or <code class="docutils literal notranslate"><span class="pre">vertex.edges</span></code>.</p>
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Graph.add_edge">
-<code class="sig-name descname">add_edge</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Edge edge</em><span class="sig-paren">)</span> &#x2192; Edge<a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_edge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_edge</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Edge edge</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge">Edge</a><a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>edge</cite> to the graph. The two vertices in the edge must already
 exist in the graph, or a <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Graph.add_vertex">
-<code class="sig-name descname">add_vertex</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex vertex</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_vertex" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_vertex</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex vertex</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="vertex.html#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex">Vertex</a><a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a <cite>vertex</cite> to the graph. The vertex is initialized with no edges.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Graph.copy">
-<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool deep=False</em><span class="sig-paren">)</span> &#x2192; Graph<a class="headerlink" href="#rmgpy.molecule.graph.Graph.copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool deep=False</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph">Graph</a><a class="headerlink" href="#rmgpy.molecule.graph.Graph.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current graph. If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a deep copy
 is made: copies of the vertices and edges are used in the new graph.
 If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
@@ -180,7 +180,7 @@ Takes the RC and recursively merges all cycles which share vertices.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Graph.get_edge">
-<code class="sig-name descname">get_edge</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex vertex1</em>, <em class="sig-param">Vertex vertex2</em><span class="sig-paren">)</span> &#x2192; Edge<a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_edge</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex vertex1</em>, <em class="sig-param">Vertex vertex2</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge">Edge</a><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the edge connecting vertices <cite>vertex1</cite> and <cite>vertex2</cite>.</p>
 </dd></dl>
 
@@ -336,7 +336,7 @@ cycles in the graph, or <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Graph.merge">
-<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Graph other</em><span class="sig-paren">)</span> &#x2192; Graph<a class="headerlink" href="#rmgpy.molecule.graph.Graph.merge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Graph other</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph">Graph</a><a class="headerlink" href="#rmgpy.molecule.graph.Graph.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge two graphs so as to store them in a single Graph object.</p>
 </dd></dl>
 
@@ -516,7 +516,7 @@ used to accelerate the isomorphism checking.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

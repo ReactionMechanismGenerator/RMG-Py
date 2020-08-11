@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rmgpy.thermo.ThermoData &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -298,7 +298,7 @@ returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.ThermoData.to_nasa">
-<code class="sig-name descname">to_nasa</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double Tmin</em>, <em class="sig-param">double Tmax</em>, <em class="sig-param">double Tint</em>, <em class="sig-param">bool fixedTint=False</em>, <em class="sig-param">bool weighting=True</em>, <em class="sig-param">int continuity=3</em><span class="sig-paren">)</span> &#x2192; NASA<a class="headerlink" href="#rmgpy.thermo.ThermoData.to_nasa" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_nasa</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double Tmin</em>, <em class="sig-param">double Tmax</em>, <em class="sig-param">double Tint</em>, <em class="sig-param">bool fixedTint=False</em>, <em class="sig-param">bool weighting=True</em>, <em class="sig-param">int continuity=3</em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA">NASA</a><a class="headerlink" href="#rmgpy.thermo.ThermoData.to_nasa" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the object to a <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> object. You must specify the
 minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K, as
 well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge
@@ -329,7 +329,7 @@ polynomial (rather than two).</p>
 
 <dl class="py method">
 <dt id="rmgpy.thermo.ThermoData.to_wilhoit">
-<code class="sig-name descname">to_wilhoit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">B</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Wilhoit<a class="headerlink" href="#rmgpy.thermo.ThermoData.to_wilhoit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_wilhoit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">B</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit">Wilhoit</a><a class="headerlink" href="#rmgpy.thermo.ThermoData.to_wilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Benson model to a Wilhoit model. For the conversion to
 succeed, you must have set the <cite>Cp0</cite> and <cite>CpInf</cite> attributes of the
 Benson model.</p>
@@ -431,7 +431,7 @@ Benson model.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2020, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
