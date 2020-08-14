@@ -839,11 +839,8 @@ def load_species_dictionary(path):
                 adjlist += line
         else:  #reach end of file
             if adjlist.strip() != '':
-<<<<<<< HEAD
-                species = Species().from_adjacency_list(adjlist)
-=======
                 if len(re.findall(r'([LR]\d?)', adjlist)) != 0:
-                    frag = Fragment().fromAdjacencyList(adjlist)
+                    frag = Fragment().from_adjacency_list(adjlist)
                     species = Species(molecule = [frag])
                     for label in adjlist.splitlines():
                         if label.strip():
@@ -853,8 +850,7 @@ def load_species_dictionary(path):
                     if len(label.split()) > 0 and not label.split()[0].isdigit():
                         species.label = label.strip()
                 else:
-                    species = Species().fromAdjacencyList(adjlist)
->>>>>>> modify for loading Chemkin file and simulation in Cantera.
+                    species = Species().from_adjacency_list(adjlist)
                 species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:

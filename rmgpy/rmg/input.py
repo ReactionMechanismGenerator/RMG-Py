@@ -204,7 +204,7 @@ def fragment_adj(string):
     from afm.fragment import Fragment
     return Fragment().from_adjacency_list(string)
 
-def fragment_SMILES(string):
+def fragment_smiles(string):
     from afm.fragment import Fragment
     return Fragment().from_smiles_like_string(string)
 
