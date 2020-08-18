@@ -144,24 +144,24 @@ class TestSurfaceReaction(unittest.TestCase):
 
         s_h2 = Species(
             molecule=[m_h2],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500, 2000],
                                      "K"),
                               Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003,
-                                       7.103, 7.502], "cal/(mol*K)"),
+                                       7.103, 7.502, 8.17], "cal/(mol*K)"),
                               H298=(0, "kcal/mol"),
                               S298=(31.129, "cal/(mol*K)")))
         s_x = Species(
             molecule=[m_x],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500, 2000],
                                      "K"),
-                              Cpdata=([0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
+                              Cpdata=([0., 0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
                               H298=(0.0, "kcal/mol"),
                               S298=(0.0, "cal/(mol*K)")))
         s_hx = Species(
             molecule=[m_hx],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500, 2000],
                                      "K"),
-                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57, 5.82], "cal/(mol*K)"),
                               H298=(-11.26, "kcal/mol"),
                               S298=(0.44, "cal/(mol*K)")))
 
@@ -254,6 +254,9 @@ class TestSurfaceReaction(unittest.TestCase):
                                numpy.log10(target),
                                places=0)
 
+    def test_get_rate_coefficient_units_from_reaction_order(self):
+
+        self.assertEqual(self.rxn1s.generate_reverse_rate_coefficient().A.units, 'm^2/(mol*s)')
 
 class TestReaction(unittest.TestCase):
     """

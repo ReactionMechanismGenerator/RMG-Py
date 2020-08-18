@@ -41,27 +41,41 @@ from rmgpy.molecule import Molecule
 
 ################################################################################
 
-cpdef str get_rate_coefficient_units_from_reaction_order(order):
+cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
     """
-    Given a reaction `order`, return the corresponding SI units of the rate
+    Given a reaction `order` with `n_gas` and `n_surf` species, 
+    return the corresponding SI units of the rate
     coefficient. These are the units that rate coefficients are stored in
     internally, as well as the units of the rate coefficient obtained using
     the ``simplified`` attribute of a :class:`Quantity` object that represents
     a rate coefficient. Raises a :class:`ValueError` if the units could not be
     determined.
     """
-    if order == 0:
-        kunits = 'mol/(m^3*s)'
-    elif order == 1:
-        kunits = 's^-1'
-    elif order == 2:
-        kunits = 'm^3/(mol*s)'
-    elif order == 3:
-        kunits = 'm^6/(mol^2*s)'
-    elif order == 4:
-        kunits = 'm^9/(mol^3*s)'
+
+    if n_surf == 0: # Volume units
+        if n_gas == 0: kunits = 'mol/(m^3*s)'
+        elif n_gas == 1: kunits = 's^-1'
+        elif n_gas == 2: kunits = 'm^3/(mol*s)'
+        elif n_gas == 3: kunits = 'm^6/(mol^2*s)'
+        elif n_gas == 4: kunits = 'm^9/(mol^3*s)'
+    elif n_surf == 1: # Area Units
+        if n_gas == 0: kunits = 's^-1'
+        elif n_gas == 1: kunits = 'm^3/(mol*s)'
+        elif n_gas == 2: kunits = 'm^6/(mol^2*s)'
+        elif n_gas == 3: kunits = 'm^9/(mol^3*s)'
+    elif n_surf == 2: # Area Units 
+        if n_gas == 0: kunits = 'm^2/(mol*s)'
+        elif n_gas == 1: kunits = 'm^5/(mol^2*s)'
+        elif n_gas == 2: kunits = 'm^8/(mol^3*s)'
+        elif n_gas == 3: kunits = 'm^11/(mol^4*s)'
+    elif n_surf == 3: # Area Units 
+        if n_gas == 0: kunits = 'm^4/(mol^2*s)' 
+        elif n_gas == 1: kunits = 'm^7/(mol^3*s)'
+        elif n_gas == 2: kunits = 'm^10/(mol^4*s)'
+        elif n_gas == 3: kunits = 'm^13/(mol^5*s)'
     else:
-        raise ValueError('Invalid reaction order {0}.'.format(order))
+        raise ValueError('Invalid reaction order of {0} gas {1} surface species.'.format(n_gas,n_surf))
+    
     return kunits
 
 cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1:

@@ -841,7 +841,16 @@ class Reaction:
         )
 
         # Get the units for the reverse rate coefficient
-        kunits = get_rate_coefficient_units_from_reaction_order(len(self.products))
+        try:
+            surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
+        except IndexError:
+            surf_prods = []
+            logging.warning(f"Species do not have an rmgpy.molecule.Molecule "  
+                            "Cannot determine phases of species. We will assume gas"
+                            )
+        n_surf = len(surf_prods)
+        n_gas = len(self.products) - len(surf_prods)
+        kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
 
         kf = self.kinetics
         if isinstance(kf, KineticsData):
@@ -906,7 +915,7 @@ class Reaction:
             return kr
 
         elif isinstance(kf, ThirdBody):
-            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = ThirdBody(krLow, *parameters[1:])
@@ -914,7 +923,7 @@ class Reaction:
 
         elif isinstance(kf, Lindemann):
             krHigh = self.reverse_arrhenius_rate(kf.arrheniusHigh, kunits)
-            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = Lindemann(krHigh, krLow, *parameters[2:])
@@ -922,7 +931,7 @@ class Reaction:
 
         elif isinstance(kf, Troe):
             krHigh = self.reverse_arrhenius_rate(kf.arrheniusHigh, kunits)
-            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = Troe(krHigh, krLow, *parameters[2:])
