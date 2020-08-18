@@ -1435,13 +1435,14 @@ class ThermoDatabase(object):
         if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        logging.debug(("Trying to generate thermo for surface species"
-                       " with these {} resonance isomer(s):").format(len(species.molecule)))
+        logging.debug("Trying to generate thermo for surface species with these %d resonance isomer(s):",
+                      len(species.molecule))
         molecule = species.molecule[0]
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
         dummy_molecule = molecule.copy(deep=True)
         sites_to_remove = []
+        adsorbed_atoms = []
         for atom in dummy_molecule.atoms:
             if atom.is_surface_site():
                 sites_to_remove.append(atom)
@@ -1453,6 +1454,7 @@ class ThermoDatabase(object):
             else:
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
                 bonded_atom = list(site.bonds.keys())[0]
+                adsorbed_atoms.append(bonded_atom)
                 bond = site.bonds[bonded_atom]
                 dummy_molecule.remove_bond(bond)
                 if bond.is_single():
@@ -1470,6 +1472,19 @@ class ThermoDatabase(object):
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             dummy_molecule.remove_atom(site)
+
+        if len(adsorbed_atoms) == 2:
+            # Bidentate adsorption.
+            # Try to turn adjacent biradical into a bond.
+            try:
+                bond = adsorbed_atoms[0].bonds[adsorbed_atoms[1]]
+            except KeyError:
+                pass # the two adsorbed atoms are not bonded to each other
+            else:
+                bond.increment_order()
+                adsorbed_atoms[0].decrement_radical()
+                adsorbed_atoms[1].decrement_radical()
+                
         dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
