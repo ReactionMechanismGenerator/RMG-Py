@@ -706,7 +706,30 @@ multiplicity 2
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
 
+    def test_adsorbate_thermo_generation_bidentate_asymmetric(self):
+        """Test thermo generation for a bidentate adsorbate, CH=XCH2X
 
+        CH-CH2
+        ‖  |
+        X  X
+        """
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,D}
+3 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+4 C u0 p0 c0 {2,D} {3,S} {7,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+7 H u0 p0 c0 {4,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertFalse('radical' in thermo.comment,
+                         "Applied radical correction instead of finding C2H3 in the DFT library")
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
 
     def test_adsorbate_thermo_generation_bidentate_nonadjacent(self):
         """Test thermo generation for a bidentate adsorbate, CH2X-CH2-CH2X
