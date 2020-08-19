@@ -232,6 +232,7 @@ cdef class Graph(object):
         """
         self.vertices.append(vertex)
         vertex.edges = dict()
+        vertex.reset_connectivity_values()
         return vertex
 
     cpdef Edge add_edge(self, Edge edge):
@@ -243,6 +244,7 @@ cdef class Graph(object):
             raise ValueError('Attempted to add edge between vertices not in the graph.')
         edge.vertex1.edges[edge.vertex2] = edge
         edge.vertex2.edges[edge.vertex1] = edge
+        self.reset_connectivity_values()
         return edge
 
     cpdef list get_all_edges(self):
@@ -300,6 +302,7 @@ cdef class Graph(object):
             del vertex2.edges[vertex]
         vertex.edges = dict()
         self.vertices.remove(vertex)
+        self.reset_connectivity_values()
 
     cpdef remove_edge(self, Edge edge):
         """
@@ -309,6 +312,7 @@ cdef class Graph(object):
         """
         del edge.vertex1.edges[edge.vertex2]
         del edge.vertex2.edges[edge.vertex1]
+        self.reset_connectivity_values()
 
     cpdef Graph copy(self, bint deep=False):
         """
