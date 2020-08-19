@@ -707,6 +707,38 @@ multiplicity 2
                         'Adsorption correction not added to thermo.')
 
 
+
+    def test_adsorbate_thermo_generation_bidentate_nonadjacent(self):
+        """Test thermo generation for a bidentate adsorbate, CH2X-CH2-CH2X
+
+        CH2-CH2-CH2
+        |       |
+        X       X
+        """
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,S} {7,S} {10,S}
+3 C u0 p0 c0 {1,S} {8,S} {9,S} {11,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {3,S}
+9 H u0 p0 c0 {3,S}
+10 X u0 p0 c0 {2,S}
+11 X u0 p0 c0 {3,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        #self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
+        self.assertTrue('radical' in thermo.comment,
+                        "Expected to need radical correctinos to find CH2j-CH2-CH2j")
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        "Adsorption correction not added to thermo.")
+
 class TestThermoAccuracy(unittest.TestCase):
     """
     Contains tests for accuracy of thermo estimates and symmetry calculations.
