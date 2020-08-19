@@ -1415,10 +1415,13 @@ class ThermoDatabase(object):
             find_cp0_and_cpinf(species, thermo)
 
         # now edit the adsorptionThermo using LSR
+        comments = []
         for element in 'CHON':
-            change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
-            thermo.H298.value_si += change_in_binding_energy
-        thermo.comment += " Binding energy corrected by LSR."
+            if normalized_bonds[element]:
+                change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
+                thermo.H298.value_si += change_in_binding_energy
+                comments.append(f'{normalized_bonds[element]:.2f}{element}')
+        thermo.comment += " Binding energy corrected by LSR ({})".format('+'.join(comments))
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
