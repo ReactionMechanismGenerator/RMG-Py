@@ -614,6 +614,45 @@ multiplicity 2
         thermo_gav = self.database.get_thermo_data_from_groups(spc)
         self.assertIn('missing(N3s-CbCbCs)', thermo_gav.comment)
 
+    def test_adsorbate_thermo_generation_gav(self):
+        """Test thermo generation for adsorbate from Group Additivity value.
+
+        Ensure that molecule list is only reordered, and not changed after matching library value"""
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 X u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.databaseWithoutLibraries.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('group additivity estimation' in thermo.comment, 'Thermo not found from group additivity, test purpose not fulfilled.')
+        self.assertTrue('radical' in thermo.comment, "Didn't apply radical correction during group estimation.")
+        self.assertTrue('Adsorption correction' in thermo.comment, 'Adsorption correction not added to thermo.')
+
+    def test_adsorbate_thermo_generation_library(self):
+        """Test thermo generation for adsorbate from gas phase library value.
+
+        Ensure that molecule list is only reordered, and not changed after matching library value"""
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 X u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
+        self.assertFalse('radical' in thermo.comment, "Applied radical correction instead of finding CH3 in the library.")
+        self.assertTrue('Adsorption correction' in thermo.comment, 'Adsorption correction not added to thermo.')
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """
