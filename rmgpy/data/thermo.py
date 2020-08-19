@@ -1469,8 +1469,8 @@ class ThermoDatabase(object):
                     bonded_atom.increment_lone_pairs()
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
-
             dummy_molecule.remove_atom(site)
+        dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
         logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
