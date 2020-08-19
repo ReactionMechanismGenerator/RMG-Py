@@ -120,7 +120,7 @@ def get_atom_correction(level_of_theory: Union[LevelOfTheory, CompositeLevelOfTh
             try:
                 atom_energies = data.atom_energies[energy_level.simple()]
             except KeyError:
-                raise AtomEnergyCorrectionError(f'Missing atom energies for {energy_level}')
+                return corr
             else:
                 logging.warning(f'No exact atom energy match found for {energy_level}.'
                                 f' Using {energy_level.simple()} instead.')
