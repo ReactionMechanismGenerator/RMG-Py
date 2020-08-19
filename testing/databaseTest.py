@@ -125,7 +125,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 yield test, family_name
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
-            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
+            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene']
             generated_trees = ["R_Recombination"]
 
             if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
