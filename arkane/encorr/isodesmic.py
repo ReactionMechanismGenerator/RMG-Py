@@ -465,6 +465,10 @@ def _clean_up_constraints(target_constraints, constraint_matrix):
 
     # Remove any columns that are all zeros
     zero_indices = np.where(~constraint_matrix.any(axis=0))[0]
+    # Check that this wouldn't eliminate a non-zero target entry
+    for z in zero_indices:
+        if target_constraints[z] != 0:  # This problem is not solvable. Return None to signal this
+            return None, None
     indices = [i for i in range(constraint_matrix.shape[1]) if i not in zero_indices]
     constraint_matrix = np.take(constraint_matrix, indices=indices, axis=1)
     target_constraints = np.take(target_constraints, indices=indices)
@@ -522,6 +526,8 @@ class ErrorCancelingScheme:
 
         # Remove unnecessary constraints
         target_constraint, c_matrix = _clean_up_constraints(self.target_constraint, c_matrix)
+        if target_constraint is None or c_matrix is None:  # The problem is not solvable
+            return None, None
 
         # Setup MILP problem
         c_matrix = np.tile(c_matrix, (2, 1))
