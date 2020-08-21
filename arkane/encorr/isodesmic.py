@@ -42,7 +42,6 @@ https://doi.org/10.1021/jp404158v
 """
 
 import signal
-from collections import deque
 from copy import deepcopy
 from pyutilib.common import ApplicationError
 from typing import List, Union
@@ -645,12 +644,13 @@ class ErrorCancelingScheme:
         Returns:
             list: A list of the found error canceling reactions
         """
-        subset_queue = deque()
+        subset_queue = []
         subset_queue.append(np.arange(0, len(self.reference_species)))
         reaction_list = []
+        reaction_indices = []
 
         while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
-            subset = subset_queue.popleft()
+            subset = subset_queue.pop()
             if len(subset) == 0:
                 continue
             reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
@@ -661,6 +661,18 @@ class ErrorCancelingScheme:
 
                 for index in subset_indices:
                     subset_queue.append(np.delete(subset, index))
+
+            # Clean up the queue to remove subsets that would allow for already found reactions
+            new_queue = []
+            reaction_indices.append([subset[i] for i in subset_indices])
+            for s in subset_queue:
+                for r in reaction_indices:
+                    if all([i in s for i in r]):
+                        break
+                else:
+                    new_queue.append(s)
+
+            subset_queue = new_queue
 
         return reaction_list
 
