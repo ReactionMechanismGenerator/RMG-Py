@@ -644,8 +644,7 @@ class ErrorCancelingScheme:
         Returns:
             list: A list of the found error canceling reactions
         """
-        subset_queue = []
-        subset_queue.append(np.arange(0, len(self.reference_species)))
+        subset_queue = [np.arange(0, len(self.reference_species))]
         reaction_list = []
         reaction_indices = []
 
