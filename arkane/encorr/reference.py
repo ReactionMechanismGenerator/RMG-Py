@@ -36,7 +36,9 @@ import os
 import string
 from collections import namedtuple
 
+import openbabel as obl
 import yaml
+from rdkit import RDLogger
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, symbol_by_number
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
@@ -466,6 +468,9 @@ class ReferenceDatabase(object):
             ignore_incomplete (bool): If ``True`` only species with both reference and calculated data will be added.
         """
         paths = self.get_database_paths(paths=paths, names=names)
+        # Disable RDKit and OpenBabel logging messages
+        obl.obErrorLog.StopLogging()
+        RDLogger.DisableLog('rdApp.*')
 
         molecule_list = []
         for path in paths:
@@ -477,9 +482,11 @@ class ReferenceDatabase(object):
                 if '.yml' not in spcs:
                     continue
                 ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
+                logging.disable()  # Don't warn about identifier errors
                 ref_spcs.load_yaml(os.path.join(path, spcs))
                 molecule = Molecule().from_adjacency_list(ref_spcs.adjacency_list, raise_atomtype_exception=False,
                                                           raise_charge_exception=False)
+                logging.disable(logging.NOTSET)
                 if ignore_incomplete:
                     if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
                         logging.warning(f'Molecule {ref_spcs.smiles} from reference set `{set_name}` does not have any '
@@ -497,6 +504,9 @@ class ReferenceDatabase(object):
                     reference_set.append(ref_spcs)
 
             self.reference_sets[set_name] = reference_set
+        # Re-enable RDKit and OpenBabel Logging messages
+        obl.obErrorLog.StartLogging()
+        RDLogger.EnableLog('rdApp.*')
 
     def save(self, database_root_path=None):
         """
