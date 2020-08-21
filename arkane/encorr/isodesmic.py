@@ -692,6 +692,8 @@ class ErrorCancelingScheme:
             - reaction list containing all error canceling reactions found
         """
         reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
+        if len(reaction_list) == 0:  # No reactions found
+            return None, reaction_list
         h298_list = np.zeros(len(reaction_list))
 
         for i, rxn in enumerate(reaction_list):
