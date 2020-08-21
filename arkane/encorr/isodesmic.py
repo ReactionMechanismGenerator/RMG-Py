@@ -646,7 +646,6 @@ class ErrorCancelingScheme:
         """
         subset_queue = [np.arange(0, len(self.reference_species))]
         reaction_list = []
-        reaction_indices = []
 
         while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
             subset = subset_queue.pop()
@@ -661,17 +660,14 @@ class ErrorCancelingScheme:
                 for index in subset_indices:
                     subset_queue.append(np.delete(subset, index))
 
-            # Clean up the queue to remove subsets that would allow for already found reactions
-            new_queue = []
-            reaction_indices.append([subset[i] for i in subset_indices])
-            for s in subset_queue:
-                for r in reaction_indices:
-                    if all([i in s for i in r]):
-                        break
-                else:
-                    new_queue.append(s)
+                # Clean up the queue to remove subsets that would allow for already found reactions
+                new_queue = []
+                reaction_indices = [subset[i] for i in subset_indices]
+                for s in subset_queue:
+                    if not all([i in s for i in reaction_indices]):
+                        new_queue.append(s)
 
-            subset_queue = new_queue
+                subset_queue = new_queue
 
         return reaction_list
 
