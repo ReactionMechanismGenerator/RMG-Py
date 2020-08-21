@@ -41,6 +41,7 @@ corannulene and C60 by means of inexpensive theoretical procedures. Journal of P
 https://doi.org/10.1021/jp404158v
 """
 
+import logging
 import signal
 from copy import deepcopy
 from pyutilib.common import ApplicationError
@@ -543,6 +544,9 @@ class ErrorCancelingScheme:
                     raise ImportError('Cannot import optional package pyomo. Either install this dependency with '
                                       '`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`')
 
+                # Diable logging, pyomo outputs too often
+                logging.disable()
+
                 # Setup the MILP problem using pyomo
                 lp_model = pyo.ConcreteModel()
                 lp_model.i = pyo.RangeSet(0, m - 1)
@@ -570,6 +574,9 @@ class ErrorCancelingScheme:
                     # Extract the solution and find the species with non-zero stoichiometric coefficients
                     solution = lp_model.v.extract_values().values()
                     break
+
+                # Re-enable logging
+                logging.disable(logging.NOTSET)
 
             elif solver == 'lpsolve':
                 # Save the current signal handler
