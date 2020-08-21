@@ -454,7 +454,7 @@ class SpeciesConstraints:
         target_constraints = np.array(target_constraints, dtype=int)
         constraint_matrix = np.array(reference_constraints, dtype=int)
 
-        return _clean_up_constraints(target_constraints, constraint_matrix)
+        return target_constraints, constraint_matrix
 
 
 def _clean_up_constraints(target_constraints, constraint_matrix):
