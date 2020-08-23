@@ -39,6 +39,7 @@ from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.tools.loader import load_rmg_job
 from rmgpy.tools.plot import plot_sensitivity
+from rmgpy.tools.equilibrium_pooling import search_priority
 
 
 def simulate(rmg, diffusion_limited=True):
@@ -104,6 +105,7 @@ def simulate(rmg, diffusion_limited=True):
             model_settings=model_settings,
             simulator_settings=simulator_settings,
         )
+        search_priority(rmg,reaction_system)
 
         if reaction_system.sensitive_species:
             plot_sensitivity(rmg.output_directory, index, reaction_system.sensitive_species)
