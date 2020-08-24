@@ -36,23 +36,31 @@ import numpy as np
 import math
 
 def search_priority(rmg,reaction_system):
+    sim_T=reaction_system.T.value
+    core_rxn_kf=reaction_system.kf
+    core_rxn_kb=reaction_system.kb
+    core_concentrations=reaction_system.core_species_concentrations
+    core_reactants_idx=reaction_system.reactant_indices.tolist()
+    core_products_idx=reaction_system.product_indices.tolist()
     #get species list
     core_species=rmg.reaction_model.core.species
     reactive_species=[i for i in core_species if i.reactive]
     #List of all mols and pairs
     potential_reactants = []
     for i,spc0 in enumerate(reactive_species):
-        potential_reactants.append((spc0,))
+        rct0_idx=core_species.index(spc0)
+        potential_reactants.append((rct0_idx,))
         for spc1 in reactive_species[i:]:
-            potential_reactants.append((spc0,spc1))
+            rct1_idx=core_species.index(spc1)
+            potential_reactants.append((rct0_idx,rct1_idx))
     #keyed elements for all mols and pairs
     for i,pr in enumerate(potential_reactants):
         element_dict=defaultdict(int)
         multiplicity_dict=defaultdict(int)
-        for spc in pr:
-            for elmt in spc.molecule[0].get_element_count():
-                element_dict[elmt]+=spc.molecule[0].get_element_count()[elmt]
-            multiplicity_dict[spc.molecule[0].multiplicity]+=1
+        for spc_idx in pr:
+            for elmt in core_species[spc_idx].molecule[0].get_element_count():
+                element_dict[elmt]+=core_species[spc_idx].molecule[0].get_element_count()[elmt]
+            multiplicity_dict[core_species[spc_idx].molecule[0].multiplicity]+=1
         potential_reactants[i]=dict([('reactants',pr),('elements',element_dict),('multiplicities',multiplicity_dict)])
         # print(element_dict)
     # print(len(potential_reactants)) #629
@@ -63,39 +71,36 @@ def search_priority(rmg,reaction_system):
         for j in range(i,4):
             if j==i: multiplicity_ref.append(defaultdict(int,[(i,2)]))
             else: multiplicity_ref.append(defaultdict(int,[(i,1),(j,1)]))
+    # print(multiplicity_ref)
     allowed_multiplicity=dict([(0,[0,2,3,6]),(1,[1,4,7]),(2,[2,0,6,8]),(3,[0,3,6]),(4,[1,4,7]),(5,[2,5,6]),(6,[6,0,2,3,5,8]),(7,[7,1,4]),(8,[8,2,6])])
     #possible connections list
-    possible_connections = []
-    sim_T=reaction_system.T.value
+    possible_connections = [] #should this be bidirectional? Currently forward rxn only.
     for i,pr0 in enumerate(potential_reactants):
         pr0_elements=pr0['elements']
+        pr0_mult=pr0['multiplicities']
         for pr1 in potential_reactants[i+1:]:
             pr1_elements=pr1['elements']
+            pr1_mult=pr1['multiplicities']
             if pr0_elements!=pr1_elements: continue
-            if multiplicity_ref.index(pr0['multiplicities']) not in allowed_multiplicity[multiplicity_ref.index(pr1['multiplicities'])]: continue
+            if multiplicity_ref.index(pr0_mult) not in allowed_multiplicity[multiplicity_ref.index(pr1_mult)]: continue
             if len(pr0['reactants'])==1 and len(pr1['reactants'])==1:
-                possible_connections.append(Connection(reactant=pr0['reactants'][0],product=pr1['reactants'][0],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][0],product_index=pr1['reactants'][0],temperature=sim_T))
             elif len(pr0['reactants'])==2 and len(pr1['reactants'])==1:
-                possible_connections.append(Connection(reactant=pr0['reactants'][0],coreactant=pr0['reactants'][1],product=pr1['reactants'][0],temperature=sim_T))
-                possible_connections.append(Connection(reactant=pr0['reactants'][1],coreactant=pr0['reactants'][0],product=pr1['reactants'][0],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][0],coreactant_index=pr0['reactants'][1],product_index=pr1['reactants'][0],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][1],coreactant_index=pr0['reactants'][0],product_index=pr1['reactants'][0],temperature=sim_T))
             elif len(pr0['reactants'])==1 and len(pr1['reactants'])==2:
-                possible_connections.append(Connection(reactant=pr0['reactants'][0],coproduct=pr1['reactants'][1],product=pr1['reactants'][0],temperature=sim_T))
-                possible_connections.append(Connection(reactant=pr0['reactants'][0],coproduct=pr1['reactants'][0],product=pr1['reactants'][1],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][0],coproduct_index=pr1['reactants'][1],product_index=pr1['reactants'][0],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][0],coproduct_index=pr1['reactants'][0],product_index=pr1['reactants'][1],temperature=sim_T))
             elif len(pr0['reactants'])==2 and len(pr1['reactants'])==2:
-                possible_connections.append(Connection(reactant=pr0['reactants'][0],coreactant=pr0['reactants'][1],coproduct=pr1['reactants'][1],product=pr1['reactants'][0],temperature=sim_T))
-                possible_connections.append(Connection(reactant=pr0['reactants'][1],coreactant=pr0['reactants'][0],coproduct=pr1['reactants'][0],product=pr1['reactants'][1],temperature=sim_T))
-                possible_connections.append(Connection(reactant=pr0['reactants'][0],coreactant=pr0['reactants'][1],coproduct=pr1['reactants'][0],product=pr1['reactants'][1],temperature=sim_T))
-                possible_connections.append(Connection(reactant=pr0['reactants'][1],coreactant=pr0['reactants'][0],coproduct=pr1['reactants'][1],product=pr1['reactants'][0],temperature=sim_T)) 
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][0],coreactant_index=pr0['reactants'][1],coproduct_index=pr1['reactants'][1],product_index=pr1['reactants'][0],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][1],coreactant_index=pr0['reactants'][0],coproduct_index=pr1['reactants'][0],product_index=pr1['reactants'][1],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][0],coreactant_index=pr0['reactants'][1],coproduct_index=pr1['reactants'][0],product_index=pr1['reactants'][1],temperature=sim_T))
+                possible_connections.append(Connection(core_species,core_concentrations,reactant_index=pr0['reactants'][1],coreactant_index=pr0['reactants'][0],coproduct_index=pr1['reactants'][1],product_index=pr1['reactants'][0],temperature=sim_T)) 
             else: raise Exception('Invalid equilibrium pooling handling')
     # print(len(possible_connections)) #4656 vs 750k vs mult 335k vs elem 5010
     #direct connections list
-    core_rxn_kf=reaction_system.kf
-    core_rxn_kb=reaction_system.kb
-    core_concentrations=reaction_system.core_species_concentrations
-    core_reactants_idx=reaction_system.reactant_indices.tolist()
     for i,ids in enumerate(core_reactants_idx):
         core_reactants_idx[i] = [j for j in ids if j != -1]
-    core_products_idx=reaction_system.product_indices.tolist()
     for i,ids in enumerate(core_products_idx):
         core_products_idx[i] = [j for j in ids if j != -1]
     direct_connections_list=[]
@@ -105,51 +110,55 @@ def search_priority(rmg,reaction_system):
         for j in range(len(r_ids)):
             for k in range(len(p_ids)):
                 if len(r_ids)==1 and len(p_ids)==1:
-                    direct_connections_list.append(Connection(reactant=core_species[r_ids[j]],
-                                                            product=core_species[p_ids[k]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=r_ids[j],
+                                                            product_index=p_ids[k],
                                                             rate=core_rxn_kf[i],
                                                             temperature=sim_T))
-                    direct_connections_list.append(Connection(reactant=core_species[p_ids[k]],
-                                                            product=core_species[r_ids[j]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=p_ids[k],
+                                                            product_index=r_ids[j],
                                                             rate=core_rxn_kb[i],
                                                             temperature=sim_T))
                 if len(r_ids)==2 and len(p_ids)==1:
-                    direct_connections_list.append(Connection(reactant=core_species[r_ids[j]],
-                                                            coreactant=core_species[r_ids[1-j]],
-                                                            coreactant_conc=core_concentrations[r_ids[1-j]],
-                                                            product=core_species[p_ids[k]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=r_ids[j],
+                                                            coreactant_index=r_ids[1-j],
+                                                            product_index=p_ids[k],
                                                             rate=core_rxn_kf[i],
                                                             temperature=sim_T))
-                    direct_connections_list.append(Connection(reactant=core_species[p_ids[k]],
-                                                            product=core_species[r_ids[j]],
-                                                            coproduct=core_species[r_ids[1-j]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=p_ids[k],
+                                                            product_index=r_ids[j],
+                                                            coproduct_index=r_ids[1-j],
                                                             rate=core_rxn_kb[i],
                                                             temperature=sim_T))
                 if len(r_ids)==1 and len(p_ids)==2:
-                    direct_connections_list.append(Connection(reactant=core_species[r_ids[j]],
-                                                            product=core_species[p_ids[k]],
-                                                            coproduct=core_species[p_ids[1-k]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=r_ids[j],
+                                                            product_index=p_ids[k],
+                                                            coproduct_index=p_ids[1-k],
                                                             rate=core_rxn_kf[i],
                                                             temperature=sim_T))
-                    direct_connections_list.append(Connection(reactant=core_species[p_ids[k]],
-                                                            coreactant=core_species[p_ids[1-k]],
-                                                            coreactant_conc=core_concentrations[p_ids[1-k]],
-                                                            product=core_species[r_ids[j]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=p_ids[k],
+                                                            coreactant_index=p_ids[1-k],
+                                                            product_index=r_ids[j],
                                                             rate=core_rxn_kb[i],
                                                             temperature=sim_T))
                 if len(r_ids)==2 and len(p_ids)==2:
-                    direct_connections_list.append(Connection(reactant=core_species[r_ids[j]],
-                                                            coreactant=core_species[r_ids[1-j]],
-                                                            coreactant_conc=core_concentrations[r_ids[1-j]],
-                                                            product=core_species[p_ids[k]],
-                                                            coproduct=core_species[p_ids[1-k]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=r_ids[j],
+                                                            coreactant_index=r_ids[1-j],
+                                                            product_index=p_ids[k],
+                                                            coproduct_index=p_ids[1-k],
                                                             rate=core_rxn_kf[i],
                                                             temperature=sim_T))
-                    direct_connections_list.append(Connection(reactant=core_species[p_ids[k]],
-                                                            coreactant=core_species[p_ids[1-k]],
-                                                            coreactant_conc=core_concentrations[p_ids[1-k]],
-                                                            product=core_species[r_ids[j]],
-                                                            coproduct=core_species[r_ids[1-j]],
+                    direct_connections_list.append(Connection(core_species,core_concentrations,
+                                                            reactant_index=p_ids[k],
+                                                            coreactant_index=p_ids[1-k],
+                                                            product_index=r_ids[j],
+                                                            coproduct_index=r_ids[1-j],
                                                             rate=core_rxn_kb[i],
                                                             temperature=sim_T))
 #remove already covered connections
@@ -172,23 +181,28 @@ def search_priority(rmg,reaction_system):
 #classify connections by pooling time, delta H, subgroup similarity
 
 def equilibrium_pooling(direct_connections_list,core_species,t_characteristic): #,previous_forward_pass=None):
-    fast_connections=[set()]*len(core_species)
+    fast_connections=[]
+    for rct_idx in range(len(core_species)):
+        fast_connections.append(set())
     for conn in direct_connections_list:
         if conn.time_constant is None:
             continue
         elif conn.time_constant<t_characteristic:
-            fast_connections[core_species.index(conn.reactant)].add(core_species.index(conn.product))
+            fast_connections[conn.reactant].add(conn.product)
     # if previous_forward_pass is not None:
         # forward_pass=previous_forward_pass
     # else:
-    # print('fast_connections',fast_connections)
+    print('fast_connections')
+    for i in fast_connections: print(i)
     forward_pass=[]
     for rct_idx in range(len(core_species)):
         forward_pass.append(set([rct_idx]))
-    for rct_idx in range(len(core_species)):
-        for prd_idx in fast_connections[rct_idx]:
-            forward_pass[rct_idx].update(forward_pass[prd_idx])
-    # print('forward_pass',forward_pass)
+    for iter in range(len(core_species)):
+        for rct_idx in range(len(core_species)):
+            for prd_idx in fast_connections[rct_idx]:
+                forward_pass[rct_idx].update(forward_pass[prd_idx])
+    # print('forward_pass')
+    for i in forward_pass: print(i)
     pool_groups=[]
     for rct_idx in range(len(core_species)):
         pool_groups.append(set())
@@ -203,8 +217,7 @@ def equilibrium_pooling(direct_connections_list,core_species,t_characteristic): 
     for rct_idx in broken_pools:
         pool_groups[rct_idx]=set()
     # print('pool after')
-    # for i,group in enumerate(pool_groups):
-        # print(i,group)
+    for i,group in enumerate(pool_groups):print(i,group)
     return pool_groups
 
 def pooling_time_cycle(direct_connections_list,core_species):
@@ -217,17 +230,18 @@ def pooling_time_cycle(direct_connections_list,core_species):
     pooling_times=np.empty([len(core_species),len(core_species)])
     log10_minimum=math.floor(math.log10(time_constants[0]))
     log10_maximum=math.ceil(math.log10(time_constants[-1]))
-    for log10_time in range(log10_minimum,log10_maximum):
-        # print(log10_time)
-        pool_groups=equilibrium_pooling(direct_connections_list,core_species,10**log10_time)
-        for i,grp in enumerate(pool_groups):
-            for j in grp:
-                if pooling_times[i,j]==0: continue
-                else: pooling_times[i,j]=log10_time
-    #     for i in pool_groups:
-    #         if len(i)>1: print(log10_time,i)
-    print(pooling_times)
+    pool_groups=equilibrium_pooling(direct_connections_list,core_species,10**log10_maximum)
+    # for log10_time in range(log10_minimum,log10_maximum):
+    #     pool_groups=equilibrium_pooling(direct_connections_list,core_species,10**log10_time)
+    #     for i,grp in enumerate(pool_groups):
+    #         for j in grp:
+    #             if pooling_times[i,j]==0: continue
+    #             else: pooling_times[i,j]=log10_time
+        # for i in pool_groups:
+        #     if len(i)>0: print(log10_time,i)
+    # print(pooling_times)
     # print(pool_groups)
+    # for i,spc in enumerate(core_species): print(i,spc.label)
     # for i in pool_groups[-1]:
         # print(core_species[i].label)
     # equilibrium_pooling(direct_connections_list,core_species,10**-15)
@@ -242,11 +256,14 @@ class Connection:
     ======================= ================ =========================================
     Attribute               Type             Description
     ======================= ================ =========================================
-    `reactant`              :class:`Species`    
-    `coreactant`            :class:`Species`
-    `product`               :class:`Species`
-    `coproduct`             :class:`Species`
-    `coreactant_conc`       ``float``
+    `reactant_index`
+    `reactant_conc`
+    `coreactant_index`
+    `coreactant_conc`
+    `product_index`
+    `product_conc`
+    `coproduct_index`
+    `coproduct_conc`       ``float``
     `rate`                  ``float``
     `temperature`           ``float``
     `pfo_rate`              ``float``
@@ -259,21 +276,31 @@ class Connection:
 
     """
 
-    def __init__(self,reactant,product,coreactant=None,coproduct=None,coreactant_conc=None,rate=None,temperature=298):
-        self.reactant=reactant
-        self.product=product
-        self.coreactant=coreactant
-        self.coproduct=coproduct
-        self.coreactant_conc=coreactant_conc
+    def __init__(self,core_species,core_concentrations,reactant_index,product_index,coreactant_index=None,coproduct_index=None,temperature=298,rate=None):
+        self.reactant=reactant_index
+        self.reactant_conc=core_concentrations[reactant_index]
+        self.product=product_index
+        self.product_conc=core_concentrations[product_index]
+        if coreactant_index is not None:
+            self.coreactant=coreactant_index
+            self.coreactant_conc=core_concentrations[coreactant_index]
+        else:
+            self.coreactant=None
+            self.coreactant_conc=None
+        if coproduct_index is not None:
+            self.coproduct=coproduct_index
+            self.coproduct_conc=core_concentrations[coproduct_index]
+        else:
+            self.coproduct=None
+            self.coproduct_conc=None
         self.rate=rate
         self.T=temperature
         self.pooling_time=None
-        self.hash=set(((reactant.index,coreactant.index if coreactant is not None else None),
-            (product.index,coproduct.index if coproduct is not None else None)))
+        self.hash=set(((reactant_index,coreactant_index if coreactant_index is not None else None),
+            (product_index,coproduct_index if coproduct_index is not None else None)))
 
         if rate is not None:
-            self.pfo_rate=rate*coreactant_conc if coreactant is not None else rate
-            # if self.pfo_rate<10e-20: print(self.pfo_rate,self.reactant,self.coreactant,self.product,self.coproduct)
+            self.pfo_rate=rate*self.coreactant_conc if coreactant_index is not None else rate
             if self.pfo_rate!=0:
                 self.time_constant=1/self.pfo_rate
             else:
@@ -281,18 +308,18 @@ class Connection:
         else:
             self.pfo_rate=None
             self.time_constant=None
-        self.H_rxn=self.product.get_enthalpy(temperature)-self.reactant.get_enthalpy(temperature)
-        if coproduct is not None:
-            self.H_rxn+=self.coproduct.get_enthalpy(temperature)
-        if coreactant is not None:
-            self.H_rxn-=self.coreactant.get_enthalpy(temperature)
+        self.H_rxn=core_species[self.product].get_enthalpy(temperature)-core_species[self.reactant].get_enthalpy(temperature)
+        if coproduct_index is not None:
+            self.H_rxn+=core_species[self.coproduct].get_enthalpy(temperature)
+        if coreactant_index is not None:
+            self.H_rxn-=core_species[self.coreactant].get_enthalpy(temperature)
         
         lg=RDLogger.logger()
         lg.setLevel(RDLogger.ERROR)
-        rdkit_rct=Chem.MolFromSmiles(reactant.molecule[0].smiles)
-        rdkit_prd=Chem.MolFromSmiles(product.molecule[0].smiles)
+        rdkit_rct=Chem.MolFromSmiles(core_species[reactant_index].molecule[0].smiles)
+        rdkit_prd=Chem.MolFromSmiles(core_species[product_index].molecule[0].smiles)
         substruct=rdFMCS.FindMCS([rdkit_rct,rdkit_prd])
-        self.largest_substructure=substruct.numAtoms
+        self.largest_substructure=substruct.numBonds
     
     def ratchet_pooling_time(self,new_time):
         if self.pooling_time is None:
