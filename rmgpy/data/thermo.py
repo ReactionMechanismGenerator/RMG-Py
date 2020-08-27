@@ -1415,10 +1415,13 @@ class ThermoDatabase(object):
             find_cp0_and_cpinf(species, thermo)
 
         # now edit the adsorptionThermo using LSR
+        comments = []
         for element in 'CHON':
-            change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
-            thermo.H298.value_si += change_in_binding_energy
-        thermo.comment += " Binding energy corrected by LSR."
+            if normalized_bonds[element]:
+                change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
+                thermo.H298.value_si += change_in_binding_energy
+                comments.append(f'{normalized_bonds[element]:.2f}{element}')
+        thermo.comment += " Binding energy corrected by LSR ({})".format('+'.join(comments))
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
@@ -1435,13 +1438,14 @@ class ThermoDatabase(object):
         if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        logging.debug(("Trying to generate thermo for surface species"
-                       " with these {} resonance isomer(s):").format(len(species.molecule)))
+        logging.debug("Trying to generate thermo for surface species with these %d resonance isomer(s):",
+                      len(species.molecule))
         molecule = species.molecule[0]
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
         dummy_molecule = molecule.copy(deep=True)
         sites_to_remove = []
+        adsorbed_atoms = []
         for atom in dummy_molecule.atoms:
             if atom.is_surface_site():
                 sites_to_remove.append(atom)
@@ -1453,6 +1457,7 @@ class ThermoDatabase(object):
             else:
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
                 bonded_atom = list(site.bonds.keys())[0]
+                adsorbed_atoms.append(bonded_atom)
                 bond = site.bonds[bonded_atom]
                 dummy_molecule.remove_bond(bond)
                 if bond.is_single():
@@ -1469,8 +1474,39 @@ class ThermoDatabase(object):
                     bonded_atom.increment_lone_pairs()
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
-
             dummy_molecule.remove_atom(site)
+
+        if len(adsorbed_atoms) == 2:
+            # Bidentate adsorption.
+            # Try to turn adjacent biradical into a bond.
+            try:
+                bond = adsorbed_atoms[0].bonds[adsorbed_atoms[1]]
+            except KeyError:
+                pass # the two adsorbed atoms are not bonded to each other
+            else:
+                if bond.order < 3:
+                    bond.increment_order()
+                    adsorbed_atoms[0].decrement_radical()
+                    adsorbed_atoms[1].decrement_radical()
+                    if (adsorbed_atoms[0].radical_electrons and
+                            adsorbed_atoms[1].radical_electrons and
+                            bond.order < 3):
+                        # There are still spare adjacenct radicals, so do it again
+                        bond.increment_order()
+                        adsorbed_atoms[0].decrement_radical()
+                        adsorbed_atoms[1].decrement_radical()
+                    if (adsorbed_atoms[0].lone_pairs and
+                            adsorbed_atoms[1].lone_pairs and 
+                            bond.order < 3):
+                        # X#C-C#X will end up with .:C-C:. in gas phase
+                        # and we want to get to .C#C. but not :C=C:
+                        bond.increment_order()
+                        adsorbed_atoms[0].decrement_lone_pairs()
+                        adsorbed_atoms[0].increment_radical()
+                        adsorbed_atoms[1].decrement_lone_pairs()
+                        adsorbed_atoms[1].increment_radical()
+
+        dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
         logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())

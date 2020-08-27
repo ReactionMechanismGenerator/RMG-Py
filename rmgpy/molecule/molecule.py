@@ -1118,9 +1118,10 @@ class Molecule(Graph):
 
     def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
-        Update connectivity values, atom types of atoms.
+        Update the charge and atom types of atoms.
         Update multiplicity, and sort atoms (if ``sort_atoms`` is ``True``)
-        using the new connectivity values.
+        Does not necessarily update the connectivity values (which are used in isomorphism checks)
+        If you need that, call update_connectivity_values()
         """
 
         for atom in self.atoms:
