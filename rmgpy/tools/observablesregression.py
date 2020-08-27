@@ -235,8 +235,8 @@ class ObservablesTestCase(object):
         fail_header = '\nThe following observables did not match:\n'
         fail_header_printed = False
         for i in range(len(old_condition_data)):
-            time_old, data_list_old, reaction_sensitivity_data_old = old_condition_data[i]
-            time_new, data_list_new, reaction_sensitivity_data_new = new_condition_data[i]
+            time_old, data_list_old, reaction_sensitivity_data_old, thermodynamic_sensitivity_data_old = old_condition_data[i]
+            time_new, data_list_new, reaction_sensitivity_data_new, thermodynamic_sensitivity_data_new = new_condition_data[i]
 
             # Compare species observables
             if 'species' in self.observables:
