@@ -706,6 +706,62 @@ multiplicity 2
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
 
+    def test_adsorbate_thermo_generation_bidentate_C2(self):
+        """Test thermo generation for a bidentate adsorbate [C]#[C]
+
+        C#C
+        | |
+        X X
+        """
+        # Start with X-C#C-X
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,S}
+3 C u0 p0 c0 {1,S} {4,T}
+4 C u0 p0 c0 {2,S} {3,T}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertFalse('radical' in thermo.comment,
+                         "Applied radical correction instead of finding C2(T) directly in library")
+        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
+        # Now see what happens for X=C=C=X
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 X u0 p0 c0 {3,D}
+2 X u0 p0 c0 {4,D}
+3 C u0 p0 c0 {1,D} {4,D}
+4 C u0 p0 c0 {2,D} {3,D}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertFalse('radical' in thermo.comment,
+                         "Applied radical correction instead of finding C2(T) directly in library")
+        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
+         # Now see what happens for X#C-C#X
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 X u0 p0 c0 {3,T}
+2 X u0 p0 c0 {4,T}
+3 C u0 p0 c0 {1,T} {4,S}
+4 C u0 p0 c0 {2,T} {3,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertFalse('radical' in thermo.comment,
+                         "Applied radical correction instead of finding C2(T) directly in library")
+        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
+
     def test_adsorbate_thermo_generation_bidentate_asymmetric(self):
         """Test thermo generation for a bidentate adsorbate, CH=XCH2X
 

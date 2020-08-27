@@ -1484,15 +1484,28 @@ class ThermoDatabase(object):
             except KeyError:
                 pass # the two adsorbed atoms are not bonded to each other
             else:
-                bond.increment_order()
-                adsorbed_atoms[0].decrement_radical()
-                adsorbed_atoms[1].decrement_radical()
-                if adsorbed_atoms[0].radical_electrons and adsorbed_atoms[1].radical_electrons:
-                    # There are still spare adjacenct radicals, so do it again
+                if bond.order < 3:
                     bond.increment_order()
                     adsorbed_atoms[0].decrement_radical()
                     adsorbed_atoms[1].decrement_radical()
-                
+                    if (adsorbed_atoms[0].radical_electrons and
+                            adsorbed_atoms[1].radical_electrons and
+                            bond.order < 3):
+                        # There are still spare adjacenct radicals, so do it again
+                        bond.increment_order()
+                        adsorbed_atoms[0].decrement_radical()
+                        adsorbed_atoms[1].decrement_radical()
+                    if (adsorbed_atoms[0].lone_pairs and
+                            adsorbed_atoms[1].lone_pairs and 
+                            bond.order < 3):
+                        # X#C-C#X will end up with .:C-C:. in gas phase
+                        # and we want to get to .C#C. but not :C=C:
+                        bond.increment_order()
+                        adsorbed_atoms[0].decrement_lone_pairs()
+                        adsorbed_atoms[0].increment_radical()
+                        adsorbed_atoms[1].decrement_lone_pairs()
+                        adsorbed_atoms[1].increment_radical()
+
         dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
