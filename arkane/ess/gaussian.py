@@ -392,8 +392,10 @@ class GaussianLog(ESSAdapter):
         rigid_scan = False
 
         vlist = []  # The array of potentials at each scan angle
-        non_optimized = [] # The array of indexes of non-optimized point
+        non_optimized = []  # The array of indexes of non-optimized point
 
+        internal_coord = 'D(' + ','.join(self.load_scan_pivot_atoms()) + ')'
+        angle = []
         # Parse the Gaussian log file, extracting the energies of each
         # optimized conformer in the scan
         with open(self.path, 'r') as f:
@@ -423,11 +425,28 @@ class GaussianLog(ESSAdapter):
                 if 'Optimization stopped' in line:
                     non_optimized.append(len(vlist))
                     vlist.append(energy)
+                # Read the optimized angle from optimized parameters
+                if internal_coord in line and 'Scan' not in line:
+                    # EXAMPLE:
+                    # ! D9    D(1,2,3,15)            42.4441         -DE/DX =    0.0                 !
+                    angle.append(float(line.strip().split()[3]))
+
                 line = f.readline()
 
         # give warning in case this assumption is not true
         if rigid_scan:
-            print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
+            print(f'   Assuming {os.path.basename(self.path)} is the output from a rigid scan...')
+            # For rigid scans, all of the angles are evenly spaced with a constant step size
+            scan_res = math.pi / 180 * self._load_scan_angle()
+            angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
+        else:
+            angle = np.array(angle, np.float64)
+            # Convert -180 ~ 180 degrees to 0 ~ 2pi rads
+            angle = (angle - angle[0])
+            angle[angle < 0] += 360.0
+            # Adjust angle[-1] to make it close to 360 degrees
+            angle[-1] = angle[-1] if angle[-1] > 2 * self._load_scan_angle() else angle[-1] + 360.0
+            angle = angle * math.pi / 180
 
         vlist = np.array(vlist, np.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be
@@ -441,11 +460,7 @@ class GaussianLog(ESSAdapter):
 
         if opt_freq:
             vlist = vlist[:-1]
-
-        # Determine the set of dihedral angles corresponding to the loaded energies
-        # This assumes that all of the angles are evenly spaced with a constant step size
-        scan_res = math.pi / 180 * self._load_scan_angle()
-        angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
+            angle = angle[:-1]
 
         if non_optimized:
             logging.warning(f'Scan results for angles at {angle[non_optimized]} are discarded '
