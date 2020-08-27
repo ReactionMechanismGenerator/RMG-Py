@@ -1,0 +1,14 @@
+name: RMG-Py Unit Test Suite (Push)
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Build and Test
+      shell: bash
+      run: |
+        free -m
