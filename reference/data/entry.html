@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.base.Entry<a class="headerlink" href="#rmgpy-data-base-entry" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.base.Entry">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">Entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">item</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">children</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference_type</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">rank</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodal_distance</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">Entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">item</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">children</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference_type</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">rank</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodal_distance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metal</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">facet</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">site</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for representing individual records in an RMG database. Each entry
 in the database associates a chemical item (generally a species, functional
 group, or reaction) with a piece of data corresponding to that item. A
@@ -114,6 +114,18 @@ significant amount of metadata can also be stored with each entry.</p>
 </tr>
 <tr class="row-odd"><td><p><cite>nodal_distance</cite></p></td>
 <td><p>A float representing the distance of a given entry from it’s parent entry</p></td>
+</tr>
+<tr class="row-even"><td><p>For surface species</p></td>
+<td><p>thermo calculations:</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>metal</cite></p></td>
+<td><p>Which metal the thermo calculation was done on (<code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>facet</cite></p></td>
+<td><p>Which facet the thermo calculation was done on (<code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>site</cite></p></td>
+<td><p>Which surface site the molecule prefers (<code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
 </tr>
 </tbody>
 </table>
