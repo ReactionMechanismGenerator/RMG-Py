@@ -124,8 +124,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 self.compat_func_name = test_name
                 yield test, family_name
 
+                test = lambda x: self.kinetics_check_training_reactions_have_surface_attributes(family_name)
+                test_name = "Kinetics surface family {0}: entries have surface attributes?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
             # these families have some sort of difficulty which prevents us from testing accessibility right now
-            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
+            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene']
             generated_trees = ["R_Recombination"]
 
             if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
@@ -175,6 +181,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, library_name
 
+            # tests for surface families
+            if 'surface' in library_name.lower():
+                test = lambda x: self.kinetics_check_surface_library_reactions_have_surface_attributes(library)
+                test_name = "Kinetics surface library {0}: entries have surface attributes?".format(library_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.items():
             test = lambda x: self.general_check_nodes_found_in_tree(group_name, group)
@@ -212,6 +226,22 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
+
+            # tests for adsorption groups
+            if 'adsorption' in group_name.lower():
+                test = lambda x: self.check_surface_thermo_groups_have_surface_attributes(group_name, group)
+                test_name = "Thermo surface groups {0}: Entry has metal attributes?".format(group_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, group_name
+
+        for library_name, library in self.database.thermo.libraries.items():
+            if 'surface' in library_name.lower():
+                test = lambda x: self.check_surface_thermo_libraries_have_surface_attributes(library_name, library)
+                test_name = "Thermo surface libraries {0}: Entry has metal attributes?".format(library_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, group_name
 
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
@@ -332,6 +362,39 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
         family.add_rules_from_training(thermo_database=self.database.thermo)
+
+    def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
+        """Test that each surface training reaction has surface attributes"""
+        family = self.database.kinetics.families[family_name]
+        training = family.get_training_depository().entries.values()
+        failed = False
+        for entry in training:
+            if not entry.metal:
+                logging.error(f'Expected a metal attribute for {entry} in {family} family but found {entry.metal!r}')
+                failed = True
+        if failed:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
+    def kinetics_check_surface_library_reactions_have_surface_attributes(self, library):
+        """Test that each surface reaction library has surface attributes"""
+        entries = library.entries.values()
+        failed = False
+        if '_Pt' in library.label:
+            for entry in entries:
+                if entry.metal is not 'Pt':
+                    logging.error(f'Expected {entry} metal attribute in {library} library to match Pt, but was {entry.metal}')
+                    failed = True
+        if '_Ni' in library.label:
+            for entry in entries:
+                if entry.metal is not 'Ni':
+                    logging.error(f'Expected {entry} metal attribute in {library} library to match Ni, but was {entry.metal}')
+                    failed = True
+        for entry in entries:
+            if isinstance(entry.metal, type(None)):
+                logginge.error(f'Expected a metal attribute in {library} library for {entry} but found None')
+                failed = True
+        if failed:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
@@ -1151,6 +1214,59 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
+
+    def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
+        """
+        Tests that each entry in the surface thermo groups has a 'metal' and 'facet' attribute, 
+        describing which metal the data came from.
+        """
+        failed = False
+        for entry in group.entries.values():
+            if isinstance(entry.data, rmgpy.thermo.thermodata.ThermoData):
+                if 'Pt' in group_name:
+                    if entry.metal is not 'Pt':
+                        logging.error(f'Expected {entry} metal attribute in {group_name} group to match Pt, but was {entry.metal}')
+                        failed = True
+                if '111' in group_name:
+                    if entry.facet is not '111':
+                        logging.error(f'Expected {entry} facet attribute in {group_name} group to match 111, but was {entry.facet}')
+                        failed = True
+                if not entry.metal:
+                    logging.error(f'Expected a metal attribute for {entry} in {group_name} group but found {entry.metal!r}')
+                    failed = True
+                if not entry.facet:
+                    logging.error(f'Expected a facet attribute for {entry} in {group_name} group but found {entry.facet!r}')
+                    failed = True
+        if failed:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
+    def check_surface_thermo_libraries_have_surface_attributes(self, library_name, library):
+        """
+        Test that each entry in the surface thermo database has a 'metal' and 'facet' attribute,
+        describing which metal the data came from.
+        """
+        failed = False
+        for entry in library.entries.values():
+            if 'Pt' in library_name:
+                if entry.metal is not 'Pt':
+                    logging.error(f'Expected {entry} metal attribute in {library_name} library to match Pt, but was {entry.metal}')
+                    failed = True
+            if 'Ni' in library_name:
+                if entry.metal is not 'Ni':
+                    logging.error(f'Expected {entry} metal attribute in {library_name} library to match Ni, but was {entry.metal}')
+                    failed = True
+            if '111' in library_name:
+                if entry.facet is not '111':
+                    logging.error(f'Expected {entry} facet attribute in {library_name} library to match 111, but was {entry.facet}')
+                    failed = true
+            if not entry.metal:
+                logging.error(f'Expected a metal attribute for {entry} in {library} library but found {entry.metal!r}')
+                failed = True
+            if not entry.facet:
+                logging.error(f'Expected a facet attribute for {entry} in {library} library but found {entry.facet!r}')
+                failed = True
+            if failed:
+                raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def general_check_nodes_found_in_tree(self, group_name, group):
         """

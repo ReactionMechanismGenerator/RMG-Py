@@ -2484,6 +2484,12 @@ class KineticsFamily(Database):
                     depository.label,
                     '[{0}]'.format(';'.join([g.label for g in template])))
                 kinetics.comment += "\nfamily: {}".format(self.label)
+                if entry.metal:
+                    kinetics.comment += "\nmetal: {}".format(self.metal)
+                if entry.facet:
+                    kinetics.comment += "\nfacet: {}".format(self.facet)
+                if entry.facet:
+                    kinetics.comment += "\nsite: {}".format(self.site)
         return kinetics_list
 
     def _select_best_kinetics(self, kinetics_list):
@@ -3400,7 +3406,7 @@ class KineticsFamily(Database):
             if kinetics is not None:
                 entry = entries[i]
                 std = kinetics.uncertainty.get_expected_log_uncertainty() / 0.398  # expected uncertainty is std * 0.398
-                st = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i]), entry.label)
+                st = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i][0]), entry.label)
                 st += "\nTotal Standard Deviation in ln(k): {0}".format(std)
                 new_entry = Entry(
                     index=index,

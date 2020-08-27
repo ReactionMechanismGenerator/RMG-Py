@@ -437,6 +437,26 @@ Thermo library: primaryThermoLibrary
         test = Species(smiles='C1=CC=CC=C1')
 
         self.assertTrue(test.is_isomorphic(self.species2))
+        
+    def test_is_isomorphic_strict(self):
+        """Test that the strict argument to Species.is_isomorphic works"""
+        spc1 = Species(smiles='[CH2]C1=CC=CC2=C1C=CC1=C2C=CC=C1')
+        spc2 = Species(smiles='C=C1C=CC=C2C1=C[CH]C1=C2C=CC=C1')
+        spc3 = Species(smiles='[CH2]C1=CC2=C(C=C1)C1=C(C=CC=C1)C=C2')
+
+        self.assertFalse(spc1.is_isomorphic(spc2, strict=True))
+        self.assertTrue(spc1.is_isomorphic(spc2, strict=False))
+        self.assertFalse(spc1.is_isomorphic(spc3, strict=True))
+        self.assertFalse(spc1.is_isomorphic(spc3, strict=False))
+
+        spc1.generate_resonance_structures()
+        spc2.generate_resonance_structures()
+        spc3.generate_resonance_structures()
+
+        self.assertTrue(spc1.is_isomorphic(spc2, strict=True))
+        self.assertTrue(spc1.is_isomorphic(spc2, strict=False))
+        self.assertFalse(spc1.is_isomorphic(spc3, strict=True))
+        self.assertFalse(spc1.is_isomorphic(spc3, strict=False))
 
 
 ################################################################################

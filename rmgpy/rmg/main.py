@@ -61,8 +61,9 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError
+from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
+from rmgpy.kinetics import ThirdBody
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
@@ -118,6 +119,7 @@ class RMG(util.Subject):
     ----------------------------------- ------------------------------------------------
     `model_settings_list`               List of ModelSettings objects containing information related to how to manage species/reaction movement
     `simulator_settings_list`           List of SimulatorSettings objects containing information on how to run simulations
+    `init_react_tuples`                 List of name tuples of species to react at beginning of run
     `trimolecular`                      ``True`` to consider reactions between three species (i.e., if trimolecular reaction families are present)
     `unimolecular_threshold`            Array of flags indicating whether a species is above the unimolecular reaction threshold
     `bimolecular_threshold`             Array of flags indicating whether two species are above the bimolecular reaction threshold
@@ -194,6 +196,7 @@ class RMG(util.Subject):
         self.balance_species = None
 
         self.filter_reactions = False
+        self.init_react_tuples = []
         self.trimolecular = False
         self.unimolecular_react = None
         self.bimolecular_react = None
@@ -627,6 +630,8 @@ class RMG(util.Subject):
                         self.reaction_model.core.species)  # call the function to identify indices in the solver
 
         self.initialize_reaction_threshold_and_react_flags()
+        if self.filter_reactions and self.init_react_tuples:
+            self.react_init_tuples()
         self.reaction_model.initialize_index_species_dict()
 
         self.initialize_seed_mech()
@@ -675,10 +680,9 @@ class RMG(util.Subject):
         self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
         self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
         try:
-            self.Pmin = min([x.Prange[0].value_si if x.Prange else x.P.value_si for x in self.reaction_systems])
-            self.Pmax = max([x.Prange[1].value_si if x.Prange else x.P.value_si for x in self.reaction_systems])
+            self.Pmin = min([x.Prange[0].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
+            self.Pmax = max([x.Prange[1].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
         except AttributeError:
-            # For LiquidReactor, Pmin and Pmax remain with the default value of `None`
             pass
 
         self.rmg_memories = []
@@ -1121,12 +1125,26 @@ class RMG(util.Subject):
                                     time_criteria = ([criteria.time.value], criteria.time.units)
                                     break
                             else:
-                                time_criteria = self.uncertainty['time']
+                                if self.uncertainty['time']:
+                                    time_criteria = ([self.uncertainty['time'].value], self.uncertainty['time'].units)
+                                else:
+                                    raise InputError('If terminationTime was not specified in the reactor options block, it'
+                                                    'must be specified in the uncertainty options block for global uncertainty'
+                                                    'analysis.')
+
+                                    
                             Tlist = ([reaction_system.sens_conditions['T']], 'K')
-                            Plist = ([reaction_system.sens_conditions['P']], 'Pa')
+                            try:
+                                Plist = ([reaction_system.sens_conditions['P']], 'Pa')
+                            except KeyError:
+                                #LiquidReactor
+                                Plist = ([1e8], 'Pa')
+                                logging.warning('Using 1e8 Pa as the reaction system pressure to approximate liquid phase density.')
+
                             mol_frac_list = [reaction_system.sens_conditions.copy()]
                             del mol_frac_list[0]['T']
-                            del mol_frac_list[0]['P']
+                            if 'P' in mol_frac_list[0]:
+                                del mol_frac_list[0]['P']
 
                             # Set up Cantera reactor
                             job = Cantera(species_list=uncertainty.species_list, reaction_list=uncertainty.reaction_list,
@@ -1248,7 +1266,10 @@ class RMG(util.Subject):
                                   '"Violation factor" is the ratio of the rate coefficient to the collision limit'
                                   ' rate at the relevant conditions\n\n')
                 for violator in violators:
-                    rxn_string = violator[0].to_chemkin()
+                    if isinstance(violator[0].kinetics, ThirdBody):
+                        rxn_string = violator[0].to_chemkin(self.reaction_model.core.species)
+                    else:
+                        rxn_string = violator[0].to_chemkin()
                     direction = violator[1]
                     ratio = violator[2]
                     condition = violator[3]
@@ -1682,7 +1703,40 @@ class RMG(util.Subject):
                         self.bimolecular_react[:num_restart_spcs, :num_restart_spcs] = False
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
+                
+    def react_init_tuples(self):
+        """
+        Reacts tuples given in the react block
+        """
+        logging.info("Reacting Given Initial Tuples...")
+        num_core_species = len(self.reaction_model.core.species)
+        self.unimolecular_react = np.zeros((num_core_species), bool)
+        self.bimolecular_react = np.zeros((num_core_species, num_core_species), bool)
+        if self.trimolecular:
+            self.trimolecular_react = np.zeros((num_core_species, num_core_species, num_core_species), bool)
 
+        sts = [spc.label for spc in self.reaction_model.core.species]
+        for tup in self.init_react_tuples:
+            if len(tup) == 1:
+                ind = sts.index(tup[0])
+                if not self.unimolecular_threshold[ind]:
+                    self.unimolecular_react[ind] = True
+                    self.unimolecular_threshold[ind] = True
+            elif len(tup) == 2:
+                inds = sorted([sts.index(it) for it in tup])
+                if not self.bimolecular_threshold[inds[0], inds[1]]:
+                    self.bimolecular_react[inds[0], inds[1]] = True 
+                    self.bimolecular_threshold[inds[0], inds[1]] = True
+            elif self.trimolecular and len(tup) == 3:
+                inds = sorted([sts.index(it) for it in tup])
+                if not self.trimolecular_threshold[inds[0], inds[1], inds[2]]:
+                    self.trimolecular_react[inds[0], inds[1], inds[2]] = True 
+                    self.trimolecular_threshold[inds[0], inds[1], inds[2]] = True
+        self.reaction_model.enlarge(react_edge=True,
+                                    unimolecular_react=self.unimolecular_react,
+                                    bimolecular_react=self.bimolecular_react,
+                                    trimolecular_react=self.trimolecular_react)
+        
     def update_reaction_threshold_and_react_flags(self,
                                                   rxn_sys_unimol_threshold=None,
                                                   rxn_sys_bimol_threshold=None,

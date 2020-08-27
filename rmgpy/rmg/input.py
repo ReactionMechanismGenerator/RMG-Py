@@ -174,7 +174,17 @@ def inchi(string):
 def adjacency_list(string):
     return Molecule().from_adjacency_list(string)
 
-
+def react(tups):
+    if not isinstance(tups, list):
+        raise InputError("React takes a list of tuples of species strings.")
+    for item in tups:
+        if not isinstance(item, tuple):
+            raise InputError("React takes a list of tuples of species strings.")
+        for it in item:
+            if not isinstance(it, str):
+                raise InputError("React takes a list of tuples of species strings.")
+    rmg.init_react_tuples = tups
+            
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
@@ -816,7 +826,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
         'correlated': correlated,
         'localnum': localNumber,
         'globalnum': globalNumber,
-        'time': terminationTime,
+        'time': Quantity(terminationTime) if terminationTime else terminationTime,
         'pcetime': pceRunTime,
         'pcetol': pceErrorTol,
         'pceevals': pceMaxEvals,
@@ -917,6 +927,7 @@ def read_input_file(path, rmg0):
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
+        'react': react,
         'simpleReactor': simple_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,

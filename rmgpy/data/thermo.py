@@ -587,11 +587,11 @@ class ThermoDepository(Database):
     A class for working with the RMG thermodynamics depository.
     """
 
-    def __init__(self, label='', name='', short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc, metal=metal, site=site, facet=facet)
 
     def load_entry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='',
-                   rank=None):
+                   rank=None, metal=None, site=None, facet=None):
         """
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
@@ -606,6 +606,9 @@ class ThermoDepository(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            site=site,
+            facet=facet,
         )
         self.entries[label] = entry
         return entry
@@ -624,8 +627,9 @@ class ThermoLibrary(Database):
     A class for working with a RMG thermodynamics library.
     """
 
-    def __init__(self, label='', name='', solvent=None, short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', solvent=None, short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc,
+                          metal=metal, site=site, facet=facet)
 
     def load_entry(self,
                    index,
@@ -637,6 +641,9 @@ class ThermoLibrary(Database):
                    shortDesc='',
                    longDesc='',
                    rank=None,
+                   metal=None,
+                   facet=None,
+                   site=None,
                    ):
         """
         Method for parsing entries in database files.
@@ -667,6 +674,9 @@ class ThermoLibrary(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            facet=facet,
+            site=site,
         )
 
     def save_entry(self, f, entry):
@@ -697,8 +707,9 @@ class ThermoGroups(Database):
     A class for working with an RMG thermodynamics group additivity database.
     """
 
-    def __init__(self, label='', name='', short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc,
+                          metal=metal, site=site, facet=facet)
 
     def load_entry(self,
                    index,
@@ -710,6 +721,9 @@ class ThermoGroups(Database):
                    shortDesc='',
                    longDesc='',
                    rank=None,
+                   metal=None,
+                   facet=None,
+                   site=None,
                    ):
         """
         Method for parsing entries in database files.
@@ -733,6 +747,9 @@ class ThermoGroups(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            facet=facet,
+            site=site,
         )
 
     def save_entry(self, f, entry):
@@ -771,6 +788,9 @@ class ThermoGroups(Database):
         destination.long_desc = source.long_desc
         destination.rank = source.rank
         destination.reference_type = source.reference_type
+        destination.metal = source.metal
+        destination.facet = source.facet
+        destination.site = source.site
 
     def remove_group(self, group_to_remove):
         """
@@ -925,7 +945,7 @@ class ThermoDatabase(object):
             'other',
             'longDistanceInteraction_cyclic',
             'longDistanceInteraction_noncyclic',
-            'adsorptionPt',
+            'adsorptionPt111',
         ]
         self.groups = {
             category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'),
@@ -1350,10 +1370,10 @@ class ThermoDatabase(object):
             None, stores result in self.delta_atomic_adsorption_energy
         """
         reference_binding_energies = {
-            'C': rmgpy.quantity.Energy(-6.750, 'eV/molecule'),
-            'H': rmgpy.quantity.Energy(-2.479, 'eV/molecule'),
-            'O': rmgpy.quantity.Energy(-3.586, 'eV/molecule'),
-            'N': rmgpy.quantity.Energy(-4.352, 'eV/molecule'),
+            'C': rmgpy.quantity.Energy(-7.025, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(-2.754, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-3.811, 'eV/molecule'),
+            'N': rmgpy.quantity.Energy(-4.632, 'eV/molecule'),
         }
 
         # Use Pt(111) reference if no binding energies are provided
@@ -1415,10 +1435,13 @@ class ThermoDatabase(object):
             find_cp0_and_cpinf(species, thermo)
 
         # now edit the adsorptionThermo using LSR
+        comments = []
         for element in 'CHON':
-            change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
-            thermo.H298.value_si += change_in_binding_energy
-        thermo.comment += " Binding energy corrected by LSR."
+            if normalized_bonds[element]:
+                change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
+                thermo.H298.value_si += change_in_binding_energy
+                comments.append(f'{normalized_bonds[element]:.2f}{element}')
+        thermo.comment += " Binding energy corrected by LSR ({})".format('+'.join(comments))
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
@@ -1435,13 +1458,14 @@ class ThermoDatabase(object):
         if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        logging.debug(("Trying to generate thermo for surface species"
-                       " with these {} resonance isomer(s):").format(len(species.molecule)))
+        logging.debug("Trying to generate thermo for surface species with these %d resonance isomer(s):",
+                      len(species.molecule))
         molecule = species.molecule[0]
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
         dummy_molecule = molecule.copy(deep=True)
         sites_to_remove = []
+        adsorbed_atoms = []
         for atom in dummy_molecule.atoms:
             if atom.is_surface_site():
                 sites_to_remove.append(atom)
@@ -1453,6 +1477,7 @@ class ThermoDatabase(object):
             else:
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
                 bonded_atom = list(site.bonds.keys())[0]
+                adsorbed_atoms.append(bonded_atom)
                 bond = site.bonds[bonded_atom]
                 dummy_molecule.remove_bond(bond)
                 if bond.is_single():
@@ -1469,8 +1494,39 @@ class ThermoDatabase(object):
                     bonded_atom.increment_lone_pairs()
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
-
             dummy_molecule.remove_atom(site)
+
+        if len(adsorbed_atoms) == 2:
+            # Bidentate adsorption.
+            # Try to turn adjacent biradical into a bond.
+            try:
+                bond = adsorbed_atoms[0].bonds[adsorbed_atoms[1]]
+            except KeyError:
+                pass # the two adsorbed atoms are not bonded to each other
+            else:
+                if bond.order < 3:
+                    bond.increment_order()
+                    adsorbed_atoms[0].decrement_radical()
+                    adsorbed_atoms[1].decrement_radical()
+                    if (adsorbed_atoms[0].radical_electrons and
+                            adsorbed_atoms[1].radical_electrons and
+                            bond.order < 3):
+                        # There are still spare adjacenct radicals, so do it again
+                        bond.increment_order()
+                        adsorbed_atoms[0].decrement_radical()
+                        adsorbed_atoms[1].decrement_radical()
+                    if (adsorbed_atoms[0].lone_pairs and
+                            adsorbed_atoms[1].lone_pairs and 
+                            bond.order < 3):
+                        # X#C-C#X will end up with .:C-C:. in gas phase
+                        # and we want to get to .C#C. but not :C=C:
+                        bond.increment_order()
+                        adsorbed_atoms[0].decrement_lone_pairs()
+                        adsorbed_atoms[0].increment_radical()
+                        adsorbed_atoms[1].decrement_lone_pairs()
+                        adsorbed_atoms[1].increment_radical()
+
+        dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
         logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
@@ -1497,7 +1553,7 @@ class ThermoDatabase(object):
             S298=(0.0, "J/(mol*K)"),
         )
         try:
-            self._add_group_thermo_data(adsorption_thermo, self.groups['adsorptionPt'], molecule, {})
+            self._add_group_thermo_data(adsorption_thermo, self.groups['adsorptionPt111'], molecule, {})
         except KeyError:
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)

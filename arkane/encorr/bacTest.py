@@ -268,7 +268,7 @@ class TestBAC(unittest.TestCase):
             self.bac.save_correlation_mat('')
 
         self.bac.bacs = self.tmp_melius_params
-        self.bac.correlation = np.random.uniform(size=(16, 16))
+        self.bac.correlation = np.random.uniform(size=(24, 24))
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             tmp_corr_path = os.path.join(tmpdirname, 'corr.pdf')

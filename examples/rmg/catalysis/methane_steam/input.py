@@ -10,12 +10,12 @@ database(
 
 catalystProperties(
     bindingEnergies = {  # values for Ni(111)
-                        'H': (-2.778, 'eV/molecule'),
-                        'O': (-4.485, 'eV/molecule'),
-                        'C': (-5.997, 'eV/molecule'),
-                        'N': (-4.352, 'eV/molecule'), # Unknown! don't use with Nitrogen adsorbates!
+                        'H': (-2.892, 'eV/molecule'),
+                        'O': (-4.989, 'eV/molecule'),
+                        'C': (-6.798, 'eV/molecule'),
+                        'N': (-5.164, 'eV/molecule'), 
                       },
-    surfaceSiteDensity=(2.9e-9, 'mol/cm^2'), # values for Ni(111)
+    surfaceSiteDensity=(3.148e-9, 'mol/cm^2'), # values for Ni(111)
 )
 
 # List of species
