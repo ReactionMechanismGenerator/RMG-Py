@@ -140,7 +140,7 @@ of the gas-phase precursor ([Goldsmith2017]_).
 Following is an example for how a thermo library for species adsorbed on platinum 
 is provided in the input file database module::
 
-    thermoLibraries=['surfaceThermoPt']
+    thermoLibraries=['surfaceThermoPt111']
     
 This can be added along with other gas-phase reaction libraries for coupling 
 of gas-phase and surface reactions.  
