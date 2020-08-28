@@ -1375,11 +1375,13 @@ def save_labeled_reactions_file(path, reaction_model, part_core_edge='core'):
     with open(path, "w") as f:
         f.write('---\nreactions:\n')
         for i, rxn in enumerate(reactions):
-            f.write(f"  - index: {i:d}\n    reaction: {rxn!s}\n    reaction_family: {rxn.family!s}\n")
+            f.write(f"  - index: {i+1:d}\n    reaction: {rxn!s}\n    reaction_family: {rxn.family!s}\n")
             if hasattr(rxn, 'adjacency_list'):
                 for line in rxn.adjacency_list.splitlines(True):
                     if line in ('reactant\n', 'product\n'):
                         f.write('    {0}: |\n'.format(line.strip()))
+                    elif line == 'multiplicity -187\n':
+                        pass
                     elif line.strip():
                         f.write('        '+line)
             f.write("\n")
