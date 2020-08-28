@@ -112,9 +112,9 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
 
     def test_hindered_rotor_nd(self):
         self.hdnd.read_scan()
-        self.assertAlmostEqual(self.hdnd.Es[0], 20.048316823666962, 4)
+        self.assertAlmostEqual(self.hdnd.Es[0], 8.58538448, 4)
         self.hdnd.fit()
-        self.assertAlmostEqual(self.hdnd.calc_partition_function(300.0), 2.8524691948593133, 5)
+        self.assertAlmostEqual(self.hdnd.calc_partition_function(300.0), 2.899287634962152, 5)
 
 
 if __name__ == '__main__':
