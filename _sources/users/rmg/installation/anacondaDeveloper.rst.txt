@@ -23,12 +23,13 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
    for your system. For example, on Ubuntu you would use the ``apt`` package manager. For Ubuntu 16 and newer, the
-   necessary commands would be ::
+   necessary command would be ::
 
-    sudo apt install git
-    sudo apt install gcc
-    sudo apt install g++
-    sudo apt install make
+    sudo apt install git gcc g++ make
+    
+   On Fedora the package manager is ``dnf`` ::
+   
+    sudo dnf install git gcc gcc-c++ make
 
    For MacOS users, these packages will not come preinstalled, but can be easily obtained by installing the XCode Command Line Tools.
    These are a set of packages relevant for software development which have been bundled together by Apple. The easiest way
