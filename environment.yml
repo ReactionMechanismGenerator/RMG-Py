@@ -42,6 +42,7 @@ dependencies:
   - rmg::pyrdl
   - rmg::pyrms
   - python >=3.7
+  - pyutilib
   - pyyaml
   - rmg::quantities
   - rmg::rdkit >=2020.03.3.0
