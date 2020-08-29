@@ -500,6 +500,8 @@ class ErrorCancelingScheme:
 
         self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
+        self.ref_errors = np.abs(np.array([s.high_level_hf298.value_si - s.low_level_hf298.value_si
+                                           for s in self.reference_species]))
 
     def _find_error_canceling_reaction(self, reference_subset, milp_software=None):
         """
@@ -524,6 +526,7 @@ class ErrorCancelingScheme:
 
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
+        ref_errors = np.take(self.ref_errors, reference_subset, axis=0)
 
         # Remove unnecessary constraints
         target_constraint, c_matrix = _clean_up_constraints(self.target_constraint, c_matrix)
@@ -532,6 +535,7 @@ class ErrorCancelingScheme:
 
         # Setup MILP problem
         c_matrix = np.tile(c_matrix, (2, 1))
+        ref_errors = np.tile(ref_errors, 2)
         sum_constraints = np.sum(c_matrix, 1, dtype=int)
         targets = -1*target_constraint
         m = c_matrix.shape[0]
@@ -559,6 +563,7 @@ class ErrorCancelingScheme:
                                                                                                            j_ind])
                 lp_model.s = pyo.Param(lp_model.i, initialize=lambda _, i_ind: sum_constraints[i_ind])
                 lp_model.t = pyo.Param(lp_model.j, initialize=lambda _, j_ind: targets[j_ind])
+                lp_model.e = pyo.Param(lp_model.i, initialize=lambda _, i_ind: ref_errors[i_ind])
 
                 lp_model.obj = pyo.Objective(rule=_pyo_obj_expression)
                 lp_model.constraints = pyo.Constraint(lp_model.j, rule=_pyo_constraint_rule)
@@ -586,7 +591,7 @@ class ErrorCancelingScheme:
                 # Setup the MILP problem using lpsolve
                 lp = lpsolve('make_lp', 0, m)
                 lpsolve('set_verbose', lp, 2)  # Reduce the logging from lpsolve
-                lpsolve('set_obj_fn', lp, sum_constraints)
+                lpsolve('set_obj_fn', lp, ref_errors)
                 lpsolve('set_minim', lp)
 
                 for j in range(n):
@@ -707,7 +712,7 @@ class ErrorCancelingScheme:
 
 
 def _pyo_obj_expression(model):
-    return pyo.summation(model.v, model.s, index=model.i)
+    return pyo.summation(model.v, model.e, index=model.i)
 
 
 def _pyo_constraint_rule(model, col):
