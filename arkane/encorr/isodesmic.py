@@ -592,12 +592,7 @@ class ErrorCancelingScheme:
                     lpsolve('add_constraint', lp, np.concatenate((c_matrix[:split, j], -1*c_matrix[split:, j])), EQ,
                             targets[j])
 
-                lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
                 lpsolve('set_timeout', lp, 10)  # Move on if lpsolve can't find a solution quickly
-
-                # Constrain v_i to be 4 or less
-                for i in range(m):
-                    lpsolve('set_upbo', lp, i, 4)
 
                 # All v_i must be integers
                 lpsolve('set_int', lp, [True]*m)
