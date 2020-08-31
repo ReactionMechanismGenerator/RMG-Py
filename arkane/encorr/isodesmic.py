@@ -565,7 +565,7 @@ class ErrorCancelingScheme:
                 # Solve the MILP problem using the GLPK MILP solver (https://www.gnu.org/software/glpk/)
                 opt = pyo.SolverFactory('glpk')
                 try:
-                    results = opt.solve(lp_model, timelimit=1)
+                    results = opt.solve(lp_model, timelimit=10)
                 except ApplicationError:
                     continue
 
@@ -593,7 +593,7 @@ class ErrorCancelingScheme:
                             targets[j])
 
                 lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
-                lpsolve('set_timeout', lp, 1)  # Move on if lpsolve can't find a solution quickly
+                lpsolve('set_timeout', lp, 10)  # Move on if lpsolve can't find a solution quickly
 
                 # Constrain v_i to be 4 or less
                 for i in range(m):
