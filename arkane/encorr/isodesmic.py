@@ -673,7 +673,7 @@ class ErrorCancelingScheme:
 
         return reaction_list
 
-    def calculate_target_enthalpy(self, n_reactions_max=20, milp_software=None):
+    def calculate_target_enthalpy(self, n_reactions_max=5, milp_software=None):
         """
         Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
         median hf298 value from among the error canceling reactions found
