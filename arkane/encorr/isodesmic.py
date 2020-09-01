@@ -66,7 +66,7 @@ except ImportError:
 class ErrorCancelingSpecies:
     """Class for target and known (reference) species participating in an error canceling reaction"""
 
-    def __init__(self, molecule, low_level_hf298, level_of_theory, high_level_hf298=None, source=None):
+    def __init__(self, molecule, low_level_hf298, level_of_theory, high_level_hf298=None, source=None, bac_hf298=None):
         """
 
         Args:
@@ -76,6 +76,7 @@ class ErrorCancelingSpecies:
             high_level_hf298 (ScalarQuantity, optional): evaluated using experimental data
                 or a high level of theory that is serving as the "reference" for the isodesmic calculation
             source (str): Literature source from which the high level data was taken
+            bac_hf298 (ScalarQuantity): BAC corrected Hf298, which can be used to weight species in isodesmic reactions
         """
         if isinstance(molecule, Molecule):
             self.molecule = molecule
@@ -106,6 +107,7 @@ class ErrorCancelingSpecies:
                                 f'received {high_level_hf298} instead.')
         self.high_level_hf298 = high_level_hf298
         self.source = source
+        self.bac_hf298 = bac_hf298
 
     def __repr__(self):
         return f'<ErrorCancelingSpecies {self.molecule.to_smiles()}>'
@@ -500,8 +502,13 @@ class ErrorCancelingScheme:
 
         self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
-        self.ref_errors = np.abs(np.array([s.high_level_hf298.value_si - s.low_level_hf298.value_si
-                                           for s in self.reference_species]))
+        ref_errors = []
+        for s in self.reference_species:
+            if s.bac_hf298 is not None:
+                ref_errors.append(s.high_level_hf298.value_si - s.bac_hf298.value_si)
+            else:  # Use the low level as an estimate with safety factor of 2
+                ref_errors.append((s.high_level_hf298.value_si - s.low_level_hf298.value_si)*2)
+        self.ref_errors = np.abs(ref_errors)
 
     def _find_error_canceling_reaction(self, reference_subset, milp_software=None):
         """

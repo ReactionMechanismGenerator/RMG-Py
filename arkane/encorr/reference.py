@@ -255,11 +255,13 @@ class ReferenceSpecies(ArkaneSpecies):
 
         reference_enthalpy = self.get_reference_enthalpy(source=source)
         low_level_h298 = self.calculated_data[level_of_theory].thermo_data.H298
+        bac_h298 = self.calculated_data[level_of_theory].bac_hf298
 
         return ErrorCancelingSpecies(
             molecule, low_level_h298, level_of_theory,
             high_level_hf298=reference_enthalpy.h298,
-            source=reference_enthalpy.source
+            source=reference_enthalpy.source,
+            bac_hf298=bac_h298
         )
 
     def get_reference_enthalpy(self, source=None):
@@ -382,7 +384,7 @@ class CalculatedDataEntry(RMGObject):
     A class for storing a single entry of statistical mechanical and thermochemistry information calculated at a single
     model chemistry or level of theory
     """
-    def __init__(self, thermo_data, xyz_dict=None, t1_diagnostic=None, fod=None):
+    def __init__(self, thermo_data, xyz_dict=None, t1_diagnostic=None, fod=None, bac_hf298=None):
         """
 
         Args:
@@ -392,12 +394,15 @@ class CalculatedDataEntry(RMGObject):
             t1_diagnostic (float): T1 diagnostic for coupled cluster calculations to check if single reference methods
                 are suitable
             fod (float): Fractional Occupation number weighted electron Density
+            bac_hf298 (rmgpy.quantity.ScalarQuantity): Heat of formation calculated for the species and corrected using
+                BACs.
         """
         super().__init__()
         self.thermo_data = thermo_data
         self.xyz_dict = xyz_dict
         self.t1_diagnostic = t1_diagnostic
         self.fod = fod
+        self.bac_hf298 = bac_hf298
 
     def __repr__(self):
         return str(self.as_dict())
