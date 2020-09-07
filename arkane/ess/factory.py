@@ -89,6 +89,9 @@ def ess_factory(fullpath: str) -> Type[ESSAdapter]:
                 elif 'O   R   C   A' in line or 'orca' in line.lower():
                     ess_name = 'OrcaLog'
                     break
+                elif 'psi4' in line or 'rob parrish' in line.lower():
+                    ess_name = 'Psi4Log'
+                    break
                 elif 'qchem' in line.lower():
                     ess_name = 'QChemLog'
                     break
