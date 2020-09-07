@@ -34,7 +34,7 @@ This module contains unit tests of the :mod:`arkane.ess.psi4` module.
 import os
 import unittest
 
-from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.ess.psi4 import Psi4Log
 
@@ -105,6 +105,7 @@ class QChemLogTest(unittest.TestCase):
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertEqual(len(unscaled_frequencies), 3)
 
     def test_spin_multiplicity_from_psi4_log(self):
         """

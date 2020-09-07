@@ -32,16 +32,14 @@ Arkane Psi4 module
 Used to parse Psi4 output files
 """
 
-import math
 import logging
-import os.path
 
 import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
-from arkane.common import check_conformer_energy, get_element_mass, get_principal_moments_of_inertia, convert_i_to_neg
+from arkane.common import  get_element_mass, get_principal_moments_of_inertia, convert_i_to_neg
 from arkane.exceptions import LogError
 from arkane.ess.adapter import ESSAdapter
 from arkane.ess.factory import register_ess_adapter
@@ -72,8 +70,8 @@ class Psi4Log(ESSAdapter):
             while line != '' and n_atoms == 0:
                 # Automatically determine the number of atoms
                 if 'Center              X                  Y                   Z               Mass ' in line and n_atoms == 0:
-                    for i in range(2):
-                        line = f.readline()
+                    line = f.readline()
+                    line = f.readline()
                     while line != '\n':
                         n_atoms += 1
                         line = f.readline()
