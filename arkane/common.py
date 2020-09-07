@@ -725,3 +725,16 @@ def clean_dir(base_dir_path: str = '',
             if os.path.split(item_path)[-1] in sub_dir_to_keep:
                 continue
             shutil.rmtree(item_path)
+
+
+def convert_i_to_neg(d):
+    """if frequency had imaginary frequency convert to negative number
+        '635.0i' -> -635.0
+        '500.0' -> 500.0
+    """
+    if d.endswith('i'):
+        freq = float(d[:-1]) * -1
+    else:
+        freq = float(d)
+
+    return freq
