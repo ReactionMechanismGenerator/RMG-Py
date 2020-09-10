@@ -627,7 +627,7 @@ class ErrorCancelingScheme:
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if results.solver.termination_condition == pyo.TerminationCondition.optimal:
                     # Extract the solution and find the species with non-zero stoichiometric coefficients
-                    solution = lp_model.v.extract_values().values()
+                    solution = list(lp_model.v.extract_values().values())
                     break
 
                 # Re-enable logging
