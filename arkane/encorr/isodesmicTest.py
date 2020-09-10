@@ -346,5 +346,37 @@ class TestErrorCancelingScheme(unittest.TestCase):
             self.assertEqual(target_thermo.value_si, 100000.0)
 
 
+class TestCalculateRCClass(unittest.TestCase):
+    """
+    A class for testing that we can calculate the reaction class of an error canceling reaction
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        lot = LevelOfTheory('test')
+        cls.propene = ErrorCancelingSpecies(Molecule(smiles='CC=C'), (100, 'kJ/mol'), lot)
+        cls.propane = ErrorCancelingSpecies(Molecule(smiles='CCC'), (100, 'kJ/mol'), lot)
+        cls.butane = ErrorCancelingSpecies(Molecule(smiles='CCCC'), (100, 'kJ/mol'), lot)
+        cls.butene = ErrorCancelingSpecies(Molecule(smiles='C=CCC'), (100, 'kJ/mol'), lot)
+        cls.pentane = ErrorCancelingSpecies(Molecule(smiles='CCCCC'), (100, 'kJ/mol'), lot)
+        cls.benzene = ErrorCancelingSpecies(Molecule(smiles='C1=CC=CC=C1'), (100, 'kJ/mol'), lot)
+        cls.fluorobenzene = ErrorCancelingSpecies(Molecule(smiles='FC1=CC=CC=C1'), (100, 'kJ/mol'), lot)
+        cls.difluorobenzene = ErrorCancelingSpecies(Molecule(smiles='FC1=CC=CC(F)=C1'), (100, 'kJ/mol'), lot)
+
+    def test_reaction_class_identification(self):
+        rxn = ErrorCancelingReaction(target=self.propene, species={self.butane: -1, self.propane: 1, self.butene: 1})
+        self.assertEqual('rc3_c', rxn.rc_class)
+
+        rxn = ErrorCancelingReaction(target=self.pentane, species={self.propane: -1, self.butane: 2})
+        self.assertEqual('rc4_cs', rxn.rc_class)
+
+        rxn = ErrorCancelingReaction(target=self.difluorobenzene, species={self.benzene: -1, self.fluorobenzene: 2})
+        self.assertEqual('rc4_cs', rxn.rc_class)
+
+        with self.assertRaises(ValueError):
+            rxn = ErrorCancelingReaction(target=self.propene, species={self.propane: 1})
+            rxn.calculate_rc_class()
+
+
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

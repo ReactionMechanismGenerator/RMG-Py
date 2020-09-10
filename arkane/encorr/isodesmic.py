@@ -133,6 +133,7 @@ class ErrorCancelingReaction:
 
         self.target = target
         self.level_of_theory = self.target.level_of_theory
+        self._rc_class = None
 
         # Perform a consistency check that all species are using the same level of theory
         for spcs in species.keys():
@@ -153,6 +154,47 @@ class ErrorCancelingReaction:
                 reactant_string += f' + {-1*int(coeff)}*{spcs.molecule.to_smiles()}'
 
         return f'<ErrorCancelingReaction {reactant_string} <=> {product_string[3:]} >'
+
+    @property
+    def rc_class(self):
+        if self._rc_class is None:
+            self.calculate_rc_class()
+        return self._rc_class
+
+    def calculate_rc_class(self):
+        rc_class = None
+
+        charge = self.target.molecule.get_net_charge()
+        sign = np.sign(charge) if charge != 0 else 1
+        allowed_charges = np.arange(0, charge + sign, sign)
+
+        for rc in sorted(CONSTRAINT_CLASSES.keys()):
+            spcs, stoich = zip(*self.species.items())
+            stoich = np.array(stoich)
+            constraint = SpeciesConstraints(self.target, spcs, isodesmic_class=rc,
+                                            conserve_ring_size=False, limit_charges=False, limit_scope=False)
+            target_constraint, species_constraints = constraint.calculate_constraints()
+            if np.array_equal(target_constraint, stoich@species_constraints):
+                # Check if additional constraints apply
+                additions = []
+                # Check if charges are limited
+                charge = self.target.molecule.get_net_charge()
+                sign = np.sign(charge) if charge != 0 else 1
+                allowed_charges = np.arange(0, charge + sign, sign)
+                if all([s.molecule.get_net_charge() in allowed_charges for s in spcs]):
+                    additions.append('c')
+                # Check if scope is limited
+                # A zero entry indicates the presence of a feature that is not in the target
+                if 0 not in target_constraint[:-1]:  # The last entry is charge, which can be zero
+                    additions.append('s')
+
+                if additions:
+                    rc += '_' + ''.join(additions)
+                rc_class = rc
+
+        if rc_class is None:
+            raise ValueError(f'Could not determine the reaction class for {self}')
+        self._rc_class = rc_class
 
     def calculate_target_thermo(self):
         """
@@ -638,6 +680,8 @@ class ErrorCancelingScheme:
             if v != 0:
                 subset_indices.append(index)
                 reaction.species.update({self.reference_species[reference_subset[index]]: v})
+
+        reaction.calculate_rc_class()
 
         return reaction, np.array(subset_indices)
 
