@@ -632,13 +632,12 @@ class ErrorCancelingScheme:
 
         reaction = ErrorCancelingReaction(self.target, dict())
         subset_indices = []
+        # Transform solution from 1x2*nspcs to 1xnspcs (in case of duplicates)
+        solution = [p - r for p, r in zip(solution[split:], solution[:split])]
         for index, v in enumerate(solution):
-            if v > 0:
-                subset_indices.append(index % split)
-                if index < split:
-                    reaction.species.update({self.reference_species[reference_subset[index]]: -v})
-                else:
-                    reaction.species.update({self.reference_species[reference_subset[index % split]]: v})
+            if v != 0:
+                subset_indices.append(index)
+                reaction.species.update({self.reference_species[reference_subset[index]]: v})
 
         return reaction, np.array(subset_indices)
 
