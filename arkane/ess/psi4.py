@@ -69,8 +69,8 @@ class Psi4Log(ESSAdapter):
             line = f.readline()
             while line != '' and n_atoms == 0:
                 # Automatically determine the number of atoms
-                if 'Center              X                  Y                   Z               Mass ' in line and n_atoms == 0:
-                    line = f.readline()
+                if 'Center              X                  Y                   Z               Mass ' in line:
+                    _ = f.readline()
                     line = f.readline()
                     while line != '\n':
                         n_atoms += 1
@@ -111,7 +111,6 @@ class Psi4Log(ESSAdapter):
         return force
 
     def load_geometry(self):
-
         """
         Return the optimum geometry of the molecular configuration from the
         Psi4 log file. If multiple such geometries are identified, only the
@@ -229,11 +228,8 @@ class Psi4Log(ESSAdapter):
                     vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
                     # modes.append(vibration)
                     freq.append(vibration)
-
-                    # Read the next line in the file
                 line = f.readline()
 
-                # Read the next line in the file
         # get moments of inertia from external rotational modes, given in atomic units        line = f.readline()
         coord, number, mass = self.load_geometry()
         inertia = get_principal_moments_of_inertia(coord, numbers=number, symbols=None)
