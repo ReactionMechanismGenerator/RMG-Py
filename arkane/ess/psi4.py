@@ -97,13 +97,13 @@ class Psi4Log(ESSAdapter):
             line = f.readline()
             while line != '':
                 # Read force constant matrix
-                if 'Force constants in Cartesian coordinates.' in line:
+                if 'Force constants in mass-weighted Cartesian coordinates' in line:
                     f.readline()
                     f_array = []  # we read the last one
                     while line != '\n':
                         line = f.readline()
                         # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                        f_array.extend([float(f) * 4.35974417e-18 / 5.291772108e-11 ** 2 for f in
+                        f_array.extend([float(f) * 4.35974417e-18 / 5.291772108e-11 ** 2  for f in
                                         line.replace('[', '').replace(']', '').split()])
                     force = np.array(f_array).reshape(n_rows, n_rows)
                 line = f.readline()
@@ -239,15 +239,10 @@ class Psi4Log(ESSAdapter):
                 # If the first eigenvalue is 0, the rotor is linear
                 inertia.remove(0.0)
                 logging.debug('inertia is {}'.format(str(inertia)))
-                for i in range(2):
-                    inertia[i] *= (constants.a0 / 1e-10) ** 2
-                inertia = np.sqrt(inertia[0] * inertia[1])
                 rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                 rot.append(rotation)
             else:
-                for i in range(3):
-                    inertia[i] *= (constants.a0 / 1e-10) ** 2
-                    rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                     # modes.append(rotation)
                 rot.append(rotation)
 
