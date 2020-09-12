@@ -34,7 +34,7 @@ This module contains unit tests of the :mod:`arkane.ess.orca` module.
 
 import os
 import unittest
-
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 from arkane.ess.orca import OrcaLog
 
 ################################################################################
@@ -105,11 +105,50 @@ class OrcaTest(unittest.TestCase):
 
     def test_T1_diagnostic_from_orca_log(self):
         """
-        Uses a Orca log file for npropyl to test that its
-        T1_diagnostic of freedom can be properly read.
+        Uses a Orca log file form dlpno calculation to test that its
+        T1_diagnostic of freedom can be properly read
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_dlpno_test.log'))
         self.assertAlmostEqual(log.get_T1_diagnostic(), 0.009872238, delta=1e-3)
+
+    def test_load_vibrations_from_orca_log(self):
+        """
+        Uses a Orca log files to test that
+        molecular energies can be properly read.
+        """
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(len(conformer.modes[2]._frequencies.value), 3)
+        self.assertEqual(conformer.modes[2]._frequencies.value[1], 3780.96)
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_TS_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(len(conformer.modes[2]._frequencies.value), 11)
+        self.assertEqual(conformer.modes[2]._frequencies.value[2], 331.23)
+
+    def test_load_modes_from_orca_log(self):
+        """
+        Uses a Orca log file for Orca_opt_freq_test.log to test that its
+        molecular modes can be properly read.
+        """
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertEqual(len(unscaled_frequencies), 3)
+
+    def test_spin_multiplicity_from_orca_log(self):
+        """
+        Uses a Orca log file for opt_freq_dft_ts.out to test that its
+        molecular degrees of freedom can be properly read.
+        """
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(conformer.spin_multiplicity, 1)
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_TS_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(conformer.spin_multiplicity, 1)
 
 ################################################################################
 

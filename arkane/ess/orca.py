@@ -34,10 +34,12 @@ Used to parse Orca output files
 """
 
 import logging
-import numpy
+import math
+import numpy as np
 import rmgpy.constants as constants
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
-from arkane.common import get_element_mass
+from arkane.common import get_element_mass, get_principal_moments_of_inertia , symbol_by_number
 from arkane.exceptions import LogError
 from arkane.ess.adapter import ESSAdapter
 from arkane.ess.factory import register_ess_adapter
@@ -80,10 +82,45 @@ class OrcaLog(ESSAdapter):
                 line = f.readline()
 
     def load_force_constant_matrix(self):
-        """not implemented in orca"""
-        # Orca print the hessian to .hess file.  you need to provide .hess instead of .log
+        """
+        Orca print the hessian to .hess file.  you need to provide .hess in the same folder
+        eg. ts.out and ts.hess need to be in the same folder
+        """
+        # Orca print the hessian to .hess file.  you need to provide .hess in the same folder
+        log_filename = self.path
+        # remove extension
+        base_name = log_filename.split('.')[:-1]
+        base_name.append('.hess')
+        hess_filename = ''.join(base_name)
 
-        raise LogError('The load_force_constant_matrix method is not implemented for Orca Logs')
+        if hess_filename:
+            force = None
+            n_atoms = self.get_number_of_atoms()
+            n_rows = n_atoms * 3
+
+            with open(hess_filename, 'r') as f:
+                line = f.readline()
+                while line != '':
+                    # Read force constant matrix
+                    if '$hessian' in line:
+                        line = f.readline()
+                        force = np.zeros((n_rows, n_rows), np.float64)
+                        for i in range(int(math.ceil(n_rows / 5.0))):
+                            # Header row
+                            line = f.readline()
+                            # Matrix element rows
+                            for j in range(n_rows):
+                                data = f.readline().split()[1:]
+                                for k in range(len(data)):
+                                    force[j, i * 5 + k] = float(data[k])
+                        # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
+                        force *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                    line = f.readline()
+
+            return force
+        else:
+            raise LogError(
+                'The load_force_constant_matrix method needs .hess file. Make sure filename.hess avaible in the same folder')
 
     def load_geometry(self):
         """
@@ -132,29 +169,86 @@ class OrcaLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             numbers.append(num1)
-        coord = numpy.array(coords, numpy.float64)
-        number = numpy.array(numbers, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
+        coord = np.array(coords, np.float64)
+        number = np.array(numbers, np.int)
+        mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise LogError('Unable to read atoms from Orca geometry output file {0}'.format(self.path))
+            raise LogError('Unable to read atoms from orca geometry output file {0}.'.format(self.path))
 
-        return coords, numbers, mass
+        return coord, number, mass
 
     def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Orca "Freq" quantum chemistry calculation.
-
-        CAUTION: The rotational entropy is not quite correctly treated here
-        because it includes a symmetry number that is not yet correctly
-        implemented in ORCA. Orca does not provide Rotational temperatures;
-        only E(rot) and E(trans) energies.
-
-        Consider using another supported software (such as Gaussian or QChem)
-        to calculate the frequencies and derive E0
         """
+        modes = []
+        freq = []
+        mmass = []
+        rot = []
+        inertia = []
+        unscaled_frequencies = []
+        e0 = 0.0
+        if optical_isomers is None or symmetry is None:
+            _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
+        if optical_isomers is None:
+            optical_isomers = _optical_isomers
+        if symmetry is None:
+            symmetry = _symmetry
 
-        raise NotImplementedError('Could not find a successfully load Orca scan:Parser is not inpemented')
+        with open(self.path) as f:
+            log = f.readlines()
+        for i, line in enumerate(log):
+            # Read spin multiplicity if not explicitly given
+            if ' Total Charge           Charge' in line:
+                charge = int(float(line.split()[4]))
+                logging.debug(
+                    'Conformer {0} is assigned a charge of {1}'.format(label, charge))
+            if ' Multiplicity           Mult' in line and spin_multiplicity == 0:
+                spin_multiplicity = int(float(line.split()[3]))
+                logging.debug(
+                    'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spin_multiplicity))
+
+            # The rest of the data we want is in the Thermochemistry section of the output
+            if ' Mode    freq' in line:
+                frequencies = list()
+                for line in log[(i + 2):]:
+                    if not line.strip():
+                        break
+                    frequencies.extend([float(line.split()[1])])
+
+                else:
+                    raise Exception(f'Frequencies not found in {self.logfile}')
+                unscaled_frequencies = frequencies
+                vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
+                # modes.append(vibration)
+                freq.append(vibration)
+
+        # get moments of inertia from external rotational modes, given in atomic units        line = f.readline()
+        coord, number, mass = self.load_geometry()
+        symbols = [symbol_by_number[i] for i in number]
+        inertia = get_principal_moments_of_inertia(coord, numbers=number, symbols=symbols)
+        inertia = list(inertia[0])
+        if len(inertia):
+            if inertia[0] == 0.0:
+                # If the first eigenvalue is 0, the rotor is linear
+                inertia.remove(0.0)
+                logging.debug('inertia is {}'.format(str(inertia)))
+                rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                rot.append(rotation)
+            else:
+                rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                # modes.append(rotation)
+                rot.append(rotation)
+
+        translation = IdealGasTranslation(mass=(sum(mass), "amu"))
+        # modes.append(translation)
+        mmass.append(translation)
+
+        # Take only the last modes found (in the event of multiple jobs)
+        modes = mmass[-1:] + rot[-1:] + freq[-1:]
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
+                         optical_isomers=optical_isomers), unscaled_frequencies
 
     def load_energy(self, zpe_scale_factor=1.):
         """
@@ -227,6 +321,7 @@ class OrcaLog(ESSAdapter):
             if 'T1 diagnostic ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise LogError('Unable to find T1 diagnostic in energy file: {}'.format(self.path))
+        # T1 diagnostic only avilable in Coupled cluster calculations.
+        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Orca Logs')
 
 register_ess_adapter("OrcaLog", OrcaLog)
