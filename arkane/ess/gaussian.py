@@ -302,7 +302,7 @@ class GaussianLog(ESSAdapter):
                 elif ' DE(CBS)=' in line:
                     cbs = float(line.split()[1]) * constants.E_h * constants.Na
                 elif ' DE(Int)=' in line:
-                    cbs_int = float(line.split()[1]) * constants.E_h * constants.Na
+                    cbs_int = float(line.split()[-1]) * constants.E_h * constants.Na
                 elif ' DE(Empirical)=' in line:
                     empirical = float(line.split()[1]) * constants.E_h * constants.Na
 
