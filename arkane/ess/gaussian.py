@@ -257,7 +257,7 @@ class GaussianLog(ESSAdapter):
         return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
                          optical_isomers=optical_isomers), unscaled_frequencies
 
-    def load_energy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1. , remove_empirical = False):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -299,6 +299,13 @@ class GaussianLog(ESSAdapter):
 
                 elif 'E(ZPE)' in line:
                     scaled_zpe = float(line.split()[1]) * constants.E_h * constants.Na
+                elif ' DE(CBS)=' in line:
+                    cbs = float(line.split()[1]) * constants.E_h * constants.Na
+                elif ' DE(Int)=' in line:
+                    cbs_int = float(line.split()[1]) * constants.E_h * constants.Na
+                elif ' DE(Empirical)=' in line:
+                    empirical = float(line.split()[1]) * constants.E_h * constants.Na
+
                 elif '\\ZeroPoint=' in line:
                     line = line.strip() + f.readline().strip()
                     start = line.find('\\ZeroPoint=') + 11
@@ -307,16 +314,19 @@ class GaussianLog(ESSAdapter):
                 # Read the next line in the file
                 line = f.readline()
 
-        if e0_composite is not None:
-            logging.debug("Using the composite energy from the gaussian output file")
-            if scaled_zpe is None:
-                raise LogError('Unable to find zero-point energy in Gaussian log file.')
-            return e0_composite - scaled_zpe
-        elif e_elect is not None:
-            logging.debug("Using the {0} energy from the gaussian output file".format(elect_energy_source))
-            return e_elect
-        else:
-            raise LogError('Unable to find energy in Gaussian log file.')
+            if e0_composite is not None and remove_empirical:
+                logging.debug("removing cbs, interference, and empirical correction for the composite energy")
+                return e0_composite - scaled_zpe - (cbs + cbs_int + empirical)
+            elif e0_composite is not None:
+                logging.debug("Using the composite energy from the gaussian output file")
+                if scaled_zpe is None:
+                    raise LogError('Unable to find zero-point energy in Gaussian log file.')
+                return e0_composite - scaled_zpe
+            elif e_elect is not None:
+                logging.debug("Using the {0} energy from the gaussian output file".format(elect_energy_source))
+                return e_elect
+            else:
+                raise LogError('Unable to find energy in Gaussian log file.')
 
     def load_zero_point_energy(self):
         """
