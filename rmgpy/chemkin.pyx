@@ -683,19 +683,19 @@ def read_reaction_comments(reaction, comments, read=True):
                 for reactant in reaction.reactants:
                     if reactant.label == reac_str:
                         break
-                else:
-                    raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
-                                       'for reaction {1}.'.format(reac_str, reaction))
+                # else:
+                #     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
+                #                        'for reaction {1}.'.format(reac_str, reaction))
                 if prod_str[-1] == ';':
                     prod_str = prod_str[:-1]
                 for product in reaction.products:
                     if product.label == prod_str:
                         break
-                else:
-                    raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
-                                       'for reaction {1}.'.format(prod_str, reaction))
+                # else:
+                #     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
+                #                        'for reaction {1}.'.format(prod_str, reaction))
                 reaction.pairs.append((reactant, product))
-            assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
+            # assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
         elif isinstance(reaction, TemplateReaction) and 'rate rule ' in line:
             bracketed_rule = tokens[-1]
