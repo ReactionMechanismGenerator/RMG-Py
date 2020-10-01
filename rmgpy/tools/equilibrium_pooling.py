@@ -28,6 +28,7 @@
 ###############################################################################
 
 import logging
+import os
 from collections import defaultdict
 from rdkit import RDLogger
 from rdkit import Chem
@@ -37,9 +38,11 @@ import math
 import cmath
 import rmgpy.constants as constants
 from scipy.optimize import fsolve
+from rmgpy.chemkin import save_chemkin_file
 
 def search_priority(rmg,reaction_system):
     # print(dir(reaction_system))
+    # print(dir(rmg.reaction_model.core.reactions))
     sim_T=reaction_system.T.value
     core_rxn_kf=reaction_system.kf
     core_rxn_kb=reaction_system.kb
@@ -190,11 +193,12 @@ def search_priority(rmg,reaction_system):
     # for conn in direct_connections_list:
     #     if abs(conn.equil_flux/min(conn.min_product_conc,conn.min_reactant_conc))<0.1:
     #         print(conn.equil_flux/min(conn.min_product_conc,conn.min_reactant_conc),conn.reactant,conn.coreactant,conn.product,conn.coproduct)
-
 #forward pooling list at a given time
 #bidirectional check on pooling at a given time
 #cycle through different times
 #classify connections by pooling time, delta H, subgroup similarity
+    chemkin_path=os.path.join(rmg.output_directory,'pooling_chem.inp')
+    save_chemkin_file(path=chemkin_path,species=core_species,reactions=rmg.reaction_model.core.reactions,check_for_duplicates=False)
 
 def equilibrium_pooling(direct_connections_list,core_species,t_characteristic): #,previous_forward_pass=None):
     fast_connections=[]
@@ -380,83 +384,18 @@ class Connection:
             self.H_rxn-=core_species[self.coreactant].get_enthalpy(temperature)
             self.G_rxn-=core_species[self.coreactant].get_free_energy(temperature)
         #equilibrium flux calculation
-        if kf is not None:
-            if kb !=0:
-                self.Keq=kf/kb
+        if self.kf is not None:
+            if self.kb !=0:
+                self.Keq=self.kf/self.kb
             else:
                 self.Keq=float('inf')
         else:
-            self.Keq=math.exp(-self.G_rxn/temperature/constants.R)*(100000/constants.R/temperature)**(self.species_count[1]-self.species_count[0])
-
-        if self.species_count==(2,2) and self.delta_reactant_conc>self.min_reactant_conc*1e8 and self.delta_product_conc>self.min_product_conc*1e8: #pseudofirst order
-            func= lambda x: (self.min_product_conc+x)/(self.min_reactant_conc-x)-self.Keq*(self.delta_reactant_conc+self.min_reactant_conc)/(self.delta_product_conc+self.min_product_conc)
-            self.symsol=(self.Keq*(self.delta_reactant_conc+self.min_reactant_conc)/(self.delta_product_conc+self.min_product_conc)*self.min_reactant_conc-self.min_product_conc)/(self.Keq*(self.delta_reactant_conc+self.min_reactant_conc)/(self.delta_product_conc+self.min_product_conc)+1)
-            self.equil_flux=fsolve(func,self.symsol)[0]
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coreactant_conc-self.equil_flux,self.coproduct_conc+self.equil_flux])
-            if not pos_check:
-                inst_K=self.product_conc*self.coproduct_conc/self.reactant_conc/self.coreactant_conc
-                if self.Keq/inst_K>1:
-                    self.equil_flux=fsolve(func,self.min_reactant_conc/2)[0]
-                else:
-                    self.equil_flux=fsolve(func,self.min_product_conc/2)[0]
-            self.equil_check()
-        elif self.species_count==(2,2):
-            if self.Keq<1:
-                func= lambda x: (self.product_conc+x)*(self.coproduct_conc+x)/(self.reactant_conc-x)/(self.coreactant_conc-x)-self.Keq
-            else:
-                func= lambda x: (self.reactant_conc-x)*(self.coreactant_conc-x)/(self.product_conc+x)/(self.coproduct_conc+x)-1/self.Keq
-            self.symsol=((2*self.Keq*self.min_reactant_conc+self.Keq*self.delta_reactant_conc+2*self.min_product_conc+self.delta_product_conc-math.sqrt(self.Keq**2*self.delta_reactant_conc**2+4*self.Keq*self.min_reactant_conc**2+8*self.Keq*self.min_reactant_conc*self.min_product_conc+4*self.Keq*self.min_reactant_conc*self.delta_product_conc+4*self.Keq*self.min_reactant_conc*self.delta_reactant_conc+4*self.Keq*self.min_product_conc**2+4*self.Keq*self.min_product_conc*self.delta_product_conc+4*self.Keq*self.min_product_conc*self.delta_reactant_conc+2*self.Keq*self.delta_reactant_conc*self.delta_product_conc+self.delta_product_conc**2))/(2*(self.Keq-1)))
-            self.equil_flux=fsolve(func,self.symsol)[0]
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coreactant_conc-self.equil_flux,self.coproduct_conc+self.equil_flux])
-            if not pos_check:
-                inst_K=self.product_conc*self.coproduct_conc/self.reactant_conc/self.coreactant_conc
-                if self.Keq/inst_K>1:
-                    self.equil_flux=fsolve(func,self.min_reactant_conc/2)[0]
-                else:
-                    self.equil_flux=fsolve(func,self.min_product_conc/2)[0]
-        elif self.species_count==(2,1):
-            self.symsol=(2*self.Keq*self.min_reactant_conc+self.Keq*self.delta_reactant_conc-math.sqrt(self.Keq**2*self.delta_reactant_conc**2+4*self.Keq*self.min_reactant_conc+4*self.Keq*self.product_conc+2*self.Keq*self.delta_reactant_conc+1)+1)/(2*self.Keq)
-            if self.Keq<1:
-                func= lambda x: (self.product_conc+x)/(self.reactant_conc-x)/(self.coreactant_conc-x)-self.Keq
-            else:
-                func= lambda x: (self.reactant_conc-x)*(self.coreactant_conc-x)/(self.product_conc+x)-1/self.Keq
-            self.equil_flux=fsolve(func,self.symsol)[0]
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coreactant_conc-self.equil_flux])
-            if not pos_check:
-                inst_K=self.product_conc/self.reactant_conc/self.coreactant_conc
-                if self.Keq/inst_K>1:
-                    self.equil_flux=fsolve(func,self.min_reactant_conc/2)[0]
-                else:
-                    self.equil_flux=fsolve(func,self.min_product_conc/2)[0]
-        elif self.species_count==(1,2):
-            self.symsol=-self.Keq/2-self.min_product_conc-self.delta_product_conc/2+math.sqrt(self.Keq**2+4*self.Keq*self.reactant_conc+4*self.Keq*self.min_product_conc+2*self.Keq*self.delta_product_conc+self.delta_product_conc**2)/2
-            if self.Keq<1:
-                func= lambda x: (self.product_conc+x)*(self.coproduct_conc+x)/(self.reactant_conc-x)-self.Keq
-            else:
-                func= lambda x: (self.reactant_conc-x)/(self.product_conc+x)/(self.coproduct_conc+x)-1/self.Keq
-            # func= lambda x: ((self.product_conc+x)*(self.coproduct_conc+x)/(self.reactant_conc-x))/self.Keq-1
-            self.equil_flux=fsolve(func,self.symsol)[0]
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coproduct_conc+self.equil_flux])
-            if not pos_check:
-                inst_K=self.product_conc*self.coproduct_conc/self.reactant_conc
-                if self.Keq/inst_K>1:
-                    self.equil_flux=fsolve(func,self.min_reactant_conc/2)[0]
-                else:
-                    self.equil_flux=fsolve(func,self.min_product_conc/2)[0]
-        else:
-            self.symsol=(self.Keq*self.reactant_conc-self.product_conc)/(self.Keq+1)
-            func= lambda x: (self.product_conc+x)/(self.reactant_conc-x)-self.Keq
-            self.equil_flux=fsolve(func,self.symsol)[0]
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux])
-            if not pos_check:
-                inst_K=self.product_conc/self.reactant_conc
-                if self.Keq/inst_K>1:
-                    self.equil_flux=fsolve(func,self.min_reactant_conc/2)[0]
-                else:
-                    self.equil_flux=fsolve(func,self.min_product_conc/2)[0]
-        self.equil_check()
+            self.Keq=math.exp(-self.G_rxn/self.T/constants.R)*(100000/constants.R/self.T)**(self.species_count[1]-self.species_count[0])
+        self.calculate_equil_flux()
         #time constant calculation
         if kf is not None:
+            if self.min_reactant_conc==0 and self.min_product_conc==0:
+                self.time_constant=None
         #pseudo first order time constant
             # self.pfo_k=kf*self.coreactant_conc if self.species_count[0]==2 else kf
             # if self.pfo_k!=0:
@@ -480,23 +419,23 @@ class Connection:
                 a2=(-4*self.min_reactant_conc*kf*kb*a1 - 2*self.min_reactant_conc*kf - 4*self.product_conc*kf*kb*a1 - self.delta_reactant_conc**2*kf**2*a1 - 2*self.delta_reactant_conc*kf*kb*a1 - self.delta_reactant_conc*kf - kb**2*a1 - kb)/(2*kf)
                 a3=(4*self.min_reactant_conc*kf*kb*a1 - 2*self.min_reactant_conc*kf + 4*self.product_conc*kf*kb*a1 + self.delta_reactant_conc**2*kf**2*a1 + 2*self.delta_reactant_conc*kf*kb*a1 - self.delta_reactant_conc*kf + kb**2*a1 - kb)/(2*kf)
                 # print(a1,a2,a3)
-                if a3==0:
-                    print(a1,a2,a3)
-                    print(kf,kb)
-                    print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
-                    print(self.equil_flux,self.symsol,self.species_count)
-                    print(self.Keq)
+                # if a3==0:
+                #     print(a1,a2,a3)
+                #     print(kf,kb)
+                #     print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
+                #     print(self.equil_flux,self.flux_guess,self.species_count)
+                #     print(self.Keq)
                 # C1=-a1*math.log(a2)+a1*math.log(a3)
                 self.time_constant=a1*(math.log((self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3)))
             elif self.species_count==(1,2):
                 a1=math.sqrt(1/(4*self.min_product_conc*kb*kf + 4*self.min_reactant_conc*kb*kf + self.delta_product_conc**2*kb**2 + 2*self.delta_product_conc*kb*kf + kf**2))
                 a2=(-4*self.min_product_conc*kb*kf*a1 - 2*self.min_product_conc*kb - 4*self.min_reactant_conc*kb*kf*a1 - self.delta_product_conc**2*kb**2*a1 - 2*self.delta_product_conc*kb*kf*a1 - self.delta_product_conc*kb - kf**2*a1 - kf)/(2*kb)
                 a3=(4*self.min_product_conc*kb*kf*a1 - 2*self.min_product_conc*kb + 4*self.min_reactant_conc*kb*kf*a1 + self.delta_product_conc**2*kb**2*a1 + 2*self.delta_product_conc*kb*kf*a1 - self.delta_product_conc*kb + kf**2*a1 - kf)/(2*kb)
-                if a3==0:
-                    print(a1,a2,a3)
-                    print(kf,kb)
-                    print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
-                    print(self.equil_flux,self.species_count)                # C1=-a1*math.log(a2)+a1*math.log(a3)
+                # if a3==0:
+                    # print(a1,a2,a3)
+                    # print(kf,kb)
+                    # print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
+                    # print(self.equil_flux,self.species_count)                # C1=-a1*math.log(a2)+a1*math.log(a3)
                 # self.time_constant=a1*math.log(-self.equil_flux*0.9+a2)-a1*math.log(-self.equil_flux*0.9+a3+C1)
                 self.time_constant=a1*(math.log((a2-self.equil_flux*0.9)*a3/a2/(a3-self.equil_flux*0.9)))
             elif self.species_count==(2,2) and abs(kb/kf-1)>1e-3:
@@ -516,7 +455,7 @@ class Connection:
             #     print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
             #     print(self.equil_flux,self.species_count)
             #     raise Exception('complex number problem')
-            print(self.time_constant)
+            # print(self.time_constant)
         else:
             self.pfo_k=None
             self.time_constant=None
@@ -545,32 +484,146 @@ class Connection:
         # return False
         return self.hash==other_connection.hash
     
-    def equil_check(self):
+    def calculate_equil_flux(self):
+        if max(self.min_product_conc,self.min_reactant_conc)<1e-18:
+            self.equil_flux=0
+            return
+        elif self.species_count==(2,2):
+            if self.delta_reactant_conc!=0 and (self.product_conc+self.min_reactant_conc)*(self.coproduct_conc+self.min_reactant_conc)/(self.Keq)/self.delta_reactant_conc<1e-18:
+                # print((self.product_conc+self.min_reactant_conc)*(self.coproduct_conc+self.min_reactant_conc)/(self.Keq)/self.delta_reactant_conc,'small remainder')
+                self.equil_flux=0
+                return
+            if self.min_reactant_conc==0:
+                inst_K=float('inf')
+            else:
+                inst_K=self.product_conc*self.coproduct_conc/self.reactant_conc/self.coreactant_conc
+            self.flux_guess=((2*self.Keq*self.min_reactant_conc+self.Keq*self.delta_reactant_conc+2*self.min_product_conc+self.delta_product_conc-math.sqrt(self.Keq**2*self.delta_reactant_conc**2+4*self.Keq*self.min_reactant_conc**2+8*self.Keq*self.min_reactant_conc*self.min_product_conc+4*self.Keq*self.min_reactant_conc*self.delta_product_conc+4*self.Keq*self.min_reactant_conc*self.delta_reactant_conc+4*self.Keq*self.min_product_conc**2+4*self.Keq*self.min_product_conc*self.delta_product_conc+4*self.Keq*self.min_product_conc*self.delta_reactant_conc+2*self.Keq*self.delta_reactant_conc*self.delta_product_conc+self.delta_product_conc**2))/(2*(self.Keq-1)))
+            # print(self.Keq,self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
+            # print(self.flux_guess)
+            if not self.pos_flux_check(self.flux_guess) or self.flux_guess==0:
+                if inst_K/self.Keq<1:
+                    self.flux_guess=self.min_reactant_conc/2
+                else:
+                    self.flux_guess=-self.min_product_conc/2
+            # print(self.flux_guess)
+            func= lambda x: (self.product_conc+x)*(self.coproduct_conc+x)-(self.reactant_conc-x)*(self.coreactant_conc-x)*self.Keq
+            self.equil_flux=fsolve(func,self.flux_guess)[0]
+            if not self.flux_K_check():
+                if inst_K/self.Keq<1 and abs(math.log10((self.min_reactant_conc-self.equil_flux)/self.min_reactant_conc))>1e-5:
+                    func= lambda x: (self.product_conc+self.min_reactant_conc-x)*(self.coproduct_conc+self.min_reactant_conc-x)-x*(self.delta_reactant_conc+x)*self.Keq
+                    self.equil_flux=self.min_reactant_conc-fsolve(func,(self.product_conc+self.min_reactant_conc)*(self.coproduct_conc+self.min_reactant_conc)/self.delta_reactant_conc/self.Keq)[0]
+                if not self.flux_K_check():
+                    # print(self.Keq,self.reactant_conc,self.coreactant_conc,self.product_conc)
+                    # print(self.flux_guess,self.equil_flux)
+                    raise Exception('bad equil')
+            return
+        # elif self.species_count==(2,1) and self.product_conc<1e-10:
+        #     inst_K=self.product_conc/self.reactant_conc/self.coreactant_conc
+        #     if self.delta_reactant_conc!=0 and inst_K/self.Keq<1 and (self.product_conc+self.min_reactant_conc)/(self.delta_reactant_conc)/self.Keq/self.min_reactant_conc<1e-5:
+        #         func= lambda x: math.log((self.min_reactant_conc-x)/x/(self.delta_reactant_conc+x)/self.Keq)
+        #         self.equil_flux=self.min_reactant_conc-fsolve(func,(self.min_reactant_conc)/self.delta_reactant_conc/self.Keq)[0]
+        #         if not self.flux_K_check():
+        #             raise Exception('bad equil')
+        #         return
+        #     self.flux_guess=(2*self.Keq*self.min_reactant_conc+self.Keq*self.delta_reactant_conc-math.sqrt(self.Keq**2*self.delta_reactant_conc**2+4*self.Keq*self.min_reactant_conc+4*self.Keq*self.product_conc+2*self.Keq*self.delta_reactant_conc+1)+1)/(2*self.Keq)
+        #     if not self.pos_flux_check(self.flux_guess) or self.flux_guess==0:
+        #         self.flux_guess=self.Keq*(self.min_reactant_conc)*(self.min_reactant_conc+self.delta_reactant_conc)/(self.Keq+1)
+        #     print(self.Keq,self.reactant_conc,self.coreactant_conc,self.product_conc)
+        #     print(self.flux_guess)
+        #     func= lambda x: math.log((self.product_conc+x)/(self.reactant_conc-x)/(self.coreactant_conc-x)/self.Keq)
+        #     self.equil_flux=fsolve(func,self.flux_guess)[0]
+        #     if not self.flux_K_check():
+        #         raise Exception('bad equil')
+        #     return
+        elif self.species_count==(2,1):
+            if self.min_reactant_conc==0:
+                inst_K=float('inf')
+            else:
+                inst_K=self.product_conc/self.reactant_conc/self.coreactant_conc
+            self.flux_guess=(2*self.Keq*self.min_reactant_conc+self.Keq*self.delta_reactant_conc-math.sqrt(self.Keq**2*self.delta_reactant_conc**2+4*self.Keq*self.min_reactant_conc+4*self.Keq*self.product_conc+2*self.Keq*self.delta_reactant_conc+1)+1)/(2*self.Keq)
+            if not self.pos_flux_check(self.flux_guess) or self.flux_guess==0:
+                if inst_K/self.Keq<1:
+                    self.flux_guess=self.min_reactant_conc/2
+                else:
+                    self.flux_guess=-self.min_product_conc/2
+            # print(self.Keq,self.reactant_conc,self.coreactant_conc,self.product_conc)
+            # print(self.flux_guess)
+            func= lambda x: (self.product_conc+x)-(self.reactant_conc-x)*(self.coreactant_conc-x)*self.Keq
+            self.equil_flux=fsolve(func,self.flux_guess)[0]
+            if not self.flux_K_check():
+                if self.delta_reactant_conc!=0 and inst_K/self.Keq<1 and (self.product_conc+self.min_reactant_conc)/(self.delta_reactant_conc)/self.Keq/self.min_reactant_conc<1e-5:
+                    func= lambda x: (self.product_conc+self.min_reactant_conc-x)-x*(self.delta_reactant_conc+x)*self.Keq
+                    self.equil_flux=self.min_reactant_conc-fsolve(func,(self.product_conc+self.min_reactant_conc)*(self.coproduct_conc+self.min_reactant_conc)/self.delta_reactant_conc/self.Keq)[0]
+                    if not self.flux_K_check():
+                        raise Exception('bad equil')
+                    return
+                raise Exception('bad equil')
+            return
+        elif self.species_count==(1,2):
+            if self.min_reactant_conc==0:
+                inst_K=float('inf')
+            else:
+                inst_K=self.product_conc*self.coproduct_conc/self.reactant_conc
+            self.flux_guess=-self.Keq/2-self.min_product_conc-self.delta_product_conc/2+math.sqrt(self.Keq**2+4*self.Keq*self.reactant_conc+4*self.Keq*self.min_product_conc+2*self.Keq*self.delta_product_conc+self.delta_product_conc**2)/2
+            if not self.pos_flux_check(self.flux_guess) or self.flux_guess==0:
+                if inst_K/self.Keq<1:
+                    self.flux_guess=self.min_reactant_conc/2
+                else:
+                    self.flux_guess=-self.min_product_conc/2
+            # if self.Keq<1:
+            #     func= lambda x: (self.product_conc+x)*(self.coproduct_conc+x)/(self.reactant_conc-x)-self.Keq
+            # else:
+            #     func= lambda x: (self.reactant_conc-x)/(self.product_conc+x)/(self.coproduct_conc+x)-1/self.Keq
+            func= lambda x: (self.product_conc+x)*(self.coproduct_conc+x)-(self.reactant_conc-x)*self.Keq
+            self.equil_flux=fsolve(func,self.flux_guess)[0]
+            if not self.flux_K_check():
+                raise Exception('bad equil')
+            return
+        else:
+            if self.min_reactant_conc==0:
+                inst_K=float('inf')
+            else:
+                inst_K=self.product_conc/self.reactant_conc
+            self.flux_guess=(self.Keq*self.reactant_conc-self.product_conc)/(self.Keq+1)
+            if not self.pos_flux_check(self.flux_guess) or self.flux_guess==0:
+                if inst_K/self.Keq<1:
+                    self.flux_guess=self.min_reactant_conc/2
+                else:
+                    self.flux_guess=-self.product_conc/2
+            # func= lambda x: (self.product_conc+x)/(self.reactant_conc-x)-self.Keq
+            func= lambda x: (self.product_conc+x)-(self.reactant_conc-x)*self.Keq
+            self.equil_flux=fsolve(func,self.flux_guess)[0]
+            if not self.flux_K_check():
+                raise Exception('bad equil')
+            return
+
+    def pos_flux_check(self,flux):
+        if self.species_count==(1,1):
+            pos_check=all(i>0 for i in [self.reactant_conc-flux,self.product_conc+flux])
+        if self.species_count==(1,2):
+            pos_check=all(i>0 for i in [self.reactant_conc-flux,self.product_conc+flux,self.coproduct_conc+flux])
+        if self.species_count==(2,1):
+            pos_check=all(i>0 for i in [self.reactant_conc-flux,self.product_conc+flux,self.coreactant_conc-flux])
+        if self.species_count==(2,2):
+            pos_check=all(i>0 for i in [self.reactant_conc-flux,self.product_conc+flux,self.coreactant_conc-flux,self.coproduct_conc+flux])
+        # if not pos_check:
+        #     print("pos check fail")
+        return pos_check
+
+    def flux_K_check(self):
         if self.species_count==(1,1):
             flux_K=(self.product_conc+self.equil_flux)/(self.reactant_conc-self.equil_flux)
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux])
         if self.species_count==(1,2):
             flux_K=(self.product_conc+self.equil_flux)*(self.coproduct_conc+self.equil_flux)/(self.reactant_conc-self.equil_flux)
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coproduct_conc+self.equil_flux])
         if self.species_count==(2,1):
             flux_K=(self.product_conc+self.equil_flux)/(self.reactant_conc-self.equil_flux)/(self.coreactant_conc-self.equil_flux)
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coreactant_conc-self.equil_flux])
         if self.species_count==(2,2):
             flux_K=(self.product_conc+self.equil_flux)*(self.coproduct_conc+self.equil_flux)/(self.reactant_conc-self.equil_flux)/(self.coreactant_conc-self.equil_flux)
-            pos_check=all(i>0 for i in [self.reactant_conc-self.equil_flux,self.product_conc+self.equil_flux,self.coreactant_conc-self.equil_flux,self.coproduct_conc+self.equil_flux])
-        res_K=abs(flux_K/self.Keq-1)
-        if max(self.min_product_conc,self.min_reactant_conc)<1e-18:
-            return
-        if res_K>1e-8: #revisit numerical precision of solution
-            print('res K',self.Keq,flux_K,self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc,self.equil_flux,self.species_count)
-            print(self.symsol,self.equil_flux,self.species_count)
-            print(self.min_reactant_conc,self.delta_reactant_conc,self.min_product_conc,self.delta_product_conc)
-            print(type(self.Keq))
-        if not pos_check:
-            print('pos',self.kf,self.kb,self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
-            print(self.symsol,self.equil_flux,self.species_count)
+        res_K=abs(math.log10(self.Keq/flux_K))
+        if res_K>1e-6: #revisit numerical precision of solution
+            # print('res K',self.Keq,flux_K)
+            # print(self.flux_guess,self.equil_flux,self.species_count)
             # print(self.min_reactant_conc,self.delta_reactant_conc,self.min_product_conc,self.delta_product_conc)
-        # if self.Keq>1e8: print(self.Keq)
-        if res_K>1e-8 or not pos_check:
-            raise Exception('bad equil_flux')
-        # print(res_K,self.Keq,flux_K)
+            return False
+        else:
+            return True

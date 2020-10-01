@@ -39,7 +39,7 @@ from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.tools.loader import load_rmg_job
 from rmgpy.tools.plot import plot_sensitivity
-from rmgpy.tools.equilibrium_pooling import search_priority
+from rmgpy.tools.equilibrium_pooling import search_priority,Connection
 
 
 def simulate(rmg, diffusion_limited=True):
@@ -94,7 +94,8 @@ def simulate(rmg, diffusion_limited=True):
 
         reaction_system.simulate(
             core_species=rmg.reaction_model.core.species,
-            core_reactions=rmg.reaction_model.core.reactions,
+            core_reactions=[i for e,i in enumerate(rmg.reaction_model.core.reactions) if e%2==1],
+            # core_reactions=rmg.reaction_model.core.reactions,
             edge_species=rmg.reaction_model.edge.species,
             edge_reactions=rmg.reaction_model.edge.reactions,
             surface_species=[],
