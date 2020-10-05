@@ -34,7 +34,7 @@ from copy import deepcopy
 import numpy as np
 
 from rmgpy import settings
-from rmgpy.exceptions import InputError
+from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
@@ -45,6 +45,7 @@ from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
+from rmgpy.data.surface import MetalDatabase
 
 ################################################################################
 
@@ -97,45 +98,65 @@ def database(
 
 
 def catalyst_properties(bindingEnergies=None,
-                        surfaceSiteDensity=None, ):
+                        surfaceSiteDensity=None,
+                        metal=None):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
+    Metal is the label of a metal in the surface metal library.
     Defaults to Pt(111) if not specified.
     """
-    rmg.binding_energies = convert_binding_energies(bindingEnergies)
+    metal_db = MetalDatabase()
+    metal_db.load(os.path.join(settings['database.directory'], 'surface'))
 
-    if surfaceSiteDensity is None:
-        surfaceSiteDensity = (2.72e-9, 'mol/cm^2')
-        logging.info("Using default surface site density of {0!r}".format(surfaceSiteDensity))
-    surfaceSiteDensity = SurfaceConcentration(*surfaceSiteDensity)
-    rmg.surface_site_density = surfaceSiteDensity
+    if metal and (bindingEnergies or surfaceSiteDensity):
+        raise InputError("In catalyst_properties section you should only specify a 'metal' shortcut " 
+                         "or the surfaceSiteDensity and bindingEnergies, but not both.")
+
+    if metal:
+        try:
+            logging.info("Using catalyst surface properties from metal %r.", metal)
+            rmg.binding_energies = metal_db.get_binding_energies(metal)
+            rmg.surface_site_density = metal_db.get_surface_site_density(metal)
+        except DatabaseError:
+            logging.error('Metal %r missing from surface library', metal)
+            raise
+    else: # metal not specified
+        if bindingEnergies is None:
+            rmg.binding_energies = metal_db.get_binding_energies("Pt111")
+            logging.info("Using default binding energies, Pt(111)")
+        else:
+            rmg.binding_energies = convert_binding_energies(bindingEnergies)
+    
+
+        if surfaceSiteDensity is None:
+            rmg.surface_site_density = metal_db.get_surface_site_density("Pt111")
+            logging.info("Using default surface site density, Pt(111)")
+        else:
+            rmg.surface_site_density = SurfaceConcentration(*surfaceSiteDensity)
+
+    logging.info("Using binding energies:\n%r", rmg.binding_energies)
+    logging.info("Using surface site density: %r", rmg.surface_site_density)
 
 
-def convert_binding_energies(bindingEnergies):
+def convert_binding_energies(binding_energies):
     """
-    Process the bindingEnergies from the input file.
-    If "None" is passed, then it returns Pt(111) values.
+    Process binding_energies dictionary from the input file
+    
+    It converts the values into Energy quantities, and checks that 
+    all elements C,H,O, and N are present.
 
-    :param bindingEnergies: a dictionary of element symbol: binding energy pairs (or None)
+    :param binding_energies: a dictionary of element symbol: binding energy pairs
     :return: the processed and checked dictionary
     """
-    if bindingEnergies is None:
-        bindingEnergies = {  # default values for Pt(111)
-            'C': (-6.750, 'eV/molecule'),
-            'H': (-2.479, 'eV/molecule'),
-            'O': (-3.586, 'eV/molecule'),
-            'N': (-4.352, 'eV/molecule'),
-        }
-        logging.info("Using default binding energies for Pt(111):\n{0!r}".format(bindingEnergies))
-    if not isinstance(bindingEnergies, dict):
+    if not isinstance(binding_energies, dict):
         raise InputError("bindingEnergies should be None (for default) or a dict.")
     new_dict = {}
     for element in 'CHON':
         try:
-            new_dict[element] = Energy(bindingEnergies[element])
+            new_dict[element] = Energy(binding_energies[element])
         except KeyError:
-            logging.error('Element {} missing from bindingEnergies dictionary'.format(element))
+            logging.error('Element {} missing from binding energies dictionary'.format(element))
             raise
     return new_dict
 
