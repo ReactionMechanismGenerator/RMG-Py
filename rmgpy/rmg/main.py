@@ -400,8 +400,9 @@ class RMG(util.Subject):
         # check libraries
         self.check_libraries()
 
+        # set global binding energies variable
         if self.binding_energies:
-            self.database.thermo.set_delta_atomic_adsorption_energies(self.binding_energies)
+            self.database.thermo.set_binding_energies(self.binding_energies)
 
         # set global variable solvent
         if self.solvent:
