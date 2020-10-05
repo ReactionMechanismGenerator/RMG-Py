@@ -62,6 +62,7 @@ class TestUncertainty(unittest.TestCase):
             kinetics_depositories=['training'],
             thermo_libraries=['primaryThermoLibrary'],
             reaction_libraries=['GRI-Mech3.0'],
+            surface=False,
         )
 
         # Prepare the database by loading training reactions and averaging the rate rules verbosely
