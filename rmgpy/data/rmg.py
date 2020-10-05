@@ -40,6 +40,7 @@ from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.solvation import SolvationDatabase
 from rmgpy.data.statmech import StatmechDatabase
 from rmgpy.data.thermo import ThermoDatabase
+from rmgpy.data.surface import MetalDatabase
 from rmgpy.data.transport import TransportDatabase
 from rmgpy.exceptions import DatabaseError
 
@@ -62,6 +63,7 @@ class RMGDatabase(object):
         self.kinetics = None
         self.statmech = None
         self.solvation = None
+        self.surface = None
 
         # Store the newly created database in the module.
         global database
@@ -80,6 +82,7 @@ class RMGDatabase(object):
              statmech_libraries=None,
              depository=True,
              solvation=True,
+             surface=True,
              testing=False):
         """
         Load the RMG database from the given `path` on disk, where `path`
@@ -105,6 +108,9 @@ class RMGDatabase(object):
 
         if solvation:
             self.load_solvation(os.path.join(path, 'solvation'))
+
+        if surface:
+            self.load_surface(os.path.join(path, 'surface'))
 
     def load_thermo(self, path, thermo_libraries=None, depository=True):
         """
@@ -173,6 +179,14 @@ class RMGDatabase(object):
         self.solvation = SolvationDatabase()
         self.solvation.load(path)
 
+    def load_surface(self, path):
+        """
+        Load the RMG metal database from the given `path` on disk, where
+        `path` points to the top-level folder of the RMG surface database.
+        """
+        self.surface = MetalDatabase()
+        self.surface.load(path)
+
     def load_statmech(self, path, statmech_libraries=None, depository=True):
         """
         Load the RMG statmech database from the given `path` on disk, where
@@ -213,6 +227,7 @@ class RMGDatabase(object):
         self.statmech.save(os.path.join(path, 'statmech'))
         self.solvation.save(os.path.join(path, 'solvation'))
         self.transport.save(os.path.join(path, 'transport'))
+        self.surface.save(os.path.join(path, 'surface'))
 
     def save_old(self, path):
         """
@@ -248,6 +263,8 @@ def get_db(name=''):
             return database.transport
         elif name == 'solvation':
             return database.solvation
+        elif name == 'surface':
+            return database.surface
         elif name == 'statmech':
             return database.statmech
         elif name == 'forbidden':
