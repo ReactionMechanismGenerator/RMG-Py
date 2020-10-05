@@ -75,6 +75,8 @@ class Entry(object):
     `metal`             Which metal the thermo calculation was done on (``None`` if not used)
     `facet`             Which facet the thermo calculation was done on (``None`` if not used)
     `site`              Which surface site the molecule prefers (``None`` if not used)
+    `binding_energies'  The surface binding energies for C,H,O, and N
+    `surface_site_density`  The surface site density
     =================== ========================================================
 
     """
@@ -95,6 +97,8 @@ class Entry(object):
                  metal=None,
                  facet=None,
                  site=None,
+                 binding_energies=None,
+                 surface_site_density=None,
                  ):
         self.index = index
         self.label = label
@@ -111,6 +115,8 @@ class Entry(object):
         self.metal = metal
         self.facet = facet
         self.site = site
+        self.binding_energies = binding_energies
+        self.surface_site_density = surface_site_density
 
     def __str__(self):
         return self.label
