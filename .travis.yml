@@ -37,7 +37,7 @@ jobs:
     - stage: test
       install:
         # Clone RMG-database
-        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+        - git clone -b Metal_Attributes https://github.com/ReactionMechanismGenerator/RMG-database.git
         - cd RMG-Py
         # Create and activate environment
         - conda env create -q -f environment.yml
