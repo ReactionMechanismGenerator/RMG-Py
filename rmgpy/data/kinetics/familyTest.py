@@ -670,6 +670,7 @@ class TestTreeGeneration(unittest.TestCase):
             kinetics_families=[],
             depository=False,
             solvation=False,
+            surface=False,
             testing=True,
         )
         cls.database.load_forbidden_structures()
@@ -833,6 +834,7 @@ class TestGenerateReactions(unittest.TestCase):
                               'Surface_Dissociation_vdW'],
             depository=False,
             solvation=False,
+            surface=False,
             testing=True,
         )
         cls.database.load_forbidden_structures()
