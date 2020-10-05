@@ -29,7 +29,9 @@
 
 import logging
 import os.path
+import csv
 from time import time
+import random
 
 import rmgpy.util as util
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
@@ -92,21 +94,48 @@ def simulate(rmg, diffusion_limited=True):
         if reaction_system.const_spc_names is not None:
             reaction_system.get_const_spc_indices(rmg.reaction_model.core.species)
 
-        reaction_system.simulate(
-            core_species=rmg.reaction_model.core.species,
-            core_reactions=[i for e,i in enumerate(rmg.reaction_model.core.reactions) if e%2==1],
-            # core_reactions=rmg.reaction_model.core.reactions,
-            edge_species=rmg.reaction_model.edge.species,
-            edge_reactions=rmg.reaction_model.edge.reactions,
-            surface_species=[],
-            surface_reactions=[],
-            pdep_networks=pdep_networks,
-            sensitivity=True if reaction_system.sensitive_species else False,
-            sens_worksheet=sens_worksheet,
-            model_settings=model_settings,
-            simulator_settings=simulator_settings,
-        )
-        search_priority(rmg,reaction_system)
+        all_core_reactions=rmg.reaction_model.core.reactions
+
+        included_reaction_indices=list(range(len(all_core_reactions)))
+        random.Random(20).shuffle(included_reaction_indices)
+        included_reaction_indices=set(included_reaction_indices[:len(all_core_reactions)//2])
+        simulation_reactions=[]
+        simulation_concentrations=[]
+        save_location=os.path.join(rmg.output_directory,'prioritized_searh_concentrations.csv')
+
+        for idx in included_reaction_indices:
+            simulation_reactions.append(all_core_reactions[idx])
+        for i in range(len(all_core_reactions)-len(included_reaction_indices)+1):
+
+            reaction_system.simulate(
+                core_species=rmg.reaction_model.core.species,
+                # core_reactions=rmg.reaction_model.core.reactions,
+                core_reactions=simulation_reactions,
+                edge_species=rmg.reaction_model.edge.species,
+                edge_reactions=rmg.reaction_model.edge.reactions,
+                surface_species=[],
+                surface_reactions=[],
+                pdep_networks=pdep_networks,
+                sensitivity=True if reaction_system.sensitive_species else False,
+                sens_worksheet=sens_worksheet,
+                model_settings=model_settings,
+                simulator_settings=simulator_settings,
+            )
+            simulation_concentrations.append(reaction_system.core_species_concentrations)
+            reaction_priority=search_priority(rmg,reaction_system)
+            print(len(included_reaction_indices),'/',len(all_core_reactions))
+            for rxn_idx in reaction_priority:
+                if rxn_idx not in included_reaction_indices:
+                    included_reaction_indices.add(rxn_idx)
+                    simulation_reactions.append(all_core_reactions[rxn_idx])
+                    break
+            else:
+                with open(save_location,'w') as wf:
+                    w=csv.writer(wf)
+                    w.writerow([i.label for i in rmg.reaction_model.core.species])
+                    for row in simulation_concentrations:
+                        w.writerow(row)
+            
 
         if reaction_system.sensitive_species:
             plot_sensitivity(rmg.output_directory, index, reaction_system.sensitive_species)
