@@ -97,11 +97,11 @@ def simulate(rmg, diffusion_limited=True):
         all_core_reactions=rmg.reaction_model.core.reactions
 
         included_reaction_indices=list(range(len(all_core_reactions)))
-        random.Random(20).shuffle(included_reaction_indices)
-        included_reaction_indices=set(included_reaction_indices[:len(all_core_reactions)//2])
+        # random.Random(20).shuffle(included_reaction_indices)
+        included_reaction_indices=set(included_reaction_indices[:1])
         simulation_reactions=[]
         simulation_concentrations=[]
-        save_location=os.path.join(rmg.output_directory,'prioritized_searh_concentrations.csv')
+        save_location=os.path.join(rmg.output_directory,'Hscore_search.csv')
 
         for idx in included_reaction_indices:
             simulation_reactions.append(all_core_reactions[idx])

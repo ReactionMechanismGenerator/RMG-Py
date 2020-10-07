@@ -36,13 +36,15 @@ from rdkit.Chem import rdFMCS
 import numpy as np
 import math
 import cmath
+import random
 import rmgpy.constants as constants
 from scipy.optimize import fsolve
+from scipy.integrate import solve_ivp
 from rmgpy.chemkin import save_chemkin_file
 
 def search_priority(rmg,reaction_system):
     # print(dir(reaction_system))
-    # print(dir(rmg.reaction_model.core.reactions[1]))
+    # print(rmg.reaction_model.core.reactions)
     sim_T=reaction_system.T.value
     core_rxn_kf=reaction_system.kf
     core_rxn_kb=reaction_system.kb
@@ -52,6 +54,8 @@ def search_priority(rmg,reaction_system):
     #get species list
     core_species=rmg.reaction_model.core.species
     # print(core_species[5].index)
+    # for e,i in enumerate(core_concentrations):
+    #     print(core_species[e],i)
     reactive_species=[i for i in core_species if i.reactive]
     #List of all mols and pairs
     potential_reactants = []
@@ -291,6 +295,7 @@ def equilibrium_pooling(direct_connections_list,core_species,t_characteristic): 
         fast_connections.append(set())
         # strong_connections.append(set())
     for conn in direct_connections_list:
+        # print(conn.time_constant,t_characteristic)
         if conn.time_constant is None:
             continue
         elif conn.product_conc!=conn.min_product_conc or conn.reactant_conc!=conn.min_reactant_conc:
@@ -356,8 +361,12 @@ def pooling_time_cycle(direct_connections_list,core_species):
     pooling_times[:]=np.inf
     # log10_minimum=math.floor(math.log10(time_constants[0]))
     # print(time_constants)
-    log10_minimum=math.floor(math.log10([i for i in time_constants if i>0][0]))
-    log10_maximum=math.ceil(math.log10(time_constants[-1]))+1
+    if all(i==0 for i in time_constants):
+        log10_minimum=0
+        log10_maximum=1
+    else:
+        log10_minimum=math.floor(math.log10([i for i in time_constants if i>0][0]))
+        log10_maximum=math.ceil(math.log10(time_constants[-1]))+1
     # log10_minimum=math.floor(math.log2(time_constants[0]))
     # log10_maximum=math.ceil(math.log2(time_constants[-1]))+1
     # pool_groups=equilibrium_pooling(direct_connections_list,core_species,10**log10_maximum)
@@ -370,7 +379,7 @@ def pooling_time_cycle(direct_connections_list,core_species):
         for i,grp in enumerate(pool_groups):
             for j in grp:
                 pooling_times[i,j]=log10_time
-    # for i in pooling_times: print(i) 
+    for i in pooling_times: print(i) 
     # print(pool_groups)
     # for i,spc in enumerate(core_species): print(i,spc)
     # for i in pool_groups[-1]:
@@ -412,10 +421,12 @@ def connection_sort_key(conn): #reversed
             same_species_score=0.1
         else:
             same_species_score=1
+    distance_score=conn.equil_flux/(min(conn.min_reactant_conc,conn.min_product_conc)+1e-25)
     substructure_score=conn.largest_substructure+1
+    random_score=random.random()
     composite=H_score*mult_score*same_species_score*substructure_score
     if None in (conn.pooling_time,conn.largest_substructure,composite): print(conn.pooling_time,conn.largest_substructure,composite)
-    return (conn.pooling_time,composite)
+    return (H_score)
     #classify connections by pooling time, delta H, subgroup similarity, unimolecular,distance from equil,multiplicity,same element
 
 def rank_core_reactions(rmg,pooling_times,core_species,core_concentrations,temperature):
@@ -708,6 +719,7 @@ class Connection:
             # print(self.flux_guess)
             func= lambda x: (self.product_conc+x)-(self.reactant_conc-x)*(self.coreactant_conc-x)*self.Keq
             self.equil_flux=fsolve(func,self.flux_guess)[0]
+            # print(self.equil_flux)
             if not self.flux_K_check():
                 if self.delta_reactant_conc!=0 and inst_K/self.Keq<1 and (self.product_conc+self.min_reactant_conc)/(self.delta_reactant_conc)/self.Keq/self.min_reactant_conc<1e-5:
                     func= lambda x: (self.product_conc+self.min_reactant_conc-x)-x*(self.delta_reactant_conc+x)*self.Keq
@@ -771,42 +783,62 @@ class Connection:
             # else:
             #     self.time_constant=self.equil_flux/(self.kf*self.reactant_conc*self.coreactant_conc)
         #time to 0.9 equilibrium flux
-            if abs(self.equil_flux)<1e-16 or max(self.min_reactant_conc,self.min_product_conc)<1e-18 or self.equil_flux<min(self.min_reactant_conc,self.min_product_conc)*1e-5:
+            # if abs(self.equil_flux)<1e-16 or max(self.min_reactant_conc,self.min_product_conc)<1e-18 or self.equil_flux<min(self.min_reactant_conc,self.min_product_conc)*1e-5:
+            if abs(self.equil_flux)<1e-22 or max(self.min_reactant_conc,self.min_product_conc)<1e-20 or abs(self.equil_flux)<min(self.min_reactant_conc,self.min_product_conc)*1e-8:
             # if self.equil_flux<min(self.min_reactant_conc,self.min_product_conc)*1e-5:
                 self.time_constant=0 #sufficiently equilibrated that equil_flux is in the range of numerical precision
             elif self.species_count==(1,1):
                 # self.time_constant=math.log(-self.reactant_conc*self.kf+self.product_conc*self.kb)/(self.kf+self.kb)-math.log(-self.reactant_conc*self.kf+self.product_conc*self.kb+(self.kf+self.kb)*self.equil_flux*0.9)/(self.kf+self.kb)
                 self.time_constant=math.log((-self.reactant_conc*self.kf+self.product_conc*self.kb)/(-self.reactant_conc*self.kf+self.product_conc*self.kb+(self.kf+self.kb)*self.equil_flux*0.9))/(self.kf+self.kb)
             elif self.species_count==(2,1):
-                a1=math.sqrt(1/(4*self.min_reactant_conc*self.kf*self.kb + 4*self.product_conc*self.kf*self.kb + self.delta_reactant_conc**2*self.kf**2 + 2*self.delta_reactant_conc*self.kf*self.kb + self.kb**2))
-                a2=(-4*self.min_reactant_conc*self.kf*self.kb*a1 - 2*self.min_reactant_conc*self.kf - 4*self.product_conc*self.kf*self.kb*a1 - self.delta_reactant_conc**2*self.kf**2*a1 - 2*self.delta_reactant_conc*self.kf*self.kb*a1 - self.delta_reactant_conc*self.kf - self.kb**2*a1 - self.kb)/(2*self.kf)
+                a1=math.sqrt(1/(4*self.min_reactant_conc*self.kf*self.kb + 4*self.min_product_conc*self.kf*self.kb + self.delta_reactant_conc**2*self.kf**2 + 2*self.delta_reactant_conc*self.kf*self.kb + self.kb**2))
+                a2=(-4*self.min_reactant_conc*self.kf*self.kb*a1 - 2*self.min_reactant_conc*self.kf - 4*self.min_product_conc*self.kf*self.kb*a1 - self.delta_reactant_conc**2*self.kf**2*a1 - 2*self.delta_reactant_conc*self.kf*self.kb*a1 - self.delta_reactant_conc*self.kf - self.kb**2*a1 - self.kb)/(2*self.kf)
                 a3=(4*self.min_reactant_conc*self.kf*self.kb*a1 - 2*self.min_reactant_conc*self.kf + 4*self.product_conc*self.kf*self.kb*a1 + self.delta_reactant_conc**2*self.kf**2*a1 + 2*self.delta_reactant_conc*self.kf*self.kb*a1 - self.delta_reactant_conc*self.kf + self.kb**2*a1 - self.kb)/(2*self.kf)
                 # print(a1,a2,a3)
-                if a3==0:
+                if (self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3)<=0:
                     print(a1,a2,a3)
                     print(self.kf,self.kb)
                     print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
                     print(self.equil_flux,self.flux_guess,self.species_count)
                     print(self.Keq)
-                # C1=-a1*math.log(a2)+a1*math.log(a3)
-                self.time_constant=a1*(math.log((self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3)))
-            elif self.species_count==(1,2):
+                    self.numerical_time()
+                else:
+                    # if (self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3)<=0:
+                    #     print((self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3))
+                    #     print(a1,a2,a3)
+                    #     print(self.kf,self.kb)
+                    #     print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
+                    #     print(self.equil_flux,self.flux_guess,self.species_count)
+                    #     print(self.Keq)
+                    self.time_constant=a1*(math.log((self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3)))
+            elif self.species_count==(1,2): #this one has fewer errors than (2,1), why?
                 a1=math.sqrt(1/(4*self.min_product_conc*self.kb*self.kf + 4*self.min_reactant_conc*self.kb*self.kf + self.delta_product_conc**2*self.kb**2 + 2*self.delta_product_conc*self.kb*self.kf + self.kf**2))
                 a2=(-4*self.min_product_conc*self.kb*self.kf*a1 - 2*self.min_product_conc*self.kb - 4*self.min_reactant_conc*self.kb*self.kf*a1 - self.delta_product_conc**2*self.kb**2*a1 - 2*self.delta_product_conc*self.kb*self.kf*a1 - self.delta_product_conc*self.kb - self.kf**2*a1 - self.kf)/(2*self.kb)
                 a3=(4*self.min_product_conc*self.kb*self.kf*a1 - 2*self.min_product_conc*self.kb + 4*self.min_reactant_conc*self.kb*self.kf*a1 + self.delta_product_conc**2*self.kb**2*a1 + 2*self.delta_product_conc*self.kb*self.kf*a1 - self.delta_product_conc*self.kb + self.kf**2*a1 - self.kf)/(2*self.kb)
-                # if a3==0:
-                    # print(a1,a2,a3)
-                    # print(self.kf,self.kb)
-                    # print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
-                    # print(self.equil_flux,self.species_count)                # C1=-a1*math.log(a2)+a1*math.log(a3)
+                if (a2-self.equil_flux*0.9)*a3/a2/(a3-self.equil_flux*0.9)<=0:
+                    print(a1,a2,a3)
+                    print(self.kf,self.kb)
+                    print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
+                    print(self.equil_flux,self.species_count)
+                    self.numerical_time()
                 # self.time_constant=a1*math.log(-self.equil_flux*0.9+a2)-a1*math.log(-self.equil_flux*0.9+a3+C1)
-                self.time_constant=a1*(math.log((a2-self.equil_flux*0.9)*a3/a2/(a3-self.equil_flux*0.9)))
+                else:
+                    self.time_constant=a1*(math.log((a2-self.equil_flux*0.9)*a3/a2/(a3-self.equil_flux*0.9)))
             elif self.species_count==(2,2) and abs(self.kb/self.kf-1)>1e-3:
                 a1=math.sqrt(1/(4*self.min_reactant_conc**2*self.kf*self.kb + 8*self.min_reactant_conc*self.min_product_conc*self.kf*self.kb + 4*self.min_reactant_conc*self.delta_product_conc*self.kf*self.kb + 4*self.min_reactant_conc*self.delta_reactant_conc*self.kf*self.kb + 4*self.min_product_conc**2*self.kf*self.kb + 4*self.min_product_conc*self.delta_product_conc*self.kf*self.kb + 4*self.min_product_conc*self.delta_reactant_conc*self.kf*self.kb + self.delta_product_conc**2*self.kb**2 + 2*self.delta_product_conc*self.delta_reactant_conc*self.kf*self.kb + self.delta_reactant_conc**2*self.kf**2))
                 a2=(-4*self.min_reactant_conc**2*self.kf*self.kb*a1 - 8*self.min_reactant_conc*self.min_product_conc*self.kf*self.kb*a1 - 4*self.min_reactant_conc*self.delta_product_conc*self.kf*self.kb*a1 - 4*self.min_reactant_conc*self.delta_reactant_conc*self.kf*self.kb*a1 - 2*self.min_reactant_conc*self.kf - 4*self.min_product_conc**2*self.kf*self.kb*a1 - 4*self.min_product_conc*self.delta_product_conc*self.kf*self.kb*a1 - 4*self.min_product_conc*self.delta_reactant_conc*self.kf*self.kb*a1 - 2*self.min_product_conc*self.kb - self.delta_product_conc**2*self.kb**2*a1 - 2*self.delta_product_conc*self.delta_reactant_conc*self.kf*self.kb*a1 - self.delta_product_conc*self.kb - self.delta_reactant_conc**2*self.kf**2*a1 - self.delta_reactant_conc*self.kf)/(2*(self.kf - self.kb))
                 a3=(4*self.min_reactant_conc**2*self.kf*self.kb*a1 + 8*self.min_reactant_conc*self.min_product_conc*self.kf*self.kb*a1 + 4*self.min_reactant_conc*self.delta_product_conc*self.kf*self.kb*a1 + 4*self.min_reactant_conc*self.delta_reactant_conc*self.kf*self.kb*a1 - 2*self.min_reactant_conc*self.kf + 4*self.min_product_conc**2*self.kf*self.kb*a1 + 4*self.min_product_conc*self.delta_product_conc*self.kf*self.kb*a1 + 4*self.min_product_conc*self.delta_reactant_conc*self.kf*self.kb*a1 - 2*self.min_product_conc*self.kb + self.delta_product_conc**2*self.kb**2*a1 + 2*self.delta_product_conc*self.delta_reactant_conc*self.kf*self.kb*a1 - self.delta_product_conc*self.kb + self.delta_reactant_conc**2*self.kf**2*a1 - self.delta_reactant_conc*self.kf)/(2*(self.kf - self.kb))
                 # print(a1,a2,a3)
-                self.time_constant=a1*(math.log((a2 + self.equil_flux*0.9)*a3/(a3 + self.equil_flux*0.9)/a2))
+                if (a2 + self.equil_flux*0.9)*a3/(a3 + self.equil_flux*0.9)/a2<=0:
+                    print((self.equil_flux*0.9+a2)*a3/a2/(self.equil_flux*0.9+a3))
+                    print(a1,a2,a3)
+                    print(self.kf,self.kb)
+                    print(self.reactant_conc,self.coreactant_conc,self.product_conc,self.coproduct_conc)
+                    print(self.equil_flux,self.flux_guess,self.species_count)
+                    print(self.Keq)
+                    self.numerical_time()
+                else:
+                    self.time_constant=a1*(math.log((a2 + self.equil_flux*0.9)*a3/(a3 + self.equil_flux*0.9)/a2))
             elif self.species_count==(2,2) and abs(self.kb/self.kf-1)<=1e-3:
                 self.time_constant=(math.log(-self.min_reactant_conc**2 - self.min_reactant_conc*self.delta_reactant_conc + self.min_product_conc**2 + self.min_product_conc*self.delta_product_conc) - math.log(-self.min_reactant_conc**2 - self.min_reactant_conc*self.delta_reactant_conc + 2*self.min_reactant_conc*self.equil_flux*0.9 + self.min_product_conc**2 + self.min_product_conc*self.delta_product_conc + 2*self.min_product_conc*self.equil_flux*0.9 + self.delta_product_conc*self.equil_flux*0.9 + self.delta_reactant_conc*self.equil_flux*0.9))/(self.kf*(2*self.min_reactant_conc + 2*self.min_product_conc + self.delta_product_conc + self.delta_reactant_conc))
             else: raise Exception('Unsupported reaction type')
@@ -845,7 +877,7 @@ class Connection:
             flux_K=(self.product_conc+self.equil_flux)/(self.reactant_conc-self.equil_flux)/(self.coreactant_conc-self.equil_flux)
         if self.species_count==(2,2):
             flux_K=(self.product_conc+self.equil_flux)*(self.coproduct_conc+self.equil_flux)/(self.reactant_conc-self.equil_flux)/(self.coreactant_conc-self.equil_flux)
-        res_K=abs(math.log10(self.Keq/flux_K))
+        res_K=abs(math.log10(flux_K/self.Keq+1e-25))
         if res_K>1e-5: #revisit numerical precision of solution
             if abs((self.min_product_conc+self.equil_flux)/self.min_product_conc)<1e-5 or abs((self.min_reactant_conc-self.equil_flux)/self.min_reactant_conc)<1e-5:
                 return True #depleted species
@@ -855,3 +887,40 @@ class Connection:
             return False
         else:
             return True
+
+    def numerical_time(self):
+        if self.species_count==(2,2):
+            time_step=(self.kf*(self.min_reactant_conc+self.delta_reactant_conc)+self.kb*(self.min_product_conc+self.delta_product_conc))
+            time_range=[0,10*time_step]
+            int_func = lambda t,y: -1*self.kb*(self.product_conc+y[0])*(self.coproduct_conc+y[0])+self.kf*(self.reactant_conc-y[0])*(self.coreactant_conc-y[0])
+            int_event = lambda t,y: self.equil_flux*0.9-y[0]
+            sol=solve_ivp(int_func,time_range,[0])#,events=int_event)
+        if self.species_count==(2,1):
+            time_step=(self.kf*(self.min_reactant_conc+self.delta_reactant_conc)+self.kb)
+            time_range=[0,10*time_step]
+            int_func = lambda t,y: -1*self.kb*(self.product_conc+y[0])+self.kf*(self.reactant_conc-y[0])*(self.coreactant_conc-y[0])
+            int_event = lambda t,y: self.equil_flux*0.9-y[0]
+            sol=solve_ivp(int_func,time_range,[0])#,events=int_event)
+        if self.species_count==(1,2):
+            time_step=(self.kf+self.kb*(self.min_product_conc+self.delta_product_conc))
+            time_range=[0,10*time_step]
+            int_func = lambda t,y: -1*self.kb*(self.product_conc+y[0])*(self.coproduct_conc+y[0])+self.kf*(self.reactant_conc-y[0])
+            int_event = lambda t,y: self.equil_flux*0.9-y[0]
+            sol=solve_ivp(int_func,time_range,[0])#,events=int_event)
+        # print(sol.t_events)
+        # print(sol.t_events[0])
+        print(sol.t)
+        print(sol.y)
+        self.time_constant=0# sol.t_events[0][0]
+    
+    # def int2_2(self,t,y):
+    #     return -1*self.kb*(self.product_conc+y[0])*(self.coproduct_conc+y[0])+self.kf*(self.reactant_conc-y[0])*(self.coreactant_conc-y[0])
+    
+    # def int2_1(self,t,y):
+    #     return -1*self.kb*(self.product_conc+y[0])+self.kf*(self.reactant_conc-y[0])*(self.coreactant_conc-y[0])
+    
+    # def int1_2(self,t,y):
+    #     return -1*self.kb*(self.product_conc+y[0])*(self.coproduct_conc+y[0])+self.kf*(self.reactant_conc-y[0])
+    
+    # def int_event(self,t,y):
+    #     return self.equil_flux*0.9-y[0]
