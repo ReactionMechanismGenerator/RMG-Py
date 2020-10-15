@@ -98,15 +98,18 @@ def simulate(rmg, diffusion_limited=True):
 
         included_reaction_indices=list(range(len(all_core_reactions)))
         # random.Random(20).shuffle(included_reaction_indices)
-        included_reaction_indices=set(included_reaction_indices[:1])
+        # included_reaction_indices=set(included_reaction_indices[::2]+[0])
+        included_reaction_indices=set(included_reaction_indices)
+        included_reaction_indices.remove(14)
+        included_reaction_indices.remove(0)
         simulation_reactions=[]
         simulation_concentrations=[]
-        save_location=os.path.join(rmg.output_directory,'Hscore_search.csv')
+        save_location=os.path.join(rmg.output_directory,'test_cycle.csv')
 
         for idx in included_reaction_indices:
             simulation_reactions.append(all_core_reactions[idx])
         for i in range(len(all_core_reactions)-len(included_reaction_indices)+1):
-
+            print('simulate iteration',i)
             reaction_system.simulate(
                 core_species=rmg.reaction_model.core.species,
                 # core_reactions=rmg.reaction_model.core.reactions,
@@ -121,6 +124,7 @@ def simulate(rmg, diffusion_limited=True):
                 model_settings=model_settings,
                 simulator_settings=simulator_settings,
             )
+            print('end simulation',i)
             simulation_concentrations.append(reaction_system.core_species_concentrations)
             reaction_priority=search_priority(rmg,reaction_system)
             print(len(included_reaction_indices),'/',len(all_core_reactions))
