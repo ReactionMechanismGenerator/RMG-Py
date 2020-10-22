@@ -148,7 +148,11 @@ def species(label, structure, reactive=True):
     if '+' in label:
         raise InputError('species {0} label cannot include a + sign'.format(label))
 
-    spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
+    try:
+        spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
+    except:
+        logging.error(f'Error when reading species "{label}" from input file.')
+        raise
     if not is_new:
         raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
                                                                                                           spec.label))
