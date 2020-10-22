@@ -1569,7 +1569,7 @@ class ThermoDatabase(object):
         )
         try:
             self._add_group_thermo_data(adsorption_thermo, self.groups['adsorptionPt111'], molecule, {})
-        except KeyError:
+        except (KeyError, DatabaseError):
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
             logging.error(molecule.to_adjacency_list())
