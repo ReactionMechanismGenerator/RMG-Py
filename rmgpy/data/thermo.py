@@ -1531,6 +1531,16 @@ class ThermoDatabase(object):
                         adsorbed_atoms[0].increment_radical()
                         adsorbed_atoms[1].decrement_lone_pairs()
                         adsorbed_atoms[1].increment_radical()
+                #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
+                if (bond.order == 3 and adsorbed_atoms[0].radical_electrons and 
+                    adsorbed_atoms[1].radical_electrons and 
+                    (adsorbed_atoms[0].lone_pairs or adsorbed_atoms[1].lone_pairs)):
+                    adsorbed_atoms[0].decrement_radical()
+                    adsorbed_atoms[1].decrement_radical()
+                    if adsorbed_atoms[0].lone_pairs:
+                        adsorbed_atoms[1].increment_lone_pairs()
+                    else:
+                        adsorbed_atoms[0].increment_lone_pairs()
 
         dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
