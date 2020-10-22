@@ -1458,9 +1458,10 @@ class ThermoDatabase(object):
         if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        logging.debug("Trying to generate thermo for surface species with these %d resonance isomer(s):",
+        logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
                       len(species.molecule))
         molecule = species.molecule[0]
+        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
         dummy_molecule = molecule.copy(deep=True)
@@ -1529,7 +1530,6 @@ class ThermoDatabase(object):
         dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
-        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
 
         dummy_species = Species()
