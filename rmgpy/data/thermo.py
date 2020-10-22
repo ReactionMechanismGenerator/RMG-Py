@@ -2404,7 +2404,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descend_tree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in thermo database for atom {0} in molecule {1}.'.format(atom, molecule))
+            raise KeyError(f'Node not found for atom {atom} in molecule {molecule} in thermo database {database.label}.')
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an
@@ -2413,8 +2413,8 @@ class ThermoDatabase(object):
         while node is not None and node.data is None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or '
-                                'any of its ancestors.'.format(molecule, node0))
+            raise DatabaseError(f'Unable to determine thermo parameters for atom {atom} in molecule {molecule}: '
+                                f'no data for node {node0} or any of its ancestors in database {database.label}.')
 
         data = node.data
         comment = node.label
@@ -2423,8 +2423,8 @@ class ThermoDatabase(object):
             loop_count += 1
             if loop_count > 100:
                 raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
-                                    " reference may exist. Last node was {0} pointing to group called {1} in "
-                                    "database {2}".format(node.label, data, database.label))
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {database.label}")
 
             for entry in database.entries.values():
                 if entry.label == data:
@@ -2432,9 +2432,9 @@ class ThermoDatabase(object):
                     comment = entry.label
                     break
             else:
-                raise DatabaseError("Node {0} points to a non-existing group called {1} in database: "
-                                    "{2}".format(node.label, data, database.label))
-        data.comment = '{0}({1})'.format(database.label, comment)
+                raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {database.label}")
+        data.comment = f'{database.label}({comment})'
 
         # This code prints the hierarchy of the found node; useful for debugging
         # result = ''
@@ -2458,7 +2458,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descend_tree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in database.')
+            raise KeyError(f'Node not found for atom {atom} in molecule {molecule} in thermo database {database.label}.')
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an
@@ -2467,8 +2467,8 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of'
-                                ' its ancestors.'.format(molecule, node0))
+            raise DatabaseError(f'Unable to determine thermo parameters for atom {atom} in molecule {molecule}: '
+                                f'no data for node {node0} or any of its ancestors in database {database.label}.')
 
         data = node.data
         comment = node.label
@@ -2476,19 +2476,18 @@ class ThermoDatabase(object):
         while isinstance(data, str):
             loop_count += 1
             if loop_count > 100:
-                raise DatabaseError(
-                    "Maximum iterations reached while following thermo group data pointers. A circular"
-                    " reference may exist. Last node was {0} pointing to group called {1} in"
-                    " database {2}".format(node.label, data, database.label))
+                raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {database.label}")
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
             else:
-                raise DatabaseError("Node {0} points to a non-existant group called {1} in database: "
-                                    "{2}".format(node.label, data, database.label))
-        data.comment = '{0}({1})'.format(database.label, comment)
+                raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {database.label}")
+        data.comment = f'{database.label}({comment})'
 
         # This code prints the hierarchy of the found node; useful for debugging
         # result = ''
