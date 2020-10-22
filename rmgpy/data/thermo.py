@@ -1219,9 +1219,14 @@ class ThermoDatabase(object):
             return thermo0
 
         if species.contains_surface_site():
-            thermo0 = self.get_thermo_data_for_surface_species(species)
-            thermo0 = self.correct_binding_energy(thermo0, species)
-            return thermo0
+            try:
+                thermo0 = self.get_thermo_data_for_surface_species(species)
+                thermo0 = self.correct_binding_energy(thermo0, species)
+                return thermo0
+            except:
+                logging.error("Error attempting to get thermo for species %s with structure \n%s", 
+                    species, species.molecule[0].to_adjacency_list())
+                raise
 
         try:
             quantum_mechanics = get_input('quantum_mechanics')
