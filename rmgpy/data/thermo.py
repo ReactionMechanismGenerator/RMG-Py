@@ -1219,9 +1219,14 @@ class ThermoDatabase(object):
             return thermo0
 
         if species.contains_surface_site():
-            thermo0 = self.get_thermo_data_for_surface_species(species)
-            thermo0 = self.correct_binding_energy(thermo0, species)
-            return thermo0
+            try:
+                thermo0 = self.get_thermo_data_for_surface_species(species)
+                thermo0 = self.correct_binding_energy(thermo0, species)
+                return thermo0
+            except:
+                logging.error("Error attempting to get thermo for species %s with structure \n%s", 
+                    species, species.molecule[0].to_adjacency_list())
+                raise
 
         try:
             quantum_mechanics = get_input('quantum_mechanics')
@@ -1458,9 +1463,10 @@ class ThermoDatabase(object):
         if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        logging.debug("Trying to generate thermo for surface species with these %d resonance isomer(s):",
+        logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
                       len(species.molecule))
         molecule = species.molecule[0]
+        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
         dummy_molecule = molecule.copy(deep=True)
@@ -1525,11 +1531,20 @@ class ThermoDatabase(object):
                         adsorbed_atoms[0].increment_radical()
                         adsorbed_atoms[1].decrement_lone_pairs()
                         adsorbed_atoms[1].increment_radical()
+                #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
+                if (bond.order == 3 and adsorbed_atoms[0].radical_electrons and 
+                    adsorbed_atoms[1].radical_electrons and 
+                    (adsorbed_atoms[0].lone_pairs or adsorbed_atoms[1].lone_pairs)):
+                    adsorbed_atoms[0].decrement_radical()
+                    adsorbed_atoms[1].decrement_radical()
+                    if adsorbed_atoms[0].lone_pairs:
+                        adsorbed_atoms[1].increment_lone_pairs()
+                    else:
+                        adsorbed_atoms[0].increment_lone_pairs()
 
         dummy_molecule.update_connectivity_values()
         dummy_molecule.update()
 
-        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
 
         dummy_species = Species()
