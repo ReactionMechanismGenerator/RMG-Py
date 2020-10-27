@@ -234,7 +234,7 @@ cdef class StickingCoefficient(KineticsModel):
             exp(sqrt(cov[0, 0])),
             sqrt(cov[1, 1]),
             sqrt(cov[2, 2]) * 0.001,
-        )  # todo: add in coverage params here
+        )  # todo: add in coverage params here?
 
         return self
 
@@ -436,8 +436,12 @@ cdef class StickingCoefficientBEP(KineticsModel):
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,
+            eps_ki=self.eps_ki,
+            mu_ki=self.mu_ki,
+            nu_ki=self.nu_ki,
+            species=self.species,
             comment=self.comment,
-        )  # todo: update this with coverage dependent params
+        )
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
@@ -617,6 +621,10 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,
+            eps_ki=self.eps_ki,
+            mu_ki=self.mu_ki,
+            nu_ki=self.nu_ki,
+            species=self.species,
             uncertainty = self.uncertainty,
             comment=self.comment,
-        )  # todo: add in coverage params here
+        )
