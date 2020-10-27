@@ -58,17 +58,27 @@ cdef class StickingCoefficient(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `eps_ki`        The activation energy dependence on coverage
+    `mu_ki`         The power-law exponent of coverage dependence
+    `nu_ki`         The coefficient for exponential dependence on the coverage
+    `species`       The species, i, that the coverage dependence parameters are dependent on
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
 
-    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0, "K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0, "K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, eps_ki=None,
+                 mu_ki=None, nu_ki=None, species=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, eps_ki=eps_ki, mu_ki=mu_ki,
+                               nu_ki=nu_ki, species=species, comment=comment)
         self.A = A
         self.n = n
         self.Ea = Ea
         self.T0 = T0
+        self.eps_ki = eps_ki
+        self.mu_ki = mu_ki
+        self.nu_ki = nu_ki
+        self.species = species
 
     def __repr__(self):
         """
@@ -80,6 +90,10 @@ cdef class StickingCoefficient(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.species is not None: string += f', species={self.species}'
+        if self.eps_ki is not None: string += f', eps_ki={self.eps_ki}'
+        if self.mu_ki is not None: string += f',  mu_ki={self.mu_ki}'
+        if self.nu_ki is not None: string += f', nu_ki={self.nu_ki}'
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -89,7 +103,7 @@ cdef class StickingCoefficient(KineticsModel):
         A helper function used when pickling a StickingCoefficient object.
         """
         return (StickingCoefficient, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                                      self.comment))
+                                      self.eps_ki, self.mu_ki, self.nu_ki, self.species, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -119,16 +133,53 @@ cdef class StickingCoefficient(KineticsModel):
         def __set__(self, value):
             self._T0 = quantity.Temperature(value)
 
-    cpdef double get_sticking_coefficient(self, double T) except -1:
+    property eps_ki:
+        """The activation energy dependence on coverage."""
+        def __get__(self):
+            return self._eps_ki
+        def __set__(self, value):
+            self._eps_ki = quantity.Energy(value)
+
+    property mu_ki:
+        """The power-law exponent of coverage dependence."""
+        def __get__(self):
+            return self._mu_ki
+        def __set__(self, value):
+            self._mu_ki = quantity.Dimensionless(value)
+
+    property nu_ki:
+        """The coefficient for exponential dependence on the coverage."""
+        def __get__(self):
+            return self._nu_ki
+        def __set__(self, value):
+            self._nu_ki = quantity.Dimensionless(value)
+
+    property species:
+        """The species, i, that the coverage dependence parameters are dependent on."""
+        def __get__(self):
+            return self._species
+        def __set__(self, value):
+            # todo: not sure how to do this as species should be a rmg.species or a string?
+            self._species = quantity.SurfaceConcentration
+
+    cpdef double get_sticking_coefficient(self, double T, double species=1) except -1:
         """
         Return the sticking coefficient (dimensionless) at temperature `T` in K. 
         """
-        cdef double A, n, Ea, T0, stickingCoefficient
+        cdef double A, n, Ea, T0, eps_ki, mu_ki, nu_ki, species, stickingCoefficient
         A = self._A.value_si
         n = self._n.value_si
         Ea = self._Ea.value_si
         T0 = self._T0.value_si
-        stickingCoefficient = A * (T / T0) ** n * exp(-Ea / (constants.R * T))
+        eps_ki = self._eps_ki
+        mu_ki = self._mu_ki
+        nu_ki = self._nu_ki
+        species = self._species  # todo: need to get the concentration/surface site fraction/surface coverage of said species
+        if species:
+            stickingCoefficient = A * (T / T0) ** n * exp(-Ea / (constants.R * T)) *
+        else:
+            stickingCoefficient = A * (T / T0) ** n * exp(-Ea / (constants.R * T))
+
         if stickingCoefficient < 0:
             raise ValueError("Sticking coefficients cannot be negative, check your preexponential factor.")
         return min(stickingCoefficient, 1.0)
@@ -183,7 +234,7 @@ cdef class StickingCoefficient(KineticsModel):
             exp(sqrt(cov[0, 0])),
             sqrt(cov[1, 1]),
             sqrt(cov[2, 2]) * 0.001,
-        )
+        )  # todo: add in coverage params here
 
         return self
 
@@ -238,17 +289,27 @@ cdef class StickingCoefficientBEP(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `eps_ki`        The activation energy dependence on coverage
+    `mu_ki`         The power-law exponent of coverage dependence
+    `nu_ki`         The coefficient for exponential dependence on the coverage
+    `species`       The species, i, that the coverage dependence parameters are dependent on
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
 
-    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, eps_ki=None,
+                 mu_ki=None, nu_ki=None, species=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, eps_ki=eps_ki, mu_ki=mu_ki,
+                               nu_ki=nu_ki, species=species, comment=comment)
         self.A = A
         self.n = n
         self.alpha = alpha
         self.E0 = E0
+        self.eps_ki = eps_ki
+        self.mu_ki = mu_ki
+        self.nu_ki = nu_ki
+        self.species = species
 
     def __repr__(self):
         """
@@ -261,6 +322,10 @@ cdef class StickingCoefficientBEP(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.species is not None: string += f', species={self.species}'
+        if self.eps_ki is not None: string += f', eps_ki={self.eps_ki}'
+        if self.mu_ki is not None: string += f',  mu_ki={self.mu_ki}'
+        if self.nu_ki is not None: string += f', nu_ki={self.nu_ki}'
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -269,8 +334,8 @@ cdef class StickingCoefficientBEP(KineticsModel):
         """
         A helper function used when pickling an StickingCoefficientBEP object.
         """
-        return (StickingCoefficientBEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax,
-                                         self.Pmin, self.Pmax, self.comment))
+        return (StickingCoefficientBEP, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                                         self.eps_ki, self.mu_ki, self.nu_ki, self.species, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -300,12 +365,42 @@ cdef class StickingCoefficientBEP(KineticsModel):
         def __set__(self, value):
             self._E0 = quantity.Energy(value)
 
+    property eps_ki:
+        """The activation energy dependence on coverage."""
+        def __get__(self):
+            return self._eps_ki
+        def __set__(self, value):
+            self._eps_ki = quantity.Energy(value)
+
+    property mu_ki:
+        """The power-law exponent of coverage dependence."""
+        def __get__(self):
+            return self._mu_ki
+        def __set__(self, value):
+            self._mu_ki = quantity.Dimensionless(value)
+
+    property nu_ki:
+        """The coefficient for exponential dependence on the coverage."""
+        def __get__(self):
+            return self._nu_ki
+        def __set__(self, value):
+            self._nu_ki = quantity.Dimensionless(value)
+
+    property species:
+        """The species, i, that the coverage dependence parameters are dependent on."""
+        def __get__(self):
+            return self._species
+        def __set__(self, value):
+            # todo: not sure how to do this as species should be a rmg.species or a string?
+            self._species = quantity.SurfaceConcentration
+
+
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the sticking coefficient (dimensionless) at
         temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
         """
-        cdef double A, n, Ea, stickingCoefficient
+        cdef double A, n, Ea, stickingCoefficient  # todo: update this function
         Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
@@ -342,7 +437,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
             Tmin=self.Tmin,
             Tmax=self.Tmax,
             comment=self.comment,
-        )
+        )  # todo: update this with coverage dependent params
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
@@ -393,11 +488,15 @@ cdef class SurfaceArrhenius(Arrhenius):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `eps_ki`        The activation energy dependence on coverage
+    `mu_ki`         The power-law exponent of coverage dependence
+    `nu_ki`         The coefficient for exponential dependence on the coverage
+    `species`       The species, i, that the coverage dependence parameters are dependent on
     `uncertainty`   Uncertainty information
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     """
-    property A:
+    property A:  # todo: double check this is the only thing that changes even with coverage parameters
         """The preexponential factor. 
     
         This is the only thing different from a normal Arrhenius class."""
@@ -416,6 +515,10 @@ cdef class SurfaceArrhenius(Arrhenius):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.species is not None: string += f', species={self.species}'
+        if self.eps_ki is not None: string += f', eps_ki={self.eps_ki}'
+        if self.mu_ki is not None: string += f',  mu_ki={self.mu_ki}'
+        if self.nu_ki is not None: string += f', nu_ki={self.nu_ki}'
         if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
@@ -426,7 +529,7 @@ cdef class SurfaceArrhenius(Arrhenius):
         A helper function used when pickling a SurfaceArrhenius object.
         """
         return (SurfaceArrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                                   self.uncertainty, self.comment))
+                                   self.eps_ki, self.mu_ki, self.nu_ki, self.species, self.uncertainty, self.comment))
 
 
 ################################################################################
@@ -453,12 +556,16 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `eps_ki`        The activation energy dependence on coverage
+    `mu_ki`         The power-law exponent of coverage dependence
+    `nu_ki`         The coefficient for exponential dependence on the coverage
+    `species`       The species, i, that the coverage dependence parameters are dependent on
     `uncertainty`   Uncertainty information
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
-    property A:
+    property A:  # todo: double check this is the only thing that changes even with coverage parameters
         """The preexponential factor. 
     
         This is the only thing different from a normal ArrheniusEP class."""
@@ -478,6 +585,10 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.species is not None: string += f', species={self.species}'
+        if self.eps_ki is not None: string += f', eps_ki={self.eps_ki}'
+        if self.mu_ki is not None: string += f',  mu_ki={self.mu_ki}'
+        if self.nu_ki is not None: string += f', nu_ki={self.nu_ki}'
         if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
@@ -488,7 +599,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         A helper function used when pickling an SurfaceArrheniusBEP object.
         """
         return (SurfaceArrheniusBEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                                      self.uncertainty, self.comment))
+                                   self.eps_ki, self.mu_ki, self.nu_ki, self.species, self.uncertainty, self.comment))
 
     cpdef SurfaceArrhenius to_arrhenius(self, double dHrxn):
         """
@@ -508,4 +619,4 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
             Tmax=self.Tmax,
             uncertainty = self.uncertainty,
             comment=self.comment,
-        )
+        )  # todo: add in coverage params here
