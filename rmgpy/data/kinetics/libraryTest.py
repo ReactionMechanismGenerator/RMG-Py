@@ -53,7 +53,7 @@ class TestLibrary(unittest.TestCase):
         cls.database = KineticsDatabase()
         cls.database.load_libraries(
             os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'libraries'),
-            libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation'])
+            libraries=None)  # this loads all of them
         cls.libraries = cls.database.libraries
 
     def test_get_library_reactions(self):
@@ -76,24 +76,25 @@ class TestLibrary(unittest.TestCase):
         This tests the the library.save method by writing a new temporary file and
         loading it and comparing the original and copied reactions
         """
-        os.makedirs(os.path.join(settings['test_data.directory'],
-                                 'testing_database', 'kinetics', 'libraries', 'eth-oxcopy'))
-        try:
-            self.libraries['ethane-oxidation'].save(
-                os.path.join(settings['test_data.directory'],
-                             'testing_database', 'kinetics', 'libraries', 'eth-oxcopy', 'reactions.py'))
-            self.database.load_libraries(
-                os.path.join(settings['test_data.directory'],
-                             'testing_database', 'kinetics', 'libraries'),
-                libraries=None)  # this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation', 'eth-oxcopy'])
-            ori_rxns = self.database.libraries['ethane-oxidation'].get_library_reactions()
-            copy_rxns = self.database.libraries['eth-oxcopy'].get_library_reactions()
-            for i in range(len(ori_rxns)):
-                if repr(ori_rxns[i]).strip() != repr(copy_rxns[i]).strip():
-                    self.assertIsInstance(copy_rxns[i], TemplateReaction)
-        finally:
-            shutil.rmtree(os.path.join(settings['test_data.directory'],
-                                       'testing_database', 'kinetics', 'libraries', 'eth-oxcopy'))
+        for library_name in ['ethane-oxidation', 'surface-example']:
+            copy_path = os.path.join(settings['test_data.directory'], 'testing_database',
+                                    'kinetics', 'libraries', library_name+'-copy')
+            os.makedirs(copy_path)
+            try:
+                self.libraries[library_name].save(os.path.join(copy_path, 'reactions.py'))
+                self.database.load_libraries(
+                    os.path.join(settings['test_data.directory'], 'testing_database',
+                                'kinetics', 'libraries'),
+                    libraries=None)  # this loads all of them, including the new copy
+                original_rxns = self.database.libraries[library_name].get_library_reactions()
+                copy_rxns = self.database.libraries[library_name+'-copy'].get_library_reactions()
+                for i in range(len(original_rxns)):
+                    if repr(original_rxns[i]).strip() != repr(copy_rxns[i]).strip(): # if it's representation looks different...
+                        self.assertIsInstance(copy_rxns[i], TemplateReaction) # ...it must be a TemplateReaction
+                    #Todo: we need to check more carefully for equivalence, 
+                    # eg. is the metal attribute saved for surface reactions?
+            finally:
+                shutil.rmtree(copy_path)
 
     def test_generate_high_p_limit_kinetics(self):
         """
