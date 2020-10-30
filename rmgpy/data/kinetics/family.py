@@ -4427,10 +4427,11 @@ def _make_rule(rr):
     for i, rxn in enumerate(rxns):
         rxn.rank = ranks[i]
     rxns = np.array(rxns)
+    data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
     if n > 0:
         kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
         if n == 1:
-            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, correlation=label)
+            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
         else:
             dlnks = np.array([
                 np.log(
@@ -4446,7 +4447,7 @@ def _make_rule(rr):
             V2 = (ws ** 2).sum()
             mu = np.dot(ws, dlnks) / V1
             s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
-            kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, correlation=label)
+            kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
         return kin
     else:
         return None
