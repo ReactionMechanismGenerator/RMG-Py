@@ -617,6 +617,32 @@ class KineticsRules(Database):
         """
         entry = self.get_rule(template)
 
+        if self.auto_generated:
+            entry0 = entry
+            while entry.parent is not None:
+                parent = entry.parent
+                err_parent = abs(parent.data.uncertainty.data_mean + parent.data.uncertainty.mu - entry.data.uncertainty.data_mean) + sqrt(2.0*parent.data.uncertainty.var/pi)
+                err_entry = abs(entry.data.uncertainty.mu) + sqrt(2.0*entry.data.uncertainty.var/pi)
+                if err_entry > err_parent:
+                    entry = entry.parent
+            
+            kinetics = deepcopy(entry.data)
+            if entry0 == entry:
+                kinetics.comment = "Estimated from node {}".format(entry.label)
+                kinetics.A.value_si *= degeneracy
+                if degeneracy > 1:
+                    kinetics.comment += "\n"
+                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+                return kinetics,entry
+            else:
+                kinetics.comment = "Matched node {}\n".format(entry0.label)
+                kinetics.comment += "Estimated from node {}".format(entry.label)
+                kinetics.A.value_si *= degeneracy
+                if degeneracy > 1:
+                    kinetics.comment += "\n"
+                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+                return kinetics,None
+                     
         original_leaves = get_template_label(template)
         template_list = [template]
         distance_list = [np.zeros(len(template))]
