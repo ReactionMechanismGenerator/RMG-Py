@@ -106,6 +106,8 @@ def catalyst_properties(bindingEnergies=None,
     Metal is the label of a metal in the surface metal library.
     Defaults to Pt(111) if not specified.
     """
+    # Normally we wouldn't load the database until after reading the input file,
+    # but we need to load the metal surfaces library to validate the input.
     metal_db = MetalDatabase()
     metal_db.load(os.path.join(settings['database.directory'], 'surface'))
 
