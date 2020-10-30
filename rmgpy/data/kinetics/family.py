@@ -742,7 +742,7 @@ class KineticsFamily(Database):
                 if self.reverse is None:
                     self.reverse = '{0}_reverse'.format(self.label)
 
-        self.rules = KineticsRules(label='{0}/rules'.format(self.label))
+        self.rules = KineticsRules(label='{0}/rules'.format(self.label),auto_generated=self.auto_generated)
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
 
