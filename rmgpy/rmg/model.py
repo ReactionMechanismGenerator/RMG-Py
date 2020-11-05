@@ -265,7 +265,6 @@ class CoreEdgeReactionModel:
         object. It is emphasized that `reactive` relates to the :Class:`Species` attribute, while `reactive_structure`
         relates to the :Class:`Molecule` attribute.
         """
-
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label
@@ -342,7 +341,7 @@ class CoreEdgeReactionModel:
 
         Next, the reaction ID containing an identifier (e.g. label) of the reactants
         and products is compared between the parameter reaction and the each of the
-        reactions in the shortlist. If a match is found, the discovered reaction is 
+        reactions in the shortlist. If a match is found, the discovered reaction is
         returned.
 
         If a match is not yet found, the Library (seed mechs, reaction libs)
@@ -394,7 +393,7 @@ class CoreEdgeReactionModel:
             lib_obj = get_family_library_object(library)
             if isinstance(lib_obj, KineticsLibrary) and library != rxn.family:
 
-                # First check seed short-list in forward direction                
+                # First check seed short-list in forward direction
                 shortlist = self.retrieve(library, r1_fwd, r2_fwd)
 
                 for rxn0 in shortlist:
@@ -415,7 +414,7 @@ class CoreEdgeReactionModel:
 
     def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, perform_cut = True):
         """
-        Make a new reaction given a :class:`Reaction` object `forward`. 
+        Make a new reaction given a :class:`Reaction` object `forward`.
         The reaction is added to the global list of reactions.
         Returns the reaction in the direction that corresponds to the
         estimated kinetics, along with whether or not the reaction is new to the
@@ -424,33 +423,38 @@ class CoreEdgeReactionModel:
         The forward direction is determined using the "is_reverse" attribute of the
         reaction's family.  If the reaction family is its own reverse, then it is
         made such that the forward reaction is exothermic at 298K.
-        
+
         The forward reaction is appended to self.new_reaction_list if it is new.
         """
 
         # Determine the proper species objects for all reactants and products
         # check perform_cut first, assume True for model generation
-        if perform_cut:
-            threshold = 20
-            if forward.is_forward == True and forward.family in ['R_Recombination', 'R_Addition_MultipleBond'] and forward.products[0].molecule[0].get_element_count()['C'] >= threshold:
-                # check if the product is too large so that we can cut
-                reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
-                products = []
-                for product in forward.products:
-                    spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_cut=True)
-                    if type(spcs) == tuple:
-                        products.append(spcs[0])
-                    elif type(spcs) == list:
-                        products.extend([spc[0] for spc in spcs])
-                # change the reaction to irreversible if we cut the product into fragments
-                if len(products) != 1:
-                    forward.reversible = False
-            else:
-                reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
-                products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
-        else:
-            reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
-            products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+        # if perform_cut:
+        #     threshold = 20
+        #     # print(forward.products[0].molecule[0].get_element_count())
+        #     # print(forward.is_forward == True and forward.family in ['R_Recombination', 'R_Addition_MultipleBond'])
+        #     if forward.is_forward == True and forward.family in ['R_Recombination', 'R_Addition_MultipleBond'] and \
+        #      'C' in forward.products[0].molecule[0].get_element_count() and forward.products[0].molecule[0].get_element_count()['C'] >= threshold:
+        #         # check if the product is too large so that we can cut
+        #         reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+        #         products = []
+        #         for product in forward.products:
+        #             spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_cut=True)
+        #             if type(spcs) == tuple:
+        #                 products.append(spcs[0])
+        #             elif type(spcs) == list:
+        #                 products.extend([spc[0] for spc in spcs])
+        #         # change the reaction to irreversible if we cut the product into fragments
+        #         if len(products) != 1:
+        #             forward.reversible = False
+        #     else:
+        #         reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+        #         products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+        # else:
+        #     reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+        #     products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+        reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+        products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
 
         if forward.specific_collider is not None:
             forward.specific_collider = self.make_new_species(forward.specific_collider)[0]
@@ -531,7 +535,7 @@ class CoreEdgeReactionModel:
     def enlarge(self, new_object=None, react_edge=False,
                 unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
         """
-        Enlarge a reaction model by processing the objects in the list `new_object`. 
+        Enlarge a reaction model by processing the objects in the list `new_object`.
         If `new_object` is a
         :class:`rmg.species.Species` object, then the species is moved from
         the edge to the core and reactions generated for that species, reacting
@@ -557,7 +561,7 @@ class CoreEdgeReactionModel:
         procnum = determine_procnum_from_ram()
 
         if react_edge is False:
-            # We are adding core species 
+            # We are adding core species
             new_reactions = []
             pdep_network = None
             object_was_in_edge = False
@@ -741,8 +745,8 @@ class CoreEdgeReactionModel:
 
     def adjust_surface(self):
         """
-        Here we add species intended to be added and remove any species that need to be moved out of the core.  
-        For now we remove reactions from the surface that have become part of a PDepNetwork by 
+        Here we add species intended to be added and remove any species that need to be moved out of the core.
+        For now we remove reactions from the surface that have become part of a PDepNetwork by
         intersecting the set of surface reactions with the core so that all surface reactions are in the core
         thus the surface algorithm currently (June 2017) is not implemented for pdep networks
         (however it will function fine for non-pdep reactions on a pdep run)
@@ -767,7 +771,7 @@ class CoreEdgeReactionModel:
         """
         Process a list of newly-generated reactions involving the new core
         species or explored isomer `new_species` in network `pdep_network`.
-        
+
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
         for rxn in new_reactions:
@@ -830,7 +834,7 @@ class CoreEdgeReactionModel:
                 # would cause you to miss the reverse reactions!
                 self.add_reaction_to_unimolecular_networks(rxn, new_species=new_species, network=pdep_network)
                 if isinstance(rxn, LibraryReaction):
-                    # If reaction came from a reaction library, omit it from the core and edge so that it does 
+                    # If reaction came from a reaction library, omit it from the core and edge so that it does
                     # not get double-counted with the pdep network
                     if rxn in self.core.reactions:
                         self.core.reactions.remove(rxn)
@@ -869,7 +873,7 @@ class CoreEdgeReactionModel:
 
     def apply_kinetics_to_reaction(self, reaction):
         """
-        retrieve the best kinetics for the reaction and apply it towards the forward 
+        retrieve the best kinetics for the reaction and apply it towards the forward
         or reverse direction (if reverse, flip the direaction).
         """
         from rmgpy.data.rmg import get_db
@@ -976,7 +980,7 @@ class CoreEdgeReactionModel:
 
         # The comments generated by the database for estimated kinetics can
         # be quite long, and therefore not very useful
-        # We don't want to waste lots of memory storing these long, 
+        # We don't want to waste lots of memory storing these long,
         # uninformative strings, so here we replace them with much shorter ones
         if not self.verbose_comments:
             # Only keep a short comment (to save memory)
@@ -997,7 +1001,7 @@ class CoreEdgeReactionModel:
         """
         Output a summary of a model enlargement step to the log. The details of
         the enlargement are passed in the `new_core_species`, `new_core_reactions`,
-        `new_edge_species`, and `new_edge_reactions` objects. 
+        `new_edge_species`, and `new_edge_reactions` objects.
         """
 
         logging.info('')
@@ -1454,7 +1458,7 @@ class CoreEdgeReactionModel:
 
     def add_seed_mechanism_to_core(self, seed_mechanism, react=False):
         """
-        Add all species and reactions from `seed_mechanism`, a 
+        Add all species and reactions from `seed_mechanism`, a
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
         is ``True``, then reactions will also be generated between the seed
         species. For large seed mechanisms this can be prohibitively expensive,
@@ -1850,7 +1854,7 @@ class CoreEdgeReactionModel:
     def mark_chemkin_duplicates(self):
         """
         Check that all reactions that will appear the chemkin output have been checked as duplicates.
-        
+
         Call this if you've done something that may have introduced undetected duplicate reactions,
         like add a reaction library or seed mechanism.
         Anything added via the :meth:`expand` method should already be detected.
@@ -1873,13 +1877,13 @@ class CoreEdgeReactionModel:
         - reactant(s) keys
 
         First, the keys are generated for the parameter reaction.
-        
-        Next, it is checked whether the reaction database already 
+
+        Next, it is checked whether the reaction database already
         contains similar keys. If not, a new container is created,
         either a dictionary for the family key and first reactant key,
         or a list for the second reactant key.
 
-        Finally, the reaction is inserted as the first element in the 
+        Finally, the reaction is inserted as the first element in the
         list.
         """
 
@@ -1900,8 +1904,8 @@ class CoreEdgeReactionModel:
 
     def search_retrieve_reactions(self, rxn):
         """
-        Searches through the reaction database for 
-        reactions with an identical reaction key as the key of the 
+        Searches through the reaction database for
+        reactions with an identical reaction key as the key of the
         parameter reaction.
 
         Both the reaction key based on the reactants as well as on the products
@@ -1930,7 +1934,7 @@ class CoreEdgeReactionModel:
     def initialize_index_species_dict(self):
         """
         Populates the core species dictionary
-        
+
         integer -> core Species
 
         with the species that are currently in the core.
@@ -1942,7 +1946,7 @@ class CoreEdgeReactionModel:
 
     def retrieve(self, family_label, key1, key2):
         """
-        Returns a list of reactions from the reaction database with the 
+        Returns a list of reactions from the reaction database with the
         same keys as the parameters.
 
         Returns an empty list when one of the keys could not be found.
@@ -1959,7 +1963,7 @@ def generate_reaction_key(rxn, useProducts=False):
     - the reaction family (or library) the reaction belongs to
     - the keys of the reactants.
 
-    None for the third element in the tuple if there is 
+    None for the third element in the tuple if there is
     only 1 reactant.
 
     The keys are sorted alphabetically.
@@ -1999,7 +2003,7 @@ def get_family_library_object(label):
     Returns the KineticsFamily or KineticsLibrary object associated with the
     parameter string.
 
-    First search through the reaction families, then 
+    First search through the reaction families, then
     through the libraries.
     """
 
