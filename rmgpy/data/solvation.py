@@ -30,9 +30,11 @@
 """
 
 """
+import itertools
 import logging
 import math
 import os.path
+import re
 import numpy as np
 from copy import deepcopy
 from CoolProp.CoolProp import PropsSI
@@ -42,6 +44,9 @@ from rmgpy.data.base import Database, Entry, make_logic_node, DatabaseError
 from rmgpy.molecule import Molecule, Group, ATOMTYPES
 from rmgpy.species import Species
 from rmgpy.exceptions import InputError
+from rmgpy.data.thermo import is_aromatic_ring, is_bicyclic, find_aromatic_bonds_from_sub_molecule, \
+    convert_ring_to_sub_molecule, is_ring_partial_matched, bicyclic_decomposition_for_polyring, \
+    split_bicyclic_into_single_rings, saturate_ring_bonds
 
 
 ################################################################################
@@ -131,6 +136,87 @@ def process_old_library_entry(data):
     """
     raise NotImplementedError()
 
+
+def add_solute_data(solute_data1, solute_data2, group_additivity=False, verbose=False):
+    """
+    Add the solute data `solute_data2` to the data `solute_data1`,
+    and return `solute_data1`.
+
+    If `group_additivity` is True, append comments related to group additivity estimation
+    If `verbose` is False, omit the comments from a "zero entry", whose E, S, A, B, amd L are all 0.
+    If `verbose` is True, or solute_data2 is not a zero entry, add solute_data2.comment to solute_data1.comment.
+    """
+    solute_data1.A += solute_data2.A
+    solute_data1.B += solute_data2.B
+    solute_data1.L += solute_data2.L
+    solute_data1.E += solute_data2.E
+    solute_data1.S += solute_data2.S
+
+    test_zero = sum(abs(value) for value in
+                    [solute_data2.A, solute_data2.B, solute_data2.L, solute_data2.E, solute_data2.S])
+    # Used to check if all of the entries in solute_data2 are zero
+
+    if group_additivity:
+        if verbose or test_zero != 0:
+            # If verbose==True or test_zero!=0, add solute_data2.comment to solute_data1.comment.
+            if solute_data1.comment:
+                solute_data1.comment += ' + {0}'.format(solute_data2.comment)
+            else:
+                solute_data1.comment = solute_data2.comment
+
+    return solute_data1
+
+
+def remove_solute_data(solute_data1, solute_data2, group_additivity=False, verbose=False):
+    """
+    Remove the solute data `solute_data2` from the data `solute_data1`,
+    and return `solute_data1`.
+    If `verbose` is True, append ' - solute_data2.comment' to the solute_data1.comment.
+    If `verbose` is False, remove the solute_data2.comment from the solute_data1.comment.
+    """
+    solute_data1.A -= solute_data2.A
+    solute_data1.B -= solute_data2.B
+    solute_data1.L -= solute_data2.L
+    solute_data1.E -= solute_data2.E
+    solute_data1.S -= solute_data2.S
+
+    if group_additivity:
+        if verbose:
+            solute_data1.comment += ' - {0}'.format(solute_data2.comment)
+        else:
+            solute_data1.comment = re.sub(re.escape(' + ' + solute_data2.comment), '', solute_data1.comment, 1)
+    return solute_data1
+
+
+def average_solute_data(solute_data_list=None):
+    """
+    Average a list of solute_data values together.
+    """
+    if solute_data_list is None:
+        solute_data_list = []
+
+    num_values = len(solute_data_list)
+
+    if num_values == 0:
+        raise ValueError('No solute data values were inputted to be averaged.')
+    else:
+        logging.debug('Averaging solute data over {0} value(s).'.format(num_values))
+
+        if num_values == 1:
+            return deepcopy(solute_data_list[0])
+
+        else:
+            averaged_solute_data = deepcopy(solute_data_list[0])
+            for solute_data in solute_data_list[1:]:
+                averaged_solute_data = add_solute_data(averaged_solute_data, solute_data)
+            averaged_solute_data.S /= num_values
+            averaged_solute_data.B /= num_values
+            averaged_solute_data.E /= num_values
+            averaged_solute_data.L /= num_values
+            averaged_solute_data.A /= num_values
+            return averaged_solute_data
+
+################################################################################
 
 class SolventData(object):
     """
@@ -235,7 +321,7 @@ class SoluteData(object):
         1: 8.71, 2: 6.75,
         6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
         14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
-        35: 26.21,
+        35: 26.21, 53: 34.53,
     }
 
     def __init__(self, S=None, B=None, E=None, L=None, A=None, V=None, comment=""):
@@ -582,6 +668,9 @@ class SolvationDatabase(object):
             for category in categories
         }
 
+        self.record_ring_generic_nodes()
+        self.record_polycylic_generic_nodes()
+
     def save(self, path):
         """
         Save the solvation database to the given `path` on disk, where `path`
@@ -676,26 +765,68 @@ class SolvationDatabase(object):
             libstr=os.path.join(groups_path, 'Abraham_Library.txt'),
         )
 
+    def record_polycylic_generic_nodes(self):
+        """
+        Identify generic nodes in tree for polycyclic groups.
+        Saves them as a list in the `generic_nodes` attribute
+        in the polycyclic :class:`SoluteGroups` object, which
+        must be pre-loaded.
+
+        Necessary for polycyclic heuristic.
+        """
+        self.groups['polycyclic'].generic_nodes = ['PolycyclicRing']
+        for label, entry in self.groups['polycyclic'].entries.items():
+            if isinstance(entry.data, SoluteData):
+                continue
+            self.groups['polycyclic'].generic_nodes.append(label)
+
+    def record_ring_generic_nodes(self):
+        """
+        Identify generic nodes in tree for ring groups.
+        Saves them as a list in the `generic_nodes` attribute
+        in the ring :class:`SoluteGroups` object, which
+        must be pre-loaded.
+
+        Necessary for polycyclic heuristic.
+        """
+        self.groups['ring'].generic_nodes = ['Ring']
+        for label, entry in self.groups['ring'].entries.items():
+            if isinstance(entry.data, SoluteData):
+                continue
+            self.groups['ring'].generic_nodes.append(label)
+
+
     def get_solute_data(self, species):
         """
         Return the solute descriptors for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
-        estimation via Platts group additivity.
+        estimation via solute data group additivity.
         """
-        solute_data = None
 
         # Check the library first
         solute_data = self.get_solute_data_from_library(species, self.libraries['solute'])
         if solute_data is not None:
             assert len(solute_data) == 3, "solute_data should be a tuple (solute_data, library, entry)"
-            solute_data[0].comment += "Data from solute library"
+            solute_data[0].comment += "Solute library: " + solute_data[2].label
             solute_data = solute_data[0]
         else:
             # Solute not found in any loaded libraries, so estimate
+            # First try finding stable species in libraries and using HBI
+            molecule = species.molecule[0]
+            if molecule.get_radical_count() > 0:
+                # If the molecule is a radical, check if any of the saturated forms are in the libraries
+                # first and perform an HBI correction on them
+                molecule.clear_labeled_atoms()
+                # First see if the saturated molecule is in the libraries.
+                solute_data = self.estimate_radical_solute_data_via_hbi(molecule, self.get_solute_data_from_library)
+
+        if solute_data is None:
+            # Solute or its saturated structure is not found in libraries. Use group additivty to determine solute data
             solute_data = self.get_solute_data_from_groups(species)
-            # No Platts group additivity for V, so set using atom sizes
-            solute_data.set_mcgowan_volume(species)
+
+        # No group additivity for V, so set using atom sizes
+        solute_data.set_mcgowan_volume(species)
         # Return the resulting solute parameters S, B, E, L, A
         return solute_data
 
@@ -714,7 +845,7 @@ class SolvationDatabase(object):
         data = self.get_solute_data_from_library(species, self.libraries['solute'])
         if data is not None:
             assert len(data) == 3, "solute_data should be a tuple (solute_data, library, entry)"
-            data[0].comment += "Data from solute library"
+            data[0].comment += "Solute library: " + data[2].label
             solute_data_list.append(data)
         # Estimate from group additivity
         # Make it a tuple
@@ -739,7 +870,7 @@ class SolvationDatabase(object):
     def get_solute_data_from_groups(self, species):
         """
         Return the set of Abraham solute parameters corresponding to a given
-        :class:`Species` object `species` by estimation using the Platts group
+        :class:`Species` object `species` by estimation using the group
         additivity method. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         
@@ -833,8 +964,8 @@ class SolvationDatabase(object):
     def estimate_solute_via_group_additivity(self, molecule):
         """
         Return the set of Abraham solute parameters corresponding to a given
-        :class:`Molecule` object `molecule` by estimation using the Platts' group
-        additivity method. If no group additivity values are loaded, a
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
         # For thermo estimation we need the atoms to already be sorted because we
@@ -842,59 +973,472 @@ class SolvationDatabase(object):
         # will probably not visit the right atoms, and so will get the thermo wrong
         molecule.sort_atoms()
 
-        # Create the SoluteData object with the intercepts from the Platts groups
-        solute_data = SoluteData(
-            S=0.277,
-            B=0.071,
-            E=0.248,
-            L=0.13,
-            A=0.003
-        )
+        if molecule.is_radical():
+            solute_data = self.estimate_radical_solute_data_via_hbi(molecule, self.compute_group_additivity_solute)
+        else:
+            solute_data = self.compute_group_additivity_solute(molecule)
+        return solute_data
 
-        added_to_radicals = {}  # Dictionary of key = atom, value = dictionary of {H atom: bond}
-        added_to_pairs = {}  # Dictionary of key = atom, value = # lone pairs changed
+    def estimate_radical_solute_data_via_hbi(self, molecule, stable_solute_data_estimator):
+        """
+        Estimate the thermodynamics of a radical by saturating it,
+        applying the provided stable_solute_data_estimator method on the saturated species,
+        then applying hydrogen bond increment corrections for the radical
+        site(s).
+        """
+        if not molecule.is_radical():
+            raise ValueError("Method only valid for radicals.")
+
         saturated_struct = molecule.copy(deep=True)
+        added = saturated_struct.saturate_radicals()
+        saturated_struct.props['saturated'] = True
 
-        # Convert lone pairs to radicals, then saturate with H.
+        # Get solute data estimate for saturated form of structure
+        if stable_solute_data_estimator == self.get_solute_data_from_library:
+            # Get data from libraries
+            saturated_spec = Species(molecule=[saturated_struct])
+            solute_data_sat = stable_solute_data_estimator(saturated_spec, library=self.libraries['solute'])
+            if solute_data_sat:
+                if len(solute_data_sat) != 3:
+                    raise RuntimeError("solute_data should be a tuple (solute_data, library, entry), "
+                                       "not {0}".format(solute_data_sat))
+                sat_label = solute_data_sat[2].label
+                solute_data_sat = solute_data_sat[0]
+                solute_data_sat.comment += "Solute library: " + sat_label
+        else:
+            solute_data_sat = stable_solute_data_estimator(saturated_struct)
 
-        # Change lone pairs to radicals based on valency
-        if (sum([atom.lone_pairs for atom in saturated_struct.atoms]) > 0 and  # molecule contains lone pairs
-                not any([atom.atomtype.label == 'C2tc' for atom in saturated_struct.atoms])):  # and is not [C-]#[O+]
-            saturated_struct, added_to_pairs = self.transform_lone_pairs(saturated_struct)
+        if solute_data_sat is None:
+            # We couldn't get solute data for the saturated species from libraries.
+            # However, if we were trying group additivity, this could be a problem
+            if stable_solute_data_estimator == self.compute_group_additivity_solute:
+                logging.info("Solute data of saturated {0} of molecule {1} is None.".format(saturated_struct, molecule))
+            return None
 
-        # Now saturate radicals with H
-        if sum([atom.radical_electrons for atom in saturated_struct.atoms]) > 0:  # radical species
-            added_to_radicals = saturated_struct.saturate_radicals()
+        solute_data = solute_data_sat
 
-        # Saturated structure should now have no unpaired electrons, and only "expected" lone pairs
-        # based on the valency
-        for atom in saturated_struct.atoms:
-            # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_non_hydrogen():
-                # Get initial solute data from main group database. Every atom must
-                # be found in the main abraham database
-                try:
-                    self._add_group_solute_data(solute_data, self.groups['abraham'], saturated_struct, {'*': atom})
-                except KeyError:
-                    logging.error("Couldn't find in main abraham database:")
-                    logging.error(saturated_struct)
-                    logging.error(saturated_struct.to_adjacency_list())
-                    raise
-                # Get solute data for non-atom centered groups (being found in this group
-                # database is optional)    
-                try:
-                    self._add_group_solute_data(solute_data, self.groups['nonacentered'], saturated_struct, {'*': atom})
-                except KeyError:
-                    pass
+        # For each radical site, get radical correction
+        # Only one radical site should be considered at a time; all others
+        # should be saturated with hydrogen atoms
+        for atom in added:
+            # Remove the added hydrogen atoms and bond and restore the radical
+            for H, bond in added[atom]:
+                saturated_struct.remove_bond(bond)
+                saturated_struct.remove_atom(H)
+                atom.increment_radical()
+            saturated_struct.update()
+            try:
+                self._add_group_solute_data(solute_data, self.groups['radical'], saturated_struct, {'*': atom})
+            except KeyError:
+                pass
+            # Re-saturate
+            for H, bond in added[atom]:
+                saturated_struct.add_atom(H)
+                saturated_struct.add_bond(bond)
+                atom.decrement_radical()
 
-        solute_data = self.remove_h_bonding(saturated_struct, added_to_radicals, added_to_pairs, solute_data)
-        solute_data.comment = solute_data.comment[:-3]
+        # Remove all of the long distance interactions of the saturated structure. Then add the long interactions of the radical.
+        # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
+        # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
+        if saturated_struct.is_cyclic():
+            sssr = saturated_struct.get_smallest_set_of_smallest_rings()
+            for ring in sssr:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self._remove_group_solute_data(solute_data, self.groups['longDistanceInteraction_cyclic'],
+                                                       saturated_struct, {'*1': atomPair[0], '*2': atomPair[1]})
+                    except KeyError:
+                        pass
+            sssr = molecule.get_smallest_set_of_smallest_rings()
+            for ring in sssr:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self._add_group_solute_data(solute_data, self.groups['longDistanceInteraction_cyclic'],
+                                                    molecule,
+                                                    {'*1': atomPair[0], '*2': atomPair[1]})
+                    except KeyError:
+                        pass
+
+        # prevents the original thermo species name being used for the HBI corrected radical in species generation
+        solute_data.label = ''
 
         return solute_data
 
+    def compute_group_additivity_solute(self, molecule):
+
+        """
+        Return the set of Abraham solute parameters corresponding to a given
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+
+        assert not molecule.is_radical(), "This method is only for saturated non-radical species."
+        # For thermo estimation we need the atoms to already be sorted because we
+        # iterate over them; if the order changes during the iteration then we
+        # will probably not visit the right atoms, and so will get the thermo wrong
+        molecule.sort_atoms()
+
+        # Create the SoluteData object
+        solute_data = SoluteData(
+            S=0.0,
+            B=0.0,
+            E=0.0,
+            L=0.0,
+            A=0.0,
+        )
+        cyclic = molecule.is_cyclic()
+        # Generate estimate of thermodynamics
+        for atom in molecule.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.is_non_hydrogen():
+                # Get initial thermo estimate from main group database
+                try:
+                    self._add_group_solute_data(solute_data, self.groups['group'], molecule, {'*': atom})
+                except KeyError:
+                    logging.error("Couldn't find in main solute database:")
+                    logging.error(molecule)
+                    logging.error(molecule.to_adjacency_list())
+                    raise
+
+                # Correct for gauche and 1,5- interactions
+                # Pair atom with its 1st and 2nd nonHydrogen neighbors,
+                # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
+                # Currently we only have gauche(1,4) and 1,5 interactions in that file.
+                # If you want to add more corrections for longer distance, please call get_nth_neighbor() method accordingly.
+                # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
+                if not molecule.is_atom_in_cycle(atom):
+                    for atom_2 in molecule.get_nth_neighbor([atom], [1, 2]):
+                        if not molecule.is_atom_in_cycle(atom_2):
+                            # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
+                            # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
+                            try:
+                                self._add_group_solute_data(solute_data,
+                                                            self.groups['longDistanceInteraction_noncyclic'],
+                                                            molecule, {'*1': atom, '*2': atom_2})
+                            except KeyError:
+                                pass
+
+        # Do long distance interaction correction for cyclic molecule.
+        # First get smallest set of smallest rings.
+        # Then for every single ring, generate the atom pairs by itertools.permutation.
+        # Finally match the atom pair with the database.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        # WIP: For now, in the database, if an entry describes the interaction between same groups,
+        # it will be halved because it will be counted twice here.
+        # Alternatively we could keep all the entries as their full values by using combinations instead of permutations here.
+        # In that case, we need to add more lines to match from reverse side when we didn't hit the most specific level from the forward side.
+        # PS: by saying 'forward side', I mean {'*1':atomPair[0], '*2':atomPair[1]}. So the following is the reverse side '{'*1':atomPair[1], '*2':atomPair[0]}'
+        # In my opinion, it's cleaner to do it in the current way.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        if cyclic:
+            sssr = molecule.get_smallest_set_of_smallest_rings()
+            for ring in sssr:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self._add_group_solute_data(solute_data, self.groups['longDistanceInteraction_cyclic'],
+                                                    molecule,
+                                                    {'*1': atomPair[0], '*2': atomPair[1]})
+                    except KeyError:
+                        pass
+
+        # Do ring corrections separately because we only want to match
+        # each ring one time
+        if cyclic:
+            monorings, polyrings = molecule.get_disparate_cycles()
+            for ring in monorings:
+                # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                try:
+                    self._add_ring_correction_solute_data_from_tree(solute_data, self.groups['ring'], molecule, ring)
+                except KeyError:
+                    logging.error("Couldn't find a match in the monocyclic ring database even though "
+                                  "monocyclic rings were found.")
+                    logging.error(molecule)
+                    logging.error(molecule.to_adjacency_list())
+                    raise
+            for polyring in polyrings:
+                # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                try:
+                    self._add_polycyclic_correction_solute_data(solute_data, molecule, polyring)
+                except KeyError:
+                    logging.error("Couldn't find a match in the polycyclic ring database even though "
+                                  "polycyclic rings were found.")
+                    logging.error(molecule)
+                    logging.error(molecule.to_adjacency_list())
+                    raise
+
+        return solute_data
+
+    def _add_polycyclic_correction_solute_data(self, solute_data, molecule, polyring):
+        """
+        INPUT: `polyring` as a list of `Atom` forming a polycyclic ring
+        OUTPUT: if the input `polyring` can be fully matched in polycyclic database, the correction
+        will be directly added to `solute_data`; otherwise, a heuristic approach will
+        be applied.
+        """
+        # look up polycylic tree directly
+        matched_group_solutedata, matched_group, is_partial_match = self._add_ring_correction_solute_data_from_tree(
+            None, self.groups['polycyclic'], molecule, polyring)
+
+        # if partial match (non-H atoms number same between
+        # polycylic ring in molecule and match group)
+        # otherwise, apply heuristic algorithm
+        if not is_partial_match:
+            if is_bicyclic(polyring) and matched_group.label in self.groups['polycyclic'].generic_nodes:
+                # apply secondary decompostion formula
+                # to get a estimated_group_thermodata
+                estimated_bicyclic_solutedata = self.get_bicyclic_correction_solute_data_from_heuristic(polyring)
+                if not estimated_bicyclic_solutedata:
+                    estimated_bicyclic_solutedata = matched_group_solutedata
+                solute_data = add_solute_data(solute_data, estimated_bicyclic_solutedata, group_additivity=True,
+                                              verbose=True)
+            else:
+                # keep matched_group_solutedata as is
+                solute_data = add_solute_data(solute_data, matched_group_solutedata, group_additivity=True,
+                                              verbose=True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+        else:
+            self._add_poly_ring_correction_solute_data_from_heuristic(solute_data, polyring)
+
+    def _add_poly_ring_correction_solute_data_from_heuristic(self, solute_data, polyring):
+        """
+        INPUT: `polyring` as a list of `Atom` forming a polycyclic ring, which can
+        only be partially matched.
+        OUTPUT: `polyring` will be decomposed into a combination of 2-ring polycyclics
+        and each one will be looked up from polycyclic database. The heuristic formula
+        is "polyring solute correction = sum of correction of all 2-ring sub-polycyclics -
+        overlapped single-ring correction"; the calculated polyring solute correction
+        will be finally added to input `solute_data`.
+        """
+
+        # polyring decomposition
+        bicyclics_merged_from_ring_pair, ring_occurrences_dict = bicyclic_decomposition_for_polyring(polyring)
+
+        # loop over 2-ring cores
+        for bicyclic in bicyclics_merged_from_ring_pair:
+            matched_group_solutedata, matched_group, _ = self._add_ring_correction_solute_data_from_tree(
+                None, self.groups['polycyclic'], bicyclic, bicyclic.atoms)
+
+            if matched_group.label in self.groups['polycyclic'].generic_nodes:
+                # apply secondary decompostion formula
+                # to get a estimated_group_solutedata
+                estimated_bicyclic_solutedata = self.get_bicyclic_correction_solute_data_from_heuristic(bicyclic.atoms)
+                if not estimated_bicyclic_solutedata:
+                    estimated_bicyclic_solutedata = matched_group_solutedata
+                solute_data = add_solute_data(solute_data, estimated_bicyclic_solutedata, group_additivity=True,
+                                              verbose=True)
+            else:
+                # keep matched_group_solutedata as is
+                solute_data = add_solute_data(solute_data, matched_group_solutedata, group_additivity=True,
+                                              verbose=True)
+
+        # loop over 1-ring
+        for singleRingTuple, occurrence in ring_occurrences_dict.items():
+            single_ring = list(singleRingTuple)
+
+            if occurrence >= 2:
+                submol, _ = convert_ring_to_sub_molecule(single_ring)
+
+                if not is_aromatic_ring(submol):
+                    aromatic_bonds = find_aromatic_bonds_from_sub_molecule(submol)
+                    for aromaticBond in aromatic_bonds:
+                        aromaticBond.set_order_num(1)
+
+                    submol.saturate_unfilled_valence()
+                    single_ring_solutedata = self._add_ring_correction_solute_data_from_tree(
+                        None, self.groups['ring'], submol, submol.atoms)[0]
+
+                else:
+                    submol.update()
+                    single_ring_solutedata = self._add_ring_correction_solute_data_from_tree(
+                        None, self.groups['ring'], submol, submol.atoms)[0]
+            for _ in range(occurrence - 1):
+                solute_data = remove_solute_data(solute_data, single_ring_solutedata, True, True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+
+    def get_bicyclic_correction_solute_data_from_heuristic(self, bicyclic):
+        # saturate if the bicyclic has unsaturated bonds
+        # otherwise return None
+        bicyclic_submol = convert_ring_to_sub_molecule(bicyclic)[0]
+        saturated_bicyclic_submol, already_saturated = saturate_ring_bonds(bicyclic_submol)
+
+        if already_saturated:
+            return None
+        # split bicyclic into two single ring submols
+        single_ring_submols = split_bicyclic_into_single_rings(bicyclic_submol)
+
+        # split saturated bicyclic into two single ring submols
+        saturated_single_ring_submols = split_bicyclic_into_single_rings(saturated_bicyclic_submol)
+
+        # apply formula:
+        # bicyclic correction ~= saturated bicyclic correction -
+        # saturated single ring corrections + single ring corrections
+
+        estimated_bicyclic_solute_data = SoluteData(
+            S=0.0,
+            B=0.0,
+            E=0.0,
+            L=0.0,
+            A=0.0,
+        )
+
+        saturated_bicyclic_solute_data = self._add_ring_correction_solute_data_from_tree(
+            None, self.groups['polycyclic'], saturated_bicyclic_submol, saturated_bicyclic_submol.atoms)[0]
+
+        estimated_bicyclic_solute_data = add_solute_data(estimated_bicyclic_solute_data,
+                                                         saturated_bicyclic_solute_data,
+                                                         group_additivity=True)
+
+        estimated_bicyclic_solute_data.comment = "Estimated bicyclic component: " + \
+                                                 saturated_bicyclic_solute_data.comment
+
+        for submol in saturated_single_ring_submols:
+
+            if not is_aromatic_ring(submol):
+                aromatic_bonds = find_aromatic_bonds_from_sub_molecule(submol)
+                for aromatic_bond in aromatic_bonds:
+                    aromatic_bond.set_order_num(1)
+
+                submol.saturate_unfilled_valence()
+                single_ring_solute_data = self._add_ring_correction_solute_data_from_tree(
+                    None, self.groups['ring'], submol, submol.atoms)[0]
+
+            else:
+                submol.update()
+                single_ring_solute_data = self._add_ring_correction_solute_data_from_tree(
+                    None, self.groups['ring'], submol, submol.atoms)[0]
+            estimated_bicyclic_solute_data = remove_solute_data(estimated_bicyclic_solute_data,
+                                                                single_ring_solute_data,
+                                                                group_additivity=True, verbose=True)
+
+        for submol in single_ring_submols:
+
+            if not is_aromatic_ring(submol):
+                aromatic_bonds = find_aromatic_bonds_from_sub_molecule(submol)
+                for aromatic_bond in aromatic_bonds:
+                    aromatic_bond.set_order_num(1)
+
+                submol.saturate_unfilled_valence()
+                single_ring_solute_data = self._add_ring_correction_solute_data_from_tree(
+                    None, self.groups['ring'], submol, submol.atoms)[0]
+
+            else:
+                submol.update()
+                single_ring_solute_data = self._add_ring_correction_solute_data_from_tree(
+                    None, self.groups['ring'], submol, submol.atoms)[0]
+
+            estimated_bicyclic_solute_data = add_solute_data(estimated_bicyclic_solute_data,
+                                                             single_ring_solute_data, group_additivity=True,
+                                                             verbose=True)
+
+        return estimated_bicyclic_solute_data
+
+    def _add_ring_correction_solute_data_from_tree(self, solute_data, ring_database, molecule, ring):
+        """
+        Determine the ring correction group additivity solute data for the given
+         `ring` in the `molecule`, and add it to the existing solute data
+        `solute_data`.
+        Also returns the matched ring group from the database from which the data originated.
+        """
+        matched_ring_entries = []
+        # label each atom in the ring individually to try to match the group
+        # for each ring, save only the ring that matches the most specific leaf in the tree.
+        for atom in ring:
+            atoms = {'*': atom}
+            entry = ring_database.descend_tree(molecule, atoms)
+            matched_ring_entries.append(entry)
+
+        if matched_ring_entries is []:
+            raise KeyError('Node not found in database.')
+        # Decide which group to keep
+        is_partial_match = True
+        complete_matched_groups = [entry for entry in matched_ring_entries
+                                   if not is_ring_partial_matched(ring, entry.item)]
+
+        if complete_matched_groups:
+            is_partial_match = False
+            matched_ring_entries = complete_matched_groups
+
+        depth_list = [len(ring_database.ancestors(entry)) for entry in matched_ring_entries]
+        most_specific_match_indices = [i for i, x in enumerate(depth_list) if x == max(depth_list)]
+
+        most_specific_matched_entries = [matched_ring_entries[idx] for idx in most_specific_match_indices]
+        if len(set(most_specific_matched_entries)) != 1:
+            logging.debug('More than one type of node was found to be most specific for this ring.')
+            logging.debug('This is either due to a database error in the ring or polycyclic groups, '
+                          'or a partial match between the group and the full ring.')
+            logging.debug(most_specific_matched_entries)
+
+        # Condense the number of most specific groups down to one
+        most_specific_matched_entry = matched_ring_entries[most_specific_match_indices[0]]
+
+        node = most_specific_matched_entry
+
+        if node is None:
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for {1} or '
+                                'any of its ancestors.'.format(molecule, most_specific_match_indices[0]))
+
+        while node is not None and node.data is None:
+            # do average of its children
+            success, averaged_solute_data = self._average_children_solute(node)
+            if success:
+                node.data = averaged_solute_data
+            else:
+                node = node.parent
+
+        data = node.data
+        comment = node.label
+        while isinstance(data, str) and data is not None:
+            for entry in ring_database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    node = entry
+                    break
+        data.comment = '{0}({1})'.format(ring_database.label, comment)
+
+        if solute_data is None:
+            return data, node, is_partial_match
+        else:
+            return add_solute_data(solute_data, data, group_additivity=True, verbose=True), node, is_partial_match
+            # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+
+    def _average_children_solute(self, node):
+        """
+        Use children's solute data to guess solute data of parent `node`
+        that doesn't have solute data built-in in tree yet.
+        For `node` has children that have solute data, return success flag
+        `True` and the average solute data.
+        For `node` whose children that all have no solute data, return flag
+        `False` and None for the solute data.
+        """
+        if not node.children:
+            if node.data is None:
+                return False, None
+            else:
+                return True, node.data
+        else:
+            children_solute_data_list = []
+            for child in node.children:
+                if child.data is None:
+                    success, child_solute_data_average = self._average_children_solute(child)
+                    if success:
+                        children_solute_data_list.append(child_solute_data_average)
+                else:
+                    children_solute_data_list.append(child.data)
+            if children_solute_data_list:
+                return True, average_solute_data(children_solute_data_list)
+            else:
+                return False, None
+
     def _add_group_solute_data(self, solute_data, database, molecule, atom):
         """
-        Determine the Platts group additivity solute data for the atom `atom`
+        Determine the group additivity solute data for the atom `atom`
         in the structure `structure`, and add it to the existing solute data
         `solute_data`.
         """
@@ -921,7 +1465,7 @@ class SolvationDatabase(object):
                     data = entry.data
                     comment = entry.label
                     break
-        comment = '{0}({1})'.format(database.label, comment)
+        data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         # result = ''
@@ -929,16 +1473,46 @@ class SolvationDatabase(object):
         #   result = ' -> ' + node + result
         #   node = database.tree.parent[node]
         # print result[4:]
+        if solute_data is None:
+            return data
+        else:
+            return add_solute_data(solute_data, data, group_additivity=True)
 
-        # Add solute data for each atom to the overall solute data for the molecule.
-        solute_data.S += data.S
-        solute_data.B += data.B
-        solute_data.E += data.E
-        solute_data.L += data.L
-        solute_data.A += data.A
-        solute_data.comment += comment + " + "
+    def _remove_group_solute_data(self, solute_data, database, molecule, atom):
+        """
+        Based on the _add_group_solute_data method. Just replace the last line with 'return remove_solute_data()'.
+        Determine the group additivity solute data for the atom `atom` in the structure `structure`,
+        and REMOVE it from the existing solute data `solute_data`.
+        """
 
-        return solute_data
+        node0 = database.descend_tree(molecule, atom, None)
+
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+
+        while node is not None and node.data is None:
+            node = node.parent
+        if node is None:
+            raise KeyError('Node has no parent with data in database.')
+        data = node.data
+        comment = node.label
+        while isinstance(data, str) and data is not None:
+            for entry in database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        data.comment = '{0}({1})'.format(database.label, comment)
+
+        if solute_data is None:
+            return data
+        else:
+            return remove_solute_data(solute_data, data, True)
 
     def calc_h(self, solute_data, solvent_data):
         """
