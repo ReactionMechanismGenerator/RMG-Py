@@ -566,18 +566,20 @@ class SolvationDatabase(object):
         """
         Load the solute database from the given `path` on disk, where `path`
         points to the top-level folder of the solute database.
-        
-        Three sets of groups for additivity, atom-centered ('abraham'), non atom-centered 
-        ('nonacentered'), and radical corrections ('radical')
         """
-        logging.info('Loading Platts additivity group database from {0}...'.format(path))
+        logging.info('Loading solvation thermodynamics group database from {0}...'.format(path))
+        categories = [
+            'radical',
+            'group',
+            'ring',
+            'polycyclic',
+            'longDistanceInteraction_cyclic',
+            'longDistanceInteraction_noncyclic',
+        ]
         self.groups = {
-            'abraham': SoluteGroups(label='abraham').load(os.path.join(path, 'abraham.py'),
-                                                          self.local_context, self.global_context),
-            'nonacentered': SoluteGroups(label='nonacentered').load(os.path.join(path, 'nonacentered.py'),
-                                                                    self.local_context, self.global_context),
-            'radical': SoluteGroups(label='radical').load(os.path.join(path, 'radical.py'),
-                                                          self.local_context, self.global_context)
+            category: SoluteGroups(label=category).load(os.path.join(path, category + '.py'),
+                                                        self.local_context, self.global_context)
+            for category in categories
         }
 
     def save(self, path):
