@@ -450,6 +450,17 @@ class TestReaction(unittest.TestCase):
             products=[so3],
             kinetics=Arrhenius(A=(3.7e+11, 'cm^3/(mol*s)'), n=0, Ea=(1689, 'cal/mol'), T0=(1, 'K')))
 
+        H2 = Species().from_smiles('[H][H]')
+        PO3 = Species().from_smiles('[O]P(=O)=O')
+        HOPO2 = Species().from_smiles('OP(=O)=O')
+        H_atom = Species().from_smiles('[H]')
+
+        self.reaction4 = Reaction(
+            reactants=[H2, PO3],
+            products=[HOPO2, H_atom],
+            kinetics=Arrhenius(A=(2.4e+7, 'cm^3/(mol*s)'), n=1.38, Ea=(15.38, 'kcal/mol'), T0=(1, 'K')))
+        self.reaction4_pairs = [(PO3, HOPO2), (H2, H_atom)]
+
     def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.
@@ -1323,6 +1334,16 @@ class TestReaction(unittest.TestCase):
         self.reaction3.generate_pairs()
         self.assertEqual(len(self.reaction3.pairs[0]), 2)
         self.assertEqual(len(self.reaction3.pairs[1]), 2)
+
+    def test_phosphorus_reaction_pairs(self):
+        """
+        This method tests that reaction pairs are being generated for phosphorus species
+        """
+
+        self.reaction4.generate_pairs()
+        self.assertEqual(len(self.reaction4.pairs[0]), 2)
+        self.assertEqual(len(self.reaction4.pairs[1]), 2)
+        self.assertEqual(self.reaction4.pairs, self.reaction4_pairs)
 
 
 class TestReactionToCantera(unittest.TestCase):
