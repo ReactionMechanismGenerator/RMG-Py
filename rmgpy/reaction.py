@@ -1108,7 +1108,7 @@ class Reaction:
 
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
-                numbers = [6, 8, 7, 14, 16, 17, 53, 9, 35]  # C, O, N, Si, S, Cl, I, F, Br
+                numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
                 return tuple(sum([1 for atom in spc.molecule[0].atoms if atom.element.number == n]) for n in numbers)
 
             # Sort the reactants and products by element counts
