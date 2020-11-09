@@ -376,6 +376,13 @@ class Atom(Vertex):
         """
         return self.element.number == 14
 
+    def is_phosphorus(self):
+        """
+        Return ``True`` if the atom represents a phosphorus atom or ``False`` if
+        not.
+        """
+        return self.element.number == 15
+
     def is_sulfur(self):
         """
         Return ``True`` if the atom represents a sulfur atom or ``False`` if

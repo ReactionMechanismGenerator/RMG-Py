@@ -66,6 +66,8 @@ cdef class Atom(Vertex):
 
     cpdef bint is_silicon(self)
 
+    cpdef bint is_phosphorus(self)
+
     cpdef bint is_sulfur(self)
 
     cpdef bint is_chlorine(self)
