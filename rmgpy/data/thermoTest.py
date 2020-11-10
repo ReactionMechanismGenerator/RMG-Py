@@ -787,6 +787,37 @@ multiplicity 2
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
 
+    def test_adsorbate_thermo_raises_error(self):
+        """Test thermo generation group tree error handling.
+        """
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 N u0 p1 c0 {2,D} {4,S}
+2 N u0 p0 c+1 {1,D} {3,D}
+3 N u0 p2 c-1 {2,D}
+4 X u0 p0 c0 {1,S}
+""")])
+        groups = self.database.groups['adsorptionPt111'].entries
+        # save a few things we're about to change
+        _nstarparent = groups['N*'].parent
+        _nstardata = groups['N*'].data
+        _ostardata = groups['O*'].data
+        # change the database to cause errors
+        groups['N*'].data = None
+        groups['N*'].parent = None
+        with self.assertRaisesRegex(DatabaseError, 'no data for node'):
+            thermo = self.database.get_thermo_data(spec)
+        groups['N*'].data = 'O*'
+        groups['O*'].data = 'N*'
+        with self.assertRaisesRegex(DatabaseError, 'circular reference'):
+            thermo = self.database.get_thermo_data(spec)
+        groups['N*'].data = 'O*'
+        groups['O*'].data = 'foobar'
+        with self.assertRaisesRegex(DatabaseError, 'non-existing group'):
+            thermo = self.database.get_thermo_data(spec)
+        # Now restore the database to working order
+        groups['N*'].parent = _nstarparent
+        groups['N*'].data = _nstardata
+        groups['O*'].data = _ostardata
 
     def test_adsorbate_thermo_generation_bidentate_weird_CO(self):
         """Test thermo generation for a bidentate adsorbate weird resonance of CO

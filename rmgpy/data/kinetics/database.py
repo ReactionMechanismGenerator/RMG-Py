@@ -562,6 +562,8 @@ and immediately used in input files without any additional changes.
                 except:
                     logging.error("Problem family: {}".format(label))
                     logging.error("Problem reactants: {}".format(molecules))
+                    for m in molecules:
+                        logging.error(f"{m}\n{m.to_adjacency_list()}")
                     raise
 
         for reactant in molecules:
