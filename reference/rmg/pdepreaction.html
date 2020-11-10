@@ -353,12 +353,15 @@ in K.</p>
 
 <dl class="py method">
 <dt id="rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constant">
-<code class="sig-name descname">get_equilibrium_constant</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">unicode type=u'Kc'</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constant" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_equilibrium_constant</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">unicode type=u'Kc'</em>, <em class="sig-param">double surface_site_density=2.5e-05</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constant for the reaction at the specified
-temperature <cite>T</cite> in K. The <cite>type</cite> parameter lets you specify the
-quantities used in the equilibrium constant: <code class="docutils literal notranslate"><span class="pre">Ka</span></code> for activities,
-<code class="docutils literal notranslate"><span class="pre">Kc</span></code> for concentrations (default), or <code class="docutils literal notranslate"><span class="pre">Kp</span></code> for pressures. Note that
-this function currently assumes an ideal gas mixture.</p>
+temperature <cite>T</cite> in K and reference <cite>surface_site_density</cite>
+in mol/m^2 (2.5e-05 default) The <cite>type</cite> parameter lets you specify
+the quantities used in the equilibrium constant: <code class="docutils literal notranslate"><span class="pre">Ka</span></code> for activities,
+<code class="docutils literal notranslate"><span class="pre">Kc</span></code> for concentrations (default), or <code class="docutils literal notranslate"><span class="pre">Kp</span></code> for pressures.  This
+function assumes a reference pressure of 1e5 Pa for gas phases species
+and uses the ideal gas law to determine reference concentrations. For
+surface species, the <cite>surface_site_density</cite> is the assumed reference.</p>
 </dd></dl>
 
 <dl class="py method">
