@@ -258,6 +258,17 @@ class TestSurfaceReaction(unittest.TestCase):
 
         self.assertEqual(self.rxn1s.generate_reverse_rate_coefficient().A.units, 'm^2/(mol*s)')
 
+    def test_equilibrium_constant_surface_kc(self):
+        """
+        Test the Reaction.get_equilibrium_constant() method for Kc of a surface reaction.
+        """
+        Tlist = numpy.arange(400.0, 1600.0, 200.0, numpy.float64)
+        Kclist0 = [15375.20186, 1.566753, 0.017772, 0.0013485,
+                   0.000263180, 8.73504e-05]
+        Kclist = self.rxn1s.get_equilibrium_constants(Tlist, type='Kc')
+        for i in range(len(Tlist)):
+            self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
+
 class TestReaction(unittest.TestCase):
     """
     Contains unit tests of the Reaction class.
@@ -393,6 +404,7 @@ class TestReaction(unittest.TestCase):
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
+            molecule=[Molecule(smiles='CC(=O)O[O]')],
             thermo=Wilhoit(Cp0=(4.0 * constants.R, "J/(mol*K)"), CpInf=(21.0 * constants.R, "J/(mol*K)"), a0=-3.95,
                            a1=9.26, a2=-15.6, a3=8.55, B=(500.0, "K"), H0=(-6.151e+04, "J/mol"),
                            S0=(-790.2, "J/(mol*K)")),
@@ -401,6 +413,7 @@ class TestReaction(unittest.TestCase):
         # C[C]=O
         acetyl = Species(
             label='acetyl',
+            molecule=[Molecule(smiles='C[C]=O')],
             thermo=Wilhoit(Cp0=(4.0 * constants.R, "J/(mol*K)"), CpInf=(15.5 * constants.R, "J/(mol*K)"), a0=0.2541,
                            a1=-0.4712, a2=-4.434, a3=2.25, B=(500.0, "K"), H0=(-1.439e+05, "J/mol"),
                            S0=(-524.6, "J/(mol*K)")),
@@ -409,6 +422,7 @@ class TestReaction(unittest.TestCase):
         # [O][O]
         oxygen = Species(
             label='oxygen',
+            molecule=[Molecule(smiles='[O][O]')],
             thermo=Wilhoit(Cp0=(3.5 * constants.R, "J/(mol*K)"), CpInf=(4.5 * constants.R, "J/(mol*K)"), a0=-0.9324,
                            a1=26.18, a2=-70.47, a3=44.12, B=(500.0, "K"), H0=(1.453e+04, "J/mol"),
                            S0=(-12.19, "J/(mol*K)")),
@@ -566,6 +580,12 @@ class TestReaction(unittest.TestCase):
         Kclist = self.reaction2.get_equilibrium_constants(Tlist, type='Kc')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
+
+        rxn2_copy = self.reaction2.copy()
+        rxn2_copy.reactants[0].molecule = []
+        Kclist_2 = rxn2_copy.get_equilibrium_constants(Tlist, type='Kc')
+        for i in range(len(Tlist)):
+            self.assertAlmostEqual(Kclist[i] / Kclist_2[i], 1.0, 4)
 
     def test_equilibrium_constant_kp(self):
         """
