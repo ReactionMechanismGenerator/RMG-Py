@@ -1300,6 +1300,7 @@ Origin Group AdjList:
         So unfortunately, problems can still slip through this test.
         """
         family = self.database.kinetics.families[family_name]
+        test1 = []
 
         # ignore any products
         ignore = []
@@ -1370,11 +1371,23 @@ Origin Group AdjList:
 
                 except ImplicitBenzeneError:
                     skipped.append(entryName)
+        def make_error_message(reactants, message=''):
+            "Give it the list of reactant Molecules and an optional message."
+            output = f"Error in family {family_name} when reacting "
+            output += ' + '.join(s.to_smiles() for s in reactants)
+            output += f". {message}\n"
+            for s in reactants:
+                output += "\n" + s.to_adjacency_list(label=s.to_smiles())
+            return output
 
         if len(sample_reactants) == 1 == len(family.forward_template.reactants):
             reactants = list(sample_reactants.values())[0]
             for reactant in reactants:
                 products = family.apply_recipe([reactant])
+                if products is None:
+                    test1.append(make_error_message([reactant],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
                 for molecule in products:
                     # Just check none of this throws errors
                     species = rmgpy.species.Species(index=1,molecule=[molecule])
@@ -1386,6 +1399,10 @@ Origin Group AdjList:
             pairs = zip(*reactant_lists)
             for reactant1, reactant2 in pairs:
                 products = family.apply_recipe([reactant1, reactant2])
+                if products is None:
+                    test1.append(make_error_message([reactant1, reactant2],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
                 for molecule in products:
                     # Just check none of this throws errors
                     species = rmgpy.species.Species(index=1,molecule=[molecule])
@@ -1400,6 +1417,10 @@ Origin Group AdjList:
                 pairs = zip(itertools.cycle(sr[0]), sr[1])
             for reactant1, reactant2 in pairs:
                 products = family.apply_recipe([reactant1, reactant2])
+                if products is None:
+                    test1.append(make_error_message([reactant1, reactant2],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
                 for molecule in products:
                     # Just check none of this throws errors
                     species = rmgpy.species.Species(index=1,molecule=[molecule])
@@ -1418,6 +1439,10 @@ Origin Group AdjList:
                 triplets = zip(itertools.cycle(sr[0]), itertools.cycle(sr[1]), sr[2])
             for reactant1, reactant2, reactant3 in triplets:
                 products = family.apply_recipe([reactant1, reactant2, reactant3])
+                if products is None:
+                    test1.append(make_error_message([reactant1, reactant2, reactant3],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
                 for molecule in products:
                     # Just check none of this throws errors
                     species = rmgpy.species.Species(index=1,molecule=[molecule])
@@ -1432,6 +1457,12 @@ Origin Group AdjList:
             for entryName in skipped:
                 print(entryName)
 
+        boo = False
+        for err in test1:
+            logging.error(err)
+            boo = True
+        if boo:
+            raise ValueError("Error Occurred. See log for details.")
     def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
         """
         Tests that each entry in the surface thermo groups has a 'metal' and 'facet' attribute, 
