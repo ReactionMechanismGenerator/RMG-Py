@@ -40,6 +40,7 @@ import logging
 import cython
 import numpy as np
 cimport numpy as np
+import re
 from cpython cimport bool
 
 include "settings.pxi"
@@ -56,6 +57,7 @@ from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
+from afm.renormalize import frag_renormalize
 
 ################################################################################
 
@@ -724,7 +726,8 @@ cdef class ReactionSystem(DASx):
 
         first_time = True
 
-        invalid_objects_print_boolean = True  
+        invalid_objects_print_boolean = True 
+        last_t_renorm = 0 
         while not terminated:
             # Integrate forward in time by one time step
 
@@ -1204,6 +1207,37 @@ cdef class ReactionSystem(DASx):
                                      'exploring of {3}'.format(self.t, obj.index, val, tol_move_to_core))
 
                 invalid_objects += new_objects
+
+            # check the concentration of small fragments (exclude radicals, aromatics)
+            # find small fragments indexes and their molar fraction
+            small_frag_inds = []
+            total_small_frag = 0
+            for spe_ind, spe in enumerate(core_species):
+                smi = spe.molecule[0].to_smiles()
+                if re.findall(r'([LR]\d?)', smi) != []: # should be fragment
+                    if spe.molecule[0].get_element_count()['C'] <= 3 and '[' not in smi:
+                        # print(smi) # species smiles
+                        # print(core_species_concentrations[spe_ind]) # number of moles of core species
+                        # print(y_core_species[spe_ind]) # molar fraction of core species
+                        # core_species is a list of species
+                        total_small_frag += y_core_species[spe_ind]
+
+            # if total mf of small frags exceed threshold, interrupt simulation
+            del_t = self.t - last_t_renorm
+            if total_small_frag >= 0.25 and del_t >= 3.6e5 and len(core_species) >= 50:
+                last_t_renorm = self.t
+                print(self.t)
+                print(self.y)
+                core_smiles = []
+                for spe in core_species:
+                    core_smiles.append(spe.molecule[0].to_smiles())
+                print(core_smiles)
+                # use current y to perform reattachment and recut to get y_renormed
+                y_renormed = frag_renormalize(core_species_concentrations, core_species, core_smiles)
+                # for further simulation, starts with new set of y
+                self.y = y_renormed
+                print(self.t)
+                print(self.y)
 
             if schanged:  # reinitialize surface
                 surface_species, surface_reactions = self.initialize_surface(core_species, core_reactions,
