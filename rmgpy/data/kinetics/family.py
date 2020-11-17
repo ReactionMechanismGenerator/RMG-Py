@@ -2116,10 +2116,10 @@ class KineticsFamily(Database):
                                                                                    forward,
                                                                                    return_adjacency_lists=True)
                             else:
-                                product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
-                                                                                   [map_a, map_b, map_c],
-                                                                                   forward,
-                                                                                   return_adjacency_lists=False)
+                                product_structures = self._generate_product_structures(reactant_structures,
+                                                            [map_a, map_b, map_c],
+                                                            forward,
+                                                            return_adjacency_lists=False)
                         except ForbiddenStructureException:
                             pass
                         else:
