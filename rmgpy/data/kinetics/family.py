@@ -1607,7 +1607,10 @@ class KineticsFamily(Database):
 
         # Generate the product structures by applying the forward reaction recipe
         try:
-            product_structures, reaction_adjacency_lists = self.apply_recipe(reactant_structures, forward=forward, return_adjacency_lists=return_adjacency_lists)
+            if return_adjacency_lists:
+                product_structures, reaction_adjacency_lists = self.apply_recipe(reactant_structures, forward=forward, return_adjacency_lists=True)
+            else:
+                product_structures = self.apply_recipe(reactant_structures, forward=forward, return_adjacency_lists=False)
             if not product_structures:
                 return (None, None) if return_adjacency_lists else None
         except (InvalidActionError, KekulizationError):
