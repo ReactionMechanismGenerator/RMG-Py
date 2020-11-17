@@ -433,6 +433,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
+    generateLabeledReactions=True,
     generatePlots=False,
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
