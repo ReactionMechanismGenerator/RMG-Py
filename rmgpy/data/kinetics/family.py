@@ -1534,7 +1534,7 @@ class KineticsFamily(Database):
                     struct.update_charge()
             else:
                 raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
-            product_net_charge += struct.get_net_charge()
+            product_net_charge += struc.get_net_charge()
         if reactant_net_charge != product_net_charge:
             logging.debug(
                 'The net charge of the reactants {0} differs from the net charge of the products {1} in reaction '
