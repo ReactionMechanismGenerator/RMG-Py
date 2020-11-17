@@ -1403,7 +1403,7 @@ class KineticsFamily(Database):
                 # For groups, we ignore the product template for a purely aromatic group
                 # If there is an analagous aliphatic group in the family, then the product template will be identical
                 # There should NOT be any families that consist solely of aromatic reactant templates
-                return []
+                return ([], []) if return_adjacency_lists else [] # (though I doubt this is ever called with return_adjacency_lists=True for a Group not a Molecule)
 
         if not forward:
             # Hardcoding of reaction family for reverse of peroxyl disproportionation
