@@ -39,11 +39,11 @@ cdef class Chebyshev(PDepKineticsModel):
     cdef public int degreeP
     cdef public str kunits
     
-    cdef double chebyshev(self, int n, double x)
+    cpdef double chebyshev(self, int n, double x)
     
-    cdef double get_reduced_temperature(self, double T) except -1000
+    cpdef double get_reduced_temperature(self, double T) except -1000
     
-    cdef double get_reduced_pressure(self, double P) except -1000
+    cpdef double get_reduced_pressure(self, double P) except -1000
     
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
