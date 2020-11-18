@@ -304,7 +304,7 @@ class CoreEdgeReactionModel:
         # This may change later after getting thermo in self.generate_thermo()
         if not spec.label:
             spec.label = spec.smiles
-        logging.debug('Creating new species {0}'.format(spec.label))
+        logging.debug('Creating new species %s', spec.label)
 
         formula = molecule.get_formula()
         if formula in self.species_dict:
@@ -452,11 +452,11 @@ class CoreEdgeReactionModel:
 
         # Note in the log
         if isinstance(forward, TemplateReaction):
-            logging.debug('Creating new {0} template reaction {1}'.format(forward.family, forward))
+            logging.debug('Creating new %s template reaction %s', forward.family, forward)
         elif isinstance(forward, DepositoryReaction):
-            logging.debug('Creating new {0} reaction {1}'.format(forward.get_source(), forward))
+            logging.debug('Creating new %s reaction %s', forward.get_source(), forward)
         elif isinstance(forward, LibraryReaction):
-            logging.debug('Creating new library reaction {0}'.format(forward))
+            logging.debug('Creating new library reaction %s', forward)
         else:
             raise Exception("Unrecognized reaction type {0!s}".format(forward.__class__))
 
@@ -1044,7 +1044,7 @@ class CoreEdgeReactionModel:
         if spec in self.edge.species:
 
             # If species was in edge, remove it
-            logging.debug("Removing species {0} from edge.".format(spec))
+            logging.debug("Removing species %s from edge.", spec)
             self.edge.species.remove(spec)
 
             # Search edge for reactions that now contain only core species;
@@ -1063,7 +1063,7 @@ class CoreEdgeReactionModel:
             # Move any identified reactions to the core
             for rxn in rxn_list:
                 self.add_reaction_to_core(rxn)
-                logging.debug("Moving reaction from edge to core: {0}".format(rxn))
+                logging.debug("Moving reaction from edge to core: %s", rxn)
         return rxn_list
 
     def add_species_to_edge(self, spec):
@@ -1123,7 +1123,7 @@ class CoreEdgeReactionModel:
         """
         Tmax = self.Tmax
         num_to_remove = len(self.edge.species) - maximum_edge_species
-        logging.debug('Planning to remove {0} species'.format(num_to_remove))
+        logging.debug('Planning to remove %d species', num_to_remove)
         iteration = self.iteration_num
 
         if num_to_remove > 0:  # implies flux pruning is off or did not trigger
@@ -1149,7 +1149,7 @@ class CoreEdgeReactionModel:
                     num_to_remove -= 1
                 ind += 1
 
-            logging.debug('found {0} eligible species for filtering'.format(len(remove_spcs)))
+            logging.debug('Found %d eligible species for filtering', len(remove_spcs))
 
             for i, spc in enumerate(remove_spcs):
                 logging.info('Removing species {0} from edge to meet maximum number of edge species, Gibbs '
@@ -1176,7 +1176,7 @@ class CoreEdgeReactionModel:
         if len(networks_to_delete) > 0:
             logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networks_to_delete)))
             for network in networks_to_delete:
-                logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
+                logging.debug('    Deleting empty pressure dependent reaction network #%d', network.index)
                 source = tuple(network.source)
                 nets_with_this_source = self.network_dict[source]
                 nets_with_this_source.remove(network)
@@ -1255,17 +1255,18 @@ class CoreEdgeReactionModel:
 
         # Actually do the pruning
         if prune_due_to_rate_counter > 0:
-            logging.info('Pruning {0:d} species whose rate ratios against characteristic rate did not exceed the '
-                         'minimum threshold of {1:g}'.format(prune_due_to_rate_counter, tol_keep_in_edge))
+            logging.info('Pruning %d species whose rate ratios against characteristic rate did not exceed the '
+                         'minimum threshold of %g', prune_due_to_rate_counter, tol_keep_in_edge)
             for index, spec in species_to_prune[0:prune_due_to_rate_counter]:
-                logging.info('Pruning species {0:<56}'.format(spec))
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, max_edge_species_rate_ratios[index]))
+                logging.info('Pruning species %s', spec)
+                logging.debug('    %-56s    %10.4e', spec, max_edge_species_rate_ratios[index])
                 self.remove_species_from_edge(reaction_systems, spec)
         if len(species_to_prune) - prune_due_to_rate_counter > 0:
-            logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(species_to_prune) - prune_due_to_rate_counter, maximum_edge_species))
+            logging.info('Pruning %d species to obtain an edge size of %d species',
+                         len(species_to_prune) - prune_due_to_rate_counter, maximum_edge_species)
             for index, spec in species_to_prune[prune_due_to_rate_counter:]:
-                logging.info('Pruning species {0:<56}'.format(spec))
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, max_edge_species_rate_ratios[index]))
+                logging.info('Pruning species %s', spec)
+                logging.debug('    %-56s    %10.4e', spec, max_edge_species_rate_ratios[index])
                 self.remove_species_from_edge(reaction_systems, spec)
 
         # Delete any networks that became empty as a result of pruning
