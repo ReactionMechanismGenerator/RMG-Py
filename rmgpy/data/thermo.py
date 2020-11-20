@@ -1226,7 +1226,7 @@ class ThermoDatabase(object):
         if species.contains_surface_site():
             try:
                 thermo0 = self.get_thermo_data_for_surface_species(species)
-                thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_to=metal_to_scale_to)
+                thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from="Pt111", metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
                 return thermo0
             except:
                 logging.error("Error attempting to get thermo for species %s with structure \n%s", 
