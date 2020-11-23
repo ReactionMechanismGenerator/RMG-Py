@@ -329,27 +329,47 @@ element_list = [
 # (C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced
 # if a sourced value becomes available
 # (C,C,2.5) is C#C - (CbenzeneC - C-C)
-bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si']  # elements supported by BDE
+# P=P value is from: https://www2.chemistry.msu.edu/faculty/reusch/OrgPage/bndenrgy.htm
+# The reference state is gaseous state at 298 K, but some of the values in the bde_dict might be coming from 0 K.
+# The bond dissociation energy at 298 K is greater than the bond dissociation energy at 0 K by 0.6 to 0.9 kcal/mol
+# (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
+# energy itself. Therefore, the discrepancy between 0 K and 298 K shouldn't matter too much.
+# But for any new entries, try to use the consistent reference state of 298 K.
+bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si', 'P', 'F', 'Br', 'I']  # elements supported by BDE
 bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
             ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
-            ('H', 'S', 1): (363.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
+            ('H', 'P', 1): (322.0, 'kJ/mol'), ('H', 'S', 1): (363.0, 'kJ/mol'),
+            ('H', 'F', 1): (565.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
+            ('H', 'Br', 1): (362.0, 'kJ/mol'), ('H', 'I', 1): (295.0, 'kJ/mol'),
             ('C', 'C', 1): (346.0, 'kJ/mol'), ('C', 'C', 2): (602.0, 'kJ/mol'),
-            ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
+            ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
+            ('C', 'C', 2.5): (663.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
             ('C', 'N', 1): (305.0, 'kJ/mol'), ('C', 'N', 2): (615.0, 'kJ/mol'),
             ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
             ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
-            ('C', 'S', 1): (272.0, 'kJ/mol'), ('C', 'S', 2): (573.0, 'kJ/mol'),
-            ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('Si', 'Si', 1): (222.0, 'kJ/mol'),
-            ('Si', 'N', 1): (355.0, 'kJ/mol'), ('Si', 'O', 1): (452.0, 'kJ/mol'),
-            ('Si', 'S', 1): (293.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
+            ('C', 'P', 1): (264.0, 'kJ/mol'), ('C', 'S', 1): (272.0, 'kJ/mol'),
+            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'F', 1): (485.0, 'kJ/mol'),
+            ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('C', 'Br', 1): (285.0, 'kJ/mol'),
+            ('C', 'I', 1): (213.0, 'kJ/mol'),
+            ('Si', 'Si', 1): (222.0, 'kJ/mol'), ('Si', 'N', 1): (355.0, 'kJ/mol'),
+            ('Si', 'O', 1): (452.0, 'kJ/mol'), ('Si', 'S', 1): (293.0, 'kJ/mol'),
+            ('Si', 'F', 1): (565.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
+            ('Si', 'Br', 1): (310.0, 'kJ/mol'), ('Si', 'I', 1): (234.0, 'kJ/mol'),
             ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
             ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
-            ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'Cl', 1): (313.0, 'kJ/mol'),
+            ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'F', 1): (283.0, 'kJ/mol'),
+            ('N', 'Cl', 1): (313.0, 'kJ/mol'),
             ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
-            ('S', 'O', 2): (522.0, 'kJ/mol'), ('S', 'S', 1): (226.0, 'kJ/mol'),
-            ('S', 'S', 2): (425.0, 'kJ/mol'), ('S', 'Cl', 1): (255.0, 'kJ/mol'),
-            ('Cl', 'Cl', 1): (240.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
-            ('O', 'S', 1): (265.0, 'kJ/mol'), ('C', 'C', 2.5): (663.0, 'kJ/mol')}
+            ('O', 'P', 1): (335.0, 'kJ/mol'), ('O', 'P', 2): (544.0, 'kJ/mol'),
+            ('O', 'S', 1): (265.0, 'kJ/mol'), ('O', 'S', 2): (522.0, 'kJ/mol'),
+            ('P', 'P', 1): (201.0, 'kJ/mol'), ('P', 'P', 2): (351.0, 'kJ/mol'),
+            ('P', 'P', 3): (489.0, 'kJ/mol'), ('P', 'S', 2): (335.0, 'kJ/mol'),
+            ('P', 'F', 1): (490.0, 'kJ/mol'), ('P', 'Cl', 1): (326.0, 'kJ/mol'),
+            ('P', 'Br', 1): (264.0, 'kJ/mol'), ('P', 'I', 2): (184.0, 'kJ/mol'),
+            ('S', 'S', 1): (226.0, 'kJ/mol'), ('S', 'S', 2): (425.0, 'kJ/mol'),
+            ('S', 'Cl', 1): (255.0, 'kJ/mol'),
+            ('F', 'F', 1): (155.0, 'kJ/mol'), ('Cl', 'Cl', 1): (240.0, 'kJ/mol'),
+            ('Br', 'Br', 1): (190.0, 'kJ/mol'), ('I', 'I', 1): (148.0, 'kJ/mol')}
 
 bdes = {}
 for key, value in bde_dict.items():
