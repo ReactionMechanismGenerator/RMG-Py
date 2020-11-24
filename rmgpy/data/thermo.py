@@ -1375,7 +1375,7 @@ class ThermoDatabase(object):
         Returns:
             None, stores result in self.binding_energies
         """
-    
+        
         if isinstance(binding_energies, str):
             # Want to load the binding energies from the database
             metal_db = rmgpy.data.rmg.database.surface
