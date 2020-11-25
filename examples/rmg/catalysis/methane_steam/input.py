@@ -1,6 +1,6 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'], 
+    thermoLibraries=['surfaceThermoPt111', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'], 
     reactionLibraries = [('Surface/Deutschmann_Ni', True)], # when Pt is used change the library to Surface/CPOX_Pt/Deutschmann2006
     seedMechanisms = [],
     kineticsDepositories = ['training'],

@@ -1374,6 +1374,7 @@ class ThermoDatabase(object):
         Returns:
             None, stores result in self.delta_atomic_adsorption_energy
         """
+        # If changing these, remember to update the example input files and documentation.
         reference_binding_energies = {
             'C': rmgpy.quantity.Energy(-7.025, 'eV/molecule'),
             'H': rmgpy.quantity.Energy(-2.754, 'eV/molecule'),

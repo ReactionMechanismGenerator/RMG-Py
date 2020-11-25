@@ -1,6 +1,6 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals 
+    thermoLibraries=['surfaceThermoPt111', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals 
     reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)], # when Ni is used change the library to Surface/Deutschmann_Ni 
     seedMechanisms = [],
     kineticsDepositories = ['training'],
