@@ -78,12 +78,12 @@ This block should also contain the reference adatom binding energies
 <p>Here is an example catalyst properties block for Pt(111):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
     <span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.479</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.586</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">6.750</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.352</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
                     <span class="p">},</span>
-    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">2.72e-9</span><span class="p">,</span> <span class="s1">&#39;mol/cm^2&#39;</span><span class="p">),</span>
+    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">2.483e-9</span><span class="p">,</span> <span class="s1">&#39;mol/cm^2&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -187,7 +187,7 @@ RMG-Cat uses a precompiled adsorption correction with the thermodynamic properti
 of the gas-phase precursor (<a class="reference internal" href="#goldsmith2017" id="id3"><span>[Goldsmith2017]</span></a>).</p>
 <p>Following is an example for how a thermo library for species adsorbed on platinum
 is provided in the input file database module:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This can be added along with other gas-phase reaction libraries for coupling
@@ -294,10 +294,10 @@ The following is an example using the default binding energies of the four atoms
 Deviating from these values will result in adsorption energies being modified,
 even for species taken from the thermochemistry libraries:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span> <span class="c1"># default values for Pt(111)</span>
-                   <span class="s1">&#39;H&#39;</span><span class="p">:(</span><span class="o">-</span><span class="mf">2.479</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                   <span class="s1">&#39;O&#39;</span><span class="p">:(</span><span class="o">-</span><span class="mf">3.586</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                   <span class="s1">&#39;C&#39;</span><span class="p">:(</span><span class="o">-</span><span class="mf">6.750</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                   <span class="s1">&#39;N&#39;</span><span class="p">:(</span><span class="o">-</span><span class="mf">4.352</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
                    <span class="p">}</span>
 </pre></div>
 </div>
@@ -364,7 +364,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>This is a simple input file steam reforming of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">],</span> 
+    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">],</span> 
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/Deutschmann_Ni&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)],</span> <span class="c1"># when Pt is used change the library to Surface/CPOX_Pt/Deutschmann2006</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
@@ -572,7 +572,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>This is an input file for catalytic partial oxidation (CPOX) of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">],</span> <span class="c1"># &#39;surfaceThermoPt&#39; is the default. Thermo data is derived using bindingEnergies for other metals </span>
+    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">],</span> <span class="c1"># &#39;surfaceThermoPt&#39; is the default. Thermo data is derived using bindingEnergies for other metals </span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/CPOX_Pt/Deutschmann2006&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span> <span class="c1"># when Ni is used change the library to Surface/Deutschmann_Ni </span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>

@@ -25,13 +25,13 @@ This block should also contain the reference adatom binding energies
 Here is an example catalyst properties block for Pt(111)::
 
     catalystProperties(
-        bindingEnergies = { 
-                            'H': (-2.479, 'eV/molecule'),
-                            'O': (-3.586, 'eV/molecule'),
-                            'C': (-6.750, 'eV/molecule'),
-                            'N': (-4.352, 'eV/molecule'),
+        bindingEnergies = {
+                            'H': (-2.754, 'eV/molecule'),
+                            'O': (-3.811, 'eV/molecule'),
+                            'C': (-7.025, 'eV/molecule'),
+                            'N': (-4.632, 'eV/molecule'),
                         },
-        surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+        surfaceSiteDensity=(2.483e-9, 'mol/cm^2'),
     )
 
 
@@ -140,7 +140,7 @@ of the gas-phase precursor ([Goldsmith2017]_).
 Following is an example for how a thermo library for species adsorbed on platinum 
 is provided in the input file database module::
 
-    thermoLibraries=['surfaceThermoPt']
+    thermoLibraries=['surfaceThermoPt111']
     
 This can be added along with other gas-phase reaction libraries for coupling 
 of gas-phase and surface reactions.  
@@ -257,10 +257,10 @@ Deviating from these values will result in adsorption energies being modified,
 even for species taken from the thermochemistry libraries::
 
     bindingEnergies = { # default values for Pt(111)
-                       'H':(-2.479, 'eV/molecule'),
-                       'O':(-3.586, 'eV/molecule'),
-                       'C':(-6.750, 'eV/molecule'),
-                       'N':(-4.352, 'eV/molecule'),
+                        'H': (-2.754, 'eV/molecule'),
+                        'O': (-3.811, 'eV/molecule'),
+                        'C': (-7.025, 'eV/molecule'),
+                        'N': (-4.632, 'eV/molecule'),
                        }
 
 
