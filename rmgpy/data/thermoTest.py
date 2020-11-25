@@ -730,7 +730,7 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertFalse('radical' in thermo.comment,
                          "Applied radical correction instead of finding C2(T) directly in library")
-        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertEqual(thermo.label, 'C2(T)XX', 'Should have found triplet C2 in the gas phase library')
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
         # Now see what happens for X=C=C=X
@@ -746,7 +746,7 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertFalse('radical' in thermo.comment,
                          "Applied radical correction instead of finding C2(T) directly in library")
-        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertEqual(thermo.label, 'C2(T)XX', 'Should have found triplet C2 in the gas phase library')
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
          # Now see what happens for X#C-C#X
@@ -762,7 +762,7 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertFalse('radical' in thermo.comment,
                          "Applied radical correction instead of finding C2(T) directly in library")
-        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertEqual(thermo.label, 'C2(T)XX', 'Should have found triplet C2 in the gas phase library')
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
 

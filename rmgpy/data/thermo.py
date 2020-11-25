@@ -1638,7 +1638,7 @@ class ThermoDatabase(object):
         add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
         if thermo.label:
-            thermo.label += 'X'
+            thermo.label += 'X' * len(adsorbed_atoms)
 
         find_cp0_and_cpinf(species, thermo)
         return thermo
