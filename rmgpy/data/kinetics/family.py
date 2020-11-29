@@ -3381,8 +3381,22 @@ class KineticsFamily(Database):
             while root.parent is not None:
                 root = root.parent
 
-        psize = float(len(template_rxn_map[root.label]))
-
+        if depth == 0: #may start with reactions at many nodes first iteration
+            psize = 0.0
+            entries = [root]
+            while entries != []:
+                entry = entries[-1]
+                if entry.children:
+                    psize += float(len(template_rxn_map[entry.label]))
+                    entries.extend(entry.children)
+                    entries.remove(entry)
+                else:
+                    psize += float(len(template_rxn_map[entry.label]))
+                    entries.remove(entry)
+        else:
+            psize = float(len(template_rxn_map[root.label]))
+            
+        logging.error(psize)
         mult_completed_nodes = []  # nodes containing multiple identical training reactions
         boo = True  # if the for loop doesn't break becomes false and the while loop terminates
         active_procs = []
