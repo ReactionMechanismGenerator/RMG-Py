@@ -3403,7 +3403,7 @@ class KineticsFamily(Database):
                 entry = self.groups.entries[label]
                 if not isinstance(entry.item, Group):  # skip logic nodes
                     continue
-                if psize == 0.0:
+                if len(template_rxn_map[label]) == 0:
                     continue
                 if entry.index != -1 and len(template_rxn_map[entry.label]) > 1 and entry not in mult_completed_nodes:
                     if (free_procs > 0 and splitable_entry_num > min_splitable_entry_num and
