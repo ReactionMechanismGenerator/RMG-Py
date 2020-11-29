@@ -3279,15 +3279,18 @@ class KineticsFamily(Database):
                     rxns = batch
                 else:
                     rxns += batch
-                    logging.error("pruning tree")
+                    logging.info("pruning tree")
                     self.prune_tree(rxns, thermo_database=thermo_database, max_rxns_to_reopt_node=max_rxns_to_reopt_node)
-                logging.error("getting reaction matches")
+                    logging.info("pruned tree down to {} nodes".format(len(list(self.groups.entries))))
+                logging.info("getting reaction matches")
                 template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, fix_labels=True,
                                                              exact_matches_only=True, get_reverse=True)
-                logging.error("building tree with {} rxns".format(len(rxns)))
+                logging.info("building tree with {} rxns".format(len(rxns)))
                 self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
                                      min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn)
 
+                logging.info("built tree with {} nodes".format(len(list(self.groups.entries))))
+                
     def get_rxn_batches(self, rxns, T=1000.0, max_batch_size=800, outlier_fraction=0.02, stratum_num=8):
         """
         Breaks reactions into batches based on a modified stratified sampling scheme
