@@ -3267,11 +3267,13 @@ class KineticsFamily(Database):
             self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
                                  min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn)
         else:
-            random.seed(1)
-            logging.error("dividing into batches")
-            batches = self.get_rxn_batches(rxns, T=T, max_batch_size=max_batch_size, outlier_fraction=outlier_fraction,
-                                           stratum_num=stratum_num)
-            logging.error([len(x) for x in batches])
+            def rxnkey(rxn):
+                c = 0
+                for react in rxn.reactants:
+                    c += len(react.molecule[0].atoms)
+                return c
+            rxnsorted = sorted(rxns,key=rxnkey)
+            batches = [rxnsorted[i * max_batch_size:(i + 1) * max_batch_size] for i in range((len(rxnsorted) + max_batch_size - 1) // max_batch_size )]
             for i, batch in enumerate(batches):
                 if i == 0:
                     rxns = batch
