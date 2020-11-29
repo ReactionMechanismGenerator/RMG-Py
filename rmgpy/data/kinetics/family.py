@@ -2951,7 +2951,7 @@ class KineticsFamily(Database):
                 ob, boo = get_objective_function(new, old, T=T)
             return ob, True
 
-    def get_extension_edge(self, parent, template_rxn_map, obj, T):
+    def get_extension_edge(self, parent, template_rxn_map, obj, T, iter_max=np.inf):
         """
         finds the set of all extension groups to parent such that
         1) the extension group divides the set of reactions under parent
@@ -2968,14 +2968,15 @@ class KineticsFamily(Database):
         Speed of this algorithm relies heavily on searching non bond creation dimensions once.
         """
         out_exts = [[]]
-        grps = [parent.item]
+        grps = [[parent.item]]
         names = [parent.label]
         first_time = True
 
         n_splits = len(template_rxn_map[parent.label][0].reactants)
-
-        while grps != []:
-            grp = grps[-1]
+        iter = 0
+        
+        while grps[iter] != []:
+            grp = grps[iter][-1]
 
             exts = grp.get_extensions(basename=names[-1], n_splits=n_splits)
 
@@ -3090,17 +3091,24 @@ class KineticsFamily(Database):
                                               list(set(bd.order) & set(reg_val[1]))]
 
             out_exts.append([])
-            grps.pop()
+            grps[iter].pop()
             names.pop()
-
+            
             for ind in ext_inds:  # collect the groups to be expanded
                 grpr, grpcr, namer, typr, indcr = exts[ind]
-                grps.append(grpr)
+                if len(grps) == iter+1:
+                    grps.append([])
+                grps[iter+1].append(grpr)
                 names.append(namer)
 
             if first_time:
                 first_time = False
-
+                
+            if grps[iter] == [] and len(grps) != iter+1 and (not (any([len(x)>0 for x in out_exts]) and iter+1 > iter_max)):
+                iter += 1
+            elif grps[iter] == [] and len(grps) != iter+1 and (any([len(x)>0 for x in out_exts]) and iter+1 > iter_max):
+                logging.error("iter_max achieved terminating early")
+                
         out = []
         # compile all of the valid extensions together
         # may be some duplicates here, but I don't think it's currently worth identifying them
@@ -3109,13 +3117,12 @@ class KineticsFamily(Database):
 
         return out
 
-    def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, ):
+    def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf):
         """
         Constructs an extension to the group parent based on evaluation 
         of the objective function obj
         """
-
-        exts = self.get_extension_edge(parent, template_rxn_map, obj=obj, T=T)
+        exts = self.get_extension_edge(parent, template_rxn_map, obj=obj, T=T, iter_max=iter_max)
 
         if exts == []:  # should only occur when all reactions at this node are identical
             rs = template_rxn_map[parent.label]
@@ -3223,12 +3230,11 @@ class KineticsFamily(Database):
             template_rxn_map[cextname] = comp_entries
         else:
             template_rxn_map[parent.label] = comp_entries
-
         return True
 
     def generate_tree(self, rxns=None, obj=None, thermo_database=None, T=1000.0, nprocs=1, min_splitable_entry_num=2,
                       min_rxns_to_spawn=20, max_batch_size=800, outlier_fraction=0.02, stratum_num=8,
-                      max_rxns_to_reopt_node=100):
+                      max_rxns_to_reopt_node=100, extension_iter_max=np.inf):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -3265,7 +3271,7 @@ class KineticsFamily(Database):
             template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, remove_degeneracy=True,
                                                          fix_labels=True, exact_matches_only=True, get_reverse=True)
             self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
-                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn)
+                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max)
         else:
             def rxnkey(rxn):
                 c = 0
@@ -3287,8 +3293,7 @@ class KineticsFamily(Database):
                                                              exact_matches_only=True, get_reverse=True)
                 logging.info("building tree with {} rxns".format(len(rxns)))
                 self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
-                                     min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn)
-
+                                     min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn, extension_iter_max=extension_iter_max)
                 logging.info("built tree with {} nodes".format(len(list(self.groups.entries))))
                 
     def get_rxn_batches(self, rxns, T=1000.0, max_batch_size=800, outlier_fraction=0.02, stratum_num=8):
@@ -3364,7 +3369,7 @@ class KineticsFamily(Database):
                 entry.item.clear_reg_dims()
 
     def make_tree_nodes(self, template_rxn_map=None, obj=None, T=1000.0, nprocs=0, depth=0, min_splitable_entry_num=2,
-                        min_rxns_to_spawn=20):
+                        min_rxns_to_spawn=20, extension_iter_max=np.inf):
 
         if depth > 0:
             root = self.groups.entries[list(template_rxn_map.keys())[0]]
@@ -3425,7 +3430,7 @@ class KineticsFamily(Database):
                                                             template_rxn_map={entry.label: template_rxn_map[entry.label]},
                                                             obj=obj, T=T, nprocs=procs_out - 1, depth=depth,
                                                             min_splitable_entry_num=min_splitable_entry_num,
-                                                            min_rxns_to_spawn=min_rxns_to_spawn)
+                                                            min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max)
                         active_procs.append(p)
                         active_conns.append(conn)
                         proc_names.append(name)
@@ -3437,7 +3442,7 @@ class KineticsFamily(Database):
 
                         splitable_entry_num -= 1
                         continue
-                    boo2 = self.extend_node(entry, template_rxn_map, obj, T)
+                    boo2 = self.extend_node(entry, template_rxn_map, obj, T, iter_max=extension_iter_max)
                     if boo2:  # extended node so restart while loop
                         break
                     else:  # no extensions could be generated since all reactions were identical
@@ -4470,18 +4475,18 @@ def _make_rule(rr):
         return None
 
 
-def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn):
+def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max):
     parent_conn, child_conn = mp.Pipe()
     name = list(template_rxn_map.keys())[0]
     p = mp.Process(target=_child_make_tree_nodes,
                    args=(family, child_conn, template_rxn_map, obj, T, nprocs,
-                         depth, name, min_splitable_entry_num, min_rxns_to_spawn))
+                         depth, name, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max))
     p.start()
     return parent_conn, p, name
 
 
 def _child_make_tree_nodes(family, child_conn, template_rxn_map, obj, T, nprocs, depth, name, min_splitable_entry_num,
-                           min_rxns_to_spawn):
+                           min_rxns_to_spawn, extension_iter_max):
     del_labels = []
     root_label = list(template_rxn_map.keys())[0]
     for label in family.groups.entries.keys():
@@ -4493,6 +4498,6 @@ def _child_make_tree_nodes(family, child_conn, template_rxn_map, obj, T, nprocs,
     family.groups.entries[root_label].parent = None
 
     family.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs, depth=depth + 1,
-                           min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn)
+                           min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn, extension_iter_max=extension_iter_max)
 
     child_conn.send(list(family.groups.entries.values()))
