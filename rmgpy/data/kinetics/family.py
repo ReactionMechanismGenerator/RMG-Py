@@ -3916,7 +3916,8 @@ class KineticsFamily(Database):
                 root = deepcopy(r)
 
         root_labels = [x.label for x in root.atoms if x.label != '']
-
+        root_label_set = set(root_labels)
+        
         for i, r in enumerate(entries):
             if estimate_thermo:
                 for j, react in enumerate(r.item.reactants):
@@ -3962,10 +3963,15 @@ class KineticsFamily(Database):
                             mol = mol.merge(react.molecule[0])
                         else:
                             mol = deepcopy(react.molecule[0])
-
-                    if (mol.is_subgraph_isomorphic(root, generate_initial_map=True) or
+                    
+                    if fix_labels:
+                        mol_label_set = set([x.label for x in get_label_fixed_mol(mol, root_labels).atoms if x.label != ''])
+                    else:
+                        mol_label_set = set([x.label for x in mol.atoms if x.label != ''])
+                    
+                    if mol_label_set == root_label_set and ((mol.is_subgraph_isomorphic(root, generate_initial_map=True) or
                             (not fix_labels and
-                             get_label_fixed_mol(mol, root_labels).is_subgraph_isomorphic(root, generate_initial_map=True))):
+                             get_label_fixed_mol(mol, root_labels).is_subgraph_isomorphic(root, generate_initial_map=True)))):
                         # try product structures
                         products = [Species(molecule=[get_label_fixed_mol(x.molecule[0], root_labels)], thermo=x.thermo)
                                     for x in rxns[i].products]
