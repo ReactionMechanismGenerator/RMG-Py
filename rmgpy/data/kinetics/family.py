@@ -3157,8 +3157,13 @@ class KineticsFamily(Database):
                             ind2 = parent.item.atoms.index(bd.vertex2)
                             logging.error(((ind1, ind2), bd.order, bd.reg_dim))
                         for rxn in rs:
+                            logging.error(str(rxn))
                             for react in rxn.reactants:
+                                logging.error(react.label)
                                 logging.error(react.to_adjacency_list())
+                            for prod in rxn.products:
+                                logging.error(prod.label)
+                                logging.error(prod.to_adjacency_list())
                         logging.error("Clearing Regularization Dimensions and Reattempting")  # this usually happens when node expansion breaks some symmetry
                         parent.item.clear_reg_dims()  # this almost always solves the problem
                         return True
