@@ -3350,7 +3350,8 @@ class KineticsFamily(Database):
             if parent and len(template_rxn_map[parent.label]) < max_rxns_to_reopt_node:
                 parent.children.remove(entry)
                 del self.groups.entries[key]
-                parent.item.clear_reg_dims()
+            else:
+                entry.item.clear_reg_dims()
 
     def make_tree_nodes(self, template_rxn_map=None, obj=None, T=1000.0, nprocs=0, depth=0, min_splitable_entry_num=2,
                         min_rxns_to_spawn=20):
