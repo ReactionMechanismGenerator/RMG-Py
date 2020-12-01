@@ -86,6 +86,28 @@ Atom type       Description
 ``Sit``         silicon atom with one triple bond and one single bond
 ``Sib``         silicon atom with two benzene bonds and one single bond
 ``Sibf``        silicon atom with three benzene bonds
+*Phosphorus atom types*
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+``P``           phosphorus atom with any local bond structure
+``P0sc``        charged phosphorus atom with three lone pairs (valence 0) and up to 1 single bond
+``P1s``         phosphorus atom with two lone pairs (valence 1) and up to 1 single bond
+``P1sc``        charged phosphorus atom with two lone pairs (valence 1) and up to 2 single bonds
+``P1dc``        charged phosphorus atom with two lone pairs (valence 1) and 1 double bond
+``P3s``         phosphorus atom with one lone pair (valence 3) and up to 3 single bonds
+``P3d``         phosphorus atom with one lone pair (valence 3), 1 double bond and up to 1 single bond
+``P3t``         phosphorus atom with one lone pair (valence 3) and 1 triple bond
+``P3b``         phosphorus atom with one lone pair (valence 3) and 2 benzene bonds
+``P5s``         phosphorus atom with no lone pairs (valence 5) and up to 5 single bonds
+``P5sc``        charged phosphorus atom with no lone pairs (valence 5) and up to 6 single bonds
+``P5d``         phosphorus atom with no lone pairs (valence 5), 1 double bond and up to 3 single bonds
+``P5dd``        phosphorus atom with no lone pairs (valence 5), 2 double bonds and up to 1 single bond
+``P5dc``        charged phosphorus atom with no lone pairs (valence 5), 1 double bond and up to 2 single bonds
+``P5ddc``       charged phosphorus atom with no lone pairs (valence 5) and 2 double bonds
+``P5t``         phosphorus atom with no lone pairs (valence 5), 1 triple bond and up to 2 single bonds
+``P5td``        phosphorus atom with no lone pairs (valence 5), 1 triple bond and 1 double bond
+``P5tc``        charged phosphorus atom with no lone pairs (valence 5), 1 triple bond and up to 1 single bond
+``P5b``         phosphorus atom with no lone pairs (valence 5), 2 benzene bonds and up to 1 single bond
+``P5bd``        phosphorus atom with no lone pairs (valence 5), 2 benzene bonds and 1 double bond
 *Sulfur atom types*
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``S``           sulfur atom with any local bond structure

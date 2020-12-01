@@ -37,7 +37,7 @@ from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.molecule import Molecule
 
-molecule_atom_types = ['C', 'O', 'N', 'S', 'Si', 'Cl', 'Br', 'I', 'F']
+molecule_atom_types = ['C', 'O', 'N', 'S', 'P', 'Si', 'Cl', 'Br', 'I', 'F']
 group_atomtypes = {}
 
 for item in create_atom_types():
@@ -78,12 +78,17 @@ def create_molecule(element, u1, c1):
     adjlist = get_molecule_string(element, u1, c1)
     logging.info('Creating molecule: {0}'.format(adjlist))
     mol = None
-    try:
-        mol = Molecule().from_adjacency_list(adjlist)
-    except (ValueError, InvalidAdjacencyListError):
-        # Either a non-neutral molecule, incompatible multiplcity, or an improper valence 
-        # was assigned with this combination.
+    if element == 'P' and c1 == 1 and get_lone_pairs(element) == 1:
+        # AtomTypeError is raised when phosphorus has +1 partial charge and 1 lone pair.
+        # Although this will not raise InvalidAdjacencyListError, these are chemically infeasible.
         pass
+    else:
+        try:
+            mol = Molecule().from_adjacency_list(adjlist)
+        except (ValueError, InvalidAdjacencyListError):
+            # Either a non-neutral molecule, incompatible multiplcity, or an improper valence
+            # was assigned with this combination.
+            pass
     return mol, adjlist
 
 
