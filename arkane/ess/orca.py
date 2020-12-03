@@ -221,10 +221,9 @@ class OrcaLog(ESSAdapter):
                     raise Exception(f'Frequencies not found in {self.logfile}')
                 unscaled_frequencies = frequencies
                 vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
-                # modes.append(vibration)
                 freq.append(vibration)
 
-        # get moments of inertia from external rotational modes, given in atomic units        line = f.readline()
+        # get moments of inertia from external rotational modes, given in atomic units        
         coord, number, mass = self.load_geometry()
         symbols = [symbol_by_number[i] for i in number]
         inertia = get_principal_moments_of_inertia(coord, numbers=number, symbols=symbols)
@@ -238,11 +237,9 @@ class OrcaLog(ESSAdapter):
                 rot.append(rotation)
             else:
                 rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                # modes.append(rotation)
                 rot.append(rotation)
 
         translation = IdealGasTranslation(mass=(sum(mass), "amu"))
-        # modes.append(translation)
         mmass.append(translation)
 
         # Take only the last modes found (in the event of multiple jobs)
