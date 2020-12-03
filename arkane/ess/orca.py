@@ -223,7 +223,7 @@ class OrcaLog(ESSAdapter):
                 vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
                 freq.append(vibration)
 
-        # get moments of inertia from external rotational modes, given in atomic units        
+        # get moments of inertia from external rotational modes, given in atomic units
         coord, number, mass = self.load_geometry()
         symbols = [symbol_by_number[i] for i in number]
         inertia = get_principal_moments_of_inertia(coord, numbers=number, symbols=symbols)
