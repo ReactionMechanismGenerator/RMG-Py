@@ -3359,7 +3359,7 @@ class KineticsFamily(Database):
 
         return batches
 
-    def prune_tree(self, rxns, thermo_database=None, max_rxns_to_reopt_node=100, fix_labels=True,
+    def prune_tree(self, rxns, newrxns, thermo_database=None, new_fraction_threshold_to_reopt_node=0.25, fix_labels=True,
                    exact_matches_only=True, get_reverse=True):
         """
         Remove nodes that have less than maxRxnToReoptNode reactions that match
@@ -3372,11 +3372,14 @@ class KineticsFamily(Database):
         for key, item in template_rxn_map.items():
             entry = self.groups.entries[key]
             parent = entry.parent
-            if parent and len(template_rxn_map[parent.label]) < max_rxns_to_reopt_node:
-                parent.children.remove(entry)
-                del self.groups.entries[key]
-            else:
-                entry.item.clear_reg_dims()
+            Nrxns = float(len(template_rxn_map[entry.label]))
+            if parent and Nrxns > 0:
+                Nrxnsnew = float(len(set(template_rxn_map[entry.label]) & set(newrxns)))
+                if Nrxnsnew/Nrxns > new_fraction_threshold_to_reopt_node:
+                    parent.children.remove(entry)
+                    del self.groups.entries[key]
+                else:
+                    entry.item.clear_reg_dims()
 
     def make_tree_nodes(self, template_rxn_map=None, obj=None, T=1000.0, nprocs=0, depth=0, min_splitable_entry_num=2,
                         min_rxns_to_spawn=20, extension_iter_max=np.inf, extension_iter_item_cap=np.inf):
