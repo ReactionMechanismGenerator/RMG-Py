@@ -3448,7 +3448,7 @@ class KineticsFamily(Database):
                 if len(template_rxn_map[label]) == 0:
                     continue
                 if entry.index != -1 and len(template_rxn_map[entry.label]) > 1 and entry not in mult_completed_nodes:
-                    if (free_procs > 0 and splitable_entry_num > min_splitable_entry_num and
+                    if entry.parent and (free_procs > 0 and splitable_entry_num > min_splitable_entry_num and
                             len(template_rxn_map[entry.label]) > min_rxns_to_spawn):
                         procs_out = int(len(template_rxn_map[entry.label]) / psize * free_procs)
                         free_procs -= procs_out
