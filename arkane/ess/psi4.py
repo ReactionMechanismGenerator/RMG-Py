@@ -235,11 +235,11 @@ class Psi4Log(ESSAdapter):
         inertia = get_principal_moments_of_inertia(coord, numbers=number, symbols=None)
         inertia = list(inertia[0])
         if len(inertia):
-            if inertia[0] == 0.0:
+            if len([f for f in inertia if f == 0.0]) == 1:
                 # If the first eigenvalue is 0, the rotor is linear
                 inertia.remove(0.0)
                 logging.debug('inertia is {}'.format(str(inertia)))
-                rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                 rot.append(rotation)
             else:
                 rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
