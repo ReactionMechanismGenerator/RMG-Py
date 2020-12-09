@@ -1378,7 +1378,8 @@ class ThermoDatabase(object):
         
         if isinstance(binding_energies, str):
             # Want to load the binding energies from the database
-            metal_db = rmgpy.data.rmg.database.surface
+            metal_db = MetalDatabase()
+            metal_db.load(os.path.join(settings['database.directory'], 'surface'))
             binding_energies = metal_db.find_binding_energies(binding_energies)
 
         for element, energy in binding_energies.items():
@@ -1397,7 +1398,8 @@ class ThermoDatabase(object):
         :param metal_to_scale_to: the metal you want to scale to (string e.g 'Pt111' or None)
         :return: corrected thermo
         """
-        metal_db = rmgpy.data.rmg.database.surface
+        metal_db = MetalDatabase()
+        metal_db.load(os.path.join(settings['database.directory'], 'surface'))
         
         if metal_to_scale_from == metal_to_scale_to:
             return thermo
