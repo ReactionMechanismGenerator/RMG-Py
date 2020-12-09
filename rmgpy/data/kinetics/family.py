@@ -2211,9 +2211,10 @@ class KineticsFamily(Database):
                                     generate_products_and_reactions((1, 2, 0))
 
         # ToDo: try to remove this hard-coding of reaction family name..
-        if not forward and 'adsorption' in self.label.lower():
+        if not forward and ('adsorption' in self.label.lower() or 'eleyrideal' in self.label.lower()):
             # Desorption should have desorbed something (else it was probably bidentate)
             # so delete reactions that don't make a gas-phase desorbed product
+            # Eley-Rideal reactions should have one gas-phase product in the reverse direction 
             pruned_list = []
             for reaction in rxn_list:
                 for reactant in reaction.reactants:
