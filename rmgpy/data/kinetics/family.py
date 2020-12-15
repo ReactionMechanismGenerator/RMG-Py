@@ -3657,13 +3657,13 @@ class KineticsFamily(Database):
                     
         return errors, uncertainties
 
-    def cross_validate_old(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermo_database=None):
+    def cross_validate_old(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermo_database=None, get_reverse=False):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
         """
         errors = {}
-        rxns = np.array(self.get_training_set(remove_degeneracy=True))
+        rxns = np.array(self.get_training_set(remove_degeneracy=True,get_reverse=get_reverse))
 
         if folds == 0:
             folds = len(rxns)
@@ -3679,7 +3679,8 @@ class KineticsFamily(Database):
         for train_index, test_index in kf.split(rxns):
 
             self.rules.entries = {}  # clear rules each iteration
-
+            if get_reverse:
+                train_index = [x for x in train_index if x<len(rxns)/2]
             self.add_rules_from_training(train_indices=train_index, thermo_database=tdb)
             self.fill_rules_by_averaging_up()
             rxns_test = rxns[test_index]
