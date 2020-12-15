@@ -3561,7 +3561,7 @@ class KineticsFamily(Database):
 
                 index += 1
 
-    def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1):
+    def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1, ascend=True):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         after finding an appropriate node for kinetics estimation it will move up the tree
@@ -3618,17 +3618,43 @@ class KineticsFamily(Database):
                         entry = entry.parent
 
                 uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
+                
+                if not ascend:
+                    L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
-                L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
-
-                if L != []:
-                    kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                    if L != []:
+                        kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                        kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
+                        k = kinetics.get_rate_coefficient(T)
+                        errors[rxn] = np.log(k / krxn)
+                    else:
+                        raise ValueError('only one piece of kinetics information in the tree?')
+                else:
+                    boo = True
+                    rlist = list(set(template_rxn_map[entry.label]) - set(rxns_test))
+                    kinetics = _make_rule((self.forward_recipe.actions,rlist,T,1.0e3,"",[rxn.rank for rxn in rlist]))
+                    logging.error("determining fold rate")
+                    c = 1
+                    while boo:
+                        parent = entry.parent 
+                        if parent is None:
+                            break
+                        rlistparent = list(set(template_rxn_map[parent.label]) - set(rxns_test))
+                        kineticsparent = _make_rule((self.forward_recipe.actions,rlistparent,T,1.0e3,"",[rxn.rank for rxn in rlistparent]))
+                        err_parent = abs(kineticsparent.uncertainty.data_mean + kineticsparent.uncertainty.mu - kinetics.uncertainty.data_mean) + np.sqrt(2.0*kineticsparent.uncertainty.var/np.pi)
+                        err_entry = abs(kinetics.uncertainty.mu) + np.sqrt(2.0*kinetics.uncertainty.var/np.pi)
+                        if err_entry > err_parent:
+                            entry = entry.parent
+                            kinetics = kineticsparent
+                            logging.error("recursing {}".format(c))
+                            c += 1
+                        else:
+                            boo = False
+                            
                     kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
                     k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
-                else:
-                    raise ValueError('only one piece of kinetics information in the tree?')
-
+                    
         return errors, uncertainties
 
     def cross_validate_old(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermo_database=None):
