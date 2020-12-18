@@ -38,7 +38,7 @@ import math
 import os.path
 
 import numpy as np
-
+from copy import deepcopy
 import rmgpy.quantity as quantity
 from rmgpy.chemkin import write_kinetics_entry
 from rmgpy.data.kinetics.library import LibraryReaction
@@ -296,24 +296,8 @@ class PressureDependenceJob(object):
             if plot:
                 self.plot(os.path.dirname(output_file))
             if self.sensitivity_conditions is not None:
-                perturbation = 0.1  # kcal/mol
                 logging.info('\n\nRunning sensitivity analysis...')
-                for i in range(3):
-                    try:
-                        SensAnalysis(self, os.path.dirname(output_file), perturbation=perturbation)
-                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as e:
-                        logging.warning('Could not complete the sensitivity analysis with a perturbation of {0} '
-                                        'kcal/mol, trying {1} kcal/mol instead.'.format(
-                                         perturbation, perturbation / 2.0))
-                        perturbation /= 2.0
-                    else:
-                        break
-                else:
-                    logging.error("Could not complete the sensitivity analysis even with a perturbation of {0}"
-                                  " kcal/mol".format(perturbation))
-                    raise e
-                logging.info("Completed the sensitivity analysis using a perturbation of {0} kcal/mol".format(
-                    perturbation))
+                SensAnalysis(self, os.path.dirname(output_file), perturbation=self.sensitivity_perturbation)
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
         logging.debug(repr(self.network))
 
