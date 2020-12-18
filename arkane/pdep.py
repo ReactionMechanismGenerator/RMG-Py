@@ -297,7 +297,7 @@ class PressureDependenceJob(object):
                 self.plot(os.path.dirname(output_file))
             if self.sensitivity_conditions is not None:
                 logging.info('\n\nRunning sensitivity analysis...')
-                SensAnalysis(self, os.path.dirname(output_file), perturbation=self.sensitivity_perturbation)
+                SensAnalysis(deepcopy(self), os.path.dirname(output_file), perturbation=self.sensitivity_perturbation)
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
         logging.debug(repr(self.network))
 
