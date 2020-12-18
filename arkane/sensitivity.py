@@ -454,7 +454,10 @@ class PDepSensitivity(object):
                 axis.set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
                 # axis.ticklabel_format('sci')
                 axis.set_title('{0}, {1}'.format(condition[0], condition[1]))
-                axis.set_xlim([min_sa, max_sa])
+                try:
+                    axis.set_xlim([min_sa, max_sa])
+                except:
+                    pass
                 axis.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
             if not os.path.exists(self.sensitivity_path):
