@@ -71,6 +71,8 @@ class Network(object):
     `grain_size`            Maximum size of separation between energies
     `grain_count`           Minimum number of descrete energies separated
     `E0`                    A list of ground state energies of isomers, reactants, and products (J/mol)
+    `Emax`                  Highest energy level considered in graining before padding
+    `Emin`                  Minimum energy levell considered in graining
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
@@ -93,7 +95,8 @@ class Network(object):
     def __init__(self, label='', isomers=None, reactants=None, products=None,
                  path_reactions=None, bath_gas=None, net_reactions=None, T=0.0, P=0.0,
                  e_list=None, j_list=None, n_grains=0, n_j=0, active_k_rotor=True,
-                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None):
+                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None,
+                 Emax=None, Emin=None):
         """
         To initialize a Network object for running a pressure dependent job,
         only label, isomers, reactants, products path_reactions and bath_gas are useful,
@@ -127,7 +130,9 @@ class Network(object):
         self.grain_size = grain_size
         self.grain_count = grain_count
         self.E0 = E0
-
+        self.Emin = Emin
+        self.Emax = Emax
+        
         self.valid = False
 
     def __repr__(self):
@@ -497,14 +502,19 @@ class Network(object):
             raise NetworkError('Must provide either grain_size or n_grains parameter to Network.determineEnergyGrains().')
 
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
-        e_min = np.min(self.E0)
-        e_min = math.floor(e_min)  # Round to nearest whole number
-
+        if self.Emin is None:
+            e_min = np.min(self.E0)
+            e_min = math.floor(e_min)  # Round to nearest whole number
+        else:
+            e_min = self.Emin
         # Use the highest energy on the PES as the initial guess for Emax0
-        e_max = np.max(self.E0)
-        for rxn in self.path_reactions:
-            E0 = float(rxn.transition_state.conformer.E0.value_si)
-            if E0 > e_max: e_max = E0
+        if self.Emax is None:
+            e_max = np.max(self.E0)
+            for rxn in self.path_reactions:
+                E0 = float(rxn.transition_state.conformer.E0.value_si)
+                if E0 > e_max: e_max = E0
+        else:
+            e_max = self.Emax
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
         # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
