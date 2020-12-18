@@ -266,6 +266,30 @@ class PDepSensitivity(object):
         self.output_directory = output_directory
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
+        self.perturbation = perturbation
+        
+        base_wells = []
+        base_wells.extend(self.job.network.reactants)
+        base_wells.extend(self.job.network.isomers)
+        base_wells.extend(self.job.network.products)
+        Emin = min([x.E0 for x in base_wells])
+        
+        base_transition_states = []
+        Emax = Emin
+        for rxn in self.job.network.path_reactions:
+            # if rxn.transition_state is not None:
+            base_transition_states.append(rxn.transition_state)
+            if rxn.transition_state.conformer.E0.value_si > Emax:
+                Emax = rxn.transition_state.conformer.E0.value_si
+        if self.perturbation.value_si > 0:
+            self.job.network.Emin = Emin
+            self.job.network.Emax = Emax + self.perturbation.value_si
+        else:
+            self.job.network.Emin = Emin + self.perturbation.value_si
+            self.job.network.Emax = Emax
+        
+        self.job.execute(output_file=None, plot=False, print_summary=False)
+        
         self.rates = {}
         for rxn in self.job.network.net_reactions:
             self.rates[str(rxn)] = []
@@ -277,7 +301,7 @@ class PDepSensitivity(object):
         for rxn in self.job.network.net_reactions:
             self.sa_rates[str(rxn)] = {}
             self.sa_coefficients[str(rxn)] = {}
-        self.perturbation = perturbation
+        
         self.max_iters = max_iters
         self.execute()
 
