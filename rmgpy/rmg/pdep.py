@@ -582,8 +582,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     os.remove(os.path.join(path, name))
 
             for name in os.listdir(path):  # find the new file and name it network_reduced.py
-                if not name.endswith('full.py'):
-                    os.rename(os.path.join(path, name), os.path.join(path, 'network_reduced.py'))
+                if not "full" in name:
+                    os.rename(os.path.join(path, name), os.path.join(path, name.split("_")[0]+"_reduced.py"))
 
     def merge(self, other):
         """
