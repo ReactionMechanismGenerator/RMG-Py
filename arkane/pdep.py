@@ -106,12 +106,18 @@ class PressureDependenceJob(object):
                  Pmin=None, Pmax=None, Pcount=0, Plist=None,
                  maximumGrainSize=None, minimumGrainCount=0,
                  method=None, interpolationModel=None, maximumAtoms=None,
-                 activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+                 activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None, 
+                 sensitivity_perturbation=0):
         self.network = network
 
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Tcount = Tcount
+        if sensitivity_perturbation == 0:
+            self.sensitivity_perturbation = quantity.Quantity(2.0,'kcal/mol')
+        else:
+            self.sensitivity_perturbation = quantity.Quantity(sensitivity_perturbation)
+        
         if Tlist is not None:
             self.Tlist = Tlist
             self.Tmin = (np.min(self.Tlist.value_si), "K")
