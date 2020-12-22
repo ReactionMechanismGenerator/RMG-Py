@@ -356,7 +356,7 @@ class Species(object):
                 break
         else:
             label = ''
-        if len(label.split()) > 0 and not label.split()[0].isdigit():
+        if len(label.split()) > 0 and not label.split()[0].isdigit() and 'multiplicity' not in label:
             self.label = label.strip()
         # Return a reference to itself so we can use e.g. Species().from_adjacency_list()
         return self
