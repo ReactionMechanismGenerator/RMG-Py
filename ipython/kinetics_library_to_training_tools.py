@@ -33,6 +33,7 @@ from io import BytesIO
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import display, HTML
+from rmgpy.quantity import ScalarQuantity
 
 
 # HTML formatting for output
@@ -177,6 +178,15 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                 else:
                     lib_rxn.reactants = fam_rxn.products
                     lib_rxn.products = fam_rxn.reactants
+
+                if len(lib_rxn.reactants) == 1:
+                    units = 's^-1'
+                elif len(lib_rxn.reactants) == 2:
+                    units = 'cm^3/(mol*s)'
+                elif len(lib_rxn.reactants) == 3:
+                    units = 'cm^6/(mol^2*s)'
+                A = lib_rxn.kinetics.A
+                lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
 
                 if fam_rxn.family in reaction_dict:
                     reaction_dict[fam_rxn.family].append(lib_rxn)
