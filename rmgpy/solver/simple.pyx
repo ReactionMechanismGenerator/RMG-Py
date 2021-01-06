@@ -334,7 +334,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         for spec, moleFrac in self.initial_mole_fractions.items():
             i = self.get_species_index(spec)
-            self.y0[i] = moleFrac
+            self.y0[i] = moleFrac if not isinstance(moleFrac, (list, tuple)) else 0.5 * (moleFrac[0] + moleFrac[1])
 
         # Use ideal gas law to compute volume
         self.V = constants.R * self.T.value_si * np.sum(self.y0[:self.num_core_species]) / self.P.value_si  # volume in m^3
