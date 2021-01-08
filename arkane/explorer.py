@@ -244,6 +244,12 @@ class ExplorerJob(object):
                             reaction_model.enlarge(react_edge=True, unimolecular_react=flags,
                                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))
+        
+        if output_file is not None:
+            path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
+            for name in os.listdir(path):
+                os.remove(os.path.join(path,name))
+                
         for network in self.networks:
             rm_rxns = []
             for rxn in network.path_reactions:  # remove reactions with forbidden species
@@ -254,17 +260,22 @@ class ExplorerJob(object):
             for rxn in rm_rxns:
                 logging.info('Removing forbidden reaction: {0}'.format(rxn))
                 network.path_reactions.remove(rxn)
-
-            # clean up output files
-            if output_file is not None:
-                path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
+            
+            network.valid = False
+            
+        if output_file is not None:
+            path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
+            for q,network in enumerate(self.networks):
+                network.valid = False
+                network.update(reaction_model,reaction_model.pressure_dependence)
                 for name in os.listdir(path):
-                    if name.endswith('.py') and '_' in name:
-                        if name.split('_')[-1].split('.')[0] != str(len(network.isomers)):
-                            os.remove(os.path.join(path, name))
-                        else:
-                            os.rename(os.path.join(path, name),
-                                      os.path.join(path, 'network_full{}.py'.format(self.networks.index(network))))
+                    if "full" not in name:
+                        start = "".join(name.split("_")[:-1])
+                        end = name.split("_")[-1]
+                        suffix = end.split(".")[-1]
+                        new_name = start+"_full"+str(q)+"."+suffix
+                        os.rename(os.path.join(path,name),os.path.join(path,new_name))
+            
 
         warns = []
 

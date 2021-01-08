@@ -571,19 +571,17 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         assert self.path_reactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
 
-        reaction_model.update_unimolecular_reaction_networks()
-
+        self.update(reaction_model,reaction_model.pressure_dependence)
+        
         if reaction_model.pressure_dependence.output_file:
             path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
-
-            for name in os.listdir(path):  # remove the old reduced file
-                if name.endswith('reduced.py'):
-                    os.remove(os.path.join(path, name))
-
             for name in os.listdir(path):  # find the new file and name it network_reduced.py
-                if not "full" in name:
-                    os.rename(os.path.join(path, name), os.path.join(path, name.split("_")[0]+"_reduced.py"))
-
+                if not "full" in name and not "reduced" in name:
+                    q = 0
+                    while any(["_reduced{}.py".format(q) in x for x in  os.listdir(path)]):
+                        q += 1  
+                    os.rename(os.path.join(path, name), os.path.join(path, name.split("_")[0]+"_reduced{}.py".format(q)))    
+            
     def merge(self, other):
         """
         Merge the partial network `other` into this network.
