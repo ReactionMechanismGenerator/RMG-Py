@@ -136,6 +136,13 @@ def save_entry(f, entry):
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
 
+    if entry.metal:
+        f.write('    metal = "{0}",\n'.format(entry.metal))
+    if entry.facet:
+        f.write('    facet = "{0}",\n'.format(entry.facet))
+    if entry.site:
+        f.write('    site = "{0}",\n'.format(entry.site))
+
     f.write(')\n\n')
 
 
