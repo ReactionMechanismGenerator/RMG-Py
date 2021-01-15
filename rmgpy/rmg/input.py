@@ -171,7 +171,7 @@ def convert_binding_energies(binding_energies):
     return new_dict
 
 
-def species(label, structure, reactive=True, cut=False):
+def species(label, structure, reactive=True, cut=False, size_threshold=None):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive',
                                                          label,
                                                          structure.to_smiles()))
@@ -182,7 +182,10 @@ def species(label, structure, reactive=True, cut=False):
     if cut:
         from afm.fragment import Fragment
         mol_to_frag[label] = {} # key:original molecule label, value:created fragment label
-        cut_frag_list = Fragment().cut_molecule(structure)
+        if size_threshold:
+            cut_frag_list = Fragment().cut_molecule(structure, size_threshold=size_threshold)
+        else:
+            cut_frag_list = Fragment().cut_molecule(structure)
         logging.info('The original molecule {0} is divided into several fragments:'.format(label))
         for initial_frag in cut_frag_list:
             frag_label = initial_frag.to_smiles()
