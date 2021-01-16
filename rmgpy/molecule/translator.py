@@ -81,6 +81,24 @@ SMILES_LOOKUPS = {
         1 C u1 p1 c0 {2,S}
         2 H u0 p0 c0 {1,S}
         """,
+    '[C]F':  # We'd return the quartet without this
+        """
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 F u0 p3 c0 {1,S}
+        """,
+    '[C]Cl':  # We'd return the quartet without this
+        """
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 Cl u0 p3 c0 {1,S}
+        """,
+    '[C]Br':  # We'd return the quartet without this
+        """
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 Br u0 p3 c0 {1,S}
+        """,
     '[X]':  # Surface site
         """
         multiplicity 1
@@ -131,8 +149,13 @@ RADICAL_LOOKUPS = {
     'H2N': '[NH2]',
     'HN': '[NH]',
     'NO': '[N]=O',
+    'F' : '[F]',
     'Cl': '[Cl]',
+    'Br': '[Br]',
     'I': '[I]',
+    'CF': '[C]F',
+    'CCl': '[C]Cl',
+    'CBr': '[C]Br'
 }
 
 
