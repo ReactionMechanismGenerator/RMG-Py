@@ -35,6 +35,8 @@ import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 from rmgpy.quantity import ScalarQuantity
 
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
+                            StickingCoefficient, StickingCoefficientBEP
 
 # HTML formatting for output
 full = 12
@@ -127,6 +129,10 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
     master_dict = {}
     multiple_dict = {}
 
+    # The KineticsModels allowing in training
+    supported_kinetic_models = (Arrhenius, ArrheniusEP, SurfaceArrhenius, SurfaceArrheniusBEP, 
+                                StickingCoefficient,StickingCoefficientBEP)
+
     for library_name in libraries:
         library = database.kinetics.libraries[library_name]
         reaction_dict = {}
@@ -134,6 +140,9 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
             lib_rxn = entry.item
             lib_rxn.kinetics = entry.data
             lib_rxn.index = index
+
+            if type(lib_rxn.kinetics) not in supported_kinetic_models:
+                continue
 
             # Let's make RMG try to generate this reaction from the families!
             fam_rxn_list = database.kinetics.generate_reactions_from_families(
