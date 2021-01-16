@@ -1336,7 +1336,7 @@ class KineticsFamily(Database):
 
         self.rules.fill_rules_by_averaging_up(self.get_root_template(), {}, verbose)
 
-    def apply_recipe(self, reactant_structures, forward=True, unique=True):
+    def apply_recipe(self, reactant_structures, forward=True, unique=True, relabel_products=True):
         """
         Apply the recipe for this reaction family to the list of
         :class:`Molecule` or :class:`Group` objects `reactant_structures`. The atoms
@@ -1463,63 +1463,64 @@ class KineticsFamily(Database):
         #  structures which are labeled as reactants.
         # Unfortunately, this means that reaction family info is
         #  hardcoded, so this must be updated if the database changes.
-        if not self.reverse_template:
-            # Get atom labels for products
-            atom_labels = {}
-            for atom in product_structure.atoms:
-                if atom.label != '':
-                    atom_labels[atom.label] = atom
+        if relabel_products:
+            if not self.reverse_template:
+                # Get atom labels for products
+                atom_labels = {}
+                for atom in product_structure.atoms:
+                    if atom.label != '':
+                        atom_labels[atom.label] = atom
 
-            if label == 'h_abstraction':
-                # '*2' is the H that migrates
-                # it moves from '*1' to '*3'
-                atom_labels['*1'].label = '*3'
-                atom_labels['*3'].label = '*1'
+                if label in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
+                    # '*2' is the H that migrates
+                    # it moves from '*1' to '*3'
+                    atom_labels['*1'].label = '*3'
+                    atom_labels['*3'].label = '*1'
 
-            elif label == 'intra_h_migration':
-                # '*3' is the H that migrates
-                # swap the two ends between which the H moves
-                atom_labels['*1'].label = '*2'
-                atom_labels['*2'].label = '*1'
-                # reverse all the atoms in the chain between *1 and *2
-                highest = len(atom_labels)
-                if highest > 4:
-                    # swap *4 with *5
-                    atom_labels['*4'].label = '*5'
-                    atom_labels['*5'].label = '*4'
-                if highest > 6:
-                    # swap *6 with the highest, etc.
-                    for i in range(6, highest + 1):
-                        atom_labels['*{0:d}'.format(i)].label = '*{0:d}'.format(6 + highest - i)
+                elif label == 'intra_h_migration':
+                    # '*3' is the H that migrates
+                    # swap the two ends between which the H moves
+                    atom_labels['*1'].label = '*2'
+                    atom_labels['*2'].label = '*1'
+                    # reverse all the atoms in the chain between *1 and *2
+                    highest = len(atom_labels)
+                    if highest > 4:
+                        # swap *4 with *5
+                        atom_labels['*4'].label = '*5'
+                        atom_labels['*5'].label = '*4'
+                    if highest > 6:
+                        # swap *6 with the highest, etc.
+                        for i in range(6, highest + 1):
+                            atom_labels['*{0:d}'.format(i)].label = '*{0:d}'.format(6 + highest - i)
 
-            elif label == 'intra_ene_reaction':
-                # Labels for nodes are swapped
-                atom_labels['*1'].label = '*2'
-                atom_labels['*2'].label = '*1'
-                atom_labels['*3'].label = '*5'
-                atom_labels['*5'].label = '*3'
+                elif label == 'intra_ene_reaction':
+                    # Labels for nodes are swapped
+                    atom_labels['*1'].label = '*2'
+                    atom_labels['*2'].label = '*1'
+                    atom_labels['*3'].label = '*5'
+                    atom_labels['*5'].label = '*3'
 
-            elif label == '6_membered_central_c-c_shift':
-                # Labels for nodes are swapped
-                atom_labels['*1'].label = '*3'
-                atom_labels['*3'].label = '*1'
-                atom_labels['*4'].label = '*6'
-                atom_labels['*6'].label = '*4'
+                elif label == '6_membered_central_c-c_shift':
+                    # Labels for nodes are swapped
+                    atom_labels['*1'].label = '*3'
+                    atom_labels['*3'].label = '*1'
+                    atom_labels['*4'].label = '*6'
+                    atom_labels['*6'].label = '*4'
 
-            elif label == '1,2_shiftc':
-                # Labels for nodes are swapped
-                atom_labels['*2'].label = '*3'
-                atom_labels['*3'].label = '*2'
+                elif label == '1,2_shiftc':
+                    # Labels for nodes are swapped
+                    atom_labels['*2'].label = '*3'
+                    atom_labels['*3'].label = '*2'
 
-            elif label == 'intra_r_add_exo_scission':
-                # Labels for nodes are swapped
-                atom_labels['*1'].label = '*3'
-                atom_labels['*3'].label = '*1'
+                elif label == 'intra_r_add_exo_scission':
+                    # Labels for nodes are swapped
+                    atom_labels['*1'].label = '*3'
+                    atom_labels['*3'].label = '*1'
 
-            elif label == 'intra_substitutions_isomerization':
-                # Swap *2 and *3
-                atom_labels['*2'].label = '*3'
-                atom_labels['*3'].label = '*2'
+                elif label == 'intra_substitutions_isomerization':
+                    # Swap *2 and *3
+                    atom_labels['*2'].label = '*3'
+                    atom_labels['*3'].label = '*2'
 
             elif label == 'surface_abstraction':
                 atom_labels['*1'].label = '*3'
@@ -1653,7 +1654,7 @@ class KineticsFamily(Database):
         # Return the product structures
         return product_structures
 
-    def _generate_product_structures(self, reactant_structures, maps, forward):
+    def _generate_product_structures(self, reactant_structures, maps, forward, relabel_products=True):
         """
         For a given set of `reactant_structures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1681,7 +1682,7 @@ class KineticsFamily(Database):
 
         # Generate the product structures by applying the forward reaction recipe
         try:
-            product_structures = self.apply_recipe(reactant_structures, forward=forward)
+            product_structures = self.apply_recipe(reactant_structures, forward=forward, relabel_products=relabel_products)
             if not product_structures:
                 return None
         except (InvalidActionError, KekulizationError):
@@ -2754,7 +2755,7 @@ class KineticsFamily(Database):
 
         return template
 
-    def get_labeled_reactants_and_products(self, reactants, products):
+    def get_labeled_reactants_and_products(self, reactants, products, relabel_products=True):
         """
         Given `reactants`, a list of :class:`Molecule` objects, and products, a list of 
         :class:`Molecule` objects, return two new lists of :class:`Molecule` objects with 
@@ -2819,7 +2820,8 @@ class KineticsFamily(Database):
 
         for mapping in mappings:
             try:
-                product_structures = self._generate_product_structures(reactant_structures, mapping, forward=True)
+                product_structures = self._generate_product_structures(reactant_structures, mapping, forward=True, 
+                relabel_products=relabel_products)
             except ForbiddenStructureException:
                 pass
             else:
@@ -2836,7 +2838,7 @@ class KineticsFamily(Database):
 
         return None, None
 
-    def add_atom_labels_for_reaction(self, reaction, output_with_resonance=True):
+    def add_atom_labels_for_reaction(self, reaction, output_with_resonance=True, relabel_products=True):
         """
         Apply atom labels on a reaction using the appropriate atom labels from
         this reaction family.
@@ -2868,7 +2870,8 @@ class KineticsFamily(Database):
         for reactant_pair, product_pair in itertools.product(reactant_pairs, product_pairs):
             try:
                 # see if we obtain proper labeling
-                labeled_reactants, labeled_products = self.get_labeled_reactants_and_products(reactant_pair, product_pair)
+                labeled_reactants, labeled_products = \
+                    self.get_labeled_reactants_and_products(reactant_pair, product_pair, relabel_products=relabel_products)
                 if labeled_reactants is not None:
                     break
             except ActionError:
