@@ -2138,8 +2138,8 @@ class ThermoDatabase(object):
         cyclic = molecule.is_cyclic()
         # Generate estimates of the thermodynamics parameters
         for atom in molecule.atoms:
-            # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_non_hydrogen():
+            # Iterate over atoms and skip hydogens and halogens (since there are no groups centered on these atomtypes)
+            if atom.is_non_hydrogen() and not atom.is_halogen():
                 # Get initial thermo estimate from main group database
                 data_added = False
                 try:
