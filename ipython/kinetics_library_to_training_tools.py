@@ -29,19 +29,30 @@
 
 from base64 import b64encode
 from io import BytesIO
+import logging
+from collections import OrderedDict
 
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 from rmgpy.quantity import ScalarQuantity
 
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
-                            StickingCoefficient, StickingCoefficientBEP
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, \
+                            SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 
 # HTML formatting for output
 full = 12
 half = full / 2
 
+def get_duplicate_reactions(training_depository,reaction):
+
+    duplicate_reactions = []
+    for i,training_entry in training_depository.entries.items():
+        if reaction.is_isomorphic(training_entry.item,generate_initial_map=False):
+            identical = reaction.kinetics.is_identical_to(training_entry.data)
+            duplicate_reactions.append((training_entry, identical))
+    
+    return duplicate_reactions
 
 def generate_header_html(n, fam_rxn, lib_rxn, library_name, families):
     """
@@ -122,12 +133,14 @@ def generate_template_html(rxn, template):
     return html
 
 
-def process_reactions(database, libraries, families, compare_kinetics=True, show_all=False, filter_aromatic=True):
+def process_reactions(database, libraries, families, compare_kinetics=True, show_all=False, filter_aromatic=True,
+                      prompt=False):
     """
     Main function to recreate library reactions from families and display the results.
     """
     master_dict = {}
     multiple_dict = {}
+    unmatched_entries_master = {}
 
     # The KineticsModels allowing in training
     supported_kinetic_models = (Arrhenius, ArrheniusEP, SurfaceArrhenius, SurfaceArrheniusBEP, 
@@ -136,12 +149,17 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
     for library_name in libraries:
         library = database.kinetics.libraries[library_name]
         reaction_dict = {}
+        unmatched_entries_dict = OrderedDict()
         for index, entry in library.entries.items():
             lib_rxn = entry.item
             lib_rxn.kinetics = entry.data
             lib_rxn.index = index
+            lib_rxn.label = entry.label
 
             if type(lib_rxn.kinetics) not in supported_kinetic_models:
+                logging.warning(f'Skipping reaction {index} {lib_rxn} in {library_name} '
+                                f'because {lib_rxn.kinetics.__class__} is not allowed in training')
+                unmatched_entries_dict[entry.index] = entry
                 continue
 
             # Let's make RMG try to generate this reaction from the families!
@@ -176,8 +194,27 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
 
                 forward = fam_rxn.is_forward
 
+                try:
+                    training_depository = database.kinetics.families[fam_rxn.family].get_training_depository()
+                except:
+                    training_depository = None
+
+                identical = False
+                duplicate_reactions = []
+                if training_depository is not None:
+                    duplicate_reactions = get_duplicate_reactions(training_depository,lib_rxn)
+                    for training_entry, identical in duplicate_reactions:
+                        if identical == True:
+                            logging.warning(f"{lib_rxn.index} {lib_rxn.label} in {library_name} is identical to "
+                                            f"{training_entry.index} {training_entry.label} in {training_depository.label} " 
+                                            "skipping this reaction...")
+                            break
+                
+                    if identical:
+                        continue
+
                 # Find the labeled atoms using family and reactants & products from fam_rxn
-                database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn)
+                database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn, relabel_products=False)
 
                 # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
                 if forward:
@@ -188,14 +225,15 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     lib_rxn.reactants = fam_rxn.products
                     lib_rxn.products = fam_rxn.reactants
 
-                if len(lib_rxn.reactants) == 1:
-                    units = 's^-1'
-                elif len(lib_rxn.reactants) == 2:
-                    units = 'cm^3/(mol*s)'
-                elif len(lib_rxn.reactants) == 3:
-                    units = 'cm^6/(mol^2*s)'
-                A = lib_rxn.kinetics.A
-                lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
+                if not lib_rxn.is_surface_reaction():
+                    if len(lib_rxn.reactants) == 1:
+                        units = 's^-1'
+                    elif len(lib_rxn.reactants) == 2:
+                        units = 'cm^3/(mol*s)'
+                    elif len(lib_rxn.reactants) == 3:
+                        units = 'cm^6/(mol^2*s)'
+                    A = lib_rxn.kinetics.A
+                    lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
 
                 if fam_rxn.family in reaction_dict:
                     reaction_dict[fam_rxn.family].append(lib_rxn)
@@ -209,6 +247,7 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     new_kinetics = lib_rxn.kinetics
                     old_kinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
                     # Evaluate kinetics
+                    is_similar = new_kinetics.is_similar_to(old_kinetics)
                     tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
                     tlist = 1000 * np.reciprocal(tlistinv)
                     newklist = np.log10(np.array([new_kinetics.get_rate_coefficient(t) for t in tlist]))
@@ -217,14 +256,23 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
                     plt.plot(tlistinv, oldklist, label='Current')
+                    # Check for duplicate reactions in training
+                    if len(duplicate_reactions) > 0:
+                        other_kinetics = []
+                        for training_entry, _ in duplicate_reactions:
+                            other_kinetics.append((training_entry.index,np.log10(np.array([training_entry.data.get_rate_coefficient(t) for t in tlist]))))
+                        for training_index,k in other_kinetics:
+                            plt.plot(tlistinv, k,linestyle='--',label='Match #{0} in {1}'.format(training_index,training_depository.label))
                     plt.legend()
                     plt.xlabel('1000/T')
                     plt.ylabel('log(k)')
+                    plt.title(lib_rxn.label)
                     fig = BytesIO()
                     plt.savefig(fig, file_format='png')
                     fig.seek(0)
                     figdata = b64encode(fig.getvalue()).decode()
                     fig.close()
+
 
                 # Format output using html
                 html = generate_header_html(1, fam_rxn, lib_rxn, library_name, families)
@@ -236,13 +284,34 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                                  '</th></tr>'.format(full)]
                     html += ['<tr>']
                     html += ['<td colspan="{0}"><strong>New Kinetics:</strong><br>{1}<br><br>'
-                             '<strong>Current Kinetics</strong><br>{2}</td>'.format(half, new_kinetics, old_kinetics)]
+                             '<strong>Current Kinetics:</strong><br>{2}<br><br>'
+                             '<strong>Is Similar:</strong><br>{3}</td>'.format(half, new_kinetics, old_kinetics, is_similar)]
                     html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(half, figdata)]
                     html += ['</tr>']
                 html += ['</table>']
 
                 display(HTML(''.join(html)))
+
+
+                if prompt:
+                    success = False
+                    while not success:
+                        choice = input('Would you like to add this reaction? (y/n) ')
+                        if choice in ['y', 'n', '']:
+                            success = True
+                        else:
+                            print('Invalid choice.')
+
+                    if choice == 'n':
+                        continue
+
+                if fam_rxn.family in reaction_dict:
+                    reaction_dict[fam_rxn.family].append(lib_rxn)
+                else:
+                    reaction_dict[fam_rxn.family] = [lib_rxn]
+
             elif len(fam_rxn_list) == 0:
+                unmatched_entries_dict[entry.index] = entry
                 if show_all:
                     html = generate_header_html(0, None, lib_rxn, library_name, families)
                     html += ['</table>']
@@ -295,6 +364,7 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     plt.legend()
                     plt.xlabel('1000/T')
                     plt.ylabel('log(k)')
+                    plt.title(lib_rxn.label)
                     fig = BytesIO()
                     plt.savefig(fig, file_format='png')
                     fig.seek(0)
@@ -319,8 +389,10 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
         # Save results for this library
         if reaction_dict:
             master_dict[library_name] = reaction_dict
+        if unmatched_entries_dict:
+            unmatched_entries_master[library_name] = unmatched_entries_dict
 
-    return master_dict, multiple_dict
+    return master_dict, multiple_dict, unmatched_entries_master
 
 
 def review_reactions(master_dict, prompt=False):
@@ -417,7 +489,7 @@ def manual_selection(master_dict, multiple_dict, database):
             forward = fam_rxn.is_forward
 
             # Find the labeled atoms using family and reactants & products from fam_rxn
-            database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn)
+            database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn, relabel_products=False)
 
             # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
             if forward:
