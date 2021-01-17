@@ -45,7 +45,7 @@ from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, Databas
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
 from rmgpy.species import Species
 from rmgpy.molecule import Molecule
-from afm.fragment import Fragment
+from rmgpy.molecule.fragment import Fragment
 
 # Prior to np 1.14, `np.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None

@@ -830,7 +830,7 @@ def load_species_dictionary(path, generate_resonance_structures=True):
     If `generate_resonance_structures` is True (default if omitted)
     then resonance isomers for each species are generated.
     """
-    from afm.fragment import Fragment
+    from rmgpy.molecule.fragment import Fragment
     import re
     species_dict = {}
 

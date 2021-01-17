@@ -1091,7 +1091,7 @@ class Reaction:
         each side of the reaction equation, or ``False`` if not.
         """
         from rmgpy.molecule.element import element_list
-        from afm.fragment import CuttingLabel, Fragment
+        from rmgpy.molecule.fragment import CuttingLabel, Fragment
         
         cython.declare(reactantElements=dict, productElements=dict, molecule=Graph, atom=Vertex, element=Element)
 

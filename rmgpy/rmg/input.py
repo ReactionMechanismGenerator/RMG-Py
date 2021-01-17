@@ -180,7 +180,7 @@ def species(label, structure, reactive=True, cut=False, size_threshold=None):
         raise InputError('species {0} label cannot include a + sign'.format(label))
 
     if cut:
-        from afm.fragment import Fragment
+        from rmgpy.molecule.fragment import Fragment
         mol_to_frag[label] = {} # key:original molecule label, value:created fragment label
         if size_threshold:
             cut_frag_list = Fragment().cut_molecule(structure, size_threshold=size_threshold)
@@ -245,11 +245,11 @@ def react(tups):
     rmg.init_react_tuples = tups
 
 def fragment_adj(string):
-    from afm.fragment import Fragment
+    from rmgpy.molecule.fragment import Fragment
     return Fragment().from_adjacency_list(string)
 
 def fragment_smiles(string):
-    from afm.fragment import Fragment
+    from rmgpy.molecule.fragment import Fragment
     return Fragment().from_smiles_like_string(string)
 
 # Reaction systems

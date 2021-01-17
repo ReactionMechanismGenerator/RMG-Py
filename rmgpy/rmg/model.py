@@ -57,7 +57,7 @@ from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
 from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface
-from afm.fragment import Fragment
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
