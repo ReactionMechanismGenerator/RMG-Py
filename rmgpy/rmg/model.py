@@ -54,7 +54,7 @@ from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
 from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
-from afm.fragment import Fragment
+from rmgpy.molecule.fragment import Fragment
 
 
 ################################################################################

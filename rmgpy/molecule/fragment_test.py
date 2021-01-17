@@ -7,7 +7,7 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 
-import afm.fragment
+import rmgpy.molecule.fragment
 
 class TestCuttingLabel(unittest.TestCase):
 
@@ -15,7 +15,7 @@ class TestCuttingLabel(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.cutting_label_R = afm.fragment.CuttingLabel('R')
+        self.cutting_label_R = rmgpy.molecule.fragment.CuttingLabel('R')
 
     def test_symbol(self):
 
@@ -49,8 +49,8 @@ class TestFragment(unittest.TestCase):
                     charge=0, 
                     lone_pairs=0)
 
-        cutting_label_R1 = afm.fragment.CuttingLabel('R')
-        cutting_label_L1 = afm.fragment.CuttingLabel('L')
+        cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel('R')
+        cutting_label_L1 = rmgpy.molecule.fragment.CuttingLabel('L')
 
         vertices = [
             atom_C1,
@@ -63,7 +63,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C1, cutting_label_L1)
         ]
 
-        self.fragment1 = afm.fragment.Fragment()
+        self.fragment1 = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: self.fragment1.add_vertex(vertex)
         for bond in bonds: self.fragment1.add_edge(bond)
 
@@ -73,8 +73,8 @@ class TestFragment(unittest.TestCase):
                     charge=0, 
                     lone_pairs=0)
 
-        cutting_label_R2 = afm.fragment.CuttingLabel('R')
-        cutting_label_L2 = afm.fragment.CuttingLabel('L')
+        cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel('R')
+        cutting_label_L2 = rmgpy.molecule.fragment.CuttingLabel('L')
 
         vertices = [
             atom_C2,
@@ -87,7 +87,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C2, cutting_label_L2)
         ]
 
-        self.fragment2 = afm.fragment.Fragment()
+        self.fragment2 = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: self.fragment2.add_vertex(vertex)
         for bond in bonds: self.fragment2.add_edge(bond)
 
@@ -100,7 +100,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from SMILES like string
         # the atom type is also calculated
         smiles_like = 'C'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         
         # construct fragment manually
         atom_C = Atom(element=get_element('C'),
@@ -149,7 +149,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H4, 1)
         ]
         
-        expected_fragment = afm.fragment.Fragment()
+        expected_fragment = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: expected_fragment.add_vertex(vertex)
         for bond in bonds: expected_fragment.add_edge(bond)
         expected_fragment.update()
@@ -161,7 +161,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from SMILES like string
         # the atom type is also calculated
         smiles_like = 'RCR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         atom_C = Atom(element=get_element('C'),
                     radical_electrons=0, 
@@ -183,8 +183,8 @@ class TestFragment(unittest.TestCase):
         atom_H1.atomtype=ATOMTYPES['H']
         atom_H2.atomtype=ATOMTYPES['H']
 
-        cutting_label_R1 = afm.fragment.CuttingLabel('R')
-        cutting_label_R2 = afm.fragment.CuttingLabel('R')
+        cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel('R')
+        cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel('R')
         
         vertices = [
             atom_C,
@@ -201,7 +201,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H2, 1)
         ]
         
-        expected_fragment = afm.fragment.Fragment()
+        expected_fragment = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: expected_fragment.add_vertex(vertex)
         for bond in bonds: expected_fragment.add_edge(bond)
         expected_fragment.update()
@@ -213,7 +213,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from SMILES like string
         # the atom type is also calculated
         smiles_like = 'RCL'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         atom_C = Atom(element=get_element('C'),
                     radical_electrons=0, 
@@ -235,8 +235,8 @@ class TestFragment(unittest.TestCase):
         atom_H1.atomtype=ATOMTYPES['H']
         atom_H2.atomtype=ATOMTYPES['H']
 
-        cutting_label_R = afm.fragment.CuttingLabel('R')
-        cutting_label_L = afm.fragment.CuttingLabel('L')
+        cutting_label_R = rmgpy.molecule.fragment.CuttingLabel('R')
+        cutting_label_L = rmgpy.molecule.fragment.CuttingLabel('L')
         
         vertices = [
             atom_C,
@@ -253,7 +253,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H2, 1)
         ]
         
-        expected_fragment = afm.fragment.Fragment()
+        expected_fragment = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: expected_fragment.add_vertex(vertex)
         for bond in bonds: expected_fragment.add_edge(bond)
         expected_fragment.update()
@@ -265,7 +265,7 @@ class TestFragment(unittest.TestCase):
         from rmgpy.molecule.group import Group
 
         smiles_like = '[CH2]CR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         adj =     """
                 1 * R u1
@@ -279,7 +279,7 @@ class TestFragment(unittest.TestCase):
         from rmgpy.molecule.group import Group
 
         smiles_like = '[CH2]CR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         adj =     """
                 1 * Ct  u1 {2,T}
@@ -294,7 +294,7 @@ class TestFragment(unittest.TestCase):
         from rmgpy.molecule.group import Group
 
         smiles_like = '[CH2]CR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         adj =     """
                 1 * R u1
@@ -318,7 +318,7 @@ class TestFragment(unittest.TestCase):
         from rmgpy.molecule.group import Group
 
         smiles_like = '[CH2]CR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_molecule()
 
@@ -343,7 +343,7 @@ class TestFragment(unittest.TestCase):
     def test_assign_representative_species(self):
 
         smiles_like = 'RCR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_species()
 
@@ -354,7 +354,7 @@ class TestFragment(unittest.TestCase):
     def test_assign_representative_molecule(self):
 
         smiles_like = 'RCR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_molecule()
 
@@ -370,7 +370,7 @@ class TestFragment(unittest.TestCase):
     def test_get_molecular_weight2(self):
 
         smiles_like = 'RCR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         fragmental_weight = fragment.get_molecular_weight()
         self.assertAlmostEqual(fragmental_weight*1000, 14.03, 2)
 
@@ -391,8 +391,8 @@ class TestFragment(unittest.TestCase):
                     charge=0, 
                     lone_pairs=0)
 
-        cutting_label_R1 = afm.fragment.CuttingLabel('R')
-        cutting_label_R2 = afm.fragment.CuttingLabel('R')
+        cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel('R')
+        cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel('R')
         
         vertices = [
             atom_C,
@@ -409,7 +409,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H2, 1)
         ]
         
-        fragment = afm.fragment.Fragment()
+        fragment = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: fragment.add_vertex(vertex)
         for bond in bonds: fragment.add_edge(bond)
 
@@ -438,8 +438,8 @@ class TestFragment(unittest.TestCase):
                     charge=0, 
                     lone_pairs=0)
 
-        cutting_label_R1 = afm.fragment.CuttingLabel('R')
-        cutting_label_R2 = afm.fragment.CuttingLabel('R')
+        cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel('R')
+        cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel('R')
         
         vertices = [
             atom_C,
@@ -456,7 +456,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H2, 1)
         ]
         
-        fragment = afm.fragment.Fragment()
+        fragment = rmgpy.molecule.fragment.Fragment()
         for vertex in vertices: fragment.add_vertex(vertex)
         for bond in bonds: fragment.add_edge(bond)
 
@@ -475,7 +475,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from smiles like string
         # the atom type is also calculated
         smiles_like = 'C'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list(remove_h=True)
@@ -487,7 +487,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from smiles like string
         # removed H
         smiles_like = 'CR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list(remove_h=True)
@@ -499,7 +499,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from smiles like string
         # with H
         smiles_like = 'CR'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list()
@@ -516,7 +516,7 @@ class TestFragment(unittest.TestCase):
         # generate fragment from SMILES like string
         # radical species
         smiles_like = '[CH2]R'
-        fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list()
@@ -536,11 +536,11 @@ class TestFragment(unittest.TestCase):
 3 H u0 p0 c0 {1,S}
 4 R u0 p0 c0 {1,S}
 """
-        fragment = afm.fragment.Fragment().from_adjacency_list(adj)
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj)
 
         # create expected fragment
         smiles_like = '[CH2]R'
-        expected_fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         expected_fragment.update()
 
         self.assertTrue(isinstance(fragment.multiplicity, int))
@@ -555,11 +555,11 @@ class TestFragment(unittest.TestCase):
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 """
-        fragment = afm.fragment.Fragment().from_adjacency_list(adj)
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj)
 
         # create expected fragment
         smiles_like = 'CR'
-        expected_fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         expected_fragment.update()
 
         self.assertTrue(fragment.multiplicity == 1)
@@ -570,11 +570,11 @@ class TestFragment(unittest.TestCase):
         adj = """1 C u0 p0 c0 {2,S}
 2 R u0 p0 c0 {1,S}
 """
-        fragment = afm.fragment.Fragment().from_adjacency_list(adj, saturate_h=True)
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj, saturate_h=True)
 
         # create expected fragment
         smiles_like = 'CR'
-        expected_fragment = afm.fragment.Fragment().from_smiles_like_string(smiles_like)
+        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         expected_fragment.update()
 
         self.assertTrue(fragment.multiplicity == 1)
@@ -595,7 +595,7 @@ class TestFragment(unittest.TestCase):
 11 H u0 p0 c0 {4,S}
 12 H u0 p0 c0 {5,S}
 """
-        fragment = afm.fragment.Fragment().from_adjacency_list(adj)
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj)
 
         # create expected fragment
         aromatic_rings, aromatic_bonds = fragment.get_aromatic_rings()
@@ -651,7 +651,7 @@ class TestFragment(unittest.TestCase):
 22 H u0 p0 c0 {9,S}
 23 H u0 p0 c0 {10,S}
 """
-        fragment = afm.fragment.Fragment().from_adjacency_list(adj)
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj)
 
         frag_res = resonance.generate_resonance_structures(fragment, 
                                                            clar_structures=False)
@@ -662,7 +662,7 @@ class TestFragment(unittest.TestCase):
 
         ### use ethylbenzly radical to test if it can generate aromatic fragment or not
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('c1ccccc1[CH]CR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('c1ccccc1[CH]CR')
 
         frag_res = resonance.generate_resonance_structures(fragment, 
                                                            clar_structures=True)
@@ -677,26 +677,26 @@ class TestFragment(unittest.TestCase):
 
     def test_fragment_get_formula(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
 
         self.assertTrue(fragment.get_formula()=='C2H5R')
 
     def test_fragment_is_linear(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('C#CR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('C#CR')
 
         self.assertTrue(fragment.is_linear())
 
     def test_fragment_get_element_count(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('[CH2]CR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('[CH2]CR')
 
         self.assertEqual(fragment.get_element_count()['C'], 2)
         self.assertEqual(fragment.get_element_count()['H'], 4)
 
     def test_fragment_get_num_atoms(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('[CH2]CR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('[CH2]CR')
 
         self.assertEqual(fragment.get_num_atoms(element='C'), 2)
         self.assertEqual(fragment.get_num_atoms(element='H'), 4)
@@ -710,7 +710,7 @@ class TestFragment(unittest.TestCase):
 5 H u0 p0 c0 {1,S}
 """
 
-        fragment = afm.fragment.Fragment().from_adjacency_list(adj)
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj)
         fragment.update()
         smiles = fragment.to_smiles()
         expected_smiles = 'CR'
@@ -720,9 +720,9 @@ class TestFragment(unittest.TestCase):
     def test_sliceitup_arom1(self):
 
         # test avoid cutting aromatic species at ring position
-        fragment = afm.fragment.Fragment().from_smiles_like_string('c1ccccc1CCCCCC')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('c1ccccc1CCCCCC')
 
-        frags = afm.fragment.Fragment().sliceitup_arom(fragment)
+        frags = rmgpy.molecule.fragment.Fragment().sliceitup_arom(fragment)
 
         # check element balance
         expected_element = fragment.get_element_count()
@@ -744,8 +744,8 @@ class TestFragment(unittest.TestCase):
 
         # do not cut when input is aliphatic species
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCCCCCCCCC')
-        frags = afm.fragment.Fragment().sliceitup_arom(fragment)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCCCCCCCCC')
+        frags = rmgpy.molecule.fragment.Fragment().sliceitup_arom(fragment)
 
         self.assertEqual(len(frags), 1)
         self.assertTrue(fragment.is_isomorphic(frags[0]))
@@ -755,8 +755,8 @@ class TestFragment(unittest.TestCase):
         # test avoid cutting species at ring position
 
         import re
-        fragment = afm.fragment.Fragment().from_smiles_like_string('C1=CCC=CC1CCCCCCCC')
-        frags = afm.fragment.Fragment().sliceitup_aliph(fragment)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('C1=CCC=CC1CCCCCCCC')
+        frags = rmgpy.molecule.fragment.Fragment().sliceitup_aliph(fragment)
 
         # check element balance
         expected_element = fragment.get_element_count()
@@ -782,7 +782,7 @@ class TestFragment(unittest.TestCase):
 
         # test input string
         frag_smiles = 'CCCCCCCCCC'
-        new_frags = afm.fragment.Fragment().cut_molecule(frag_smiles)
+        new_frags = rmgpy.molecule.fragment.Fragment().cut_molecule(frag_smiles)
 
         self.assertEqual(len(new_frags), 2)
         self.assertTrue(isinstance(new_frags[0], str))
@@ -790,8 +790,8 @@ class TestFragment(unittest.TestCase):
     def test_cut_molecule2(self):
 
         # test input Fragment
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCCCCCCCCCR')
-        new_frags = afm.fragment.Fragment().cut_molecule(fragment)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCCCCCCCCCR')
+        new_frags = rmgpy.molecule.fragment.Fragment().cut_molecule(fragment)
 
         self.assertEqual(len(new_frags), 2)
 
@@ -800,14 +800,14 @@ class TestFragment(unittest.TestCase):
         # test input Molecule
 
         molecule = Molecule().from_smiles('CCCCCCCCCC')
-        new_frags = afm.fragment.Fragment().cut_molecule(molecule)
+        new_frags = rmgpy.molecule.fragment.Fragment().cut_molecule(molecule)
 
         self.assertEqual(len(new_frags), 2)
 
     def test_calculate_symmetry_number1(self):
 
         #  for fragment with 1 CuttingLabel
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         fragment.calculate_symmetry_number()
         fsn = fragment.symmetry_number
 
@@ -817,7 +817,7 @@ class TestFragment(unittest.TestCase):
     def test_calculate_symmetry_number2(self):
 
         #  for fragment with 2 CuttingLabel
-        fragment = afm.fragment.Fragment().from_smiles_like_string('LCCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('LCCR')
         fragment.calculate_symmetry_number()
         fsn = fragment.symmetry_number
 
@@ -826,7 +826,7 @@ class TestFragment(unittest.TestCase):
     def test_get_symmetry_number1(self):
 
         # fragment symmetry number == -1
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         fsn = fragment.symmetry_number
 
         self.assertEqual(fsn, -1)
@@ -834,7 +834,7 @@ class TestFragment(unittest.TestCase):
     def test_get_symmetry_number2(self):
 
         # fragment symmetry number != -1
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         fragment.get_symmetry_number()
         fsn = fragment.symmetry_number
 
@@ -844,20 +844,20 @@ class TestFragment(unittest.TestCase):
 
     def test_is_radical(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('[CH2]CR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('[CH2]CR')
 
         self.assertTrue(fragment.is_radical())
 
     def test_is_aromatic(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('c1ccccc1CR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('c1ccccc1CR')
         frag = fragment.generate_resonance_structures()[0]
 
         self.assertTrue(frag.is_aromatic())
 
     def test_get_representative_molecule(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         mol_repr,_ = fragment.get_representative_molecule()
         ethane = Molecule().from_smiles('CC')
 
@@ -865,7 +865,7 @@ class TestFragment(unittest.TestCase):
 
     def test_assign_representative_species(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         fragment.assign_representative_species()
 
         self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
@@ -873,7 +873,7 @@ class TestFragment(unittest.TestCase):
 
     def test_to_rdkit_mol(self):
 
-        fragment = afm.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         rdmol,_ = fragment.to_rdkit_mol()
 
         self.assertEqual(rdmol.GetNumAtoms(), 8)

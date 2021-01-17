@@ -698,7 +698,7 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
                 if isotope != -1:
                     atom.element = get_element(atom.number, isotope)
             except KeyError:
-                from afm.fragment import CuttingLabel
+                from rmgpy.molecule.fragment import CuttingLabel
                 atom = CuttingLabel(name=atom_type[0], label=label)
 
         # Add the atom to the list

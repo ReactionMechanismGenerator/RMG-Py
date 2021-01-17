@@ -806,7 +806,7 @@ def load_species_dictionary(path):
     mapping the species identifiers to the loaded species. Resonance isomers
     for each species are automatically generated.
     """
-    from afm.fragment import Fragment
+    from rmgpy.molecule.fragment import Fragment
     import re
     species_dict = {}
     

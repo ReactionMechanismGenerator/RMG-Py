@@ -2502,7 +2502,7 @@ class Molecule(Graph):
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
         cython.declare(atom_ids=set, other_ids=set, atom_list=list, other_list=list, mapping=dict)
-        from afm.fragment import Fragment
+        from rmgpy.molecule.fragment import Fragment
 
         if not isinstance(other, (Molecule, Fragment)):
             raise TypeError(

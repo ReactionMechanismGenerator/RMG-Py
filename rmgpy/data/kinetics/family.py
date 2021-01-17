@@ -61,7 +61,7 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-from afm.fragment import Fragment, CuttingLabel
+from rmgpy.molecule.fragment import Fragment, CuttingLabel
 
 
 ################################################################################
