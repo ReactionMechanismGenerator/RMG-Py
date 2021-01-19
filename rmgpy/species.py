@@ -459,6 +459,14 @@ class Species(object):
         else:
             return self.molecule[0].is_electron()
 
+    def is_proton(self):
+        """Return ``True`` if the species is a proton"""
+        
+        if len(self.molecule) == 0:
+            return False
+        else:
+            return self.molecule[0].is_proton()
+
     def get_partition_function(self, T):
         """
         Return the partition function for the species at the specified
