@@ -257,7 +257,7 @@ ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
 
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
-    'H',
+    'H','H+',
     'R!H',
     'Val4','Val5','Val6','Val7',
     'He','Ne','Ar',
@@ -304,7 +304,9 @@ ATOMTYPES['Val7'] = AtomType(label='Val7', generic=['R', 'R!H'], specific=[
     'I','I1s',
     'F','F1s'])
 
-ATOMTYPES['H'] = AtomType('H', generic=['R'], specific=[])
+ATOMTYPES['H'] = AtomType('H', generic=['R'], specific=['H+'], charge=[])
+ATOMTYPES['H+'] = AtomType('H+', generic=['R','H'], specific=[], single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0],
+                            quadruple=[0], benzene=[0], lone_pairs=[0], charge=[+1])
 
 ATOMTYPES['He'] = AtomType('He', generic=['R', 'R!H'], specific=[])
 ATOMTYPES['Ne'] = AtomType('Ne', generic=['R', 'R!H'], specific=[])
@@ -765,16 +767,15 @@ ATOMTYPES['F1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F
 # these are ordered in priority of picking if a more general atomtype is encountered
 allElements = ['H', 'C', 'O', 'N', 'S', 'P', 'Si', 'F', 'Cl', 'Br', 'I', 'Ne', 'Ar', 'He', 'X', 'e']
 # list of elements that do not have more specific atomTypes
-nonSpecifics = ['H', 'He', 'Ne', 'Ar', 'e']
+nonSpecifics = ['He', 'Ne', 'Ar', 'e']
 
 for atomtype in ATOMTYPES.values():
     for items in [atomtype.generic, atomtype.specific,
                   atomtype.increment_bond, atomtype.decrement_bond, atomtype.form_bond,
                   atomtype.break_bond, atomtype.increment_radical, atomtype.decrement_radical, atomtype.increment_lone_pair,
-                  atomtype.decrement_lone_pair]:
+                  atomtype.decrement_lone_pair, atomtype.increment_charge, atomtype.decrement_charge]:
         for index in range(len(items)):
             items[index] = ATOMTYPES[items[index]]
-
 
 def get_features(atom, bonds):
     """
@@ -830,6 +831,12 @@ def get_atomtype(atom, bonds):
     # These elements do not do not have a more specific atomtype
     if atom_symbol in nonSpecifics:
         return ATOMTYPES[atom_symbol]
+
+    if atom_symbol == 'H':
+        if atom.charge == 0:
+            return ATOMTYPES['H']
+        elif atom.charge == 1:
+            return ATOMTYPES['H+']
 
     mol_feature_list = get_features(atom, bonds)
     for specific_atom_type in ATOMTYPES[atom_symbol].specific:
