@@ -61,6 +61,7 @@ from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.species import Species
+from rmgpy.thermo import ThermoData
 
 ################################################################################
 
@@ -590,34 +591,68 @@ class Reaction:
             dSrxn += product.get_entropy(T)
         return dSrxn
 
-    def get_free_energy_of_reaction(self, T, potential=0):
-        """
-        Return the Gibbs free energy of reaction in J/mol evaluated at
-        temperature `T` in K and potential in Volts (if applicable)
-        """
+    def _get_free_energy_of_charge_transfer_reaction(self, T, potential=0.):
+            
         cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
-        dGrxn = 0.0
 
-        if self.is_charge_transfer_reaction() and self.V0:
-            dGrxn = -1 * abs(self.ne) * constants.F * self.V0.value_si # G = -nFE0 in J/mol, not sure about sign
-        else:
+        if self.kinetics.E0 and abs(T-298) < 10: # use standard potential if available
+            dGrxn = self.n_electrons * constants.F * self.kinetics.E0.value_si # G = -nFE0 in J/mol
+        else: # lets see if we can apply the CHE model
+            dGrxn = 0.0
+            if self.n_electrons == self.n_protons:
+                # H2 thermo from primaryThermoLibrary
+                H2_thermo = ThermoData(
+                    Tdata = ([300,400,500,600,800,1000,1500],'K'),
+                    Cpdata = ([6.895,6.975,6.994,7.009,7.081,7.219,7.72],'cal/(mol*K)'),
+                    H298 = (0,'kcal/mol'),
+                    S298 = (31.233,'cal/(mol*K)','+|-',0.0007))
+                # H+ + e -> 1/2 H2
+                dGrxn += self.n_electrons * 0.5 * H2_thermo.get_free_energy(T)
+
             for reactant in self.reactants:
-                if not reactant.is_electron():
+                if not reactant.is_electron() and not reactant.is_proton():
                     try:
                         dGrxn -= reactant.get_free_energy(T)
                     except Exception:
                         logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
                         raise
+
             for product in self.products:
-                if not product.is_electron():
+                if not reactant.is_electron() and not reactant.is_proton():
                     try:
                         dGrxn += product.get_free_energy(T)
                     except Exception:
                         logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
                         raise
 
-        if self.is_charge_transfer_reaction() and potential != 0:
-            dGrxn -=  self.ne * constants.F * potential    # Not sure about sign here
+        if potential != 0.:
+            dGrxn -=  self.n_electrons * constants.F * potential   # Not sure about sign here
+        
+        return dGrxn 
+
+    def get_free_energy_of_reaction(self, T, potential=0.):
+        """
+        Return the Gibbs free energy of reaction in J/mol evaluated at
+        temperature `T` in K and potential in Volts (if applicable)
+        """
+        cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
+
+        if self.is_charge_transfer_reaction():
+            return self._get_free_energy_of_charge_transfer_reaction(T, potential=potential)
+
+        dGrxn = 0.0
+        for reactant in self.reactants:
+            try:
+                dGrxn -= reactant.get_free_energy(T)
+            except Exception:
+                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
+                raise
+        for product in self.products:
+            try:
+                dGrxn += product.get_free_energy(T)
+            except Exception:
+                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
+                raise
 
         return dGrxn
 
