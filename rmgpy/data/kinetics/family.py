@@ -254,6 +254,10 @@ class ReactionRecipe(object):
                 other.add_action(['GAIN_RADICAL', action[1], action[2]])
             elif action[0] == 'GAIN_RADICAL':
                 other.add_action(['LOSE_RADICAL', action[1], action[2]])
+            elif action[0] == 'GAIN_ELECTRON':
+                other.add_action(['LOSE_ELECTRON', action[1], action[2]])
+            elif action[0] == 'LOSE_ELECTORN':
+                other.add_action(['GAIN_ELECTORN', action[1], action[2]])
             elif action[0] == 'LOSE_PAIR':
                 other.add_action(['GAIN_PAIR', action[1], action[2]])
             elif action[0] == 'GAIN_PAIR':
@@ -326,7 +330,7 @@ class ReactionRecipe(object):
                     atom1.apply_action(['BREAK_BOND', label1, info, label2])
                     atom2.apply_action(['BREAK_BOND', label1, info, label2])
 
-            elif action[0] in ['LOSE_RADICAL', 'GAIN_RADICAL']:
+            elif action[0] in ['LOSE_RADICAL', 'GAIN_RADICAL', 'LOSE_ELECTRON', 'GAIN_ELECTRON']:
 
                 label, change = action[1:]
                 change = int(change)
@@ -344,6 +348,10 @@ class ReactionRecipe(object):
                             atom.apply_action(['GAIN_RADICAL', label, 1])
                         elif (action[0] == 'LOSE_RADICAL' and forward) or (action[0] == 'GAIN_RADICAL' and not forward):
                             atom.apply_action(['LOSE_RADICAL', label, 1])
+                        elif (action[0] == 'LOSE_ELECTRON' and forward) or (action[0] == 'GAIN_ELECTRON' and not forward):
+                            atom.apply_action(['LOSE_ELECTRON', label, 1])
+                        elif (action[0] == 'LOSE_ELECTRON' and forward) or (action[0] == 'GAIN_ELECTRON' and not forward):
+                            atom.apply_action(['LOSE_ELECTRON', label, 1])
 
             elif action[0] in ['LOSE_PAIR', 'GAIN_PAIR']:
 
@@ -779,7 +787,8 @@ class KineticsFamily(Database):
         for action in actions:
             action[0] = action[0].upper()
             valid_actions = [
-                'CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND', 'GAIN_RADICAL', 'LOSE_RADICAL', 'GAIN_PAIR', 'LOSE_PAIR'
+                'CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND', 'GAIN_RADICAL', 'LOSE_RADICAL', 
+                'GAIN_ELECTRON', 'LOSE_ELECTORN', 'GAIN_PAIR', 'LOSE_PAIR'
             ]
             if action[0] not in valid_actions:
                 raise InvalidActionError('Action {0} is not a recognized action. '
