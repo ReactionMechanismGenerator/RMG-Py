@@ -111,8 +111,10 @@ class Atom(Vertex):
         self.id = id
         self.props = props or {}
 
-        if self.is_electron():
-            self.charge = -1
+        # if self.is_electron():
+        #     self.charge = -1
+        # elif self.is_proton():
+        #     self.charge = 1
 
     def __str__(self):
         """
