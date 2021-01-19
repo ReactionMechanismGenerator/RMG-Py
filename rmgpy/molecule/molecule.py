@@ -339,7 +339,7 @@ class Atom(Vertex):
         not.
         """
 
-        if self.element.symbol == 1 and self.charge == 1:
+        if self.element.number == 1 and self.charge == 1:
             return True
         return False
 
@@ -463,7 +463,7 @@ class Atom(Vertex):
         """
         # Set the new radical electron count
         self.decrement_radical()
-        self.update_charge()
+        self.charge += 1
 
     def decrement_charge(self):
         """
@@ -473,7 +473,7 @@ class Atom(Vertex):
         cython.declare(radical_electrons=cython.short)
         # Set the new radical electron count
         self.increment_radical()
-        self.update_charge()
+        self.charge -= 1
 
     def set_lone_pairs(self, lone_pairs):
         """
@@ -519,6 +519,10 @@ class Atom(Vertex):
         if self.is_electron():
             self.charge = -1
             return
+        if self.is_proton():
+            self.charge = 1
+            return
+
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.get_total_bond_order()
         self.charge = valence_electron - order - self.radical_electrons - 2 * self.lone_pairs
