@@ -330,6 +330,16 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == -1
+    
+    def is_proton(self):
+        """
+        Return ``True`` if the atom represents a proton or ``False`` if
+        not.
+        """
+
+        if self.element.symbol == 1 and self.charge == 1:
+            return True
+        return False
 
     def is_hydrogen(self):
         """
@@ -1132,6 +1142,10 @@ class Molecule(Graph):
     def is_electron(self):
         """Returns ``True`` iff the molecule is nothing but an electron 'e'."""
         return len(self.atoms) == 1 and self.atoms[0].is_electron()
+
+    def is_proton(self):
+        """Returns ``True`` iff the molecule is nothing but a proton 'H+'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_proton()
 
     def remove_atom(self, atom):
         """
