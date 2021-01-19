@@ -39,6 +39,8 @@ cdef class AtomType:
     cdef public list decrement_radical
     cdef public list increment_lone_pair
     cdef public list decrement_lone_pair
+    cdef public list increment_charge
+    cdef public list decrement_charge
 
     cdef public list single
     cdef public list all_double

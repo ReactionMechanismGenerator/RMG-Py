@@ -232,6 +232,36 @@ class GroupAtom(Vertex):
         # Set the new radical electron counts
         self.radical_electrons = radical_electrons
 
+    def _lose_charge(self, charge):
+        """
+        Update the atom group as a result of applying a LOSE_CHARGE action,
+        where `electron` specifies the number of electrons to add.
+
+        The 'radicalElectron' attribute can be an empty list if we use the wildcard
+        argument ux in the group definition. In this case, we will have this
+        function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
+        or 4 radical electrons.
+
+        Similar to GAIN_RADICAL except we update the charge
+        """
+        radical_electrons = []
+        if any([len(atomtype.decrement_charge) == 0 for atomtype in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+        if not self.radical_electrons:
+            radical_electrons = [1, 2, 3, 4]
+        else:
+            for electron in self.radical_electrons:
+                radical_electrons.append(electron + charge)
+        # Set the new radical electron counts
+        self.radical_electrons = radical_electrons
+
+        if isinstance(self.charge,list):
+            for charge in self.charge:
+                charge -= charge
+        else:
+            self.charge -= charge
+
     def _lose_radical(self, radical):
         """
         Update the atom group as a result of applying a LOSE_RADICAL action,
@@ -259,6 +289,40 @@ class GroupAtom(Vertex):
 
         # Set the new radical electron counts
         self.radical_electrons = radical_electrons
+
+    def _gain_charge(self, charge):
+        """
+        Update the atom group as a result of applying a GAIN_CHARGE action,
+        where `electron` specifies the number of radical electrons to remove.
+
+        The 'radicalElectron' attribute can be an empty list if we use the wildcard
+        argument ux in the group definition. In this case, we will have this
+        function set the atom's 'radicalElectron' to a list allowing 0, 1, 2,
+        or 3 radical electrons.
+        """
+        radical_electrons = []
+        if any([len(atomtype.increment_charge) == 0 for atomtype in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+
+        if not self.radical_electrons:
+            radical_electrons = [0, 1, 2, 3]
+        else:
+            for electron in self.radical_electrons:
+                electron = electron - charge
+                if electron < 0:
+                    raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
+                                      'Invalid radical electron set "{0}".'.format(self.radical_electrons))
+                radical_electrons.append(electron)
+
+        # Set the new radical electron counts
+        self.radical_electrons = radical_electrons
+
+        if isinstance(self.charge,list):
+            for charge in self.charge:
+                charge += charge
+        else:
+            self.charge += charge
 
     def _gain_pair(self, pair):
         """
@@ -331,8 +395,12 @@ class GroupAtom(Vertex):
             self._break_bond(action[2])
         elif act == 'GAIN_RADICAL':
             self._gain_radical(action[2])
+        elif act == 'GAIN_CHARGE':
+            self._gain_charge(action[2])
         elif act == 'LOSE_RADICAL':
             self._lose_radical(action[2])
+        elif act == 'LOSE_CHARGE':
+            self._lose_charge(action[2])
         elif action[0].upper() == 'GAIN_PAIR':
             self._gain_pair(action[2])
         elif action[0].upper() == 'LOSE_PAIR':
