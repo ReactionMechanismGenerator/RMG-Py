@@ -232,36 +232,6 @@ class GroupAtom(Vertex):
         # Set the new radical electron counts
         self.radical_electrons = radical_electrons
 
-    def _lose_charge(self, charge):
-        """
-        Update the atom group as a result of applying a LOSE_CHARGE action,
-        where `electron` specifies the number of electrons to add.
-
-        The 'radicalElectron' attribute can be an empty list if we use the wildcard
-        argument ux in the group definition. In this case, we will have this
-        function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
-        or 4 radical electrons.
-
-        Similar to GAIN_RADICAL except we update the charge
-        """
-        radical_electrons = []
-        if any([len(atomtype.decrement_charge) == 0 for atomtype in self.atomtype]):
-            raise ActionError('Unable to update GroupAtom due to LOSE_CHARGE action: '
-                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
-        if not self.radical_electrons:
-            radical_electrons = [1, 2, 3, 4]
-        else:
-            for electron in self.radical_electrons:
-                radical_electrons.append(electron + charge)
-        # Set the new radical electron counts
-        self.radical_electrons = radical_electrons
-
-        if isinstance(self.charge,list):
-            for charge in self.charge:
-                charge -= charge
-        else:
-            self.charge -= charge
-
     def _lose_radical(self, radical):
         """
         Update the atom group as a result of applying a LOSE_RADICAL action,
@@ -301,7 +271,12 @@ class GroupAtom(Vertex):
         or 3 radical electrons.
         """
         radical_electrons = []
-        if any([len(atomtype.increment_charge) == 0 for atomtype in self.atomtype]):
+        atomtype = []
+
+        for atom in self.atomtype:
+            atomtype.extend(atom.increment_charge)
+
+        if any([len(atom.increment_charge) == 0 for atom in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
                               'Unknown atom type produced from set "{0}".'.format(self.atomtype))
 
@@ -319,10 +294,53 @@ class GroupAtom(Vertex):
         self.radical_electrons = radical_electrons
 
         if isinstance(self.charge,list):
-            for charge in self.charge:
-                charge += charge
+            charges = []
+            for c in self.charge:
+                charges.append(c+charge)
+            self.charge = charges
         else:
-            self.charge += charge
+            self.charge += 1
+
+        self.atomtype = list(set(atomtype))
+
+    def _lose_charge(self, charge):
+        """
+        Update the atom group as a result of applying a LOSE_CHARGE action,
+        where `electron` specifies the number of electrons to add.
+
+        The 'radicalElectron' attribute can be an empty list if we use the wildcard
+        argument ux in the group definition. In this case, we will have this
+        function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
+        or 4 radical electrons.
+
+        Similar to GAIN_RADICAL except we update the charge
+        """
+        radical_electrons = []
+        atomtype = []
+
+        for atom in self.atomtype:
+            atomtype.extend(atom.decrement_charge)
+
+        if any([len(atomtype.decrement_charge) == 0 for atomtype in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+        if not self.radical_electrons:
+            radical_electrons = [1, 2, 3, 4]
+        else:
+            for electron in self.radical_electrons:
+                radical_electrons.append(electron + charge)
+        # Set the new radical electron counts
+        self.radical_electrons = radical_electrons
+
+        if isinstance(self.charge,list):
+            charges = []
+            for c in self.charge:
+                charges.append(c-charge)
+            self.charge = charges
+        else:
+            self.charge -= 1
+
+        self.atomtype = list(set(atomtype))
 
     def _gain_pair(self, pair):
         """
