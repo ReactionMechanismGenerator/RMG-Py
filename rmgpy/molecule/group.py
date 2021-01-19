@@ -674,6 +674,7 @@ class GroupAtom(Vertex):
                               'I': 3,
                               'Ar': 4,
                               'X': 0,
+                              'e': 0
                               }
 
         for element_label in allElements:
