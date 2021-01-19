@@ -980,7 +980,7 @@ class Reaction:
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
         """
-        cython.declare(n_gas=cython.int, n_surf=cython.int, prod=cython.int, k_units=str,
+        cython.declare(n_gas=cython.int, n_surf=cython.int, prod=Species, k_units=str,
                        Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
                        rxn=Reaction, klist=np.ndarray, i=cython.size_t,
                        Tindex=cython.size_t, Pindex=cython.size_t)
