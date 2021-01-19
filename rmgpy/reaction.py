@@ -980,7 +980,8 @@ class Reaction:
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
         """
-        cython.declare(prods=cython.int, Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
+        cython.declare(n_gas=cython.int, n_surf=cython.int, prod=cython.int, k_units=str,
+                       Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
                        rxn=Reaction, klist=np.ndarray, i=cython.size_t,
                        Tindex=cython.size_t, Pindex=cython.size_t)
 
@@ -1002,7 +1003,7 @@ class Reaction:
         try:
             n_gas = 0 # mols of gas products
             n_surf = 0 # mols of surface products
-            for prod in self.products():
+            for prod in self.products:
                 if not prod.is_electron(): # don't count electrons
                     if prod.contains_surface_site():
                         n_surf += 1
