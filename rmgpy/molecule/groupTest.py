@@ -469,6 +469,19 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEquals(new_atom.charge, 0)
         self.assertEquals(new_atom.lone_pairs, 0)
 
+    def test_is_electron(self):
+        """
+        Test the GroupAtom.is_electron() method.
+        """
+        electron = GroupAtom(atomtype=[ATOMTYPES['e']])
+        self.assertTrue(electron.is_electron())
+
+    def test_is_proton(self):
+        """
+        Test the GroupAtom.is_proton() method.
+        """
+        proton = GroupAtom(atomtype=[ATOMTYPES['H+']])
+        self.assertTrue(proton.is_proton())
 
 ################################################################################
 
@@ -780,6 +793,22 @@ class TestGroup(unittest.TestCase):
         self.assertFalse(surface_group.is_surface_site())
         surface_site = Group().from_adjacency_list("1 *1 X u0")
         self.assertTrue(surface_site.is_surface_site())
+
+    def test_is_electron(self):
+        """
+        Test the Group.is_electron() method.
+        """
+        self.assertFalse(self.group.is_electron())
+        electron = Group().from_adjacency_list("""1 *1 e u1 p0 c-1""")
+        self.assertTrue(electron.is_electron())
+
+    def test_is_proton(self):
+        """
+        Test the Group.is_proton() method.
+        """
+        self.assertFalse(self.group.is_proton())
+        proton = Group().from_adjacency_list("""1 *1 H+ u0 p0 c+1""")
+        self.assertTrue(proton.is_proton())
 
     def test_get_labeled_atom(self):
         """
