@@ -232,22 +232,40 @@ class Reaction:
         self._degeneracy = new
 
     @property
-    def ne(self):
+    def n_elections(self):
         """
         The stochiometric coeff for electrons in charge transfer reactions
         """
         if self.is_charge_transfer_reaction():
-            self._ne = 0
+            self._n_electrons = 0
             for prod in self.products:
                 if prod.is_electron():
-                    self._ne += 1
+                    self._n_electrons += 1
             for react in self.reactants:
                 if react.is_electron():
-                    self._ne -= 1
+                    self._n_electrons -= 1
         else:
-            self._ne = 0
+            self._n_electrons = 0
 
-        return self._ne
+        return self._n_electrons
+
+    @property
+    def n_protons(self):
+        """
+        The stochiometric coeff for protons in charge transfer reactions
+        """
+        if self.is_charge_transfer_reaction():
+            self._n_protons = 0
+            for prod in self.products:
+                if prod.is_proton():
+                    self._n_protons += 1
+            for react in self.reactants:
+                if react.is_proton():
+                    self._n_protons -= 1
+        else:
+            self._n_protons = 0
+
+        return self._n_protons
 
     def to_chemkin(self, species_list=None, kinetics=True):
         """
