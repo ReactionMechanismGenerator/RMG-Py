@@ -74,6 +74,8 @@ cdef class Reaction:
 
     cpdef bint is_charge_transfer_reaction(self)
 
+    cpdef bint is_surface_charge_transfer_reaction(self)
+
     cpdef bint has_template(self, list reactants, list products)
 
     cpdef bint matches_species(self, list reactants, list products=?)

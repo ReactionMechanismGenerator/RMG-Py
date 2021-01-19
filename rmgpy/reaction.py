@@ -445,6 +445,14 @@ class Reaction:
                 return True
         return False
 
+    def is_surface_charge_transfer_reaction(self):
+        """
+        Return ``True`` if one or more reactants or products are electrons
+        """
+        if self.is_surface_reaction() and self.is_charge_transfer_reaction():
+            return True
+        return False
+
     def has_template(self, reactants, products):
         """
         Return ``True`` if the reaction matches the template of `reactants`
