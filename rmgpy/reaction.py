@@ -780,7 +780,7 @@ class Reaction:
         else:
             return self.kinetics.get_rate_coefficient(T, P)
 
-    def get_surface_rate_coefficient(self, T, surface_site_density):
+    def get_surface_rate_coefficient(self, T, surface_site_density, potential=0.):
         """
         Return the overall surface rate coefficient for the forward reaction at
         temperature `T` in K with surface site density `surface_site_density` in mol/m2.
@@ -820,6 +820,9 @@ class Reaction:
 
         if isinstance(self.kinetics, SurfaceArrhenius):
             return self.kinetics.get_rate_coefficient(T, P=0)
+
+        if isinstance(self.kinetics, SurfaceChargeTransfer):
+            return self.kinetics.get_rate_coefficient(T, potential) 
 
         raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r}".format(type(self.kinetics)))
 

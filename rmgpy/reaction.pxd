@@ -106,7 +106,7 @@ cdef class Reaction:
 
     cpdef double get_rate_coefficient(self, double T, double P=?)
 
-    cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density) except -2
+    cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density, double potential=?) except -2
 
     cpdef fix_barrier_height(self, bint force_positive=?)
 
