@@ -656,7 +656,7 @@ class Reaction:
 
         return dGrxn
 
-    def get_equilibrium_constant(self, T, potential=0, type='Kc', surface_site_density=2.5e-05):
+    def get_equilibrium_constant(self, T, potential=0., type='Kc', surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
         temperature `T` in K and reference `surface_site_density`
@@ -667,7 +667,7 @@ class Reaction:
         and uses the ideal gas law to determine reference concentrations. For
         surface species, the `surface_site_density` is the assumed reference.
         """
-        cython.declare(prods=cython.int, reacts=cython.int, dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
+        cython.declare(dN_gas=cython.int, dN_surf=cython.int, dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T, potential)
         K = np.exp(-dGrxn / constants.R / T)
@@ -679,14 +679,14 @@ class Reaction:
         try:
             dN_gas = 0 # change in mols of gas spcs
             dN_surf = 0 # change in mols of surface spcs
-            for prod in self.products():
-                if not prod.is_electron(): # don't count electrons
+            for prod in self.products:
+                if not prod.is_electron(): # don't count electrons (should we count protons???)
                     if prod.contains_surface_site():
                         dN_surf += 1
                     else:
                         dN_gas += 1
-            for react in self.reactants():
-                if not react.is_electron(): # dont count electrons
+            for react in self.reactants:
+                if not react.is_electron(): # dont count electrons (should we count protons???)
                     if react.contains_surface_site():
                         dN_surf -= 1
                     else:
