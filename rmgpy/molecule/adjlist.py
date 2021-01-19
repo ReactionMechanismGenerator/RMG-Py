@@ -89,7 +89,7 @@ class ConsistencyChecker(object):
         the theoretical one:
 
         """
-        if atom.symbol in ('X','e'):
+        if atom.symbol in ('X','e','H+'):
             return  # because we can't check it.
 
         valence = PeriodicSystem.valence_electrons[atom.symbol]
