@@ -359,7 +359,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             yield test, group_name
 
     def test_metal_libraries(self):
-        for library_name, library in self.database.surface.libraries.items():
+        for library_name, library in self.database.thermo.surface['metal'].libraries.items():
             test = lambda x: self.general_check_metal_database_has_catalyst_properties(library)
             test_name = "Metal library {0}: Entries have catalyst properties?".format(library_name)
             test.description = test_name

@@ -843,6 +843,7 @@ class ThermoDatabase(object):
     def __init__(self):
         self.depository = {}
         self.libraries = {}
+        self.surface = {}
         self.groups = {}
         self.library_order = []
         self.local_context = {
@@ -862,6 +863,7 @@ class ThermoDatabase(object):
             'libraries': self.libraries,
             'groups': self.groups,
             'library_order': self.library_order,
+            'surface' : self.surface,
         }
         return ThermoDatabase, (), d
 
@@ -873,8 +875,9 @@ class ThermoDatabase(object):
         self.libraries = d['libraries']
         self.groups = d['groups']
         self.library_order = d['library_order']
+        self.surface = d['surface']
 
-    def load(self, path, libraries=None, depository=True):
+    def load(self, path, libraries=None, depository=True, surface=False):
         """
         Load the thermo database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
@@ -885,6 +888,8 @@ class ThermoDatabase(object):
             self.depository = {}
         self.load_libraries(os.path.join(path, 'libraries'), libraries)
         self.load_groups(os.path.join(path, 'groups'))
+        if surface:
+            self.load_surface()
 
     def load_depository(self, path):
         """
@@ -937,6 +942,18 @@ class ThermoDatabase(object):
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
 
+    def load_surface(self):
+        """
+        Load the metal database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        MetalDB = MetalDatabase()
+        MetalDB.load(os.path.join(settings['database.directory'], 'surface'))
+
+        self.surface = {
+            'metal': MetalDB
+        }
+
     def load_groups(self, path):
         """
         Load the thermo database from the given `path` on disk, where `path`
@@ -973,6 +990,7 @@ class ThermoDatabase(object):
         self.save_depository(os.path.join(path, 'depository'))
         self.save_libraries(os.path.join(path, 'libraries'))
         self.save_groups(os.path.join(path, 'groups'))
+        self.save_surface(os.path.join(path, 'surface'))
 
     def save_depository(self, path):
         """
@@ -1003,6 +1021,17 @@ class ThermoDatabase(object):
             os.mkdir(path)
         for group in self.groups.keys():
             self.groups[group].save(os.path.join(path, group + '.py'))
+
+    def save_surface(self, path):
+        """
+        Save the metal library to the given `path` on disk, where `path`
+        points to the top-level folder of the metal library.
+        """
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for library in self.surface.keys():
+            self.surface[library].save(os.path.join(path, library + '.py'))
 
     def load_old(self, path):
         """
@@ -1384,9 +1413,7 @@ class ThermoDatabase(object):
         """
         
         if isinstance(binding_energies, str):
-            # Want to load the binding energies from the database
-            metal_db = rmgpy.data.rmg.database.surface
-            binding_energies = metal_db.find_binding_energies(binding_energies)
+            binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
         for element, energy in binding_energies.items():
             binding_energies[element] = rmgpy.quantity.Energy(energy)
@@ -1404,20 +1431,19 @@ class ThermoDatabase(object):
         :param metal_to_scale_to: the metal you want to scale to (string e.g 'Pt111' or None)
         :return: corrected thermo
         """
-        metal_db = rmgpy.data.rmg.database.surface
-        
+
         if metal_to_scale_from == metal_to_scale_to:
             return thermo
 
         if metal_to_scale_to is None:
             metal_to_scale_to_binding_energies = self.binding_energies
         else:
-            metal_to_scale_to_binding_energies = metal_db.find_binding_energies(metal_to_scale_to)
+            metal_to_scale_to_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_to)
 
         if metal_to_scale_from is None:
             metal_to_scale_from_binding_energies = self.binding_energies
         else:
-            metal_to_scale_from_binding_energies = metal_db.find_binding_energies(metal_to_scale_from)
+            metal_to_scale_from_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_from)
 
         delta_atomic_adsorption_energy = {
             'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),

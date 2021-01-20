@@ -35,6 +35,7 @@ import re
 import logging
 
 from rmgpy.data.base import Database, Entry, DatabaseError
+# from rmgpy.data.thermo import ThermoDatabase, Entry, DatabaseError
 import rmgpy.quantity
 
 
