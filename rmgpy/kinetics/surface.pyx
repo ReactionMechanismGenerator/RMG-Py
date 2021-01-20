@@ -533,22 +533,23 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
 cdef class SurfaceChargeTransfer(KineticsModel):
 
     """
-    A kinetics model based on (modified) Arrhenius for surface reactions.
+    A kinetics model for surface charge transfer reactions
 
-    It is very similar to the gas phase :class:`Arrhenius`
+    It is very similar to the :class:`SurfaceArrhenius`, but the Ea is potential-dependent
+
 
     The attributes are:
 
     =============== =============================================================
     Attribute       Description
     =============== =============================================================
-    `a`             The charge transfer coefficient
     `A`             The preexponential factor
     `T0`            The reference temperature
-    `V0`            The reference potential
     `n`             The temperature exponent
     `Ea`            The activation energy
     `ne`            The stochiometry coeff for electrons (negative if reactant, positive if product)
+    `V0`            The reversible potential
+    `alpha`         The charge transfer coefficient
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
@@ -558,23 +559,49 @@ cdef class SurfaceChargeTransfer(KineticsModel):
 
     """
 
-    def __init__(self, a=0.5, A=None, n=0.0, Ea=None, T0=(1.0, "K"), V0=(0.0, "V"), ne=-1, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
-                 uncertainty=None, comment=''):
+    def __init__(self, A=None, n=0.0, Ea=None, V0=None, alpha=0.5, ne=-1, T0=(1.0, "K"), Tmin=None, Tmax=None, 
+                Pmin=None, Pmax=None, uncertainty=None, comment=''):
 
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
+                comment=comment)
+
+        self.alpha = alpha
         self.A = A
         self.n = n
         self.Ea = Ea
         self.T0 = T0
-        self.a = a
         self.ne = ne
         self.V0 = V0
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        Arrhenius object.
+        """
+        string = 'SurfaceChargeTransfer(A={0!r}, n={1!r}, Ea={2!r}, V0={3!r}, alpha={4!r}, ne={5!r}, T0={6!r}'.format(
+            self.A, self.n, self.Ea, self.V0, self.alpha, self.ne, self.T0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a SurfaceChargeTransfer object.
+        """
+        return (SurfaceChargeTransfer, (self.A, self.n, self.Ea, self.V0, self.alpha, self.ne, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
         def __get__(self):
             return self._A
         def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+            self._A = quantity.SurfaceRateCoefficient(value)
 
     property n:
         """The temperature exponent."""
@@ -598,7 +625,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             self._T0 = quantity.Temperature(value)
 
     property V0:
-        """The reference potential"""
+        """The reversible potential."""
         def __get__(self):
             return self._V0
         def __set__(self, value):
@@ -611,34 +638,12 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         def __set__(self, value):
             self._ne = quantity.Dimensionless(value)
 
-    property a:
+    property alpha:
         """The charge transfer coefficient."""
         def __get__(self):
-            return self._a
+            return self._alpha
         def __set__(self, value):
-            self._a = quantity.Dimensionless(value)
-
-    def __repr__(self):
-        """
-        Return a string representation that can be used to reconstruct the
-        Arrhenius object.
-        """
-        string = 'SurfaceChargeTransfer(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}, a={4!r}, ne={5!r}, '.format(self.A, self.n, self.Ea, self.T0, self.a, self.ne)
-        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
-        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
-        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
-        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
-
-    def __reduce__(self):
-        """
-        A helper function used when pickling an Arrhenius object.
-        """
-        return (SurfaceChargeTransfer, (self.a, self.A, self.n, self.ne, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                            self.uncertainty, self.comment))
+            self._alpha = quantity.Dimensionless(value)
 
     cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=True):
         """
@@ -699,7 +704,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             rate_sign_multiplier = 1
 
         for i in range(len(Tlist)):
-            klist[i] /= np.exp((self.a * self.ne * constants.F * V) / (constants.R * Tlist[i])) # NOT SURE ABOUT SIGN HERE
+            klist[i] /= np.exp((self.alpha * self.ne * constants.F * V) / (constants.R * Tlist[i])) # NOT SURE ABOUT SIGN HERE
 
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
         if len(Tlist) < 3 + three_params:
@@ -756,7 +761,8 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             return False
         if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
                 or not self.Ea.equals(other_kinetics.Ea) or not self.T0.equals(other_kinetics.T0)
-                or not self.a.equals(other_kinetics.Ea) or not self.ne.equals(other_kinetics.ne)):
+                or not self.alpha.equals(other_kinetics.alpha) or not self.ne.equals(other_kinetics.ne)
+                or not self.V0.equals(other_kinetics.V0)):
             return False
 
         return True
