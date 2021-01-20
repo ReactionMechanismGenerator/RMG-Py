@@ -80,7 +80,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
     cdef public ScalarQuantity _V0
-    cdef public ScalarQuantity _a
+    cdef public ScalarQuantity _alpha
     cdef public ScalarQuantity _ne
 
     cpdef double get_activation_energy_from_potential(self, double V=?, bint non_negative=?)
