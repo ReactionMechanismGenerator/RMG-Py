@@ -65,7 +65,9 @@ cdef class StickingCoefficientBEP(KineticsModel):
 
 ################################################################################
 cdef class SurfaceArrhenius(Arrhenius):
-    pass
+
+    cpdef SurfaceChargeTransfer to_surface_charge_transfer(self, double V0, double ne=?)
+
 ################################################################################
 cdef class SurfaceArrheniusBEP(ArrheniusEP):
     pass
