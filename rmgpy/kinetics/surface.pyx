@@ -748,3 +748,18 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
+
+    cpdef SurfaceArrhenius to_surface_arrhenius(self):
+        """
+        Return an :class:`SurfaceArrhenius` instance of the kinetics model
+        """
+        return SurfaceArrhenius(
+            A=self.A,
+            n=self.n,
+            Ea=self.Ea,
+            T0=(1, "K"),
+            Tmin=self.Tmin,
+            Tmax=self.Tmax,
+            uncertainty = self.uncertainty,
+            comment=self.comment,
+        )

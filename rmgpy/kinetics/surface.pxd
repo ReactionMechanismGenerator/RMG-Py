@@ -92,3 +92,5 @@ cdef class SurfaceChargeTransfer(KineticsModel):
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, double V=?, np.ndarray weights=?, bint three_params=?)
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
+    cpdef SurfaceArrhenius to_surface_arrhenius(self)
