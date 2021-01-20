@@ -82,7 +82,7 @@ class RMGDatabase(object):
              statmech_libraries=None,
              depository=True,
              solvation=True,
-             surface=True,
+             surface=True,  # on by default, because solvation is also on by default
              testing=False):
         """
         Load the RMG database from the given `path` on disk, where `path`
@@ -93,7 +93,7 @@ class RMGDatabase(object):
 
         Argument testing will load a lighter version of the database used for unit-tests
         """
-        self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository)
+        self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository, surface)
         if not testing:
             self.load_transport(os.path.join(path, 'transport'), transport_libraries)
             self.load_forbidden_structures(os.path.join(path, 'forbiddenStructures.py'))
@@ -109,16 +109,15 @@ class RMGDatabase(object):
         if solvation:
             self.load_solvation(os.path.join(path, 'solvation'))
 
-        if surface:
-            self.load_surface(os.path.join(path, 'surface'))
 
-    def load_thermo(self, path, thermo_libraries=None, depository=True):
+
+    def load_thermo(self, path, thermo_libraries=None, depository=True, surface=False):
         """
         Load the RMG thermo database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG thermo database.
         """
         self.thermo = ThermoDatabase()
-        self.thermo.load(path, thermo_libraries, depository)
+        self.thermo.load(path, thermo_libraries, depository, surface)
 
     def load_transport(self, path, transport_libraries=None):
         """
@@ -227,7 +226,6 @@ class RMGDatabase(object):
         self.statmech.save(os.path.join(path, 'statmech'))
         self.solvation.save(os.path.join(path, 'solvation'))
         self.transport.save(os.path.join(path, 'transport'))
-        self.surface.save(os.path.join(path, 'surface'))
 
     def save_old(self, path):
         """
@@ -263,8 +261,6 @@ def get_db(name=''):
             return database.transport
         elif name == 'solvation':
             return database.solvation
-        elif name == 'surface':
-            return database.surface
         elif name == 'statmech':
             return database.statmech
         elif name == 'forbidden':
