@@ -68,7 +68,8 @@ class TestFamily(unittest.TestCase):
                 'Intra_R_Add_Exo_scission',
                 'intra_substitutionS_isomerization',
                 'R_Addition_COm',
-                'R_Recombination'
+                'R_Recombination',
+                'Surface_Proton_Electron_Reduction_Alpha',
             ],
         )
         cls.family = cls.database.families['intra_H_migration']
@@ -1027,3 +1028,6 @@ multiplicity 2
         # self.assertEquals(len(reaction_list), 14)
         reaction_list = self.database.kinetics.families['Surface_Dissociation_vdW'].generate_reactions(reactants)
         self.assertEquals(len(reaction_list), 0)
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
