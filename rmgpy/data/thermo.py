@@ -1254,7 +1254,12 @@ class ThermoDatabase(object):
 
             if species.contains_surface_site():
                 if entry.metal is not None:
-                    thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=entry.metal, metal_to_scale_to=metal_to_scale_to)
+                    if entry.facet is not None:
+                        db_label = entry.metal + entry.facet
+                        thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=db_label,
+                                                              metal_to_scale_to=metal_to_scale_to)
+                    else:  # no facet was given
+                        thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=entry.metal, metal_to_scale_to=metal_to_scale_to)
                 else:  # assume the thermo came from pt 111
                     thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=None, metal_to_scale_to=metal_to_scale_to)
             return thermo0
