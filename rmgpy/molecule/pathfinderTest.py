@@ -313,7 +313,7 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
 
     def test_c6h6o4(self):
         inchi = "InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2"
-        mol = Molecule().from_inchi(inchi)
+        mol = Molecule().from_inchi(inchi, raise_atomtype_exception=False)
         start = mol.atoms[0]
         path = find_butadiene_end_with_charge(start)
         idx_path = [mol.atoms.index(atom) + 1 for atom in path[0::2]]
@@ -525,3 +525,6 @@ class FindN5dcRadicalDelocalizationPaths(unittest.TestCase):
         mol = Molecule().from_smiles(smiles)
         paths = find_N5dc_radical_delocalization_paths(mol.atoms[1])
         self.assertTrue(paths)
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
