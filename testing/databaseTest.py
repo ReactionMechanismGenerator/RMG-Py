@@ -405,6 +405,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 raise TypeError('Entry {} should be a str, but is type {}'.format(entry.label, type(entry.surface_site_density.units)))
             assert 1e-4 > entry.surface_site_density.value_si > 1e-6  # values should be reasonable
 
+            assert isinstance(entry.metal, str)  # all entries should have a metal attribute, at minimum
+            if entry.facet:
+                assert isinstance(entry.facet, str)
+            if entry.site:
+                assert isinstance(entry.site, str)
+
     def general_check_metal_database_has_reasonable_labels(self, library):
         """Test that each entry has a reasonable label corresponding to its metal and facet"""
         for entry in library.entries.values():
@@ -424,6 +430,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if not entry.metal:
                 logging.error(f'Expected a metal attribute for {entry} in {family} family but found {entry.metal!r}')
                 failed = True
+            else:
+                assert isinstance(entry.metal, str)
+
+            if entry.facet:
+                assert isinstance(entry.facet, str)
+            if entry.site:
+                assert isinstance(entry.site, str)
+
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
