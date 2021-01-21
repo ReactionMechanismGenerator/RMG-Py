@@ -1222,19 +1222,21 @@ class Molecule(Graph):
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
+    def update_charge(self):
+
+        for atom in self.atoms:
+            atom.update_charge()
+
     def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
-        Update the charge and atom types of atoms.
+        Update the lone_pairs, charge, and atom types of atoms.
         Update multiplicity, and sort atoms (if ``sort_atoms`` is ``True``)
         Does not necessarily update the connectivity values (which are used in isomorphism checks)
         If you need that, call update_connectivity_values()
         """
 
         self.update_lone_pairs()
-
-        for atom in self.atoms:
-            atom.update_charge()
-
+        self.update_charge()
         self.update_atomtypes(log_species=log_species, raise_exception=raise_atomtype_exception)
         self.update_multiplicity()
         if sort_atoms:
