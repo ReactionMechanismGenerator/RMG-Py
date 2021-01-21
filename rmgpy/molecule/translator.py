@@ -485,7 +485,7 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
 
     if _lookup(mol, identifier, identifier_type) is not None:
         if _check_output(mol, identifier):
-            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
+            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception, sort_atoms=False)
             return mol
 
     for option in _get_backend_list(backend):
