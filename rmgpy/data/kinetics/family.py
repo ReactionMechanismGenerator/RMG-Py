@@ -1490,7 +1490,7 @@ class KineticsFamily(Database):
             product_num = self.product_num or len(template.products)
 
         # Split product structure into multiple species if necessary
-        product_structures = product_structure.split()
+        product_structures = [p for p in product_structure.split() if not p.is_electron()]
 
         # Make sure we've made the expected number of products
         if product_num != len(product_structures):
