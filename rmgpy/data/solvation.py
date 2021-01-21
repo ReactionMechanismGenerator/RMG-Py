@@ -793,8 +793,8 @@ class SolvationDatabase(object):
                         atom.increment_radical()
                         added_to_pairs[atom] += 1
 
+        saturated_struct.update_charge() # we need to update charges before updating lone pairs
         saturated_struct.update()
-        saturated_struct.update_lone_pairs()
 
         return saturated_struct, added_to_pairs
 
