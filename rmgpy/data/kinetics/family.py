@@ -55,7 +55,7 @@ from rmgpy.data.kinetics.rules import KineticsRules
 from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
-                           StickingCoefficientBEP, ArrheniusBM
+                           StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
