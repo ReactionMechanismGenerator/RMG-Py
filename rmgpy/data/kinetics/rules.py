@@ -44,7 +44,7 @@ import numpy as np
 from rmgpy.data.base import Database, Entry, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.exceptions import KineticsError, DatabaseError
-from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP, SurfaceChargeTransfer
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 
