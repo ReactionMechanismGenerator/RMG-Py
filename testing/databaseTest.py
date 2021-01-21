@@ -457,7 +457,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     failed = True
         for entry in entries:
             if isinstance(entry.metal, type(None)):
-                logginge.error(f'Expected a metal attribute in {library} library for {entry} but found None')
+                logging.error(f'Expected a metal attribute in {library} library for {entry} but found None')
                 failed = True
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
@@ -1324,7 +1324,7 @@ Origin Group AdjList:
             if '111' in library_name:
                 if entry.facet is not '111':
                     logging.error(f'Expected {entry} facet attribute in {library_name} library to match 111, but was {entry.facet}')
-                    failed = true
+                    failed = True
             if not entry.metal:
                 logging.error(f'Expected a metal attribute for {entry} in {library} library but found {entry.metal!r}')
                 failed = True
