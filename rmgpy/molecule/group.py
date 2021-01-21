@@ -280,18 +280,18 @@ class GroupAtom(Vertex):
             raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
                               'Unknown atom type produced from set "{0}".'.format(self.atomtype))
 
-        if not self.radical_electrons:
-            radical_electrons = [0, 1, 2, 3]
-        else:
-            for electron in self.radical_electrons:
-                electron = electron - charge
-                if electron < 0:
-                    raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
-                                      'Invalid radical electron set "{0}".'.format(self.radical_electrons))
-                radical_electrons.append(electron)
+        # if not self.radical_electrons:
+        #     radical_electrons = [0, 1, 2, 3]
+        # else:
+        #     for electron in self.radical_electrons:
+        #         electron = electron - charge
+        #         if electron < 0:
+        #             raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
+        #                               'Invalid radical electron set "{0}".'.format(self.radical_electrons))
+        #         radical_electrons.append(electron)
 
         # Set the new radical electron counts
-        self.radical_electrons = radical_electrons
+        # self.radical_electrons = radical_electrons
 
         if isinstance(self.charge,list):
             charges = []
@@ -324,13 +324,13 @@ class GroupAtom(Vertex):
         if any([len(atomtype.decrement_charge) == 0 for atomtype in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to LOSE_CHARGE action: '
                               'Unknown atom type produced from set "{0}".'.format(self.atomtype))
-        if not self.radical_electrons:
-            radical_electrons = [1, 2, 3, 4]
-        else:
-            for electron in self.radical_electrons:
-                radical_electrons.append(electron + charge)
-        # Set the new radical electron counts
-        self.radical_electrons = radical_electrons
+        # if not self.radical_electrons:
+        #     radical_electrons = [1, 2, 3, 4]
+        # else:
+        #     for electron in self.radical_electrons:
+        #         radical_electrons.append(electron + charge)
+        # # Set the new radical electron counts
+        # self.radical_electrons = radical_electrons
 
         if isinstance(self.charge,list):
             charges = []

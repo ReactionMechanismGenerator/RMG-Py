@@ -462,7 +462,7 @@ class Atom(Vertex):
         where `radical` specifies the number of radical electrons to add.
         """
         # Set the new radical electron count
-        self.decrement_radical()
+        # self.decrement_radical()
         self.charge += 1
 
     def decrement_charge(self):
@@ -472,7 +472,7 @@ class Atom(Vertex):
         """
         cython.declare(radical_electrons=cython.short)
         # Set the new radical electron count
-        self.increment_radical()
+        # self.increment_radical()
         self.charge -= 1
 
     def set_lone_pairs(self, lone_pairs):
