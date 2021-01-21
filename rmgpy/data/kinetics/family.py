@@ -1518,6 +1518,8 @@ class KineticsFamily(Database):
                 struc.update()
             reactant_net_charge += struc.get_net_charge()
 
+
+        is_molecule = True
         for struct in product_structures:
             # If product structures are Molecule objects, update their atom types
             # If product structures are Group objects and the reaction is in certain families
@@ -1525,15 +1527,17 @@ class KineticsFamily(Database):
             if isinstance(struct, Molecule):
                 struct.update(sort_atoms=not self.save_order)
             elif isinstance(struct, Group):
+                is_molecule = False
                 struct.reset_ring_membership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
                              'intra_no2_ono_conversion', 'lone_electron_pair_bond',
-                             '1,2_nh3_elimination', '1,3_nh3_elimination']:
+                             '1,2_nh3_elimination', '1,3_nh3_elimination',]:
                     struct.update_charge()
             else:
                 raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
-            product_net_charge += struc.get_net_charge()
-        if reactant_net_charge != product_net_charge:
+            product_net_charge += struct.get_net_charge()
+        
+        if reactant_net_charge != product_net_charge and is_molecule:
             logging.debug(
                 'The net charge of the reactants {0} differs from the net charge of the products {1} in reaction '
                 'family {2}. Not generating this reaction.'.format(reactant_net_charge, product_net_charge, self.label))
