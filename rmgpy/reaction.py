@@ -233,7 +233,7 @@ class Reaction:
         self._degeneracy = new
 
     @property
-    def n_elections(self):
+    def n_electrons(self):
         """
         The stochiometric coeff for electrons in charge transfer reactions
         """
@@ -564,6 +564,33 @@ class Reaction:
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return reverse_reactants_match and reverse_products_match and collider_match
+    
+    def _apply_CHE_model(self, T):
+        """
+        Apply the computational hydrogen electrode (CHE) model at temperature T (in 'K').
+
+        Returns the free energy (in J/mol) of 'N' proton/electron couple(s) in the reaction
+        using the Reversible Hydrogen Electrode (RHE) as referernce so that
+        N * deltaG(H+ + e-) = N * 1/2 deltaG(H2(g)) at 0V.  
+        """
+
+        if not self.is_charge_transfer_reaction():
+            raise ReactionError("CHE model is only applicable to charge transfer reactions!")
+
+        if self.n_electrons != self.n_protons:
+            raise ReactionError("Number of electrons must equal number of protons! "
+                                f"{self} has {self.n_electrons} protons and {self.n_electrons} electrons")
+
+
+        H2_thermo = ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), 
+                               Cpdata=([6.895,6.975,6.994,7.009,7.081,7.219,7.72],'cal/(mol*K)'), 
+                               H298=(0,'kcal/mol'), S298=(31.233,'cal/(mol*K)','+|-',0.0007), 
+                               Cp0=(29.1007,'J/(mol*K)'), CpInf=(37.4151,'J/(mol*K)'), 
+                               label="""H2""", comment="""Thermo library: primaryThermoLibrary""")
+        # deltG_H+ + deltaG_e- -> 1/2 deltaG_H2 # only at 298K ???
+
+        return self.n_electrons * 0.5 * H2_thermo.get_free_energy(T)
+
 
     def get_enthalpy_of_reaction(self, T):
         """
@@ -571,6 +598,9 @@ class Reaction:
         `T` in K.
         """
         cython.declare(dHrxn=cython.double, reactant=Species, product=Species)
+
+        if self.is_charge_transfer_reaction():
+            raise NotImplementedError("Can only get free energy of charge transfer reactions using CHE model")
         dHrxn = 0.0
         for reactant in self.reactants:
             dHrxn -= reactant.get_enthalpy(T)
@@ -584,6 +614,9 @@ class Reaction:
         in K.
         """
         cython.declare(dSrxn=cython.double, reactant=Species, product=Species)
+
+        if self.is_charge_transfer_reaction():
+            raise NotImplementedError("Can only get free energy of charge transfer reactions using CHE model")
         dSrxn = 0.0
         for reactant in self.reactants:
             dSrxn -= reactant.get_entropy(T)
@@ -595,35 +628,26 @@ class Reaction:
             
         cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
 
-        if self.kinetics.E0 and abs(T-298) < 10: # use standard potential if available
-            dGrxn = self.n_electrons * constants.F * self.kinetics.E0.value_si # G = -nFE0 in J/mol
-        else: # lets see if we can apply the CHE model
-            dGrxn = 0.0
-            if self.n_electrons == self.n_protons:
-                # H2 thermo from primaryThermoLibrary
-                H2_thermo = ThermoData(
-                    Tdata = ([300,400,500,600,800,1000,1500],'K'),
-                    Cpdata = ([6.895,6.975,6.994,7.009,7.081,7.219,7.72],'cal/(mol*K)'),
-                    H298 = (0,'kcal/mol'),
-                    S298 = (31.233,'cal/(mol*K)','+|-',0.0007))
-                # H+ + e -> 1/2 H2
-                dGrxn += self.n_electrons * 0.5 * H2_thermo.get_free_energy(T)
+        if not (self.n_electrons == self.n_protons):
+            raise NotImplementedError("We can only calculate free energy using the CHE model!")
 
-            for reactant in self.reactants:
-                if not reactant.is_electron() and not reactant.is_proton():
-                    try:
-                        dGrxn -= reactant.get_free_energy(T)
-                    except Exception:
-                        logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
-                        raise
+        dGrxn = self._apply_CHE_model(T) # get H+ and e- free energy using CHE model
 
-            for product in self.products:
-                if not reactant.is_electron() and not reactant.is_proton():
-                    try:
-                        dGrxn += product.get_free_energy(T)
-                    except Exception:
-                        logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
-                        raise
+        for reactant in self.reactants:
+            if not reactant.is_electron() and not reactant.is_proton():
+                try:
+                    dGrxn -= reactant.get_free_energy(T)
+                except Exception:
+                    logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
+                    raise
+
+        for product in self.products:
+            if not reactant.is_electron() and not reactant.is_proton():
+                try:
+                    dGrxn += product.get_free_energy(T)
+                except Exception:
+                    logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
+                    raise
 
         if potential != 0.:
             dGrxn -=  self.n_electrons * constants.F * potential   # Not sure about sign here
@@ -656,6 +680,18 @@ class Reaction:
 
         return dGrxn
 
+    def get_reversible_potential(self, T):
+        """
+        Get the Potential in `V` at T in 'K' at which the charge transfer reaction is at equilibrium
+        """
+        cython.declare(deltaG=cython.double, V0=cython.double)
+        if not self.is_charge_transfer_reaction():
+            return None
+
+        deltaG = self._get_free_energy_of_charge_transfer_reaction(T) #J/mol
+        V0 = deltaG / self.n_electrons / constants.F # V = deltaG / n / F
+        return V0
+            
     def get_equilibrium_constant(self, T, potential=0., type='Kc', surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
@@ -665,7 +701,8 @@ class Reaction:
         ``Kc`` for concentrations (default), or ``Kp`` for pressures.  This
         function assumes a reference pressure of 1e5 Pa for gas phases species
         and uses the ideal gas law to determine reference concentrations. For
-        surface species, the `surface_site_density` is the assumed reference.
+        surface species, the `surface_site_density` is the assumed reference. For protons (H+),
+        a reference concentration of 1000 mol/m^3 (1 mol/L) is assumed
         """
         cython.declare(dN_gas=cython.int, dN_surf=cython.int, dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
@@ -680,13 +717,13 @@ class Reaction:
             dN_gas = 0 # change in mols of gas spcs
             dN_surf = 0 # change in mols of surface spcs
             for prod in self.products:
-                if not prod.is_electron(): # don't count electrons (should we count protons???)
+                if not prod.is_electron() and not prod.is_proton(): # don't count electrons (should we count protons???)
                     if prod.contains_surface_site():
                         dN_surf += 1
                     else:
                         dN_gas += 1
             for react in self.reactants:
-                if not react.is_electron(): # dont count electrons (should we count protons???)
+                if not react.is_electron() and not react.is_proton(): # dont count electrons (should we count protons???)
                     if react.contains_surface_site():
                         dN_surf -= 1
                     else:
@@ -700,10 +737,12 @@ class Reaction:
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
-                C0 = P0 / constants.R / T
+                C0 = P0 / constants.R / T # mol/m^3
                 K *= C0 ** dN_gas
             if dN_surf:
                 K *= surface_site_density ** dN_surf
+            if self.n_protons:
+                K *= 1000 ** self.n_protons
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
             K *= P0 ** dN_gas
@@ -728,14 +767,14 @@ class Reaction:
         """
         return np.array([self.get_entropy_of_reaction(T) for T in Tlist], np.float64)
 
-    def get_free_energies_of_reaction(self, Tlist):
+    def get_free_energies_of_reaction(self, Tlist, potential=0.):
         """
         Return the Gibbs free energies of reaction in J/mol evaluated at
         temperatures `Tlist` in K.
         """
-        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_free_energy_of_reaction(T, potential=potential) for T in Tlist], np.float64)
 
-    def get_equilibrium_constants(self, Tlist, type='Kc'):
+    def get_equilibrium_constants(self, Tlist, potential=0., type='Kc'):
         """
         Return the equilibrium constants for the reaction at the specified
         temperatures `Tlist` in K. The `type` parameter lets you specify the
@@ -743,7 +782,7 @@ class Reaction:
         ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
         this function currently assumes an ideal gas mixture.
         """
-        return np.array([self.get_equilibrium_constant(T, type=type) for T in Tlist], np.float64)
+        return np.array([self.get_equilibrium_constant(T, potential=potential, type=type) for T in Tlist], np.float64)
 
     def get_stoichiometric_coefficient(self, spec):
         """
@@ -951,30 +990,31 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
-    def reverse_surface_charge_transfer_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None, potential=0):
+    def reverse_surface_charge_transfer_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
         """
         Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
         You must supply the correct units for the reverse rate.
         The equilibrium constant is evaluated from the current reaction instance (self).
         """
         cython.declare(kf=SurfaceChargeTransfer, kr=SurfaceChargeTransfer)
-        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
         kf = k_forward
         if not isinstance(kf, SurfaceChargeTransfer): # Only reverse SurfaceChargeTransfer rates
             raise TypeError(f'Expected a SurfaceChargeTransfer object for k_forward but received {kf}')
         if Tmin is not None and Tmax is not None:
             Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
         else:
-            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
-        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+            Tlist = np.linspace(298, 500, 30)
+
+        V0 = self.kinetics.V0.value_si
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
-            klist[i] = kf.get_rate_coefficient(Tlist[i], potential) / self.get_equilibrium_constant(Tlist[i], potential)
-        kr = SurfaceChargeTransfer(a=self.a, ne=self.ne)
-        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si, potential)
+            klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
+        kr = SurfaceChargeTransfer(alpha=1-kf.alpha.value, ne=-1*self.n_electrons, V0=(V0,'V'))
+        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
-    def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, potential=0):
+    def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None):
         """
         Generate and return a rate coefficient model for the reverse reaction.
         Currently this only works if the `kinetics` attribute is one of several
@@ -1015,10 +1055,15 @@ class Reaction:
             n_gas = len(self.products)
             n_surf = 0
 
+        
         kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
 
         kf = self.kinetics
-        if isinstance(kf, KineticsData):
+
+        if isinstance(kf, SurfaceChargeTransfer):
+            return self.reverse_surface_charge_transfer_arrhenius_rate(kf, kunits, Tmin, Tmax)
+
+        elif isinstance(kf, KineticsData):
 
             Tlist = kf.Tdata.value_si
             klist = np.zeros_like(Tlist)
@@ -1028,9 +1073,6 @@ class Reaction:
             kr = KineticsData(Tdata=(Tlist, "K"), kdata=(klist, kunits), Tmin=(np.min(Tlist), "K"),
                               Tmax=(np.max(Tlist), "K"))
             return kr
-
-        if isinstance(kf, SurfaceChargeTransfer):
-            return self.reverse_surface_charge_transfer_arrhenius_rate(kf, kunits, Tmin, Tmax, potential)
 
         elif isinstance(kf, Arrhenius):
             if isinstance(kf, SurfaceArrhenius):

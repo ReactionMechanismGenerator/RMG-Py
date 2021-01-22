@@ -548,7 +548,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
     `n`             The temperature exponent
     `Ea`            The activation energy
     `ne`            The stochiometry coeff for electrons (negative if reactant, positive if product)
-    `V0`            The reversible potential
+    `V0`            The reference potential
     `alpha`         The charge transfer coefficient
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
@@ -625,7 +625,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             self._T0 = quantity.Temperature(value)
 
     property V0:
-        """The reversible potential."""
+        """The reference potential."""
         def __get__(self):
             return self._V0
         def __set__(self, value):
@@ -645,7 +645,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         def __set__(self, value):
             self._alpha = quantity.Dimensionless(value)
 
-    cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=True):
+    cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=False):
         """
         Return the effective activation energy (in J/mol) at specificed potential (in Volts).
         """
@@ -655,7 +655,8 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         Ea = self._Ea.value_si
         V0 = self._V0.value_si
 
-        Ea -= ne * constants.F * (V-V0)
+        if ne > 0:
+            Ea -= ne * constants.F * (V-V0)
 
         if non_negative is True:
             return max(0.0,Ea)
@@ -683,8 +684,8 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
-    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, double V=0.0, np.ndarray weights=None,
-                      bint three_params=True):
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
+                      np.ndarray weights=None, bint three_params=False):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in
@@ -702,9 +703,6 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             klist = -1 * klist
         else:
             rate_sign_multiplier = 1
-
-        for i in range(len(Tlist)):
-            klist[i] /= np.exp((self.alpha * self.ne * constants.F * V) / (constants.R * Tlist[i])) # NOT SURE ABOUT SIGN HERE
 
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
         if len(Tlist) < 3 + three_params:
