@@ -383,10 +383,22 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         self.V0 = 1
         self.ne = -1
         self.comment = 'CH3x + Hx <=> CH4 + x + x'
-        self.surfchargerxn = SurfaceChargeTransfer(
+        self.surfchargerxn_reduction = SurfaceChargeTransfer(
             A=(self.A, 'm^2/(mol*s)'),
             n=self.n,
             ne=self.ne,
+            V0=(self.V0, "V"),
+            Ea=(self.Ea, "kJ/mol"),
+            T0=(self.T0, "K"),
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            comment=self.comment,
+        )
+
+        self.surfchargerxn_oxidation = SurfaceChargeTransfer(
+            A=(self.A, 'm^2/(mol*s)'),
+            n=self.n,
+            ne=1,
             V0=(self.V0, "V"),
             Ea=(self.Ea, "kJ/mol"),
             T0=(self.T0, "K"),
@@ -399,61 +411,61 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         """
         Test that the SurfaceChargeTransfer A property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.A.value_si, self.A, delta=1e0)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.A.value_si, self.A, delta=1e0)
 
     def test_n(self):
         """
         Test that the SurfaceChargeTransfer n property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.n.value_si, self.n, 6)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.n.value_si, self.n, 6)
 
     def test_ne(self):
         """
         Test that the SurfaceChargeTransfer ne property was properly set.
         """
-        self.assertEqual(self.surfchargerxn.ne.value_si, -1.0)
+        self.assertEqual(self.surfchargerxn_reduction.ne.value_si, -1.0)
 
     def test_Ea(self):
         """
         Test that the SurfaceChargeTransfer Ea property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.Ea.value_si * 0.001, self.Ea, 6)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Ea.value_si * 0.001, self.Ea, 6)
 
     def test_T0(self):
         """
         Test that the SurfaceChargeTransfer T0 property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.T0.value_si, self.T0, 6)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.T0.value_si, self.T0, 6)
 
     def test_Tmin(self):
         """
         Test that the SurfaceChargeTransfer Tmin property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.Tmin.value_si, self.Tmin, 6)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmin.value_si, self.Tmin, 6)
 
     def test_Tmax(self):
         """
         Test that the SurfaceChargeTransfer Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.Tmax.value_si, self.Tmax, 6)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmax.value_si, self.Tmax, 6)
 
     def test_V0(self):
         """
         Test that the SurfaceChargeTransfer V0 property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.V0.value_si, self.V0, 1)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.V0.value_si, self.V0, 1)
 
     def test_Tmax(self):
         """
         Test that the SurfaceChargeTransfer Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.surfchargerxn.Tmax.value_si, self.Tmax, 6)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmax.value_si, self.Tmax, 6)
 
     def test_comment(self):
         """
         Test that the SurfaceChargeTransfer comment property was properly set.
         """
-        self.assertEqual(self.surfchargerxn.comment, self.comment)
+        self.assertEqual(self.surfchargerxn_reduction.comment, self.comment)
 
     def test_is_temperature_valid(self):
         """
@@ -462,7 +474,7 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
         valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
         for T, valid in zip(T_data, valid_data):
-            valid0 = self.surfchargerxn.is_temperature_valid(T)
+            valid0 = self.surfchargerxn_reduction.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
 
     def test_pickle(self):
@@ -471,23 +483,23 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         of information.
         """
         import pickle
-        surfchargerxn = pickle.loads(pickle.dumps(self.surfchargerxn, -1))
-        self.assertAlmostEqual(self.surfchargerxn.A.value, surfchargerxn.A.value, delta=1e0)
-        self.assertEqual(self.surfchargerxn.A.units, surfchargerxn.A.units)
-        self.assertAlmostEqual(self.surfchargerxn.n.value, surfchargerxn.n.value, 4)
-        self.assertAlmostEqual(self.surfchargerxn.ne.value, surfchargerxn.ne.value, 4)
-        self.assertAlmostEqual(self.surfchargerxn.Ea.value, surfchargerxn.Ea.value, 4)
-        self.assertEqual(self.surfchargerxn.Ea.units, surfchargerxn.Ea.units)
-        self.assertAlmostEqual(self.surfchargerxn.T0.value, surfchargerxn.T0.value, 4)
-        self.assertEqual(self.surfchargerxn.T0.units, surfchargerxn.T0.units)
-        self.assertAlmostEqual(self.surfchargerxn.V0.value, surfchargerxn.V0.value, 4)
-        self.assertEqual(self.surfchargerxn.V0.units, surfchargerxn.V0.units)
-        self.assertAlmostEqual(self.surfchargerxn.Tmin.value, surfchargerxn.Tmin.value, 4)
-        self.assertEqual(self.surfchargerxn.Tmin.units, surfchargerxn.Tmin.units)
-        self.assertAlmostEqual(self.surfchargerxn.Tmax.value, surfchargerxn.Tmax.value, 4)
-        self.assertEqual(self.surfchargerxn.Tmax.units, surfchargerxn.Tmax.units)
-        self.assertEqual(self.surfchargerxn.comment, surfchargerxn.comment)
-        self.assertEqual(dir(self.surfchargerxn), dir(surfchargerxn))
+        surfchargerxn_reduction = pickle.loads(pickle.dumps(self.surfchargerxn_reduction, -1))
+        self.assertAlmostEqual(self.surfchargerxn_reduction.A.value, surfchargerxn_reduction.A.value, delta=1e0)
+        self.assertEqual(self.surfchargerxn_reduction.A.units, surfchargerxn_reduction.A.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.n.value, surfchargerxn_reduction.n.value, 4)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.ne.value, surfchargerxn_reduction.ne.value, 4)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Ea.value, surfchargerxn_reduction.Ea.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Ea.units, surfchargerxn_reduction.Ea.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.T0.value, surfchargerxn_reduction.T0.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.T0.units, surfchargerxn_reduction.T0.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.V0.value, surfchargerxn_reduction.V0.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.V0.units, surfchargerxn_reduction.V0.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmin.value, surfchargerxn_reduction.Tmin.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Tmin.units, surfchargerxn_reduction.Tmin.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmax.value, surfchargerxn_reduction.Tmax.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Tmax.units, surfchargerxn_reduction.Tmax.units)
+        self.assertEqual(self.surfchargerxn_reduction.comment, surfchargerxn_reduction.comment)
+        self.assertEqual(dir(self.surfchargerxn_reduction), dir(surfchargerxn_reduction))
 
     def test_repr(self):
         """
@@ -495,22 +507,22 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         output with no loss of information.
         """
         namespace = {}
-        exec('surfchargerxn = {0!r}'.format(self.surfchargerxn), globals(), namespace)
-        self.assertIn('surfchargerxn', namespace)
-        surfchargerxn = namespace['surfchargerxn']
-        self.assertAlmostEqual(self.surfchargerxn.A.value, surfchargerxn.A.value, delta=1e0)
-        self.assertEqual(self.surfchargerxn.A.units, surfchargerxn.A.units)
-        self.assertAlmostEqual(self.surfchargerxn.n.value, surfchargerxn.n.value, 4)
-        self.assertAlmostEqual(self.surfchargerxn.Ea.value, surfchargerxn.Ea.value, 4)
-        self.assertEqual(self.surfchargerxn.Ea.units, surfchargerxn.Ea.units)
-        self.assertAlmostEqual(self.surfchargerxn.T0.value, surfchargerxn.T0.value, 4)
-        self.assertEqual(self.surfchargerxn.T0.units, surfchargerxn.T0.units)
-        self.assertAlmostEqual(self.surfchargerxn.Tmin.value, surfchargerxn.Tmin.value, 4)
-        self.assertEqual(self.surfchargerxn.Tmin.units, surfchargerxn.Tmin.units)
-        self.assertAlmostEqual(self.surfchargerxn.Tmax.value, surfchargerxn.Tmax.value, 4)
-        self.assertEqual(self.surfchargerxn.Tmax.units, surfchargerxn.Tmax.units)
-        self.assertEqual(self.surfchargerxn.comment, surfchargerxn.comment)
-        self.assertEqual(dir(self.surfchargerxn), dir(surfchargerxn))
+        exec('surfchargerxn_reduction = {0!r}'.format(self.surfchargerxn_reduction), globals(), namespace)
+        self.assertIn('surfchargerxn_reduction', namespace)
+        surfchargerxn_reduction = namespace['surfchargerxn_reduction']
+        self.assertAlmostEqual(self.surfchargerxn_reduction.A.value, surfchargerxn_reduction.A.value, delta=1e0)
+        self.assertEqual(self.surfchargerxn_reduction.A.units, surfchargerxn_reduction.A.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.n.value, surfchargerxn_reduction.n.value, 4)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Ea.value, surfchargerxn_reduction.Ea.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Ea.units, surfchargerxn_reduction.Ea.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.T0.value, surfchargerxn_reduction.T0.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.T0.units, surfchargerxn_reduction.T0.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmin.value, surfchargerxn_reduction.Tmin.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Tmin.units, surfchargerxn_reduction.Tmin.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmax.value, surfchargerxn_reduction.Tmax.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Tmax.units, surfchargerxn_reduction.Tmax.units)
+        self.assertEqual(self.surfchargerxn_reduction.comment, surfchargerxn_reduction.comment)
+        self.assertEqual(dir(self.surfchargerxn_reduction), dir(surfchargerxn_reduction))
 
     def test_copy(self):
         """
@@ -518,40 +530,40 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         with no loss of information.
         """
         import copy
-        surfchargerxn = copy.deepcopy(self.surfchargerxn)
-        self.assertAlmostEqual(self.surfchargerxn.A.value, surfchargerxn.A.value, delta=1e0)
-        self.assertEqual(self.surfchargerxn.A.units, surfchargerxn.A.units)
-        self.assertAlmostEqual(self.surfchargerxn.n.value, surfchargerxn.n.value, 4)
-        self.assertAlmostEqual(self.surfchargerxn.Ea.value, surfchargerxn.Ea.value, 4)
-        self.assertEqual(self.surfchargerxn.Ea.units, surfchargerxn.Ea.units)
-        self.assertAlmostEqual(self.surfchargerxn.T0.value, surfchargerxn.T0.value, 4)
-        self.assertEqual(self.surfchargerxn.T0.units, surfchargerxn.T0.units)
-        self.assertAlmostEqual(self.surfchargerxn.Tmin.value, surfchargerxn.Tmin.value, 4)
-        self.assertEqual(self.surfchargerxn.Tmin.units, surfchargerxn.Tmin.units)
-        self.assertAlmostEqual(self.surfchargerxn.Tmax.value, surfchargerxn.Tmax.value, 4)
-        self.assertEqual(self.surfchargerxn.Tmax.units, surfchargerxn.Tmax.units)
-        self.assertEqual(self.surfchargerxn.comment, surfchargerxn.comment)
-        self.assertEqual(dir(self.surfchargerxn), dir(surfchargerxn))
+        surfchargerxn_reduction = copy.deepcopy(self.surfchargerxn_reduction)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.A.value, surfchargerxn_reduction.A.value, delta=1e0)
+        self.assertEqual(self.surfchargerxn_reduction.A.units, surfchargerxn_reduction.A.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.n.value, surfchargerxn_reduction.n.value, 4)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Ea.value, surfchargerxn_reduction.Ea.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Ea.units, surfchargerxn_reduction.Ea.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.T0.value, surfchargerxn_reduction.T0.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.T0.units, surfchargerxn_reduction.T0.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmin.value, surfchargerxn_reduction.Tmin.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Tmin.units, surfchargerxn_reduction.Tmin.units)
+        self.assertAlmostEqual(self.surfchargerxn_reduction.Tmax.value, surfchargerxn_reduction.Tmax.value, 4)
+        self.assertEqual(self.surfchargerxn_reduction.Tmax.units, surfchargerxn_reduction.Tmax.units)
+        self.assertEqual(self.surfchargerxn_reduction.comment, surfchargerxn_reduction.comment)
+        self.assertEqual(dir(self.surfchargerxn_reduction), dir(surfchargerxn_reduction))
 
     def test_is_identical_to(self):
         """
         Test that the SurfaceChargeTransfer.is_identical_to method works on itself
         """
-        self.assertTrue(self.surfchargerxn.is_identical_to(self.surfchargerxn))
+        self.assertTrue(self.surfchargerxn_reduction.is_identical_to(self.surfchargerxn_reduction))
 
     def test_to_surface_arrhenius(self):
         """
         Test that the SurfaceChargeTransfer.to_surface_arrhenius method works
         """
-        surface_arr = self.surfchargerxn.to_surface_arrhenius()
+        surface_arr = self.surfchargerxn_reduction.to_surface_arrhenius()
         self.assertIsInstance(surface_arr,SurfaceArrhenius)
         surface_arrhenius0 = SurfaceArrhenius(
-            A = self.surfchargerxn.A,
-            n = self.surfchargerxn.n,
-            Ea = self.surfchargerxn.Ea,
-            T0 = self.surfchargerxn.T0,
-            Tmin = self.surfchargerxn.Tmin,
-            Tmax = self.surfchargerxn.Tmax,
+            A = self.surfchargerxn_reduction.A,
+            n = self.surfchargerxn_reduction.n,
+            Ea = self.surfchargerxn_reduction.Ea,
+            T0 = self.surfchargerxn_reduction.T0,
+            Tmin = self.surfchargerxn_reduction.Tmin,
+            Tmax = self.surfchargerxn_reduction.Tmax,
         )
 
         self.assertTrue(surface_arr.is_identical_to(surface_arrhenius0))
@@ -561,36 +573,45 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
         Test that the SurfaceChargeTransfer.get_activation_energy_from_potential method works
         """
  
-        ne = self.surfchargerxn.ne.value_si
-        V0 = self.surfchargerxn.V0.value_si
-        Ea0 = self.surfchargerxn.Ea.value_si
+        ne = self.surfchargerxn_oxidation.ne.value_si
+        V0 = self.surfchargerxn_oxidation.V0.value_si
+        Ea0 = self.surfchargerxn_oxidation.Ea.value_si
 
         Potentials = (V0 + 1, V0, V0 - 1)        
         
         for V in Potentials:
-            Ea = self.surfchargerxn.get_activation_energy_from_potential(V, False)
+            Ea = self.surfchargerxn_oxidation.get_activation_energy_from_potential(V, False)
             self.assertAlmostEqual(Ea0 - (ne * constants.F * (V-V0)), Ea, 6)
-            Ea = self.surfchargerxn.get_activation_energy_from_potential(V, True)
+            Ea = self.surfchargerxn_oxidation.get_activation_energy_from_potential(V, True)
             self.assertTrue(Ea>=0)
+            Ea = self.surfchargerxn_reduction.get_activation_energy_from_potential(V, False)
+            self.assertAlmostEqual(self.surfchargerxn_oxidation.Ea.value_si, Ea, 6)
+
 
     def test_get_rate_coefficient(self):
         """
         Test that the SurfaceChargeTransfer.to_surface_arrhenius method works
         """
 
-        A = self.surfchargerxn.A.value_si
-        ne = self.surfchargerxn.ne.value_si
-        n = self.surfchargerxn.n.value_si
-        Ea0 = self.surfchargerxn.Ea.value_si
-        V0 = self.surfchargerxn.V0.value_si
-        T0 = self.surfchargerxn.T0.value_si
+        A = self.surfchargerxn_oxidation.A.value_si
+        A_reduction = self.surfchargerxn_reduction.A.value_si
+        ne = self.surfchargerxn_oxidation.ne.value_si
+        n = self.surfchargerxn_oxidation.n.value_si
+        n_reduction = self.surfchargerxn_reduction.n.value_si
+        Ea_oxidation = self.surfchargerxn_oxidation.Ea.value_si
+        Ea_reduction = self.surfchargerxn_reduction.Ea.value_si
+        V0 = self.surfchargerxn_oxidation.V0.value_si
+        T0 = self.surfchargerxn_oxidation.T0.value_si
 
         Potentials = (V0 + 1, V0, V0 - 1) 
         for V in Potentials:
             for T in np.linspace(300,3000,10):
-                Ea = max(Ea0 - (ne * constants.F * (V-V0)),0.0)
-                k = A * (T / T0) ** n * np.exp(-Ea / (constants.R * T)) 
-                self.assertAlmostEqual(k,self.surfchargerxn.get_rate_coefficient(T,V))
+                Ea = Ea_oxidation - (ne * constants.F * (V-V0))
+                k_oxidation = A * (T / T0) ** n * np.exp(-Ea / (constants.R * T)) 
+                k_reduction = A_reduction * (T / T0) ** n_reduction * np.exp(-Ea_reduction  / (constants.R * T)) 
+                self.assertAlmostEqual(k_oxidation,self.surfchargerxn_oxidation.get_rate_coefficient(T,V))
+                self.assertAlmostEqual(k_reduction,self.surfchargerxn_reduction.get_rate_coefficient(T,V))
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
