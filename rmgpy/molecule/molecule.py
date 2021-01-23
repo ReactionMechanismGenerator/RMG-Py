@@ -519,9 +519,6 @@ class Atom(Vertex):
         if self.is_electron():
             self.charge = -1
             return
-        if self.is_proton():
-            self.charge = 1
-            return
 
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.get_total_bond_order()
