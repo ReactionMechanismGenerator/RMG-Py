@@ -587,7 +587,6 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
             Ea = self.surfchargerxn_reduction.get_activation_energy_from_potential(V, False)
             self.assertAlmostEqual(self.surfchargerxn_oxidation.Ea.value_si, Ea, 6)
 
-
     def test_get_rate_coefficient(self):
         """
         Test that the SurfaceChargeTransfer.to_surface_arrhenius method works
@@ -612,6 +611,27 @@ class TestSurfaceChargeTransfer((unittest.TestCase)):
                 self.assertAlmostEqual(k_oxidation,self.surfchargerxn_oxidation.get_rate_coefficient(T,V))
                 self.assertAlmostEqual(k_reduction,self.surfchargerxn_reduction.get_rate_coefficient(T,V))
 
+    def test_change_v0(self):
+        
+        V0 = self.surfchargerxn_oxidation.V0.value_si
+        ne = self.surfchargerxn_oxidation.ne.value
+        for V in (V0 + 1, V0, V0 - 1, V0):
+            delta = V - self.surfchargerxn_oxidation.V0.value_si
+            V_i = self.surfchargerxn_oxidation.V0.value_si
+            Ea_i = self.surfchargerxn_oxidation.Ea.value_si
+            self.surfchargerxn_oxidation.change_v0(V)
+            self.assertEqual(self.surfchargerxn_oxidation.V0.value_si, V_i + delta)
+            self.assertAlmostEqual(self.surfchargerxn_oxidation.Ea.value_si, Ea_i - (ne * constants.F * delta), 6)
+
+        V0 = self.surfchargerxn_reduction.V0.value_si
+        ne = self.surfchargerxn_reduction.ne.value
+        for V in (V0 + 1, V0, V0 - 1, V0):
+            delta = V - self.surfchargerxn_reduction.V0.value_si
+            V_i = self.surfchargerxn_reduction.V0.value_si
+            Ea_i = self.surfchargerxn_reduction.Ea.value_si
+            self.surfchargerxn_reduction.change_v0(V)
+            self.assertEqual(self.surfchargerxn_reduction.V0.value_si, V_i + delta)
+            self.assertAlmostEqual(self.surfchargerxn_reduction.Ea.value_si, Ea_i, 6)
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

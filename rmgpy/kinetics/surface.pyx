@@ -684,6 +684,17 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
+    cpdef change_v0(self, double V0):
+        """
+        Changes the reference potential to `V0` in volts, and adjusts the
+        activation energy `Ea` accordingly.
+        """
+
+        if self._ne.value > 0:
+            self._Ea.value_si = self.get_activation_energy_from_potential(V0, non_negative=False)
+
+        self._V0.value_si = V0
+
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
                       np.ndarray weights=None, bint three_params=False):
         """
