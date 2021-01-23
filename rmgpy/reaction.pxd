@@ -116,7 +116,7 @@ cdef class Reaction:
 
     cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef reverse_surface_charge_transfer_arrhenius_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?)
+    cpdef reverse_surface_charge_transfer_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?)
 
     cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
 

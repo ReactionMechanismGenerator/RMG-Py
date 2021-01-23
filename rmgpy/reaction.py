@@ -990,7 +990,7 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
-    def reverse_surface_charge_transfer_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
+    def reverse_surface_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
         """
         Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
         You must supply the correct units for the reverse rate.
@@ -1061,7 +1061,7 @@ class Reaction:
         kf = self.kinetics
 
         if isinstance(kf, SurfaceChargeTransfer):
-            return self.reverse_surface_charge_transfer_arrhenius_rate(kf, kunits, Tmin, Tmax)
+            return self.reverse_surface_charge_transfer_rate(kf, kunits, Tmin, Tmax)
 
         elif isinstance(kf, KineticsData):
 
