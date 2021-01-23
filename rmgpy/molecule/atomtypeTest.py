@@ -634,7 +634,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that get_atomtype() returns the hydrogen atom type.
         """
-        self.assertEqual(self.atom_type(self.mol3, 0), 'H')
+        self.assertEqual(self.atom_type(self.mol3, 0), 'H0')
 
     def test_carbon_types(self):
         """
@@ -800,7 +800,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that get_atomtype() works for occupied surface sites and for regular atoms in the complex.
         """
-        self.assertEqual(self.atom_type(self.mol76, 0), 'H')
+        self.assertEqual(self.atom_type(self.mol76, 0), 'H0')
         self.assertEqual(self.atom_type(self.mol76, 1), 'Xo')
 
     def test_vacant_surface_site_atom_type(self):
@@ -808,7 +808,7 @@ class TestGetAtomType(unittest.TestCase):
         Test that get_atomtype() works for vacant surface sites and for regular atoms in the complex.
         """
         self.assertEqual(self.atom_type(self.mol77, 0), 'Cs')
-        self.assertEqual(self.atom_type(self.mol77, 1), 'H')
+        self.assertEqual(self.atom_type(self.mol77, 1), 'H0')
         self.assertEqual(self.atom_type(self.mol77, 3), 'Xv')
         self.assertEqual(self.atom_type(self.mol78, 0), 'Xv')
 
