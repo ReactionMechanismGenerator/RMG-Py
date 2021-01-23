@@ -1961,7 +1961,7 @@ class Molecule(Graph):
         ONinds = [n for n, a in enumerate(self.atoms) if a.is_oxygen() or a.is_nitrogen()]
 
         for i, atm1 in enumerate(self.atoms):
-            if atm1.atomtype.label == 'H':
+            if atm1.atomtype.label == 'H0':
                 atm_covs = [q for q in atm1.bonds.keys()]
                 if len(atm_covs) > 1:  # H is already H bonded
                     continue

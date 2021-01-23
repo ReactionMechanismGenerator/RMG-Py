@@ -267,7 +267,7 @@ ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
 
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
-    'H','H+',
+    'H','H0','H+',
     'R!H',
     'Val4','Val5','Val6','Val7',
     'He','Ne','Ar',
@@ -314,7 +314,10 @@ ATOMTYPES['Val7'] = AtomType(label='Val7', generic=['R', 'R!H'], specific=[
     'I','I1s',
     'F','F1s'])
 
-ATOMTYPES['H'] = AtomType('H', generic=['R'], specific=['H+'], charge=[])
+
+ATOMTYPES['H'] = AtomType('H', generic=['R'], specific=['H0','H+'], charge=[0,+1])
+ATOMTYPES['H0'] = AtomType('H0', generic=['R','H'], specific=[], single=[0,1], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0],
+                            quadruple=[0], benzene=[0], lone_pairs=[0], charge=[0])
 ATOMTYPES['H+'] = AtomType('H+', generic=['R','H'], specific=[], single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0],
                             quadruple=[0], benzene=[0], lone_pairs=[0], charge=[+1])
 
@@ -648,8 +651,9 @@ ATOMTYPES['Val5'].set_actions(increment_bond=['Val5'], decrement_bond=['Val5'], 
 ATOMTYPES['Val6'].set_actions(increment_bond=['Val6'], decrement_bond=['Val6'], form_bond=['Val6'], break_bond=['Val6'], increment_radical=['Val6'], decrement_radical=['Val6'], increment_lone_pair=['Val6'], decrement_lone_pair=['Val6'],increment_charge=[], decrement_charge=[])
 ATOMTYPES['Val7'].set_actions(increment_bond=['Val7'], decrement_bond=['Val7'], form_bond=['Val7'], break_bond=['Val7'], increment_radical=['Val7'], decrement_radical=['Val7'], increment_lone_pair=['Val7'], decrement_lone_pair=['Val7'],increment_charge=[], decrement_charge=[])
 
-ATOMTYPES['H'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['H'], break_bond=['H'], increment_radical=['H'], decrement_radical=['H'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['H+'], decrement_charge=[])
-ATOMTYPES['H+'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=['H'])
+ATOMTYPES['H'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['H'], break_bond=['H'], increment_radical=['H'], decrement_radical=['H'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['H'], decrement_charge=['H'])
+ATOMTYPES['H0'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['H0'], break_bond=['H0'], increment_radical=['H0'], decrement_radical=['H0'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['H+'], decrement_charge=[])
+ATOMTYPES['H+'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=['H0'])
 
 ATOMTYPES['He'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=['He'], decrement_radical=['He'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=[])
 ATOMTYPES['Ne'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=['Ne'], decrement_radical=['Ne'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=[])
@@ -842,13 +846,7 @@ def get_atomtype(atom, bonds):
     # These elements do not do not have a more specific atomtype
     if atom_symbol in nonSpecifics:
         return ATOMTYPES[atom_symbol]
-
-    if atom_symbol == 'H':
-        if atom.charge == 0:
-            return ATOMTYPES['H']
-        elif atom.charge == 1:
-            return ATOMTYPES['H+']
-
+        
     mol_feature_list = get_features(atom, bonds)
     for specific_atom_type in ATOMTYPES[atom_symbol].specific:
         atomtype_feature_list = specific_atom_type.get_features()
