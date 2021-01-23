@@ -2760,7 +2760,8 @@ class Group(Graph):
                 else:
                     raise UnexpectedChargeError(graph=new_molecule)
                 # check hardcoded atomtypes
-                positive_charged = ['Csc', 'Cdc',
+                positive_charged = ['H+',
+                                    'Csc', 'Cdc',
                                     'N3sc', 'N5sc', 'N5dc', 'N5ddc', 'N5tc', 'N5b',
                                     'O2sc', 'O4sc', 'O4dc', 'O4tc',
                                     'P5sc', 'P5dc', 'P5ddc', 'P5tc', 'P5b',
