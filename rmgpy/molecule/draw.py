@@ -1228,7 +1228,7 @@ class MoleculeDrawer(object):
             heavy_atom = symbol[0]
 
             # Split label by atoms
-            labels = re.findall('[A-Z][a-z]*[0-9]*', symbol)
+            labels = re.findall('[A-Z]*[a-z]*[0-9]*', symbol)
             if not heavy_first:
                 labels.reverse()
             if 'C' not in symbol and 'O' not in symbol and len(atoms) == 1:
@@ -1333,6 +1333,8 @@ class MoleculeDrawer(object):
                 cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
             elif heavy_atom == 'X':
                 cr.set_source_rgba(0.5, 0.25, 0.5, 1.0)
+            elif heavy_atom == 'e':
+                cr.set_source_rgba(1.0, 0.0, 1.0, 1.0)
             else:
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
 
