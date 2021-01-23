@@ -91,6 +91,8 @@ cdef class SurfaceChargeTransfer(KineticsModel):
 
     cpdef change_t0(self, double T0)
 
+    cpdef change_v0(self, double V0)
+
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
