@@ -302,6 +302,30 @@ class ReactionRecipe(object):
                 # Apply the action
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
+                    # Check first to see if we have a bond
+                    if not struct.has_bond(atom1, atom2):
+                        if info < 1:
+                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        # If we do not have a bond, it might be because we are trying to change a vdW bond
+                        # Lets see if one of that atoms is a surface site, 
+                        # If we have a surface site, we will make a single bond, then change it by info - 1
+                        is_vdW_bond = False
+                        for atom in (atom1, atom2):
+                            if atom.is_surface_site():
+                                is_vdW_bond = True
+                                break
+                        if not is_vdW_bond: # no surface site, so no vdW bond
+                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        else: # we found a surface site, so we will make a single bond
+                            bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
+                            struct.add_bond(bond)
+                            atom1.apply_action(['FORM_BOND', label1, 1, label2])
+                            atom2.apply_action(['FORM_BOND', label1, 1, label2])
+                            # Now subtract 1 from info
+                            info -= 1
+                            # If info is 0, then we can continue since we don't have to change the bond
+                            if info == 0:
+                                continue
                     bond = struct.get_bond(atom1, atom2)
                     if bond.is_benzene():
                         struct.props['validAromatic'] = False
