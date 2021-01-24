@@ -6,7 +6,7 @@ shortDesc = u""
 longDesc = u"""
 
    *1                        *1-*3H
-   ||  + *3H+ + *4e-  ---->   |
+   ||  + *3H+ + *e-  ---->   |
   ~*2~                      ~*2~~
 
 The rate, which should be in mol/m2/s,
@@ -20,7 +20,6 @@ reverse = "Surface_Proton_Electron_Oxidation_Alpha"
 
 reactantNum = 3
 productNum = 1
-electronLabel = '*4'
 
 recipe(actions=[
     ['LOSE_CHARGE', '*3', 1],
@@ -54,7 +53,7 @@ entry(
     label = "Electron",
     group =
 """
-1 *4 e u0 p0 c-1
+1 * e u0 p0 c-1
 """,
     kinetics = None,
 )
