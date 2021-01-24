@@ -32,7 +32,7 @@ from unittest import TestCase, TestLoader, TextTestRunner
 
 from rmgpy import settings
 from rmgpy.data.surface import MetalDatabase
-from rmgpy.data.base import Entry #DatabaseError
+from rmgpy.data.base import Entry
 from rmgpy.exceptions import DatabaseError
 from rmgpy.quantity import Energy, SurfaceConcentration
 
@@ -74,6 +74,47 @@ class TestMetalDatabase(TestCase):
 
         self.assertEqual(repr(self.database.get_binding_energies(test_entry.label)), repr(test_entry.binding_energies))
         self.assertEqual(repr(self.database.get_surface_site_density(test_entry.label)), repr(test_entry.surface_site_density))
+
+    def test_write_entry_to_database(self):
+        """Test we can write an entry to the database"""
+
+        test_entry = Entry(
+            index=100,
+            label="Me111",
+            binding_energies={
+                'H': Energy(0., 'eV/molecule'),
+                'C': Energy(0., 'eV/molecule'),
+                'N': Energy(0., 'eV/molecule'),
+                'O': Energy(0., 'eV/molecule'),
+            },
+            surface_site_density=SurfaceConcentration(0., 'mol/cm^2'),
+            facet="111",
+            metal="Me",
+            short_desc=u"fcc",
+            long_desc=u"""
+        Test
+            """,
+        )
+
+        MetalLib = self.database.libraries['surface']
+        self.database.add_entry(test_entry)
+
+        # test to see if the entry was added
+        self.assertEqual(repr(self.database.get_binding_energies(test_entry.label)), repr(test_entry.binding_energies))
+        self.assertEqual(repr(self.database.get_surface_site_density(test_entry.label)), repr(test_entry.surface_site_density))
+
+        # write the new entry
+        self.database.save(os.path.join(settings['database.directory'], 'surface'))
+        # MetalLib.save_entry(os.path.join(settings['database.directory'], 'surface/libraries/metal.py'), test_entry)
+
+        # test to see if entry was written
+        with open(os.path.join(settings['database.directory'], 'surface/libraries/metal.py'), "r") as f:
+            if "Me111" in f.read():
+                self.database.remove_entry(test_entry)
+                self.database.save(os.path.join(settings['database.directory'], 'surface'))
+            else:
+                raise DatabaseError("Unable to write entry to database.")
+
 
     def test_load_from_label(self):
         """Test we can obtain metal parameters from a string"""

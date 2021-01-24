@@ -35,7 +35,6 @@ import re
 import logging
 
 from rmgpy.data.base import Database, Entry, DatabaseError
-# from rmgpy.data.thermo import ThermoDatabase, Entry, DatabaseError
 import rmgpy.quantity
 
 
@@ -49,13 +48,14 @@ def save_entry(f, entry):
     f.write('entry(\n')
     f.write('    index = {0:d},\n'.format(entry.index))
     f.write('    label = "{0}",\n'.format(entry.label))
-    if entry.bindingEnergies:
+    if entry.binding_energies:
         f.write('    bindingEnergies = {\n')
-        for key, value in entry.bindingEnergies.items():
+        for key, value in entry.binding_energies.items():
             f.write(f"        {key!r}: {value!r},\n")
-        f.write("    }\n")
-    if entry.surfaceSiteDesnity:
-        f.write('    surfaceSiteDensity = {0},\n'.format(entry.surfaceSiteDesnity))
+        f.write("    },\n")
+    if entry.surface_site_density:
+        f.write("    surfaceSiteDensity = ({0}, '{1}'),\n".format(entry.surface_site_density.value,
+                                                                  entry.surface_site_density.units))
     if entry.facet:
         f.write('    facet = "{0}",\n'.format(entry.facet))
     if entry.metal:
@@ -121,11 +121,11 @@ class MetalLibrary(Database):
         """
         Database.load(self, path, local_context={}, global_context={})
 
-    def save_entry(self, f, entry):
+    def save_entry(self, path, entry):
         """
         Write the given `entry` in the metal database to the file object `f`.
         """
-        return save_entry(f, entry)
+        return save_entry(path, entry)
 
     def get_binding_energies(self, label):
         """
@@ -267,6 +267,18 @@ class MetalDatabase(object):
 
         return metal_binding_energies
 
+    def add_entry(self, entry):
+        """
+        Add an entry to a metal library
+        """
+        self.libraries['surface'].entries[f'{entry.label}'] = entry
+
+    def remove_entry(self, entry):
+        """
+        Remove an entry from a metal library
+        """
+        self.libraries['surface'].entries.pop(f'{entry.label}')
+
     def save(self, path):
         """
         Save the metal database to the given `path` on disk, where `path`
@@ -275,7 +287,7 @@ class MetalDatabase(object):
         path = os.path.abspath(path)
         if not os.path.exists(path):
             os.mkdir(path)
-        self.save_libraries(os.path.join(path, 'libraries'))
+        self.save_libraries(os.path.join(path, 'libraries/metal.py'))
 
     def save_libraries(self, path):
         """
@@ -285,4 +297,4 @@ class MetalDatabase(object):
         if not os.path.exists(path):
             os.mkdir(path)
         for library in self.libraries.keys():
-            self.libraries[library].save(os.path.join(path, library + '.py'))
+            self.libraries[library].save(path)
