@@ -2266,16 +2266,20 @@ class KineticsFamily(Database):
             # Desorption should have desorbed something (else it was probably bidentate)
             # so delete reactions that don't make a gas-phase desorbed product
             # Eley-Rideal reactions should have one gas-phase product in the reverse direction 
+
+            # Determine how many surf reactants we expect based on the template
+            n_surf_expected = len([r for r in self.forward_template.reactants if r.item.contains_surface_site()])
+
+            # Now iterate through the reactions and toss them out if they number of surface reactants does not match
+            # does not match the expected number
             pruned_list = []
             for reaction in rxn_list:
-                for reactant in reaction.reactants:
-                    if not reactant.contains_surface_site():
-                        # found a desorbed species, we're ok
-                        pruned_list.append(reaction)
-                        break
-                else:  # didn't break, so all species still adsorbed
+                n_surf_reaction = len([r for r in reaction.reactants if r.contains_surface_site()])
+                if n_surf_expected != n_surf_reaction:
                     logging.debug("Removing {0} reaction {1!s} with no desorbed species".format(self.label, reaction))
-                    continue  # to next reaction immediately
+                    continue
+                else:
+                    pruned_list.append(reaction)
             rxn_list = pruned_list
 
         # If products is given, remove reactions from the reaction list that
