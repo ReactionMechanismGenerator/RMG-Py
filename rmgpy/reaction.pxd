@@ -94,6 +94,10 @@ cdef class Reaction:
 
     cpdef double get_free_energy_of_reaction(self, double T, double potential=?)
 
+    cpdef double get_reversible_potential(self, double T)
+
+    cpdef double set_reference_potential(self, double T)
+
     cpdef double get_equilibrium_constant(self, double T, double potential=?, str type=?, double surface_site_density=?)
 
     cpdef np.ndarray get_enthalpies_of_reaction(self, np.ndarray Tlist)
