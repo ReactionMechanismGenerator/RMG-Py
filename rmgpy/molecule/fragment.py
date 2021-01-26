@@ -952,8 +952,8 @@ class Fragment(Graph):
                 return True
         return False
 
-    def update(self):
-
+    def update(self, sort_atoms=True):
+        # currently sort_atoms does not work for fragments
         for v in self.vertices:
             if isinstance(v, Atom):
                 v.update_charge()
@@ -1254,10 +1254,12 @@ class Fragment(Graph):
             if atom_id_counter == 2**15:
                 atom_id_counter = -2**15
 
-    def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True):
+    def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True, save_order=False):
         """Returns a list of resonance structures of the fragment."""
         return resonance.generate_resonance_structures(self, keep_isomorphic=keep_isomorphic,
-                                                        filter_structures = filter_structures)
+                                                        filter_structures = filter_structures,
+                                                        save_order=save_order,
+                                                        )
 
     def is_identical(self, other, strict=True):
         """

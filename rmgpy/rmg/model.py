@@ -301,7 +301,7 @@ class CoreEdgeReactionModel:
             if len(mols) == 1:
                 molecule = mols[0]
             else:
-                return [self.make_new_species(mol) for mol in mols]
+                return [self.make_new_species(mol, check_decay=check_decay) for mol in mols]
 
         try:
             spec = Species(label=label,molecule=[molecule],reactive=reactive,thermo=object.thermo, transport_data=object.transport_data)
@@ -460,12 +460,27 @@ class CoreEdgeReactionModel:
         if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
             products = []
+            if perform_cut:
+                threshold = 20
+                # check if the product is too large so that we can cut
+                # maybe species do not contain element C
+                try:
+                    if forward.family in ['R_Recombination', 'R_Addition_MultipleBond'] and forward.products[0].molecule[0].get_element_count()['C'] >= threshold:
+                        # need to cut
+                        check_cut=True
+                    else:
+                        check_cut=False
+                except KeyError:
+                    check_cut=False
             for product in forward.products:
-                spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_decay=True)
+                spcs = self.make_new_species(product, generate_thermo=generate_thermo, check_decay=True, check_cut=check_cut)
                 if type(spcs) == tuple:
                     products.append(spcs[0])
                 elif type(spcs) == list:
                     products.extend([spc[0] for spc in spcs])
+            # change the reaction to irreversible if we cut the product into fragments
+            if len(products) != 1 and check_cut:
+                forward.reversible = False
         else:
             try:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
