@@ -31,4 +31,5 @@ from rmgpy.solver.base import ReactionSystem, TerminationTime, TerminationConver
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.electrode import ElectrodeReactor
 from rmgpy.solver.mbSampled import MBSampledReactor

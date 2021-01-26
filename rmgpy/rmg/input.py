@@ -44,6 +44,7 @@ from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.electrode import ElectrodeReactor
 from rmgpy.util import as_list
 
 ################################################################################
@@ -477,6 +478,109 @@ def surface_reactor(temperature,
         # mole fractions (simple reactor). In fact, some may be surface coverages.
 
     system = SurfaceReactor(T=T,
+                            P_initial=P_initial,
+                            initial_gas_mole_fractions=initialGasMoleFractions,
+                            initial_surface_coverages=initialSurfaceCoverages,
+                            surface_volume_ratio=surfaceVolumeRatio,
+                            surface_site_density=rmg.surface_site_density,
+                            n_sims=nSims,
+                            termination=termination,
+                            sensitive_species=sensitive_species,
+                            sensitivity_threshold=sensitivityThreshold,
+                            sens_conditions=sens_conditions)
+    rmg.reaction_systems.append(system)
+    system.log_initial_conditions(number=len(rmg.reaction_systems))
+
+# Reaction systems
+def electrode_reactor(potential,
+                    temperature,
+                    initialPressure,
+                    initialGasMoleFractions,
+                    initialSurfaceCoverages,
+                    surfaceVolumeRatio,
+                    nSims=4,
+                    terminationConversion=None,
+                    terminationTime=None,
+                    terminationRateRatio=None,
+                    sensitivity=None,
+                    sensitivityThreshold=1e-3):
+    logging.debug('Found electrodeReactor reaction system')
+
+    for value in list(initialGasMoleFractions.values()):
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
+    total_initial_moles = sum(initialGasMoleFractions.values())
+    if total_initial_moles != 1:
+        logging.warning('Initial gas mole fractions do not sum to one; renormalizing.')
+        logging.debug('')
+        logging.debug('Original composition:')
+        for spec, molfrac in initialGasMoleFractions.items():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+        for spec in initialGasMoleFractions:
+            initialGasMoleFractions[spec] /= total_initial_moles
+        logging.info('')
+        logging.debug('Normalized mole fractions:')
+        for spec, molfrac in initialGasMoleFractions.items():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+
+    if not isinstance(potential, list):
+        potential = Quantity(potential)
+    else:
+        if len(potential) != 2:
+            raise InputError('potential ranges can either be in the form of (number,units) or a list with 2 entries '
+                             'of the same format')
+        potential = [Quantity(v) for v in potential]
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature ranges can either be in the form of (number,units) or a list with 2 entries '
+                             'of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(initialPressure, list):
+        P_initial = Quantity(initialPressure)
+    else:
+        if len(initialPressure) != 2:
+            raise InputError('Initial pressure ranges can either be in the form ''of (number,units) or a list with '
+                             '2 entries of the same format')
+        P_initial = [Quantity(p) for p in initialPressure]
+
+    if not isinstance(temperature, list) and not isinstance(initialPressure, list):
+        nSims = 1
+    if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
+            any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
+        raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append(TerminationConversion(species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    sensitive_species = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitive_species.append(species_dict[spec])
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not isinstance(initialPressure, list):
+        sensitivityPressure = initialPressure
+    sens_conditions = None
+    if sensitivity:
+        raise NotImplementedError("Can't currently do sensitivity with surface reactors.")
+        # The problem is inside base.pyx it reads the dictionary 'sensConditions'
+        # and guesses whether they're all concentrations (liquid reactor) or
+        # mole fractions (simple reactor). In fact, some may be surface coverages.
+
+    system = ElectrodeReactor(potential=potential,
+                            T=T,
                             P_initial=P_initial,
                             initial_gas_mole_fractions=initialGasMoleFractions,
                             initial_surface_coverages=initialSurfaceCoverages,
@@ -935,6 +1039,7 @@ def read_input_file(path, rmg0):
         'simpleReactor': simple_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
+        'electrodeReactor': electrode_reactor,
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
