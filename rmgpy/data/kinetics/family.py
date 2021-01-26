@@ -1981,6 +1981,10 @@ class KineticsFamily(Database):
             return []
 
         if len(reactants) > len(template.reactants):
+            # If the template contains a surface site, we do not want to split it because it will break vdw bonds
+            if isinstance(template.reactants[0].item, Group):
+                if template.reactants[0].item.contains_surface_site():
+                    return []
             # if the family has one template and is bimolecular split template into multiple reactants
             try:
                 grps = template.reactants[0].item.split()
