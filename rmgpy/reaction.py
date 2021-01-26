@@ -686,11 +686,24 @@ class Reaction:
         """
         cython.declare(deltaG=cython.double, V0=cython.double)
         if not self.is_charge_transfer_reaction():
-            return None
+            raise KineticsError("Cannot get reversible potential for non charge transfer reactions")
 
         deltaG = self._get_free_energy_of_charge_transfer_reaction(T) #J/mol
         V0 = deltaG / self.n_electrons / constants.F # V = deltaG / n / F
         return V0
+
+    def set_reference_potential(self, T):
+        """
+        Get the Potential in `V` at T in 'K' at which the charge transfer reaction is at equilibrium
+        """
+        if self.kinetics is None:
+            raise KineticsError("Cannot set reference potential for reactions with no kinetics attribute")
+
+        if not isinstance(self.kinetics, SurfaceChargeTransfer):
+            raise KineticsError(f"Cannot set reference potential for {self.kinetics} kinetics")
+
+        if not self.kinetics.V0:
+            self.kinetics.V0 = (self.get_reversible_potential(T),'V')
             
     def get_equilibrium_constant(self, T, potential=0., type='Kc', surface_site_density=2.5e-05):
         """
@@ -903,6 +916,9 @@ class Reaction:
         if self.kinetics is None:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
+        if isinstance(self.kinetics, SurfaceChargeTransfer):
+            return # Not sure how to implement this method yet
+
         H298 = self.get_enthalpy_of_reaction(298)
         H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
              - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
@@ -999,6 +1015,7 @@ class Reaction:
         cython.declare(kf=SurfaceChargeTransfer, kr=SurfaceChargeTransfer)
         cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
         kf = k_forward
+        self.set_reference_potential(298)
         if not isinstance(kf, SurfaceChargeTransfer): # Only reverse SurfaceChargeTransfer rates
             raise TypeError(f'Expected a SurfaceChargeTransfer object for k_forward but received {kf}')
         if Tmin is not None and Tmax is not None:
