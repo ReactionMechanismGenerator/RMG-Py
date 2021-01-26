@@ -40,6 +40,7 @@ from rmgpy.solver.base import TerminationConversion
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.electrode import ElectrodeReactor
 
 
 def load_rmg_job(input_file, chemkin_file=None, species_dict=None, generate_images=True, use_java=False,

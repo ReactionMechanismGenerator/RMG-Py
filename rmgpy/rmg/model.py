@@ -47,11 +47,13 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
-from rmgpy.kinetics import KineticsData, Arrhenius
+from rmgpy.kinetics import KineticsData, Arrhenius, SurfaceChargeTransfer
+from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
 from rmgpy.rmg.react import react_all
+from rmgpy.solver.electrode import ElectrodeReactor
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 
@@ -282,7 +284,7 @@ class CoreEdgeReactionModel:
                 return spec, False
 
         # If we're here then we're ready to make the new species
-        if reactive:
+        if reactive and not molecule.is_electron():
             self.species_counter += 1  # count only reactive species
             species_index = self.species_counter
         else:
@@ -630,17 +632,21 @@ class CoreEdgeReactionModel:
         # self.new_reaction_list only contains *actually* new reactions, all in the forward direction.
         for reaction in self.new_reaction_list:
             # convert KineticsData to Arrhenius forms
-            if isinstance(reaction.kinetics, KineticsData):
+            if isinstance(reaction.kinetics, KineticsData) and not isinstance(reaction.kinetics, SurfaceChargeTransfer):
                 reaction.kinetics = reaction.kinetics.to_arrhenius()
-            #  correct barrier heights of estimated kinetics
-            if isinstance(reaction, TemplateReaction) or isinstance(reaction,
-                                                                    DepositoryReaction):  # i.e. not LibraryReaction
-                reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
 
-            if self.pressure_dependence and reaction.is_unimolecular():
-                # If this is going to be run through pressure dependence code,
-                # we need to make sure the barrier is positive.
-                reaction.fix_barrier_height(force_positive=True)
+            if isinstance(reaction.kinetics, SurfaceChargeTransfer):
+                reaction.set_reference_potential(298)
+            else:
+                #  correct barrier heights of estimated kinetics
+                if isinstance(reaction, TemplateReaction) or isinstance(reaction,
+                                                                        DepositoryReaction):  # i.e. not LibraryReaction
+                    reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
+
+                if self.pressure_dependence and reaction.is_unimolecular():
+                    # If this is going to be run through pressure dependence code,
+                    # we need to make sure the barrier is positive.
+                    reaction.fix_barrier_height(force_positive=True)
 
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressure_dependence:
