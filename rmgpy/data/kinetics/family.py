@@ -333,10 +333,22 @@ class ReactionRecipe(object):
                         atom1.apply_action(['CHANGE_BOND', label1, info, label2])
                         atom2.apply_action(['CHANGE_BOND', label1, info, label2])
                         bond.apply_action(['CHANGE_BOND', label1, info, label2])
+                        if pattern:
+                            if bond.is_van_der_waals():
+                                if atom1.is_surface_site():
+                                    atom1.atomtype = [ATOMTYPES['Xv']]
+                                else:
+                                    atom2.atomtype = [ATOMTYPES['Xv']]
                     else:
                         atom1.apply_action(['CHANGE_BOND', label1, -info, label2])
                         atom2.apply_action(['CHANGE_BOND', label1, -info, label2])
                         bond.apply_action(['CHANGE_BOND', label1, -info, label2])
+                        if pattern:
+                            if bond.is_van_der_waals():
+                                if atom1.is_surface_site():
+                                    atom1.atomtype = [ATOMTYPES['Xv']]
+                                else:
+                                    atom2.atomtype = [ATOMTYPES['Xv']]
                 elif (action[0] == 'FORM_BOND' and forward) or (action[0] == 'BREAK_BOND' and not forward):
                     if struct.has_bond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
