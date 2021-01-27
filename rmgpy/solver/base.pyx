@@ -213,6 +213,8 @@ cdef class ReactionSystem(DASx):
                 self.T = Quantity(conditions['T'], 'K')
             if 'P' in keys and hasattr(self, 'P'):
                 self.P = Quantity(conditions['P'], 'Pa')
+            if 'potential' in keys and hasattr(self, 'potential'):
+                self.potential = Quantity(conditions['potential'], 'V')
             for k in keys:
                 if is_conc:
                     if k in self.initial_concentrations.keys():
