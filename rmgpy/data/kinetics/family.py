@@ -360,6 +360,13 @@ class ReactionRecipe(object):
                     atom2.apply_action(['FORM_BOND', label1, info, label2])
                 elif (action[0] == 'BREAK_BOND' and forward) or (action[0] == 'FORM_BOND' and not forward):
                     if not struct.has_bond(atom1, atom2):
+                        if info == 0:
+                            if atom1.is_surface_site() or atom2.is_surface_site():
+                                # We are trying to break a vdW bond, but the atoms are not connected in
+                                # the graph. The bond will break when we split the merged products
+                                # in the `apply_recipe()` functions. Thus, there is nothing to do here,
+                                # so we continue to the next action.
+                                continue
                         raise InvalidActionError('Attempted to remove a nonexistent bond.')
                     bond = struct.get_bond(atom1, atom2)
                     struct.remove_bond(bond)
