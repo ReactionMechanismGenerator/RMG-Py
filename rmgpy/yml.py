@@ -44,7 +44,7 @@ from rmgpy.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, M
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.util import make_output_subdirectory
 
 
@@ -109,6 +109,14 @@ def obj_to_dict(obj, spcs, label="solvent"):
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
+    elif isinstance(obj, SurfaceChargeTransfer):
+        result_dict["type"] = "SurfaceChargeTransfer"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["ne"] = obj.ne.value_si
+        result_dict["V0"] = obj.V0.value_si
+        result_dict["alpha"] = obj.alpha.value_si
     elif isinstance(obj, StickingCoefficient):
         result_dict["type"] = "StickingCoefficient"
         result_dict["A"] = obj.A.value_si
