@@ -1551,17 +1551,21 @@ class Fragment(Graph):
         # slice mol
         frag_smiles_list = []
         if cut_through:
-            arom_cut_frag = self.sliceitup_arom(mol.to_smiles())
+            arom_cut_frag = self.sliceitup_arom(mol.to_smiles(), size_threshold=size_threshold)
             for frag in arom_cut_frag:
-                aliph_cut_frag = self.sliceitup_aliph(frag, size_threshold)
+                aliph_cut_frag = self.sliceitup_aliph(frag, size_threshold=size_threshold)
                 for ele in aliph_cut_frag:
                     frag_smiles_list.append(ele)
         else:
             # if aromatic, only perform sliceitup_arom, if aliphatic, only sliceitup_aliph
             if mol.is_aromatic() == True:
-                frag_smiles_list = self.sliceitup_arom(mol.to_smiles())
+                # try aromatic cut first, if no cut found, try aliphatic cut then
+                frag_smiles_list = self.sliceitup_arom(mol.to_smiles(), size_threshold=size_threshold)
+                if len(frag_smiles_list) == 1:
+                    # try aliphatic cut then
+                    frag_smiles_list = self.sliceitup_aliph(mol.to_smiles(), size_threshold=size_threshold)
             else:
-                frag_smiles_list = self.sliceitup_aliph(mol.to_smiles(), size_threshold)
+                frag_smiles_list = self.sliceitup_aliph(mol.to_smiles(), size_threshold=size_threshold)
 
         frag_list_new = []
         for frag_smiles in frag_smiles_list:
@@ -1583,10 +1587,15 @@ class Fragment(Graph):
                 frag_list.append(res_frag)
             return frag_list
 
-    def sliceitup_arom(self, molecule):
+    def sliceitup_arom(self, molecule, size_threshold = None):
         """
         Several specified aromatic patterns
         """
+        # set min size for each aliphatic fragment size
+        if size_threshold != None:
+            size_threshold = size_threshold
+        else:
+            size_threshold = 5
         # if input is smiles string, output smiles
         if isinstance(molecule, str):
             molecule_smiles = molecule
@@ -1625,9 +1634,10 @@ class Fragment(Graph):
         for i, (arom_rxn,pseudo_spe) in enumerate(arom_rxn_list):
             ps = arom_rxn.RunReactants((molecule1, pseudo_spe))
             if len(ps) != 0:
-                for i in range(len(ps[0])):
-                    frag_list.append(Chem.MolToSmiles(ps[0][i]))
-                break
+                if all( ps_i.GetNumAtoms() >= size_threshold for ps_i in ps[0] ):
+                    for i in range(len(ps[0])):
+                        frag_list.append(Chem.MolToSmiles(ps[0][i]))
+                    break
 
         if frag_list == []:
             frag_list.append(molecule_smiles)
