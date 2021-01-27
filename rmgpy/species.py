@@ -263,6 +263,14 @@ class Species(object):
     def molecular_weight(self, value):
         self._molecular_weight = quantity.Mass(value)
 
+    def get_net_charge(self):
+        """
+        Iterate through the atoms in the structure and calculate the net charge
+        on the overall molecule.
+        """
+
+        return self.molecule[0].get_net_charge()
+
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
         Generate all of the resonance structures of this species. The isomers are
