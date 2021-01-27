@@ -127,6 +127,25 @@ cdef class ElectrodeReactor(ReactionSystem):
             initial_surface_coverages[species_dict[label]] = surfaceCoverage
         self.initial_surface_coverages = initial_surface_coverages
 
+    def generate_reactant_product_indices(self, core_reactions, edge_reactions):
+        """
+        Creates a matrix for the reactants and products.
+        """
+
+        self.reactant_indices = -np.ones((self.num_core_reactions + self.num_edge_reactions, 3), np.int)
+        self.product_indices = -np.ones_like(self.reactant_indices)
+
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            j = self.reaction_index[rxn]
+            reacts = [r for r in rxn.reactants if not r.is_electron()]
+            prods = [p for p in rxn.products if not p.is_electron()]
+            for l, spec in enumerate(reacts):
+                i = self.get_species_index(spec)
+                self.reactant_indices[j, l] = i
+            for l, spec in enumerate(prods):
+                i = self.get_species_index(spec)
+                self.product_indices[j, l] = i
+
     cpdef initialize_model(self,
                           list core_species,
                           list core_reactions,
