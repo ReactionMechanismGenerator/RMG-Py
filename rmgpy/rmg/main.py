@@ -708,6 +708,16 @@ class RMG(util.Subject):
             self.rmg_memories.append(RMG_Memory(reaction_system, self.balance_species))
             self.rmg_memories[index].generate_cond()
             log_conditions(self.rmg_memories, index)
+            conditions = self.rmg_memories[index].get_cond()
+            temperature = potential = None
+            if isinstance(reaction_system, ElectrodeReactor):
+                if conditions:
+                    potential = conditions.get('potential')
+                    temperature = conditions.get('T')
+                if not potential:
+                    potential = reaction_system.potential.value_si
+                if not temperature:
+                    temperature = reaction_system.T.value_si
 
             # Update react flags
             if self.filter_reactions:
@@ -721,7 +731,7 @@ class RMG(util.Subject):
                     atol=self.simulator_settings_list[0].atol,
                     rtol=self.simulator_settings_list[0].rtol,
                     filter_reactions=True,
-                    conditions=self.rmg_memories[index].get_cond(),
+                    conditions=conditions,
                 )
 
                 self.update_reaction_threshold_and_react_flags(
@@ -742,7 +752,9 @@ class RMG(util.Subject):
             self.reaction_model.enlarge(react_edge=True,
                                         unimolecular_react=self.unimolecular_react,
                                         bimolecular_react=self.bimolecular_react,
-                                        trimolecular_react=self.trimolecular_react)
+                                        trimolecular_react=self.trimolecular_react,
+                                        temperature=temperature,
+                                        potential=potential)
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
             self.reaction_model.set_thermodynamic_filtering_parameters(
@@ -802,7 +814,16 @@ class RMG(util.Subject):
                         reactor_done = True
                         objects_to_enlarge = []
 
-                        conditions = self.rmg_memories[index].get_cond()
+
+                    if isinstance(reaction_system, ElectrodeReactor):
+                        if conditions:
+                            potential = conditions.get('potential')
+                            temperature = conditions.get('T')
+                        if not potential:
+                            potential = reaction_system.potential.value_si
+                        if not temperature:
+                            temperature = reaction_system.T.value_si
+
                         if conditions and self.solvent:
                             T = conditions['T']
                             # Set solvent viscosity
@@ -832,7 +853,7 @@ class RMG(util.Subject):
                                 prune=prune,
                                 model_settings=model_settings,
                                 simulator_settings=simulator_settings,
-                                conditions=self.rmg_memories[index].get_cond()
+                                conditions=conditions
                             )
                         except:
                             logging.error("Model core reactions:")
@@ -932,7 +953,9 @@ class RMG(util.Subject):
                         self.reaction_model.enlarge(react_edge=True,
                                                     unimolecular_react=self.unimolecular_react,
                                                     bimolecular_react=self.bimolecular_react,
-                                                    trimolecular_react=self.trimolecular_react)
+                                                    trimolecular_react=self.trimolecular_react,
+                                                    potential=potential,
+                                                    temperature=temperature)
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(
                                 self.reaction_model.core.reactions):
@@ -2340,7 +2363,7 @@ class RMG_Memory(object):
             if 'P' in list(new_cond.keys()):
                 new_cond['P'] = np.exp(new_cond['P'])
             if 'potential' in list(new_cond.keys()):
-                new_cond['potential'] = np.exp(new_cond['potential'])
+                new_cond['potential'] = new_cond['potential']
 
             if hasattr(self, 'initial_mole_fractions'):
                 for key in self.initial_mole_fractions.keys():

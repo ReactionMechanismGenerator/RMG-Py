@@ -503,7 +503,8 @@ class CoreEdgeReactionModel:
         return forward
 
     def enlarge(self, new_object=None, react_edge=False,
-                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
+                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None,
+                temperature=None, potential=None):
         """
         Enlarge a reaction model by processing the objects in the list `new_object`. 
         If `new_object` is a
@@ -636,7 +637,9 @@ class CoreEdgeReactionModel:
                 reaction.kinetics = reaction.kinetics.to_arrhenius()
 
             if isinstance(reaction.kinetics, SurfaceChargeTransfer):
-                reaction.set_reference_potential(298)
+                reaction.set_reference_potential(temperature)
+                # reaction.kinetics.change_v0(0.0)
+
             else:
                 #  correct barrier heights of estimated kinetics
                 if isinstance(reaction, TemplateReaction) or isinstance(reaction,
