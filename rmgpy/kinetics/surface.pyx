@@ -645,18 +645,18 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         def __set__(self, value):
             self._alpha = quantity.Dimensionless(value)
 
-    cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=False):
+    cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=True):
         """
         Return the effective activation energy (in J/mol) at specificed potential (in Volts).
         """
-        cdef double ne, Ea, V0
+        cdef double ne, alpha, Ea, V0
         
         ne = self._ne.value_si
+        alpha = self._alpha.value_si
         Ea = self._Ea.value_si
         V0 = self._V0.value_si
 
-        if ne > 0:
-            Ea -= ne * constants.F * (V-V0)
+        Ea -= alpha * ne * constants.F * (V-V0)
 
         if non_negative is True:
             return max(0.0,Ea)
@@ -668,11 +668,17 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         Return the rate coefficient in the appropriate combination of m^2,
         mol, and s at temperature `T` in K.
         """
-        cdef double A, n, Ea, T0
+        cdef double A, n, V0, T0, Ea
+
         A = self._A.value_si
         n = self._n.value_si
-        Ea = self.get_activation_energy_from_potential(V)
+        V0 = self._V0.value_si
         T0 = self._T0.value_si
+
+        if V != V0:
+            Ea = self.get_activation_energy_from_potential(V)
+        else:
+            Ea = self._Ea.value_si
 
         return A * (T / T0) ** n * exp(-Ea / (constants.R * T)) 
 
@@ -690,9 +696,7 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         activation energy `Ea` accordingly.
         """
 
-        if self._ne.value > 0:
-            self._Ea.value_si = self.get_activation_energy_from_potential(V0, non_negative=False)
-
+        self._Ea.value_si = self.get_activation_energy_from_potential(V0)
         self._V0.value_si = V0
 
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
