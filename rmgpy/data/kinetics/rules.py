@@ -564,12 +564,18 @@ class KineticsRules(Database):
         n = 0.0
         E0 = 0.0
         alpha = 0.0
+        ne = None
         count = len(kinetics_list)
         for kinetics in kinetics_list:
             logA += math.log10(kinetics.A.value_si)
             n += kinetics.n.value_si
             alpha += kinetics.alpha.value_si
-            E0 += kinetics.E0.value_si
+            if isinstance(kinetics, SurfaceChargeTransfer):
+                E0 += kinetics.Ea.value_si
+                if ne is None:
+                    ne = kinetics.ne.value_si
+            else:
+                E0 += kinetics.E0.value_si
         logA /= count
         n /= count
         alpha /= count
@@ -594,15 +600,24 @@ class KineticsRules(Database):
         else:
             raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
 
-        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP]:
+        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceChargeTransfer]:
             raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
 
-        averaged_kinetics = type(kinetics)(
-            A=(10 ** logA, Aunits),
-            n=n,
-            alpha=alpha,
-            E0=(E0 * 0.001, "kJ/mol"),
-        )
+        if isinstance(kinetics, SurfaceChargeTransfer):
+            averaged_kinetics = SurfaceChargeTransfer(
+                A=(10 ** logA, Aunits),
+                n=n,
+                ne=ne,
+                alpha=alpha,
+                Ea=(E0 * 0.001, "kJ/mol"),
+                )
+        else:
+            averaged_kinetics = type(kinetics)(
+                A=(10 ** logA, Aunits),
+                n=n,
+                alpha=alpha,
+                E0=(E0 * 0.001, "kJ/mol"),
+            )
         return averaged_kinetics
 
     def estimate_kinetics(self, template, degeneracy=1):
