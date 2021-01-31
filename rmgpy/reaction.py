@@ -913,13 +913,22 @@ class Reaction:
         If `force_positive` is True, then all reactions
         are forced to have a non-negative barrier.
         """
-        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double, V0=cython.double, 
+                       deltaG=cython.double)
 
         if self.kinetics is None:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         if isinstance(self.kinetics, SurfaceChargeTransfer):
-            return # Not sure how to implement this method yet
+            Ea = self.kinetics.Ea.value_si
+            V0 = self.kinetics.V0.value_si
+            deltaG = self._get_free_energy_of_charge_transfer_reaction(298,V0)
+            if deltaG > 0 and Ea < deltaG:
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol at {2:.2f} V".format(
+                    self.kinetics.Ea.value_si / 1000., deltaG / 1000., V0)
+                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol at {3:.2f} V".format(
+                    self, self.kinetics.Ea.value_si / 1000., deltaG / 1000., V0))
+                self.kinetics.Ea.value_si = deltaG
 
         H298 = self.get_enthalpy_of_reaction(298)
         H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
