@@ -638,18 +638,17 @@ class CoreEdgeReactionModel:
 
             if isinstance(reaction.kinetics, SurfaceChargeTransfer):
                 reaction.set_reference_potential(temperature)
-                # reaction.kinetics.change_v0(0.0)
+                reaction.kinetics.change_v0(potential)
 
-            else:
-                #  correct barrier heights of estimated kinetics
-                if isinstance(reaction, TemplateReaction) or isinstance(reaction,
-                                                                        DepositoryReaction):  # i.e. not LibraryReaction
-                    reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
+            #  correct barrier heights of estimated kinetics
+            if isinstance(reaction, TemplateReaction) or isinstance(reaction,
+                                                                    DepositoryReaction):  # i.e. not LibraryReaction
+                reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
 
-                if self.pressure_dependence and reaction.is_unimolecular():
-                    # If this is going to be run through pressure dependence code,
-                    # we need to make sure the barrier is positive.
-                    reaction.fix_barrier_height(force_positive=True)
+            if self.pressure_dependence and reaction.is_unimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fix_barrier_height(force_positive=True)
 
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressure_dependence:
