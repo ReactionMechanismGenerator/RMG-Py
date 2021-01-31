@@ -732,13 +732,13 @@ class Reaction:
             dN_gas = 0 # change in mols of gas spcs
             dN_surf = 0 # change in mols of surface spcs
             for prod in self.products:
-                if not prod.is_electron() and not prod.is_proton(): # don't count electrons (should we count protons???)
+                if not prod.is_electron(): # don't count electrons (should we count protons???)
                     if prod.contains_surface_site():
                         dN_surf += 1
                     else:
                         dN_gas += 1
             for react in self.reactants:
-                if not react.is_electron() and not react.is_proton(): # dont count electrons (should we count protons???)
+                if not react.is_electron(): # dont count electrons (should we count protons???)
                     if react.contains_surface_site():
                         dN_surf -= 1
                     else:
@@ -756,8 +756,8 @@ class Reaction:
                 K *= C0 ** dN_gas
             if dN_surf:
                 K *= surface_site_density ** dN_surf
-            if self.n_protons:
-                K *= 1000 ** self.n_protons
+            # if self.n_protons:
+            #     K *= 1000 ** self.n_protons
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
             K *= P0 ** dN_gas
