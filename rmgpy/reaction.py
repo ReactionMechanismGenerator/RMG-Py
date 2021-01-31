@@ -600,7 +600,8 @@ class Reaction:
         cython.declare(dHrxn=cython.double, reactant=Species, product=Species)
 
         if self.is_charge_transfer_reaction():
-            raise NotImplementedError("Can only get free energy of charge transfer reactions using CHE model")
+            logging.debug("Can only get free energy of charge transfer reactions using CHE model")
+            return self.get_free_energy_of_reaction(T)
         dHrxn = 0.0
         for reactant in self.reactants:
             dHrxn -= reactant.get_enthalpy(T)
@@ -616,7 +617,8 @@ class Reaction:
         cython.declare(dSrxn=cython.double, reactant=Species, product=Species)
 
         if self.is_charge_transfer_reaction():
-            raise NotImplementedError("Can only get free energy of charge transfer reactions using CHE model")
+            logging.debug("Can only get free energy of charge transfer reactions using CHE model")
+            return self.get_free_energy_of_reaction(T)
         dSrxn = 0.0
         for reactant in self.reactants:
             dSrxn -= reactant.get_entropy(T)
@@ -1243,10 +1245,13 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
+        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element,
+                       reactants_net_charge=cython.int, products_net_charge=cython.int)
 
         reactant_elements = {}
         product_elements = {}
+        reactants_net_charge = 0
+        products_net_charge = 0
         for element in element_list:
             reactant_elements[element] = 0
             product_elements[element] = 0
@@ -1257,7 +1262,9 @@ class Reaction:
             elif isinstance(reactant, Molecule):
                 molecule = reactant
             for atom in molecule.atoms:
-                reactant_elements[atom.element] += 1
+                reactants_net_charge += atom.charge
+                if not atom.is_electron():
+                    reactant_elements[atom.element] += 1
 
         for product in self.products:
             if isinstance(product, Species):
@@ -1265,11 +1272,16 @@ class Reaction:
             elif isinstance(product, Molecule):
                 molecule = product
             for atom in molecule.atoms:
-                product_elements[atom.element] += 1
+                products_net_charge += atom.charge
+                if not atom.is_electron():
+                    product_elements[atom.element] += 1
 
         for element in element_list:
             if reactant_elements[element] != product_elements[element]:
                 return False
+
+        if reactants_net_charge != products_net_charge:
+            return False
 
         return True
 
