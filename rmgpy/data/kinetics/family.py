@@ -1233,6 +1233,23 @@ class KineticsFamily(Database):
                     Tmin=deepcopy(data.Tmin),
                     Tmax=deepcopy(data.Tmax)
                 )
+            elif isinstance(data, SurfaceChargeTransfer):
+                for reactant in entry.item.reactants:
+                    # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
+                    reactant_copy = reactant.copy(deep=True)
+                    reactant_copy.molecule[0].clear_labeled_atoms()
+                    reactant_copy.generate_resonance_structures()
+                    reactant.thermo = thermo_database.get_thermo_data(reactant_copy, training_set=True)
+                for product in entry.item.products:
+                    product_copy = product.copy(deep=True)
+                    product_copy.molecule[0].clear_labeled_atoms()
+                    product_copy.generate_resonance_structures()
+                    product.thermo = thermo_database.get_thermo_data(product_copy, training_set=True)
+                entry.item.kinetics = data
+                V0 = entry.item.get_reversible_potential(298)
+                data.change_v0(V0)
+                data.Ea = (data.Ea.value_si / 1000, 'kJ/mol')
+                data.V0 = None
             else:
                 raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
 
@@ -1262,7 +1279,9 @@ class KineticsFamily(Database):
 
             tentries[entry.index].item.is_forward = False
 
-            assert isinstance(entry.data, Arrhenius)
+            if not isinstance(entry.data, Arrhenius):
+                print(self.label)
+                assert False
             data = deepcopy(entry.data)
             data.change_t0(1)
             # Estimate the thermo for the reactants and products
@@ -1291,6 +1310,11 @@ class KineticsFamily(Database):
                 product.thermo = thermo_database.get_thermo_data(product, training_set=True)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
+            if isinstance(item.kinetics, SurfaceChargeTransfer):
+                V0 = item.get_reversible_potential(298)
+                data.change_v0(V0)
+                data.V0 = None
+
             data = item.generate_reverse_rate_coefficient()
 
             item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products],
