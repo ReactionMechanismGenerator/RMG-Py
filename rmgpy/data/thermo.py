@@ -1505,7 +1505,7 @@ class ThermoDatabase(object):
                 change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
                 thermo.H298.value_si += change_in_binding_energy
                 comments.append(f'{normalized_bonds[element]:.2f}{element}')
-        thermo.comment += " Binding energy corrected by LSR ({})".format('+'.join(comments))
+        thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
