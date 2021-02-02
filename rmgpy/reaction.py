@@ -841,7 +841,8 @@ class Reaction:
         Value is returned in combination of [m,mol,s]
         """
         cython.declare(rateCoefficient=cython.double,
-                       molecularWeight_kg=cython.double, )
+                       molecularWeight_kg=cython.double, 
+                       Ea=cython.double, deltaG=cython.double)
 
         if diffusion_limiter.enabled:
             raise NotImplementedError()
@@ -876,7 +877,17 @@ class Reaction:
             return self.kinetics.get_rate_coefficient(T, P=0)
 
         if isinstance(self.kinetics, SurfaceChargeTransfer):
-            return self.kinetics.get_rate_coefficient(T, potential) 
+            Ea = self.kinetics.get_activation_energy_from_potential(potential)
+            deltaG = self._get_free_energy_of_charge_transfer_reaction(298,potential)
+            if deltaG > 0 and Ea < deltaG:
+                corrected_kinetics = deepcopy(self.kinetics)
+                corrected_kinetics.V0.value_si = potential
+                corrected_kinetics.Ea.value_si = deltaG
+                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol at {3:.2f} V".format(
+                    self, self.kinetics.Ea.value_si / 1000., deltaG / 1000., potential))
+                return corrected_kinetics.get_rate_coefficient(T, potential)
+            else:
+                return self.kinetics.get_rate_coefficient(T, potential) 
 
         raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r}".format(type(self.kinetics)))
 
