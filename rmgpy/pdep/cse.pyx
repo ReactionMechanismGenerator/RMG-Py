@@ -155,7 +155,7 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     #        omega0[ind[-1]], omega0[ind[-2]], omega0[ind[-1]] / omega0[ind[-2]]))
     else:
         lumping = []
-        unlumping = range(n_chem)
+        unlumping = list(range(n_chem))
 
     # Extract the chemically-significant eigenvalues and eigenvectors
     omega = omega0.take(ind[-n_cse:])
