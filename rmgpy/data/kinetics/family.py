@@ -1247,7 +1247,10 @@ class KineticsFamily(Database):
                     product.thermo = thermo_database.get_thermo_data(product_copy, training_set=True)
                 entry.item.kinetics = data
                 V0 = entry.item.get_reversible_potential(298)
-                data.change_v0(V0)
+                if data.V0 is None:
+                    data.V0.value_si = V0
+                else:
+                    data.change_v0(V0)
                 data.Ea = (data.Ea.value_si / 1000, 'kJ/mol')
                 data.V0 = None
             else:
