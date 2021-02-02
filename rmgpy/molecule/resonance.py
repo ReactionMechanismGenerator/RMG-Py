@@ -254,7 +254,8 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         copy                if False, append new resonance structures to input list (default)
                             if True, make a new list with all of the resonance structures
     """
-    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule, input_charge=cython.int)
+    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule, input_charge=cython.int,
+                    x=Atom)
 
     if copy:
         # Make a copy of the list so we don't modify the input list
@@ -308,6 +309,21 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
             logging.warning('Resonance generation created a molecule {0} with a net charge of {1}\n'
                             'which does not match the input mol charge of {2}'
                             'Removing {0} from resonance structures'.format(mol.smiles,mol.get_net_charge(),input_charge))
+        if mol.contains_surface_site():
+            for x in [atom for atom in mol.atoms if atom.is_surface_site()]:
+                if x.radical_electrons != 0:
+                    mol_list.remove(mol)
+                    logging.warning('Resonance generation created a molecule {0} with {1} radicals on {2}\n'
+                    'Removing {0} from resonance structures'.format(mol.smiles,x.radical_electrons,x.symbol))
+                elif x.lone_pairs != 0:
+                    mol_list.remove(mol)
+                    logging.warning('Resonance generation created a molecule {0} with {1} lone pairs on {2}\n'
+                    'Removing {0} from resonance structures'.format(mol.smiles,x.lone_pairs,x.symbol))
+                elif x.charge != 0:
+                    mol_list.remove(mol)
+                    logging.warning('Resonance generation created a molecule {0} with a charge of {1} on {2}\n'
+                    'Removing {0} from resonance structures'.format(mol.smiles,x.charge,x.symbol))
+
     return mol_list
 
 
