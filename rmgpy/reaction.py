@@ -644,7 +644,7 @@ class Reaction:
                     raise
 
         for product in self.products:
-            if not reactant.is_electron() and not reactant.is_proton():
+            if not product.is_electron() and not product.is_proton():
                 try:
                     dGrxn += product.get_free_energy(T)
                 except Exception:
