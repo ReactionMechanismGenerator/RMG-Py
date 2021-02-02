@@ -106,7 +106,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
                     for s in range(n_j):
                         u, v = indices[i, r, s], indices[j, r, s]
                         if u > -1 and v > -1:
-                            me_mat[u, v] = k_ij[j, i, r, s]
+                            me_mat[v, u] = k_ij[j, i, r, s]
                             me_mat[u, u] -= k_ij[j, i, r, s]
                             me_mat[u, v] = k_ij[i, j, r, s]
                             me_mat[v, v] -= k_ij[i, j, r, s]
@@ -122,7 +122,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
                         if u > -1:
                             me_mat[u, u] -= g_nj[n, i, r, s]
                             if n < n_reac or products:
-                                me_mat[u, v] = g_nj[n, i, r, s]
+                                me_mat[v, u] = g_nj[n, i, r, s]
                             if n < n_reac:
                                 val = f_im[i, n, r, s] * dens_states[n + n_isom, r, s] \
                                       * (2 * j_list[s] + 1) * exp(-e_list[r] * beta)
