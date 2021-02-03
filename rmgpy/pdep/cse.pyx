@@ -47,12 +47,12 @@ from rmgpy.pdep.me import generate_full_me_matrix
 
 def apply_chemically_significant_eigenvalues_method(network, list lumping_order=None):
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
-    cdef np.ndarray[np.int_t,ndim=1] j_list
-    cdef np.ndarray[np.int_t,ndim=3] indices
-    cdef np.ndarray[np.float64_t,ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
-    cdef np.ndarray[np.float64_t,ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
-    cdef np.ndarray[np.float64_t,ndim=3] dens_states
-    cdef np.ndarray[np.float64_t,ndim=4] g_nj, pa
+    cdef np.ndarray[np.int_t, ndim=1] j_list
+    cdef np.ndarray[np.int_t, ndim=3] indices
+    cdef np.ndarray[np.float64_t, ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
+    cdef np.ndarray[np.float64_t, ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
+    cdef np.ndarray[np.float64_t, ndim=3] dens_states
+    cdef np.ndarray[np.float64_t, ndim=4] g_nj, pa
     cdef list lumping, unlumping
     cdef double temperature, pressure, ym_b
     cdef int n_isom, n_reac, n_prod, n_grains, n_j, n_chem, n_cse, n_rows
@@ -74,7 +74,7 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     n_grains = len(e_list)
     n_chem = n_isom + n_reac
     
-    ym_b = 1.0e-6 * pressure / constants.R / temperature
+    ym_b = 1.0e-6 * pressure / (constants.R * temperature)
     
     # Generate the full master equation matrix
     me_mat, indices = generate_full_me_matrix(network, products=False)
@@ -89,15 +89,15 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
             for s in range(n_j):
                 index = indices[i, r, s]
                 if index > -1:
-                    s_mat[index] = sqrt(dens_states[i, r, s] * (2 * j_list[s] + 1)
-                                        * exp(-e_list[r] / constants.R / temperature) * eq_ratios[i])
+                    s_mat[index] = sqrt(dens_states[i, r, s] * (2 * j_list[s] + 1) \
+                                        * exp(-e_list[r] / (constants.R * temperature)) * eq_ratios[i])
                     s_mat_inv[index] = 1.0 / s_mat[index]
     for n in range(n_reac):
         index = n_rows - n_reac + n
         s_mat[index] = sqrt(eq_ratios[n + n_isom] / ym_b)
         s_mat_inv[index] = 1.0 / s_mat[index]
 
-    # Symmetrize master equation matrix: me_mat = s_mat * Msymm * s_mat_inv
+    # Symmetrize master equation matrix: me_mat = s_mat * m_symm * s_mat_inv
     # Since s_mat and s_mat_inv are diagonal we can do this very efficiently
     for r in range(n_rows):
         for s in range(n_rows):
@@ -108,9 +108,9 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     for r in range(n_rows):
         for s in range(r):
             if me_mat[r, s] != 0:
-                if abs(me_mat[r, s] - me_mat[s,r]) > 0.01 * me_mat[r, s]:
-                    if me_mat[r, s] > 1e-200 or me_mat[s,r] > 1e-200:
-                        print(r, s, me_mat[r, s], me_mat[s,r])
+                if abs(me_mat[r, s] - me_mat[s, r]) > 0.01 * min(me_mat[r, s], me_mat[s, r]) \
+                    and max(me_mat[r, s], me_mat[s, r]) > 1e-200:
+                        print(r, s, me_mat[r, s], me_mat[s, r])
                         properly_symmetrized = False
     if not properly_symmetrized:
         raise ChemicallySignificantEigenvaluesError('Master equation matrix not properly symmetrized.')
@@ -118,7 +118,7 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     # Get eigenvalues and eigenvectors
     # We only need the slowest n_chem + 1 eigenmodes, so only compute those
     try:
-        # omega0, eigen_vectors0 = scipy.linalg.eigh(me_mat, eigvals=(n_rows-n_chem-1,n_rows-1),
+        # omega0, eigen_vectors0 = scipy.linalg.eigh(me_mat, eigvals=(n_rows - n_chem - 1, n_rows - 1),
         #                                            overwrite_a=True, overwrite_b=True)
         omega0, eigen_vectors0 = scipy.linalg.eigh(me_mat, overwrite_a=True, overwrite_b=True)
     except np.linalg.LinAlgError:
