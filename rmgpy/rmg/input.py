@@ -273,10 +273,22 @@ def simple_reactor(temperature,
         # calculate total as denominator
         total = float(0)
         for initial_mol, value in initialMoleFractions.items():
-            total += value * sum(mol_to_frag[initial_mol].values())
+            try:
+                total += value * sum(mol_to_frag[initial_mol].values())
+            except KeyError:
+                # there might be other species which set cut to be False but in initialMoleFractions
+                mol_to_frag[initial_mol] = {}
+                mol_to_frag[initial_mol][initial_mol] = 1
+                total += value * sum(mol_to_frag[initial_mol].values())
         for key, frag_dict in mol_to_frag.items():
             # if not perform cutting, no need to modify initialMoleFractions
-            if len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+            # only 1 species in system and it does not get cut, then no need to modify initialMoleFractions
+            if len(mol_to_frag.keys())==1 and len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                continue
+            # probably this species does not get cut but other speceis are cut,
+            # so it still requires to re-calculate and normalize molar fraction
+            elif len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                initialMoleFractions[key] = initialMoleFractions[key] * frag_dict[key] / total
                 continue
             for frag_label, number in frag_dict.items():
                 if frag_label in initialMoleFractions:
