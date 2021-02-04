@@ -136,14 +136,15 @@ class MetalLibrary(Database):
         try:
             binding_energies = self.entries[label].binding_energies
         except KeyError:
-            raise DatabaseError(f'Metal {label!r} not found in metal library database.')
+            raise DatabaseError(f'Metal {label!r} not found in metal library database. \
+            Labels should be formatted MetalFacet (ex. Pt111).')
         if binding_energies is None:
             raise DatabaseError(f'Metal {label!r} has no binding energies in metal library database.')
         return binding_energies
 
     def get_surface_site_density(self, label):
         """
-        Get a metal's surface site desnity from its label.
+        Get a metal's surface site density from its label.
 
         Raises DatabaseError (rather than returning None) if it can't be found.
         """
