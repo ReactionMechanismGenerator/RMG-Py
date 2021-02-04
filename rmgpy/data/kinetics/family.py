@@ -1470,7 +1470,7 @@ class KineticsFamily(Database):
                 if atom.label != '':
                     atom_labels[atom.label] = atom
 
-            if label == 'h_abstraction':
+            if label in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
                 # '*2' is the H that migrates
                 # it moves from '*1' to '*3'
                 atom_labels['*1'].label = '*3'
@@ -2340,7 +2340,7 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 for product in reaction.products:
                     pairs.append([reactant, product])
-        elif self.label.lower() == 'h_abstraction':
+        elif self.label.lower() == ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
