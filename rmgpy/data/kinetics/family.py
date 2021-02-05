@@ -55,7 +55,7 @@ from rmgpy.data.kinetics.rules import KineticsRules
 from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
-                           StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer
+                           StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer, SurfaceChargeTransferBEP
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, GroupAtom, Molecule, Atom
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -1245,14 +1245,9 @@ class KineticsFamily(Database):
                     product_copy.molecule[0].clear_labeled_atoms()
                     product_copy.generate_resonance_structures()
                     product.thermo = thermo_database.get_thermo_data(product_copy, training_set=True)
-                entry.item.kinetics = data
-                V0 = entry.item.get_reversible_potential(298)
-                if data.V0 is None:
-                    data.V0.value_si = V0
-                else:
-                    data.change_v0(V0)
-                data.Ea = (data.Ea.value_si / 1000, 'kJ/mol')
-                data.V0 = None
+                V = data.V0.value_si
+                dGrxn = entry.item._get_free_energy_of_charge_transfer_reaction(298,V)
+                data = data.to_surface_charge_transfer_bep(dGrxn,0.0)
             else:
                 raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
 
