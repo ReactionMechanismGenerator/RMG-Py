@@ -815,7 +815,7 @@ class RMG(util.Subject):
                         reactor_done = True
                         objects_to_enlarge = []
 
-
+                        conditions = self.rmg_memories[index].get_cond()
                         if isinstance(reaction_system, ElectrodeReactor):
                             if conditions:
                                 potential = conditions.get('potential')
@@ -867,9 +867,9 @@ class RMG(util.Subject):
                                 self.make_seed_mech()  # Just in case the user wants to restart from this
                             raise
 
+                        log_conditions(self.rmg_memories, index)
                         self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
                         self.rmg_memories[index].generate_cond()
-                        log_conditions(self.rmg_memories, index)
 
                         reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species,
                                                                                    new_surface_reactions, reaction_system)
