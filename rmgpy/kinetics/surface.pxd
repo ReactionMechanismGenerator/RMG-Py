@@ -98,3 +98,29 @@ cdef class SurfaceChargeTransfer(KineticsModel):
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
 
     cpdef SurfaceArrhenius to_surface_arrhenius(self)
+
+    cpdef SurfaceChargeTransferBEP to_surface_charge_transfer_bep(self, double dGrxn, double V0=?)
+
+################################################################################
+cdef class SurfaceChargeTransferBEP(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _E0
+    cdef public ScalarQuantity _V0
+    cdef public ScalarQuantity _alpha
+    cdef public ScalarQuantity _ne
+
+    cpdef change_v0(self, double V0)
+
+    cpdef double get_activation_energy(self, double dGrxn) except -1
+
+    cpdef double get_activation_energy_from_potential(self, double V, double dGrxn) except -1
+
+    cpdef double get_rate_coefficient_from_potential(self, double T, double V, double dGrxn) except -1
+
+    cpdef SurfaceChargeTransfer to_surface_charge_transfer(self, double dGrxn)
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
+    cpdef change_rate(self, double factor)

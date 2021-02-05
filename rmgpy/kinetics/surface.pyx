@@ -659,9 +659,10 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         Ea -= alpha * ne * constants.F * (V-V0)
 
         if non_negative is True:
-            return max(0.0,Ea)
-        else:
-            return Ea
+            if Ea < 0:
+                Ea = 0.0
+
+        return Ea
 
     cpdef double get_rate_coefficient(self, double T, double V=0.0) except -1:
         """
@@ -800,3 +801,230 @@ cdef class SurfaceChargeTransfer(KineticsModel):
             uncertainty = self.uncertainty,
             comment=self.comment,
         )
+
+    cpdef SurfaceChargeTransferBEP to_surface_charge_transfer_bep(self, double dGrxn, double V0=0.0):
+        """
+        Converts an SurfaceChargeTransfer object to SurfaceChargeTransferBEP
+        """
+        cdef double E0
+    
+        self.change_t0(1)
+        self.change_v0(V0)
+
+        E0 = self.Ea.value_si - self._alpha.value_si * dGrxn
+        if E0 < 0:
+            E0 = 0.0
+
+        aep = SurfaceChargeTransferBEP(
+                        A=self.A,
+                        ne=self.ne,
+                        n=self.n,
+                        alpha=self.alpha,
+                        V0=self.V0,
+                        E0=(E0, 'J/mol'),
+                        Tmin=self.Tmin,
+                        Tmax=self.Tmax,
+                        Pmin=self.Pmin,
+                        Pmax=self.Pmax,
+                        uncertainty=self.uncertainty,
+                        comment=self.comment)
+        return aep
+
+cdef class SurfaceChargeTransferBEP(KineticsModel):
+    """
+    A kinetics model based on the (modified) Arrhenius equation, using the
+    Evans-Polanyi equation to determine the activation energy. The attributes
+    are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `n`             The temperature exponent
+    `E0`            The activation energy at equilibiurm
+    `ne`            The stochiometry coeff for electrons (negative if reactant, positive if product)
+    `V0`            The reference potential
+    `alpha`         The charge transfer coefficient
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+
+    """
+
+    def __init__(self, A=None, n=0.0, E0=None, V0=(0.0,'V'), alpha=0.5, ne=-1, Tmin=None, Tmax=None,
+                Pmin=None, Pmax=None, uncertainty=None, comment=''):
+
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
+                comment=comment)
+
+        self.alpha = alpha
+        self.A = A
+        self.n = n
+        self.E0 = E0
+        self.ne = ne
+        self.V0 = V0
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        Arrhenius object.
+        """
+        string = 'SurfaceChargeTransferBEP(A={0!r}, n={1!r}, E0={2!r}, V0={3!r}, alpha={4!r}, ne={5!r}'.format(
+            self.A, self.n, self.E0, self.V0, self.alpha, self.ne)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a SurfaceChargeTransfer object.
+        """
+        return (SurfaceChargeTransferBEP, (self.A, self.n, self.E0, self.V0, self.alpha, self.ne, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.uncertainty, self.comment))
+
+    property A:
+        """The preexponential factor."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.SurfaceRateCoefficient(value)
+
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property E0:
+        """The activation energy."""
+        def __get__(self):
+            return self._E0
+        def __set__(self, value):
+            self._E0 = quantity.Energy(value)
+
+    property V0:
+        """The reference potential."""
+        def __get__(self):
+            return self._V0
+        def __set__(self, value):
+            self._V0 = quantity.Potential(value)
+
+    property ne:
+        """The number of electrons transferred."""
+        def __get__(self):
+            return self._ne
+        def __set__(self, value):
+            self._ne = quantity.Dimensionless(value)
+
+    property alpha:
+        """The charge transfer coefficient."""
+        def __get__(self):
+            return self._alpha
+        def __set__(self, value):
+            self._alpha = quantity.Dimensionless(value)
+
+    cpdef change_v0(self, double V0):
+        """
+        Changes the reference potential to `V0` in volts, and adjusts the
+        activation energy `E0` accordingly.
+        """
+
+        self._E0.value_si = self.get_activation_energy_from_potential(V0,0.0)
+        self._V0.value_si = V0
+
+    cpdef double get_activation_energy(self, double dGrxn) except -1:
+        """
+        Return the activation energy in J/mol corresponding to the given
+        free energy of reaction `dGrxn` in J/mol at the reference potential.
+        """
+        cdef double Ea
+        Ea = self._alpha.value_si * dGrxn + self._E0.value_si
+
+        if Ea < 0.0:
+            Ea = 0.0
+        elif dGrxn > 0.0 and Ea < dGrxn:
+            Ea = dGrxn
+
+        return Ea
+
+    cpdef double get_activation_energy_from_potential(self, double V, double dGrxn) except -1:
+        """
+        Return the activation energy in J/mol corresponding to the given
+        free energy of reaction `dGrxn` in J/mol.
+        """
+        cdef double Ea
+        Ea = self.get_activation_energy(dGrxn)
+        Ea -= self._alpha.value_si * self._ne.value_si * constants.F * (V-self._V0.value_si)
+
+        return Ea
+
+    cpdef double get_rate_coefficient_from_potential(self, double T, double V, double dGrxn) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3,
+        mol, and s at temperature `T` in K, potential `V` in volts, and 
+        free of reaction `dGrxn` in J/mol.
+        """
+        cdef double A, n, Ea
+        Ea = self.get_activation_energy_from_potential(V,dGrxn)
+        A = self._A.value_si
+        n = self._n.value_si
+        return A * T ** n * exp(-Ea / (constants.R * T))
+
+    cpdef SurfaceChargeTransfer to_surface_charge_transfer(self, double dGrxn):
+        """
+        Return an :class:`SurfaceChargeTransfer` instance of the kinetics model using the
+        given free energy of reaction `dGrxn` to determine the activation energy.
+        """
+        return SurfaceChargeTransfer(
+            A=self.A,
+            n=self.n,
+            ne=self.ne,
+            Ea=(self.get_activation_energy(dGrxn) * 0.001, "kJ/mol"),
+            V0=self.V0,
+            T0=(1, "K"),
+            Tmin=self.Tmin,
+            Tmax=self.Tmax,
+            Pmin=self.Pmin,
+            Pmax=self.Pmax,
+            uncertainty=self.uncertainty,
+            comment=self.comment,
+        )
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(other_kinetics, SurfaceChargeTransferBEP):
+            return False
+        if not KineticsModel.is_identical_to(self, other_kinetics):
+            return False
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.E0.equals(other_kinetics.E0) or not self.alpha.equals(other_kinetics.alpha)
+                or not self.ne.equals(other_kinetics.ne) or not self.V0.equals(other_kinetics.V0)):
+            return False
+
+        return True
+
+    cpdef change_rate(self, double factor):
+        """
+        Changes A factor by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+        """
+        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        converted to an Arrhenius form.
+        """
+        raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusEP class kinetics.')
