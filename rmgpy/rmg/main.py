@@ -816,14 +816,14 @@ class RMG(util.Subject):
                         objects_to_enlarge = []
 
 
-                    if isinstance(reaction_system, ElectrodeReactor):
-                        if conditions:
-                            potential = conditions.get('potential')
-                            temperature = conditions.get('T')
-                        if not potential:
-                            potential = reaction_system.potential.value_si
-                        if not temperature:
-                            temperature = reaction_system.T.value_si
+                        if isinstance(reaction_system, ElectrodeReactor):
+                            if conditions:
+                                potential = conditions.get('potential')
+                                temperature = conditions.get('T')
+                            if not potential:
+                                potential = reaction_system.potential.value_si
+                            if not temperature:
+                                temperature = reaction_system.T.value_si
 
                         if conditions and self.solvent:
                             T = conditions['T']
