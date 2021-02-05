@@ -39,7 +39,7 @@ import cython
 from rdkit import Chem
 # Test if openbabel is installed
 try:
-    import openbabel
+    from openbabel import openbabel
 except ImportError:
     BACKENDS = ['rdkit']
 else:
