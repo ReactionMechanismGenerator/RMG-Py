@@ -55,7 +55,7 @@ from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Li
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
     StickingCoefficient, SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
-from rmgpy.kinetics.surface import SurfaceArrhenius, SurfaceChargeTransfer  # Separate because we cimport from rmgpy.kinetics.surface
+from rmgpy.kinetics.surface import SurfaceArrhenius, SurfaceChargeTransfer, SurfaceChargeTransferBEP # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -701,10 +701,7 @@ class Reaction:
         if self.kinetics is None:
             raise KineticsError("Cannot set reference potential for reactions with no kinetics attribute")
 
-        if not isinstance(self.kinetics, SurfaceChargeTransfer):
-            raise KineticsError(f"Cannot set reference potential for {self.kinetics} kinetics")
-
-        if not self.kinetics.V0:
+        if isinstance(self.kinetics, SurfaceChargeTransfer) and self.kinetics.V0 is None:
             self.kinetics.V0 = (self.get_reversible_potential(T),'V')
             
     def get_equilibrium_constant(self, T, potential=0., type='Kc', surface_site_density=2.5e-05):
@@ -930,23 +927,11 @@ class Reaction:
         if self.kinetics is None:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
-        if isinstance(self.kinetics, SurfaceChargeTransfer):
-            Ea = self.kinetics.Ea.value_si
+        if isinstance(self.kinetics, SurfaceChargeTransferBEP):
+            Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             V0 = self.kinetics.V0.value_si
             deltaG = self._get_free_energy_of_charge_transfer_reaction(298,V0)
-            if deltaG > 0 and Ea < deltaG:
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol at {2:.2f} V".format(
-                    self.kinetics.Ea.value_si / 1000., deltaG / 1000., V0)
-                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol at {3:.2f} V".format(
-                    self, self.kinetics.Ea.value_si / 1000., deltaG / 1000., V0))
-                self.kinetics.Ea.value_si = deltaG
-
-        H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
-        if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
-            Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
-            self.kinetics = self.kinetics.to_arrhenius(H298)
+            self.kinetics = self.kinetics.to_surface_charge_transfer(deltaG)
             if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
                 # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
                 Ea = min(0.0, Ea)  # (the lowest we want it to be)
@@ -955,33 +940,48 @@ class Reaction:
                 logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
                     self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
                 self.kinetics.Ea.value_si = Ea
-        if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
-            Ea = self.kinetics.Ea.value_si
-            if H0 >= 0 and Ea < H0:
-                self.kinetics.Ea.value_si = H0
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
-                                         "reaction.".format( Ea / 1000., H0 / 1000.)
-                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
-                             "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
-        if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
-            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
-            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
-                self.kinetics.Ea.value_si / 1000., self))
-            self.kinetics.Ea.value_si = 0
-        if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
-            Ea = self.network_kinetics.Ea.value_si
-            if H0 >= 0 and Ea < H0:
-                self.network_kinetics.Ea.value_si = H0
-                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
-                                                 " reaction.".format(Ea / 1000., H0 / 1000.)
-                logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
-                             " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
-            if force_positive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
-                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(
-                    self.kinetics.Ea.value_si / 1000.)
-                logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
-                             " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
+        else:
+            H298 = self.get_enthalpy_of_reaction(298)
+            H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
+                - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
+            if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
+                Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
+                self.kinetics = self.kinetics.to_arrhenius(H298)
+                if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                    # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                    Ea = min(0.0, Ea)  # (the lowest we want it to be)
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                        self.kinetics.Ea.value_si / 1000., Ea / 1000.)
+                    logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                        self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
+                    self.kinetics.Ea.value_si = Ea
+            if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
+                Ea = self.kinetics.Ea.value_si
+                if H0 >= 0 and Ea < H0:
+                    self.kinetics.Ea.value_si = H0
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
+                                            "reaction.".format( Ea / 1000., H0 / 1000.)
+                    logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
+                                "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
+            if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
+                self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
+                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
+                    self.kinetics.Ea.value_si / 1000., self))
                 self.kinetics.Ea.value_si = 0
+            if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
+                Ea = self.network_kinetics.Ea.value_si
+                if H0 >= 0 and Ea < H0:
+                    self.network_kinetics.Ea.value_si = H0
+                    self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
+                                                    " reaction.".format(Ea / 1000., H0 / 1000.)
+                    logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
+                                " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
+                if force_positive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
+                    self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(
+                        self.kinetics.Ea.value_si / 1000.)
+                    logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
+                                " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
+                    self.kinetics.Ea.value_si = 0
 
     def reverse_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
         """
