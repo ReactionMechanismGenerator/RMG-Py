@@ -268,6 +268,24 @@ class Reaction:
 
         return self._n_protons
 
+    @property
+    def n_hydronium(self):
+        """
+        The stochiometric coeff for protons in charge transfer reactions
+        """
+        if self.is_charge_transfer_reaction():
+            self._n_hydronium = 0
+            for prod in self.products:
+                if prod.smiles == 'O.[H+]':
+                    self._n_hydronium += 1
+            for react in self.reactants:
+                if react.smiles == 'O.[H+]':
+                    self._n_hydronium -= 1
+        else:
+            self._n_hydronium  = 0
+
+        return self._n_hydronium 
+
     def to_chemkin(self, species_list=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.

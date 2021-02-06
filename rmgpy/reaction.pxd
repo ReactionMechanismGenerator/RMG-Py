@@ -53,6 +53,7 @@ cdef class Reaction:
     cdef public float _degeneracy
     cdef public int _n_electrons
     cdef public int _n_protons
+    cdef public int _n_hydronium
     cdef public list pairs
     cdef public bint allow_pdep_route
     cdef public bint elementary_high_p
