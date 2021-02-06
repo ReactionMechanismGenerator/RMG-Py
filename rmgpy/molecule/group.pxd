@@ -152,6 +152,8 @@ cdef class Group(Graph):
 
     cpdef remove_van_der_waals_bonds(self)
 
+    cpdef remove_h_bonds(self)
+
     cpdef sort_atoms(self)
 
     cpdef list sort_by_connectivity(self, list atom_list)

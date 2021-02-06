@@ -1252,6 +1252,15 @@ class Group(Graph):
             if bond.is_van_der_waals(wildcards=False):
                 self.remove_bond(bond)
 
+    def remove_h_bonds(self):
+        """
+        Remove all bonds that are definitely only van der Waals bonds.
+        """
+        cython.declare(bond=GroupBond)
+        for bond in self.get_all_edges():
+            if bond.is_hydrogen_bond(wildcards=False):
+                self.remove_bond(bond)
+
     def sort_atoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
