@@ -309,13 +309,13 @@ class ReactionRecipe(object):
                         # If we do not have a bond, it might be because we are trying to change a vdW bond
                         # Lets see if one of that atoms is a surface site, 
                         # If we have a surface site, we will make a single bond, then change it by info - 1
-                        is_vdW_bond = False
-                        for atom in (atom1, atom2):
-                            if atom.is_surface_site():
-                                is_vdW_bond = True
-                                break
-                        if not is_vdW_bond: # no surface site, so no vdW bond
-                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        # is_vdW_bond = False
+                        # for atom in (atom1, atom2):
+                        #     if atom.is_surface_site():
+                        #         is_vdW_bond = True
+                        #         break
+                        # if not is_vdW_bond: # no surface site, so no vdW bond
+                        #     raise InvalidActionError('Attempted to change a nonexistent bond.')
                         else: # we found a surface site, so we will make a single bond
                             bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
                             struct.add_bond(bond)
@@ -361,12 +361,12 @@ class ReactionRecipe(object):
                 elif (action[0] == 'BREAK_BOND' and forward) or (action[0] == 'FORM_BOND' and not forward):
                     if not struct.has_bond(atom1, atom2):
                         if info == 0:
-                            if atom1.is_surface_site() or atom2.is_surface_site():
+                            #if atom1.is_surface_site() or atom2.is_surface_site():
                                 # We are trying to break a vdW bond, but the atoms are not connected in
                                 # the graph. The bond will break when we split the merged products
                                 # in the `apply_recipe()` functions. Thus, there is nothing to do here,
                                 # so we continue to the next action.
-                                continue
+                            continue
                         raise InvalidActionError('Attempted to remove a nonexistent bond.')
                     bond = struct.get_bond(atom1, atom2)
                     struct.remove_bond(bond)
