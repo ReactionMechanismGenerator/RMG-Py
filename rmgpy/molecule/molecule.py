@@ -1173,6 +1173,14 @@ class Molecule(Graph):
         """Returns ``True`` iff the molecule is nothing but a proton 'H+'."""
         return len(self.atoms) == 1 and self.atoms[0].is_proton()
 
+    def contains_proton(self):
+        """Returns ``True`` iff the molecule contains an 'H+'."""
+        cython.declare(atom=Atom)
+        for atom in self.atoms:
+            if atom.is_proton():
+                return True
+        return False
+
     def remove_atom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does

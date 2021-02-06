@@ -173,6 +173,8 @@ cdef class Molecule(Graph):
 
     cpdef bint is_proton(self)
 
+    cpdef bint contains_proton(self)
+
     cpdef bint contains_surface_site(self)
 
     cpdef bint is_surface_site(self)
