@@ -190,6 +190,8 @@ cdef class Group(Graph):
 
     cpdef bint is_proton(self)
 
+    cpdef bint contains_proton(self)
+
     cpdef bint is_electron(self)
     
     cpdef bint contains_surface_site(self) except -2

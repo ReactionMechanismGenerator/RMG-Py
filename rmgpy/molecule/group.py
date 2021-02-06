@@ -1215,6 +1215,14 @@ class Group(Graph):
         """Returns ``True`` iff the group is a proton"""
         return len(self.atoms) == 1 and self.atoms[0].is_proton()
 
+    def contains_proton(self):
+        """Returns ``True`` iff the group contains proton"""
+        cython.declare(atom=GroupAtom)
+        for atom in self.atoms:
+            if atom.is_proton():
+                return True
+        return False
+
     def is_electron(self):
         """Returns ``True`` iff the group is an electron"""
         return len(self.atoms) == 1 and self.atoms[0].is_electron()
