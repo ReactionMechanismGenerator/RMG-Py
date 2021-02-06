@@ -258,10 +258,10 @@ class Reaction:
         if self.is_charge_transfer_reaction():
             self._n_protons = 0
             for prod in self.products:
-                if prod.is_proton():
+                if prod.contains_proton():
                     self._n_protons += 1
             for react in self.reactants:
-                if react.is_proton():
+                if react.contains_proton():
                     self._n_protons -= 1
         else:
             self._n_protons = 0
@@ -654,7 +654,10 @@ class Reaction:
         dGrxn = self._apply_CHE_model(T) # get H+ and e- free energy using CHE model
 
         for reactant in self.reactants:
-            if not reactant.is_electron() and not reactant.is_proton():
+            if not reactant.is_electron() and not reactant.contains_proton():
+                if self.n_hydronium > 0:
+                    if reactant.smiles == 'O':
+                        continue
                 try:
                     dGrxn -= reactant.get_free_energy(T)
                 except Exception:
@@ -662,7 +665,10 @@ class Reaction:
                     raise
 
         for product in self.products:
-            if not product.is_electron() and not product.is_proton():
+            if not product.is_electron() and not product.contains_proton():
+                if self.n_hydronium < 0:
+                    if product.smiles == 'O':
+                        continue
                 try:
                     dGrxn += product.get_free_energy(T)
                 except Exception:
