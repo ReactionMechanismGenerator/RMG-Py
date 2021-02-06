@@ -988,6 +988,7 @@ cdef class SurfaceChargeTransferBEP(KineticsModel):
             A=self.A,
             n=self.n,
             ne=self.ne,
+            alpha=self.alpha,
             Ea=(self.get_activation_energy(dGrxn) * 0.001, "kJ/mol"),
             V0=self.V0,
             T0=(1, "K"),
