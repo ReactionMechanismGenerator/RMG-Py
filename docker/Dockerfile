@@ -1,5 +1,5 @@
-# Set base image to anaconda
-FROM continuumio/anaconda
+# Set base image to miniconda to save space
+FROM continuumio/miniconda3:4.9.2
 
 # Update conda
 RUN conda update -n base -c defaults conda
