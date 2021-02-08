@@ -665,7 +665,7 @@ class PressureDependenceJob(object):
                 f.write('species(\n')
                 f.write('    label = {0!r},\n'.format(str(spec)))
                 if len(spec.molecule) > 0:
-                    f.write('    structure = SMILES({0!r}),\n'.format(spec.molecule[0].to_smiles()))
+                    f.write(f'    structure = adjacencyList("""{spec.molecule[0].to_adjacency_list()}"""),\n')
                 if spec.conformer is not None:
                     if spec.conformer.E0 is not None:
                         f.write('    E0 = {0!r},\n'.format(spec.conformer.E0))

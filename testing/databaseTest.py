@@ -48,6 +48,7 @@ from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule import Group
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
+from rmgpy.quantity import ScalarQuantity
 
 
 class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want to use nose test generators
@@ -357,11 +358,68 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, group_name
 
+    def test_metal_libraries(self):
+        for library_name, library in self.database.thermo.surface['metal'].libraries.items():
+            test = lambda x: self.general_check_metal_database_has_catalyst_properties(library)
+            test_name = "Metal library {0}: Entries have catalyst properties?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
+            test = lambda x: self.general_check_metal_database_has_reasonable_labels(library)
+            test_name = "Metal library {0}: Entries have reasonable labels?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
     # These are the actual tests, that don't start with a "test_" name:
     def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
         family.add_rules_from_training(thermo_database=self.database.thermo)
+
+    def general_check_metal_database_has_catalyst_properties(self, library):
+        """Test that each entry has catalyst properties"""
+        for entry in library.entries.values():
+            if not entry.binding_energies:
+                raise AttributeError('Entry {} has no binding energies'.format(entry.label))
+            assert isinstance(entry.binding_energies, dict)
+            for element in 'CHON':
+                if not entry.binding_energies[element]:
+                    raise KeyError('Entry {} has no {} binding energy'.format(entry.label, element))
+                if not isinstance(entry.binding_energies[element], ScalarQuantity):
+                    raise TypeError('Entry {} binding energy value for {} should be a ScalarQuantity, but is type {}'.format(
+                        entry.label, element, type(entry.binding_energies[element])))
+                if not isinstance(entry.binding_energies[element].value, float):
+                    raise TypeError('Entry {} binding energy for {} should be a float, but is type {}'.format(
+                        entry.label, element, type(entry.binding_energies[element].value)))
+                assert entry.binding_energies[element].value < 0.  # binding energies should all be negative... probably
+                assert entry.binding_energies[element].units == 'eV/molecule'
+
+            if not entry.surface_site_density:
+                raise AttributeError('Entry {} has no surface site density'.format(entry.label))
+            assert isinstance(entry.surface_site_density, ScalarQuantity)
+            if not isinstance(entry.surface_site_density.value, float):
+                raise TypeError('Entry {} should be a float, but is type {}'.format(entry.label, type(entry.surface_site_density.value)))
+            if not isinstance(entry.surface_site_density.units, str):
+                raise TypeError('Entry {} should be a str, but is type {}'.format(entry.label, type(entry.surface_site_density.units)))
+            assert 1e-4 > entry.surface_site_density.value_si > 1e-6  # values should be reasonable
+
+            assert isinstance(entry.metal, str)  # all entries should have a metal attribute, at minimum
+            if entry.facet:
+                assert isinstance(entry.facet, str)
+            if entry.site:
+                assert isinstance(entry.site, str)
+
+    def general_check_metal_database_has_reasonable_labels(self, library):
+        """Test that each entry has a reasonable label corresponding to its metal and facet"""
+        for entry in library.entries.values():
+            if entry.metal not in entry.label:
+                raise NameError('Entry {} with metal attribute {} does not have metal in its label'.format(entry.label, entry.metal))
+            if entry.facet not in entry.label:
+                raise NameError('Entry {} with facet attribute {} does not have facet in its label'.format(entry.label, entry.facet))
+            if not entry.label[0].isupper():
+                raise NameError('Entry {} should start with a capital letter'.format(entry.label))
 
     def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
         """Test that each surface training reaction has surface attributes"""
@@ -372,6 +430,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if not entry.metal:
                 logging.error(f'Expected a metal attribute for {entry} in {family} family but found {entry.metal!r}')
                 failed = True
+            else:
+                assert isinstance(entry.metal, str)
+
+            if entry.facet:
+                assert isinstance(entry.facet, str)
+            if entry.site:
+                assert isinstance(entry.site, str)
+
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
@@ -391,7 +457,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     failed = True
         for entry in entries:
             if isinstance(entry.metal, type(None)):
-                logginge.error(f'Expected a metal attribute in {library} library for {entry} but found None')
+                logging.error(f'Expected a metal attribute in {library} library for {entry} but found None')
                 failed = True
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
@@ -1258,7 +1324,7 @@ Origin Group AdjList:
             if '111' in library_name:
                 if entry.facet is not '111':
                     logging.error(f'Expected {entry} facet attribute in {library_name} library to match 111, but was {entry.facet}')
-                    failed = true
+                    failed = True
             if not entry.metal:
                 logging.error(f'Expected a metal attribute for {entry} in {library} library but found {entry.metal!r}')
                 failed = True

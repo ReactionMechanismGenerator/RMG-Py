@@ -96,6 +96,31 @@ class TestSpecies(unittest.TestCase):
             12 H u0 p0 c0 {6,S}
             """)
 
+        self.species3 = Species().from_adjacency_list(
+            """
+            multiplicity 2
+            1 O u1 p2 c0 {3,S}
+            2 O u0 p2 c0 {3,D}
+            3 N u0 p1 c0 {1,S} {2,D}
+            """)
+
+        self.species4 = Species().from_adjacency_list(
+            """
+            Propane     
+            multiplicity 1
+            1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+            2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+            3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+            4  H u0 p0 c0 {1,S}
+            5  H u0 p0 c0 {1,S}
+            6  H u0 p0 c0 {1,S}
+            7  H u0 p0 c0 {2,S}
+            8  H u0 p0 c0 {2,S}
+            9  H u0 p0 c0 {3,S}
+            10 H u0 p0 c0 {3,S}
+            11 H u0 p0 c0 {3,S}
+            """)
+
     def test_pickle(self):
         """
         Test that a Species object can be pickled and unpickled.
@@ -457,6 +482,11 @@ Thermo library: primaryThermoLibrary
         self.assertTrue(spc1.is_isomorphic(spc2, strict=False))
         self.assertFalse(spc1.is_isomorphic(spc3, strict=True))
         self.assertFalse(spc1.is_isomorphic(spc3, strict=False))
+
+    def test_species_label(self):
+        """Test that the species label is not being assigned with the multiplicity string"""
+        self.assertEqual(self.species3.label, '')
+        self.assertEqual(self.species4.label, 'Propane')
 
 
 ################################################################################

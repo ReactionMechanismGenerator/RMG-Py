@@ -1325,11 +1325,23 @@ class TestGroup(unittest.TestCase):
         answer_smiles = '[NH4+]'
         self.assertTrue(perform_samp_mole_comparison(adjlist, answer_smiles))
 
+        adjlist = """
+1  *1 P5dc u0
+"""
+        answer_smiles = '[PH2+]=C'
+        self.assertTrue(perform_samp_mole_comparison(adjlist, answer_smiles))
+
         # test the creation of a negatively charged species
         adjlist = """
 1  *1 N1sc u0
 """
         answer_smiles = '[NH2-]'
+        self.assertTrue(perform_samp_mole_comparison(adjlist, answer_smiles))
+
+        adjlist = """
+1  *1 P5sc u0
+"""
+        answer_smiles = '[PH6-]'
         self.assertTrue(perform_samp_mole_comparison(adjlist, answer_smiles))
 
         # test creation of charged species when some single bonds present
@@ -1475,9 +1487,10 @@ graph G {
 1 R!H u0 {2,S}
 2 [Cs,Cd,Ct,Cb] u0 {1,S} {3,S}
 3 [Cs,Cd,Ct,Cb,O2s,S2s] u0 {2,S} {4,S}
-4 N1s u0 {3,S}
+4 N3s u0 {3,S} {5,S}
+5 P1s u0 {4,S} 
 """)
-        expected = {'C': 1, 'N': 1}
+        expected = {'C': 1, 'N': 1, 'P': 1}
         result = group.get_element_count()
         self.assertEqual(expected, result)
 

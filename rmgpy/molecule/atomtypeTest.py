@@ -506,6 +506,110 @@ class TestGetAtomType(unittest.TestCase):
         self.mol79 = Molecule().from_adjacency_list('''1 H  u0 p0 c0 {2,S}
                                                        2 Br u0 p3 c0 {1,S}''')
 
+        self.mol80 = Molecule().from_adjacency_list('''1 P u0 p3 c-2 {2,S}
+                                                       2 P u0 p0 c+1 {1,S} {3,T}
+                                                       3 P u0 p0 c+1 {2,T} {4,S}
+                                                       4 H u0 p0 c0 {3,S}''')
+
+        self.mol81 = Molecule().from_adjacency_list('''1 P u0 p2 c0 {2,S}
+                                                       2 H u0 p0 c0 {1,S}''')
+
+        self.mol82 = Molecule().from_adjacency_list('''1 P u0 p2 c-1 {2,S} {3,S}
+                                                       2 H u0 p0 c0 {1,S}
+                                                       3 P u0 p0 c+1 {1,S} {4,T}
+                                                       4 C u0 p0 c0 {3,T} {5,S}
+                                                       5 H u0 p0 c0 {4,S}''')
+
+        self.mol83 = Molecule().from_adjacency_list('''1 H u0 p0 {3,S}
+                                                       2 H u0 p0 {3,S}
+                                                       3 P u0 p0 c+1 {1,S} {2,S} {4,D}
+                                                       4 P u0 p2 c-1 {3,D}''')
+
+        self.mol84 = Molecule().from_adjacency_list('''1 P u0 p1 c0 {4,S} {7,S} {8,S}
+                                                       2 P u0 p1 c0 {3,D} {4,S}
+                                                       3 O u0 p2 c0 {2,D}
+                                                       4 C u0 p0 c0 {1,S} {2,S} {5,S} {6,S}
+                                                       5 H u0 p0 c0 {4,S}
+                                                       6 H u0 p0 c0 {4,S}
+                                                       7 H u0 p0 c0 {1,S}
+                                                       8 H u0 p0 c0 {1,S}''')
+
+        self.mol85 = Molecule().from_adjacency_list('''1 P u0 p1 c0 {2,T}
+                                                       2 C u0 p0 c0 {1,T} {3,S}
+                                                       3 H u0 p0 c0 {2,S}''')
+
+        self.mol86 = Molecule().from_adjacency_list('''1  P u0 p0 c+1 {2,B} {6,B} {7,S}
+                                                       2  C u0 p0 {1,B} {3,B} {8,S}
+                                                       3  C u0 p0 {2,B} {4,B} {9,S}
+                                                       4  C u0 p0 {3,B} {5,B} {10,S}
+                                                       5  C u0 p0 {4,B} {6,B} {11,S}
+                                                       6  P u0 p1 {1,B} {5,B}
+                                                       7  O u0 p3 c-1 {1,S}
+                                                       8  H u0 p0 {2,S}
+                                                       9  H u0 p0 {3,S}
+                                                       10 H u0 p0 {4,S}
+                                                       11 H u0 p0 {5,S}''')
+
+        self.mol87 = Molecule().from_adjacency_list('''1 P  u0 p0 c0 {2,S} {3,S} {4,S} {5,S} {6,S}
+                                                       2 Cl u0 p3 c0 {1,S}
+                                                       3 Cl u0 p3 c0 {1,S}
+                                                       4 Cl u0 p3 c0 {1,S}
+                                                       5 Cl u0 p3 c0 {1,S}
+                                                       6 Cl u0 p3 c0 {1,S}''')
+
+        self.mol88 = Molecule().from_adjacency_list('''1 P u0 p0 c+1 {2,S} {3,S} {4,S} {5,S}
+                                                       2 O u0 p2 c0 {1,S} {6,S}
+                                                       3 O u0 p3 c-1 {1,S}
+                                                       4 H u0 p0 c0 {1,S}
+                                                       5 H u0 p0 c0 {1,S}
+                                                       6 H u0 p0 c0 {2,S}''')
+
+        self.mol89 = Molecule().from_adjacency_list('''1 P u0 p0 c0 {2,S} {3,S} {4,S} {5,D}
+                                                       2 O u0 p2 c0 {1,S} {6,S}
+                                                       3 O u0 p2 c0 {1,S} {7,S}
+                                                       4 O u0 p2 c0 {1,S} {8,S}
+                                                       5 O u0 p2 c0 {1,D}
+                                                       6 H u0 p0 c0 {2,S}
+                                                       7 H u0 p0 c0 {3,S}
+                                                       8 H u0 p0 c0 {4,S}''')
+
+        self.mol90 = Molecule().from_adjacency_list('''1 P u0 p0 c0 {2,D} {3,D} {4,S}
+                                                       2 O u0 p2 c0 {1,D}
+                                                       3 O u0 p2 c0 {1,D}
+                                                       4 C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
+                                                       5 H u0 p0 c0 {4,S}
+                                                       6 H u0 p0 c0 {4,S}
+                                                       7 H u0 p0 c0 {4,S}''')
+
+        self.mol91 = Molecule().from_adjacency_list('''1 P u0 p0 c+1 {2,D} {3,D}
+                                                       2 N u0 p2 c-1 {1,D}
+                                                       3 C u0 p0 c0 {1,D} {4,S} {5,S}
+                                                       4 H u0 p0 c0 {3,S}
+                                                       5 H u0 p0 c0 {3,S}''')
+
+        self.mol92 = Molecule().from_adjacency_list('''1 P  u0 p0 c0 {2,T} {3,S} {4,S}
+                                                       2 N  u0 p1 c0 {1,T}
+                                                       3 Cl u0 p3 c0 {1,S}
+                                                       4 Cl u0 p3 c0 {1,S}''')
+
+        self.mol93 = Molecule().from_adjacency_list('''1 P u0 p0 c0 {2,D} {3,T}
+                                                       2 O u0 p2 c0 {1,D}
+                                                       3 C u0 p0 c0 {1,T} {4,S}
+                                                       4 H u0 p0 c0 {3,S}''')
+
+        self.mol94 = Molecule().from_adjacency_list('''1  P u0 p0 {2,B} {6,B} {7,D}
+                                                       2  C u0 p0 {1,B} {3,B} {8,S}
+                                                       3  C u0 p0 {2,B} {4,B} {9,S}
+                                                       4  C u0 p0 {3,B} {5,B} {10,S}
+                                                       5  C u0 p0 {4,B} {6,B} {11,S}
+                                                       6  C u0 p0 {1,B} {5,B} {12,S}
+                                                       7  S u0 p2 {1,D}
+                                                       8  H u0 p0 {2,S}
+                                                       9  H u0 p0 {3,S}
+                                                       10 H u0 p0 {4,S}
+                                                       11 H u0 p0 {5,S}
+                                                       12 H u0 p0 {6,S}''')
+
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
         atom_type = get_atomtype(atom, mol.get_bonds(atom))
@@ -589,6 +693,30 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol4, 5), 'Sid')
         self.assertEqual(self.atom_type(self.mol4, 4), 'Sidd')
         self.assertEqual(self.atom_type(self.mol4, 7), 'Sit')  # todo: add in Siq unit test?
+
+    def test_phosphorus_types(self):
+        """
+        Test that get_atomtype() returns appropriate phosphorus atom types.
+        """
+        self.assertEqual(self.atom_type(self.mol80, 0), 'P0sc')
+        self.assertEqual(self.atom_type(self.mol81, 0), 'P1s')
+        self.assertEqual(self.atom_type(self.mol82, 0), 'P1sc')
+        self.assertEqual(self.atom_type(self.mol83, 3), 'P1dc')
+        self.assertEqual(self.atom_type(self.mol84, 0), 'P3s')
+        self.assertEqual(self.atom_type(self.mol84, 1), 'P3d')
+        self.assertEqual(self.atom_type(self.mol85, 0), 'P3t')
+        self.assertEqual(self.atom_type(self.mol86, 5), 'P3b')
+        self.assertEqual(self.atom_type(self.mol87, 0), 'P5s')
+        self.assertEqual(self.atom_type(self.mol88, 0), 'P5sc')
+        self.assertEqual(self.atom_type(self.mol89, 0), 'P5d')
+        self.assertEqual(self.atom_type(self.mol90, 0), 'P5dd')
+        self.assertEqual(self.atom_type(self.mol83, 2), 'P5dc')
+        self.assertEqual(self.atom_type(self.mol91, 0), 'P5ddc')
+        self.assertEqual(self.atom_type(self.mol92, 0), 'P5t')
+        self.assertEqual(self.atom_type(self.mol93, 0), 'P5td')
+        self.assertEqual(self.atom_type(self.mol80, 1), 'P5tc')
+        self.assertEqual(self.atom_type(self.mol86, 0), 'P5b')
+        self.assertEqual(self.atom_type(self.mol94, 0), 'P5bd')
 
     def test_sulfur_types(self):
         """

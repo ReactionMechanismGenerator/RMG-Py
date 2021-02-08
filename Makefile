@@ -42,8 +42,8 @@ install:
 	python setup.py install
 
 q2dtor:
-	@ echo "\nInstalling Q2DTor...\n"
-	@ echo "Q2DTor is a software for calculating the partition functions and themodynamic properties\
+	@ echo -e "\nInstalling Q2DTor...\n"
+	@ echo -e "Q2DTor is a software for calculating the partition functions and themodynamic properties\
 	of molecular systems with two or more torsional modes developed by David Ferro Costas (david.ferro@usc.es)\
 	 and Antonio Fernandez Ramos (qf.ramos@usc.es) at the Universidade de Santiago de Compostela. Arkane can\
 	  integrate Q2DTor to compute the quantum mechanical partition function of 2D rotors.  \n\nFor use of Q2DTor\

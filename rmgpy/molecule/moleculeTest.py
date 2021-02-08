@@ -164,6 +164,17 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.is_nitrogen())
 
+    def test_is_phosphorus(self):
+        """
+        Test the Atom.is_phosphorus() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label='*1', lone_pairs=1)
+            if element.symbol == 'P':
+                self.assertTrue(atom.is_phosphorus())
+            else:
+                self.assertFalse(atom.is_phosphorus())
+
     def test_is_sulfur(self):
         """
         Test the Atom.is_sulfur() method.

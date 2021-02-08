@@ -59,6 +59,7 @@ def setUpModule():
         testing=True,
         depository=False,
         solvation=False,
+        surface=False,
     )
     database.load_forbidden_structures()
 

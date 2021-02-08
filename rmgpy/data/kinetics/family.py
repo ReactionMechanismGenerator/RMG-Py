@@ -1194,7 +1194,6 @@ class KineticsFamily(Database):
         # Process the entries that are stored in the reverse direction of the
         # family definition
         for entry in reverse_entries:
-
             tentries[entry.index].item.is_forward = False
 
             assert isinstance(entry.data, Arrhenius)
@@ -1215,15 +1214,20 @@ class KineticsFamily(Database):
                 if quantum_mechanics:
                     quantum_mechanics.run_jobs(item.reactants + item.products, procnum=procnum)
 
+            if entry.facet is None:
+                metal = entry.metal # could be None
+            else:
+                metal = entry.metal + entry.facet
+
             for reactant in item.reactants:
                 # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
                 reactant.molecule[0].clear_labeled_atoms()
                 reactant.generate_resonance_structures()
-                reactant.thermo = thermo_database.get_thermo_data(reactant, training_set=True)
+                reactant.thermo = thermo_database.get_thermo_data(reactant, training_set=True, metal_to_scale_to=metal)
             for product in item.products:
                 product.molecule[0].clear_labeled_atoms()
                 product.generate_resonance_structures()
-                product.thermo = thermo_database.get_thermo_data(product, training_set=True)
+                product.thermo = thermo_database.get_thermo_data(product, training_set=True, metal_to_scale_to=metal)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
             data = item.generate_reverse_rate_coefficient()
@@ -1258,6 +1262,7 @@ class KineticsFamily(Database):
                 reference=entry.reference,
                 short_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.short_desc,
                 long_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.long_desc,
+                metal=entry.metal
             )
             new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
@@ -2211,9 +2216,10 @@ class KineticsFamily(Database):
                                     generate_products_and_reactions((1, 2, 0))
 
         # ToDo: try to remove this hard-coding of reaction family name..
-        if not forward and 'adsorption' in self.label.lower():
+        if not forward and ('adsorption' in self.label.lower() or 'eleyrideal' in self.label.lower()):
             # Desorption should have desorbed something (else it was probably bidentate)
             # so delete reactions that don't make a gas-phase desorbed product
+            # Eley-Rideal reactions should have one gas-phase product in the reverse direction 
             pruned_list = []
             for reaction in rxn_list:
                 for reactant in reaction.reactants:
@@ -2769,6 +2775,7 @@ class KineticsFamily(Database):
                 if species.is_isomorphic(labeled_molecule, save_order=self.save_order):
                     species.molecule = [labeled_molecule]
                     reaction.products[index] = species
+                    labeled_products.remove(labeled_molecule)
                     break
             else:
                 raise ActionError('Could not find isomorphic molecule to fit the original product {} from '
@@ -2778,6 +2785,7 @@ class KineticsFamily(Database):
                 if species.is_isomorphic(labeled_molecule, save_order=self.save_order):
                     species.molecule = [labeled_molecule]
                     reaction.reactants[index] = species
+                    labeled_reactants.remove(labeled_molecule)
                     break
             else:
                 raise ActionError('Could not find isomorphic molecule to fit the original reactant {} from '
@@ -3829,12 +3837,12 @@ class KineticsFamily(Database):
                 for j, react in enumerate(r.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
                         react.generate_resonance_structures()
-                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react)
+                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=r.metal)
 
                 for j, react in enumerate(r.item.products):
                     if rxns[i].products[j].thermo is None:
                         react.generate_resonance_structures()
-                        rxns[i].products[j].thermo = tdb.get_thermo_data(react)
+                        rxns[i].products[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=r.metal)
 
             rxns[i].kinetics = r.data
             rxns[i].rank = r.rank
@@ -3911,7 +3919,10 @@ class KineticsFamily(Database):
                             if r.thermo is None:
                                 therm_spc = deepcopy(r)
                                 therm_spc.generate_resonance_structures()
-                                r.thermo = tdb.get_thermo_data(therm_spc)
+                                if r.metal:
+                                    r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
+                                else:
+                                    r.thermo = tdb.get_thermo_data(therm_spc)
 
                     rev_rxns.append(rrev)
 
@@ -3952,7 +3963,10 @@ class KineticsFamily(Database):
                         if r.thermo is None:
                             therm_spc = deepcopy(r)
                             therm_spc.generate_resonance_structures()
-                            r.thermo = tdb.get_thermo_data(therm_spc)
+                            if r.metal:
+                                r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
+                            else:
+                                r.thermo = tdb.get_thermo_data(therm_spc)
                 rxns[i] = rrev
 
         if self.own_reverse and get_reverse:
