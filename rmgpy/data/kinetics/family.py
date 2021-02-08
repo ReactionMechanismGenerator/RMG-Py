@@ -515,6 +515,18 @@ class KineticsFamily(Database):
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
 
+    def is_electrochemical(self):
+
+        template = self.forward_template
+
+        for entry in template.reactants + template.products:
+            if not isinstance(entry.item,Group):
+                continue
+            if entry.item.is_electron():
+                return True
+        
+        return False
+
     def load_old(self, path):
         """
         Load an old-style RMG kinetics group additivity database from the
@@ -2319,6 +2331,73 @@ class KineticsFamily(Database):
                                     generate_products_and_reactions((2, 0, 1))
                                     # Reactants stored as B + C + A
                                     generate_products_and_reactions((1, 2, 0))
+
+        elif len(reactants) == 4 and len(template_reactants) == 4:
+
+            molecules_a = reactants[0]
+            molecules_b = reactants[1]
+            molecules_c = reactants[2]
+            molecules_d = reactants[3]
+
+            # Iterate over all resonance isomers of the reactants
+            for molecule_a in molecules_a:
+                for molecule_b in molecules_b:
+                    for molecule_c in molecules_c:
+                        for molecule_d in molecules_d:
+
+                            def generate_products_and_reactions(order):
+                                """
+                                order = (0, 1, 2, 3) corresponds to reactants stored as A + B + C, etc.
+                                """
+                                _mappings_a = self._match_reactant_to_template(molecule_a, template_reactants[order[0]])
+                                _mappings_b = self._match_reactant_to_template(molecule_b, template_reactants[order[1]])
+                                _mappings_c = self._match_reactant_to_template(molecule_c, template_reactants[order[2]])
+                                _mappings_d = self._match_reactant_to_template(molecule_d, template_reactants[order[3]])
+
+                                # Iterate over each pair of matches (A, B, C)
+                                for _map_a in _mappings_a:
+                                    for _map_b in _mappings_b:
+                                        for _map_c in _mappings_c:
+                                            for _map_d in _mappings_d:
+                                                _reactantStructures = [molecule_a, molecule_b, molecule_c, molecule_d]
+                                                _maps = [_map_a, _map_b, _map_c, _map_d]
+                                                # Reorder reactants in case we have a family with fewer reactant trees than
+                                                # reactants and different reactant orders can produce different products
+                                                _reactantStructures = [_reactantStructures[_i] for _i in order]
+                                                _maps = [_maps[_i] for _i in order]
+                                                try:
+                                                    _productStructures = self._generate_product_structures(
+                                                        _reactantStructures,
+                                                        _maps,
+                                                        forward)
+                                                except ForbiddenStructureException:
+                                                    pass
+                                                else:
+                                                    if _productStructures is not None:
+                                                        _rxn = self._create_reaction(_reactantStructures,
+                                                                                        _productStructures,
+                                                                                        forward)
+                                                        if _rxn:
+                                                            rxn_list.append(_rxn)
+
+                            # Reactants stored as A + B + C
+                            generate_products_and_reactions((0, 1, 2, 3))
+
+                            # Only check for swapped reactants if they are different
+                            if reactants[1] is not reactants[2]:
+                                # Reactants stored as A + C + B
+                                generate_products_and_reactions((0, 2, 1, 3))
+                            if reactants[0] is not reactants[1]:
+                                # Reactants stored as B + A + C
+                                generate_products_and_reactions((1, 0, 2, 3))
+                            if reactants[0] is not reactants[2]:
+                                # Reactants stored as C + B + A
+                                generate_products_and_reactions((2, 1, 0, 3))
+                                if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
+                                    # Reactants stored as C + A + B
+                                    generate_products_and_reactions((2, 0, 1, 3))
+                                    # Reactants stored as B + C + A
+                                    generate_products_and_reactions((1, 2, 0, 3))
 
         # ToDo: try to remove this hard-coding of reaction family name..
         if not forward and ('adsorption' in self.label.lower() or 'eleyrideal' in self.label.lower()):

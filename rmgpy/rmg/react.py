@@ -127,6 +127,12 @@ def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecul
                 if core_spc_list[i].reactive and core_spc_list[j].reactive:
                     spc_tuples.append((core_spc_list[i], core_spc_list[j]))
 
+    electron = None
+    for spc in core_spc_list:
+        if spc.is_electron():
+            electron = spc
+            break
+
     if trimolecular_react is not None:
         for i in range(num_old_core_species):
             for j in range(i, num_old_core_species):
@@ -135,6 +141,9 @@ def react_all(core_spc_list, num_old_core_species, unimolecular_react, bimolecul
                     if trimolecular_react[i, j, k]:
                         if core_spc_list[i].reactive and core_spc_list[j].reactive and core_spc_list[k].reactive:
                             spc_tuples.append((core_spc_list[i], core_spc_list[j], core_spc_list[k]))
+                            if electron:
+                                spc_tuples.append((core_spc_list[i], core_spc_list[j], core_spc_list[k], electron))
+    
 
     if procnum == 1:
         # React all families like normal (provide empty argument for only_families)

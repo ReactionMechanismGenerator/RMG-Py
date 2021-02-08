@@ -524,6 +524,10 @@ and immediately used in input files without any additional changes.
                     same_reactants = 2
                 elif reactants[1].is_isomorphic(reactants[2]):
                     same_reactants = 2
+        elif len(reactants) == 4:
+            for i in range(4):
+                reactants[i] = reactants[i].copy(deep=True)
+            same_reactants = 0
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
         ensure_independent_atom_ids(reactants, resonance=resonance)
