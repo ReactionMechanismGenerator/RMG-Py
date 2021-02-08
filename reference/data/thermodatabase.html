@@ -76,7 +76,7 @@ this should be done later by the calling function.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.correct_binding_energy">
-<code class="sig-name descname">correct_binding_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thermo</span></em>, <em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.correct_binding_energy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">correct_binding_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thermo</span></em>, <em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">metal_to_scale_from</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metal_to_scale_to</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.correct_binding_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the provided thermo, by applying a linear scaling relation
 to correct the adsorption energy.</p>
 <dl class="field-list simple">
@@ -84,6 +84,8 @@ to correct the adsorption energy.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>thermo</strong> – starting thermo data</p></li>
 <li><p><strong>species</strong> – the species (which is an adsorbate)</p></li>
+<li><p><strong>metal_to_scale_from</strong> – the metal you want to scale from (string eg. ‘Pt111’ or None)</p></li>
+<li><p><strong>metal_to_scale_to</strong> – the metal you want to scale to (string e.g ‘Pt111’ or None)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -155,7 +157,7 @@ from them, returning them as lists.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data">
-<code class="sig-name descname">get_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">training_set</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">metal_to_scale_to</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">training_set</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
@@ -163,6 +165,7 @@ estimation via machine learning and then group additivity.</p>
 <p>The method corrects for symmetry when the molecule uses machine
 learning or group additivity. Libraries and direct QM calculations
 are already corrected.</p>
+<p>If either metal to scale to or from is not specified, assume the binding energies given in the input file</p>
 <p>Returns: ThermoData</p>
 </dd></dl>
 
@@ -240,7 +243,7 @@ This should be done later by the calling function.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">libraries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depository</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">libraries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depository</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">surface</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
@@ -272,6 +275,13 @@ points to the top-level folder of the thermo database.</p>
 <code class="sig-name descname">load_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the old RMG thermo database from the given <cite>path</cite> on disk, where
 <cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.load_surface">
+<code class="sig-name descname">load_surface</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the metal database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -344,21 +354,25 @@ points to the top-level folder of the thermo libraries.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.set_delta_atomic_adsorption_energies">
-<code class="sig-name descname">set_delta_atomic_adsorption_energies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binding_energies</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.set_delta_atomic_adsorption_energies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets and stores the change in atomic binding energy between
-the desired and the Pt(111) default.</p>
-<p>This depends on the two metal surfaces: the reference one used in
-the database of adsorption energies, and the desired surface.</p>
-<p>If binding_energies are not provided, resets the values to those
-of the Pt(111) default.</p>
+<dt id="rmgpy.data.thermo.ThermoDatabase.save_surface">
+<code class="sig-name descname">save_surface</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the metal library to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the metal library.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.set_binding_energies">
+<code class="sig-name descname">set_binding_energies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binding_energies</span><span class="o">=</span><span class="default_value">'Pt111'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.set_binding_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets and stores the atomic binding energies specified in the input file.</p>
+<p>All adsorbates will be scaled to use these elemental binding energies.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>binding_energies</strong> (<em>dict</em><em>, </em><em>optional</em>) – the desired binding energies with
-elements as keys and binding energy/unit tuples as values</p>
+elements as keys and binding energy/unit tuples (or Energy
+quantities) as values</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None, stores result in self.delta_atomic_adsorption_energy</p>
+<dd class="field-even"><p>None, stores result in self.binding_energies</p>
 </dd>
 </dl>
 </dd></dl>

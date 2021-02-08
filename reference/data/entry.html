@@ -61,73 +61,41 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.base.Entry<a class="headerlink" href="#rmgpy-data-base-entry" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.base.Entry">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">Entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">item</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">children</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference_type</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">rank</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodal_distance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metal</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">facet</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">site</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.base.</code><code class="sig-name descname">Entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">item</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">children</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference_type</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">rank</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nodal_distance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metal</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">facet</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">site</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">binding_energies</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">surface_site_density</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for representing individual records in an RMG database. Each entry
 in the database associates a chemical item (generally a species, functional
 group, or reaction) with a piece of data corresponding to that item. A
 significant amount of metadata can also be stored with each entry.</p>
 <p>The attributes are:</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 16%" />
-<col style="width: 84%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Attribute</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><cite>index</cite></p></td>
-<td><p>A unique nonnegative integer index for the entry</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>label</cite></p></td>
-<td><p>A unique string identifier for the entry (or ‘’ if not used)</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>item</cite></p></td>
-<td><p>The item that this entry represents</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>parent</cite></p></td>
-<td><p>The parent of the entry in the hierarchy (or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>children</cite></p></td>
-<td><p>A list of the children of the entry in the hierarchy (or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>data</cite></p></td>
-<td><p>The data to associate with the item</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>reference</cite></p></td>
-<td><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">Reference</span></code> object containing bibliographic reference information to the source of the data</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>reference_type</cite></p></td>
-<td><p>The way the data was determined: <code class="docutils literal notranslate"><span class="pre">'theoretical'</span></code>, <code class="docutils literal notranslate"><span class="pre">'experimental'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'review'</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><cite>short_desc</cite></p></td>
-<td><p>A brief (one-line) description of the data</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>long_desc</cite></p></td>
-<td><p>A long, verbose description of the data</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>rank</cite></p></td>
-<td><p>An integer indicating the degree of confidence in the entry data, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not used</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>nodal_distance</cite></p></td>
-<td><p>A float representing the distance of a given entry from it’s parent entry</p></td>
-</tr>
-<tr class="row-even"><td><p>For surface species</p></td>
-<td><p>thermo calculations:</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>metal</cite></p></td>
-<td><p>Which metal the thermo calculation was done on (<code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>facet</cite></p></td>
-<td><p>Which facet the thermo calculation was done on (<code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>site</cite></p></td>
-<td><p>Which surface site the molecule prefers (<code class="docutils literal notranslate"><span class="pre">None</span></code> if not used)</p></td>
-</tr>
-</tbody>
-</table>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">/home/travis/build/ReactionMechanismGenerator/RMG-Py/rmgpy/data/base.py:docstring of rmgpy.data.base.Entry</span>, line 28)</p>
+<p>Malformed table.
+Text in column margin in table line 21.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>=================== ========================================================
+Attribute           Description
+=================== ========================================================
+`index`             A unique nonnegative integer index for the entry
+`label`             A unique string identifier for the entry (or &#39;&#39; if not used)
+`item`              The item that this entry represents
+`parent`            The parent of the entry in the hierarchy (or ``None`` if not used)
+`children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
+`data`              The data to associate with the item
+`reference`         A :class:`Reference` object containing bibliographic reference information to the source of the data
+`reference_type`     The way the data was determined: ``&#39;theoretical&#39;``, ``&#39;experimental&#39;``, or ``&#39;review&#39;``
+`short_desc`         A brief (one-line) description of the data
+`long_desc`          A long, verbose description of the data
+`rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
+`nodal_distance`     A float representing the distance of a given entry from it&#39;s parent entry
+For surface species thermo calculations:
+`metal`             Which metal the thermo calculation was done on (``None`` if not used)
+`facet`             Which facet the thermo calculation was done on (``None`` if not used)
+`site`              Which surface site the molecule prefers (``None`` if not used)
+`binding_energies&#39;  The surface binding energies for C,H,O, and N
+`surface_site_density`  The surface site density
+=================== ========================================================
+</pre></div>
+</div>
+</div>
 <dl class="py method">
 <dt id="rmgpy.data.base.Entry.get_all_descendants">
 <code class="sig-name descname">get_all_descendants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry.get_all_descendants" title="Permalink to this definition">¶</a></dt>
