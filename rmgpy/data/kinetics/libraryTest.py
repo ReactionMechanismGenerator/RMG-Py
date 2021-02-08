@@ -79,6 +79,9 @@ class TestLibrary(unittest.TestCase):
         for library_name in ['ethane-oxidation', 'surface-example']:
             copy_path = os.path.join(settings['test_data.directory'], 'testing_database',
                                     'kinetics', 'libraries', library_name+'-copy')
+            if os.path.exists(copy_path):
+                logging.warning(f"Removing existing directory {copy_path}.")
+                shutil.rmtree(copy_path)
             os.makedirs(copy_path)
             try:
                 self.libraries[library_name].save(os.path.join(copy_path, 'reactions.py'))
