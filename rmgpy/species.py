@@ -263,7 +263,7 @@ class Species(object):
     def molecular_weight(self, value):
         self._molecular_weight = quantity.Mass(value)
 
-    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
+    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True, sort_atoms=True):
         """
         Generate all of the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
@@ -274,7 +274,8 @@ class Species(object):
             if not self.molecule[0].atom_ids_valid():
                 self.molecule[0].assign_atom_ids()
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
-                                                                           filter_structures=filter_structures)
+                                                                           filter_structures=filter_structures,
+                                                                           sort_atoms=sort_atoms)
 
     def is_isomorphic(self, other, generate_initial_map=False, save_order=False, strict=True):
         """

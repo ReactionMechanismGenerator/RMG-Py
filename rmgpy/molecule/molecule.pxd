@@ -247,7 +247,7 @@ cdef class Molecule(Graph):
 
     cpdef float calculate_symmetry_number(self) except -1
 
-    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
+    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, sort_atoms=?)
 
     cpdef identify_ring_membership(self)
 

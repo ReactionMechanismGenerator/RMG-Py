@@ -147,7 +147,8 @@ def analyze_molecule(mol):
     return features
 
 
-def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=False, filter_structures=True):
+def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=False, filter_structures=True,
+                                  sort_atoms=True):
     """
     Generate and return all of the resonance structures for the input molecule.
 
@@ -175,7 +176,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     # Check that mol is a valid structure in terms of atomTypes and net charge. Since SMILES with hypervalance
     # heteroatoms are not always read correctly, print a suggestion to input the structure using an adjList.
     try:
-        mol.update()
+        mol.update(sort_atoms=sort_atoms)
     except AtomTypeError:
         logging.error("The following molecule has at least one atom with an undefined atomtype:\n{0}"
                       "\nIf this structure was entered in SMILES, try using the adjacencyList format for an unambiguous"
