@@ -1220,6 +1220,11 @@ class KineticsFamily(Database):
             data = deepcopy(entry.data)
             data.change_t0(1)
 
+            if entry.facet is None:
+                metal = entry.metal # could be None
+            else:
+                metal = entry.metal + entry.facet
+
             if type(data) is Arrhenius:
                 # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
                 data = data.to_arrhenius_ep()
@@ -1251,12 +1256,12 @@ class KineticsFamily(Database):
                     reactant_copy = reactant.copy(deep=True)
                     reactant_copy.molecule[0].clear_labeled_atoms()
                     reactant_copy.generate_resonance_structures()
-                    reactant.thermo = thermo_database.get_thermo_data(reactant_copy, training_set=True)
+                    reactant.thermo = thermo_database.get_thermo_data(reactant_copy, training_set=True, metal_to_scale_to=metal)
                 for product in entry.item.products:
                     product_copy = product.copy(deep=True)
                     product_copy.molecule[0].clear_labeled_atoms()
                     product_copy.generate_resonance_structures()
-                    product.thermo = thermo_database.get_thermo_data(product_copy, training_set=True)
+                    product.thermo = thermo_database.get_thermo_data(product_copy, training_set=True, metal_to_scale_to=metal)
                 V = data.V0.value_si
                 dGrxn = entry.item._get_free_energy_of_charge_transfer_reaction(298,V)
                 data = data.to_surface_charge_transfer_bep(dGrxn,0.0)
