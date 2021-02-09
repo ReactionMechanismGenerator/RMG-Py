@@ -1632,7 +1632,7 @@ class ThermoDatabase(object):
         # define the comparison function to find the lowest energy
         def lowest_energy(species):
             if hasattr(species.thermo, 'H298'):
-                return species.thermo.H298.value
+                return species.thermo.H298.value_si
             else:
                 return species.thermo.get_enthalpy(298.0)
 
