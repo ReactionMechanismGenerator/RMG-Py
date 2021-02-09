@@ -1602,6 +1602,7 @@ class ThermoDatabase(object):
                         adsorbed_atoms[0].increment_lone_pairs()
 
         dummy_molecule.update_connectivity_values()
+        dummy_molecule.update_charge()
         dummy_molecule.update()
 
         logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
