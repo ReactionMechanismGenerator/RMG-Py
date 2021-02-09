@@ -40,6 +40,7 @@ from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.solvation import SolvationDatabase
 from rmgpy.data.statmech import StatmechDatabase
 from rmgpy.data.thermo import ThermoDatabase
+from rmgpy.data.surface import MetalDatabase
 from rmgpy.data.transport import TransportDatabase
 from rmgpy.exceptions import DatabaseError
 
@@ -62,6 +63,7 @@ class RMGDatabase(object):
         self.kinetics = None
         self.statmech = None
         self.solvation = None
+        self.surface = None
 
         # Store the newly created database in the module.
         global database
@@ -80,6 +82,7 @@ class RMGDatabase(object):
              statmech_libraries=None,
              depository=True,
              solvation=True,
+             surface=True,  # on by default, because solvation is also on by default
              testing=False):
         """
         Load the RMG database from the given `path` on disk, where `path`
@@ -90,7 +93,6 @@ class RMGDatabase(object):
 
         Argument testing will load a lighter version of the database used for unit-tests
         """
-        self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository)
         if not testing:
             self.load_transport(os.path.join(path, 'transport'), transport_libraries)
             self.load_forbidden_structures(os.path.join(path, 'forbiddenStructures.py'))
@@ -106,13 +108,18 @@ class RMGDatabase(object):
         if solvation:
             self.load_solvation(os.path.join(path, 'solvation'))
 
-    def load_thermo(self, path, thermo_libraries=None, depository=True):
+        if surface:
+            self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository, surface)
+
+
+
+    def load_thermo(self, path, thermo_libraries=None, depository=True, surface=False):
         """
         Load the RMG thermo database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG thermo database.
         """
         self.thermo = ThermoDatabase()
-        self.thermo.load(path, thermo_libraries, depository)
+        self.thermo.load(path, thermo_libraries, depository, surface)
 
     def load_transport(self, path, transport_libraries=None):
         """
@@ -172,6 +179,14 @@ class RMGDatabase(object):
         """
         self.solvation = SolvationDatabase()
         self.solvation.load(path)
+
+    def load_surface(self, path):
+        """
+        Load the RMG metal database from the given `path` on disk, where
+        `path` points to the top-level folder of the RMG surface database.
+        """
+        self.surface = MetalDatabase()
+        self.surface.load(path)
 
     def load_statmech(self, path, statmech_libraries=None, depository=True):
         """
