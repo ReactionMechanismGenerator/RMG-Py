@@ -621,6 +621,9 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.int_t, ndim=1] sens_species_indices, reactant_side, product_side
         cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdk, norm_sens
         cdef list time_array, norm_sens_array, new_surface_reactions, new_surface_reaction_inds, new_objects, new_object_inds
+        cdef bool connect_deadend
+        cdef list deadend_index
+        cdef np.ndarray[np.float64_t, ndim=1] connect_deadend_rate
 
         zero_production = False
         zero_consumption = False
@@ -659,6 +662,8 @@ cdef class ReactionSystem(DASx):
             branching_index = model_settings.branching_index
         else:
             branch_factor = 0.0
+
+        connect_deadend = model_settings.connect_deadend
 
         #if not pruning always terminate at max objects, otherwise only do so if terminate_at_max_objects=True
         terminate_at_max_objects = True if not prune else model_settings.terminate_at_max_objects
@@ -851,6 +856,41 @@ cdef class ReactionSystem(DASx):
                              'singularity'.format(self.t, max_species))
                 invalid_objects.append(max_species)
                 break
+
+            if connect_deadend and not first_time:
+
+                deadend_index = []
+                connect_deadend_rate = np.zeros(num_edge_reactions)
+
+                for spc_index in range(num_core_species):
+                    if core_species[spc_index].molecule[0].multiplicity == 2:
+                        net_L = core_species_net_consumption_rates[spc_index]
+                        C = core_species_concentrations[spc_index]
+                        if C != 0.0 and net_L == 0.0:
+                            deadend_index.append(spc_index)
+
+                if deadend_index:
+                    sorted_inds = np.argsort(np.abs(edge_reaction_rates)).tolist()[::-1]
+                    for index in sorted_inds:
+                        reaction = edge_reactions[index]
+                        reaction_rate = edge_reaction_rates[index]
+
+                        if reaction_rate == 0.0:
+                            break
+
+                        if reaction.family == "H_Abstraction":
+
+                            if reaction_rate > 0:
+                                reactant_side = self.reactant_indices[index + num_core_reactions, :]
+                                product_side = self.product_indices[index + num_core_reactions, :]
+                            else:
+                                reactant_side = self.product_indices[index + num_core_reactions, :]
+                                product_side = self.reactant_indices[index + num_core_reactions, :]
+
+                            for spc_index in reactant_side:
+                                if spc_index in deadend_index:
+                                    deadend_index.remove(spc_index)
+                                    connect_deadend_rate[index] = abs(reaction_rate)
 
             if branch_factor != 0.0 and not first_time:
                 ######################################################
@@ -1073,6 +1113,29 @@ cdef class ReactionSystem(DASx):
                 temp_new_object_vals = []
                 temp_new_object_type = []
 
+            if connect_deadend and not first_time:
+
+                for ind, obj in enumerate(edge_reactions):
+                    d_rate = connect_deadend_rate[ind]
+                    if d_rate != 0.0:
+                        if not (obj in new_objects or obj in invalid_objects):
+                            temp_new_objects.append(edge_reactions[ind])
+                            temp_new_object_inds.append(ind)
+                            temp_new_object_vals.append(d_rate)
+                            temp_new_object_type.append('deadend')
+
+                sorted_inds = np.argsort(np.array(temp_new_object_vals)).tolist()[::-1]
+
+                new_objects.extend([temp_new_objects[q] for q in sorted_inds])
+                new_object_inds.extend([temp_new_object_inds[q] for q in sorted_inds])
+                new_object_vals.extend([temp_new_object_vals[q] for q in sorted_inds])
+                new_object_type.extend([temp_new_object_type[q] for q in sorted_inds])
+
+                temp_new_objects = []
+                temp_new_object_inds = []
+                temp_new_object_vals = []
+                temp_new_object_type = []
+
             if branch_factor != 0.0 and not first_time:
                 #movement of reactions to core based on branching number
                 for ind, obj in enumerate(edge_reactions):
@@ -1206,6 +1269,9 @@ cdef class ReactionSystem(DASx):
                         elif new_object_type[i] == 'branching':
                             logging.info('At time {0:10.4e} s, Reaction {1} at a branching number of {2} exceeded the '
                                          'threshold of 1 for moving to model core'.format(self.t, obj, val))
+                        elif new_object_type[i] == 'deadend':
+                            logging.info('At time {0:10.4e} s, Reaction {1} at a rate of {2} moved to model core '
+                                         'to connect deadend radicals'.format(self.t, obj, val))
                     else:
                         logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for '
                                      'exploring of {3}'.format(self.t, obj.index, val, tol_move_to_core))
