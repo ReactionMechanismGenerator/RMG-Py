@@ -228,6 +228,7 @@ cdef class LiquidReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t,ndim=1] core_species_consumption_rates, core_species_production_rates
         cdef np.ndarray[np.float64_t, ndim=1] C
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
+        cdef np.ndarray[np.float64_t,ndim=1] core_species_net_consumption_rates, core_species_net_production_rates
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -255,6 +256,8 @@ cdef class LiquidReactor(ReactionSystem):
         edge_species_rates = np.zeros_like(self.edge_species_rates)
         edge_reaction_rates = np.zeros_like(self.edge_reaction_rates)
         network_leak_rates = np.zeros_like(self.network_leak_rates)
+        core_species_net_consumption_rates = np.zeros_like(self.core_species_net_consumption_rates)
+        core_species_net_production_rates = np.zeros_like(self.core_species_net_production_rates) 
 
         C = np.zeros_like(self.core_species_concentrations)
         V = self.V  # constant volume reactor
@@ -295,30 +298,66 @@ cdef class LiquidReactor(ReactionSystem):
                 # and products are core species
                 first = ir[j, 0]
                 core_species_rates[first] -= reaction_rate
+
+                if reaction_rate > 0:
+                    core_species_net_consumption_rates[first] += reaction_rate
+                else:
+                    core_species_net_production_rates[first] += abs(reaction_rate)
+
                 core_species_consumption_rates[first] += f_reaction_rate
                 core_species_production_rates[first] += rev_reaction_rate
                 second = ir[j, 1]
                 if second != -1:
                     core_species_rates[second] -= reaction_rate
+
+                    if reaction_rate > 0:
+                        core_species_net_consumption_rates[second] += reaction_rate
+                    else:
+                        core_species_net_production_rates[second] += abs(reaction_rate)
+
                     core_species_consumption_rates[second] += f_reaction_rate
                     core_species_production_rates[second] += rev_reaction_rate
                     third = ir[j, 2]
                     if third != -1:
                         core_species_rates[third] -= reaction_rate
+
+                        if reaction_rate > 0:
+                            core_species_net_consumption_rates[third] += reaction_rate
+                        else:
+                            core_species_net_production_rates[third] += abs(reaction_rate)
+
                         core_species_consumption_rates[third] += f_reaction_rate
                         core_species_production_rates[third] += rev_reaction_rate
                 first = ip[j, 0]
                 core_species_rates[first] += reaction_rate
+
+                if reaction_rate > 0:
+                    core_species_net_production_rates[first] += reaction_rate
+                else:
+                    core_species_net_consumption_rates[first] += abs(reaction_rate)
+
                 core_species_production_rates[first] += f_reaction_rate
                 core_species_consumption_rates[first] += rev_reaction_rate
                 second = ip[j, 1]
                 if second != -1:
                     core_species_rates[second] += reaction_rate
+
+                    if reaction_rate > 0:
+                        core_species_net_production_rates[second] += reaction_rate
+                    else:
+                        core_species_net_consumption_rates[second] += abs(reaction_rate)
+
                     core_species_production_rates[second] += f_reaction_rate
                     core_species_consumption_rates[second] += rev_reaction_rate
                     third = ip[j, 2]
                     if third != -1:
                         core_species_rates[third] += reaction_rate
+
+                        if reaction_rate > 0:
+                            core_species_net_production_rates[third] += reaction_rate
+                        else:
+                            core_species_net_consumption_rates[third] += abs(reaction_rate)
+
                         core_species_production_rates[third] += f_reaction_rate
                         core_species_consumption_rates[third] += rev_reaction_rate
 
@@ -373,6 +412,8 @@ cdef class LiquidReactor(ReactionSystem):
         self.edge_species_rates = edge_species_rates
         self.edge_reaction_rates = edge_reaction_rates
         self.network_leak_rates = network_leak_rates
+        self.core_species_net_production_rates = core_species_net_production_rates
+        self.core_species_net_consumption_rates = core_species_net_consumption_rates
 
         res = core_species_rates * V
 

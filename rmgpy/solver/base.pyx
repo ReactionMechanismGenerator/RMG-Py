@@ -133,6 +133,8 @@ cdef class ReactionSystem(DASx):
         self.core_reaction_rates = None
         self.core_species_production_rates = None
         self.core_species_consumption_rates = None
+        self.core_species_net_production_rates = None
+        self.core_species_net_consumption_rates = None
         self.edge_species_rates = None
         self.edge_reaction_rates = None
 
@@ -247,6 +249,8 @@ cdef class ReactionSystem(DASx):
         self.core_species_concentrations = np.zeros((self.num_core_species), np.float64)
         self.core_species_production_rates = np.zeros((self.num_core_species), np.float64)
         self.core_species_consumption_rates = np.zeros((self.num_core_species), np.float64)
+        self.core_species_net_production_rates = np.zeros((self.num_core_species), np.float64)
+        self.core_species_net_consumption_rates = np.zeros((self.num_core_species), np.float64)
         self.core_reaction_rates = np.zeros((self.num_core_reactions), np.float64)
         self.edge_reaction_rates = np.zeros((self.num_edge_reactions), np.float64)
         self.core_species_rates = np.zeros((self.num_core_species), np.float64)
@@ -598,6 +602,7 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.float64_t, ndim=1] y0  # Vector containing the number of moles of each species
         cdef np.ndarray[np.float64_t, ndim=1] core_species_rates, edge_species_rates, network_leak_rates
         cdef np.ndarray[np.float64_t, ndim=1] core_species_production_rates, core_species_consumption_rates, total_div_accum_nums
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_net_production_rates, core_species_net_consumption_rates
         cdef np.ndarray[np.float64_t, ndim=1] max_edge_species_rate_ratios, max_network_leak_rate_ratios
         cdef bint terminated
         cdef object max_species, max_network
@@ -817,6 +822,8 @@ cdef class ReactionSystem(DASx):
             edge_reaction_rates = self.edge_reaction_rates
             core_species_consumption_rates = self.core_species_consumption_rates
             core_species_production_rates = self.core_species_production_rates
+            core_species_net_consumption_rates = self.core_species_net_consumption_rates
+            core_species_net_production_rates = self.core_species_net_production_rates
             edge_species_rates = np.abs(self.edge_species_rates)
             network_leak_rates = np.abs(self.network_leak_rates)
             core_species_rate_ratios = np.abs(self.core_species_rates / char_rate)

@@ -78,6 +78,8 @@ cdef class ReactionSystem(DASx):
     cdef public np.ndarray core_species_consumption_rates
     cdef public np.ndarray edge_species_rates
     cdef public np.ndarray edge_reaction_rates
+    cdef public np.ndarray core_species_net_production_rates
+    cdef public np.ndarray core_species_net_consumption_rates
 
     cdef public np.ndarray network_leak_rates    
 
