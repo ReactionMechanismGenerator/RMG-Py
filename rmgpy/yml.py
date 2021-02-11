@@ -105,16 +105,17 @@ def obj_to_dict(obj, spcs, label="solvent"):
         result_dict["radicalchange"] = sum([get_radicals(x) for x in obj.products]) - \
                                        sum([get_radicals(x) for x in obj.reactants])
     elif isinstance(obj, Arrhenius):
+        obj.change_t0(1.0)
         result_dict["type"] = "Arrhenius"
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
     elif isinstance(obj, StickingCoefficient):
+        obj.change_t0(1.0)
         result_dict["type"] = "StickingCoefficient"
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
-        result_dict["T0"] = obj.T0.value_si
     elif isinstance(obj, PDepArrhenius):
         result_dict["type"] = "PdepArrhenius"
         result_dict["Ps"] = obj.pressures.value_si.tolist()
