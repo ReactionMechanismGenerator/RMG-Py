@@ -1,0 +1,40 @@
+name: Documentation
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cd ..
+        git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+        cd RMG-Py
+        conda env create -q -f environment.yml
+        source activate rmg_env
+        conda install -y sphinx
+        conda install -y conda-build
+        conda install -y anaconda-client
+        conda list
+        sed -i '/embedsignature/s/# //g' setup.py
+        make
+        cd documentation
+        export COMMITMESSAGE="Automatic documentation rebuild"
+        make travis_setup clean html publish
+        
+      
