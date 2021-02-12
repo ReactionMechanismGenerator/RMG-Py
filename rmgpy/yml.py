@@ -86,6 +86,8 @@ def obj_to_dict(obj, spcs, label="solvent"):
     if isinstance(obj, Species):
         result_dict["name"] = obj.label
         result_dict["type"] = "Species"
+        if obj.contains_surface_site():
+            result_dict["adjlist"] = obj.molecule[0].to_adjacency_list()
         result_dict["smiles"] = obj.molecule[0].to_smiles()
         result_dict["thermo"] = obj_to_dict(obj.thermo, spcs)
         result_dict["radicalelectrons"] = get_radicals(obj)
