@@ -63,15 +63,39 @@ def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
 
 
 def get_mech_dict(spcs, rxns, solvent='solvent', solvent_data=None):
-    result_dict = dict()
-    result_dict["Units"] = dict()
-    result_dict["Phases"] = [dict()]
-    result_dict["Phases"][0]["name"] = "phase"
-    result_dict["Phases"][0]["Species"] = [obj_to_dict(x, spcs) for x in spcs]
-    result_dict["Reactions"] = [obj_to_dict(x, spcs) for x in rxns]
-    if solvent_data:
-        result_dict["Solvents"] = [obj_to_dict(solvent_data, spcs, label=solvent)]
-    return result_dict
+    names = [x.label for x in spcs]
+    for i,name in enumerate(names): #fix duplicate names
+        if names.count(name) > 1:
+            names[i] += "-"+str(names.count(name))
+
+    is_surface = False
+    for spc in spcs:
+        if spc.contains_surface_site():
+            is_surface = True
+            break
+    if not is_surface:
+        result_dict = dict()
+        result_dict["Units"] = dict()
+        result_dict["Phases"] = [dict()]
+        result_dict["Phases"][0]["name"] = "phase"
+        result_dict["Phases"][0]["Species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
+        result_dict["Reactions"] = [obj_to_dict(x, spcs, names=names) for x in rxns]
+        if solvent_data:
+            result_dict["Solvents"] = [obj_to_dict(solvent_data, spcs, names=names, label=solvent)]
+        return result_dict
+    else:
+        result_dict = dict()
+        result_dict["Units"] = dict()
+        result_dict["Phases"] = [dict(),dict()]
+        result_dict["Phases"][0]["name"] = "gas"
+        result_dict["Phases"][1]["name"] = "surface"
+        result_dict["Interfaces"] = [dict()]
+        result_dict["Phases"][0]["Species"] = [obj_to_dict(x,spcs,names=names) for x in spcs if not x.contains_surface_site()]
+        result_dict["Phases"][1]["Species"] = [obj_to_dict(x,spcs,names=names) for x in spcs if x.contains_surface_site()]
+        result_dict["Reactions"] = [obj_to_dict(x, spcs,names=names) for x in rxns]
+        if solvent_data:
+            result_dict["Solvents"] = [obj_to_dict(solvent_data, spcs, names=names, label=solvent)]
+        return result_dict
 
 
 def get_radicals(spc):
@@ -81,10 +105,10 @@ def get_radicals(spc):
         return spc.molecule[0].multiplicity-1
 
 
-def obj_to_dict(obj, spcs, label="solvent"):
+def obj_to_dict(obj, spcs, names=None, label="solvent"):
     result_dict = dict()
     if isinstance(obj, Species):
-        result_dict["name"] = obj.label
+        result_dict["name"] = names[spcs.index(obj)]
         result_dict["type"] = "Species"
         if obj.contains_surface_site():
             result_dict["adjlist"] = obj.molecule[0].to_adjacency_list()
@@ -100,9 +124,9 @@ def obj_to_dict(obj, spcs, label="solvent"):
         result_dict["Tmax"] = obj.Tmax.value_si
         result_dict["Tmin"] = obj.Tmin.value_si
     elif isinstance(obj, Reaction):
-        result_dict["reactants"] = [x.label for x in obj.reactants]
-        result_dict["products"] = [x.label for x in obj.products]
-        result_dict["kinetics"] = obj_to_dict(obj.kinetics, spcs)
+        result_dict["reactants"] = [names[spcs.index(x)] for x in obj.reactants]
+        result_dict["products"] = [names[spcs.index(x)] for x in obj.products]
+        result_dict["kinetics"] = obj_to_dict(obj.kinetics, spcs, names)
         result_dict["type"] = "ElementaryReaction"
         result_dict["radicalchange"] = sum([get_radicals(x) for x in obj.products]) - \
                                        sum([get_radicals(x) for x in obj.reactants])
