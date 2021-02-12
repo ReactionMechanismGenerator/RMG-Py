@@ -854,6 +854,14 @@ class ThermoDatabase(object):
         }
         self.global_context = {}
 
+        # Use Pt111 binding energies as default
+        self.binding_energies = {
+            'H': (-2.75368,'eV/molecule'),
+            'C': (-7.02516,'eV/molecule'),
+            'N': (-4.63225,'eV/molecule'),
+            'O': (-3.81153,'eV/molecule'),
+        }
+
     def __reduce__(self):
         """
         A helper function used when pickling a ThermoDatabase object.
