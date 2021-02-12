@@ -33,8 +33,8 @@ from unittest import mock
 
 import rmgpy
 from rmgpy.chemkin import get_species_identifier, load_chemkin_file, load_transport_file, mark_duplicate_reactions, \
-    read_kinetics_entry, read_reaction_comments, read_thermo_entry, save_chemkin_file, save_species_dictionary, \
-    save_transport_file, write_thermo_entry
+    read_kinetics_entry, read_reaction_comments, read_thermo_entry, save_chemkin_file, save_chemkin_surface_file, \
+    save_species_dictionary, save_transport_file, write_thermo_entry
 from rmgpy.chemkin import _remove_line_breaks, _process_duplicate_reactions
 from rmgpy.data.kinetics import LibraryReaction
 from rmgpy.exceptions import ChemkinError
@@ -541,7 +541,33 @@ C 1 H 3 N 1 O 2 S 1 X 1
         self.assertEqual(species, 'CH3NO2SX')
         self.assertEqual(formula, {'X': 1, 'C': 1, 'O': 2, 'H': 3, 'N': 1, 'S': 1})
         self.assertTrue(self.nasa.is_identical_to(thermo))
+    
+    def test_write_bidentate_species(self):
+        """Test that species with 2 or more surface sites get proper formatting"""
 
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
+        chemkin_path = os.path.join(folder, 'surface', 'chem-surface.inp')
+        dictionary_path = os.path.join(folder, 'surface', 'species_dictionary.txt')
+        chemkin_save_path = os.path.join(folder, 'surface', 'chem-surface-test.inp')
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
+
+        surface_atom_count = species[3].molecule[0].get_num_atoms('X')
+        self.assertEqual(surface_atom_count, 3)
+        save_chemkin_surface_file(chemkin_save_path, species, reactions, verbose=False, check_for_duplicates=False)
+        
+        bidentate_test = "    CH2OX2(52)/2/             \n"
+        tridentate_test = "    CHOX3(61)/3/             \n" 
+        with open(chemkin_save_path, "r") as f:
+            for i, line in enumerate(f):
+                if i == 3:
+                    bidentate_read = line
+                if i == 4:
+                    tridentate_read = line
+
+        self.assertEqual(bidentate_test.strip(), bidentate_read.strip())
+        self.assertEqual(tridentate_test.strip(), tridentate_read.strip())
+        
+        os.remove(chemkin_save_path)
 
 class TestReadReactionComments(unittest.TestCase):
     @classmethod

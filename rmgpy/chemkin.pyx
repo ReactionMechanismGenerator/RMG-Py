@@ -923,6 +923,11 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
                 # Unread the line (we'll re-read it in readReactionBlock())
                 f.seek(previous_line)
                 read_species_block(f, species_dict, species_aliases, species_list)
+            
+            elif 'SITE' in line.upper():
+                # Unread the line (we'll re-read it in readReactionBlock())
+                f.seek(previous_line)
+                read_species_block(f, species_dict, species_aliases, species_list)
 
             elif 'THERM' in line.upper() and thermo_path is None:
                 # Skip this if a thermo file is specified
@@ -1086,7 +1091,7 @@ def read_species_block(f, species_dict, species_aliases, species_list):
     tokens_upper = line.upper().split()
     first_token = tokens.pop(0)
     first_token = tokens_upper.pop(0)  # pop from both lists
-    assert first_token in ['SPECIES', 'SPEC']  # should be first token in first line
+    assert first_token in ['SPECIES', 'SPEC', 'SITE']  # should be first token in first line
     # Build list of species identifiers
     while 'END' not in tokens_upper:
         line = f.readline()
@@ -1110,7 +1115,7 @@ def read_species_block(f, species_dict, species_aliases, species_list):
         if token in processed_tokens:
             continue  # ignore species declared twice
         token_upper = token.upper()
-        if token_upper in ['SPECIES', 'SPEC']:
+        if token_upper in ['SPECIES', 'SPEC', 'SITE']:
             continue  # there may be more than one SPECIES statement
         if token_upper == 'END':
             break
@@ -2133,15 +2138,17 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     if surface_site_density:
         f.write('  SDEN/{0:.4E}/ ! mol/cm^2\n'.format(surface_site_density.value_si * 1e-4))
     else:
-        f.write('  SDEN/2.72E-9/ ! mol/cm^2 DEFAULT!')
+        f.write('  SDEN/2.72E-9/ ! mol/cm^2 DEFAULT!\n')
     # todo: add surface site density from reactor simulation
     for spec in sorted_species:
         label = get_species_identifier(spec)
-        # todo: add /2/ to bidentate species etc.
+        number_of_sites = spec.molecule[0].get_num_atoms('X')
+        if  number_of_sites >= 2:
+            label +=  f"/{number_of_sites}/"
         if verbose:
             f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
         else:
-            f.write('    {0!s:<16}\n'.format(label))
+            f.write('    {0!s}\n'.format(label))
     f.write('END\n\n\n\n')
 
     # Thermodynamics section
