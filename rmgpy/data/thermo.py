@@ -1426,6 +1426,8 @@ class ThermoDatabase(object):
         """
         
         if isinstance(binding_energies, str):
+            if not self.surface:
+                self.load_surface()
             binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
         for element, energy in binding_energies.items():
