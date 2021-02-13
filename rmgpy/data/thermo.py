@@ -854,6 +854,14 @@ class ThermoDatabase(object):
         }
         self.global_context = {}
 
+        # Use Pt111 binding energies as default
+        self.binding_energies = {
+            'H': rmgpy.quantity.Energy(-2.75368,'eV/molecule'),
+            'C': rmgpy.quantity.Energy(-7.02516,'eV/molecule'),
+            'N': rmgpy.quantity.Energy(-4.63225,'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-3.81153,'eV/molecule'),
+        }
+
     def __reduce__(self):
         """
         A helper function used when pickling a ThermoDatabase object.
@@ -1418,6 +1426,8 @@ class ThermoDatabase(object):
         """
         
         if isinstance(binding_energies, str):
+            if not self.surface:
+                self.load_surface()
             binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
         for element, energy in binding_energies.items():
