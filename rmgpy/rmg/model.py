@@ -468,7 +468,7 @@ class CoreEdgeReactionModel:
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined
-        if forward.pairs is None:
+        if forward.pairs is None or len(forward.pairs) != max(len(forward.reactants), len(forward.products)):
             forward.generate_pairs()
             if hasattr(forward, 'reverse'):
                 if forward.reverse:
