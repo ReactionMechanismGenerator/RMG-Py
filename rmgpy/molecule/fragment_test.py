@@ -720,7 +720,7 @@ class TestFragment(unittest.TestCase):
     def test_sliceitup_arom1(self):
 
         # test avoid cutting aromatic species at ring position
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('c1ccccc1CCCCCC')
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('c1ccccc1CCCCCCCC')
 
         frags = rmgpy.molecule.fragment.Fragment().sliceitup_arom(fragment)
 
