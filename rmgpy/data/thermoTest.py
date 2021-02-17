@@ -55,8 +55,10 @@ def setUpModule():
     database = RMGDatabase()
     database.load_thermo(
         os.path.join(settings['database.directory'], 'thermo'),
-        thermo_libraries=['DFT_QCI_thermo', 'SABIC_aromatics', 'primaryThermoLibrary']
+        thermo_libraries=['DFT_QCI_thermo', 'SABIC_aromatics', 'primaryThermoLibrary'],
+        surface=True,
     )
+    database.load_surface(os.path.join(settings['database.directory'], 'surface'))
 
 
 def tearDownModule():
@@ -86,9 +88,11 @@ class TestThermoDatabase(unittest.TestCase):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database.thermo
+        cls.database.set_binding_energies('Pt111')
 
         cls.databaseWithoutLibraries = ThermoDatabase()
-        cls.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'), libraries=[])
+        cls.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'), libraries=[], surface=True)
+        cls.databaseWithoutLibraries.set_binding_energies('Pt111')
 
         # Set up ML estimator
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')

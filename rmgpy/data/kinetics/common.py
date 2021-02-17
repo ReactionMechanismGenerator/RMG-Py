@@ -134,6 +134,14 @@ def save_entry(f, entry):
     if entry.long_desc.strip() != '':
         f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
+    # write metal attributes
+    if entry.metal:
+        f.write('    metal = "{0}",\n'.format(entry.metal))
+    if entry.facet:
+        f.write('    facet = "{0}",\n'.format(entry.facet))
+    if entry.site:
+        f.write('    site = "{0}",\n'.format(entry.site))
+
     f.write(')\n\n')
 
 

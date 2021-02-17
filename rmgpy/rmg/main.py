@@ -400,8 +400,9 @@ class RMG(util.Subject):
         # check libraries
         self.check_libraries()
 
+        # set global binding energies variable
         if self.binding_energies:
-            self.database.thermo.set_delta_atomic_adsorption_energies(self.binding_energies)
+            self.database.thermo.set_binding_energies(self.binding_energies)
 
         # set global variable solvent
         if self.solvent:
@@ -1342,6 +1343,10 @@ class RMG(util.Subject):
         temp_seed_dir = os.path.join(self.output_directory, 'seed_tmp')
 
         # Move the seed from the previous iteration to a temporary directory in case we run into errors
+
+        # First, remove the temporary seed mechanism if it exists from a previous run
+        if os.path.exists(temp_seed_dir):
+            shutil.rmtree(temp_seed_dir)
         try:
             os.rename(seed_dir, temp_seed_dir)
         except PermissionError:  # The Windows Subsystem for Linux (WSL) can have problems with renaming

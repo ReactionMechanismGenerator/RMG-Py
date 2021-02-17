@@ -64,6 +64,7 @@ def setUpModule():
         testing=True,
         depository=False,
         solvation=False,
+        surface=False,
     )
     # load empty forbidden structures to avoid any dependence on forbidden structures
     # for these tests
