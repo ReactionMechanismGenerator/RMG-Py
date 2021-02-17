@@ -432,20 +432,25 @@ class CoreEdgeReactionModel:
         # check perform_cut first, assume True for model generation
         if perform_cut:
             threshold = 20
-            if forward.is_forward == True and forward.family in ['R_Recombination', 'R_Addition_MultipleBond'] and forward.products[0].molecule[0].get_element_count()['C'] >= threshold:
-                # check if the product is too large so that we can cut
-                reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
-                products = []
-                for product in forward.products:
-                    spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_cut=True)
-                    if type(spcs) == tuple:
-                        products.append(spcs[0])
-                    elif type(spcs) == list:
-                        products.extend([spc[0] for spc in spcs])
-                # change the reaction to irreversible if we cut the product into fragments
-                if len(products) != 1:
-                    forward.reversible = False
-            else:
+            # maybe species do not contain element C
+            try:
+                if forward.is_forward == True and forward.family in ['R_Recombination', 'R_Addition_MultipleBond'] and forward.products[0].molecule[0].get_element_count()['C'] >= threshold:
+                    # check if the product is too large so that we can cut
+                    reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+                    products = []
+                    for product in forward.products:
+                        spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_cut=True)
+                        if type(spcs) == tuple:
+                            products.append(spcs[0])
+                        elif type(spcs) == list:
+                            products.extend([spc[0] for spc in spcs])
+                    # change the reaction to irreversible if we cut the product into fragments
+                    if len(products) != 1:
+                        forward.reversible = False
+                else:
+                    reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+                    products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+            except KeyError:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
         else:
