@@ -2932,7 +2932,14 @@ class KineticsFamily(Database):
                 comp.append(rxn)
 
         return new, comp, new_inds
-
+    
+    def reaction_matches(self, rxn, grp):
+        rmol = rxn.reactants[0].molecule[0]
+        for r in rxn.reactants[1:]:
+            rmol = rmol.merge(r.molecule[0])
+        rmol.identify_ring_membership()
+        return rmol.is_subgraph_isomorphic(grp, generate_initial_map=True, save_order=True)
+    
     def eval_ext(self, parent, ext, extname, template_rxn_map, obj=None, T=1000.0):
         """
         evaluates the objective function obj
