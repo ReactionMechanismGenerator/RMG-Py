@@ -3228,17 +3228,60 @@ class KineticsFamily(Database):
 
         rxns = template_rxn_map[parent.label]
 
-        new, left, new_inds = self._split_reactions(rxns, ext[0])
-
         comp_entries = []
         new_entries = []
 
         for i, entry in enumerate(template_rxn_map[parent.label]):
-            if i in new_inds:
+            if self.reaction_matches(entry,ext[0]):
                 new_entries.append(entry)
-            else:
+            elif ext[1] is None or self.reaction_matches(entry,ext[1]):
                 comp_entries.append(entry)
+            else:
+                logging.error("Reaction matched neither the new group or its complement")
+                for p, atm in enumerate(parent.item.atoms):
+                    if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
+                        logging.error('atom violation')
+                        logging.error(atm.reg_dim_atm)
+                        logging.error(parent.label)
+                        logging.error('Regularization dimension suggest this node can be expanded, '
+                                      'but extension generation has failed')
+                    if atm.reg_dim_u[0] != atm.reg_dim_u[1]:
+                        logging.error('radical violation')
+                        logging.error(atm.reg_dim_u)
+                        logging.error(parent.label)
+                        logging.error('Regularization dimension suggest this node can be expanded, '
+                                      'but extension generation has failed')
+                for p, bd in enumerate(parent.item.get_all_edges()):
+                    if bd.reg_dim[0] != bd.reg_dim[1]:
+                        logging.error('bond violation')
+                        logging.error(bd.order)
+                        logging.error(bd.reg_dim)
+                        logging.error(parent.label)
+                        logging.error('Regularization dimension suggest this node can be expanded, '
+                                      'but extension generation has failed')
 
+                logging.error('split violation')
+                logging.error('parent')
+                logging.error(parent.item.to_adjacency_list())
+                for c, atm in enumerate(parent.item.atoms):
+                    logging.error(c)
+                    logging.error(atm.reg_dim_atm)
+                    logging.error(atm.reg_dim_u)
+                logging.error("bonds:")
+                for bd in parent.item.get_all_edges():
+                    ind1 = parent.item.atoms.index(bd.vertex1)
+                    ind2 = parent.item.atoms.index(bd.vertex2)
+                    logging.error(((ind1, ind2), bd.order, bd.reg_dim))
+                for rxn in rs:
+                    logging.error(str(rxn))
+                    for react in rxn.reactants:
+                        logging.error(react.label)
+                        logging.error(react.to_adjacency_list())
+                    for prod in rxn.products:
+                        logging.error(prod.label)
+                        logging.error(prod.to_adjacency_list())
+                raise ValueError
+        
         template_rxn_map[extname] = new_entries
 
         if complement:
