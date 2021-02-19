@@ -48,9 +48,12 @@ def get_duplicate_reactions(training_depository,reaction):
 
     duplicate_reactions = []
     for i,training_entry in training_depository.entries.items():
-        if reaction.is_isomorphic(training_entry.item,generate_initial_map=False):
+        if reaction.is_isomorphic(training_entry.item,generate_initial_map=True):
+            training_entry.item.kinetics = training_entry.data
             identical = reaction.kinetics.is_identical_to(training_entry.data)
             duplicate_reactions.append((training_entry, identical))
+            if identical:
+                break
     
     return duplicate_reactions
 
@@ -199,6 +202,18 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                 except:
                     training_depository = None
 
+                # Find the labeled atoms using family and reactants & products from fam_rxn
+                database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn, relabel_products=False)
+
+                # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
+                if forward:
+                    lib_rxn.reactants = fam_rxn.reactants
+                    lib_rxn.products = fam_rxn.products
+                    lib_rxn._degeneracy = fam_rxn.degeneracy
+                else:
+                    lib_rxn.reactants = fam_rxn.products
+                    lib_rxn.products = fam_rxn.reactants
+
                 identical = False
                 duplicate_reactions = []
                 if training_depository is not None:
@@ -213,18 +228,6 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     if identical:
                         continue
 
-                # Find the labeled atoms using family and reactants & products from fam_rxn
-                database.kinetics.families[fam_rxn.family].add_atom_labels_for_reaction(fam_rxn, relabel_products=False)
-
-                # Replace lib_rxn spcs with fam_rxn spcs to transfer atom labels
-                if forward:
-                    lib_rxn.reactants = fam_rxn.reactants
-                    lib_rxn.products = fam_rxn.products
-                    lib_rxn._degeneracy = fam_rxn.degeneracy
-                else:
-                    lib_rxn.reactants = fam_rxn.products
-                    lib_rxn.products = fam_rxn.reactants
-
                 if not lib_rxn.is_surface_reaction():
                     if len(lib_rxn.reactants) == 1:
                         units = 's^-1'
@@ -234,11 +237,6 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                         units = 'cm^6/(mol^2*s)'
                     A = lib_rxn.kinetics.A
                     lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
-
-                if fam_rxn.family in reaction_dict:
-                    reaction_dict[fam_rxn.family].append(lib_rxn)
-                else:
-                    reaction_dict[fam_rxn.family] = [lib_rxn]
 
                 template = database.kinetics.families[fam_rxn.family].retrieve_template(fam_rxn.template)
 
