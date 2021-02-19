@@ -859,7 +859,7 @@ class KineticsFamily(Database):
         return save_entry(f, entry)
 
     def save_training_reactions(self, reactions, reference=None, reference_type='', short_desc='', long_desc='',
-                                rank=3):
+                                metal=None, facet=None, site=None, rank=3):
         """
         This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
         duplicate reactions.  
@@ -878,6 +878,12 @@ class KineticsFamily(Database):
             short_desc = [short_desc] * len(reactions)
         if not isinstance(long_desc, list):
             long_desc = [long_desc] * len(reactions)
+        if not isinstance(metal, list):
+            metal = [metal] * len(reactions)
+        if not isinstance(facet, list):
+            facet = [facet] * len(reactions)
+        if not isinstance(site, list):
+            site = [site] * len(reactions)
         if not isinstance(rank, list):
             rank = [rank] * len(reactions)
 
@@ -948,6 +954,9 @@ class KineticsFamily(Database):
                 short_desc=str(short_desc[i]),
                 long_desc=str(long_desc[i]),
                 rank=rank[i],
+                metal=metal[i],
+                facet=facet[i],
+                site=site[i]
             )
 
             # Add this entry to the loaded depository so it is immediately usable
