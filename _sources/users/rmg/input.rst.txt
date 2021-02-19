@@ -909,6 +909,7 @@ all of RMG's reaction families. ::
         maximumSiliconAtoms=2,
         maximumSulfurAtoms=2,
         maximumHeavyAtoms=10,
+        maximumSurfaceSites=2,
         maximumRadicalElectrons=2,
         maximumSingletCarbenes=1,
         maximumCarbeneRadicals=0,
