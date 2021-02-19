@@ -37,6 +37,8 @@ import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 from rmgpy.quantity import ScalarQuantity
 
+from copy import deepcopy
+
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, \
                             SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 
@@ -57,7 +59,55 @@ def get_duplicate_reactions(training_depository,reaction):
     
     return duplicate_reactions
 
-def generate_header_html(n, fam_rxn, lib_rxn, library_name, families):
+def compare_kinetics(database, lib_rxn, old_kinetics, metal, duplicate_reactions=None):
+    new_kinetics = lib_rxn.kinetics
+    tlistinv = np.linspace(1000 / 2000, 1000 / 300, num=15)
+    tlist = 1000 * np.reciprocal(tlistinv)
+    for spc in (lib_rxn.reactants + lib_rxn.products):
+        copy_spc = spc.copy(deep=True)
+        # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
+        copy_spc.molecule[0].clear_labeled_atoms()
+        try:
+            copy_spc.generate_resonance_structures()
+        except:
+            pass
+        spc.thermo = database.thermo.get_thermo_data(copy_spc, training_set=True, metal_to_scale_to=metal)
+        spc.thermo = spc.thermo.to_wilhoit()
+    rxn_copy = deepcopy(lib_rxn)
+    rxn_copy.kinetics = old_kinetics
+    rxn_copy.fix_barrier_height()
+    old_kinetics = rxn_copy.kinetics
+    # Evaluate kinetics
+    if isinstance(new_kinetics, StickingCoefficient):
+        newklist = np.log10(np.array([lib_rxn.get_surface_rate_coefficient(t, 2.5e-5) for t in tlist]))
+    else:
+        newklist = np.log10(np.array([new_kinetics.get_rate_coefficient(t) for t in tlist]))
+    if isinstance(old_kinetics, StickingCoefficient):
+        oldklist = np.log10(np.array([rxn_copy.get_surface_rate_coefficient(t, 2.5e-5) for t in tlist]))
+    else:
+        oldklist = np.log10(np.array([old_kinetics.get_rate_coefficient(t) for t in tlist]))
+
+    if isinstance(new_kinetics, StickingCoefficient) or \
+        isinstance(old_kinetics, StickingCoefficient):
+        # StickingCoeffs dont have `is_similar` method
+        is_similar = None
+    else:
+        is_similar = new_kinetics.is_similar_to(old_kinetics)
+
+    other_kinetics = []
+    if duplicate_reactions:
+        for training_entry, _ in duplicate_reactions:
+            if isinstance(training_entry.item.kinetics, StickingCoefficient):
+                other_kinetics.append((training_entry.index,
+                np.log10(np.array([training_entry.item.get_surface_rate_coefficient(t, 2.5e-5) for t in tlist]))))
+            else:
+                other_kinetics.append((training_entry.index,np.log10(np.array([training_entry.data.get_rate_coefficient(t) for t in tlist]))))
+
+    return tlistinv, newklist, oldklist, old_kinetics, other_kinetics, is_similar
+
+
+
+def generate_header_html(n, fam_rxn, lib_rxn, library_name, families, metal=None):
     """
     Generates initial lines of HTML for results table.
     """
@@ -91,6 +141,10 @@ def generate_header_html(n, fam_rxn, lib_rxn, library_name, families):
         html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}">'
                  '</td>'.format(full, b64encode(lib_rxn._repr_png_()).decode())]
     html += ['</tr><tr>']
+    if metal:
+        html += ['<th colspan="{0}">metal</th>'.format(half)]
+        html += ['<td colspan="{0}">{1}</td>'.format(half,metal)]
+        html += ['</tr><tr>']
     html += ['<th colspan="{0}">Reactant SMILES</th>'.format(half)]
     html += ['<td colspan="{0}">{1}</td>'.format(half, ' + '.join(
         [reactant.molecule[0].to_smiles() for reactant in lib_rxn.reactants]))]
@@ -240,26 +294,23 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
 
                 template = database.kinetics.families[fam_rxn.family].retrieve_template(fam_rxn.template)
 
+                if entry.facet is None:
+                    metal = entry.metal # could be None
+                else:
+                    metal = entry.metal + entry.facet
+
                 if compare_kinetics:
-                    # Check what the current kinetics for this template are
                     new_kinetics = lib_rxn.kinetics
-                    old_kinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
-                    # Evaluate kinetics
-                    is_similar = new_kinetics.is_similar_to(old_kinetics)
-                    tlistinv = np.linspace(1000 / 1500, 1000 / 300, num=10)
-                    tlist = 1000 * np.reciprocal(tlistinv)
-                    newklist = np.log10(np.array([new_kinetics.get_rate_coefficient(t) for t in tlist]))
-                    oldklist = np.log10(np.array([old_kinetics.get_rate_coefficient(t) for t in tlist]))
+                    template_kinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
+                    tlistinv, newklist, oldklist, old_kinetics, other_kinetics, is_similar = \
+                        compare_kinetics(database, lib_rxn, template_kinetics, metal, duplicate_reactions)
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
                     plt.plot(tlistinv, oldklist, label='Current')
                     # Check for duplicate reactions in training
-                    if len(duplicate_reactions) > 0:
-                        other_kinetics = []
-                        for training_entry, _ in duplicate_reactions:
-                            other_kinetics.append((training_entry.index,np.log10(np.array([training_entry.data.get_rate_coefficient(t) for t in tlist]))))
-                        for training_index,k in other_kinetics:
+                    if len(other_kinetics) > 0:
+                        for training_index, k in other_kinetics:
                             plt.plot(tlistinv, k,linestyle='--',label='Match #{0} in {1}'.format(training_index,training_depository.label))
                     plt.legend()
                     plt.xlabel('1000/T')
@@ -271,9 +322,8 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     figdata = b64encode(fig.getvalue()).decode()
                     fig.close()
 
-
                 # Format output using html
-                html = generate_header_html(1, fam_rxn, lib_rxn, library_name, families)
+                html = generate_header_html(1, fam_rxn, lib_rxn, library_name, families, metal)
                 html += generate_template_html(fam_rxn, template)
                 if compare_kinetics:
                     if not forward:
@@ -282,8 +332,9 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                                  '</th></tr>'.format(full)]
                     html += ['<tr>']
                     html += ['<td colspan="{0}"><strong>New Kinetics:</strong><br>{1}<br><br>'
-                             '<strong>Current Kinetics:</strong><br>{2}<br><br>'
-                             '<strong>Is Similar:</strong><br>{3}</td>'.format(half, new_kinetics, old_kinetics, is_similar)]
+                             '<strong>Template Kinetics:</strong><br>{2}<br><br>'
+                             '<strong>Current Kinetics:</strong><br>{3}<br><br>'
+                             '<strong>Is Similar:</strong><br>{4}</td>'.format(half, new_kinetics, template_kinetics, old_kinetics, is_similar)]
                     html += ['<td colspan="{0}"><img src="data:image/png;base64,{1}"></td>'.format(half, figdata)]
                     html += ['</tr>']
                 html += ['</table>']
