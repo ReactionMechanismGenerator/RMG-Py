@@ -36,6 +36,7 @@ import unittest
 import cantera as ct
 import numpy
 from external.wip import work_in_progress
+from copy import deepcopy
 
 import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, \
@@ -268,6 +269,29 @@ class TestSurfaceReaction(unittest.TestCase):
         Kclist = self.rxn1s.get_equilibrium_constants(Tlist, type='Kc')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
+
+    def test_reverse_sticking_coeff_rate(self):
+        """
+        Test the Reaction.reverse_sticking_coeff_rate() method works for StickingCoefficient format.
+        """
+
+        original_kinetics = self.rxn2sSC.kinetics
+        rxn_copy = deepcopy(self.rxn2sSC)
+        reverse_kinetics = self.rxn2sSC.generate_reverse_rate_coefficient(surface_site_density=2.5e-5)
+
+        rxn_copy.kinetics = reverse_kinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        rxn_copy.reactants, rxn_copy.products = rxn_copy.products, rxn_copy.reactants
+        reverse_reverse_kinetics = rxn_copy.generate_reverse_rate_coefficient(surface_site_density=2.5e-5)
+        rxn_copy.kinetics = reverse_reverse_kinetics
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        P = 0
+        for T in Tlist:
+            korig = self.rxn2sSC.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
+            krevrev = rxn_copy.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
 class TestReaction(unittest.TestCase):
     """
