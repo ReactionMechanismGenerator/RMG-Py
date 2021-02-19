@@ -95,7 +95,7 @@ cdef class Reaction:
 
     cpdef int get_stoichiometric_coefficient(self, Species spec)
 
-    cpdef double get_rate_coefficient(self, double T, double P=?)
+    cpdef double get_rate_coefficient(self, double T, double P=?, double surface_site_density=?)
 
     cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density) except -2
 

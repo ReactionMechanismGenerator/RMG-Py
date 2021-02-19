@@ -657,7 +657,7 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
-    def get_rate_coefficient(self, T, P=0):
+    def get_rate_coefficient(self, T, P=0, surface_site_density=0):
         """
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
@@ -666,8 +666,17 @@ class Reaction:
         If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
+
+        If the reaction has sticking coefficient kinetics, a nonzero surface site density
+        in `mol/m^2` must be provided
         """
-        if diffusion_limiter.enabled:
+        if isinstance(self.kinetics, StickingCoefficient):
+            if surface_site_density <= 0:
+                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
+                                f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
+            else:
+                return self.get_surface_rate_coefficient(T, surface_site_density)
+        elif diffusion_limiter.enabled:
             try:
                 k = self.k_effective_cache[T]
             except KeyError:
