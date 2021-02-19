@@ -61,7 +61,7 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-
+from rmgpy.tools.uncertainty import KineticParameterUncertainty
 
 ################################################################################
 
@@ -3707,12 +3707,15 @@ class KineticsFamily(Database):
                     
         return errors, uncertainties
 
-    def cross_validate_old(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermo_database=None, get_reverse=False):
+    def cross_validate_old(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermo_database=None, get_reverse=False, uncertainties=True):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
         """
         errors = {}
+        uncs = {}
+        
+        kpu = KineticParameterUncertainty()
         rxns = np.array(self.get_training_set(remove_degeneracy=True,get_reverse=get_reverse))
 
         if folds == 0:
@@ -3751,8 +3754,17 @@ class KineticsFamily(Database):
                 k = kinetics.get_rate_coefficient(T)
 
                 errors[rxn] = np.log(k / krxn)
-
-        return errors
+                if uncertainties:
+                    testrxn = deepcopy(rxn)
+                    testrxn.kinetics = kinetics
+                    boo,source = self.extract_source_from_comments(testrxn)
+                    sdict = {"Rate Rules":source}
+                    uncs[rxn] = kpu.get_uncertainty_value(sdict)
+                    
+        if uncertainties:
+            return errors, uncs
+        else:
+            return errors
 
     def simple_regularization(self, node, template_rxn_map, test=True):
         """
