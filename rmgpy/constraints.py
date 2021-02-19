@@ -82,6 +82,11 @@ def fails_species_constraints(species):
         if struct.get_num_atoms('S') > max_sulfur_atoms:
             return True
 
+    max_surface_sites = species_constraints.get('maximumSurfaceSites', -1)
+    if max_surface_sites != -1:
+        if struct.get_num_atoms('X') > max_surface_sites:
+            return True
+
     max_heavy_atoms = species_constraints.get('maximumHeavyAtoms', -1)
     if max_heavy_atoms != -1:
         if struct.get_num_atoms() - struct.get_num_atoms('H') > max_heavy_atoms:
