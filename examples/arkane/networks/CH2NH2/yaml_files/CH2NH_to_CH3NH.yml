@@ -1,0 +1,143 @@
+RMG_version: 2.4.1
+class: ArkaneSpecies
+conformer:
+  E0:
+    class: ScalarQuantity
+    units: kJ/mol
+    value: 319.41611768546977
+  class: Conformer
+  coordinates:
+    class: ArrayQuantity
+    units: angstroms
+    value:
+      class: np_array
+      object:
+      - - 0.490081
+        - -0.216452
+        - -0.060851
+      - - 1.094898
+        - -0.605911
+        - 0.758502
+      - - 0.956817
+        - -0.207264
+        - -1.051687
+      - - 1.416867
+        - 1.491698
+        - 0.240988
+      - - -0.743287
+        - 0.039611999999999994
+        - 0.159494
+      - - -1.204883
+        - 0.342239
+        - -0.6992709999999999
+  mass:
+    class: ArrayQuantity
+    units: amu
+    value:
+      class: np_array
+      object:
+      - 12.000000000000002
+      - 1.00782503224
+      - 1.00782503224
+      - 1.00782503224
+      - 14.00307400443
+      - 1.00782503224
+  modes:
+  - class: IdealGasTranslation
+    mass:
+      class: ScalarQuantity
+      units: amu
+      value: 30.034370000000003
+    quantum: false
+  - class: NonlinearRotor
+    inertia:
+      class: ArrayQuantity
+      units: amu*angstrom^2
+      value:
+        class: np_array
+        object:
+        - 5.819393533223158
+        - 18.751737117540305
+        - 19.468054139991086
+    quantum: false
+    rotationalConstant:
+      class: ArrayQuantity
+      units: cm^-1
+      value:
+        class: np_array
+        object:
+        - 2.896801695418534
+        - 0.8989902614184971
+        - 0.8659123778950111
+    symmetry: 1
+  - class: HarmonicOscillator
+    frequencies:
+      class: ArrayQuantity
+      units: cm^-1
+      value:
+        class: np_array
+        object:
+        - 377.3551990287376
+        - 424.8833603096598
+        - 1063.286401542873
+        - 1087.0779471710723
+        - 1129.9713917711765
+        - 1355.8091196953042
+        - 1452.067035470694
+        - 1624.3068398237613
+        - 3004.8275822364935
+        - 3109.6957716678035
+        - 3451.744728959109
+    quantum: true
+  number:
+    class: ArrayQuantity
+    value:
+      class: np_array
+      object:
+      - 6.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 7.0
+      - 1.0
+  opticalIsomers: 1
+  spinMultiplicity: 2
+datetime: 2019-07-29 21:54
+imaginary_frequency:
+  class: ScalarQuantity
+  units: cm^-1
+  value: -780.1889021058848
+is_ts: true
+label: CH2NH_to_CH3NH
+products:
+- adjacency_list: |
+    multiplicity 2
+    1 N u1 p1 c0 {2,S} {6,S}
+    2 C u0 p0 c0 {1,S} {3,S} {4,S} {5,S}
+    3 H u0 p0 c0 {2,S}
+    4 H u0 p0 c0 {2,S}
+    5 H u0 p0 c0 {2,S}
+    6 H u0 p0 c0 {1,S}
+  label: CH3NH
+reactants:
+- adjacency_list: |
+    1 N u0 p1 c0 {2,D} {5,S}
+    2 C u0 p0 c0 {1,D} {3,S} {4,S}
+    3 H u0 p0 c0 {2,S}
+    4 H u0 p0 c0 {2,S}
+    5 H u0 p0 c0 {1,S}
+  label: CH2NH
+- adjacency_list: |
+    multiplicity 2
+    1 H u1 p0 c0
+  label: H
+reaction_label: CH2NH +H = CH3NH
+xyz: |-
+  6
+  CH2NH_to_CH3NH
+  C 4.90081e-11 -2.16452e-11 -6.0851e-12
+  H 1.094898e-10 -6.05911e-11 7.58502e-11
+  H 9.56817e-11 -2.07264e-11 -1.051687e-10
+  H 1.416867e-10 1.491698e-10 2.40988e-11
+  N -7.43287e-11 3.9612e-12 1.59494e-11
+  H -1.204883e-10 3.42239e-11 -6.99271e-11
